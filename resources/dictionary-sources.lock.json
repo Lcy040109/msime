@@ -19,6 +19,10 @@
     "libchewing-data": {
       "repository": "https://github.com/chewing/libchewing-data.git",
       "commit": "c44e81aef24b06f1509f19e1be54c99812d0c43f"
+    },
+    "rime-wubi": {
+      "repository": "https://github.com/rime/rime-wubi.git",
+      "commit": "152a0d3f3efe40cae216d1e3b338242446848d07"
     }
   },
   "mozc": {
@@ -253,6 +257,12 @@
       "url": "https://github.com/metasequoiaime/msime-dictionary/releases/download/sources-v1.2.0/word.csv",
       "sha256": "da55b8e599c1389bc486453554f3410cf9c621d0ffff0ce38855698d26b3892a",
       "size": 399905
+    },
+    {
+      "path": "wubi/rime-wubi86.dict.yaml",
+      "url": "https://raw.githubusercontent.com/rime/rime-wubi/152a0d3f3efe40cae216d1e3b338242446848d07/wubi86.dict.yaml",
+      "sha256": "f833d86b72341fe82e069a425b6625f29ef85f1bc0f34f6fb7975fe514888b5a",
+      "size": 2289545
     }
   ]
 }

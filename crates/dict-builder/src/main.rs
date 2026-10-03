@@ -406,7 +406,11 @@ impl Build {
                     &mut self.database("msime.db")?,
                     &self.sources.pinned("cn/Wubi86.txt")?,
                 )?;
-                Ok(format!("{imported} rows imported, {skipped} skipped"))
+                let (supplemented, supplement_skipped) = msime::merge_wubi(
+                    &mut self.database("msime.db")?,
+                    &self.sources.pinned(msime::WUBI_SUPPLEMENT)?,
+                )?;
+                Ok(format!("{imported} rows imported, {skipped} skipped; {supplemented} supplemental rows, {supplement_skipped} skipped"))
             }
             Stage::Wubi98 => {
                 let (imported, skipped) = msime::build_wubi98(

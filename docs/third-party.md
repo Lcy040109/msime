@@ -44,6 +44,8 @@
 | 产物 | 大小 | 已知来源 |
 | --- | --- | --- |
 | `msime.db` | 81.9 MB | 工作词库，含 86 与 98 五笔码表 |
+
+`wubi86` 表还合并了固定提交 `152a0d3f3efe40cae216d1e3b338242446848d07` 的 [rime/rime-wubi](https://github.com/rime/rime-wubi) 完整五笔 86 词条补充表；上游许可证为 LGPL-3.0，全文随附于 `resources/licenses/rime-wubi-LICENSE.txt`。
 | `english.db` | 1.5 MB | Engine 发布的英文词库 |
 | `bigram.bin` | 12.0 MB | Engine 发布的二元语言模型表，整句词格仲裁按它加权 |
 | `trigram.bin` | 12.0 MB | Engine 发布的三元语言模型表，同上 |

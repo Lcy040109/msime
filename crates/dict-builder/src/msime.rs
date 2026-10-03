@@ -22,6 +22,9 @@ const CREATE_QUICK_PHRASE_TABLE: &str = "\n            CREATE TABLE quick_parase
 /// Characters added to the pinned single-character whitelist. The whitelist only applies to a build that includes unlicensed inputs (a licensed build accepts every single character), but where it applies it must not drop a reading the source has.
 pub const WHITELIST_ADDITIONS: &str = "cn/SingleCharWhitelist.additions.txt";
 
+/// Rime 五笔 86 的完整开源词条补充表。
+pub const WUBI_SUPPLEMENT: &str = "wubi/rime-wubi86.dict.yaml";
+
 /// Every quanpin table name, numbered buckets first, as `contracts/dictionary/format.json` lists them.
 pub fn quanpin_tables() -> Vec<String> {
     (1..=MAXIMUM_NUMBERED_SYLLABLES + 1)
@@ -348,6 +351,32 @@ pub fn build_wubi(connection: &mut Connection, path: &Path) -> Result<(usize, us
     build_code_table(connection, &WUBI86, path)
 }
 
+/// 将固定版本的开源五笔词条合并到主表；重复的编码和词条保留较高词频。
+pub fn merge_wubi(connection: &mut Connection, path: &Path) -> Result<(usize, usize)> {
+    let source = text::read(path)?;
+    let rows = text::universal_lines(text::without_bom(&source))
+        .into_iter()
+        .map(|line| parse_code_line(line, false));
+    let transaction = connection.transaction()?;
+    let mut insert = transaction.prepare(
+        "INSERT INTO wubi86 (\"key\", \"value\", \"weight\") VALUES (?, ?, ?) \
+         ON CONFLICT(\"key\", \"value\") DO UPDATE SET \"weight\" = MAX(\"weight\", excluded.\"weight\")",
+    )?;
+    let (mut imported, mut skipped) = (0, 0);
+    for row in rows {
+        match row {
+            Some((key, value, weight)) => {
+                insert.execute(params![key, value, weight])?;
+                imported += 1;
+            }
+            None => skipped += 1,
+        }
+    }
+    drop(insert);
+    transaction.commit()?;
+    Ok((imported, skipped))
+}
+
 /// Builds `wubi98` from the 98 wubi group's table as upstream ships it: UTF-16LE with a byte-order mark, `value<TAB>code` lines, no weights. Candidates of one code are listed best first, so each gets [`WUBI98_WEIGHT_STEP`] times the number of candidates after it plus one: the last of a code weighs one step, as the 86 table's lowest rank does.
 pub fn build_wubi98(connection: &mut Connection, path: &Path) -> Result<(usize, usize)> {
     let bytes = std::fs::read(path).with_context(|| format!("reading {}", path.display()))?;
@@ -667,5 +696,30 @@ mod tests {
             )
             .unwrap();
         assert!(stats > 0);
+    }
+
+    #[test]
+    fn wubi_supplement_merges_rows_without_lowering_existing_weight() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = write(
+            dir.path(),
+            "supplement.txt",
+            "冲凉\tukuy\t180000000\n部门\tukuy\t1\n",
+        );
+        let base = write(dir.path(), "base.txt", "部门\tukuy\t200000000\n");
+        let mut connection = Connection::open_in_memory().unwrap();
+        build_wubi(&mut connection, &base).unwrap();
+        assert_eq!(merge_wubi(&mut connection, &path).unwrap(), (2, 0));
+        let rows: Vec<(String, i64)> = connection
+            .prepare("select value, weight from wubi86 where key = 'ukuy' order by value")
+            .unwrap()
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        assert_eq!(
+            rows,
+            [("冲凉".into(), 180000000), ("部门".into(), 200000000)]
+        );
     }
 }
