@@ -1,39 +1,77 @@
-// 演示页的输入区：一个能获得焦点、但不可编辑的元素，文字、光标和行内拼音都由这里自己画。浏览器只对可编辑元素（textarea、input、contenteditable）启用系统输入法，焦点在这里时按键原样到达页面，交给水杉的引擎处理，不会被系统输入法截走。
+// 演示页。输入区是一个能获得焦点、但不可编辑的元素，文字、光标和行内拼音都由这里自己画：浏览器只对可编辑元素（textarea、input、contenteditable）启用系统输入法，焦点在这里时按键原样到达页面，交给水杉的引擎处理，不会被系统输入法截走。右侧的选项改动立刻作用到引擎，下方的接入代码按同样的选项生成。
 import { KeyKind, createMsimeEngine, createShiftTap, keyFromEvent, osImeIntercepting, packKey, version } from "./msime/index.js";
 
 const PINYIN = new Set(["quanpin", "xiaohe", "ziranma"]);
 const NAMES = { quanpin: "全拼", xiaohe: "小鹤双拼", ziranma: "自然码双拼", wubi86: "五笔 86" };
+const SCHEME_NOTES = {
+  quanpin: "完整拼音，例如 woshizhongguoren。",
+  xiaohe: "小鹤双拼：每个字两键，例如 你好 = ni hc。",
+  ziranma: "自然码双拼：每个字两键，例如 你好 = ni hk。",
+  wubi86: "五笔 86：形码，候选旁显示剩余编码，例如 你好 = wq vb。词库与拼音不同，切换时会单独下载（约 3.6 MB）。",
+};
+// 「看它打字」的样例，每一条都在浏览器里实测过结果，且与每页候选数无关。键序列里 " " 是空格，"^" 是单按 Shift（切换中英文），"=" 和 "-" 是下一页和上一页，数字选当前页的候选，大写字母按住 Shift 打出。
+const EXAMPLES = {
+  quanpin: [
+    { label: "整句", keys: "woshizhongguoren " },
+    { label: "长句", keys: "jintiantianqizhenhao " },
+    { label: "中英混输", keys: "woyong ^GitHub^xiedaima " },
+    { label: "全角标点", keys: "nihao,woshixiaoming." },
+    { label: "翻页选字", keys: "gongshi=-2" },
+  ],
+  xiaohe: [
+    { label: "你好", keys: "nihc " },
+    { label: "世界", keys: "uijp " },
+    { label: "我们去北京", keys: "womf qu bwjk " },
+  ],
+  ziranma: [
+    { label: "你好", keys: "nihk " },
+    { label: "世界", keys: "uijx " },
+    { label: "中国", keys: "vsgo " },
+  ],
+  wubi86: [
+    { label: "你好", keys: "wqvb " },
+    { label: "中国", keys: "khlg " },
+    { label: "工作", keys: "aawt " },
+  ],
+};
 
-const editor = document.getElementById("editor");
+// SDK 的默认值，生成代码时只写出与它们不同的选项。
+const DEFAULTS = { scheme: "quanpin", pageSize: 9, model: true, modelEnabled: true };
+const options = { ...DEFAULTS };
+
+const $ = (id) => document.getElementById(id);
+const editor = $("editor");
 const before = editor.querySelector(".before");
 const preeditSpan = editor.querySelector(".preedit");
 const caretSpan = editor.querySelector(".caret");
 const after = editor.querySelector(".after");
 const wrap = editor.parentElement;
-const bar = document.getElementById("candidates");
+const bar = $("candidates");
 const barPreedit = bar.querySelector(".cand-preedit");
 const barList = bar.querySelector(".cand-list");
-const status = document.getElementById("status");
-const statusText = document.getElementById("status-text");
-const progress = document.getElementById("progress");
-const schemeButtons = [...document.querySelectorAll(".schemes button")];
 
 let engine = null;
-let scheme = "quanpin";
+// 当前引擎是按哪些创建参数建的；只有 scheme 在拼音之间变化和 modelEnabled 变化时不用重建。
+let built = null;
 let text = "";
 let caret = 0;
 let frame = null;
 let pending = 0;
-// 放弃组字（点击挪光标、清空、切换方案）时加一，之前发出的请求回来的帧就丢掉。
+// 放弃组字（点击挪光标、清空、切换选项、跑对比）时加一，之前发出的请求回来的帧就丢掉。
 let generation = 0;
+let busyLoading = false;
 const shift = createShiftTap();
 
 const composing = () => Boolean(frame?.composing);
+const ms = (value) => (value >= 100 ? `${Math.round(value)} ms` : `${value.toFixed(1)} ms`);
+const mib = (bytes) => `${(bytes / 1048576).toFixed(1)} MB`;
 
 function setStatus(state, message) {
-  status.dataset.state = state;
-  statusText.textContent = message;
+  $("status").dataset.state = state;
+  $("status-text").textContent = message;
 }
+
+// ---- 输入区 ----
 
 function render() {
   before.textContent = text.slice(0, caret);
@@ -58,7 +96,7 @@ function renderCandidates() {
       num.textContent = String(i + 1);
       li.append(num, row.text);
       // 编码提示只对五笔这样的形码有用；拼音方案的编码就是整串拼音，桌面版也不显示。
-      if (row.code && !PINYIN.has(scheme)) {
+      if (row.code && !PINYIN.has(options.scheme)) {
         const code = document.createElement("span");
         code.className = "cand-code";
         code.textContent = row.code;
@@ -97,7 +135,7 @@ function deleteBack(word) {
   caret = start;
 }
 
-function apply(gen, next) {
+function apply(gen, next, elapsed) {
   if (gen !== generation) return;
   for (const item of next.out) {
     if (item.t === "commit" || item.t === "type") insert(item.text);
@@ -105,14 +143,16 @@ function apply(gen, next) {
   }
   frame = next;
   render();
+  showFrame(next, elapsed);
 }
 
 function send(run) {
-  if (!engine) return;
+  if (!engine || busyLoading || playing) return;
   const gen = generation;
+  const t0 = performance.now();
   pending += 1;
   run()
-    .then((next) => apply(gen, next))
+    .then((next) => apply(gen, next, performance.now() - t0))
     .catch((error) => console.error("msime:", error))
     .finally(() => {
       pending -= 1;
@@ -128,9 +168,14 @@ function abandon() {
 }
 
 editor.addEventListener("keydown", (e) => {
+  // 演示回放期间输入区只读，访客的按键不进来。
+  if (playing) {
+    e.preventDefault();
+    return;
+  }
   shift.down(e);
   if (osImeIntercepting(e)) {
-    document.getElementById("ime-notice").hidden = false;
+    $("ime-notice").hidden = false;
     return;
   }
   const busy = composing() || pending > 0;
@@ -193,7 +238,7 @@ editor.addEventListener("mousedown", (e) => {
 
 editor.addEventListener("blur", abandon);
 
-document.getElementById("clear").addEventListener("click", () => {
+$("clear").addEventListener("click", () => {
   abandon();
   text = "";
   caret = 0;
@@ -201,69 +246,341 @@ document.getElementById("clear").addEventListener("click", () => {
   editor.focus();
 });
 
-function copyButton(button, value) {
-  navigator.clipboard?.writeText(value()).then(() => {
+function copyText(button, value) {
+  navigator.clipboard?.writeText(value).then(() => {
     const label = button.textContent;
     button.textContent = "已复制";
     setTimeout(() => (button.textContent = label), 1200);
   });
 }
 
-document.getElementById("copy").addEventListener("click", (e) => copyButton(e.currentTarget, () => text));
-document.querySelector('[data-copy="snippet"]').addEventListener("click", (e) => copyButton(e.currentTarget, () => document.getElementById("snippet").textContent));
+$("copy").addEventListener("click", (e) => copyText(e.currentTarget, text));
 
-async function load(next) {
-  schemeButtons.forEach((b) => (b.disabled = true));
+// ---- 引擎面板 ----
+
+function showFacts(timings, memoryBytes) {
+  $("fact-version").textContent = `@msime/web-engine ${version}`;
+  $("fact-scheme").textContent = NAMES[options.scheme] + (PINYIN.has(options.scheme) && built.model ? " + 整句模型" : "");
+  if (timings) {
+    $("fact-download").textContent = ms(timings.fetch);
+    $("fact-compile").textContent = ms(timings.compile);
+    $("fact-import").textContent = ms(timings.import);
+    $("fact-session").textContent = ms(timings.session);
+  }
+  if (memoryBytes) $("fact-memory").textContent = mib(memoryBytes);
+}
+
+function showFrame(next, elapsed) {
+  $("fact-latency").textContent = ms(elapsed);
+  const view = {
+    out: next.out,
+    composing: next.composing,
+    preedit: next.preedit,
+    page: next.page.map((row) => (row.code && !PINYIN.has(options.scheme) ? `${row.text} ${row.code}` : row.text)),
+    pageIndex: next.pageIndex,
+    highlight: next.highlight,
+    hasPrev: next.hasPrev,
+    hasNext: next.hasNext,
+    english: next.english,
+    modelOn: next.modelOn,
+    rerankMs: Number(next.rerankMs.toFixed(2)),
+  };
+  // 短数组压成一行，面板里一屏看得完。
+  $("frame").textContent = JSON.stringify(view, null, 2).replace(/\[\n\s+([^\]{]*?)\n\s+\]/g, (_, inner) => `[${inner.replace(/\n\s+/g, " ")}]`);
+}
+
+// ---- 接入代码 ----
+
+let tab = "textarea";
+
+function engineOptions() {
+  const parts = [];
+  if (options.scheme !== DEFAULTS.scheme) parts.push(`scheme: "${options.scheme}"`);
+  if (options.pageSize !== DEFAULTS.pageSize) parts.push(`pageSize: ${options.pageSize}`);
+  if (PINYIN.has(options.scheme) && !options.model) parts.push("model: false");
+  return parts;
+}
+
+const call = (extra = []) => {
+  const parts = [...engineOptions(), ...extra];
+  return parts.length ? `createMsimeEngine({ ${parts.join(", ")} })` : "createMsimeEngine()";
+};
+
+function modelLine() {
+  return PINYIN.has(options.scheme) && options.model && !options.modelEnabled ? "\nengine.setModelEnabled(false); // 下载了模型，但先不用它排序" : "";
+}
+
+function copyFlags() {
+  const flags = [];
+  if (options.scheme === "wubi86") flags.push("--no-pinyin");
+  else {
+    flags.push("--no-wubi");
+    if (!options.model) flags.push("--no-model");
+  }
+  return flags.join(" ");
+}
+
+const CODE = {
+  textarea: () => ({
+    note: "最省事的接法：组字时按键交给引擎，空闲时的回车、退格、方向键仍由浏览器处理。访客开着系统中文输入法时，文本框的按键会先被系统输入法接走，需要切换到英文输入。",
+    code: `import { createMsimeEngine, attachInput } from "@msime/web-engine";
+
+const engine = await ${call()};${modelLine()}
+attachInput(document.querySelector("textarea"), engine);`,
+  }),
+  custom: () => ({
+    note: "这个页面的做法：输入区是可聚焦但不可编辑的元素，系统输入法不会介入；按键交给 engine.keys()，按返回的帧更新文字并自己画候选栏。",
+    code: `import { createMsimeEngine, keyFromEvent } from "@msime/web-engine";
+
+const engine = await ${call()};${modelLine()}
+const editor = document.querySelector("#editor"); // <div tabindex="0">
+let composing = false;
+
+editor.addEventListener("keydown", async (e) => {
+  const key = keyFromEvent(e, { composing });
+  if (key === null) return; // 快捷键等不属于输入法的键
+  e.preventDefault();
+  render(await engine.keys(key));
+});
+
+function render(frame) {
+  for (const o of frame.out) {
+    if (o.t === "commit" || o.t === "type") insertText(o.text);
+    if (o.t === "back") deleteBackward(o.word);
+  }
+  composing = frame.composing;
+  // frame.preedit 是拼音，frame.page 是当前页候选，frame.highlight 是高亮项
+  drawCandidates(frame.preedit, frame.page, frame.highlight);
+}
+
+// 鼠标点选当前页第 i 个候选
+const pick = async (i) => render(await engine.pick(i));`,
+  }),
+  deploy: () => ({
+    note: "三种部署方式任选其一。copy 的参数按当前方案只复制用得到的资源。",
+    code: `# 1. 静态站点（GitHub Pages、Vercel、Cloudflare Pages / Workers）
+npx @msime/web-engine copy public/msime ${copyFlags()}
+
+<script type="module">
+  import { createMsimeEngine, attachInput } from "/msime/index.js";
+  const engine = await ${call()};
+  attachInput(document.querySelector("textarea"), engine);
+</script>
+
+# 2. 打包器（Vite、webpack）：资源仍按第 1 步复制，再告诉 SDK 位置
+npm install @msime/web-engine
+const engine = await ${call(['assetBase: "/msime/assets/"'])};
+
+# 3. CDN，什么都不用部署
+import { createMsimeEngine, attachInput } from "https://cdn.jsdelivr.net/npm/@msime/web-engine@${version}/index.js";`,
+  }),
+};
+
+function renderCode() {
+  const { note, code } = CODE[tab]();
+  $("code-note").textContent = note;
+  $("code-body").textContent = code;
+  for (const button of document.querySelectorAll(".tabs button")) button.setAttribute("aria-selected", String(button.dataset.tab === tab));
+}
+
+for (const button of document.querySelectorAll(".tabs button")) {
+  button.addEventListener("click", () => {
+    tab = button.dataset.tab;
+    renderCode();
+  });
+}
+
+$("copy-code").addEventListener("click", (e) => copyText(e.currentTarget, $("code-body").textContent));
+
+// ---- 看它打字 ----
+
+let playing = false;
+
+// 样例里的一个字符对应的打包按键，规则见 EXAMPLES 上面的注释。
+function packChar(c) {
+  if (c === " ") return packKey(KeyKind.Space);
+  if (c === "^") return packKey(KeyKind.ShiftTap);
+  if (c === "=") return packKey(KeyKind.PageNext, 61);
+  if (c === "-") return packKey(KeyKind.PagePrev, 45);
+  if (c >= "a" && c <= "z") return packKey(KeyKind.Letter, c.charCodeAt(0));
+  if (c >= "A" && c <= "Z") return packKey(KeyKind.ShiftLetter, c.charCodeAt(0));
+  if (c >= "0" && c <= "9") return packKey(KeyKind.Digit, c.charCodeAt(0));
+  return packKey(KeyKind.Punct, c.charCodeAt(0));
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const KEY_LABELS = { " ": "空格", "^": "Shift", "=": "下一页", "-": "上一页" };
+
+function showTyping(keys, index) {
+  const hint = $("hint");
+  const line = document.createElement("span");
+  line.className = "typing";
+  line.append("演示：");
+  [...keys].forEach((c, i) => {
+    const label = KEY_LABELS[c] ? ` ${KEY_LABELS[c]} ` : c;
+    if (i === index) {
+      const b = document.createElement("b");
+      b.textContent = label;
+      line.append(b);
+    } else line.append(label);
+  });
+  hint.replaceChildren(line);
+}
+
+async function play(example, button) {
+  if (!engine || busyLoading || playing) return;
+  playing = true;
+  const hintBackup = [...$("hint").childNodes].map((n) => n.cloneNode(true));
+  button.dataset.playing = "true";
+  syncControls();
+  editor.focus({ preventScroll: true });
   abandon();
+  // 从新的一行开始，免得接在访客已经打的字后面。
+  if (text && !text.endsWith("\n")) {
+    caret = text.length;
+    insert("\n");
+    render();
+  }
+  const keys = example.keys;
   try {
-    if (engine && PINYIN.has(next) && PINYIN.has(scheme)) {
-      // 拼音方案之间共用词库，只重建会话，不重新下载。
-      await engine.setScheme(next);
-      setStatus("ready", `就绪 · ${NAMES[next]}`);
-    } else {
+    for (let i = 0; i < keys.length; i += 1) {
+      showTyping(keys, i);
+      const c = keys[i];
+      await sleep(c === " " || c === "^" || c === "=" || c === "-" || /[0-9]/.test(c) ? 480 : 110);
+      const gen = generation;
+      const t0 = performance.now();
+      apply(gen, await engine.keys(packChar(c)), performance.now() - t0);
+    }
+    await sleep(500);
+  } catch (error) {
+    console.error("msime:", error);
+  } finally {
+    $("hint").replaceChildren(...hintBackup);
+    delete button.dataset.playing;
+    playing = false;
+    syncControls();
+    editor.focus({ preventScroll: true });
+  }
+}
+
+function renderExamples() {
+  const chips = $("examples");
+  const list = EXAMPLES[options.scheme];
+  if (chips.dataset.scheme !== options.scheme) {
+    chips.dataset.scheme = options.scheme;
+    chips.replaceChildren(
+      ...list.map((example) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        const code = document.createElement("code");
+        code.textContent = example.keys.replaceAll(" ", "␣").replaceAll("^", "⇧");
+        button.append(example.label, code);
+        button.addEventListener("mousedown", (e) => e.preventDefault());
+        button.addEventListener("click", () => play(example, button));
+        return button;
+      }),
+    );
+  }
+  for (const button of chips.querySelectorAll("button")) button.disabled = busyLoading || playing || !engine;
+}
+
+// ---- 选项 ----
+
+function syncControls() {
+  for (const group of document.querySelectorAll(".segmented")) {
+    const value = String(options[group.dataset.option]);
+    for (const button of group.querySelectorAll("button")) {
+      button.setAttribute("aria-checked", String(button.dataset.value === value));
+      button.disabled = busyLoading || playing;
+    }
+  }
+  const pinyin = PINYIN.has(options.scheme);
+  const model = document.querySelector('[data-option="model"]');
+  const modelEnabled = document.querySelector('[data-option="modelEnabled"]');
+  model.checked = pinyin && options.model;
+  modelEnabled.checked = pinyin && options.model && options.modelEnabled;
+  model.disabled = busyLoading || playing || !pinyin;
+  modelEnabled.disabled = busyLoading || playing || !pinyin || !options.model;
+  $("scheme-note").textContent = SCHEME_NOTES[options.scheme];
+  renderExamples();
+  renderCode();
+}
+
+// 按当前选项准备好引擎：能就地切换的就地切换，否则重建。
+async function applyOptions() {
+  const rebuild = !engine || !built || built.pageSize !== options.pageSize || built.model !== options.model || PINYIN.has(built.scheme) !== PINYIN.has(options.scheme);
+  busyLoading = true;
+  abandon();
+  syncControls();
+  try {
+    if (rebuild) {
       engine?.dispose();
       engine = null;
-      progress.dataset.done = "false";
-      progress.firstElementChild.style.width = "0";
-      setStatus("loading", `正在加载${NAMES[next]}…`);
+      $("progress").dataset.done = "false";
+      $("progress").firstElementChild.style.width = "0";
+      setStatus("loading", `正在加载${NAMES[options.scheme]}…`);
       const t0 = performance.now();
       engine = await createMsimeEngine({
-        scheme: next,
+        scheme: options.scheme,
+        pageSize: options.pageSize,
+        model: options.model,
+        modelEnabled: options.modelEnabled,
         onProgress: (loaded, total) => {
           const percent = Math.round((loaded / total) * 100);
-          progress.firstElementChild.style.width = `${percent}%`;
-          setStatus("loading", `正在加载${NAMES[next]} ${percent}%`);
+          $("progress").firstElementChild.style.width = `${percent}%`;
+          setStatus("loading", `正在加载${NAMES[options.scheme]} ${percent}%`);
         },
       });
-      progress.dataset.done = "true";
+      built = { scheme: options.scheme, pageSize: options.pageSize, model: options.model };
+      $("progress").dataset.done = "true";
       engine.onError((error) => setStatus("error", `引擎出错，请刷新页面：${error.message}`));
-      document.getElementById("build").textContent = `@msime/web-engine ${version}`;
-      setStatus("ready", `就绪 · ${NAMES[next]} · 用时 ${((performance.now() - t0) / 1000).toFixed(1)} 秒`);
+      setStatus("ready", `就绪 · ${NAMES[options.scheme]} · 加载 ${((performance.now() - t0) / 1000).toFixed(1)} 秒`);
+      showFacts(engine.timings, engine.memoryBytes);
+    } else {
+      if (built.scheme !== options.scheme) {
+        // 拼音方案之间共用词库，只重建会话，不重新下载。
+        await engine.setScheme(options.scheme);
+        built.scheme = options.scheme;
+      }
+      engine.setModelEnabled(options.modelEnabled);
+      setStatus("ready", `就绪 · ${NAMES[options.scheme]}`);
+      showFacts(null, engine.memoryBytes);
     }
-    scheme = next;
+    $("build").textContent = `@msime/web-engine ${version}`;
   } catch (error) {
     const reason = error.code === "unsupported" ? "这个浏览器不支持 WebAssembly 或 DecompressionStream，请换用新版 Chrome、Edge、Firefox 或 Safari。" : error.message;
     setStatus("error", `加载失败：${reason}`);
   } finally {
-    schemeButtons.forEach((b) => {
-      b.disabled = false;
-      b.setAttribute("aria-checked", String(b.dataset.scheme === scheme));
-    });
-    if (document.activeElement === document.body || document.activeElement === null) editor.focus();
+    busyLoading = false;
+    syncControls();
   }
 }
 
-schemeButtons.forEach((button) =>
-  button.addEventListener("click", () => {
-    if (button.dataset.scheme !== scheme) load(button.dataset.scheme);
-    editor.focus();
-  }),
-);
+for (const group of document.querySelectorAll(".segmented")) {
+  for (const button of group.querySelectorAll("button")) {
+    button.addEventListener("click", () => {
+      const key = group.dataset.option;
+      const value = key === "pageSize" ? Number(button.dataset.value) : button.dataset.value;
+      if (options[key] === value) return;
+      options[key] = value;
+      applyOptions().then(() => editor.focus({ preventScroll: true }));
+    });
+  }
+}
+
+for (const input of document.querySelectorAll(".switch input")) {
+  input.addEventListener("change", () => {
+    options[input.dataset.option] = input.checked;
+    if (input.dataset.option === "model" && input.checked) options.modelEnabled = true;
+    applyOptions().then(() => editor.focus({ preventScroll: true }));
+  });
+}
 
 if (matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches) {
-  document.getElementById("touch-notice").hidden = false;
+  $("touch-notice").hidden = false;
 }
 
 render();
-editor.focus();
-load(scheme);
+syncControls();
+editor.focus({ preventScroll: true });
+applyOptions();
