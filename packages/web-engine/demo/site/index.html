@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>水杉输入法网页版｜不用安装，在浏览器里打中文</title>
+    <meta name="description" content="水杉输入法的 Rust 引擎编译成 WebAssembly，在浏览器里离线运行。全拼、小鹤双拼、自然码双拼和五笔 86，输入的内容不会离开你的设备。" />
+    <meta property="og:title" content="水杉输入法网页版" />
+    <meta property="og:description" content="不用安装，在浏览器里打中文。全拼、双拼、五笔，完全离线运行。" />
+    <meta name="theme-color" content="#1E8E4E" />
+    <link rel="icon" href="msime.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="modulepreload" href="msime/index.js" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="https://msime.app/">
+        <span class="logo"><img src="msime.svg" width="22" height="22" alt="" /></span>
+        <span>水杉输入法</span>
+      </a>
+      <nav class="links">
+        <a href="https://msime.app/download/?platform=web">接入文档</a>
+        <a href="https://www.npmjs.com/package/@msime/web-engine">npm</a>
+        <a href="https://github.com/metasequoiaime/msime/tree/develop/packages/web-engine">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">MSIME · WebAssembly</p>
+        <h1>不用安装，<br class="br-narrow" />在浏览器里打中文</h1>
+        <p class="lead">水杉输入法的 Rust 引擎编译成 WebAssembly，就运行在这个页面里。全拼、双拼、五笔，整句联想，完全离线，输入的内容不会离开你的设备。</p>
+      </section>
+
+      <section class="demo" aria-label="在线试用">
+        <div class="demo-bar">
+          <div class="schemes" role="radiogroup" aria-label="输入方案">
+            <button type="button" role="radio" data-scheme="quanpin" aria-checked="true">全拼</button>
+            <button type="button" role="radio" data-scheme="xiaohe" aria-checked="false">小鹤双拼</button>
+            <button type="button" role="radio" data-scheme="ziranma" aria-checked="false">自然码双拼</button>
+            <button type="button" role="radio" data-scheme="wubi86" aria-checked="false">五笔 86</button>
+          </div>
+          <div class="status" id="status" aria-live="polite">
+            <span class="dot"></span><span id="status-text">正在加载引擎…</span>
+          </div>
+        </div>
+        <div class="progress" id="progress" aria-hidden="true"><span></span></div>
+
+        <div class="editor-wrap">
+          <!-- 输入区按 pre-wrap 显示文字，标签之间不能有空白，否则缩进会被当成文字显示出来。 -->
+          <div class="editor" id="editor" tabindex="0" role="textbox" aria-multiline="true" aria-label="在这里打字" data-empty="true"><span class="before"></span><span class="preedit"></span><span class="caret" aria-hidden="true"></span><span class="after"></span></div>
+          <p class="placeholder" id="placeholder">点这里，直接打字试试，比如 <kbd>woshizhongguoren</kbd> 再按空格</p>
+          <div class="candidates" id="candidates" hidden>
+            <div class="cand-preedit"></div>
+            <ol class="cand-list"></ol>
+          </div>
+        </div>
+
+        <div class="demo-foot">
+          <span class="hint" id="hint">数字键或鼠标选字，<kbd>-</kbd> <kbd>=</kbd> 翻页，单按 <kbd>Shift</kbd> 切换中英文</span>
+          <span class="actions">
+            <button type="button" id="copy">复制文字</button>
+            <button type="button" id="clear">清空</button>
+          </span>
+        </div>
+        <p class="notice" id="ime-notice" hidden>检测到系统输入法正在处理按键。请把系统输入法切换到英文（如 macOS 的 ABC、Windows 的英语键盘），就能用上水杉。</p>
+        <p class="notice" id="touch-notice" hidden>这个演示需要实体键盘。手机和平板上请连接键盘，或在电脑上打开。</p>
+      </section>
+
+      <section class="features">
+        <article>
+          <h2>完全离线</h2>
+          <p>引擎、词库和整句模型都在浏览器的 Web Worker 里运行。没有服务器参与转换，输入的内容不会被上传。</p>
+        </article>
+        <article>
+          <h2>和桌面版同一个引擎</h2>
+          <p>与 macOS、Linux、Android、iOS、HarmonyOS 版共用一套 Rust 输入引擎，同样的词库，同样的候选排序。</p>
+        </article>
+        <article>
+          <h2>两行代码嵌进你的网页</h2>
+          <p>以 npm 包 <code>@msime/web-engine</code> 发布，可部署到 GitHub Pages、Vercel、Cloudflare 等任意静态托管，也能直接从 CDN 引用。</p>
+        </article>
+      </section>
+
+      <section class="integrate">
+        <h2>接入你的网站</h2>
+        <div class="code">
+          <div class="code-head"><span>HTML</span><button type="button" data-copy="snippet">复制</button></div>
+          <pre id="snippet"><code>&lt;textarea&gt;&lt;/textarea&gt;
+&lt;script type="module"&gt;
+  import { createMsimeEngine, attachInput } from "https://cdn.jsdelivr.net/npm/@msime/web-engine/index.js";
+  const engine = await createMsimeEngine({ scheme: "quanpin" });
+  attachInput(document.querySelector("textarea"), engine);
+&lt;/script&gt;</code></pre>
+        </div>
+        <p class="more">挂在普通文本框上时，访客开着系统中文输入法的话按键会先被系统输入法接走，需要切换到英文输入才能用上水杉；这个页面的输入区不是可编辑元素，所以不受影响。部署到自己的站点、打包器、各托管平台的配置和 CSP 说明，见 <a href="https://msime.app/download/?platform=web">接入文档</a>。</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>水杉输入法 · GPL-3.0 开源 · <span id="build"></span></span>
+      <span><a href="https://msime.app/">msime.app</a> · <a href="msime/assets/NOTICE.md">第三方许可声明</a></span>
+    </footer>
+
+    <script type="module" src="demo.js"></script>
+  </body>
+</html>
