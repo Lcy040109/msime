@@ -3,11 +3,11 @@ cask "msime" do
   version "@VERSION@"
   sha256 "@SHA256@"
 
-  url "https://github.com/metasequoiaime/msime/releases/download/macos-v#{version}/msime-macos-#{version}-universal.dmg"
+  url "https://github.com/Lcy040109/msime/releases/download/macos-v#{version}/msime-macos-#{version}-universal.dmg"
   name "MSIME"
-  name "水杉输入法"
+  name "灵耀输入法"
   desc "Chinese input method for pinyin, shuangpin and wubi"
-  homepage "https://github.com/metasequoiaime/msime"
+  homepage "https://github.com/Lcy040109/msime"
 
   livecheck do
     url :url
@@ -25,7 +25,7 @@ cask "msime" do
 
   # The settings app copies the input method here on its first launch.
   uninstall quit:   ["app.msime.macos", "app.msime.inputmethod.MetasequoiaIME"],
-            delete: "~/Library/Input Methods/水杉输入法.app"
+            delete: "~/Library/Input Methods/灵耀输入法.app"
 
   zap trash: [
     "~/Library/Application Support/app.msime.macos",
@@ -37,7 +37,7 @@ cask "msime" do
   ]
 
   caveats <<~EOS
-    Open MSIME once to finish installing: it adds 水杉输入法 to your input sources.
+    Open MSIME once to finish installing: it adds 灵耀输入法 to your input sources.
     On a Mac where it was never installed, log out and back in after that before it appears.
   EOS
 end

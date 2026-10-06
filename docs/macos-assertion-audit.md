@@ -32,7 +32,7 @@ grep -rhoE 'require\([^,]*,\s*"[^"]+"' "$ref"/platforms/macos/tests/*.mm "$ref"/
 
 输入菜单。这 16 条断言钉的是来源菜单的条目集合、分隔位置与 selector，对应物是 `platforms/macos/src/input/InputMenu.h` 里的菜单构造器，由 CTest `input-menu` 覆盖；`InputMenu.h` 同时提供生效菜单使用的主题处理（`ApplyMetasequoiaMenuTheme` 按 `menu_theme` / `theme` 解析 dark/light/system）。
 
-实际生效的输入菜单此后按 MSIME-Windows 的托盘菜单重排，由 `-[MSIMEInputController menu]`（`platforms/macos/src/input/InputController.mm`）构造：中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 水杉表情面板… / 云剪贴板… / 水杉屏幕键盘… / 手写输入… / 开始/结束语音输入 / 水杉输入法设置… / 关于水杉输入法…。简繁输出是一个勾选项，输入方案与主题各是一个以当前选择命名的子菜单，词库从设置窗口进入。来源里单列的「检查更新…」「语音输入设置…」收进设置窗与悬浮工具栏，管理页统一进设置窗口。这份菜单的条目数、标题与 selector 由 `platforms/macos/tests/input/ShortcutTest.mm` 断言，CTest 目标 `shortcut`。
+实际生效的输入菜单此后按 MSIME-Windows 的托盘菜单重排，由 `-[MSIMEInputController menu]`（`platforms/macos/src/input/InputController.mm`）构造：中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 灵耀表情面板… / 云剪贴板… / 灵耀屏幕键盘… / 手写输入… / 开始/结束语音输入 / 灵耀输入法设置… / 关于灵耀输入法…。简繁输出是一个勾选项，输入方案与主题各是一个以当前选择命名的子菜单，词库从设置窗口进入。来源里单列的「检查更新…」「语音输入设置…」收进设置窗与悬浮工具栏，管理页统一进设置窗口。这份菜单的条目数、标题与 selector 由 `platforms/macos/tests/input/ShortcutTest.mm` 断言，CTest 目标 `shortcut`。
 
 ## InputControllerKeyRoutingTests.mm（14 条）
 
@@ -56,7 +56,7 @@ Sparkle 驱动就绪状态、手动检查激活 accessory UI 并转发给 Sparkl
 | InputSourceRegistrationTests | 注册收到已安装 bundle 的 URL；父输入源找到之前不得启用输入模式 | 目标 `platforms/macos/src/input/InputSourceRegistration.mm`，CTest 目标 `input-source-registration` |
 | CandidateSelectionStateTests | 重置不得留下过期的引擎索引；分页夹具候选数够用 | 前一条由结构保证：选中项归共享运行时，宿主不再记索引，`crates/input-runtime/src/runtime.rs` 的 `refresh` 每次重建候选先把高亮归零（`CandidateSelectionState.h` 只被未参与构建的直连适配器使用，已随 C++ Engine 删除）。后一条是 CTest 目标 `candidate-pagination` |
 | FloatingToolbarPanelTests | 关掉一个开关再打开要恢复按钮 | 已对齐 |
-| FloatingToolbarPanelTests | **四个开关全关，齿轮还在** | **刻意分歧。** 参考的 `MetasequoiaFloatingToolbarItemKeys()` 只有四项，齿轮不可关；目标把齿轮也做成可开关，并多出表情与屏幕键盘两项。理由：目标的工具栏组件本来就更多，且关掉齿轮不困人——输入菜单里仍有「水杉输入法设置…」，手写与语音按钮恒常存在，工具栏不会变成空条。 |
+| FloatingToolbarPanelTests | **四个开关全关，齿轮还在** | **刻意分歧。** 参考的 `MetasequoiaFloatingToolbarItemKeys()` 只有四项，齿轮不可关；目标把齿轮也做成可开关，并多出表情与屏幕键盘两项。理由：目标的工具栏组件本来就更多，且关掉齿轮不困人——输入菜单里仍有「灵耀输入法设置…」，手写与语音按钮恒常存在，工具栏不会变成空条。 |
 
 ## 这一轴覆盖的范围
 

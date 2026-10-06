@@ -2587,7 +2587,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   private func generateReply(style: String) {
     guard hasFullAccess else { replyModel.status = "请在系统键盘设置中允许完全访问"; return }
     guard let configuration = KeyboardAIService.configuration() else {
-      replyModel.status = "请在水杉 App → AI 设置中保存键盘 AI 配置"; return
+      replyModel.status = "请在灵耀 App → AI 设置中保存键盘 AI 配置"; return
     }
     guard !hasComposition, let document = KeyboardHostContext.documentIdentifier(for: textDocumentProxy) else {
       replyModel.status = "请先完成输入，再选择回复方式"; return
@@ -2623,7 +2623,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   private func showKeyboardAI() {
     guard hasFullAccess else { showDiagnostic("AI 需要开启键盘的“允许完全访问”。"); return }
     guard let configuration = KeyboardAIService.configuration() else {
-      showDiagnostic("请在水杉 App 的 AI 设置中启用键盘 AI 并保存配置。"); return
+      showDiagnostic("请在灵耀 App 的 AI 设置中启用键盘 AI 并保存配置。"); return
     }
     guard !hasComposition, let document = KeyboardHostContext.documentIdentifier(for: textDocumentProxy),
           let selected = textDocumentProxy.selectedText, !selected.isEmpty, selected.count <= 10_000 else {
@@ -2961,7 +2961,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     let modeName = Self.localInputModes.first { $0.trigger == localModeTrigger }?.title
     let title = isInLocalMode && visiblePreedit == localModeTrigger
       ? (modeName ?? visiblePreedit)
-      : (idle ? (isChineseMode ? "水杉输入法" : "英文输入") : visiblePreedit)
+      : (idle ? (isChineseMode ? "灵耀输入法" : "英文输入") : visiblePreedit)
     // 「候选栏预编辑」 only changes what is drawn: `visiblePreedit` still says a composition is running, which keeps the strip up while a spelling has no candidates yet, and VoiceOver still reads the full title. The setting names the spelling, so a Japanese reading and what an in-place scheme composes are left as they are.
     let style = CandidatePreeditStyle(in: session.sharedPreferences)
     // A caret moved into the spelling is drawn even under 「不显示」: the next key acts at that caret, and a hidden one leaves no way to tell where.
@@ -3969,7 +3969,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     return Self.preferredGloss(offline: target, online: online, route: translationRoute)
   }
 
-  /// A non-English gloss, as on macOS: a service of the user's own outranks the offline dictionary, which outranks the 水杉 account.
+  /// A non-English gloss, as on macOS: a service of the user's own outranks the offline dictionary, which outranks the 灵耀 account.
   static func preferredGloss(offline: String?, online: String?, route: TranslationRoute) -> String? {
     switch route {
     case .account, .none: return offline ?? online

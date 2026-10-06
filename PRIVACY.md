@@ -8,9 +8,9 @@
 
 ## 一句话结论
 
-新装的默认配置下，**没有任何功能会把你输入的内容发出设备**。会这样做的两项都要你自己打开：云联想把当前正在组的拼音串发给 Google 输入工具，新装默认关闭，Windows、Linux 与 macOS 在第一次使用时说明并让你选择，默认选项是不启用（见[云联想](#云联想新装默认关闭)）；候选翻译要你在设置里选择一个翻译服务（自己的凭据，或显式选择「水杉账号」，后者把当前页的中文候选词发到 `api.msime.app`，见[候选翻译](#候选翻译默认不联网)）。其余所有联网功能——语音识别、语音润色、AI 联想、账号同步——默认凭据为空，你不填自己的密钥它们就不会发出任何请求。从旧版本升级时沿用配置文件里已存的值，不会替你改。
+新装的默认配置下，**没有任何功能会把你输入的内容发出设备**。会这样做的两项都要你自己打开：云联想把当前正在组的拼音串发给 Google 输入工具，新装默认关闭，Windows、Linux 与 macOS 在第一次使用时说明并让你选择，默认选项是不启用（见[云联想](#云联想新装默认关闭)）；候选翻译要你在设置里选择一个翻译服务（自己的凭据，或显式选择「灵耀账号」，后者把当前页的中文候选词发到 `api.msime.app`，见[候选翻译](#候选翻译默认不联网)）。其余所有联网功能——语音识别、语音润色、AI 联想、账号同步——默认凭据为空，你不填自己的密钥它们就不会发出任何请求。从旧版本升级时沿用配置文件里已存的值，不会替你改。
 
-另有一条不携带输入内容的自有上报路径，端点是本项目自己的 `https://api.msime.app`：六个平台都会发送匿名使用统计（每天一条活跃记录、每个输入法进程一条会话记录、崩溃时的错误摘要与调用栈），**默认开启**，可以在设置里用「匿名使用统计」（偏好字段 `usage_reporting`）关闭，关闭后不再发送并清空本机队列，见[使用统计与崩溃上报](#使用统计与崩溃上报默认开启可关闭)。设置窗口或 App 首页打开时会拉取一次不带凭据的[服务公告](#服务公告)；社区里只有你主动提交时才会发出[举报](#社区举报与审核)。六个平台还会在安装后首次启动时向同一端点注册一个本机匿名水杉账号，只发送本机随机生成的标识与口令，见[账号与同步](#账号与同步需要登录)。仓库不接入任何第三方统计或崩溃上报 SDK。
+另有一条不携带输入内容的自有上报路径，端点是本项目自己的 `https://api.msime.app`：六个平台都会发送匿名使用统计（每天一条活跃记录、每个输入法进程一条会话记录、崩溃时的错误摘要与调用栈），**默认开启**，可以在设置里用「匿名使用统计」（偏好字段 `usage_reporting`）关闭，关闭后不再发送并清空本机队列，见[使用统计与崩溃上报](#使用统计与崩溃上报默认开启可关闭)。设置窗口或 App 首页打开时会拉取一次不带凭据的[服务公告](#服务公告)；社区里只有你主动提交时才会发出[举报](#社区举报与审核)。六个平台还会在安装后首次启动时向同一端点注册一个本机匿名灵耀账号，只发送本机随机生成的标识与口令，见[账号与同步](#账号与同步需要登录)。仓库不接入任何第三方统计或崩溃上报 SDK。
 
 ## 逐项说明
 
@@ -46,9 +46,9 @@ https://inputtools.google.com/request?text=ni%20hao&itc=zh-t-i0-pinyin&num=1&ie=
 
 `candidate_translations` 默认 `true`，支持腾讯机器翻译（`https://tmt.tencentcloudapi.com`）、小牛翻译（`https://api.niutrans.com/v2/text/translate`）和自定义端点。三者都要求你在设置里填入自己的 API 凭据，默认全为空字符串——**没有凭据就不会发出请求**，开关为真也一样。发送内容是待翻译的候选词。代码在 `crates/client-core/src/credential/translation.rs`。
 
-macOS、iOS、Android 和 Linux 另提供「水杉账号」（`translation_account`）：选择它后，会把当前页的中文候选词（包括本地已有释义的）连同目标语言代码 POST 到 `https://api.msime.app/v1/translate`。请求带账号令牌：macOS 与 Android 在你已登录时用登录的账号，否则（以及 iOS 上始终）用安装后首次启动时注册的本机匿名账号（见[账号与同步](#账号与同步需要登录)）。所有平台新装和「恢复默认设置」都不选它，只有你显式选择才发送；已有配置文件里存着选择的，升级沿用，缺这个字段的按未选择处理。不想发送，在设置的翻译服务里改选别的服务或「不使用在线翻译」，或关掉候选翻译。你自己的服务优先：候选翻译关闭、小牛或自定义服务已启用、或腾讯已启用且两项凭据都可用时，都不走水杉账号。共享层把这个判定算成翻译查询里的 `translation_account` 字段（`crates/host-api/src/ffi/providers.rs`），各宿主只在它为真时发请求。Windows、HarmonyOS 没有这条路径。没有选择任何服务时不发出候选翻译请求。
+macOS、iOS、Android 和 Linux 另提供「灵耀账号」（`translation_account`）：选择它后，会把当前页的中文候选词（包括本地已有释义的）连同目标语言代码 POST 到 `https://api.msime.app/v1/translate`。请求带账号令牌：macOS 与 Android 在你已登录时用登录的账号，否则（以及 iOS 上始终）用安装后首次启动时注册的本机匿名账号（见[账号与同步](#账号与同步需要登录)）。所有平台新装和「恢复默认设置」都不选它，只有你显式选择才发送；已有配置文件里存着选择的，升级沿用，缺这个字段的按未选择处理。不想发送，在设置的翻译服务里改选别的服务或「不使用在线翻译」，或关掉候选翻译。你自己的服务优先：候选翻译关闭、小牛或自定义服务已启用、或腾讯已启用且两项凭据都可用时，都不走灵耀账号。共享层把这个判定算成翻译查询里的 `translation_account` 字段（`crates/host-api/src/ffi/providers.rs`），各宿主只在它为真时发请求。Windows、HarmonyOS 没有这条路径。没有选择任何服务时不发出候选翻译请求。
 
-macOS 26 及以上在没有选择任何服务时（候选翻译开启，小牛、自定义、腾讯都未启用，也没有选择水杉账号，新装就是这个状态），会用 Apple 系统自带的离线翻译模型为随包词典答不上的中文候选补一行释义。翻译在本机完成，候选词不离开这台 Mac；只用你已经在「系统设置 → 通用 → 语言与地区 → 翻译语言」里下载好的语言对，输入法不会触发下载，没下载就不补。代码在 `platforms/macos/src/backend/translation/BackendOnDeviceGloss.swift`，判定在 `InputController.mm` 的 `currentOnDeviceGlossRequest`。
+macOS 26 及以上在没有选择任何服务时（候选翻译开启，小牛、自定义、腾讯都未启用，也没有选择灵耀账号，新装就是这个状态），会用 Apple 系统自带的离线翻译模型为随包词典答不上的中文候选补一行释义。翻译在本机完成，候选词不离开这台 Mac；只用你已经在「系统设置 → 通用 → 语言与地区 → 翻译语言」里下载好的语言对，输入法不会触发下载，没下载就不补。代码在 `platforms/macos/src/backend/translation/BackendOnDeviceGloss.swift`，判定在 `InputController.mm` 的 `currentOnDeviceGlossRequest`。
 
 ### 语音输入（默认凭据为空）
 
@@ -93,7 +93,7 @@ macOS 26 及以上在没有选择任何服务时（候选翻译开启，小牛�
 - Android：应用首次打开时（`AccountIdentity.register`），已存有匿名会话（即使已过期）就不发请求，存于应用私有存储。
 - HarmonyOS：应用首次启动或键盘首次加载时，存于应用的 `files/state` 目录。
 
-Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审核)之外，不用这个账号发送任何内容。候选翻译在你选择了「水杉账号」时才发送，见[候选翻译](#候选翻译默认不联网)；Android 浏览社区皮肤与词库目录时，也会带上匿名账号的令牌（`platforms/android/java/app/msime/android/community/CommunityCatalog.java`），取不到照常列出目录。凭据的存放：iOS 用 Keychain（`crates/tauri-mobile-platform/ios/Sources/MobilePlatformPlugin.swift`），Android 用 Keystore 加密后落盘；macOS、Windows 与 Linux 桌面端存在当前用户私有的 `account-session.json` 里（`crates/client-core/src/account/file_storage.rs`），只有本人可读写，不加密。
+Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审核)之外，不用这个账号发送任何内容。候选翻译在你选择了「灵耀账号」时才发送，见[候选翻译](#候选翻译默认不联网)；Android 浏览社区皮肤与词库目录时，也会带上匿名账号的令牌（`platforms/android/java/app/msime/android/community/CommunityCatalog.java`），取不到照常列出目录。凭据的存放：iOS 用 Keychain（`crates/tauri-mobile-platform/ios/Sources/MobilePlatformPlugin.swift`），Android 用 Keystore 加密后落盘；macOS、Windows 与 Linux 桌面端存在当前用户私有的 `account-session.json` 里（`crates/client-core/src/account/file_storage.rs`），只有本人可读写，不加密。
 
 ### 云剪贴板（需要登录）
 
@@ -108,7 +108,7 @@ Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审
 
 ### 资源与更新下载
 
-首次准备词库时从 GitHub Releases 拉取固定版本的资源，地址、长度和 SHA-256 全部写死在 `resources/desktop-dictionary.lock.json` 里，逐一校验，全部成功才发布到内容标识目录。下载的是公开发布物，不上传任何东西。检查更新只在点击「检查更新」时进行，向 `https://api.github.com/repos/metasequoiaime/msime/releases` 发起 GET 请求并在本地按平台标签前缀筛选（识别不出宿主平台时改为读取 `https://msime.app/update.json`）；请求除 IP 地址和防缓存时间戳外不携带标识，适用 GitHub 隐私条款。
+首次准备词库时从 GitHub Releases 拉取固定版本的资源，地址、长度和 SHA-256 全部写死在 `resources/desktop-dictionary.lock.json` 里，逐一校验，全部成功才发布到内容标识目录。下载的是公开发布物，不上传任何东西。检查更新只在点击「检查更新」时进行，向 `https://api.github.com/repos/Lcy040109/msime/releases` 发起 GET 请求并在本地按平台标签前缀筛选（识别不出宿主平台时改为读取 `https://msime.app/update.json`）；请求除 IP 地址和防缓存时间戳外不携带标识，适用 GitHub 隐私条款。
 
 桌面发布包不内置的几个资源包由设置应用在首次用到时下载，之后从本机读取。哪些平台下载哪些：
 
@@ -119,7 +119,7 @@ Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审
 | | |
 | --- | --- |
 | 触发 | 只在这几种情况下发生：在设置里选日文、粤拼、注音或笔画方案（macOS）；第一次打开手写面板（宿主需要下载手写模型时）；打开「桌面神经联想」；设置应用启动时发现已保存的方案（或上一次的中文方案）需要的词库、或已打开的桌面神经联想需要的模型还没装；在资源包那一行点「下载」或「重试」 |
-| 目的地 | GitHub Releases（`https://github.com/metasequoiaime/msime-dictionary/releases/download/dict-v.../` 的词库，`https://github.com/metasequoiaime/chinese-ime-lm/releases/download/model-v1/` 的桌面神经联想模型，下载时会被重定向到 GitHub 的文件存储域名）与 `https://raw.githubusercontent.com/metasequoiaime/msime-engine/<固定提交>/...`（手写模型）；配置了镜像时改为镜像地址 |
+| 目的地 | GitHub Releases（`https://github.com/Lcy040109/msime-dictionary/releases/download/dict-v.../` 的词库，`https://github.com/metasequoiaime/chinese-ime-lm/releases/download/model-v1/` 的桌面神经联想模型，下载时会被重定向到 GitHub 的文件存储域名）与 `https://raw.githubusercontent.com/Lcy040109/msime-engine/<固定提交>/...`（手写模型）；配置了镜像时改为镜像地址 |
 | 发送内容 | 对固定文件的 HTTPS GET 请求，不携带任何输入内容、账号或设备标识 |
 | 需要凭据 | 否 |
 | 偏好字段 | 沿用 `voice_input.asr_model_mirror`，默认空字符串，表示直接访问 GitHub；下载失败时资源包那一行和手写面板都提供「设置下载镜像」 |
@@ -137,7 +137,7 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 | | |
 | --- | --- |
 | 目的地 | `https://api.msime.app/v1/telemetry/events`，不带任何凭据（服务端和任何请求一样能看到来源 IP） |
-| 偏好开关 | `usage_reporting`，默认 `true`。设置页「关于 → 隐私 → 匿名使用统计」在所有平台都显示（`packages/ui/src/settings/telemetry-section.tsx`）；Windows 原生设置在「关于」里另有同一开关（`platforms/windows/settings/main.cpp`），iOS 在「关于水杉 → 发送匿名使用统计」，Android 在「词库与输入 → 需要留意的 → 匿名使用统计」。旧字段 `telemetry_enabled` 不再读取 |
+| 偏好开关 | `usage_reporting`，默认 `true`。设置页「关于 → 隐私 → 匿名使用统计」在所有平台都显示（`packages/ui/src/settings/telemetry-section.tsx`）；Windows 原生设置在「关于」里另有同一开关（`platforms/windows/settings/main.cpp`），iOS 在「关于灵耀 → 发送匿名使用统计」，Android 在「词库与输入 → 需要留意的 → 匿名使用统计」。旧字段 `telemetry_enabled` 不再读取 |
 | 每条事件的字段 | 随机事件 id、`kind`、`platform`（`windows`/`macos`/`linux`/`android`/`ios`/`harmony`）、`version`（应用的真实版本号）、`install_id`；只有 `crash` 另带 `message` 与 `stack` |
 | `install_id` | 每个安装首次使用时随机生成一次，存在本机的 `telemetry-state.json` 里，不由硬件、账号或任何用户数据派生 |
 | 需要凭据 | 否 |
@@ -155,7 +155,7 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 
 - **Windows**（`platforms/windows/src/entrypoints/server_main.cpp`，包装层 `platforms/common/Telemetry.cpp`）：会话是 Server 进程从启动到消息循环结束；开关读自偏好里的 `usage_reporting`（`platforms/windows/src/system/TelemetryConsent.h`：缺省算开启，显式 `false` 算关闭，读不出来的值或文件算关闭），设置页保存后立即生效。启动时发送一次，之后每 30 分钟一次。崩溃来源：`std::terminate` 记录异常类型和 `what()` 的第一行（JSON 解析异常只记类型和编号，因为其文本可能引用用户文件的内容）；未处理的结构化异常由 `SetUnhandledExceptionFilter` 记录异常名与代码、出错模块文件名+偏移和逐帧的模块+偏移（例如 `EXCEPTION_ACCESS_VIOLATION (0xc0000005) in module.dll+0x…`）。文件在 `%LOCALAPPDATA%\MSIME\` 下：`telemetry.json`、`telemetry-state.json`、`telemetry-session.json`、`telemetry-crashes\`。安装器的「联网功能」页说明了这项统计默认开启（`platforms/windows/installer/msime_setup.iss`）。
 - **Linux**：IBus 宿主（`platforms/linux/src/entrypoints/ibus_main.cpp`）的会话是 `msime-linux-ibus` 从启动到主循环返回，崩溃守护以 `--recovered` 重启的进程同样如此；Fcitx5 插件（`platforms/linux/fcitx5/FcitxEngine.cpp`）的会话是插件实例的生存期，发送在后台任务里进行，不占用事件循环。崩溃来源：`std::terminate`（规则同 Windows），以及 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT 的信号处理程序，写下 `SIGSEGV: segmentation fault (code N)` 这样的摘要和 `backtrace_symbols_fd` 的栈帧，然后交回原先的处理程序（Fcitx5 自己的崩溃日志照常工作）。启动时发送一次，之后每 30 分钟一次。开关是共享偏好 `preferences.json` 里的 `usage_reporting`。文件在 `$XDG_STATE_HOME/msime/`（未设时为 `~/.local/state/msime/`）下，文件名同 Windows；Fcitx5 用自己的子目录 `$XDG_STATE_HOME/msime/fcitx5/`，因此有自己的 `install_id`，同一台机器上两种框架都用会被算成两个安装。
-- **macOS**（`platforms/macos/src/core/UsageReporting.mm`，由 `input_method_main.mm` 调用）：会话是输入法进程的生存期，单独打开的设置窗口不算。崩溃来源：`NSSetUncaughtExceptionHandler`（异常名、原因和 `callStackSymbols`）和 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT、SIGTRAP 的信号处理程序（`backtrace_symbols_fd`：二进制文件名、地址、符号+偏移）。启动时发送一次，之后每 3 小时一次。开关是共享设置页的「匿名使用统计」。文件在 `~/Library/Application Support/MSIME/telemetry/`；水杉五笔、水杉拼音等其他版本各用 `~/Library/Application Support/MSIME/<版本 id>/telemetry/`，同时安装的版本互不共享 `install_id`。
+- **macOS**（`platforms/macos/src/core/UsageReporting.mm`，由 `input_method_main.mm` 调用）：会话是输入法进程的生存期，单独打开的设置窗口不算。崩溃来源：`NSSetUncaughtExceptionHandler`（异常名、原因和 `callStackSymbols`）和 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT、SIGTRAP 的信号处理程序（`backtrace_symbols_fd`：二进制文件名、地址、符号+偏移）。启动时发送一次，之后每 3 小时一次。开关是共享设置页的「匿名使用统计」。文件在 `~/Library/Application Support/MSIME/telemetry/`；灵耀五笔、灵耀拼音等其他版本各用 `~/Library/Application Support/MSIME/<版本 id>/telemetry/`，同时安装的版本互不共享 `install_id`。
 - **iOS**（`platforms/ios/SharedUI/core/UsageReporting.swift`）：会话是键盘的一次弹出到收起（`KeyboardExtension/Sources/core/KeyboardUsageReporting.swift`），App 本身不产生会话。崩溃来源：键盘里的信号处理程序（`CrashSignalRecorder.c`，信号名和 `backtrace_symbols_fd` 的栈帧）和未捕获异常处理程序（异常名、原因和 `callStackSymbols`）；App 的崩溃来自系统的 MetricKit 诊断（`CrashDiagnostics.swift`），只取异常类型、代码、信号、ObjC 异常名、系统给出的终止原因和「二进制名+偏移」形式的栈帧，从不取 ObjC 的 `composedMessage`。键盘只有在「允许完全访问」打开时才发送，最多每 15 分钟一次；否则由 App 在回到前台时发送。文件在 App Group 容器的 `MSIME/telemetry/` 下，App 与键盘共用一个 `install_id`。`PrivacyInfo.xcprivacy` 声明了 CrashData、ProductInteraction 与 DeviceID（随机安装 id），均为不关联身份、不用于跟踪。
 - **Android**（`platforms/android/java/app/msime/android/core/Telemetry.java`，经 `platforms/android/native/client_jni.cpp` 调用共享层）：会话只在 `:ime` 进程里，是 `MSIMEInputService` 从 `onCreate` 到 `onDestroy`。崩溃来源：两个进程的未捕获异常处理程序，记录 `Throwable.toString()` 的第一行（**可能包含异常自带的消息文本**）和 Java 栈帧（类、方法、源文件名与行号，最多 4 层 Caused by）；App 进程的崩溃在键盘下次启动时作为单独的 `crash` 发送。原生（信号）崩溃目前不捕获。App 打开时发送，键盘弹出时最多每 6 小时发送一次。文件在应用私有目录 `files/telemetry/`。
 - **HarmonyOS**（`platforms/harmony/entry/src/main/ets/telemetry/Telemetry.ets`，经 `platforms/harmony/native/client_napi.cpp` 调用共享层）：会话是键盘进程从 `KeyboardExtensionAbility.onCreate` 到 `onDestroy`，设置应用只发送不产生会话。崩溃来源只有系统在下次启动时投递的 HiAppEvent `APP_CRASH`：JS 崩溃取错误名、消息第一行和引擎调用栈；原生崩溃取信号名与代码和「文件名+pc+符号」形式的栈帧，不含故障地址和目录。键盘启动时与之后每 6 小时（打字时检查）发送一次，设置应用打开时也发送。文件在 `files/state/telemetry/` 下，另有只存键盘进程号的 `harmony-keyboard-process.json`。

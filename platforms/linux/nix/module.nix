@@ -12,7 +12,7 @@ let
 in
 {
   options.programs.msime = {
-    enable = lib.mkEnableOption "水杉输入法（Fcitx5 插件、命令行入口与 provider 用户服务）";
+    enable = lib.mkEnableOption "灵耀输入法（Fcitx5 插件、命令行入口与 provider 用户服务）";
 
     package = lib.mkOption {
       type = lib.types.package;
@@ -47,7 +47,7 @@ in
     };
     # 插件只接进了 Fcitx5；换成别的输入法框架时模块什么也不提供，说一声而不是静默。
     warnings = lib.optional (config.i18n.inputMethod.type != "fcitx5") ''
-      programs.msime 只接入了 Fcitx5，i18n.inputMethod.type 是 "${toString config.i18n.inputMethod.type}" 时水杉输入法不会出现在输入法列表里。
+      programs.msime 只接入了 Fcitx5，i18n.inputMethod.type 是 "${toString config.i18n.inputMethod.type}" 时灵耀输入法不会出现在输入法列表里。
     '';
     # 首次配置要用的 msime-linux-setup 等命令；也让剪贴板的 XDG 自启动项（etc/xdg/autostart）生效。
     environment.systemPackages = [ cfg.package ];

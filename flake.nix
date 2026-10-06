@@ -1,5 +1,5 @@
 {
-  description = "水杉输入法（MSIME）的 Linux 原生宿主：Fcitx5 插件与它链接的 Host API";
+  description = "灵耀输入法（MSIME）的 Linux 原生宿主：Fcitx5 插件与它链接的 Host API";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

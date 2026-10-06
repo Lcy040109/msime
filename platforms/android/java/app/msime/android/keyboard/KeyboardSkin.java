@@ -443,7 +443,7 @@ public final class KeyboardSkin {
     /**
      * 工具栏按钮激活（对应面板打开）时的圆底。
      *
-     * 跟随系统和设计皮肤用 accentSoft。内置的命名皮肤（水杉、浅色、纸白、夜青、墨）的 accentSoft 来自平台的绿色令牌，与皮肤无关；原型在这里漏出一块固定的绿，夜青、墨上尤其扎眼。改为取皮肤自己的强调色，按设计的色调容器比例（浅色 13%、深色 25%）叠底。
+     * 跟随系统和设计皮肤用 accentSoft。内置的命名皮肤（灵耀、浅色、纸白、夜青、墨）的 accentSoft 来自平台的绿色令牌，与皮肤无关；原型在这里漏出一块固定的绿，夜青、墨上尤其扎眼。改为取皮肤自己的强调色，按设计的色调容器比例（浅色 13%、深色 25%）叠底。
      */
     public String toolbarActiveBackground() {
         return namedTheme() ? alpha(accent, dark ? .25 : .13) : accentSoft();

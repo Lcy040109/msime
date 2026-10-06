@@ -167,7 +167,7 @@ public final class KeyboardOptionsPage extends DetailPage {
             Ui.style(note, 13, 400, icon);
             plate.addView(note);
         } else {
-            addChip(context, plate, "水杉", parse(skin.accentText(), Ui.accent(context)));
+            addChip(context, plate, "灵耀", parse(skin.accentText(), Ui.accent(context)));
             for (String[] button : TOOLBAR_BUTTONS) {
                 if (toolbarButton(toolbar, settings, button[0])) addChip(context, plate, button[1], icon);
             }

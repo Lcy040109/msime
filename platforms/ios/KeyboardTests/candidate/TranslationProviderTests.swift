@@ -62,7 +62,7 @@ final class TranslationProviderTests: XCTestCase {
     XCTAssertEqual(TranslationProviderPreference.selected(in: document), .off)
   }
 
-  /// The 水杉 account is reached only by choosing it: no document, an untouched one, a Tencent placeholder or an explicit no all stay offline, and a chosen but incomplete provider does not fall back to the account either.
+  /// The 灵耀 account is reached only by choosing it: no document, an untouched one, a Tencent placeholder or an explicit no all stay offline, and a chosen but incomplete provider does not fall back to the account either.
   func testNoChoiceNeverRoutesToTheAccount() {
     let documents: [[String: Any]?] = [
       nil,
