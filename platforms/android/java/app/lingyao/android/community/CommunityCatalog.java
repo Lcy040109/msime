@@ -291,7 +291,7 @@ public final class CommunityCatalog {
                 Item updated;
                 try (InputStream input = connection.getInputStream()) {
                     updated = item(CommunityRequest.Kind.SKIN, new JSONObject(new String(
-                        readBounded(input, MAX_RESPONSE_BYTES), StandardCharsets.UTF_8)));
+                        HttpBodyPolicy.readBounded(input, MAX_RESPONSE_BYTES), StandardCharsets.UTF_8)));
                 }
                 if (updated == null || !updated.id().equalsIgnoreCase(item.id())
                         || updated.category() != category) {
@@ -475,7 +475,7 @@ public final class CommunityCatalog {
     private static String errorCode(InputStream errors) {
         if (errors == null) return "";
         try (InputStream input = errors) {
-            byte[] body = HttpBodyPolicy.readBounded(input, MAX_RESPONSE_BYTES);
+            byte[] body = HttpBodyPolicy.HttpBodyPolicy.readBounded(input, MAX_RESPONSE_BYTES);
             if (body == null) throw new IllegalStateException("community response too large");
             JSONObject root = new JSONObject(
                 new String(body, StandardCharsets.UTF_8));
@@ -562,7 +562,7 @@ public final class CommunityCatalog {
             // 回来的是整份设计，本机已经有了，只读掉不用；读取有上限，免得一个异常大的回复占满内存。
             if (status == 200) {
                 try (InputStream input = connection.getInputStream()) {
-                    readBounded(input, MAX_RESPONSE_BYTES);
+                    HttpBodyPolicy.readBounded(input, MAX_RESPONSE_BYTES);
                 } catch (Exception error) {
                     throw new java.io.IOException(error);
                 }
