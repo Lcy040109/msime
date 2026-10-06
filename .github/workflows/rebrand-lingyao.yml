@@ -17,29 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Replace Metasequoia/Shuishan branding with Lingyao
+      - name: Replace legacy product branding with Lingyao
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import os
+          import re
 
           root = Path(".")
-          replacements = [
-              ("水杉输入法", "灵耀输入法"),
-              ("水杉 IME", "灵耀 IME"),
-              ("水杉", "灵耀"),
-              ("Metasequoia IME", "Lingyao IME"),
-              ("MetasequoiaIME", "LingyaoIME"),
-              ("MetasequoiaIme", "LingyaoIme"),
-              ("Metasequoia", "Lingyao"),
-              ("SHUISHAN", "LINGYAO"),
-              ("Shuishan", "Lingyao"),
-              ("shuishan", "lingyao"),
-              ("https://github.com/metasequoiaime/msime", "https://github.com/Lcy040109/msime"),
-              ("github.com/metasequoiaime/msime", "github.com/Lcy040109/msime"),
-              ("metasequoiaime/msime", "Lcy040109/msime"),
-          ]
 
           def legal_or_attribution(p: Path) -> bool:
               s = p.as_posix()
@@ -54,35 +39,81 @@ jobs:
                   return True
               return False
 
+          def workflow_file(p: Path) -> bool:
+              return len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows"
+
+          replacements = [
+              ("水杉输入法", "灵耀输入法"),
+              ("水杉 IME", "灵耀 IME"),
+              ("水杉", "灵耀"),
+              ("Metasequoia IME", "Lingyao IME"),
+              ("MetasequoiaIME", "LingyaoIME"),
+              ("MetasequoiaIme", "LingyaoIme"),
+              ("Metasequoia", "Lingyao"),
+              ("METASEQUOIA", "LINGYAO"),
+              ("SHUISHAN", "LINGYAO"),
+              ("Shuishan", "Lingyao"),
+              ("shuishan", "lingyao"),
+          ]
+
           changed = []
           skipped_legal = []
           for p in root.rglob("*"):
-              if not p.is_file() or ".git" in p.parts:
-                  continue
-              if len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows":
-                  continue
-              if legal_or_attribution(p):
-                  try:
-                      txt = p.read_text(encoding="utf-8")
-                  except (UnicodeDecodeError, OSError):
-                      continue
-                  if any(a in txt for a, _ in replacements):
-                      skipped_legal.append(p.as_posix())
+              if not p.is_file() or ".git" in p.parts or workflow_file(p):
                   continue
               try:
                   data = p.read_text(encoding="utf-8")
               except (UnicodeDecodeError, OSError):
                   continue
+
+              if legal_or_attribution(p):
+                  if re.search(r"水杉|Metasequoia|METASEQUOIA|shuishan|metasequoia", data, re.I):
+                      skipped_legal.append(p.as_posix())
+                  continue
+
               new = data
+
+              # Repair companion/upstream repositories that were accidentally rewritten
+              # by the earlier broad "metasequoiaime/msime" prefix replacement.
+              new = new.replace("Lcy040109/msime-", "metasequoiaime/msime-")
+
+              # Main repository links belong to this fork, but companion repos remain upstream.
+              new = re.sub(
+                  r"metasequoiaime/msime(?![-A-Za-z0-9_.])",
+                  "Lcy040109/msime",
+                  new,
+                  flags=re.I,
+              )
+
+              # Protect real upstream dependency locations and the original upstream contact.
+              protected = {
+                  "__LINGYAO_UPSTREAM_ORG_SLASH__": "metasequoiaime/",
+                  "__LINGYAO_UPSTREAM_EMAIL__": "metasequoiaime@gmail.com",
+              }
+              new = new.replace("metasequoiaime/", "__LINGYAO_UPSTREAM_ORG_SLASH__")
+              new = new.replace("metasequoiaime@gmail.com", "__LINGYAO_UPSTREAM_EMAIL__")
+
               for old, repl in replacements:
                   new = new.replace(old, repl)
+
+              # Remaining lowercase forms are internal product identifiers, bundle/vendor
+              # names, data-dir markers, install directories, etc.
+              new = new.replace("metasequoiaime", "lingyaoime")
+              new = new.replace("metasequoia", "lingyao")
+
+              for placeholder, original in protected.items():
+                  new = new.replace(placeholder, original)
+
               if new != data:
                   p.write_text(new, encoding="utf-8")
                   changed.append(p.as_posix())
 
-          # Rename brand-bearing paths deepest-first so code references and file names stay aligned.
+          # Rename brand-bearing paths deepest-first so source references stay aligned.
           candidates = sorted(
-              [p for p in root.rglob("*") if ".git" not in p.parts and not (len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows")],
+              [
+                  p for p in root.rglob("*")
+                  if ".git" not in p.parts and not workflow_file(p)
+              ],
               key=lambda p: len(p.parts),
               reverse=True,
           )
@@ -93,9 +124,12 @@ jobs:
                   ("MetasequoiaIME", "LingyaoIME"),
                   ("MetasequoiaIme", "LingyaoIme"),
                   ("Metasequoia", "Lingyao"),
+                  ("METASEQUOIA", "LINGYAO"),
                   ("SHUISHAN", "LINGYAO"),
                   ("Shuishan", "Lingyao"),
                   ("shuishan", "lingyao"),
+                  ("metasequoiaime", "lingyaoime"),
+                  ("metasequoia", "lingyao"),
                   ("水杉", "灵耀"),
               ]:
                   new_name = new_name.replace(old, repl)
@@ -107,17 +141,19 @@ jobs:
 
           print(f"Changed text files: {len(changed)}")
           print(f"Skipped legal/attribution files: {len(skipped_legal)}")
-          if skipped_legal:
-              print("\n".join(skipped_legal[:50]))
+          for item in skipped_legal[:50]:
+              print("LEGAL:", item)
           PY
 
-      - name: Verify no non-legal legacy branding remains
+      - name: Verify no non-attribution legacy branding remains
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          needles = ["水杉", "Metasequoia", "METASEQUOIA", "shuishan", "Shuishan", "metasequoiaime"]
+          import re
+
           hits = []
+
           def skip(p: Path) -> bool:
               s = p.as_posix()
               name = p.name.upper()
@@ -132,6 +168,7 @@ jobs:
               if p.name.lower() == "copyright":
                   return True
               return False
+
           for p in Path(".").rglob("*"):
               if not p.is_file() or skip(p):
                   continue
@@ -139,10 +176,18 @@ jobs:
                   text = p.read_text(encoding="utf-8")
               except (UnicodeDecodeError, OSError):
                   continue
-              found = [n for n in needles if n in text]
+
+              # Allowed references that must keep pointing to the real upstream owner.
+              check = text.replace("metasequoiaime/", "")
+              check = check.replace("metasequoiaime@gmail.com", "")
+              found = sorted(set(re.findall(
+                  r"水杉|Metasequoia(?:IME|Ime)?|METASEQUOIA|Shuishan|shuishan|metasequoiaime|metasequoia",
+                  check,
+              )))
               if found:
                   hits.append((p.as_posix(), found))
-          print(f"Legacy branding hits outside legal/attribution files: {len(hits)}")
+
+          print(f"Legacy branding hits outside legal/upstream references: {len(hits)}")
           for path, found in hits[:200]:
               print(path, ",".join(found))
           if hits:
@@ -159,5 +204,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Rebrand product from 水杉 to 灵耀 [rebrand]"
+          git commit -m "Finish Lingyao internal identifier rebrand [rebrand]"
           git push origin HEAD:develop
