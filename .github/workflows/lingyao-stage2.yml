@@ -1,4 +1,4 @@
-name: Lingyao stage2 namespace migration
+name: Lingyao namespace audit
 
 on:
   push:
@@ -6,28 +6,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  migrate:
-    if: github.actor != 'github-actions[bot]'
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Rename MSIME namespace to Lingyao
+      - name: Audit legacy names
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
 
-          root = Path(".")
-
-          def is_workflow(p: Path) -> bool:
-              return len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows"
+          audit_file = ".github/workflows/lingyao-stage2.yml"
+          failures = []
 
           def legal_content(p: Path) -> bool:
               s = p.as_posix().lower()
@@ -41,125 +35,24 @@ jobs:
                   or p.name == "UPSTREAM.md"
               )
 
-          # These are live external endpoints / upstream source locations. Their literal
-          # addresses must not be invented during a product namespace migration.
-          protected_patterns = [
-              r"https?://[^\s\"'<>)]*",
-              r"git\+https?://[^\s\"'<>)]*",
-              r"ssh://[^\s\"'<>)]*",
-              r"git@github\.com:[^\s\"'<>)]*",
-              r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
-              r"(?:[A-Za-z0-9-]+\.)*msime\.app(?::\d+)?",
-          ]
-          protected_re = re.compile("|".join(f"(?:{p})" for p in protected_patterns), re.I)
-
-          def migrate_text(text: str) -> str:
-              protected = {}
-              def mask(m):
-                  key = f"__LINGYAO_EXTERNAL_{len(protected)}__"
-                  protected[key] = m.group(0)
-                  return key
-
-              masked = protected_re.sub(mask, text)
-
-              # Normalize the half-migrated namespace created in stage 1 first.
-              masked = masked.replace("com.lingyao.msime", "com.lingyao.ime")
-              masked = masked.replace("com.lingyao.MSIME", "com.lingyao.ime")
-
-              replacements = [
-                  ("MSIME", "LINGYAO"),
-                  ("Msime", "Lingyao"),
-                  ("msime", "lingyao"),
-              ]
-              for old, new in replacements:
-                  masked = masked.replace(old, new)
-
-              for key, value in protected.items():
-                  masked = masked.replace(key, value)
-              return masked
-
-          changed = []
-          legal_skipped = []
-          for p in root.rglob("*"):
-              if not p.is_file() or ".git" in p.parts or is_workflow(p):
-                  continue
-              try:
-                  data = p.read_text(encoding="utf-8")
-              except (UnicodeDecodeError, OSError):
-                  continue
-              if legal_content(p):
-                  if re.search(r"msime", data, re.I):
-                      legal_skipped.append(p.as_posix())
-                  continue
-              new = migrate_text(data)
-              if new != data:
-                  p.write_text(new, encoding="utf-8")
-                  changed.append(p.as_posix())
-
-          # Rename files/directories, including legal NOTICE filenames, while keeping
-          # legal file contents untouched. Deepest-first preserves nested moves.
-          candidates = sorted(
-              [p for p in root.rglob("*") if ".git" not in p.parts and not is_workflow(p)],
-              key=lambda p: (len(p.parts), len(p.name)),
-              reverse=True,
-          )
-          renamed = []
-          for p in candidates:
-              if not p.exists():
-                  continue
-              name = p.name
-              new_name = name.replace("MSIME", "LINGYAO").replace("Msime", "Lingyao").replace("msime", "lingyao")
-              if new_name == name:
-                  continue
-              target = p.with_name(new_name)
-              if target.exists():
-                  raise RuntimeError(f"rename collision: {p} -> {target}")
-              p.rename(target)
-              renamed.append((p.as_posix(), target.as_posix()))
-
-          print(f"Changed text files: {len(changed)}")
-          print(f"Renamed paths: {len(renamed)}")
-          print(f"Legal/attribution contents intentionally retained: {len(legal_skipped)}")
-          for a,b in renamed[:80]:
-              print(f"RENAME {a} -> {b}")
-          PY
-
-      - name: Verify internal namespace
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          hits = []
-
-          def is_workflow(p: Path) -> bool:
-              return len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows"
-
-          def legal_content(p: Path) -> bool:
-              s = p.as_posix().lower()
-              n = p.name.upper()
-              return (
-                  p.as_posix() == "LICENSE"
-                  or "/licenses/" in f"/{s}/"
-                  or "LICENSE" in n
-                  or "NOTICE" in n
-                  or p.name.lower() == "copyright"
-                  or p.name == "UPSTREAM.md"
-              )
-
-          url_re = re.compile(
-              r"https?://[^\s\"'<>)]*|git\+https?://[^\s\"'<>)]*|ssh://[^\s\"'<>)]*|"
-              r"git@github\.com:[^\s\"'<>)]*|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|"
-              r"(?:[A-Za-z0-9-]+\.)*msime\.app(?::\d+)?",
+          # Valid compatibility/external references we cannot rename until the
+          # corresponding external service/repository itself is moved.
+          allowed = re.compile(
+              r"https?://[^\s\"'<>)]*|"
+              r"git\+https?://[^\s\"'<>)]*|"
+              r"git@github\.com:[^\s\"'<>)]*|"
+              r"Lcy040109/msime\b|"
+              r"metasequoiaime/msime(?:[-A-Za-z0-9_.]*)?\b|"
+              r"(?:[A-Za-z0-9-]+\.)*msime\.app(?::\d+)?|"
+              r"[A-Za-z0-9._%+-]*msime[A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
               re.I,
           )
 
           for p in Path(".").rglob("*"):
-              if ".git" in p.parts or is_workflow(p):
+              if ".git" in p.parts or p.as_posix() == audit_file:
                   continue
-              if re.search(r"msime", p.name, re.I):
-                  hits.append((p.as_posix(), "path"))
+              if re.search(r"msime|metasequoia|shuishan|水杉", p.name, re.I):
+                  failures.append((p.as_posix(), "path"))
                   continue
               if not p.is_file() or legal_content(p):
                   continue
@@ -167,26 +60,13 @@ jobs:
                   text = p.read_text(encoding="utf-8")
               except (UnicodeDecodeError, OSError):
                   continue
-              check = url_re.sub("", text)
-              if re.search(r"msime", check, re.I):
-                  hits.append((p.as_posix(), "content"))
+              text = allowed.sub("", text)
+              if re.search(r"msime|metasequoia|shuishan|水杉", text, re.I):
+                  failures.append((p.as_posix(), "content"))
 
-          print(f"Internal MSIME namespace hits: {len(hits)}")
-          for h in hits[:300]:
-              print(*h)
-          if hits:
+          print(f"Unexpected legacy branding hits: {len(failures)}")
+          for item in failures[:400]:
+              print(*item)
+          if failures:
               raise SystemExit(1)
           PY
-
-      - name: Commit namespace migration
-        shell: bash
-        run: |
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "No namespace changes left."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Rename MSIME namespace to Lingyao [stage2]"
-          git push origin HEAD:develop
