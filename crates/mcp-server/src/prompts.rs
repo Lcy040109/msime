@@ -37,7 +37,7 @@ pub fn make_skin_text(style: Option<String>) -> String {
         None => "Ask the user in one short question what they want: colours or a mood, light, dark or both, and whether they want a background or decoration image. Choose everything else yourself.".to_owned(),
     };
     format!(
-        "Make a candidate-window skin for 水杉输入法 (MSIME) and install it with create_candidate_skin. Talk to the user in their own language.
+        "Make a candidate-window skin for 灵耀输入法 (MSIME) and install it with create_candidate_skin. Talk to the user in their own language.
 
 {request}
 
@@ -55,7 +55,7 @@ pub fn diagnose_text(problem: Option<String>) -> String {
         None => "Ask the user in one short question what goes wrong and when.".to_owned(),
     };
     format!(
-        "Help the user with a problem in 水杉输入法 (MSIME). Talk to them in their own language and in plain words; they may not be technical, so do every step yourself instead of asking them to open files, settings or a terminal.
+        "Help the user with a problem in 灵耀输入法 (MSIME). Talk to them in their own language and in plain words; they may not be technical, so do every step yourself instead of asking them to open files, settings or a terminal.
 
 {request}
 

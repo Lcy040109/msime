@@ -62,8 +62,8 @@ for d in ET.parse(dists_path).getroot().findall("distribution"):
     by_name[d.findtext("reponame")] = d
 lines = [
     f"<project name={quoteattr(project)}>",
-    "  <title>水杉输入法 MSIME</title>",
-    "  <description>水杉输入法（MSIME）的 Linux 包，含 Fcitx5 与 IBus 输入法。由 https://github.com/metasequoiaime/msime 的发布流程在每次发布后自动提交。</description>",
+    "  <title>灵耀输入法 MSIME</title>",
+    "  <description>灵耀输入法（MSIME）的 Linux 包，含 Fcitx5 与 IBus 输入法。由 https://github.com/Lcy040109/msime 的发布流程在每次发布后自动提交。</description>",
     f"  <person userid={quoteattr(user)} role=\"maintainer\"/>",
     "  <build><enable/></build>",
     "  <publish><enable/></publish>",
@@ -91,7 +91,7 @@ PY
 echo "== package $project/$package"
 cat > "$work/package.xml" <<EOF
 <package name="$package" project="$project">
-  <title>水杉输入法 MSIME</title>
+  <title>灵耀输入法 MSIME</title>
   <description>开源中文输入法，Fcitx5 与 IBus 输入法引擎，支持全拼、双拼与五笔。装好后每个用户运行一次 msime-linux-setup --download 完成首次配置。</description>
   <url>https://msime.app</url>
 </package>

@@ -4,7 +4,7 @@ const MAX_ACCOUNT_NAME_LENGTH = 64;
 
 export function preferredAccountName(user: AccountUser): string {
   const name = user.displayName.trim();
-  return name || `水杉小鹿·${user.id.slice(0, 6).toUpperCase()}`;
+  return name || `灵耀小鹿·${user.id.slice(0, 6).toUpperCase()}`;
 }
 
 export function normalizeAccountName(value: string): string {

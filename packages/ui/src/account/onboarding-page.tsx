@@ -41,7 +41,7 @@ const logoPath =
   "M80.394 18.8335L34.3451 36.489L80.394 49.7306L34.3451 71.7999C77.8789 79.1564 118.8 85.1887 31.8431 113.088";
 
 const stepTitles = [
-  "把水杉加进键盘",
+  "把灵耀加进键盘",
   "选择输入方式",
   "候选下方显示译文",
   "登录后多端同步",
@@ -86,7 +86,7 @@ function Splash({ onDone }: { onDone: () => void }) {
         <path className={onboarding.splashStroke} d={logoPath} pathLength={1} />
       </svg>
       <span className={onboarding.splashName} aria-hidden="true">
-        水杉输入法
+        灵耀输入法
       </span>
       <span className={onboarding.splashTagline} aria-hidden="true">
         METASEQUOIA IME
@@ -330,12 +330,12 @@ export function WelcomeFlowPage({
       <div className={onboarding.body}>
         {page === 0 && (
           <section className={onboarding.section}>
-            <h2 className={onboarding.sectionTitle}>{ios ? "添加水杉键盘" : "添加水杉输入法"}</h2>
+            <h2 className={onboarding.sectionTitle}>{ios ? "添加灵耀键盘" : "添加灵耀输入法"}</h2>
             <p className={onboarding.lead}>
               {ios
-                ? "在系统键盘列表中启用水杉，再回到任意输入框开始使用。"
+                ? "在系统键盘列表中启用灵耀，再回到任意输入框开始使用。"
                 : harmony
-                  ? "准备好内置词库后，按下面步骤在 HarmonyOS 中启用并选择水杉输入法。"
+                  ? "准备好内置词库后，按下面步骤在 HarmonyOS 中启用并选择灵耀输入法。"
                   : "准备好内置词库后，按下面步骤启用系统键盘。"}
             </p>
             <div className={onboarding.setupCard}>
@@ -346,15 +346,15 @@ export function WelcomeFlowPage({
                     ? "前往 HarmonyOS 的系统输入法设置。"
                     : "前往系统设置中的“语言和输入法”或“屏幕键盘”。"}
               </SetupStep>
-              <SetupStep number={2} title={ios ? "添加水杉键盘" : "启用水杉输入法"}>
+              <SetupStep number={2} title={ios ? "添加灵耀键盘" : "启用灵耀输入法"}>
                 {ios
-                  ? "在第三方键盘列表中添加水杉键盘。"
+                  ? "在第三方键盘列表中添加灵耀键盘。"
                   : "在可用输入法列表中打开 MSIME Preview。"}
               </SetupStep>
               <SetupStep number={3} title="切换并开始输入" last>
                 {ios
-                  ? "在输入框中切换到水杉键盘即可开始使用。"
-                  : "在输入框中选择水杉输入法即可开始使用。"}
+                  ? "在输入框中切换到灵耀键盘即可开始使用。"
+                  : "在输入框中选择灵耀输入法即可开始使用。"}
               </SetupStep>
             </div>
             <div className={onboarding.systemActions}>
@@ -375,10 +375,10 @@ export function WelcomeFlowPage({
             </div>
             <p className={onboarding.note}>
               {ios
-                ? "系统设置页面由 iOS 管理，水杉不会自动启用或切换键盘。"
+                ? "系统设置页面由 iOS 管理，灵耀不会自动启用或切换键盘。"
                 : harmony
-                  ? "系统设置页面由 HarmonyOS 管理，水杉不会自动启用或切换输入法。"
-                  : "系统设置页面由 Android 管理，水杉不会自动启用或切换输入法。"}
+                  ? "系统设置页面由 HarmonyOS 管理，灵耀不会自动启用或切换输入法。"
+                  : "系统设置页面由 Android 管理，灵耀不会自动启用或切换输入法。"}
             </p>
           </section>
         )}
