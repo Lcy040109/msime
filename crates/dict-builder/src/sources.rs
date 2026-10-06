@@ -381,7 +381,7 @@ mod tests {
 
     /// 锁文件曾经固定 msime-dictionary 文件时用的 raw URL 前缀：`<RAW><commit>/<path>`。
     const DICTIONARY_RAW: &str =
-        "https://raw.githubusercontent.com/Lcy040109/msime-dictionary/";
+        "https://raw.githubusercontent.com/metasequoiaime/msime-dictionary/";
     const CANTONESE_REPOSITORY: &str = "https://github.com/rime/rime-cantonese.git";
     const CHEWING_REPOSITORY: &str = "https://github.com/chewing/libchewing-data.git";
     const MOZC_REPOSITORY: &str = "https://github.com/google/mozc.git";
