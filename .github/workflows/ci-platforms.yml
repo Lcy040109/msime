@@ -131,7 +131,7 @@ jobs:
         if: ${{ needs.changes.outputs.linux != 'true' }}
         run: echo 'No Linux or shared-platform changes; platform gate skipped.'
 
-  # 上面的容器构建只测 core 几个 crate，设置应用（msime-desktop）在 Linux 上没有任何地方编译过：首次配置页 linux_setup.rs 的测试从未在 CI 里跑过，Linux 专属的 clippy 警告也攒到了几十条。这里补上它的 clippy 和全部单元测试。
+  # 上面的容器构建只测 core 几个 crate，设置应用（lingyao-desktop）在 Linux 上没有任何地方编译过：首次配置页 linux_setup.rs 的测试从未在 CI 里跑过，Linux 专属的 clippy 警告也攒到了几十条。这里补上它的 clippy 和全部单元测试。
   linux-desktop:
     needs: changes
     name: Linux settings app
@@ -150,14 +150,14 @@ jobs:
           # Installs the toolchain rust-toolchain.toml pins, with its clippy component.
           rustup toolchain install
       # Tauri 的构建脚本要求 frontendDist 目录存在；单元测试用不到页面，放一个空页面即可，省掉 pnpm 构建。
-      - name: Clippy and unit tests for msime-desktop
+      - name: Clippy and unit tests for lingyao-desktop
         if: ${{ needs.changes.outputs.linux == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p apps/desktop/dist
           [ -e apps/desktop/dist/index.html ] || : > apps/desktop/dist/index.html
-          cargo clippy --locked -p msime-desktop --all-targets -- -D warnings
-          cargo test --locked -p msime-desktop
+          cargo clippy --locked -p lingyao-desktop --all-targets -- -D warnings
+          cargo test --locked -p lingyao-desktop
       - name: Linux platform unchanged
         if: ${{ needs.changes.outputs.linux != 'true' }}
         run: echo 'No Linux or shared-platform changes; platform gate skipped.'
@@ -196,7 +196,7 @@ jobs:
     needs: changes
     name: Windows GNU cross build
     runs-on: ubuntu-24.04
-    # Ubuntu 24.04's MinGW headers predate d2d1_3.h, which msimeui includes for ID2D1DeviceContext5 and SVG rendering, so the build runs in the Debian release platforms/windows/cross/Dockerfile is based on. The steps below mirror that Dockerfile.
+    # Ubuntu 24.04's MinGW headers predate d2d1_3.h, which lingyaoui includes for ID2D1DeviceContext5 and SVG rendering, so the build runs in the Debian release platforms/windows/cross/Dockerfile is based on. The steps below mirror that Dockerfile.
     container: debian:trixie-slim
     timeout-minutes: 90
     steps:
@@ -255,7 +255,7 @@ jobs:
             & pwsh -NoProfile -File "platforms/windows/tests/tools/$test.ps1"
             if ($LASTEXITCODE -ne 0) { throw "$test failed with exit code $LASTEXITCODE" }
           }
-      # The installer script itself cannot be compiled here, so these read msime_setup.iss for its lifecycle contracts. watchdog-task also registers the logon task's exact /TR text with Task Scheduler under a throwaway name and reads back what schtasks stored; the hosted runner is elevated, which that round trip needs.
+      # The installer script itself cannot be compiled here, so these read lingyao_setup.iss for its lifecycle contracts. watchdog-task also registers the logon task's exact /TR text with Task Scheduler under a throwaway name and reads back what schtasks stored; the hosted runner is elevated, which that round trip needs.
       - name: Run installer script tests
         if: ${{ needs.changes.outputs.windows == 'true' }}
         shell: pwsh
@@ -314,26 +314,26 @@ jobs:
       - name: Smoke test the built glue and wasm in Node
         if: ${{ needs.changes.outputs.web == 'true' }}
         run: |
-          cargo run --locked -p msime-engine-wasm --example make_fixture -- target/web-engine/fixture/msime.db
-          node crates/engine-wasm/tests/smoke.mjs target/web-engine/fixture/msime.db
-      # SDK（@msime/web-engine）：test/ 下全部 *.test.mjs 单元测试（按键映射、皮肤解析等，glob 由 Node 自己展开），对构建脚本组装出的 npm 包做的端到端冒烟，以及在 runner 自带的 google-chrome 里跑的候选栏和 attachInput 接线检查（candidates.browser.mjs）。
+          cargo run --locked -p lingyao-engine-wasm --example make_fixture -- target/web-engine/fixture/lingyao.db
+          node crates/engine-wasm/tests/smoke.mjs target/web-engine/fixture/lingyao.db
+      # SDK（@lingyao/web-engine）：test/ 下全部 *.test.mjs 单元测试（按键映射、皮肤解析等，glob 由 Node 自己展开），对构建脚本组装出的 npm 包做的端到端冒烟，以及在 runner 自带的 google-chrome 里跑的候选栏和 attachInput 接线检查（candidates.browser.mjs）。
       - name: Test the web engine SDK
         if: ${{ needs.changes.outputs.web == 'true' }}
         run: |
           node --test 'packages/web-engine/test/*.test.mjs'
-          node packages/web-engine/test/smoke.mjs target/web-engine/fixture/msime.db
+          node packages/web-engine/test/smoke.mjs target/web-engine/fixture/lingyao.db
           node packages/web-engine/test/candidates.browser.mjs
-      # 包括 routing.rs 和 notice.rs；parity.rs 与 rerank_routing.rs 需要真实词库，没有 MSIME_EVAL_RESOURCES 时跳过。
-      - name: Test msime-engine-wasm
+      # 包括 routing.rs 和 notice.rs；parity.rs 与 rerank_routing.rs 需要真实词库，没有 LINGYAO_EVAL_RESOURCES 时跳过。
+      - name: Test lingyao-engine-wasm
         if: ${{ needs.changes.outputs.web == 'true' }}
-        run: cargo test --locked -p msime-engine-wasm
+        run: cargo test --locked -p lingyao-engine-wasm
       # bindings.rs 只在 wasm32 上编译，只有这一步会 lint 到它。
       - name: Clippy on the wasm target
         if: ${{ needs.changes.outputs.web == 'true' }}
         env:
           CC_wasm32_unknown_unknown: clang
           AR_wasm32_unknown_unknown: llvm-ar
-        run: cargo clippy --locked -p msime-engine-wasm --target wasm32-unknown-unknown -- -D warnings
+        run: cargo clippy --locked -p lingyao-engine-wasm --target wasm32-unknown-unknown -- -D warnings
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ needs.changes.outputs.web == 'true' }}
         with:

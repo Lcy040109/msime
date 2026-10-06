@@ -28,11 +28,11 @@ jobs:
           if ($env:PRERELEASE -eq 'true') { $flags += '--allow-prerelease' }
           python platforms/windows/packaging/render.py --tag "windows-v$env:VERSION" --output target/package-managers @flags
           if ($LASTEXITCODE -ne 0) { throw 'render.py failed' }
-          choco pack target/package-managers/chocolatey/msime/msime.nuspec --outputdirectory target/package-managers/chocolatey
+          choco pack target/package-managers/chocolatey/lingyao/lingyao.nuspec --outputdirectory target/package-managers/chocolatey
           if ($LASTEXITCODE -ne 0) { throw 'choco pack failed' }
           Get-ChildItem -Recurse target/package-managers | Format-Table FullName, Length
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-package-definitions-windows-${{ inputs.version }}
+          name: lingyao-package-definitions-windows-${{ inputs.version }}
           path: target/package-managers/
           if-no-files-found: error

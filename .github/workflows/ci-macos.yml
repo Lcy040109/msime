@@ -90,7 +90,7 @@ jobs:
               shared/*|platforms/common/*|.github/workflows/ci-macos.yml)
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "共享输入改动: $path"; exit 0 ;;
               # 工作区清单与工具链:Dependabot 的 cargo 分组只改这几个。crates/ 只列这条构建真正编译的:
-              # CMakeLists.txt 直接编 host-macos/native,cargo build -p msime-host-api 带上它依赖的三个 crate。
+              # CMakeLists.txt 直接编 host-macos/native,cargo build -p lingyao-host-api 带上它依赖的三个 crate。
               # host-windows、mcp-server 等改动重编 macOS 不会多发现什么,理由同下面 scripts/ 那段。
               Cargo.toml|Cargo.lock|rust-toolchain.toml|.cargo/*|crates/host-macos/*|crates/host-api/*|crates/path-trust/*|crates/client-core/*|crates/engine/*|crates/input-runtime/*)
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "Rust 输入改动: $path"; exit 0 ;;
@@ -148,14 +148,14 @@ jobs:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {persist-credentials: false}
-      # Cheap and runs before the build so a formatting slip fails in seconds rather than after the full compile. Formatting is architecture independent, so only one leg checks it. Same pinned formatter version as MSIME-Linux.
+      # Cheap and runs before the build so a formatting slip fails in seconds rather than after the full compile. Formatting is architecture independent, so only one leg checks it. Same pinned formatter version as LINGYAO-Linux.
       - name: Check formatting
         if: ${{ matrix.architecture == 'arm64' }}
         run: if [[ -x scripts/format.sh ]]; then scripts/format.sh --check; else echo 'format script is not present in this branch; skipped'; fi
       # runner 上下文在 job 级 env 里不可用,所以在这里写进 GITHUB_ENV,后面的步骤都能读到。
       - name: Point the Sparkle download at the cache
         if: ${{ matrix.build == 'true' }}
-        run: echo "METASEQUOIA_SPARKLE_CACHE_DIR=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+        run: echo "LINGYAO_SPARKLE_CACHE_DIR=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Cache the pinned Sparkle archive
         if: ${{ matrix.build == 'true' }}
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -182,7 +182,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sparkle"
           tar -xJf "$archive" -C "$RUNNER_TEMP/sparkle"
           test -d "$RUNNER_TEMP/sparkle/Sparkle.framework"
-          echo "MSIME_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+          echo "LINGYAO_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Remove unused runner taps
         if: ${{ matrix.build == 'true' }}
         run: if brew tap | grep -Fxq aws/tap; then brew untap aws/tap; fi
@@ -198,13 +198,13 @@ jobs:
         run: /usr/bin/python3 -m compileall -q scripts platforms/macos/tests platforms/ios/scripts platforms/ios/tests
       - name: Build the Rust host library
         if: ${{ matrix.build == 'true' }}
-        run: cargo build --locked -p msime-host-api
+        run: cargo build --locked -p lingyao-host-api
       # The unit tests run against a fixture rather than the released database: they assert behaviour
       # around composition, not dictionary content, and downloading 100 MB per run to do it would buy
       # nothing. The release build is what verifies the real data, against the digests in the lock.
       - name: Create test dictionary
         if: ${{ matrix.build == 'true' }}
-        run: python3 platforms/macos/tests/create_fixture_dictionary.py "$RUNNER_TEMP/msime-pinyin.db"
+        run: python3 platforms/macos/tests/create_fixture_dictionary.py "$RUNNER_TEMP/lingyao-pinyin.db"
       - name: Type-check registration helper
         if: ${{ matrix.build == 'true' }}
         run: |
@@ -215,7 +215,7 @@ jobs:
           fi
       - name: Configure
         if: ${{ matrix.build == 'true' }}
-        run: cmake -S platforms/macos -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(brew --prefix)" -DMSIME_SPARKLE_ROOT="$MSIME_SPARKLE_ROOT" -DMETASEQUOIA_IME_DICTIONARY="$RUNNER_TEMP/msime-pinyin.db"
+        run: cmake -S platforms/macos -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(brew --prefix)" -DLINGYAO_SPARKLE_ROOT="$LINGYAO_SPARKLE_ROOT" -DLINGYAO_IME_DICTIONARY="$RUNNER_TEMP/lingyao-pinyin.db"
       # An explicit job count: with the Makefile generator a bare `--parallel` becomes `make -j` with no limit, which starts every ready compile at once. Once whisper and ggml were linked into the input method (4737c9651) that was enough to run the 7 GB arm64 runner out of memory, and the step sat swapping until the 60-minute job limit cancelled it on every run that built.
       - name: Build
         if: ${{ matrix.build == 'true' }}
@@ -240,54 +240,54 @@ jobs:
         if: ${{ matrix.build == 'true' }}
         run: |
           set -euo pipefail
-          staged="$RUNNER_TEMP/verify/水杉输入法.app"
+          staged="$RUNNER_TEMP/verify/灵耀输入法.app"
           mkdir -p "$RUNNER_TEMP/verify"
-          ditto build/水杉输入法.app "$staged"
+          ditto build/灵耀输入法.app "$staged"
           codesign --force --deep --options runtime --entitlements platforms/macos/resources/VoiceInput.entitlements --sign - "$staged"
           codesign --verify --deep --strict --verbose=2 "$staged"
-          lipo "$staged/Contents/MacOS/水杉输入法" -verify_arch "$(uname -m)"
-          # On-device voice models run in the bundled msime-voice-local helper, which loads the sherpa-onnx runtime from Contents/Frameworks. Both have to be sealed with the bundle and built for this architecture.
-          lipo "$staged/Contents/MacOS/msime-voice-local" -verify_arch "$(uname -m)"
+          lipo "$staged/Contents/MacOS/灵耀输入法" -verify_arch "$(uname -m)"
+          # On-device voice models run in the bundled lingyao-voice-local helper, which loads the sherpa-onnx runtime from Contents/Frameworks. Both have to be sealed with the bundle and built for this architecture.
+          lipo "$staged/Contents/MacOS/lingyao-voice-local" -verify_arch "$(uname -m)"
           lipo "$staged/Contents/Frameworks/libsherpa-onnx-c-api.dylib" -verify_arch "$(uname -m)"
           # The helper's first line says whether it found and loaded the runtime. Asked of the build tree, not the staged copy: under the hardened runtime an ad-hoc signature has no Team ID, so library validation refuses the runtime there, where a Developer ID signature on both passes it.
-          hello=$(build/水杉输入法.app/Contents/MacOS/msime-voice-local < /dev/null | head -n 1)
+          hello=$(build/灵耀输入法.app/Contents/MacOS/lingyao-voice-local < /dev/null | head -n 1)
           echo "$hello"
           python3 -c 'import json, sys; hello = json.loads(sys.argv[1]); sys.exit(0 if hello.get("type") == "hello" and hello.get("available") is True else 1)' "$hello"
           plist="$staged/Contents/Info.plist"
           plutil -lint "$plist"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" = "app.msime.inputmethod.MetasequoiaIME"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodServerControllerClass' "$plist")" = "MSIMEInputController"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.msime.inputmethod.MetasequoiaIME.Hans:TISInputSourceID' "$plist")" = "app.msime.inputmethod.MetasequoiaIME.Hans"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.msime.inputmethod.MetasequoiaIME.Hans:tsInputModeScriptKey' "$plist")" = "smSimpChinese"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" = "app.lingyao.inputmethod.LingyaoIME"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodServerControllerClass' "$plist")" = "LINGYAOInputController"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.lingyao.inputmethod.LingyaoIME.Hans:TISInputSourceID' "$plist")" = "app.lingyao.inputmethod.LingyaoIME.Hans"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.lingyao.inputmethod.LingyaoIME.Hans:tsInputModeScriptKey' "$plist")" = "smSimpChinese"
           # 发布包把同一个 bundle 改成其他版本（package-release.sh），这里用五笔版走一遍同样的变换：改完仍能签名封装，模式和标识是五笔版的，带的东西与 full 一样齐。
           wubi="$RUNNER_TEMP/verify/$(python3 platforms/macos/scripts/edition_bundle.py field --edition wubi bundle_name)"
-          ditto build/水杉输入法.app "$wubi"
+          ditto build/灵耀输入法.app "$wubi"
           python3 platforms/macos/scripts/edition_bundle.py apply --edition wubi "$wubi"
           codesign --force --deep --options runtime --entitlements platforms/macos/resources/VoiceInput.entitlements --sign - "$wubi"
           codesign --verify --deep --strict --verbose=2 "$wubi"
           python3 platforms/macos/tests/settings/bundle_contents.py "$wubi" --languages zh-Hans,en
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$wubi/Contents/Info.plist")" = "app.msime.inputmethod.wubi"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodConnectionName' "$wubi/Contents/Info.plist")" = "app.msime.inputmethod.wubi_Connection"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.msime.inputmethod.wubi.Hans:tsInputModeMenuIconFileKey' "$wubi/Contents/Info.plist")" = "MSIMEClientInputMethodMenuIconWubi.tiff"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$wubi/Contents/Info.plist")" = "app.lingyao.inputmethod.wubi"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodConnectionName' "$wubi/Contents/Info.plist")" = "app.lingyao.inputmethod.wubi_Connection"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :ComponentInputModeDict:tsInputModeListKey:app.lingyao.inputmethod.wubi.Hans:tsInputModeMenuIconFileKey' "$wubi/Contents/Info.plist")" = "LINGYAOClientInputMethodMenuIconWubi.tiff"
           # 日文、越南文、藏文版只有一个语言方案：主模式 .Hans 用这个方案的图标，主模式和「英」都登记在这个语言下（ja、vi、bo），系统设置的「添加」对话框才会把它列在这个语言下。
           for pair in japanese:ja:Japanese vietnamese:vi:Vietnamese tibetan:bo:Tibetan; do
             IFS=: read -r edition language icon <<< "$pair"
             bundle="$RUNNER_TEMP/verify/$(python3 platforms/macos/scripts/edition_bundle.py field --edition "$edition" bundle_name)"
-            ditto build/水杉输入法.app "$bundle"
+            ditto build/灵耀输入法.app "$bundle"
             python3 platforms/macos/scripts/edition_bundle.py apply --edition "$edition" "$bundle"
             codesign --force --deep --options runtime --entitlements platforms/macos/resources/VoiceInput.entitlements --sign - "$bundle"
             codesign --verify --deep --strict --verbose=2 "$bundle"
             python3 platforms/macos/tests/settings/bundle_contents.py "$bundle" --languages zh-Hans,en
             plist="$bundle/Contents/Info.plist"
-            test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" = "app.msime.inputmethod.$edition"
-            test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodConnectionName' "$plist")" = "app.msime.inputmethod.${edition}_Connection"
-            test "$(/usr/libexec/PlistBuddy -c "Print :ComponentInputModeDict:tsInputModeListKey:app.msime.inputmethod.$edition.Hans:tsInputModeMenuIconFileKey" "$plist")" = "MSIMEClientInputMethodMenuIcon$icon.tiff"
+            test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" = "app.lingyao.inputmethod.$edition"
+            test "$(/usr/libexec/PlistBuddy -c 'Print :InputMethodConnectionName' "$plist")" = "app.lingyao.inputmethod.${edition}_Connection"
+            test "$(/usr/libexec/PlistBuddy -c "Print :ComponentInputModeDict:tsInputModeListKey:app.lingyao.inputmethod.$edition.Hans:tsInputModeMenuIconFileKey" "$plist")" = "LINGYAOClientInputMethodMenuIcon$icon.tiff"
             for mode in Hans Roman; do
-              test "$(/usr/libexec/PlistBuddy -c "Print :ComponentInputModeDict:tsInputModeListKey:app.msime.inputmethod.$edition.$mode:TISIntendedLanguage" "$plist")" = "$language"
+              test "$(/usr/libexec/PlistBuddy -c "Print :ComponentInputModeDict:tsInputModeListKey:app.lingyao.inputmethod.$edition.$mode:TISIntendedLanguage" "$plist")" = "$language"
             done
           done
 
-  # MSIME-Linux's ci.yml already reasons this out: "the frontend layer had none -- and that is the
+  # LINGYAO-Linux's ci.yml already reasons this out: "the frontend layer had none -- and that is the
   # layer that parses untrusted input", written after an audit of a sibling frontend turned up a
   # batch of races and null dereferences that no Debug build would have caught. Linux acted on it;
   # this repository had no sanitizer coverage at all, and it is the cheapest of the three to add
@@ -308,7 +308,7 @@ jobs:
           persist-credentials: false
       # runner 上下文在 job 级 env 里不可用,所以在这里写进 GITHUB_ENV,后面的步骤都能读到。
       - name: Point the Sparkle download at the cache
-        run: echo "METASEQUOIA_SPARKLE_CACHE_DIR=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+        run: echo "LINGYAO_SPARKLE_CACHE_DIR=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Cache the pinned Sparkle archive
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -333,7 +333,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sparkle"
           tar -xJf "$archive" -C "$RUNNER_TEMP/sparkle"
           test -d "$RUNNER_TEMP/sparkle/Sparkle.framework"
-          echo "MSIME_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+          echo "LINGYAO_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Remove unused runner taps
         run: if brew tap | grep -Fxq aws/tap; then brew untap aws/tap; fi
       - name: Install dependencies
@@ -341,16 +341,16 @@ jobs:
       - name: Create test dictionary
         run: |
           mkdir -p "$RUNNER_TEMP/dictionary"
-          if [[ -f platforms/macos/tests/create_fixture_dictionary.py ]]; then python3 platforms/macos/tests/create_fixture_dictionary.py "$RUNNER_TEMP/dictionary/msime-pinyin.db"; else touch "$RUNNER_TEMP/dictionary/msime-pinyin.db"; fi
+          if [[ -f platforms/macos/tests/create_fixture_dictionary.py ]]; then python3 platforms/macos/tests/create_fixture_dictionary.py "$RUNNER_TEMP/dictionary/lingyao-pinyin.db"; else touch "$RUNNER_TEMP/dictionary/lingyao-pinyin.db"; fi
       - name: Build the Rust host library
-        run: cargo build --locked -p msime-host-api
+        run: cargo build --locked -p lingyao-host-api
       # OBJCXX is its own CMake language here, so CXX flags alone left every .mm unsanitized. Templates such as vector<uint8_t> are instantiated on both sides, and the linker keeping one copy from each can let instrumented code check container annotations the uninstrumented half never wrote - a container-overflow inside nlohmann's lexer.
       - name: Configure with AddressSanitizer and UndefinedBehaviorSanitizer
         run: >
           cmake -S platforms/macos -B build-sanitizers -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_PREFIX_PATH="$(brew --prefix)"
-          -DMSIME_SPARKLE_ROOT="$MSIME_SPARKLE_ROOT"
-          -DMETASEQUOIA_IME_DICTIONARY="$RUNNER_TEMP/dictionary/msime-pinyin.db"
+          -DLINGYAO_SPARKLE_ROOT="$LINGYAO_SPARKLE_ROOT"
+          -DLINGYAO_IME_DICTIONARY="$RUNNER_TEMP/dictionary/lingyao-pinyin.db"
           -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
           -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
           -DCMAKE_OBJCXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"

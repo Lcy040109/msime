@@ -4,7 +4,7 @@ name: Notify site
 #
 # 两个触发缺一不可。release 事件覆盖人在网页或 gh 上做的发布、编辑和删除，以及发版工作流用 RELEASE_PUBLISH_TOKEN 创建的发行版；没有配置这个 secret 时发版工作流退回 GITHUB_TOKEN，GitHub 不会为它产生的事件再触发工作流，所以另外在这些工作流结束时通知一次（workflow_run 不受这条限制）。没有发布的运行也会通知，同步时清单没有变化就什么都不提交，多一次无害。
 #
-# 跨仓库触发要一个能写 msime-web 的令牌：仓库 secret MSIME_WEB_DISPATCH_TOKEN，细粒度令牌只授予 metasequoiaime/msime-web 的 Contents: Read and write 即可。没有配置时只留一条警告，不让这里失败。
+# 跨仓库触发要一个能写 lingyao-web 的令牌：仓库 secret LINGYAO_WEB_DISPATCH_TOKEN，细粒度令牌只授予 metasequoiaime/msime-web 的 Contents: Read and write 即可。没有配置时只留一条警告，不让这里失败。
 
 on:
   release:
@@ -23,18 +23,18 @@ permissions: {}
 
 jobs:
   notify:
-    name: Ask msime-web to refresh its download manifests
+    name: Ask lingyao-web to refresh its download manifests
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Send sync-platforms to msime-web
+      - name: Send sync-platforms to lingyao-web
         env:
-          GH_TOKEN: ${{ secrets.MSIME_WEB_DISPATCH_TOKEN }}
+          GH_TOKEN: ${{ secrets.LINGYAO_WEB_DISPATCH_TOKEN }}
           REASON: ${{ github.event_name }} ${{ github.event.action || github.event.workflow_run.name }} ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
           if [[ -z "$GH_TOKEN" ]]; then
-            echo "::warning::MSIME_WEB_DISPATCH_TOKEN is not set; msime.app picks up this change at its next scheduled sync"
+            echo "::warning::LINGYAO_WEB_DISPATCH_TOKEN is not set; msime.app picks up this change at its next scheduled sync"
             exit 0
           fi
           gh api repos/metasequoiaime/msime-web/dispatches -f event_type=sync-platforms -F "client_payload[reason]=$REASON"

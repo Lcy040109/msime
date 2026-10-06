@@ -78,12 +78,12 @@ jobs:
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "iOS 改动: $path"; exit 0 ;;
               shared/*|.github/workflows/ci-ios.yml)
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "共享输入改动: $path"; exit 0 ;;
-              # 同 ci-macos.yml:工作区清单与工具链,以及 build-native.sh 的 cargo build -p msime-host-api
+              # 同 ci-macos.yml:工作区清单与工具链,以及 build-native.sh 的 cargo build -p lingyao-host-api
               # 和它依赖的三个 crate(client-core 的 example 也由本工作流运行)。
               Cargo.toml|Cargo.lock|rust-toolchain.toml|.cargo/*|crates/host-api/*|crates/path-trust/*|crates/client-core/*|crates/engine/*|crates/input-runtime/*)
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "Rust 输入改动: $path"; exit 0 ;;
               # 同 ci-macos.yml:scripts/ 下只有真正进得了这条构建的才触发。run_ui_tests.sh 在 platforms/ios/scripts/ 下,已由 platforms/ios/* 覆盖。
-              # fetch_voice_runtime.py 与它读的 lock 决定 MSIMEApp 嵌入的 sherpa-onnx 运行时。
+              # fetch_voice_runtime.py 与它读的 lock 决定 LINGYAOApp 嵌入的 sherpa-onnx 运行时。
               scripts/fetch_voice_runtime.py|resources/voice-runtime.lock.json)
                 echo "build=true" >> "$GITHUB_OUTPUT"; echo "构建脚本改动: $path"; exit 0 ;;
             esac
@@ -97,7 +97,7 @@ jobs:
     name: iOS Simulator
     # Everything except the three handwriting cases, on arm64, always. Only MLKitDigitalInkRecognition
     # needs an Intel runner -- its arm64 slice is built for devices, so there is none to link against
-    # on an Apple Silicon Simulator -- and only MetasequoiaKeyboardTests/HandwritingTests needs it.
+    # on an Apple Silicon Simulator -- and only LingyaoKeyboardTests/HandwritingTests needs it.
     # The interface suite does not, and used to be dragged onto Intel with it: a twenty-five minute
     # test build before a case ran, then thirty-seven cases on a Simulator half the speed of an arm64
     # one. The handwriting cases are their own job now, so neither waits on the other.
@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 95
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-      MSIME_IOS_SKIP_HANDWRITING: '1'
+      LINGYAO_IOS_SKIP_HANDWRITING: '1'
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -129,22 +129,22 @@ jobs:
       - name: Package iOS dictionary
         run: |
           mkdir -p target/resources
-          resource_dir="$(cargo run --quiet -p msime-client-core --example install_resources -- target/resources)"
+          resource_dir="$(cargo run --quiet -p lingyao-client-core --example install_resources -- target/resources)"
           bash platforms/ios/stage-resources.sh "$resource_dir"
-      # project.yml gives the unit targets `LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: $(SRCROOT)/../../target/ios/simulator` and `-lmsime_host_api`, and nothing in this job produced that directory, so the test build reached the linker and stopped at "library 'msime_host_api' not found". build-native.sh is what fills it; it needs only the Rust simulator target installed. Not added to the Intel handwriting job: that simulator is x86_64 and build-native.sh's simulator variant is aarch64-apple-ios-sim.
+      # project.yml gives the unit targets `LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: $(SRCROOT)/../../target/ios/simulator` and `-llingyao_host_api`, and nothing in this job produced that directory, so the test build reached the linker and stopped at "library 'lingyao_host_api' not found". build-native.sh is what fills it; it needs only the Rust simulator target installed. Not added to the Intel handwriting job: that simulator is x86_64 and build-native.sh's simulator variant is aarch64-apple-ios-sim.
       - name: Build the iOS host library
         run: |
           set -euo pipefail
           rustup target add aarch64-apple-ios-sim
           bash platforms/ios/build-native.sh simulator
-          test -f target/ios/simulator/libmsime_host_api.a
+          test -f target/ios/simulator/liblingyao_host_api.a
       - name: Generate Xcode project
         run: |
           mkdir -p build/ios
-          # MSIMEApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
+          # LINGYAOApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
           python3 scripts/fetch_voice_runtime.py --platform ios
           xcodegen generate --spec platforms/ios/project.yml --project build/ios --project-root platforms/ios
-          if [ "${MSIME_IOS_SKIP_HANDWRITING}" != "1" ]; then
+          if [ "${LINGYAO_IOS_SKIP_HANDWRITING}" != "1" ]; then
             pod install --deployment --project-directory=platforms/ios
           fi
       - name: Test native iOS keyboard and settings
@@ -169,8 +169,8 @@ jobs:
         # 90 rather than 60, because 60 stopped catching hangs and started catching the suite. The `all` scope measured 38m43s, then 48m00s, then ran past 58 minutes and was killed with the tests still going -- and a killed run prints nothing at all, because xcodebuild only flushes its per-case lines at the end. So the cost of a tight cap is not a slower gate, it is a red run that says nothing about why. A hang is open-ended and 90 catches it just as well.
         env:
           # 全量只跑在进 main 的 PR 上。push 到 main 是紧接着的第二遍,内容和刚绿的那个 PR 头一模一样 —— 一次发布为此付两轮,而第二轮没有任何一条是新的。
-          MSIME_TEST_SCOPE: ${{ github.base_ref == 'main' && 'all' || 'pr' }}
-          MSIME_TEST_SHARD: ${{ github.base_ref == 'main' && 'rest' || '' }}
+          LINGYAO_TEST_SCOPE: ${{ github.base_ref == 'main' && 'all' || 'pr' }}
+          LINGYAO_TEST_SHARD: ${{ github.base_ref == 'main' && 'rest' || '' }}
         timeout-minutes: 90
         run: bash platforms/ios/scripts/run_ui_tests.sh
       - name: Upload iOS test results
@@ -184,7 +184,7 @@ jobs:
 
   # 全量套件的另一半。分成两个 job 而不是一个 matrix:分支保护按 job 名认必需检查,而 matrix 的 job 被 job 级 if 跳过时上报的是没展开的名字(#519 就是栽在这上面),`iOS Simulator` 这个名字必须原样留着。
   #
-  # 切在哪里见 run_ui_tests.sh 的 MSIME_TEST_SHARD:实测 SettingsUITests 743.8s 加 SkinUITests 706.6s 合 1451 秒,其余全部加起来 1173 秒。两边各跑一半,墙钟从一小时出头降到半小时上下,一条用例都不少。
+  # 切在哪里见 run_ui_tests.sh 的 LINGYAO_TEST_SHARD:实测 SettingsUITests 743.8s 加 SkinUITests 706.6s 合 1451 秒,其余全部加起来 1173 秒。两边各跑一半,墙钟从一小时出头降到半小时上下,一条用例都不少。
   ios-heavy-interface:
     needs: changes
     # 整片只在进 main 的 PR 上有事做,其余情况连构建都不必起。job 级的条件在非 matrix 的 job 上是安全的 —— #519 那个「跳过时上报没展开的名字」只发生在 matrix 上。
@@ -192,7 +192,7 @@ jobs:
     name: iOS Simulator (settings and skins)
     # Everything except the three handwriting cases, on arm64, always. Only MLKitDigitalInkRecognition
     # needs an Intel runner -- its arm64 slice is built for devices, so there is none to link against
-    # on an Apple Silicon Simulator -- and only MetasequoiaKeyboardTests/HandwritingTests needs it.
+    # on an Apple Silicon Simulator -- and only LingyaoKeyboardTests/HandwritingTests needs it.
     # The interface suite does not, and used to be dragged onto Intel with it: a twenty-five minute
     # test build before a case ran, then thirty-seven cases on a Simulator half the speed of an arm64
     # one. The handwriting cases are their own job now, so neither waits on the other.
@@ -201,7 +201,7 @@ jobs:
     timeout-minutes: 95
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-      MSIME_IOS_SKIP_HANDWRITING: '1'
+      LINGYAO_IOS_SKIP_HANDWRITING: '1'
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -224,22 +224,22 @@ jobs:
       - name: Package iOS dictionary
         run: |
           mkdir -p target/resources
-          resource_dir="$(cargo run --quiet -p msime-client-core --example install_resources -- target/resources)"
+          resource_dir="$(cargo run --quiet -p lingyao-client-core --example install_resources -- target/resources)"
           bash platforms/ios/stage-resources.sh "$resource_dir"
-      # project.yml gives the unit targets `LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: $(SRCROOT)/../../target/ios/simulator` and `-lmsime_host_api`, and nothing in this job produced that directory, so the test build reached the linker and stopped at "library 'msime_host_api' not found". build-native.sh is what fills it; it needs only the Rust simulator target installed. Not added to the Intel handwriting job: that simulator is x86_64 and build-native.sh's simulator variant is aarch64-apple-ios-sim.
+      # project.yml gives the unit targets `LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: $(SRCROOT)/../../target/ios/simulator` and `-llingyao_host_api`, and nothing in this job produced that directory, so the test build reached the linker and stopped at "library 'lingyao_host_api' not found". build-native.sh is what fills it; it needs only the Rust simulator target installed. Not added to the Intel handwriting job: that simulator is x86_64 and build-native.sh's simulator variant is aarch64-apple-ios-sim.
       - name: Build the iOS host library
         run: |
           set -euo pipefail
           rustup target add aarch64-apple-ios-sim
           bash platforms/ios/build-native.sh simulator
-          test -f target/ios/simulator/libmsime_host_api.a
+          test -f target/ios/simulator/liblingyao_host_api.a
       - name: Generate Xcode project
         run: |
           mkdir -p build/ios
-          # MSIMEApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
+          # LINGYAOApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
           python3 scripts/fetch_voice_runtime.py --platform ios
           xcodegen generate --spec platforms/ios/project.yml --project build/ios --project-root platforms/ios
-          if [ "${MSIME_IOS_SKIP_HANDWRITING}" != "1" ]; then
+          if [ "${LINGYAO_IOS_SKIP_HANDWRITING}" != "1" ]; then
             pod install --deployment --project-directory=platforms/ios
           fi
       - name: Test native iOS keyboard and settings
@@ -264,8 +264,8 @@ jobs:
         # 90 rather than 60, because 60 stopped catching hangs and started catching the suite. The `all` scope measured 38m43s, then 48m00s, then ran past 58 minutes and was killed with the tests still going -- and a killed run prints nothing at all, because xcodebuild only flushes its per-case lines at the end. So the cost of a tight cap is not a slower gate, it is a red run that says nothing about why. A hang is open-ended and 90 catches it just as well.
         env:
           # 全量只跑在进 main 的 PR 上。push 到 main 是紧接着的第二遍,内容和刚绿的那个 PR 头一模一样 —— 一次发布为此付两轮,而第二轮没有任何一条是新的。
-          MSIME_TEST_SCOPE: ${{ github.base_ref == 'main' && 'all' || 'pr' }}
-          MSIME_TEST_SHARD: ${{ github.base_ref == 'main' && 'heavy' || '' }}
+          LINGYAO_TEST_SCOPE: ${{ github.base_ref == 'main' && 'all' || 'pr' }}
+          LINGYAO_TEST_SHARD: ${{ github.base_ref == 'main' && 'heavy' || '' }}
         timeout-minutes: 90
         run: bash platforms/ios/scripts/run_ui_tests.sh
       - name: Upload iOS test results
@@ -289,8 +289,8 @@ jobs:
     timeout-minutes: 75
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-      MSIME_IOS_SKIP_HANDWRITING: '0'
-      MSIME_TEST_SCOPE: handwriting
+      LINGYAO_IOS_SKIP_HANDWRITING: '0'
+      LINGYAO_TEST_SCOPE: handwriting
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -305,12 +305,12 @@ jobs:
       - name: Package iOS dictionary
         run: |
           mkdir -p target/resources
-          resource_dir="$(cargo run --quiet -p msime-client-core --example install_resources -- target/resources)"
+          resource_dir="$(cargo run --quiet -p lingyao-client-core --example install_resources -- target/resources)"
           bash platforms/ios/stage-resources.sh "$resource_dir"
       - name: Generate Xcode project
         run: |
           mkdir -p build/ios
-          # MSIMEApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
+          # LINGYAOApp embeds the sherpa-onnx runtime for on-device dictation; it is fetched and verified against resources/voice-runtime.lock.json, never committed.
           python3 scripts/fetch_voice_runtime.py --platform ios
           xcodegen generate --spec platforms/ios/project.yml --project build/ios --project-root platforms/ios
           pod install --deployment --project-directory=platforms/ios

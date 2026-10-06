@@ -92,28 +92,28 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p target/desktop-resources
-          resources="$(cargo run --quiet --locked -p msime-client-core --example install_resources -- "$PWD/target/desktop-resources" | tail -n 1)"
+          resources="$(cargo run --quiet --locked -p lingyao-client-core --example install_resources -- "$PWD/target/desktop-resources" | tail -n 1)"
           test -d "$resources"
-          echo "MSIME_DESKTOP_RESOURCES=$resources" >> "$GITHUB_ENV"
+          echo "LINGYAO_DESKTOP_RESOURCES=$resources" >> "$GITHUB_ENV"
       - name: Stage the core-only resources
-        run: MSIME_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$MSIME_DESKTOP_RESOURCES"
+        run: LINGYAO_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$LINGYAO_DESKTOP_RESOURCES"
       - name: Check the staged layout
         run: |
           set -euo pipefail
           staged=target/macos/EngineResources
-          test ! -e "$staged/msime-japanese.dat"
-          test ! -e "$staged/msime-mozc_dictionary_oss_README.txt"
-          test ! -e "$staged/msime-mozc_LICENSE.txt"
-          test -f "$staged/msime-pinyin.db"
-          test -f "$staged/msime-scowl_Copyright.txt"
+          test ! -e "$staged/lingyao-japanese.dat"
+          test ! -e "$staged/lingyao-mozc_dictionary_oss_README.txt"
+          test ! -e "$staged/lingyao-mozc_LICENSE.txt"
+          test -f "$staged/lingyao-pinyin.db"
+          test -f "$staged/lingyao-scowl_Copyright.txt"
           test -f "$staged/helpcodes/helpcode.txt"
-          cargo run --quiet --locked -p msime-client-core --example verify_resources -- --omit-on-demand "$staged"
+          cargo run --quiet --locked -p lingyao-client-core --example verify_resources -- --omit-on-demand "$staged"
           du -sk "$staged"
       - name: Check the packaging contract
         run: python3 scripts/test-macos-package-resources.py
       # 与 App 运行时同一个安装器、同一组 URL 和 SHA-256：三个资源包都要能装上，发布出去的 App 才能补齐它们。
       - name: Install every on-demand resource pack
-        run: cargo run --quiet --locked -p msime-client-core --example install_resource_pack -- "$RUNNER_TEMP/resource-pack-check"
+        run: cargo run --quiet --locked -p lingyao-client-core --example install_resource_pack -- "$RUNNER_TEMP/resource-pack-check"
 
   package:
     name: Unsigned universal package
@@ -149,7 +149,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sparkle"
           tar -xJf "$archive" -C "$RUNNER_TEMP/sparkle"
           test -d "$RUNNER_TEMP/sparkle/Sparkle.framework"
-          echo "MSIME_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+          echo "LINGYAO_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Enable pnpm
         run: corepack enable
       - name: Add the Rust targets for the universal package
@@ -174,7 +174,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-macos-package-${{ github.run_id }}
+          name: lingyao-macos-package-${{ github.run_id }}
           path: ${{ runner.temp }}/dist/
           retention-days: 7
           if-no-files-found: error
