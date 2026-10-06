@@ -119,7 +119,7 @@ Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审
 | | |
 | --- | --- |
 | 触发 | 只在这几种情况下发生：在设置里选日文、粤拼、注音或笔画方案（macOS）；第一次打开手写面板（宿主需要下载手写模型时）；打开「桌面神经联想」；设置应用启动时发现已保存的方案（或上一次的中文方案）需要的词库、或已打开的桌面神经联想需要的模型还没装；在资源包那一行点「下载」或「重试」 |
-| 目的地 | GitHub Releases（`https://github.com/Lcy040109/msime-dictionary/releases/download/dict-v.../` 的词库，`https://github.com/metasequoiaime/chinese-ime-lm/releases/download/model-v1/` 的桌面神经联想模型，下载时会被重定向到 GitHub 的文件存储域名）与 `https://raw.githubusercontent.com/Lcy040109/msime-engine/<固定提交>/...`（手写模型）；配置了镜像时改为镜像地址 |
+| 目的地 | GitHub Releases（`https://github.com/metasequoiaime/msime-dictionary/releases/download/dict-v.../` 的词库，`https://github.com/metasequoiaime/chinese-ime-lm/releases/download/model-v1/` 的桌面神经联想模型，下载时会被重定向到 GitHub 的文件存储域名）与 `https://raw.githubusercontent.com/metasequoiaime/msime-engine/<固定提交>/...`（手写模型）；配置了镜像时改为镜像地址 |
 | 发送内容 | 对固定文件的 HTTPS GET 请求，不携带任何输入内容、账号或设备标识 |
 | 需要凭据 | 否 |
 | 偏好字段 | 沿用 `voice_input.asr_model_mirror`，默认空字符串，表示直接访问 GitHub；下载失败时资源包那一行和手写面板都提供「设置下载镜像」 |

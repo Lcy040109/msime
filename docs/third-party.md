@@ -10,7 +10,7 @@
 
 ## 输入引擎（`crates/engine`）
 
-`crates/engine`（`msime-engine`）是本项目自己的代码，按 GPL-3.0 分发。它是 [`Lcy040109/msime-engine`](https://github.com/Lcy040109/msime-engine)（GPL-3.0）C++ 实现的 Rust 移植；移植时对照的参考提交记在 `tools/engine-golden/README.md`。构建时不再取回任何上游源码归档，原先随 Engine 归档进来的组件去向如下：
+`crates/engine`（`msime-engine`）是本项目自己的代码，按 GPL-3.0 分发。它是 [`metasequoiaime/msime-engine`](https://github.com/metasequoiaime/msime-engine)（GPL-3.0）C++ 实现的 Rust 移植；移植时对照的参考提交记在 `tools/engine-golden/README.md`。构建时不再取回任何上游源码归档，原先随 Engine 归档进来的组件去向如下：
 
 | 组件 | 许可证 | 现状 |
 | --- | --- | --- |
@@ -40,7 +40,7 @@
 
 ## 随包资源（`resources/desktop-dictionary.lock.json`）
 
-锁文件固定十二个产物的长度和 SHA-256，每个都带可匿名下载的 URL：十一个来自 `Lcy040109/msime-dictionary` 的 `dict-v2.0.14` 发布（由其 `release-built-dictionaries.yml` 调用 msime 构建器生成），`sentence-model.safetensors` 来自 `metasequoiaime/chinese-ime-lm` 的 `model-v1`——两者是不同的仓库和不同的发布，以锁文件里各自的 `url` 为准。早先只供 Google 整句解码器使用的 `dict_pinyin.dat` 已随解码器一起去掉。**锁文件本身不记录许可证字段**，来源信息分散在别处：
+锁文件固定十二个产物的长度和 SHA-256，每个都带可匿名下载的 URL：十一个来自 `metasequoiaime/msime-dictionary` 的 `dict-v2.0.14` 发布（由其 `release-built-dictionaries.yml` 调用 msime 构建器生成），`sentence-model.safetensors` 来自 `metasequoiaime/chinese-ime-lm` 的 `model-v1`——两者是不同的仓库和不同的发布，以锁文件里各自的 `url` 为准。早先只供 Google 整句解码器使用的 `dict_pinyin.dat` 已随解码器一起去掉。**锁文件本身不记录许可证字段**，来源信息分散在别处：
 
 | 产物 | 大小 | 已知来源 |
 | --- | --- | --- |
@@ -211,7 +211,7 @@ kaikki 每周覆盖同一个 URL，所以能复现构建的是 `filtered_input`�
 | [rime/rime-cantonese](https://github.com/rime/rime-cantonese) 的 `jyut6ping3.chars.dict.yaml`、`jyut6ping3.words.dict.yaml`、`essay-cantonese.txt`，提交 `259f0e48bba840c3a2e0d117539e96937f3d89bc`；以及 [fcbond/hkcancor](https://github.com/fcbond/hkcancor)（香港粤语语料库 HKCanCor）的 `data/utf8/` 转写，提交 `39aeadf920e0b5ca93d0ad7792c59e740e7bdd65`，经 msime-dictionary 的 `sources/cantonese/hkcancor-word-counts.txt` 使用 | 两者都是 CC BY 4.0（rime-cantonese 作者为粤语计算语言学基础建设组 CanCLID，拼写采用香港语言学学会 LSHK 的粤拼方案；HKCanCor 由陆镜光 Luke Kang Kwong 建立）。全文、署名与改动说明在 `resources/licenses/rime-cantonese-CC-BY-4.0.txt` | 转换成 `msime-cantonese.db`：去掉声调数字、音节以空格连接，字频与词频取自 `essay-cantonese.txt`；essay 没收的词按 HKCanCor 词频乘以两者共有词的频率比中位数取权重，语料文本本身不分发。按 ODbL 发布的 `jyut6ping3.maps.dict.yaml`、来源不明且没有读音的 `jyut6ping3.phrase.dict.yaml` 和 `jyut6ping3.lettered.dict.yaml` 都不读取、不分发。CC BY 4.0 要求署名并说明改动，许可证文件已写明两者 |
 | [chewing/libchewing-data](https://github.com/chewing/libchewing-data) 的 `dict/chewing/tsi.csv`、`dict/chewing/word.csv`，提交 `c44e81aef24b06f1509f19e1be54c99812d0c43f`；以及 [openvanilla/McBopomofo](https://github.com/openvanilla/McBopomofo) 的 `Source/Data/BPMFMappings.txt` 与 `Source/Data/phrase.occ`，提交 `be6564acad6c4d3265c34a2e1a872d80f9db6068` | libchewing-data 为 LGPL-2.1-or-later（两个文件的文件头 `dc:license` 声明，Copyright (c) 2025 libchewing Core Team）；McBopomofo 多字词表说明其来源为 BSD 授权的 libtabe 并含修改；`phrase.occ` 是 McBopomofo 自己的语料计数，随项目以 MIT 发布（Copyright (c) 2011-2026 Mengjuei Hsieh et al.）。两者的署名、源码地址和条款在 `resources/licenses/libchewing-data-LGPL-2.1.txt` | 转换成 `msime-zhuyin.db`：`tsi.csv` 按词频排序，`word.csv` 补全单字，McBopomofo 补充表补入其余词语组合并以 0 作为无来源频率；`tsi.csv` 在任何读音下都没计数的两字及以上词语，权重取 `phrase.occ` 计数乘以两者共有词的频率比中位数，并压在同一读音下有计数的最高词之下。仓库里其他注音文件不使用；注音从不读 `msime-pinyin.db`，也不经过简繁转换。若转换本身算作修改，对应的源码是本仓库以 GPL-3.0 发布的 `crates/dict-builder`。 |
 
-这些文件由 [msime-dictionary](https://github.com/Lcy040109/msime-dictionary) 原样收在 `sources/cantonese/`、`sources/zhuyin/` 下（与上游固定提交逐字节一致）。`resources/dictionary-sources.lock.json` 用 `rime-cantonese`、`libchewing-data` 引用记下上游提交；文件字节由 msime-dictionary 的 `upstream.lock.json` 固定，构建器读取 checkout 时逐个校验，并要求记录的提交等于这两个引用。源文件只保存在仓库 Git 中，不再发布 `sources-v*` Release；构建后的数据库和许可证文件统一随 `dict-v*` Release 发布。许可证文本经各平台的通知渠道分发，与下一节的 libhangul 汉字表相同：Windows 的 `Collect-Notices.ps1`，macOS 输入法包的 `Resources/Licenses`（`CMakeLists.txt` 与 `THIRD_PARTY_NOTICES.txt`），Linux 安装的声明（`CMakeLists.txt` 与 `data/THIRD_PARTY_NOTICES.txt`），Android 的 `assets/native-notices`（`build-native.sh`），iOS App 的资源（`project.yml`），HarmonyOS 的 `resfile/licenses`（`stage-resources.sh`）。除 macOS 外的平台目前不提供这两个方案，也不带数据库，但这些方案的代码随每一份引擎分发，统一一份渠道清单检查起来最简单。`scripts/test-language-data-notices.py` 检查许可证文本和这几处渠道都还在。
+这些文件由 [msime-dictionary](https://github.com/metasequoiaime/msime-dictionary) 原样收在 `sources/cantonese/`、`sources/zhuyin/` 下（与上游固定提交逐字节一致）。`resources/dictionary-sources.lock.json` 用 `rime-cantonese`、`libchewing-data` 引用记下上游提交；文件字节由 msime-dictionary 的 `upstream.lock.json` 固定，构建器读取 checkout 时逐个校验，并要求记录的提交等于这两个引用。源文件只保存在仓库 Git 中，不再发布 `sources-v*` Release；构建后的数据库和许可证文件统一随 `dict-v*` Release 发布。许可证文本经各平台的通知渠道分发，与下一节的 libhangul 汉字表相同：Windows 的 `Collect-Notices.ps1`，macOS 输入法包的 `Resources/Licenses`（`CMakeLists.txt` 与 `THIRD_PARTY_NOTICES.txt`），Linux 安装的声明（`CMakeLists.txt` 与 `data/THIRD_PARTY_NOTICES.txt`），Android 的 `assets/native-notices`（`build-native.sh`），iOS App 的资源（`project.yml`），HarmonyOS 的 `resfile/licenses`（`stage-resources.sh`）。除 macOS 外的平台目前不提供这两个方案，也不带数据库，但这些方案的代码随每一份引擎分发，统一一份渠道清单检查起来最简单。`scripts/test-language-data-notices.py` 检查许可证文本和这几处渠道都还在。
 
 ## 笔画的数据（rime-stroke）
 
