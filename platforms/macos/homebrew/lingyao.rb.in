@@ -17,11 +17,11 @@ cask "lingyao" do
 
   depends_on macos: :ventura
 
-  app "MSIME.app"
+  app "LINGYAO.app"
   # The MCP server AI assistants run, on PATH for those configured from a terminal.
-  binary "#{appdir}/MSIME.app/Contents/MacOS/lingyao-mcp"
+  binary "#{appdir}/LINGYAO.app/Contents/MacOS/lingyao-mcp"
   # 同一个程序再以 lingyao 的名字放上 PATH，方便在终端里手动敲 lingyao expand、lingyao config。
-  binary "#{appdir}/MSIME.app/Contents/MacOS/lingyao-mcp", target: "lingyao"
+  binary "#{appdir}/LINGYAO.app/Contents/MacOS/lingyao-mcp", target: "lingyao"
 
   # The settings app copies the input method here on its first launch.
   uninstall quit:   ["app.lingyao.macos", "app.lingyao.inputmethod.LingyaoIME"],

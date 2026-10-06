@@ -10,7 +10,7 @@
 
 ## 输入引擎（`crates/engine`）
 
-`crates/engine`（`lingyao-engine`）是本项目自己的代码，按 GPL-3.0 分发。它是 [`metasequoiaime/lingyao-engine`](https://github.com/metasequoiaime/msime-engine)（GPL-3.0）C++ 实现的 Rust 移植；移植时对照的参考提交记在 `tools/engine-golden/README.md`。构建时不再取回任何上游源码归档，原先随 Engine 归档进来的组件去向如下：
+`crates/engine`（`lingyao-engine`）是本项目自己的代码，按 GPL-3.0 分发。它是 [`metasequoiaime/msime-engine`](https://github.com/metasequoiaime/msime-engine)（GPL-3.0）C++ 实现的 Rust 移植；移植时对照的参考提交记在 `tools/engine-golden/README.md`。构建时不再取回任何上游源码归档，原先随 Engine 归档进来的组件去向如下：
 
 | 组件 | 许可证 | 现状 |
 | --- | --- | --- |
@@ -40,7 +40,7 @@
 
 ## 随包资源（`resources/desktop-dictionary.lock.json`）
 
-锁文件固定十二个产物的长度和 SHA-256，每个都带可匿名下载的 URL：十一个来自 `metasequoiaime/lingyao-dictionary` 的 `dict-v2.0.14` 发布（由其 `release-built-dictionaries.yml` 调用 lingyao 构建器生成），`sentence-model.safetensors` 来自 `metasequoiaime/chinese-ime-lm` 的 `model-v1`——两者是不同的仓库和不同的发布，以锁文件里各自的 `url` 为准。早先只供 Google 整句解码器使用的 `dict_pinyin.dat` 已随解码器一起去掉。**锁文件本身不记录许可证字段**，来源信息分散在别处：
+锁文件固定十二个产物的长度和 SHA-256，每个都带可匿名下载的 URL：十一个来自 `metasequoiaime/msime-dictionary` 的 `dict-v2.0.14` 发布（由其 `release-built-dictionaries.yml` 调用 lingyao 构建器生成），`sentence-model.safetensors` 来自 `metasequoiaime/chinese-ime-lm` 的 `model-v1`——两者是不同的仓库和不同的发布，以锁文件里各自的 `url` 为准。早先只供 Google 整句解码器使用的 `dict_pinyin.dat` 已随解码器一起去掉。**锁文件本身不记录许可证字段**，来源信息分散在别处：
 
 | 产物 | 大小 | 已知来源 |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ print(json.loads(f.read(n))["__metadata__"]["attribution"])
 | 项 | 值 |
 | --- | --- |
 | 文件 | `resources/helpcodes/jiajia_helpcode.txt`（方案标识 `jiajia`，加加辅助码） |
-| 来源仓库 | [metasequoiaime/LINGYAO-Windows](https://github.com/metasequoiaime/MSIME-Windows) 的 `engine/helpcode/helpcodes/jiajia_helpcode.txt` |
+| 来源仓库 | [metasequoiaime/MSIME-Windows](https://github.com/metasequoiaime/MSIME-Windows) 的 `engine/helpcode/helpcodes/jiajia_helpcode.txt` |
 | 来源提交 | `566ff8b8320e7f56256544b2b1f0da8c8e7f037e` |
 | 内容摘要 | `sha256:6538d744547b590630e93160198ac16bf76112a51ec78b4dbae505b914761879`，7968 行 |
 | 登记方式 | `crates/engine/src/assets.rs` 的 `HELPCODES` 把它登记为第六套方案 `jiajia`，资源目录里的路径是 `helpcodes/jiajia_helpcode.txt` |
@@ -189,7 +189,7 @@ MPL-2.0 是文件级 copyleft，与本仓库的 GPL-3.0 兼容：这些 crate �
 | 产物 | `offline-glosses/zh-<lang>.db`，每种语言一个文件，外加 `offline-glosses-NOTICE.txt` |
 | 取词范围 | 同一张译文表（同一个英文义项）里的 Mandarin 行与目标语言行配对；读 `senses[].translations` 和顶层 `translations`；键为简体，用 `lingyao-pinyin.db` 的词表校验；每个中文词最多两个义项、每个义项最多两个词 |
 | 锁 | `resources/offline-glosses.lock.json`：`input` 是 kaikki dump，`filtered_input` 是生成时实际读的过滤后 jsonl，`artifacts` 是六个数据库和 NOTICE |
-| 发布位置 | [`metasequoiaime/chinese-ime-lm` 的 `offline-glosses-2026.09.02`](https://github.com/metasequoiaime/chinese-ime-lm/releases/tag/offline-glosses-2026.09.02)，与整句重排模型同一个仓库，不在应用内更新检查读取的 `Lcy040109/lingyao/releases` |
+| 发布位置 | [`metasequoiaime/chinese-ime-lm` 的 `offline-glosses-2026.09.02`](https://github.com/metasequoiaime/chinese-ime-lm/releases/tag/offline-glosses-2026.09.02)，与整句重排模型同一个仓库，不在应用内更新检查读取的 `Lcy040109/msime/releases` |
 | 获取 | `scripts/fetch_offline_glosses.py` 按锁下载并校验 sha256 与大小，默认写到 `target/offline-glosses` |
 
 Android、iOS、macOS、Windows 与 Linux 的发布工作流在打包前运行 `fetch_offline_glosses.py`，各自的打包脚本发现 `target/offline-glosses` 里有数据库和 NOTICE 时才带上它们。HarmonyOS 的发布工作流还不能在 CI 上出包（缺 DevEco 的 NDK，也不暂存资源），本地按 `platforms/harmony/README.md` 构建时 `stage-resources.sh` 会带上它们。本地构建同样先运行这个脚本，不运行则照常构建、只有英语走离线释义。

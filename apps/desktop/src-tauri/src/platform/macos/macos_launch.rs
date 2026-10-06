@@ -434,7 +434,7 @@ mod tests {
     /// 升级时只有打包应用自带的 `EngineResources` 能顶替过期的资源目录；开发运行的资源目录是 cargo 产物，不能写进用户的配置。
     #[test]
     fn only_a_packaged_bundle_replaces_outdated_resources() {
-        let packaged = Path::new("/Applications/MSIME.app/Contents/Resources/EngineResources");
+        let packaged = Path::new("/Applications/LINGYAO.app/Contents/Resources/EngineResources");
         assert_eq!(packaged_resources(Some(packaged)), Some(packaged));
         for development in [
             Path::new("/repo/target/debug/EngineResources"),

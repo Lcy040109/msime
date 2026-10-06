@@ -10,8 +10,8 @@ macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先
 
 比对在固定对象上进行，便于复核：
 
-- 来源：`metasequoiaime/LINGYAO-Apple` 的默认分支 `develop`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
-- 目标：`Lcy040109/lingyao` 的 `develop`。
+- 来源：`metasequoiaime/MSIME-Apple` 的默认分支 `develop`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
+- 目标：`Lcy040109/msime` 的 `develop`。
 
 来源入口是该检出的 `platforms/ios/`，以及 `shared/apple-bridge/` 与 `shared/backend/`。
 

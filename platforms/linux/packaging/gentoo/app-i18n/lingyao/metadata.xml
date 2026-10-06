@@ -12,7 +12,7 @@
 		<flag name="fcitx5">Build and install the native Fcitx5 input method addon; the IBus engine is always built</flag>
 	</use>
 	<upstream>
-		<remote-id type="github">Lcy040109/lingyao</remote-id>
+		<remote-id type="github">Lcy040109/msime</remote-id>
 		<bugs-to>https://github.com/Lcy040109/msime/issues</bugs-to>
 	</upstream>
 </pkgmetadata>

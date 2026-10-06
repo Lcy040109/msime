@@ -22,7 +22,7 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = "Lcy040109/lingyao"
+REPO = "Lcy040109/msime"
 # CPack 生成的 .rpm 的 Release 字段，packaging.cmake 没有设置 CPACK_RPM_PACKAGE_RELEASE，默认是 1。
 RPM_RELEASE = "1"
 # lingyao.install 在安装后运行 `lingyao-linux-setup --register`，这个选项从 0.10.0 才有；更早的发布还按已失效的地址取方言词库（langdict-v1.0.0 已删除），源码包在 prepare() 就会失败。仓库里提交的 PKGBUILD 在第一次渲染之前停在 0.9.1，只是占位，不能推到 AUR。

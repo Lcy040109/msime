@@ -478,7 +478,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     {
         path = [@"~" stringByAppendingString:[path substringFromIndex:NSHomeDirectory().length]];
     }
-    _directoryLabel.stringValue = path.length > 0 ? path : @"~/Library/Application Support/metasequoiaime/skins";
+    _directoryLabel.stringValue = path.length > 0 ? path : @"~/Library/Application Support/lingyao/skins";
 
     const lingyao::mac::SkinCatalog catalog = lingyao::mac::ScanSkinCatalog(root);
     NSMutableArray<NSView *> *cards = [NSMutableArray array];

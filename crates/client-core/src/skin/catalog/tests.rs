@@ -1051,7 +1051,7 @@ fn a_symlinked_catalog_root_is_not_scanned() {
     assert!(read_resource(&root, "sample", "images/sample.png").is_err());
 }
 
-/// The layout lingyao-skins (github.com/metasequoiaime/lingyao-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
+/// The layout lingyao-skins (github.com/metasequoiaime/msime-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
 fn styled_package(root: &Path) -> std::path::PathBuf {
     let skin = root.join("bigfish");
     fs::create_dir_all(skin.join("assets")).unwrap();

@@ -38,7 +38,7 @@ import urllib.request
 import xml.etree.ElementTree as ElementTree
 
 HERE = pathlib.Path(__file__).resolve().parent
-DEFAULT_REPO = "Lcy040109/lingyao"
+DEFAULT_REPO = "Lcy040109/msime"
 TAG_PREFIX = "windows-v"
 WINGET_ID = "Lingyao.LingyaoIME"
 # release-windows.yml 只接受三段数字的版本号，因为 Build-Client.ps1 要把它写进 Tauri 与 Server 的元数据。

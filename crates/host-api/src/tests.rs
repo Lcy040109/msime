@@ -8431,7 +8431,7 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
             "format_version": 1,
             "engine_compatibility": {"dictionary_format": 1, "japanese_model_magic": "MSJPDT1"},
             "source": {
-                "repository": "metasequoiaime/lingyao-engine",
+                "repository": "metasequoiaime/msime-engine",
                 "path": "dictionary",
                 "commit": commit,
                 "dirty": false,
@@ -8727,7 +8727,7 @@ fn outdated_recorded_resources_are_prepared_from_the_bundled_copy() {
         "preferences_directory": "/s",
         "preferences": {},
     });
-    let bundled = Path::new("/Applications/MSIME.app/Contents/Resources/EngineResources");
+    let bundled = Path::new("/Applications/LINGYAO.app/Contents/Resources/EngineResources");
     let outdated = |resources: &Path| -> Result<Value, Box<dyn std::error::Error>> {
         if resources == bundled {
             Ok(json!({ "resources": bundled, "dictionaries": "/s/user/dictionaries/new" }))
@@ -8808,15 +8808,15 @@ fn outdated_recorded_resources_are_prepared_from_the_bundled_copy() {
 #[test]
 fn refresh_follows_the_bundle_when_the_recorded_resources_are_gone() {
     let moved = json!({
-        "resources": "/Applications/MSIME.app/Contents/Resources/EngineResources",
+        "resources": "/Applications/LINGYAO.app/Contents/Resources/EngineResources",
         "user_data": "/s/user",
         "dictionaries": "/s/user/dictionaries/new",
         "preferences_directory": "/s",
         "preferences": {},
     });
-    let bundled = Path::new("/Users/u/Applications/MSIME.app/Contents/Resources/EngineResources");
+    let bundled = Path::new("/Users/u/Applications/LINGYAO.app/Contents/Resources/EngineResources");
     let gone = |path: &Path| {
-        path != Path::new("/Applications/MSIME.app/Contents/Resources/EngineResources")
+        path != Path::new("/Applications/LINGYAO.app/Contents/Resources/EngineResources")
     };
     let mut requested = Vec::new();
     let refreshed =

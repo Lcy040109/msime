@@ -1391,7 +1391,7 @@ mod tests {
     #[test]
     fn only_a_packaged_app_resource_directory_counts() {
         assert!(is_packaged_resource_directory(Path::new(
-            "/Applications/MSIME.app/Contents/Resources"
+            "/Applications/LINGYAO.app/Contents/Resources"
         )));
         assert!(!is_packaged_resource_directory(Path::new(
             "/Users/dev/lingyao/target/debug"

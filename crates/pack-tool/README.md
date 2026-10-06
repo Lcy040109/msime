@@ -1,6 +1,6 @@
 # lingyao-pack-tool
 
-`lingyao-pack` checks extension packs (sound, music, command table, effect) by exactly the rules the input method imports them by, for pack authors and for the CI of the community pack repository [metasequoiaime/lingyao-plugins](https://github.com/metasequoiaime/msime-plugins).
+`lingyao-pack` checks extension packs (sound, music, command table, effect) by exactly the rules the input method imports them by, for pack authors and for the CI of the community pack repository [metasequoiaime/msime-plugins](https://github.com/metasequoiaime/msime-plugins).
 
 ```sh
 cargo build -p lingyao-pack-tool --bin lingyao-pack
