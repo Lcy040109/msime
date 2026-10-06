@@ -66,7 +66,7 @@ public final class CommunitySkinCache {
                 return List.of();
             }
             byte[] bytes;
-            try (InputStream input = Files.newInputStream(file)) {
+            try (InputStream input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
                 bytes = HttpBodyPolicy.readBounded(input, (int) MAX_BYTES);
             }
             if (bytes == null) return List.of();
