@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   const auto defaults = voice_capture_selection(nlohmann::json::object());
   assert(defaults.supported() && defaults.device_id.empty());
   for (const auto *backend : {"", "auto", "windows"}) {

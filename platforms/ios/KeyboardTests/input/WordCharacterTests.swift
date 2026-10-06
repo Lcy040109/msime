@@ -7,7 +7,7 @@ final class WordCharacterTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-word-character-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-word-character-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

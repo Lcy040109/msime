@@ -3,7 +3,7 @@
 #include <array>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // What a helpcode scheme is called, wherever the user can read it.
 //
@@ -42,4 +42,4 @@ inline std::string_view helpcode_schema_label(std::string_view schema)
     return kHelpcodeSchemaNames.front().label;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

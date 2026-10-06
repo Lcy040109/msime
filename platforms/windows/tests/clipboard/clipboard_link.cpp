@@ -14,7 +14,7 @@ struct TemporaryStore {
     std::random_device random;
     for (unsigned attempt = 0; attempt < 100; ++attempt) {
       auto candidate = std::filesystem::temp_directory_path() /
-          ("msime-clipboard-link-" + std::to_string(random()));
+          ("lingyao-clipboard-link-" + std::to_string(random()));
       if (std::filesystem::create_directory(candidate)) {
         directory = std::move(candidate);
         return;
@@ -32,8 +32,8 @@ struct TemporaryStore {
 int main() {
   try {
     TemporaryStore temporary;
-    msime::windows::ClipboardHistory history(temporary.directory / "history.json");
-    msime::windows::ClipboardMailbox mailbox;
+    lingyao::windows::ClipboardHistory history(temporary.directory / "history.json");
+    lingyao::windows::ClipboardMailbox mailbox;
     // Exercise the same archive through both storage and presentation APIs.
     require(history.add("synthetic-alpha"));
     require(history.add("synthetic-beta"));

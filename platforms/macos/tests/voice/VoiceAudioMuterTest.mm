@@ -91,7 +91,7 @@ void Reset() {
 int main() {
     @autoreleasepool {
         Reset();
-        MSIMEVoiceAudioMuter *muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
+        LINGYAOVoiceAudioMuter *muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
         [muter restore]; assert(!reads && !writes);
         assert([muter mute:nil] && muted[100] == 1 && writes == 1);
         selected = 200;
@@ -155,7 +155,7 @@ int main() {
 
         // The mute follows the default output device while recording and hands each previous device back.
         Reset();
-        muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
+        muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
         assert([muter mute:nil] && muted[100] == 1 && listener && listenerAdds == 1);
         MoveDefault(200); assert(muted[100] == 0 && muted[200] == 1 && writes == 3);
         MoveDefault(200); assert(writes == 3); // A repeated notification for the held device must not flicker it.
@@ -185,13 +185,13 @@ int main() {
         [muter restore]; assert(muted[100] == 0);
         // Without listener functions the mute still works for the current device.
         Reset();
-        muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr}];
+        muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr}];
         assert([muter mute:nil] && muted[100] == 1 && !listenerAdds);
         [muter restore]; assert(muted[100] == 0);
 
         // A deferred mute (run after the start cue) is cancelled by any restore that precedes it.
         Reset();
-        muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
+        muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}];
         void (^cancelled)(void) = [muter deferredMute];
         [muter restore]; cancelled(); assert(muted[100] == 0 && !writes && !listener);
         void (^pending)(void) = [muter deferredMute];
@@ -202,7 +202,7 @@ int main() {
 
         // Owing several devices is journaled as one record and trimmed as each is handed back.
         Reset();
-        char temporary[] = "/tmp/msime-voice-muter-test-XXXXXX";
+        char temporary[] = "/tmp/lingyao-voice-muter-test-XXXXXX";
         assert(mkdtemp(temporary));
         NSURL *directory = [NSURL fileURLWithPath:@(temporary) isDirectory:YES];
         NSURL *journal = [directory URLByAppendingPathComponent:@"voice-audio-recovery/pending.json"];
@@ -210,7 +210,7 @@ int main() {
             NSData *data = [NSData dataWithContentsOfURL:journal];
             return data.length ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
         };
-        muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}
+        muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, AddListener, RemoveListener}
             recoveryDirectory:[directory URLByAppendingPathComponent:@"voice-audio-recovery" isDirectory:YES]];
         assert([muter mute:nil] && [record()[@"uids"] isEqual:@[@"synthetic-output-a"]] && [record()[@"version"] isEqual:@2]);
         [identities removeObjectForKey:@100];
@@ -224,7 +224,7 @@ int main() {
         assert([NSFileManager.defaultManager removeItemAtURL:directory error:nil]);
 
         // A replaced recovery parent must not redirect the durable mute journal.
-        char linkedTemporary[] = "/tmp/msime-voice-linked-parent-XXXXXX";
+        char linkedTemporary[] = "/tmp/lingyao-voice-linked-parent-XXXXXX";
         assert(mkdtemp(linkedTemporary));
         NSURL *linkedRoot = [NSURL fileURLWithPath:@(linkedTemporary) isDirectory:YES];
         NSURL *outside = [linkedRoot URLByAppendingPathComponent:@"outside" isDirectory:YES];
@@ -234,7 +234,7 @@ int main() {
         assert(symlink(outside.fileSystemRepresentation, linkedParent.fileSystemRepresentation) == 0);
         NSURL *linkedRecovery = [linkedParent URLByAppendingPathComponent:@"recovery" isDirectory:YES];
         Reset();
-        muter = [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr}
+        muter = [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr}
             recoveryDirectory:linkedRecovery];
         assert(![muter mute:nil]);
         assert(![NSFileManager.defaultManager fileExistsAtPath:

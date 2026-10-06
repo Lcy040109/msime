@@ -8,40 +8,40 @@ final class UsageReportingTests: XCTestCase {
       "callStacks": [
         ["threadAttributed": false, "callStackRootFrames": [["binaryName": "Other", "offsetIntoBinaryTextSegment": 1]]],
         ["threadAttributed": true, "callStackRootFrames": [[
-          "binaryName": "MSIMEApp", "offsetIntoBinaryTextSegment": 4096, "address": 123,
-          "subFrames": [["binaryName": "/private/var/containers/Bundle/Application/X/MSIMEApp.app/Frameworks/Engine", "offsetIntoBinaryTextSegment": 77,
+          "binaryName": "LINGYAOApp", "offsetIntoBinaryTextSegment": 4096, "address": 123,
+          "subFrames": [["binaryName": "/private/var/containers/Bundle/Application/X/LINGYAOApp.app/Frameworks/Engine", "offsetIntoBinaryTextSegment": 77,
                          "subFrames": [["binaryName": "libdyld.dylib", "offsetIntoBinaryTextSegment": 9]]]],
         ]]],
       ],
     ]
     let data = try JSONSerialization.data(withJSONObject: tree)
     XCTAssertEqual(UsageReporting.frames(fromCallStackTree: data),
-                   "0 MSIMEApp + 4096\n1 Engine + 77\n2 libdyld.dylib + 9")
-    XCTAssertEqual(UsageReporting.frames(fromCallStackTree: data, limit: 1), "0 MSIMEApp + 4096")
+                   "0 LINGYAOApp + 4096\n1 Engine + 77\n2 libdyld.dylib + 9")
+    XCTAssertEqual(UsageReporting.frames(fromCallStackTree: data, limit: 1), "0 LINGYAOApp + 4096")
     XCTAssertEqual(UsageReporting.frames(fromCallStackTree: Data("[]".utf8)), "")
   }
 
   func testCallStackTreeIgnoresNonIntegerOffsets() throws {
     let tree: [String: Any] = [
       "callStacks": [["callStackRootFrames": [[
-        "binaryName": "MSIMEApp", "offsetIntoBinaryTextSegment": true,
+        "binaryName": "LINGYAOApp", "offsetIntoBinaryTextSegment": true,
         "subFrames": [["binaryName": "Engine", "offsetIntoBinaryTextSegment": 1.5]],
       ]]]],
     ]
     let data = try JSONSerialization.data(withJSONObject: tree)
-    XCTAssertEqual(UsageReporting.frames(fromCallStackTree: data), "0 MSIMEApp + 0\n1 Engine + 0")
+    XCTAssertEqual(UsageReporting.frames(fromCallStackTree: data), "0 LINGYAOApp + 0\n1 Engine + 0")
   }
 
   func testCrashDiagnosticIsWrittenAsAPrivateRecordWithOneSummaryLine() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    UsageReporting.storeCrashDiagnostic(message: "Crash signal 11\nsecond line", stack: "0 MSIMEApp + 1", in: directory)
+    UsageReporting.storeCrashDiagnostic(message: "Crash signal 11\nsecond line", stack: "0 LINGYAOApp + 1", in: directory)
     let crashes = directory.appendingPathComponent("telemetry-crashes")
     let files = try FileManager.default.contentsOfDirectory(at: crashes, includingPropertiesForKeys: nil)
     XCTAssertEqual(files.count, 1)
     XCTAssertEqual(files[0].pathExtension, "crash")
     XCTAssertNotNil(UUID(uuidString: files[0].deletingPathExtension().lastPathComponent))
-    XCTAssertEqual(try String(contentsOf: files[0], encoding: .utf8), "Crash signal 11\n0 MSIMEApp + 1")
+    XCTAssertEqual(try String(contentsOf: files[0], encoding: .utf8), "Crash signal 11\n0 LINGYAOApp + 1")
     let permissions = try FileManager.default.attributesOfItem(atPath: files[0].path)[.posixPermissions] as? NSNumber
     XCTAssertEqual(permissions?.intValue, 0o600)
   }

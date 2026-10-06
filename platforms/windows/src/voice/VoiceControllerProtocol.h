@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Windows x86/x64/ARM64 are little endian, as required by the wire contract.
 // Authentication, ordering and session ownership belong to the listener, not
 // this framing adapter. No decoded payload may be logged.
@@ -67,4 +67,4 @@ inline std::optional<std::vector<uint8_t>> encode_voice_controller_reply(
   if (!text.empty()) std::memcpy(bytes.data() + sizeof(Reply), text.data(), text.size());
   return bytes;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

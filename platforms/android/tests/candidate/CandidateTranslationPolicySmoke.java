@@ -1,4 +1,4 @@
-import app.msime.android.CandidateTranslationPolicy;
+import app.lingyao.android.CandidateTranslationPolicy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,7 +34,7 @@ public final class CandidateTranslationPolicySmoke {
             "an installed offline dictionary reserves its target row");
         check(CandidateTranslationPolicy.glossLines(List.of("en", "ja"), false, false, Set.of("ja")) == 0,
             "the offline switch also gates the offline dictionaries");
-        Path root = Files.createTempDirectory("msime-offline-glosses");
+        Path root = Files.createTempDirectory("lingyao-offline-glosses");
         Path outside = null;
         try {
             Path resources = Files.createDirectories(root.resolve("resources"));
@@ -45,7 +45,7 @@ public final class CandidateTranslationPolicySmoke {
                     .equals(List.of("ja")), "only installed non-English dictionaries are offline targets");
             check(CandidateTranslationPolicy.offlineTargets(List.of("fr"), resources.toString()).isEmpty(),
                 "a missing dictionary is not an offline target");
-            outside = Files.createTempFile("msime-offline-gloss-outside", ".db");
+            outside = Files.createTempFile("lingyao-offline-gloss-outside", ".db");
             Path linked = glosses.resolve("zh-fr.db");
             Files.createSymbolicLink(linked, outside);
             check(CandidateTranslationPolicy.offlineTargets(List.of("fr"), resources.toString()).isEmpty(),

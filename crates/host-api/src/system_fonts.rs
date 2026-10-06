@@ -4,7 +4,7 @@ mod aliases_macos;
 #[cfg(windows)]
 mod aliases_windows;
 
-use msime_client_core::is_bounded_text;
+use lingyao_client_core::is_bounded_text;
 
 /// Resolve display-only CSS names without changing stored font preferences.
 ///

@@ -426,7 +426,7 @@ mod tests {
     #[test]
     fn a_missing_or_old_journal_reads_as_empty() {
         let dir = Dir::new();
-        let nowhere = dir.root.path().join("nowhere").join("msime_user.db");
+        let nowhere = dir.root.path().join("nowhere").join("lingyao_user.db");
         assert_eq!(
             load_pinyin_typo_state(&nowhere).unwrap(),
             PinyinTypoState::default()

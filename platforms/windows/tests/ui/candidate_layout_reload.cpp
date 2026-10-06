@@ -3,7 +3,7 @@
 #include <cassert>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   const auto defaults = candidate_layout_settings(nlohmann::json::object());
   assert(defaults && !defaults->horizontal && defaults->show_preedit);
   // The shared `wubi_code_hint` is on when absent or null, and must survive the atomic encoding.

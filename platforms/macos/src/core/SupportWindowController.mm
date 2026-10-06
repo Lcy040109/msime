@@ -53,7 +53,7 @@ void OpenURL(NSString *url) {
 }
 
 void InvokeUpdateController(void) {
-    // MSIMEUpdateController is a source-level alias; the Objective-C runtime name is the
+    // LINGYAOUpdateController is a source-level alias; the Objective-C runtime name is the
     // Lingyao-prefixed class.
     Class type = NSClassFromString(@"LingyaoUpdateController");
     if (type == Nil || ![type respondsToSelector:@selector(sharedController)]) return;
@@ -65,7 +65,7 @@ void InvokeUpdateController(void) {
 }
 
 void OpenPreferences(void) {
-    Class type = NSClassFromString(@"MSIMEPreferencesWindowController");
+    Class type = NSClassFromString(@"LINGYAOPreferencesWindowController");
     if (type == Nil || ![type respondsToSelector:@selector(sharedController)]) return;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -78,14 +78,14 @@ void OpenPreferences(void) {
 
 } // namespace
 
-@interface MSIMESupportWindowController ()
-@property(nonatomic, readwrite) MSIMESupportPage page;
+@interface LINGYAOSupportWindowController ()
+@property(nonatomic, readwrite) LINGYAOSupportPage page;
 @end
 
-@implementation MSIMESupportWindowController
+@implementation LINGYAOSupportWindowController
 
 + (instancetype)sharedController {
-    static MSIMESupportWindowController *controller;
+    static LINGYAOSupportWindowController *controller;
     static dispatch_once_t once;
     dispatch_once(&once, ^{ controller = [[self alloc] initWithWindow:nil]; });
     return controller;
@@ -104,50 +104,50 @@ void OpenPreferences(void) {
     }
     self = [super initWithWindow:supportWindow];
     if (self != nil) {
-        _page = MSIMESupportPageHelp;
+        _page = LINGYAOSupportPageHelp;
     }
     return self;
 }
 
-- (void)showPage:(MSIMESupportPage)page {
+- (void)showPage:(LINGYAOSupportPage)page {
     self.page = page;
     NSArray<NSView *> *views;
     NSString *title;
     switch (page) {
-        case MSIMESupportPageAbout: {
-            title = [@"关于" stringByAppendingString:MSIMEEditionDisplayName()];
+        case LINGYAOSupportPageAbout: {
+            title = [@"关于" stringByAppendingString:LINGYAOEditionDisplayName()];
             NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"] ?: @"0.52.0";
             views = @[
                 Heading(@"灵耀 IME"),
                 Body(@"为现代 macOS 桌面体验打造的开放中文输入法。"),
                 Title(@"当前版本"),
                 Body([NSString stringWithFormat:@"v%@", version]),
-                ActionButton(@"检查更新…", self, @selector(checkForUpdates:), @"MSIMESupportCheckForUpdates"),
-                ActionButton(@"访问官方网站", self, @selector(openWebsite:), @"MSIMESupportWebsite"),
-                ActionButton(@"开源许可协议", self, @selector(openLicense:), @"MSIMESupportLicense"),
-                ActionButton(@"隐私政策", self, @selector(openPrivacy:), @"MSIMESupportPrivacy"),
+                ActionButton(@"检查更新…", self, @selector(checkForUpdates:), @"LINGYAOSupportCheckForUpdates"),
+                ActionButton(@"访问官方网站", self, @selector(openWebsite:), @"LINGYAOSupportWebsite"),
+                ActionButton(@"开源许可协议", self, @selector(openLicense:), @"LINGYAOSupportLicense"),
+                ActionButton(@"隐私政策", self, @selector(openPrivacy:), @"LINGYAOSupportPrivacy"),
             ];
             break;
         }
-        case MSIMESupportPageFeedback:
+        case LINGYAOSupportPageFeedback:
             title = @"反馈与交流";
             views = @[
                 Heading(@"告诉我们你的想法"),
                 Body(@"遇到问题或有功能建议时，可以通过以下渠道提交和交流。"),
                 Title(@"GitHub Issues"),
                 Body(@"适合提交可复现的问题、功能建议和开发讨论。"),
-                ActionButton(@"查看 Issues", self, @selector(openIssues:), @"MSIMESupportIssues"),
+                ActionButton(@"查看 Issues", self, @selector(openIssues:), @"LINGYAOSupportIssues"),
                 Title(@"QQ 交流群"),
                 Body(@"适合中文用户进行日常交流、测试反馈和使用讨论。群号：829919142"),
-                ActionButton(@"复制群号", self, @selector(copyQQGroup:), @"MSIMESupportQQ"),
+                ActionButton(@"复制群号", self, @selector(copyQQGroup:), @"LINGYAOSupportQQ"),
                 Title(@"Telegram 群组"),
                 Body(@"面向国际用户和开发者的即时讨论频道。"),
-                ActionButton(@"打开群组", self, @selector(openTelegram:), @"MSIMESupportTelegram"),
+                ActionButton(@"打开群组", self, @selector(openTelegram:), @"LINGYAOSupportTelegram"),
             ];
             break;
-        case MSIMESupportPageHelp:
+        case LINGYAOSupportPageHelp:
         default:
-            title = [MSIMEEditionDisplayName() stringByAppendingString:@"帮助"];
+            title = [LINGYAOEditionDisplayName() stringByAppendingString:@"帮助"];
             views = @[
                 Heading(@"帮助"),
                 Body(@"灵耀输入法是一款 macOS 平台的中文输入法。请先在系统设置的键盘输入法中启用灵耀输入法，再使用系统配置的输入法切换快捷键。"),
@@ -155,7 +155,7 @@ void OpenPreferences(void) {
                 Body(@"默认使用全拼输入法。输入拼音后按数字键选择候选词；候选设置、输入方案和快捷键可以在设置窗口中调整。"),
                 Title(@"基本功能"),
                 Body(@"支持全拼、双拼和五笔，以及辅助码、候选窗口、手写识别板、屏幕键盘和语音输入。更多功能可以从输入菜单或悬浮工具栏打开。"),
-                ActionButton(@"打开设置…", self, @selector(openPreferences:), @"MSIMESupportPreferences"),
+                ActionButton(@"打开设置…", self, @selector(openPreferences:), @"LINGYAOSupportPreferences"),
             ];
             break;
     }
@@ -173,7 +173,7 @@ void OpenPreferences(void) {
     self.window.contentView = content;
     [self.window center];
     [self showWindow:nil];
-    MSIMEPresentWindow(self.window);
+    LINGYAOPresentWindow(self.window);
 }
 
 - (void)checkForUpdates:(id)sender { (void)sender; InvokeUpdateController(); }

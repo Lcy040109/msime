@@ -3,9 +3,9 @@
 #include <cassert>
 #include <string>
 
-using msime::linux_host::compose_phrase_preedit;
-using msime::linux_host::utf8_scalar_count;
-using msime::linux_host::view_has_composition;
+using lingyao::linux_host::compose_phrase_preedit;
+using lingyao::linux_host::utf8_scalar_count;
+using lingyao::linux_host::view_has_composition;
 
 int main()
 {
@@ -65,7 +65,7 @@ int main()
 
     // A Japanese composition shows the kana, and only while the caret is where typing leaves it.
     {
-        using msime::linux_host::composition_shows_reading;
+        using lingyao::linux_host::composition_shows_reading;
         assert(composition_shows_reading("にほん", 5, 5));
         // A caret moved into the letters keeps the letters: the offset is into the romaji.
         assert(!composition_shows_reading("にほん", 2, 5));

@@ -2,7 +2,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, render } from "@testing-library/react";
 import { AppearanceCandidatePreview } from "../../../../packages/ui/src/candidate/appearance-candidate-preview";
-import { themeEntry, type Preferences } from "@msime/ui";
+import { themeEntry, type Preferences } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

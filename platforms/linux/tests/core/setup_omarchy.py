@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""msime-linux-setup 在 Omarchy 上把主题钩子链进 ~/.config/omarchy/hooks/theme-set.d，并立即按当前主题生成一次 Omarchy 皮肤；把状态栏插件链进 ~/.config/omarchy/plugins；--unregister 只移除自己的链接。插件清单按 omarchy-plugin-validate 的规则检查。
+"""lingyao-linux-setup 在 Omarchy 上把主题钩子链进 ~/.config/omarchy/hooks/theme-set.d，并立即按当前主题生成一次 Omarchy 皮肤；把状态栏插件链进 ~/.config/omarchy/plugins；--unregister 只移除自己的链接。插件清单按 omarchy-plugin-validate 的规则检查。
 
-HOME 指向临时目录，msime-linux-settings 用一个记录参数和环境的桩代替。不需要 Omarchy 本体，也不碰真实的家目录。
+HOME 指向临时目录，lingyao-linux-settings 用一个记录参数和环境的桩代替。不需要 Omarchy 本体，也不碰真实的家目录。
 """
 import importlib.machinery
 import importlib.util
@@ -14,17 +14,17 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/msime-linux-setup"
+SCRIPT = ROOT / "scripts/lingyao-linux-setup"
 
 SETTINGS_STUB = """#!/bin/sh
-printf '%s %s\\n' "$*" "$MSIME_CLIENT_HOST_OPTIONS" >> "$(dirname "$0")/settings.log"
+printf '%s %s\\n' "$*" "$LINGYAO_CLIENT_HOST_OPTIONS" >> "$(dirname "$0")/settings.log"
 exit "${SETTINGS_EXIT:-0}"
 """
 
 
 def load_setup():
     spec = importlib.util.spec_from_loader(
-        "msime_client_setup", importlib.machinery.SourceFileLoader("msime_client_setup", str(SCRIPT))
+        "lingyao_client_setup", importlib.machinery.SourceFileLoader("lingyao_client_setup", str(SCRIPT))
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -49,13 +49,13 @@ def main() -> int:
         hook = prefix / setup.OMARCHY_HOOK
         hook.parent.mkdir(parents=True)
         hook.write_text("#!/bin/bash\n")
-        settings = prefix / "bin/msime-linux-settings"
+        settings = prefix / "bin/lingyao-linux-settings"
         settings.parent.mkdir(parents=True)
         settings.write_text(SETTINGS_STUB)
         settings.chmod(0o755)
         log = prefix / "bin/settings.log"
         options = scratch / "state/runtime-options.json"
-        link = home / ".config/omarchy/hooks/theme-set.d/msime"
+        link = home / ".config/omarchy/hooks/theme-set.d/lingyao"
 
         # 不是 Omarchy：什么都不做。
         _, out, err = run(setup.link_omarchy_theme_hook, prefix, options)
@@ -109,7 +109,7 @@ def check_manifest(setup) -> None:
     assert not any(path.is_symlink() for path in source.rglob("*"))
     widget = (source / f"{entry}.in").read_text()
     assert f'moduleName: "{setup.OMARCHY_PLUGIN_ID}"' in widget
-    assert "@CMAKE_INSTALL_FULL_DATADIR@/msime-client/omarchy/menu" in widget
+    assert "@CMAKE_INSTALL_FULL_DATADIR@/lingyao-client/omarchy/menu" in widget
 
 
 def check_plugin(setup, prefix: Path, home: Path) -> None:

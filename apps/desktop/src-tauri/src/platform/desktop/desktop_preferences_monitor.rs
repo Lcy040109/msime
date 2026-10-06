@@ -1,5 +1,5 @@
-use msime_client_core::clipboard::{ClipboardHistoryEntry, ClipboardHistoryStore};
-use msime_client_core::preferences::PreferencesStore;
+use lingyao_client_core::clipboard::{ClipboardHistoryEntry, ClipboardHistoryStore};
+use lingyao_client_core::preferences::PreferencesStore;
 #[cfg(target_os = "linux")]
 use std::mem::MaybeUninit;
 #[cfg(target_os = "linux")]
@@ -11,7 +11,7 @@ use tauri::{AppHandle, Emitter, Runtime};
 
 #[cfg(target_os = "macos")]
 pub(crate) fn record_macos_clipboard_change(
-    snapshot: msime_host_macos::ClipboardSnapshot,
+    snapshot: lingyao_host_macos::ClipboardSnapshot,
     last_change_count: &mut Option<i64>,
     enabled: bool,
     preferences: &PreferencesStore,
@@ -294,7 +294,7 @@ mod tests {
         ));
         let mut last_change_count = None;
         record_macos_clipboard_change(
-            msime_host_macos::ClipboardSnapshot {
+            lingyao_host_macos::ClipboardSnapshot {
                 change_count: 1,
                 text: Some("synthetic-external".into()),
             },
@@ -307,7 +307,7 @@ mod tests {
         assert_eq!(first.len(), 1);
         assert_eq!(first[0].text, "synthetic-external");
         record_macos_clipboard_change(
-            msime_host_macos::ClipboardSnapshot {
+            lingyao_host_macos::ClipboardSnapshot {
                 change_count: 1,
                 text: Some("synthetic-ignored".into()),
             },
@@ -318,7 +318,7 @@ mod tests {
         );
         assert_eq!(history.lock().unwrap().entries(), first.as_slice());
         record_macos_clipboard_change(
-            msime_host_macos::ClipboardSnapshot {
+            lingyao_host_macos::ClipboardSnapshot {
                 change_count: 2,
                 text: Some("synthetic-external".into()),
             },
@@ -330,7 +330,7 @@ mod tests {
         assert_eq!(history.lock().unwrap().entries(), first.as_slice());
         // The native reader reports excluded (concealed, transient, password-manager) or text-less changes as a new count with no text.
         record_macos_clipboard_change(
-            msime_host_macos::ClipboardSnapshot {
+            lingyao_host_macos::ClipboardSnapshot {
                 change_count: 5,
                 text: None,
             },
@@ -342,7 +342,7 @@ mod tests {
         assert_eq!(history.lock().unwrap().entries(), first.as_slice());
         assert_eq!(last_change_count, Some(5));
         record_macos_clipboard_change(
-            msime_host_macos::ClipboardSnapshot {
+            lingyao_host_macos::ClipboardSnapshot {
                 change_count: 3,
                 text: Some("synthetic-second".into()),
             },

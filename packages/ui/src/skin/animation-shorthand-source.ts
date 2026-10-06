@@ -54,14 +54,14 @@ function preserveShorthands(
   const projection = (parser.cssRules[0] as CSSStyleRule).style;
   projection.setProperty(shorthand, shorthand === "animation" ? "none" : "16px serif");
   const components = Array.from(projection);
-  const prefix = "msime-" + shorthand + "-source-" + ++generation + "-";
+  const prefix = "lingyao-" + shorthand + "-source-" + ++generation + "-";
   const variables = animationVariables<string>(styles, prefix, (value, property) => {
     projection.cssText = "";
     projection.setProperty(shorthand, value);
     const projected = projection.getPropertyValue(property);
     // Keep invalid-but-defined custom values invalid, rather than making them
     // missing and incorrectly activating a var() fallback.
-    return { value: projected || "msime-invalid-" + shorthand, partial: !projected };
+    return { value: projected || "lingyao-invalid-" + shorthand, partial: !projected };
   });
   for (const declaration of shorthands) {
     for (const property of components)

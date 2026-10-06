@@ -5,13 +5,13 @@ import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 // 仅在独立测试会话中运行；浏览器配置、输入和验证产物均不使用用户数据。
-assert.equal(process.env.MSIME_ISOLATED_LINUX_TEST, '1');
+assert.equal(process.env.LINGYAO_ISOLATED_LINUX_TEST, '1');
 const root = resolve('target/paired-punctuation-probe');
 mkdirSync(root, {recursive: true});
-writeFileSync(root + '/editor.html', `<title>MSIME synthetic punctuation test</title><textarea id="editor" autofocus></textarea><script>window.events=[];for(const type of ['keydown','keyup','input'])editor.addEventListener(type,e=>events.push({type,key:e.key,shift:e.shiftKey,value:editor.value,start:editor.selectionStart,end:editor.selectionEnd}));</script>`);
+writeFileSync(root + '/editor.html', `<title>LINGYAO synthetic punctuation test</title><textarea id="editor" autofocus></textarea><script>window.events=[];for(const type of ['keydown','keyup','input'])editor.addEventListener(type,e=>events.push({type,key:e.key,shift:e.shiftKey,value:editor.value,start:editor.selectionStart,end:editor.selectionEnd}));</script>`);
 const url = pathToFileURL(root + '/editor.html').href;
 const previous = execFileSync('fcitx5-remote', ['-n'], {encoding: 'utf8'}).trim();
-const browser = spawn(process.env.MSIME_TEST_CHROME || 'google-chrome-stable', [
+const browser = spawn(process.env.LINGYAO_TEST_CHROME || 'google-chrome-stable', [
   '--user-data-dir=' + root + '/profile', '--remote-debugging-port=19329',
   '--no-first-run', '--no-default-browser-check', '--ozone-platform=wayland',
   '--enable-wayland-ime', url,
@@ -46,7 +46,7 @@ try {
   await send('Page.bringToFront');
   await evaluate('editor.focus()');
   await sleep(700);
-  execFileSync('fcitx5-remote', ['-s', 'msime']);
+  execFileSync('fcitx5-remote', ['-s', 'lingyao']);
   execFileSync('fcitx5-remote', ['-o']);
   await sleep(1500);
   for (const [opening, closing, pair, shifted] of [

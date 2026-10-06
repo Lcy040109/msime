@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Fetch the offline handwriting model the Linux package ships for `msime-linux-handwriting --local`.
+"""Fetch the offline handwriting model the Linux package ships for `lingyao-linux-handwriting --local`.
 
-The model is zinnia's binary format (Tegaki zh_CN), read by the Rust port in crates/engine/src/handwriting. It is 26.8 MB, so it is not committed: ``resources/handwriting-model.lock.json`` pins it, and its LGPL-2.1 licence beside it, to the msime-engine commit they were last published from, each with a SHA-256 and a size. A download that does not match both is discarded rather than installed, and nothing is written in place, so an interrupted run never leaves a partial file where a build would take it as finished. Idempotent: files already present and matching are left alone, so packaging can call this unconditionally.
+The model is zinnia's binary format (Tegaki zh_CN), read by the Rust port in crates/engine/src/handwriting. It is 26.8 MB, so it is not committed: ``resources/handwriting-model.lock.json`` pins it, and its LGPL-2.1 licence beside it, to the lingyao-engine commit they were last published from, each with a SHA-256 and a size. A download that does not match both is discarded rather than installed, and nothing is written in place, so an interrupted run never leaves a partial file where a build would take it as finished. Idempotent: files already present and matching are left alone, so packaging can call this unconditionally.
 
 usage: fetch_handwriting_model.py [--out <directory>]   (default: target/handwriting-model)
 """

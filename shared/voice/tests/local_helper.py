@@ -1,6 +1,6 @@
-"""End-to-end check of msime-voice-local against a real runtime and an installed model.
+"""End-to-end check of lingyao-voice-local against a real runtime and an installed model.
 
-usage: local_helper.py <msime-voice-local> <runtime library> <model directory>
+usage: local_helper.py <lingyao-voice-local> <runtime library> <model directory>
 
 Speaks the stdin/stdout protocol from shared/voice/README.md with the recording the model ships in test_wavs (or, when the installer dropped it, a second of silence) and requires a final answer. The transcript itself is not compared: that would pin a model's output, not this code's behaviour.
 """

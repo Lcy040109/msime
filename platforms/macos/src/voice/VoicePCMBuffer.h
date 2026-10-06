@@ -2,8 +2,8 @@
 #import <AVFoundation/AVFoundation.h>
 
 // Native capture adaptation only: 16 kHz mono float PCM for the shared Engine provider. All access is serialized; no files, credentials or transcripts.
-@interface MSIMEVoicePCMBuffer : NSObject
-// A batch recording: keeps at most msime::voice::batch_capture_sample_limit output samples, the upload budget MSIME-Windows allows a batch provider.
+@interface LINGYAOVoicePCMBuffer : NSObject
+// A batch recording: keeps at most lingyao::voice::batch_capture_sample_limit output samples, the upload budget LINGYAO-Windows allows a batch provider.
 - (instancetype)init;
 // Keep at most `sampleLimit` 16 kHz samples. Audio arriving after the limit is dropped rather than failing the recording, so the host still submits everything captured up to it; the host also ends the recording at that point, so the user sees it stop. NSUIntegerMax means no limit, for a stream that drains as it goes.
 - (instancetype)initWithSampleLimit:(NSUInteger)sampleLimit NS_DESIGNATED_INITIALIZER;

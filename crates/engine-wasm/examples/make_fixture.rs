@@ -1,4 +1,4 @@
-//! 写出路由测试和 `tests/smoke.mjs` 用的最小 msime.db。
+//! 写出路由测试和 `tests/smoke.mjs` 用的最小 lingyao.db。
 //!
 //! usage: make_fixture <out.db> [--only wubi86]
 

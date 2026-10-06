@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 int main() {
-  using namespace msime::linux_host;
+  using namespace lingyao::linux_host;
   using Json = nlohmann::json;
   namespace fs = std::filesystem;
 
@@ -38,7 +38,7 @@ int main() {
                 !scheme::ScriptConversionApplies(scheme::Tibetan) && !scheme::LearnsIntoMainDictionary(scheme::Tibetan) &&
                 !scheme::OpensLocalModes(scheme::Tibetan) && !scheme::UsesChinesePunctuation(scheme::Tibetan) &&
                 !scheme::HostSmartPunctuation(scheme::Tibetan) && !scheme::WidensFullWidth(scheme::Tibetan));
-  // 笔画照抄粤拼的特性：候选按 msime-stroke.db 里存的原样取用，不学习，组字离开时不上屏，也不因预编辑样式而强制内嵌显示。
+  // 笔画照抄粤拼的特性：候选按 lingyao-stroke.db 里存的原样取用，不学习，组字离开时不上屏，也不因预编辑样式而强制内嵌显示。
   assert(!scheme::ScriptConversionApplies(scheme::Stroke));
   assert(!scheme::LearnsIntoMainDictionary(scheme::Stroke));
   assert(!scheme::OpensLocalModes(scheme::Stroke));
@@ -86,7 +86,7 @@ int main() {
   assert(!candidate_list_composition(nullptr));
 
   // Cantonese, Zhuyin and Stroke are available only when their dictionary is a file in the language_dictionaries directory; every other known scheme always is.
-  char pattern[] = "/tmp/msime-input-schemes-XXXXXX";
+  char pattern[] = "/tmp/lingyao-input-schemes-XXXXXX";
   assert(mkdtemp(pattern) != nullptr);
   const fs::path directory = pattern;
   const Json options = {{"language_dictionaries", directory.string()}};
@@ -118,8 +118,8 @@ int main() {
   assert(effective_input_scheme("stroke", "stroke", empty) == "quanpin");
 
   // A directory with the dictionary name is not a dictionary.
-  fs::create_directory(directory / "msime-zhuyin.db");
-  std::ofstream(directory / "msime-cantonese.db") << "db";
+  fs::create_directory(directory / "lingyao-zhuyin.db");
+  std::ofstream(directory / "lingyao-cantonese.db") << "db";
   // The availability is a snapshot of the disk when the options were read: it does not change until they are read again.
   assert(!input_scheme_available("cantonese", empty));
   const auto installed = language_dictionary_availability(options);
@@ -129,16 +129,16 @@ int main() {
   assert(effective_input_scheme("zhuyin", "cantonese", installed) == "cantonese");
   assert(!installed.stroke);
 
-  // msime-stroke.db alone makes Stroke available, and a Stroke preference whose dictionary is missing falls back to it as the last Chinese scheme.
+  // lingyao-stroke.db alone makes Stroke available, and a Stroke preference whose dictionary is missing falls back to it as the last Chinese scheme.
   fs::create_directory(directory / "stroke-only");
-  std::ofstream(directory / "stroke-only" / "msime-stroke.db") << "db";
+  std::ofstream(directory / "stroke-only" / "lingyao-stroke.db") << "db";
   const auto stroke_only = language_dictionary_availability(Json{{"language_dictionaries", (directory / "stroke-only").string()}});
   assert(stroke_only.stroke && !stroke_only.cantonese && !stroke_only.zhuyin);
   assert(input_scheme_available("stroke", stroke_only));
   assert(effective_input_scheme("stroke", "wubi", stroke_only) == "stroke");
   assert(effective_input_scheme("cantonese", "stroke", stroke_only) == "stroke");
-  // A directory named msime-stroke.db is not a dictionary.
-  fs::create_directory(directory / "msime-stroke.db");
+  // A directory named lingyao-stroke.db is not a dictionary.
+  fs::create_directory(directory / "lingyao-stroke.db");
   assert(!language_dictionary_availability(options).stroke);
 
   fs::remove_all(directory);

@@ -17,8 +17,8 @@ use std::ffi::{c_char, CStr};
 pub fn personal_dictionary_request(request: &[u8]) -> Option<Vec<u8>> {
     call(
         request,
-        msime_ios_personal_dictionary_request,
-        msime_ios_personal_dictionary_string_free,
+        lingyao_ios_personal_dictionary_request,
+        lingyao_ios_personal_dictionary_string_free,
     )
 }
 
@@ -31,8 +31,8 @@ pub fn personal_dictionary_request(_request: &[u8]) -> Option<Vec<u8>> {
 pub fn dictionary_snapshot_request(request: &[u8]) -> Option<Vec<u8>> {
     call(
         request,
-        msime_ios_dictionary_snapshot_request,
-        msime_ios_dictionary_snapshot_string_free,
+        lingyao_ios_dictionary_snapshot_request,
+        lingyao_ios_dictionary_snapshot_string_free,
     )
 }
 
@@ -61,8 +61,8 @@ fn call(
 
 #[cfg(target_os = "ios")]
 unsafe extern "C" {
-    fn msime_ios_personal_dictionary_request(request: *const u8, length: usize) -> *mut c_char;
-    fn msime_ios_personal_dictionary_string_free(value: *mut c_char);
-    fn msime_ios_dictionary_snapshot_request(request: *const u8, length: usize) -> *mut c_char;
-    fn msime_ios_dictionary_snapshot_string_free(value: *mut c_char);
+    fn lingyao_ios_personal_dictionary_request(request: *const u8, length: usize) -> *mut c_char;
+    fn lingyao_ios_personal_dictionary_string_free(value: *mut c_char);
+    fn lingyao_ios_dictionary_snapshot_request(request: *const u8, length: usize) -> *mut c_char;
+    fn lingyao_ios_dictionary_snapshot_string_free(value: *mut c_char);
 }

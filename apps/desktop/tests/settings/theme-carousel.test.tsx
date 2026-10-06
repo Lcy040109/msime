@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ThemeCarousel } from "@msime/ui";
+import { ThemeCarousel } from "@lingyao/ui";
 
 afterEach(cleanup);
 

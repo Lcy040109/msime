@@ -4,17 +4,17 @@ import CoreFoundation
 private typealias SnapshotByte = UInt8
 private typealias SnapshotNext = @convention(c) (UnsafeMutableRawPointer?, UnsafeMutablePointer<SnapshotByte>?, Int) -> Int
 
-@_silgen_name("msime_client_snapshot_prepare")
-private func msimeClientSnapshotPrepare(_ request: UnsafePointer<SnapshotByte>?, _ length: UInt,
+@_silgen_name("lingyao_client_snapshot_prepare")
+private func lingyaoClientSnapshotPrepare(_ request: UnsafePointer<SnapshotByte>?, _ length: UInt,
                                         _ next: SnapshotNext?, _ context: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_snapshot_discard")
-private func msimeClientSnapshotDiscard(_ handle: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_snapshot_version")
-private func msimeClientSnapshotVersionForBridge(_ options: UnsafePointer<SnapshotByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientSnapshotStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_snapshot_discard")
+private func lingyaoClientSnapshotDiscard(_ handle: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_snapshot_version")
+private func lingyaoClientSnapshotVersionForBridge(_ options: UnsafePointer<SnapshotByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientSnapshotStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
-final class MSIMEPreparedDictionarySnapshot: @unchecked Sendable {
+final class LINGYAOPreparedDictionarySnapshot: @unchecked Sendable {
   let handle: UInt64
   let identifier: String
   private let sourceVersion: String
@@ -44,14 +44,14 @@ enum DictionarySnapshotBridge {
     _ = user
     lock.lock(); let handle = handles[identifier]; lock.unlock()
     guard let handle else { return }
-    let value = try decode(msimeClientSnapshotDiscard(handle))
+    let value = try decode(lingyaoClientSnapshotDiscard(handle))
     guard value["discarded"] as? Bool == true else { throw SnapshotBridgeFailure.invalid }
     lock.lock(); handles.removeValue(forKey: identifier); lock.unlock()
   }
 
   static func prepare(resources: URL, user: URL, identifier: String, contentIdentifier: String,
                       maximumRecords: UInt, preparedOptions: Data? = nil,
-                      nextRecord: @escaping NextRecord) throws -> MSIMEPreparedDictionarySnapshot {
+                      nextRecord: @escaping NextRecord) throws -> LINGYAOPreparedDictionarySnapshot {
     guard resources.isFileURL, user.isFileURL, !identifier.isEmpty, maximumRecords > 0 else {
       throw SnapshotBridgeFailure.invalid
     }
@@ -75,7 +75,7 @@ enum DictionarySnapshotBridge {
     let opaque = Unmanaged.passRetained(box).toOpaque()
     defer { Unmanaged<SnapshotRecordBox>.fromOpaque(opaque).release() }
     let response = try data.withUnsafeBytes { bytes in
-      try decode(msimeClientSnapshotPrepare(bytes.bindMemory(to: SnapshotByte.self).baseAddress,
+      try decode(lingyaoClientSnapshotPrepare(bytes.bindMemory(to: SnapshotByte.self).baseAddress,
                                             UInt(data.count), snapshotNext, opaque))
     }
     guard let handle = unsignedIntegerValue(response["handle"]),
@@ -84,7 +84,7 @@ enum DictionarySnapshotBridge {
     }
     lock.lock(); handles[identifier] = handle; lock.unlock()
     _ = contentIdentifier
-    return MSIMEPreparedDictionarySnapshot(handle: handle, identifier: identifier, sourceVersion: sourceVersion)
+    return LINGYAOPreparedDictionarySnapshot(handle: handle, identifier: identifier, sourceVersion: sourceVersion)
   }
 
   static func unsignedIntegerValue(_ value: Any?) -> UInt64? {
@@ -104,17 +104,17 @@ enum DictionarySnapshotBridge {
     var options: [String: Any] = ["api_version": 1, "resources": resources.path, "user_data": user.path,
             "cache": root.appendingPathComponent("cache", isDirectory: true).path,
             "dictionaries": root.appendingPathComponent("dictionaries", isDirectory: true).path,
-            "preferences": ["scheme": MSIMEAppEdition.defaultScheme, "candidate_page_size": 9,
+            "preferences": ["scheme": LINGYAOAppEdition.defaultScheme, "candidate_page_size": 9,
                              "learning": true, "chinese_punctuation": true]]
     // 与键盘的 HostOptions 一样：full 不带版本，与引入版本之前相同；其他版本让 host-api 按本版本的方案和资源锁处理。
-    if !MSIMEAppEdition.isFull { options["edition"] = MSIMEAppEdition.identifier }
+    if !LINGYAOAppEdition.isFull { options["edition"] = LINGYAOAppEdition.identifier }
     return options
   }
 
   private static func version(_ options: [String: Any]) throws -> String {
     let data = try JSONSerialization.data(withJSONObject: options)
     let value = try data.withUnsafeBytes { bytes in
-      try decode(msimeClientSnapshotVersionForBridge(bytes.bindMemory(to: SnapshotByte.self).baseAddress,
+      try decode(lingyaoClientSnapshotVersionForBridge(bytes.bindMemory(to: SnapshotByte.self).baseAddress,
                                                      UInt(data.count)))
     }
     guard let result = value["version"] as? String else { throw SnapshotBridgeFailure.invalid }
@@ -124,7 +124,7 @@ enum DictionarySnapshotBridge {
   private static func decode(_ pointer: UnsafeMutablePointer<CChar>?) throws -> [String: Any] {
     guard let pointer else { throw SnapshotBridgeFailure.unavailable }
     let text = String(cString: pointer)
-    msimeClientSnapshotStringFree(pointer)
+    lingyaoClientSnapshotStringFree(pointer)
     guard let data = text.data(using: .utf8), let envelope = try JSONSerialization.jsonObject(with: data) as? [String: Any],
           envelope["ok"] as? Bool == true, let value = envelope["value"] as? [String: Any] else {
       throw SnapshotBridgeFailure.invalid

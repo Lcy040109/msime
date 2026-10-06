@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
-import { useMobilePopState } from "@msime/ui";
+import { useMobilePopState } from "@lingyao/ui";
 
 function Probe({
   mobile,

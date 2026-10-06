@@ -13,7 +13,7 @@
 namespace {
 
 using Json = nlohmann::json;
-namespace host = msime::linux_host;
+namespace host = lingyao::linux_host;
 
 bool contains(const std::string &text, const std::string &needle) {
   return text.find(needle) != std::string::npos;
@@ -384,9 +384,9 @@ int main() {
   assert(host::fcitx_theme_replaceable(""));
   assert(host::fcitx_theme_replaceable("default"));
   assert(host::fcitx_theme_replaceable("default-dark"));
-  assert(host::fcitx_theme_replaceable("msime"));
+  assert(host::fcitx_theme_replaceable("lingyao"));
   assert(!host::fcitx_theme_replaceable("Nord-Dark"));
-  // A user's own DarkTheme is left in place, so MSIME's colours are not drawn in dark mode even with a stock light theme.
+  // A user's own DarkTheme is left in place, so LINGYAO's colours are not drawn in dark mode even with a stock light theme.
   const std::string stock_dark = "default-dark";
   const std::string user_dark = "Nord-Dark";
   assert(host::fcitx_candidate_theme_drawn("default", nullptr));
@@ -394,14 +394,14 @@ int main() {
   assert(!host::fcitx_candidate_theme_drawn("default", &user_dark));
   assert(!host::fcitx_candidate_theme_drawn("Nord-Dark", &stock_dark));
 
-  assert(host::fcitx_theme_file("/data", "/home/u") == std::filesystem::path("/data/fcitx5/themes/msime/theme.conf"));
+  assert(host::fcitx_theme_file("/data", "/home/u") == std::filesystem::path("/data/fcitx5/themes/lingyao/theme.conf"));
   assert(host::fcitx_theme_file("relative", "/home/u") ==
-         std::filesystem::path("/home/u/.local/share/fcitx5/themes/msime/theme.conf"));
+         std::filesystem::path("/home/u/.local/share/fcitx5/themes/lingyao/theme.conf"));
   assert(host::fcitx_theme_file(nullptr, "/home/u") ==
-         std::filesystem::path("/home/u/.local/share/fcitx5/themes/msime/theme.conf"));
+         std::filesystem::path("/home/u/.local/share/fcitx5/themes/lingyao/theme.conf"));
   assert(!host::fcitx_theme_file(nullptr, nullptr));
 
-  char pattern[] = "/tmp/msime-fcitx-theme-XXXXXX";
+  char pattern[] = "/tmp/lingyao-fcitx-theme-XXXXXX";
   const std::filesystem::path root = mkdtemp(pattern);
   const auto file = *host::fcitx_theme_file(root.c_str(), nullptr);
   assert(host::write_fcitx_theme(file, theme));
@@ -529,7 +529,7 @@ int main() {
   assert(contains(halo_theme, "OverlayOffsetY=8\n") && contains(halo_theme, "Top=45\n"));
   assert(staged(directory) == std::vector<std::string>{overlay_of(halo_theme)});
 
-  // A plain skin, or an image that cannot be staged, leaves MSIME's colours with no overlay and no copy behind.
+  // A plain skin, or an image that cannot be staged, leaves LINGYAO's colours with no overlay and no copy behind.
   for (const auto &unusable : {host::CandidateSkinDecoration{(skins / "notes.txt").string(), 24, 180},
                                host::CandidateSkinDecoration{(skins / "missing.png").string(), 24, 180},
                                host::CandidateSkinDecoration{skins.string(), 24, 180}}) {

@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <limits>
 
-namespace msime::voice {
-// Display-only RMS mapping from MSIME-Windows develop bc5e86fa AudioCallback.
+namespace lingyao::voice {
+// Display-only RMS mapping from LINGYAO-Windows develop bc5e86fa AudioCallback.
 // Never alter recognition samples. Layout and integer scaling belong to hosts.
 template <typename Sample>
 float input_level(const Sample *const *channels, std::size_t channel_count,
@@ -30,4 +30,4 @@ float input_level(const Sample *const *channels, std::size_t channel_count,
 inline float input_level(const float *samples, std::size_t frames) {
   return input_level(&samples, 1, frames, 1);
 }
-} // namespace msime::voice
+} // namespace lingyao::voice

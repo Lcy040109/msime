@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct CandidateFontSettings {
   std::string family = "Segoe UI";
   std::vector<std::string> fallback;
@@ -86,4 +86,4 @@ private:
   std::optional<uint64_t> revision_;
   std::optional<CandidateFontSettings> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

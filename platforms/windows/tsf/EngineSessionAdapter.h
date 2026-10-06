@@ -1,10 +1,10 @@
 #pragma once
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
-namespace msime::tsf {
+namespace lingyao::tsf {
 struct EngineCandidate {
   std::string id;
   std::string text;

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <set>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 // Removing a single character from the dictionary would leave the user unable

@@ -3,11 +3,11 @@
 #include <cassert>
 #include <string>
 
-// The sentences are MSIME-Windows' own (voice_input_service.cpp Recognize, doubao_asr_client.cpp Run); the fixtures are synthetic.
+// The sentences are LINGYAO-Windows' own (voice_input_service.cpp Recognize, doubao_asr_client.cpp Run); the fixtures are synthetic.
 int main() {
     @autoreleasepool {
-        using msime::voice::cloud_asr_error_detail;
-        using msime::voice::cloud_asr_status_message;
+        using lingyao::voice::cloud_asr_error_detail;
+        using lingyao::voice::cloud_asr_status_message;
         assert(cloud_asr_error_detail(R"({"error":"synthetic string error"})") == "synthetic string error");
         assert(cloud_asr_error_detail(R"({"error":{"message":"Incorrect synthetic key","type":"invalid_request_error"}})") == "Incorrect synthetic key");
         assert(cloud_asr_error_detail(R"({"message":"synthetic quota","code":20015,"data":"synthetic data"})") == "synthetic quota（code 20015） synthetic data");
@@ -34,24 +34,24 @@ int main() {
                "语音识别失败：HTTP 502。这是硅基流动服务端内部错误，模型名 fixture 本身是官方支持的。");
         assert(cloud_asr_status_message(502, "", "cloud", "fixture", "") == "语音识别失败：HTTP 502");
         assert(cloud_asr_status_message(429, "", "siliconflow", "fixture", "synthetic-trace") == "语音识别失败：HTTP 429");
-        assert(msime::voice::cloud_asr_transport_message("Could not resolve host: synthetic.invalid") ==
+        assert(lingyao::voice::cloud_asr_transport_message("Could not resolve host: synthetic.invalid") ==
                "语音识别请求失败：Could not resolve host: synthetic.invalid");
-        const msime::voice::CloudAsrError error("Voice HTTP status 401", "语音识别失败：synthetic");
+        const lingyao::voice::CloudAsrError error("Voice HTTP status 401", "语音识别失败：synthetic");
         assert(std::string(error.what()) == "Voice HTTP status 401" && error.user_message() == "语音识别失败：synthetic");
 
-        assert([MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureConnect, YES, 0) isEqual:@"无法连接豆包语音识别。请检查 App ID、Access Token 和接口地址。"]);
-        assert([MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureConnect, NO, 0) isEqual:@"无法连接豆包语音识别。请检查 API Key 和接口地址。"]);
-        assert([MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureHandshake, NO, 0) isEqual:@"豆包语音识别握手失败。"]);
-        assert([MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureServerCode, NO, 45000001) isEqual:@"豆包语音识别失败（code 45000001）。请检查 Access Token。"]);
-        assert([MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureServerCode, YES, -1) isEqual:@"豆包语音识别失败（code -1）。请检查 Access Token。"]);
+        assert([LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureConnect, YES, 0) isEqual:@"无法连接豆包语音识别。请检查 App ID、Access Token 和接口地址。"]);
+        assert([LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureConnect, NO, 0) isEqual:@"无法连接豆包语音识别。请检查 API Key 和接口地址。"]);
+        assert([LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureHandshake, NO, 0) isEqual:@"豆包语音识别握手失败。"]);
+        assert([LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureServerCode, NO, 45000001) isEqual:@"豆包语音识别失败（code 45000001）。请检查 Access Token。"]);
+        assert([LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureServerCode, YES, -1) isEqual:@"豆包语音识别失败（code -1）。请检查 Access Token。"]);
 
         NSDictionary *info = @{NSLocalizedFailureReasonErrorKey: @"synthetic detail"};
-        assert([MSIMEVoiceFailureDetail([NSError errorWithDomain:@"app.msime.client.voice" code:6 userInfo:info]) isEqual:@"synthetic detail"]);
-        assert([MSIMEVoiceFailureDetail([NSError errorWithDomain:@"app.msime.client.voice.doubao" code:1 userInfo:info]) isEqual:@"synthetic detail"]);
-        assert(!MSIMEVoiceFailureDetail([NSError errorWithDomain:NSURLErrorDomain code:-1004 userInfo:info]));
-        assert(!MSIMEVoiceFailureDetail([NSError errorWithDomain:@"app.msime.client.voice" code:6 userInfo:@{NSLocalizedFailureReasonErrorKey: @""}]));
-        assert(!MSIMEVoiceFailureDetail([NSError errorWithDomain:@"app.msime.client.voice" code:6 userInfo:@{NSLocalizedFailureReasonErrorKey: @3}]));
-        assert(!MSIMEVoiceFailureDetail(nil));
+        assert([LINGYAOVoiceFailureDetail([NSError errorWithDomain:@"app.lingyao.client.voice" code:6 userInfo:info]) isEqual:@"synthetic detail"]);
+        assert([LINGYAOVoiceFailureDetail([NSError errorWithDomain:@"app.lingyao.client.voice.doubao" code:1 userInfo:info]) isEqual:@"synthetic detail"]);
+        assert(!LINGYAOVoiceFailureDetail([NSError errorWithDomain:NSURLErrorDomain code:-1004 userInfo:info]));
+        assert(!LINGYAOVoiceFailureDetail([NSError errorWithDomain:@"app.lingyao.client.voice" code:6 userInfo:@{NSLocalizedFailureReasonErrorKey: @""}]));
+        assert(!LINGYAOVoiceFailureDetail([NSError errorWithDomain:@"app.lingyao.client.voice" code:6 userInfo:@{NSLocalizedFailureReasonErrorKey: @3}]));
+        assert(!LINGYAOVoiceFailureDetail(nil));
     }
     return 0;
 }

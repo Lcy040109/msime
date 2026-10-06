@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Posted to the candidate window when a typing effect is waiting. The message wakes the Server's UI loop at once rather than at its next 50 ms poll, which is a third of the flash.
 constexpr UINT typing_effect_message = WM_APP + 0x45;
 
@@ -56,4 +56,4 @@ private:
   std::atomic<uint64_t> settings_{0};
   std::atomic<HWND> target_{nullptr};
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -19,8 +19,8 @@ final class PersonalDictionaryStoreTests: XCTestCase {
 
   func testReadRejectsASymlinkedPersonalDictionaryDirectory() throws {
     #if canImport(Darwin)
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-personal-directory-link-\(UUID().uuidString)")
-    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("msime-personal-directory-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-personal-directory-link-\(UUID().uuidString)")
+    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-personal-directory-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outside)
@@ -37,8 +37,8 @@ final class PersonalDictionaryStoreTests: XCTestCase {
 
   func testEnqueueRejectsASymlinkedStateFileWithoutWritingExternalFile() throws {
     #if canImport(Darwin)
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-personal-file-link-\(UUID().uuidString)")
-    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("msime-personal-file-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-personal-file-link-\(UUID().uuidString)")
+    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-personal-file-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outside)
@@ -101,7 +101,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
     let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
-    let word = try PersonalWord(kind: .quickPhrase, key: "msimefixture", value: "private fixture text").validated()
+    let word = try PersonalWord(kind: .quickPhrase, key: "lingyaofixture", value: "private fixture text").validated()
     let id = try host.enqueue(previous: nil, replacement: word)
     defer {
       _ = session.cancel()
@@ -323,7 +323,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
     let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
-    let word = try PersonalWord(kind: .quickPhrase, key: "msimeexport", value: "export fixture", weight: 42).validated()
+    let word = try PersonalWord(kind: .quickPhrase, key: "lingyaoexport", value: "export fixture", weight: 42).validated()
     defer {
       _ = session.cancel()
       try? session.applyPersonalPrevious(word.bridgeValue, replacement: nil, requestID: UUID().uuidString)
@@ -331,9 +331,9 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     try session.applyPersonalPrevious(nil, replacement: word.bridgeValue, requestID: UUID().uuidString)
     let windows = try session.personalExport(kind: .quickPhrase, format: "windows")
     XCTAssertTrue(windows.complete)
-    XCTAssertTrue(windows.text.contains("msimeexport\texport fixture\t42\n"), windows.text)
+    XCTAssertTrue(windows.text.contains("lingyaoexport\texport fixture\t42\n"), windows.text)
     let standard = try session.personalExport(kind: .quickPhrase, format: "standard")
-    XCTAssertTrue(standard.text.contains("export fixture\tmsimeexport\t42\n"), standard.text)
+    XCTAssertTrue(standard.text.contains("export fixture\tlingyaoexport\t42\n"), standard.text)
     // The session is reopened after the export, so typing still works.
     _ = session.openLocalMode("K")
     var snapshot = session.handleCharacter("m")
@@ -350,8 +350,8 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
     let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
-    let wanted = try PersonalWord(kind: .quickPhrase, key: "msimesearch", value: "search fixture").validated()
-    let other = try PersonalWord(kind: .quickPhrase, key: "msimeother", value: "other fixture").validated()
+    let wanted = try PersonalWord(kind: .quickPhrase, key: "lingyaosearch", value: "search fixture").validated()
+    let other = try PersonalWord(kind: .quickPhrase, key: "lingyaoother", value: "other fixture").validated()
     defer {
       _ = session.cancel()
       for word in [wanted, other] {
@@ -362,7 +362,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
       try session.applyPersonalPrevious(nil, replacement: word.bridgeValue, requestID: UUID().uuidString)
     }
 
-    try host.requestPage(offset: 0, kind: .quickPhrase, query: " msimes ")
+    try host.requestPage(offset: 0, kind: .quickPhrase, query: " lingyaos ")
     var asked: PersonalPageRequest?
     try keyboard.synchronize(apply: { _ in }, page: { request in
       asked = request
@@ -371,17 +371,17 @@ final class PersonalDictionaryStoreTests: XCTestCase {
       return .init(entries: try entries.map { try PersonalWord(bridgeValue: $0) },
                    hasMore: try XCTUnwrap(result["hasMore"] as? Bool))
     })
-    XCTAssertEqual(asked, PersonalPageRequest(offset: 0, kind: .quickPhrase, query: "msimes"))
+    XCTAssertEqual(asked, PersonalPageRequest(offset: 0, kind: .quickPhrase, query: "lingyaos"))
     let state = try host.read()
     XCTAssertEqual(state.entries, [wanted])
     XCTAssertEqual(state.pageKind, .quickPhrase)
-    XCTAssertEqual(state.pageQuery, "msimes")
+    XCTAssertEqual(state.pageQuery, "lingyaos")
 
     // The filter is written under the keys the Rust queue reads.
     let file = root.appendingPathComponent("PersonalDictionary/sync.json")
     let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
     XCTAssertEqual(object["requestedKind"] as? String, "quickPhrase")
-    XCTAssertEqual(object["pageQuery"] as? String, "msimes")
+    XCTAssertEqual(object["pageQuery"] as? String, "lingyaos")
     XCTAssertThrowsError(try host.requestPage(offset: 0, query: String(repeating: "a", count: 257)))
   }
 

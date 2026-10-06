@@ -1,8 +1,8 @@
 #import "ShuangpinKeymapPanel.h"
-// Migrated from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Migrated from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 
 #include "ShuangpinProfileNames.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <cstring>
 #include <memory>
 
@@ -26,9 +26,9 @@ NSString *DisplayUnit(NSString *unit)
 NSDictionary<NSString *, NSString *> *ProfileTable(char *(*query)(const uint8_t *, size_t), NSString *profileName)
 {
     const char *profile =
-        msime::mac::NormalizeShuangpinSchema(profileName.UTF8String != nullptr ? profileName.UTF8String : "");
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        query(reinterpret_cast<const uint8_t *>(profile), std::strlen(profile)), msime_client_string_free);
+        lingyao::mac::NormalizeShuangpinSchema(profileName.UTF8String != nullptr ? profileName.UTF8String : "");
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        query(reinterpret_cast<const uint8_t *>(profile), std::strlen(profile)), lingyao_client_string_free);
     if (!raw)
     {
         return @{};
@@ -98,7 +98,7 @@ CGFloat KeyRowInset(NSUInteger count)
 
 NSColor *KeymapAccentColor()
 {
-    return [NSColor colorWithName:@"MSIMEKeymapAccentColor"
+    return [NSColor colorWithName:@"LINGYAOKeymapAccentColor"
                   dynamicProvider:^NSColor *(NSAppearance *appearance) {
                     NSString *match = [appearance
                         bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
@@ -111,14 +111,14 @@ NSColor *KeymapAccentColor()
 }
 } // namespace
 
-@interface MSIMEShuangpinKeyView : NSView
+@interface LINGYAOShuangpinKeyView : NSView
 @property(nonatomic, copy) NSString *key;
 @property(nonatomic, copy) NSString *codes;
 @property(nonatomic) BOOL highlighted;
 @property(nonatomic, copy) NSColor *accentColor;
 @end
 
-@implementation MSIMEShuangpinKeyView
+@implementation LINGYAOShuangpinKeyView
 
 - (BOOL)isFlipped
 {
@@ -175,12 +175,12 @@ namespace
 {
 
 NSStackView *KeyRow(NSArray<NSDictionary<NSString *, NSString *> *> *definitions,
-                    NSMutableArray<MSIMEShuangpinKeyView *> *keyViews, NSColor *accentColor)
+                    NSMutableArray<LINGYAOShuangpinKeyView *> *keyViews, NSColor *accentColor)
 {
     NSMutableArray<NSView *> *views = [NSMutableArray arrayWithCapacity:definitions.count];
     for (NSDictionary<NSString *, NSString *> *definition in definitions)
     {
-        MSIMEShuangpinKeyView *view = [[MSIMEShuangpinKeyView alloc] initWithFrame:NSZeroRect];
+        LINGYAOShuangpinKeyView *view = [[LINGYAOShuangpinKeyView alloc] initWithFrame:NSZeroRect];
         view.key = definition[@"key"];
         view.codes = definition[@"codes"];
         view.accentColor = accentColor;
@@ -199,11 +199,11 @@ NSStackView *KeyRow(NSArray<NSDictionary<NSString *, NSString *> *> *definitions
     return row;
 }
 
-NSString *AccessibleKeymapDescription(NSArray<MSIMEShuangpinKeyView *> *keyViews, NSString *highlightedKey)
+NSString *AccessibleKeymapDescription(NSArray<LINGYAOShuangpinKeyView *> *keyViews, NSString *highlightedKey)
 {
     NSMutableArray<NSString *> *definitions = [NSMutableArray arrayWithCapacity:keyViews.count];
     NSString *highlightedDescription = nil;
-    for (MSIMEShuangpinKeyView *view in keyViews)
+    for (LINGYAOShuangpinKeyView *view in keyViews)
     {
         NSString *definition = [NSString stringWithFormat:@"%@：%@", view.key, view.codes];
         [definitions addObject:definition];
@@ -219,9 +219,9 @@ NSString *AccessibleKeymapDescription(NSArray<MSIMEShuangpinKeyView *> *keyViews
 }
 } // namespace
 
-NSArray<NSArray<NSDictionary<NSString *, NSString *> *> *> *MSIMEShuangpinKeymapRows(NSString *profileName)
+NSArray<NSArray<NSDictionary<NSString *, NSString *> *> *> *LINGYAOShuangpinKeymapRows(NSString *profileName)
 {
-    NSDictionary<NSString *, NSString *> *hints = ProfileTable(msime_client_shuangpin_key_hints, profileName);
+    NSDictionary<NSString *, NSString *> *hints = ProfileTable(lingyao_client_shuangpin_key_hints, profileName);
     NSMutableArray<NSString *> *homeKeys = [@[ @"A", @"S", @"D", @"F", @"G", @"H", @"J", @"K", @"L" ] mutableCopy];
     if (hints[@";"].length > 0)
     {
@@ -234,9 +234,9 @@ NSArray<NSArray<NSDictionary<NSString *, NSString *> *> *> *MSIMEShuangpinKeymap
     ];
 }
 
-NSString *MSIMEShuangpinZeroInitialText(NSString *profileName)
+NSString *LINGYAOShuangpinZeroInitialText(NSString *profileName)
 {
-    NSDictionary<NSString *, NSString *> *zeroInitials = ProfileTable(msime_client_shuangpin_zero_initials, profileName);
+    NSDictionary<NSString *, NSString *> *zeroInitials = ProfileTable(lingyao_client_shuangpin_zero_initials, profileName);
     NSMutableArray<NSString *> *entries = [NSMutableArray arrayWithCapacity:zeroInitials.count];
     [zeroInitials enumerateKeysAndObjectsUsingBlock:^(NSString *syllable, NSString *code, BOOL *stop) {
       (void)stop;
@@ -246,20 +246,20 @@ NSString *MSIMEShuangpinZeroInitialText(NSString *profileName)
     return [@"零声母  " stringByAppendingString:[entries componentsJoinedByString:@" · "]];
 }
 
-BOOL MSIMEShouldShowShuangpinKeymap(BOOL isShuangpin, BOOL enabled, BOOL hasComposition)
+BOOL LINGYAOShouldShowShuangpinKeymap(BOOL isShuangpin, BOOL enabled, BOOL hasComposition)
 {
     return isShuangpin && enabled && hasComposition;
 }
 
-NSString *MSIMEShuangpinKeymapEditingText(NSDictionary *view)
+NSString *LINGYAOShuangpinKeymapEditingText(NSDictionary *view)
 {
     id editing = view[@"editing_text"];
     return [editing isKindOfClass:NSString.class] ? editing : @"";
 }
 
-NSString *MSIMEShuangpinKeymapHighlightedKey(NSDictionary *view)
+NSString *LINGYAOShuangpinKeymapHighlightedKey(NSDictionary *view)
 {
-    NSString *editing = MSIMEShuangpinKeymapEditingText(view);
+    NSString *editing = LINGYAOShuangpinKeymapEditingText(view);
     if (editing.length == 0) return @"";
     const unichar last = [editing characterAtIndex:editing.length - 1];
     if ((last >= 'a' && last <= 'z') || (last >= 'A' && last <= 'Z') || last == ';') {
@@ -268,7 +268,7 @@ NSString *MSIMEShuangpinKeymapHighlightedKey(NSDictionary *view)
     return @"";
 }
 
-NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloat candidateClearance,
+NSRect LINGYAOShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloat candidateClearance,
                                             NSRect visibleFrame)
 {
     const CGFloat minimumX = NSMinX(visibleFrame) + kScreenMargin;
@@ -283,9 +283,9 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
     return NSMakeRect(x, y, panelSize.width, panelSize.height);
 }
 
-@implementation MSIMEShuangpinKeymapPanel
+@implementation LINGYAOShuangpinKeymapPanel
 {
-    NSMutableArray<MSIMEShuangpinKeyView *> *_keyViews;
+    NSMutableArray<LINGYAOShuangpinKeyView *> *_keyViews;
     NSString *_profileName;
     NSColor *_accentColor;
 }
@@ -320,7 +320,7 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
 - (void)setProfileName:(NSString *)profileName
 {
     NSString *normalized =
-        @(msime::mac::NormalizeShuangpinSchema(profileName.UTF8String != nullptr ? profileName.UTF8String : ""));
+        @(lingyao::mac::NormalizeShuangpinSchema(profileName.UTF8String != nullptr ? profileName.UTF8String : ""));
     if ([_profileName isEqualToString:normalized] && _keyViews.count > 0)
     {
         return;
@@ -336,7 +336,7 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
     background.layer.masksToBounds = YES;
     background.accessibilityRole = NSAccessibilityGroupRole;
     NSString *schemaTitle =
-        @(msime::mac::ShuangpinSchemaTitle(_profileName.UTF8String != nullptr ? _profileName.UTF8String : ""));
+        @(lingyao::mac::ShuangpinSchemaTitle(_profileName.UTF8String != nullptr ? _profileName.UTF8String : ""));
     background.accessibilityLabel = [schemaTitle stringByAppendingString:@"键位提示"];
 
     NSTextField *title = [NSTextField labelWithString:[schemaTitle stringByAppendingString:@"键位"]];
@@ -352,14 +352,14 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
 
     _keyViews = [NSMutableArray arrayWithCapacity:27];
     NSArray<NSArray<NSDictionary<NSString *, NSString *> *> *> *definitions =
-        MSIMEShuangpinKeymapRows(_profileName);
+        LINGYAOShuangpinKeymapRows(_profileName);
     NSStackView *topRow = KeyRow(definitions[0], _keyViews, _accentColor);
     NSStackView *homeRow = KeyRow(definitions[1], _keyViews, _accentColor);
     NSStackView *bottomRow = KeyRow(definitions[2], _keyViews, _accentColor);
     const CGFloat homeInset = KeyRowInset(definitions[1].count);
     const CGFloat bottomInset = KeyRowInset(definitions[2].count);
 
-    NSTextField *zeroInitials = [NSTextField labelWithString:MSIMEShuangpinZeroInitialText(_profileName)];
+    NSTextField *zeroInitials = [NSTextField labelWithString:LINGYAOShuangpinZeroInitialText(_profileName)];
     zeroInitials.font = [NSFont systemFontOfSize:10.0 weight:NSFontWeightRegular];
     zeroInitials.textColor = [NSColor secondaryLabelColor];
     zeroInitials.alignment = NSTextAlignmentCenter;
@@ -403,7 +403,7 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
 - (void)setAccentColor:(NSColor *)accent
 {
     _accentColor = [accent copy];
-    for (MSIMEShuangpinKeyView *view in _keyViews)
+    for (LINGYAOShuangpinKeyView *view in _keyViews)
     {
         view.accentColor = _accentColor;
         view.needsDisplay = YES;
@@ -413,7 +413,7 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
 - (void)updateHighlightedKey:(NSString *)key
 {
     NSString *normalizedKey = key.length == 1 ? key.uppercaseString : @"";
-    for (MSIMEShuangpinKeyView *view in _keyViews)
+    for (LINGYAOShuangpinKeyView *view in _keyViews)
     {
         view.highlighted = [view.key isEqualToString:normalizedKey];
     }
@@ -441,7 +441,7 @@ NSRect MSIMEShuangpinKeymapPanelFrame(NSRect caretRect, NSSize panelSize, CGFloa
         [self orderOut:nil];
         return;
     }
-    NSRect panelFrame = MSIMEShuangpinKeymapPanelFrame(caretRect, NSMakeSize(kPanelWidth, kPanelHeight),
+    NSRect panelFrame = LINGYAOShuangpinKeymapPanelFrame(caretRect, NSMakeSize(kPanelWidth, kPanelHeight),
                                                              candidateClearance, targetScreen.visibleFrame);
     [self setFrame:panelFrame display:NO];
     [self orderFrontRegardless];

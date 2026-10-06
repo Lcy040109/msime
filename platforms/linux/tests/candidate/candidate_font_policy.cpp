@@ -3,9 +3,9 @@
 #include <cassert>
 
 int main() {
-  using msime::linux_host::candidate_pango_font;
-  using msime::linux_host::CandidateFont;
-  using msime::linux_host::CandidateFontSync;
+  using lingyao::linux_host::candidate_pango_font;
+  using lingyao::linux_host::CandidateFont;
+  using lingyao::linux_host::CandidateFontSync;
 
   assert(candidate_pango_font({"Noto Sans SC", {"Noto Sans SC", "Microsoft YaHei"}, 18}) ==
          "Noto Sans SC, Microsoft YaHei, 18px");
@@ -20,7 +20,7 @@ int main() {
   assert(candidate_pango_font({"Sans", {}, 4}) == "Sans, 18px");
   assert(candidate_pango_font({"", {}, 14}) == "14px");
 
-  using msime::linux_host::read_candidate_font;
+  using lingyao::linux_host::read_candidate_font;
   // A document without the keys reads as the store's defaults.
   assert(candidate_pango_font(read_candidate_font(nlohmann::json::object())) ==
          "Noto Sans SC, Microsoft YaHei, 18px");
@@ -46,7 +46,7 @@ int main() {
   assert(candidate_pango_font({"Noto Sans SC", {"Noto Sans SC", "Microsoft YaHei"}, 18, "  "}) ==
          "Noto Sans SC, Microsoft YaHei, 18px");
 
-  using msime::linux_host::candidate_font_is_default;
+  using lingyao::linux_host::candidate_font_is_default;
   assert(candidate_font_is_default(read_candidate_font(nlohmann::json::object())));
   assert(candidate_font_is_default(read_candidate_font(nlohmann::json{{"candidate_english_font", nullptr}})));
   assert(!candidate_font_is_default(read_candidate_font(nlohmann::json{{"candidate_english_font", "Inter"}})));

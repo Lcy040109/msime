@@ -5,19 +5,19 @@
 #include <cassert>
 
 @interface DoubaoRequestFixture : NSObject
-@property(copy) MSIMEDoubaoResult result;
+@property(copy) LINGYAODoubaoResult result;
 @property NSMutableData *audio;
 @property NSUInteger finishes;
 @property NSUInteger cancellations;
 @property BOOL failStart;
 @property BOOL failAppend;
-- (BOOL)startWithResult:(MSIMEDoubaoResult)result error:(NSError **)error;
+- (BOOL)startWithResult:(LINGYAODoubaoResult)result error:(NSError **)error;
 - (BOOL)appendPCM:(NSData *)pcm error:(NSError **)error;
 - (BOOL)finishWithError:(NSError **)error;
 - (void)cancel;
 @end
 @implementation DoubaoRequestFixture
-- (BOOL)startWithResult:(MSIMEDoubaoResult)result error:(NSError **)error {
+- (BOOL)startWithResult:(LINGYAODoubaoResult)result error:(NSError **)error {
     (void)error; self.result = result; self.audio = [NSMutableData data]; return !self.failStart;
 }
 - (BOOL)appendPCM:(NSData *)pcm error:(NSError **)error {
@@ -27,9 +27,9 @@
 - (void)cancel { ++self.cancellations; }
 @end
 
-@interface DoubaoCaptureFixture : MSIMEVoiceInputService
+@interface DoubaoCaptureFixture : LINGYAOVoiceInputService
 @property NSTimeInterval capturedSeconds;
-@property(copy) MSIMEVoicePCMChunk chunk;
+@property(copy) LINGYAOVoicePCMChunk chunk;
 @property BOOL failStart;
 @property NSUInteger finishes;
 @end
@@ -37,7 +37,7 @@
 - (NSTimeInterval)recordedDuration { return self.capturedSeconds; }
 - (AVAuthorizationStatus)microphoneAuthorizationStatus { return AVAuthorizationStatusAuthorized; }
 - (SFSpeechRecognizerAuthorizationStatus)speechAuthorizationStatus { assert(false && "Doubao must not request Speech permission"); return SFSpeechRecognizerAuthorizationStatusDenied; }
-- (BOOL)startPCMStreaming:(MSIMEVoicePCMChunk)handler deviceUID:(NSString *)device error:(NSError **)error {
+- (BOOL)startPCMStreaming:(LINGYAOVoicePCMChunk)handler deviceUID:(NSString *)device error:(NSError **)error {
     (void)device; (void)error; self.chunk = handler; return !self.failStart;
 }
 - (NSData *)finishPCMStreamingWithError:(NSError **)error {
@@ -68,7 +68,7 @@
 - (void)dismissProcessing { self.dismissed = YES; }
 - (void)setListening:(BOOL)listening { self.phase = listening ? 1 : 0; self.failure = 0; self.preview = @""; }
 - (void)setTranscript:(NSString *)text { self.preview = text; }
-- (void)showFailure:(MSIMEVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; self.preview = @""; }
+- (void)showFailure:(LINGYAOVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; self.preview = @""; }
 - (void)dismissFailure { if (self.failure) [self setListening:NO]; }
 - (void)setProcessing:(BOOL)polishing { self.phase = polishing ? 3 : 2; }
 - (void)setInputLevel:(float)level { self.lastLevel = level; ++self.levelUpdates; }
@@ -77,7 +77,7 @@
 - (void)playStartCue {}
 @end
 
-@interface DoubaoTextFixture : NSObject <MSIMETextClient>
+@interface DoubaoTextFixture : NSObject <LINGYAOTextClient>
 @property(copy) NSString *marked;
 @property NSMutableArray *commits;
 @end
@@ -108,7 +108,7 @@
 - (void)cancel { ++self.cancellations; }
 @end
 
-@interface DoubaoControllerFixture : MSIMEInputController
+@interface DoubaoControllerFixture : LINGYAOInputController
 @property DoubaoRequestFixture *fixture;
 @property BOOL failRequest;
 @property BOOL usePolishFixture;
@@ -116,23 +116,23 @@
 @property NSUInteger externalCommits;
 @end
 @implementation DoubaoControllerFixture
-- (MSIMEVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const MSIMEVoiceCommitRoute &)route {
+- (LINGYAOVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const LINGYAOVoiceCommitRoute &)route {
     assert([text isEqual:@"synthetic routed"] && ![route.mode isEqual:@"tsf"]);
-    ++self.externalCommits; return MSIMEVoiceCommitOutcome::posted;
+    ++self.externalCommits; return LINGYAOVoiceCommitOutcome::posted;
 }
-- (MSIMEHTTPVoiceRequest *)makeDoubaoPolishRequest:(NSDictionary *)options {
+- (LINGYAOHTTPVoiceRequest *)makeDoubaoPolishRequest:(NSDictionary *)options {
     if (!self.usePolishFixture) return [super makeDoubaoPolishRequest:options];
     self.polishFixture = [DoubaoPolishFixture new]; return (id)self.polishFixture;
 }
-- (MSIMEDoubaoVoiceRequest *)makeDoubaoVoiceRequest:(NSDictionary *)options error:(NSError **)error {
+- (LINGYAODoubaoVoiceRequest *)makeDoubaoVoiceRequest:(NSDictionary *)options error:(NSError **)error {
     (void)options; (void)error; self.fixture = [DoubaoRequestFixture new]; self.fixture.failStart = self.failRequest; return (id)self.fixture;
 }
 - (void)apply:(NSDictionary *)transition {
-    MSIMEApplyTransition(transition, [self valueForKey:@"activeClient"]);
+    LINGYAOApplyTransition(transition, [self valueForKey:@"activeClient"]);
 }
 @end
 
-static BOOL Start(DoubaoControllerFixture *controller, DoubaoCaptureFixture *capture, MSIMEClientSession *session, BOOL stream) {
+static BOOL Start(DoubaoControllerFixture *controller, DoubaoCaptureFixture *capture, LINGYAOClientSession *session, BOOL stream) {
     uint64_t generation = 0;
     assert([capture startWithSession:session generation:&generation error:nil] && generation);
     [controller setValue:@(generation) forKey:@"voiceGeneration"];
@@ -153,17 +153,17 @@ int main() {
             assert([NSFileManager.defaultManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil]);
             options[name] = path;
         }
-        MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:nil];
+        LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:nil];
         assert(session);
         DoubaoControllerFixture *controller = [DoubaoControllerFixture alloc];
         DoubaoPresentationFixture *presentation = [DoubaoPresentationFixture new];
         [controller setValue:presentation forKey:@"voiceOverlay"];
         [controller setValue:presentation forKey:@"voiceAudioMuter"];
-        MSIMEVoiceCueFixture *cues = [MSIMEVoiceCueFixture new];
+        LINGYAOVoiceCueFixture *cues = [LINGYAOVoiceCueFixture new];
         [controller setValue:cues forKey:@"voiceCuePlayer"];
         NSUserDefaults *cueDefaults = NSUserDefaults.standardUserDefaults;
         NSDictionary *oldCueArguments = [cueDefaults volatileDomainForName:NSArgumentDomain];
-        [cueDefaults setVolatileDomain:@{@"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @YES, @"MSIMEClientVoiceEndSound": @YES} forName:NSArgumentDomain];
+        [cueDefaults setVolatileDomain:@{@"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @YES, @"LINGYAOClientVoiceEndSound": @YES} forName:NSArgumentDomain];
         DoubaoCaptureFixture *capture = [DoubaoCaptureFixture new];
         capture.capturedSeconds = 0.25;
         DoubaoTextFixture *client = [DoubaoTextFixture new];
@@ -177,10 +177,10 @@ int main() {
         request.result(@"synthetic partial", NO, nil);
         assert(!presentation.preview.length);
         assert([client.marked isEqual:@"synthetic partial"] && client.commits.count == 0);
-        capture.chunk(MSIMEVoiceMeterFixturePCM(), nil); Pump();
+        capture.chunk(LINGYAOVoiceMeterFixturePCM(), nil); Pump();
         assert(presentation.lastLevel > 0.5f && presentation.lastLevel < 0.7f && presentation.levelUpdates == 1);
-        assert([request.audio isEqual:MSIMEVoiceMeterFixturePCM()]); // Metering never changes recognition audio.
-        MSIMEVoicePCMChunk oldMeter = capture.chunk;
+        assert([request.audio isEqual:LINGYAOVoiceMeterFixturePCM()]); // Metering never changes recognition audio.
+        LINGYAOVoicePCMChunk oldMeter = capture.chunk;
         presentation.actionHandler(NO);
         presentation.actionHandler(NO);
         assert(presentation.dismissed && capture.active);
@@ -192,7 +192,7 @@ int main() {
         request.result(@"duplicate", YES, nil);
         assert(client.commits.count == 1);
         assert(Start(controller, capture, session, NO));
-        oldMeter(MSIMEVoiceMeterFixturePCM(), nil); Pump();
+        oldMeter(LINGYAOVoiceMeterFixturePCM(), nil); Pump();
         assert(presentation.levelUpdates == 1); // Old request cannot meter a successor.
         oldAction(YES); oldAction(NO);
         assert(capture.active && !controller.fixture.finishes && !controller.fixture.cancellations);
@@ -215,7 +215,7 @@ int main() {
         for (NSString *field in @[@"activeClient", @"session", @"voiceGeneration"]) {
             assert(Start(controller, capture, session, YES));
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @99999 : [MSIMEVoiceClientFixture new] forKey:field];
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @99999 : [LINGYAOVoiceClientFixture new] forKey:field];
             controller.fixture.result(@"stale focus", YES, nil);
             [controller setValue:original forKey:field];
             assert(client.commits.count == 1);
@@ -223,12 +223,12 @@ int main() {
         capture.failStart = YES;
         const auto beforeFailure = cues.starts;
         assert(!Start(controller, capture, session, YES) && !capture.active);
-        assert(presentation.failure == MSIMEVoiceFailureCapture);
+        assert(presentation.failure == LINGYAOVoiceFailureCapture);
         assert(cues.starts == beforeFailure && cues.stops == beforeFailure);
         capture.failStart = NO;
         controller.failRequest = YES;
         assert(!Start(controller, capture, session, YES) && !capture.active);
-        assert(presentation.failure == MSIMEVoiceFailureProvider);
+        assert(presentation.failure == LINGYAOVoiceFailureProvider);
         controller.failRequest = NO;
         assert(Start(controller, capture, session, YES));
         controller.fixture.failAppend = YES;
@@ -238,22 +238,22 @@ int main() {
         // Exercise the actual toggle route without touching persistent defaults.
         NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
         NSDictionary *oldArguments = [defaults volatileDomainForName:NSArgumentDomain];
-        NSDictionary *toggleArguments = @{@"MSIMEClientVoiceEnabled": @YES, @"MSIMEClientVoiceASRProvider": @"doubao", @"MSIMEClientVoiceMuteSystemAudio": @NO, @"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @YES, @"MSIMEClientVoiceEndSound": @YES};
+        NSDictionary *toggleArguments = @{@"LINGYAOClientVoiceEnabled": @YES, @"LINGYAOClientVoiceASRProvider": @"doubao", @"LINGYAOClientVoiceMuteSystemAudio": @NO, @"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @YES, @"LINGYAOClientVoiceEndSound": @YES};
         [defaults setVolatileDomain:toggleArguments forName:NSArgumentDomain];
         assert([controller usesNativeDoubaoVoice] && ![controller usesNativeHTTPVoice]);
         // No token: Windows asks for one before recording rather than failing after the user has spoken.
         [controller toggleVoiceInput:nil];
-        assert(!capture.active && presentation.failure == MSIMEVoiceFailureMissingToken);
+        assert(!capture.active && presentation.failure == LINGYAOVoiceFailureMissingToken);
         // `local` holding a Whisper model file, not an installed model directory, refuses before recording too, rather than starting the system recognizer.
         NSMutableDictionary *whisperFile = [toggleArguments mutableCopy];
-        whisperFile[@"MSIMEClientVoiceASRProvider"] = @"local";
-        whisperFile[@"MSIMEClientVoiceASRModelPath"] = @"/synthetic/ggml-large-v3-turbo.bin";
+        whisperFile[@"LINGYAOClientVoiceASRProvider"] = @"local";
+        whisperFile[@"LINGYAOClientVoiceASRModelPath"] = @"/synthetic/ggml-large-v3-turbo.bin";
         [defaults setVolatileDomain:whisperFile forName:NSArgumentDomain];
         assert(![controller usesNativeDoubaoVoice] && ![controller usesNativeHTTPVoice]);
         [controller toggleVoiceInput:nil];
-        assert(!capture.active && presentation.failure == MSIMEVoiceFailureMissingLocalModel);
+        assert(!capture.active && presentation.failure == LINGYAOVoiceFailureMissingLocalModel);
         NSMutableDictionary *withToken = [toggleArguments mutableCopy];
-        withToken[@"MSIMEClientVoiceASRToken"] = @"synthetic-token";
+        withToken[@"LINGYAOClientVoiceASRToken"] = @"synthetic-token";
         [defaults setVolatileDomain:withToken forName:NSArgumentDomain];
         assert([session setFocused:YES error:nil]);
         assert([session typeASCII:'U' shift:YES error:nil]);

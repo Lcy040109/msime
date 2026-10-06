@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The legacy Windows UI exposes PAGE slots as 1..10. Engine IDs are global
 // indices and may exceed 9 after paging; never apply this limit to an ID.
 inline constexpr size_t candidate_ui_max_count = 10;
@@ -24,4 +24,4 @@ bool candidate_ui_action_matches(const Candidates &page, uint64_t session,
   }
   return false;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Source-over of one colour at the given alpha on an opaque background.
 inline std::uint32_t composite_color(std::uint32_t color, std::uint8_t alpha, std::uint32_t background) {
@@ -48,7 +48,7 @@ inline CandidateNativePalette candidate_native_palette(bool dark) {
   };
 }
 
-// The palette of a floating surface MSIME draws itself (the mode badge, the voice overlay), taken from the resolved theme's candidate palette as THEME_CONTRACT §3 derives the floating toolbar from it: surface for the plate, text for glyphs, accent for highlights and border for the outline, all opaque. No border means the theme draws none.
+// The palette of a floating surface LINGYAO draws itself (the mode badge, the voice overlay), taken from the resolved theme's candidate palette as THEME_CONTRACT §3 derives the floating toolbar from it: surface for the plate, text for glyphs, accent for highlights and border for the outline, all opaque. No border means the theme draws none.
 struct FloatingSurfaceColors {
   std::uint32_t surface;
   std::uint32_t text;
@@ -71,4 +71,4 @@ inline std::string candidate_preedit_with_caret(std::string_view preedit,
   return result;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

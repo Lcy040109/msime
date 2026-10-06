@@ -1,17 +1,17 @@
 #import "CloudURLSession.h"
 
-@interface MSIMECloudDataTask : NSObject <NSURLSessionDataDelegate, NSURLSessionTaskDelegate>
+@interface LINGYAOCloudDataTask : NSObject <NSURLSessionDataDelegate, NSURLSessionTaskDelegate>
 @property(nonatomic, strong) NSURLSession *session;
 @property(nonatomic, strong) NSMutableData *body;
-@property(nonatomic, copy) MSIMECloudDataCompletion completion;
+@property(nonatomic, copy) LINGYAOCloudDataCompletion completion;
 @property(nonatomic) NSUInteger maximumBytes;
 @property(nonatomic, strong) NSURLResponse *response;
 @property(nonatomic) BOOL finished;
 @end
 
-@implementation MSIMECloudDataTask
+@implementation LINGYAOCloudDataTask
 - (instancetype)initWithRequest:(NSURLRequest *)request maximumBytes:(NSUInteger)maximumBytes
-                      completion:(MSIMECloudDataCompletion)completion {
+                      completion:(LINGYAOCloudDataCompletion)completion {
     if (!(self = [super init])) return nil;
     _body = [NSMutableData data];
     _maximumBytes = maximumBytes;
@@ -30,7 +30,7 @@
 - (void)finishWithData:(NSData *)data response:(NSURLResponse *)response error:(NSError *)error {
     if (_finished) return;
     _finished = YES;
-    MSIMECloudDataCompletion completion = _completion;
+    LINGYAOCloudDataCompletion completion = _completion;
     _completion = nil;
     [_session finishTasksAndInvalidate];
     _session = nil;
@@ -81,13 +81,13 @@
 }
 @end
 
-void MSIMEStartCloudDataTask(NSURLRequest *request, NSUInteger maximumBytes,
-                             MSIMECloudDataCompletion completion) {
+void LINGYAOStartCloudDataTask(NSURLRequest *request, NSUInteger maximumBytes,
+                             LINGYAOCloudDataCompletion completion) {
     if (!request || maximumBytes == 0 || !completion) {
         if (completion) completion(nil, nil, nil);
         return;
     }
     // NSURLSession retains its delegate for the lifetime of the task.
-    (void)[[MSIMECloudDataTask alloc] initWithRequest:request maximumBytes:maximumBytes
+    (void)[[LINGYAOCloudDataTask alloc] initWithRequest:request maximumBytes:maximumBytes
                                             completion:completion];
 }

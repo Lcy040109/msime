@@ -1,9 +1,9 @@
-//! `msime-dict-build web` 的端到端测试：用合成的小号 msime-pinyin.db 和 msime-wubi.db 跑编译出的二进制，检查裁剪结果。
+//! `lingyao-dict-build web` 的端到端测试：用合成的小号 lingyao-pinyin.db 和 lingyao-wubi.db 跑编译出的二进制，检查裁剪结果。
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use msime_engine::format::{quanpin_table, MAXIMUM_NUMBERED_SYLLABLES, SHIPPED_INITIALS};
+use lingyao_engine::format::{quanpin_table, MAXIMUM_NUMBERED_SYLLABLES, SHIPPED_INITIALS};
 use rusqlite::{Connection, OpenFlags};
 use sha2::{Digest, Sha256};
 
@@ -21,7 +21,7 @@ fn quanpin_tables() -> Vec<String> {
         .collect()
 }
 
-/// 按词库 release 的结构建两个小库：`msime-pinyin.db` 里每张全拼表都有两个索引，`quick_parases` 有一个索引；`msime-wubi.db` 里 `wubi86`、`wubi98` 各有一个索引。
+/// 按词库 release 的结构建两个小库：`lingyao-pinyin.db` 里每张全拼表都有两个索引，`quick_parases` 有一个索引；`lingyao-wubi.db` 里 `wubi86`、`wubi98` 各有一个索引。
 fn fixture(pinyin: &Path, wubi: &Path) {
     let mut sql = String::from("BEGIN;");
     for table in quanpin_tables() {
@@ -63,7 +63,7 @@ fn keyed_table(table: &str) -> String {
 }
 
 fn command(pinyin: &Path, wubi: &Path, out_dir: &Path, keep_multi: Option<usize>) -> Command {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_msime-dict-build"));
+    let mut command = Command::new(env!("CARGO_BIN_EXE_lingyao-dict-build"));
     command
         .arg("web")
         .arg("--pinyin")
@@ -82,7 +82,7 @@ fn run(pinyin: &Path, wubi: &Path, out_dir: &Path, keep_multi: Option<usize>) {
     let output = command(pinyin, wubi, out_dir, keep_multi).output().unwrap();
     assert!(
         output.status.success(),
-        "msime-dict-build web failed: {}",
+        "lingyao-dict-build web failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -134,8 +134,8 @@ struct Built {
 
 fn inputs() -> (tempfile::TempDir, PathBuf, PathBuf) {
     let dir = tempfile::tempdir().unwrap();
-    let pinyin = dir.path().join("msime-pinyin.db");
-    let wubi = dir.path().join("msime-wubi.db");
+    let pinyin = dir.path().join("lingyao-pinyin.db");
+    let wubi = dir.path().join("lingyao-wubi.db");
     fixture(&pinyin, &wubi);
     (dir, pinyin, wubi)
 }
@@ -155,7 +155,7 @@ fn built(keep_multi: Option<usize>) -> Built {
 #[test]
 fn pinyin_keeps_every_single_and_the_top_multi_rows() {
     let built = built(Some(4));
-    let db = open(&built.out.join("msime-pinyin.db"));
+    let db = open(&built.out.join("lingyao-pinyin.db"));
     assert_eq!(rows(&db, "tbl_1_a"), [("啊".into(), 10), ("爱".into(), 1)]);
     assert_eq!(rows(&db, "tbl_1_b"), [("把".into(), 0)]);
     assert_eq!(
@@ -174,7 +174,7 @@ fn pinyin_keeps_every_single_and_the_top_multi_rows() {
 fn pinyin_breaks_weight_ties_by_key() {
     // 四行同为权重 100 的多字词里，按 key 排序取前两行：nan'ren 和 wan'shang。
     let built = built(Some(6));
-    let db = open(&built.out.join("msime-pinyin.db"));
+    let db = open(&built.out.join("lingyao-pinyin.db"));
     assert_eq!(
         rows(&db, "tbl_2_n"),
         [
@@ -194,7 +194,7 @@ fn pinyin_breaks_weight_ties_by_key() {
 #[test]
 fn pinyin_default_keeps_every_row_of_a_small_input() {
     let built = built(None);
-    let db = open(&built.out.join("msime-pinyin.db"));
+    let db = open(&built.out.join("lingyao-pinyin.db"));
     let source = open(&built.pinyin);
     for table in quanpin_tables() {
         assert_eq!(count(&db, &table), count(&source, &table), "{table}");
@@ -205,7 +205,7 @@ fn pinyin_default_keeps_every_row_of_a_small_input() {
 #[test]
 fn wubi86_keeps_only_the_wubi86_table() {
     let built = built(None);
-    let db = open(&built.out.join("msime-wubi86.db"));
+    let db = open(&built.out.join("lingyao-wubi86.db"));
     assert_eq!(
         rows(&db, "wubi86"),
         [("你".into(), 3), ("我".into(), 9), ("一".into(), 1)]
@@ -226,7 +226,7 @@ fn both_outputs_keep_every_table_and_index() {
         all.sort();
         all
     };
-    for name in ["msime-pinyin.db", "msime-wubi86.db"] {
+    for name in ["lingyao-pinyin.db", "lingyao-wubi86.db"] {
         let db = open(&built.out.join(name));
         assert_eq!(names(&db, "table"), union("table"), "{name}");
         assert_eq!(names(&db, "index"), union("index"), "{name}");
@@ -248,27 +248,27 @@ fn both_outputs_keep_every_table_and_index() {
             .unwrap();
         assert_eq!(stat4, 0, "{name}");
     }
-    assert!(!built.out.join("msime-pinyin.db.scratch").exists());
-    assert!(!built.out.join("msime-wubi86.db.scratch").exists());
+    assert!(!built.out.join("lingyao-pinyin.db.scratch").exists());
+    assert!(!built.out.join("lingyao-wubi86.db.scratch").exists());
 }
 
 #[test]
 fn two_runs_give_the_same_bytes() {
     let built = built(Some(3));
-    let first: Vec<String> = ["msime-pinyin.db", "msime-wubi86.db"]
+    let first: Vec<String> = ["lingyao-pinyin.db", "lingyao-wubi86.db"]
         .iter()
         .map(|name| sha256(&built.out.join(name)))
         .collect();
     // 第二次写到已有输出的同一目录，同时验证覆盖旧文件。
     run(&built.pinyin, &built.wubi, &built.out, Some(3));
-    let second: Vec<String> = ["msime-pinyin.db", "msime-wubi86.db"]
+    let second: Vec<String> = ["lingyao-pinyin.db", "lingyao-wubi86.db"]
         .iter()
         .map(|name| sha256(&built.out.join(name)))
         .collect();
     assert_eq!(first, second);
     let elsewhere = built.out.with_file_name("again");
     run(&built.pinyin, &built.wubi, &elsewhere, Some(3));
-    let third: Vec<String> = ["msime-pinyin.db", "msime-wubi86.db"]
+    let third: Vec<String> = ["lingyao-pinyin.db", "lingyao-wubi86.db"]
         .iter()
         .map(|name| sha256(&elsewhere.join(name)))
         .collect();

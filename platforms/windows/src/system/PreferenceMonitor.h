@@ -3,7 +3,7 @@
 #include <atomic>
 #include <chrono>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class PreferenceMonitorStatus {
   Starting,
   Current,
@@ -49,4 +49,4 @@ private:
   bool stopping_ = false;
   std::thread worker_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

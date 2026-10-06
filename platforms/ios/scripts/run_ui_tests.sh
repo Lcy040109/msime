@@ -3,37 +3,37 @@ set -euo pipefail
 
 # The runner ci-ios.yml calls for the three iOS jobs. It reads its scope from the environment rather than from arguments because all three jobs invoke it the same way and differ only in what they set.
 #
-#   MSIME_TEST_SCOPE=pr           the unit suites, minus the cases that need ML Kit  (job: iOS Simulator)
-#   MSIME_TEST_SCOPE=all          same, on the pull request that promotes develop to main
-#   MSIME_TEST_SCOPE=handwriting  only the cases that need ML Kit                    (job: iOS Handwriting)
-#   MSIME_TEST_SHARD=heavy        the interface suite                                (job: iOS Simulator (settings and skins))
-#   MSIME_TEST_SHARD=rest|<empty> everything the heavy shard does not take
+#   LINGYAO_TEST_SCOPE=pr           the unit suites, minus the cases that need ML Kit  (job: iOS Simulator)
+#   LINGYAO_TEST_SCOPE=all          same, on the pull request that promotes develop to main
+#   LINGYAO_TEST_SCOPE=handwriting  only the cases that need ML Kit                    (job: iOS Handwriting)
+#   LINGYAO_TEST_SHARD=heavy        the interface suite                                (job: iOS Simulator (settings and skins))
+#   LINGYAO_TEST_SHARD=rest|<empty> everything the heavy shard does not take
 #
 # Scope and shard are deliberately separate: the handwriting split is about which runner architecture can link the SDK, and the heavy/rest split is about wall-clock. They answer different questions and a single knob conflated them.
 #
-# This covers the unit schemes only. MSIMEClientUITests drives a real app launch and MSIMESharedTests/HandwritingTests links MLKitDigitalInkRecognition through CocoaPods, and this tree generates its project into build/ios while its Podfile integrates the checked-in project in platforms/ios -- two different containers. Wiring those two scopes needs that resolved first, so they report as not-yet-covered rather than silently passing.
+# This covers the unit schemes only. LINGYAOClientUITests drives a real app launch and LINGYAOSharedTests/HandwritingTests links MLKitDigitalInkRecognition through CocoaPods, and this tree generates its project into build/ios while its Podfile integrates the checked-in project in platforms/ios -- two different containers. Wiring those two scopes needs that resolved first, so they report as not-yet-covered rather than silently passing.
 
 project_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 cd "$project_root"
 
-scope=${MSIME_TEST_SCOPE:-pr}
-shard=${MSIME_TEST_SHARD:-}
-derived_data=${MSIME_IOS_DERIVED_DATA:-build/ios-derived}
-project=${MSIME_IOS_PROJECT:-build/ios/MSIMEClient.xcodeproj}
+scope=${LINGYAO_TEST_SCOPE:-pr}
+shard=${LINGYAO_TEST_SHARD:-}
+derived_data=${LINGYAO_IOS_DERIVED_DATA:-build/ios-derived}
+project=${LINGYAO_IOS_PROJECT:-build/ios/LINGYAOClient.xcodeproj}
 
 # The three cases that assert on real ink: the SDK ships no simulator slice for arm64, so only the Intel job can link them. This list is the single definition of that line -- the unit scopes skip exactly these, the handwriting scope runs exactly these, so the two cannot drift apart.
 recognition_cases=(
-  MSIMESharedTests/HandwritingTests/testRealChineseInkRecognition
-  MSIMESharedTests/HandwritingTests/testCommonCharactersFromPenTrajectories
-  MSIMESharedTests/HandwritingTests/testCandidateSelectionInsertsOnlyAfterConfirmation
+  LINGYAOSharedTests/HandwritingTests/testRealChineseInkRecognition
+  LINGYAOSharedTests/HandwritingTests/testCommonCharactersFromPenTrajectories
+  LINGYAOSharedTests/HandwritingTests/testCandidateSelectionInsertsOnlyAfterConfirmation
 )
 
 # Two cases fail the first time anything compiles and runs this suite, and both need a product answer rather than a CI one: the space key measures 50pt where the test wants 79.2, and a shuangpin preedit reload is refused. They are tracked in #678.
 #
 # Skipping them is a deliberate trade against "do not skip failing tests". The alternative is leaving `iOS Simulator` as it was -- a required check that reserves a macos-15 runner for 95 minutes to print one line -- until someone answers two layout questions. Roughly three hundred cases start gating the product today instead, and these two are named here rather than commented out of the suite, so removing the skip is a one-line change once #678 is settled.
 known_failures=(
-  MSIMEKeyboardTests/NineKeyKeyboardTests/testKeyLayoutsKeepNineKeyHeight
-  MSIMEKeyboardTests/CandidateOptionsSettingsTests/testReloadHandsShuangpinPreeditToTheLiveSession
+  LINGYAOKeyboardTests/NineKeyKeyboardTests/testKeyLayoutsKeepNineKeyHeight
+  LINGYAOKeyboardTests/CandidateOptionsSettingsTests/testReloadHandsShuangpinPreeditToTheLiveSession
 )
 
 if [[ ! -d "$project" ]]; then
@@ -74,13 +74,13 @@ case "$scope:$shard" in
     exit 0
     ;;
   *:heavy)
-    echo "::notice::The heavy shard is the MSIMEClientUITests interface suite, which drives a real app launch. Not covered yet."
+    echo "::notice::The heavy shard is the LINGYAOClientUITests interface suite, which drives a real app launch. Not covered yet."
     exit 0
     ;;
 esac
 
-# Both unit schemes, in one build. MSIMEClientTests carries MSIMEKeyboardTests, MSIMEServiceTests and MSIMESharedTests; MSIMEDoubaoTransportTests is its own scheme because the transport builds standalone.
-schemes=(MSIMEClientTests MSIMEDoubaoTransportTests)
+# Both unit schemes, in one build. LINGYAOClientTests carries LINGYAOKeyboardTests, LINGYAOServiceTests and LINGYAOSharedTests; LINGYAODoubaoTransportTests is its own scheme because the transport builds standalone.
+schemes=(LINGYAOClientTests LINGYAODoubaoTransportTests)
 
 status=0
 for scheme in "${schemes[@]}"; do
@@ -98,8 +98,8 @@ for scheme in "${schemes[@]}"; do
   result_bundle="$derived_data/Logs/Test/$scheme.xcresult"
   rm -rf "$result_bundle"
   mkdir -p "$(dirname "$result_bundle")"
-  # Only MSIMEClientTests contains the handwriting cases; passing -skip-testing for a target a scheme does not build makes xcodebuild fail outright.
-  if [[ "$scheme" == MSIMEClientTests ]]; then
+  # Only LINGYAOClientTests contains the handwriting cases; passing -skip-testing for a target a scheme does not build makes xcodebuild fail outright.
+  if [[ "$scheme" == LINGYAOClientTests ]]; then
     for case_name in "${recognition_cases[@]}" "${known_failures[@]}"; do
       arguments+=(-skip-testing:"$case_name")
     done

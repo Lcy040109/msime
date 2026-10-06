@@ -36,7 +36,7 @@ impl DictionaryAccess {
         let mut files = Vec::with_capacity(roots.len());
         for root in roots {
             let file = crate::file_lock::open_private_lock_file(
-                root.join(".msime-dictionary-access.lock"),
+                root.join(".lingyao-dictionary-access.lock"),
             )?;
             let acquired = if exclusive {
                 crate::file_lock::try_exclusive(&file)?
@@ -120,7 +120,7 @@ mod tests {
         assert!(DictionaryAccess::try_session(&user, dictionaries.path()).is_err());
         assert!(!outside
             .path()
-            .join(".msime-dictionary-access.lock")
+            .join(".lingyao-dictionary-access.lock")
             .exists());
     }
 }

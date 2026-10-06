@@ -1,11 +1,11 @@
-//! `msime-pack validate` against real pack folders: the report lines, the exit status, and that the rules are client-core's.
+//! `lingyao-pack validate` against real pack folders: the report lines, the exit status, and that the rules are client-core's.
 
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use msime_pack_tool::{run, EXIT_INVALID, EXIT_OK, EXIT_USAGE};
+use lingyao_pack_tool::{run, EXIT_INVALID, EXIT_OK, EXIT_USAGE};
 
 fn template() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/plugin-template")
@@ -135,16 +135,16 @@ fn a_command_line_it_does_not_understand_is_a_usage_error() {
         let (status, out, err) = invoke(args);
         assert_eq!(status, EXIT_USAGE, "{args:?}");
         assert!(out.is_empty());
-        assert!(err.starts_with("usage: msime-pack validate"));
+        assert!(err.starts_with("usage: lingyao-pack validate"));
     }
     let (status, out, _) = invoke(&[Path::new("--help")]);
     assert_eq!(status, EXIT_OK);
-    assert!(out.starts_with("usage: msime-pack validate"));
+    assert!(out.starts_with("usage: lingyao-pack validate"));
 }
 
 #[test]
 fn the_binary_reports_and_exits_the_same_way() {
-    let output = Command::new(env!("CARGO_BIN_EXE_msime-pack"))
+    let output = Command::new(env!("CARGO_BIN_EXE_lingyao-pack"))
         .arg("validate")
         .arg(template())
         .output()
@@ -155,7 +155,7 @@ fn the_binary_reports_and_exits_the_same_way() {
         "ok example-keys sound 1.0.0\n"
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_msime-pack"))
+    let output = Command::new(env!("CARGO_BIN_EXE_lingyao-pack"))
         .arg("validate")
         .arg(template().join("plugin.toml"))
         .output()

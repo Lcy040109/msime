@@ -2,9 +2,9 @@
 
 #include <limits>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
-constexpr std::wstring_view prefix = L"MSIME_VOICE|";
+constexpr std::wstring_view prefix = L"LINGYAO_VOICE|";
 bool number(std::wstring_view value, uint64_t &out) {
   if (value.empty()) return false;
   uint64_t parsed = 0;
@@ -50,4 +50,4 @@ std::optional<VoiceControlMessage> decode_voice_control(std::wstring_view text) 
     return std::nullopt;
   return VoiceControlMessage{static_cast<VoiceControlCommand>(values[0]), values[1], values[2], values[3]};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

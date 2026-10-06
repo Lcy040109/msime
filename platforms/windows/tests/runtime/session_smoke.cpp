@@ -24,7 +24,7 @@ static_assert(VK_NUMPAD0 == 0x60 && VK_NUMPAD9 == 0x69 && VK_LSHIFT == 0xA0);
 #endif
 
 using Json = nlohmann::json;
-using msime::windows::ServerSession;
+using lingyao::windows::ServerSession;
 void session_pump_tests(const std::string &options);
 void candidate_mailbox_tests();
 void ui_selection_tests(const std::string &options, bool dictionary);
@@ -48,7 +48,7 @@ template <class F> void rejected(F action) {
 } // namespace
 
 void local_mode_tests(const std::string &options) {
-  using msime::windows::ServerSession;
+  using lingyao::windows::ServerSession;
   struct ModeCase {
     char shortcut;
     const char *name;
@@ -109,7 +109,7 @@ void local_mode_tests(const std::string &options) {
 
 // V, "/" and "@" through the production key route (ReplyComposer::configured_key), which is where the TIP's keys arrive. The Engine lists the keys it spells in View.spelling_symbols; the Server must hand those to it as input instead of reading a digit as a selection, an operator as paging or a "/" as punctuation. No dictionary is needed: the modes generate their rows.
 void local_mode_trigger_tests(const std::string &options) {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   ServerSession session(43, options);
   uint64_t epoch = 1;
   session.activate(epoch);
@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
     require(argc == 1 || argc == 2, "Expected at most one resource directory");
     auto root =
         std::filesystem::temp_directory_path() /
-        ("msime-windows-session-" +
+        ("lingyao-windows-session-" +
          std::to_string(
              std::chrono::steady_clock::now().time_since_epoch().count()));
     require(std::filesystem::create_directory(root),
@@ -247,10 +247,10 @@ int main(int argc, char **argv) {
       auto input = Json{{"resources", resources.u8string()},
                         {"state_root", (root / "prepared").u8string()}}
                        .dump();
-      std::unique_ptr<char, decltype(&msime_client_string_free)> prepared(
-          msime_client_prepare_host(
+      std::unique_ptr<char, decltype(&lingyao_client_string_free)> prepared(
+          lingyao_client_prepare_host(
               reinterpret_cast<const uint8_t *>(input.data()), input.size()),
-          msime_client_string_free);
+          lingyao_client_string_free);
       auto document = Json::parse(prepared.get());
       if (!document.at("ok").get<bool>()) {
         // The reply carries why. Asserting only on `ok` throws that away and
@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
             .accepted,
         "Shared protocol negotiation failed");
     {
-      using namespace msime::windows;
+      using namespace lingyao::windows;
       FocusGate gate;
       FocusedSession focused(gate, 42, options.dump());
       PipeTicket ticket{42, {1, 2, 3}};
@@ -474,7 +474,7 @@ int main(int argc, char **argv) {
               "Old owner cleanup invalidated new focus");
     }
     {
-      using namespace msime::windows;
+      using namespace lingyao::windows;
       FocusGate gate;
       FocusRouter router(gate, 2);
       FocusedSession first(gate, 42, options.dump());
@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
               "Disconnected queue session cleanup failed");
     }
     {
-      using namespace msime::windows;
+      using namespace lingyao::windows;
       FocusGate gate;
       InputQueue queue(gate, 2, 8, options.dump());
       const auto run = [&](InputQueue::Task task) {
@@ -644,7 +644,7 @@ int main(int argc, char **argv) {
     session_worker_tests(options.dump());
     preference_monitor_tests(options.dump(), directory("monitor-preferences"));
     {
-      using namespace msime::windows;
+      using namespace lingyao::windows;
       FocusGate gate;
       InputQueue queue(gate, 1, 8, options.dump());
       // A require() inside a queued task throws on the worker thread, where the
@@ -867,7 +867,7 @@ int main(int argc, char **argv) {
               "Character-set shortcut did not restore the host output projection");
     }
     {
-      using namespace msime::windows;
+      using namespace lingyao::windows;
       key('U', 'U', 1);
       const auto unchanged = session.view();
       ReplyComposer composer(42, epoch);
@@ -936,7 +936,7 @@ int main(int argc, char **argv) {
             "Unicode commit failed");
     require(selected.transition.at("view").at("local_mode") == "none",
             "Committed session retained Unicode mode");
-    auto reply = msime::windows::candidate_commit(
+    auto reply = lingyao::windows::candidate_commit(
         selected.request_id,
         selected.transition.at("commit").get<std::string>());
     require(reply && reply.packet.request_id == selected.request_id &&
@@ -1012,7 +1012,7 @@ int main(int argc, char **argv) {
     rejected([&] { session.deactivate(epoch - 1); });
     if (argc == 2) {
       for (bool last : {false, true}) {
-        using namespace msime::windows;
+        using namespace lingyao::windows;
         ReplyComposer composer(42, epoch);
         for (char c : std::string("nihao"))
           key(c - 'a' + 'A', c);
@@ -1042,7 +1042,7 @@ int main(int argc, char **argv) {
         composer.confirm_delivery(42, epoch, packet.request_id);
       }
       {
-        using namespace msime::windows;
+        using namespace lingyao::windows;
         // Enter while the candidate page is active must select the
         // highlighted candidate. The same VK is raw-local commit only after
         // a partial prefix has already been retained by ReplyComposer.
@@ -1065,7 +1065,7 @@ int main(int argc, char **argv) {
         enter_composer.confirm_delivery(42, epoch, enter.request_id);
       }
       {
-        using namespace msime::windows;
+        using namespace lingyao::windows;
         // Without the explicit candidate-mode metadata, Enter follows the
         // legacy TSF raw-commit path even when the Engine still publishes a
         // candidate page. The local observation proves the TSF-owned text.
@@ -1090,7 +1090,7 @@ int main(int argc, char **argv) {
         raw_composer.confirm_delivery(42, epoch, enter.request_id);
       }
       {
-        using namespace msime::windows;
+        using namespace lingyao::windows;
         for (char c : std::string("nihao")) key(c - 'a' + 'A', c);
         // Multiple dictionary senses use a short-lived candidate page. The
         // original Engine composition remains untouched until a sense is
@@ -1214,9 +1214,9 @@ int main(int argc, char **argv) {
       // locked dictionary. Do not synthesize an Engine remainder for this test.
       session.deactivate(epoch);
       session.activate(++epoch);
-      msime::windows::ReplyComposer composer(42, epoch);
+      lingyao::windows::ReplyComposer composer(42, epoch);
       auto send = [&](uint32_t vk, uint32_t text,
-                      msime::windows::ReplyPath path, bool uiless = false) {
+                      lingyao::windows::ReplyPath path, bool uiless = false) {
         FanyImeNamedpipeData packet{};
         packet.event_type = FanyImePipeEventType::KeyEvent;
         packet.client_id = 42;
@@ -1236,9 +1236,9 @@ int main(int argc, char **argv) {
         return copy;
       };
       for (char c : std::string("nihao"))
-        send(c - 'a' + 'A', c, msime::windows::ReplyPath::Composition);
+        send(c - 'a' + 'A', c, lingyao::windows::ReplyPath::Composition);
       {
-        using namespace msime::windows;
+        using namespace lingyao::windows;
         for (bool uiless : {false, true}) {
           for (auto keys : {std::pair<uint32_t, uint32_t>{0xBD, 0xBB},
                             {0xBC, 0xBE},
@@ -1312,7 +1312,7 @@ int main(int argc, char **argv) {
       }
       for (bool uiless : {false, true}) {
         const auto original = session.view();
-        auto navigate = [&](uint32_t vk, msime::windows::ReplyPath path,
+        auto navigate = [&](uint32_t vk, lingyao::windows::ReplyPath path,
                             uint32_t type) {
           auto reply = send(vk, 0, path, uiless);
           require(reply.encoded->packet.msg_type ==
@@ -1325,21 +1325,21 @@ int main(int argc, char **argv) {
             require(reply.encoded->packet.candidate_string[0] == 0,
                     "Normal navigation included text");
         };
-        navigate(0x21, msime::windows::ReplyPath::PreviousPage,
+        navigate(0x21, lingyao::windows::ReplyPath::PreviousPage,
                  FanyImeReplyType::MovePagePrevious);
         require(session.view().at("page") == 0,
                 "Previous page crossed first-page boundary");
-        navigate(0x22, msime::windows::ReplyPath::NextPage,
+        navigate(0x22, lingyao::windows::ReplyPath::NextPage,
                  FanyImeReplyType::MovePageNext);
         require(session.view().at("page") == 1,
                 "Navigation reply did not use shared paging");
-        navigate(0x21, msime::windows::ReplyPath::PreviousPage,
+        navigate(0x21, lingyao::windows::ReplyPath::PreviousPage,
                  FanyImeReplyType::MovePagePrevious);
-        navigate(0x28, msime::windows::ReplyPath::NextCandidate,
+        navigate(0x28, lingyao::windows::ReplyPath::NextCandidate,
                  FanyImeReplyType::MoveSelectionNext);
         require(session.view().at("candidates").at(1).at("highlighted") == true,
                 "Navigation reply did not use shared highlight");
-        navigate(0x26, msime::windows::ReplyPath::PreviousCandidate,
+        navigate(0x26, lingyao::windows::ReplyPath::PreviousCandidate,
                  FanyImeReplyType::MoveSelectionPrevious);
         require(session.view().at("candidates").at(0).at("highlighted") == true,
                 "Previous navigation did not restore shared highlight");
@@ -1358,11 +1358,11 @@ int main(int argc, char **argv) {
         if (found || current.at("page").get<size_t>() + 1 >=
                          current.at("page_count").get<size_t>())
           break;
-        send(0x22, 0, msime::windows::ReplyPath::NextPage);
+        send(0x22, 0, lingyao::windows::ReplyPath::NextPage);
       }
       require(found, "No real partial candidate in fixed dictionary");
       auto partial = send(static_cast<uint32_t>(0x61 + slot), 0,
-                          msime::windows::ReplyPath::Selection);
+                          lingyao::windows::ReplyPath::Selection);
       require(partial.source.transition.at("commit") == "你" &&
                   !partial.source.transition.at("view")
                        .at("editing_text")
@@ -1382,14 +1382,14 @@ int main(int argc, char **argv) {
         enter.keycode = 0x0D;
         rejected([&] {
           composer.dispatch(session, enter, epoch,
-                            msime::windows::ReplyPath::LocalCommit, false,
+                            lingyao::windows::ReplyPath::LocalCommit, false,
                             preserved.at("editing_text").get<std::string>());
         });
         require(session.view() == preserved && !composer.has_pending() &&
                     composer.selected_prefix() == "你",
                 "Rejected raw-only Enter lost the selected prefix or remainder");
       }
-      auto final = send(0x20, 0, msime::windows::ReplyPath::Selection);
+      auto final = send(0x20, 0, lingyao::windows::ReplyPath::Selection);
       require(final.encoded->packet.msg_type == FanyImeReplyType::Normal &&
                   final.encoded->packet.candidate_string[0] == 0x4F60 &&
                   final.encoded->packet.candidate_string[1] == 0x597D &&

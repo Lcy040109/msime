@@ -8,7 +8,7 @@
 #include <atomic>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct AudioCapture::Impl {
   ma_device device{};
   ma_context context{};
@@ -94,4 +94,4 @@ void AudioCapture::stop() {
 }
 
 bool AudioCapture::callback_failed() const { return impl_->failed.load(); }
-} // namespace msime::windows
+} // namespace lingyao::windows

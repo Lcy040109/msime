@@ -21,15 +21,15 @@ static NSFont *MissingKeyFont(id cls, SEL selector, CGFloat size, NSFontWeight w
 
 // The scheme is a radio group now, not a popup: report the checked one, and check one by
 // sending the action the way a click does.
-static NSInteger SelectedSchemeIndex(MSIMEAppearancePreferences *preferences) {
-    for (NSControl *control in MSIMEFindPreferenceControls(preferences.window.contentView,
+static NSInteger SelectedSchemeIndex(LINGYAOAppearancePreferences *preferences) {
+    for (NSControl *control in LINGYAOFindPreferenceControls(preferences.window.contentView,
                                                            @selector(schemeRadioChanged:)))
         if (((NSButton *)control).state == NSControlStateValueOn) return control.tag;
     return -1;
 }
 
-static void SelectScheme(MSIMEAppearancePreferences *preferences, NSInteger index) {
-    for (NSControl *control in MSIMEFindPreferenceControls(preferences.window.contentView,
+static void SelectScheme(LINGYAOAppearancePreferences *preferences, NSInteger index) {
+    for (NSControl *control in LINGYAOFindPreferenceControls(preferences.window.contentView,
                                                            @selector(schemeRadioChanged:)))
         if (control.tag == index) {
             ((NSButton *)control).state = NSControlStateValueOn;
@@ -39,7 +39,7 @@ static void SelectScheme(MSIMEAppearancePreferences *preferences, NSInteger inde
     assert(false && "Missing scheme radio");
 }
 
-static BOOL MSIMEViewHasComposition(NSDictionary *view) {
+static BOOL LINGYAOViewHasComposition(NSDictionary *view) {
     if (![view isKindOfClass:NSDictionary.class]) return NO;
     NSString *editing = [view[@"editing_text"] isKindOfClass:NSString.class] ? view[@"editing_text"] : @"";
     NSArray *candidates = [view[@"candidates"] isKindOfClass:NSArray.class] ? view[@"candidates"] : @[];
@@ -47,8 +47,8 @@ static BOOL MSIMEViewHasComposition(NSDictionary *view) {
     return editing.length || candidates.count || phrase.length;
 }
 
-static NSControl *PreferenceControl(MSIMEAppearancePreferences *preferences, SEL action) {
-    NSControl *control = MSIMEFindPreferenceControl(preferences.window.contentView, action);
+static NSControl *PreferenceControl(LINGYAOAppearancePreferences *preferences, SEL action) {
+    NSControl *control = LINGYAOFindPreferenceControl(preferences.window.contentView, action);
     assert(control && "Missing preference action");
     return control;
 }
@@ -263,12 +263,12 @@ static void CheckMenu(NSMenu *menu, id controller) {
     (void)error;
     ++self.commandCalls;
     self.lastCommand = command;
-    if (command == MSIME_COMMIT_RAW) ++self.rawCommitCalls;
-    if (self.failFinish && command == MSIME_FINISH_COMPOSITION) return nil;
-    if (self.failCancel && command == MSIME_CANCEL) return nil;
-    if (self.finishTransition && command == MSIME_FINISH_COMPOSITION) return self.finishTransition;
-    if (self.cancelTransition && command == MSIME_CANCEL) return self.cancelTransition;
-    if (self.rawTransition && command == MSIME_COMMIT_RAW) return self.rawTransition;
+    if (command == LINGYAO_COMMIT_RAW) ++self.rawCommitCalls;
+    if (self.failFinish && command == LINGYAO_FINISH_COMPOSITION) return nil;
+    if (self.failCancel && command == LINGYAO_CANCEL) return nil;
+    if (self.finishTransition && command == LINGYAO_FINISH_COMPOSITION) return self.finishTransition;
+    if (self.cancelTransition && command == LINGYAO_CANCEL) return self.cancelTransition;
+    if (self.rawTransition && command == LINGYAO_COMMIT_RAW) return self.rawTransition;
     if (self.nextTransition) return self.nextTransition;
     return @{@"handled": @YES, @"commit": @"测试", @"view": @{@"editing_text": @"", @"caret_position": @0, @"candidates": @[]}};
 }
@@ -279,7 +279,7 @@ static void CheckMenu(NSMenu *menu, id controller) {
 }
 @end
 
-@interface ShortcutClient : NSObject <MSIMETextClient>
+@interface ShortcutClient : NSObject <LINGYAOTextClient>
 @property(nonatomic, copy) NSString *committed;
 @property(nonatomic, copy) NSString *marked;
 @property(nonatomic, copy) NSString *document;
@@ -289,12 +289,12 @@ static void CheckMenu(NSMenu *menu, id controller) {
 @end
 
 static void TestBackspaceHoldDoesNotEscapeComposition() {
-    NSString *suite = [@"msime.backspace-hold." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.backspace-hold." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     [controller setValue:client forKey:@"activeClient"];
@@ -313,7 +313,7 @@ static void TestBackspaceHoldDoesNotEscapeComposition() {
     [controller setValue:@(NSProcessInfo.processInfo.systemUptime) forKey:@"spaceRevertTime"];
     [controller setValue:client forKey:@"spaceRevertClient"];
     assert([controller handleEvent:backspace(NO) client:client]);
-    assert(session.commandCalls == 1 && session.lastCommand == MSIME_BACKSPACE);
+    assert(session.commandCalls == 1 && session.lastCommand == LINGYAO_BACKSPACE);
     assert([[controller valueForKey:@"spaceRevertKey"] integerValue] == 0);
     assert(![controller valueForKey:@"spaceRevertClient"]);
     assert([controller handleEvent:backspace(YES) client:client]);
@@ -334,37 +334,37 @@ static void TestBackspaceHoldDoesNotEscapeComposition() {
     assert(![controller handleEvent:backspace(YES) client:nextClient]);
     assert(session.commandCalls == callsBeforeSwitch + 1);
     assert(![[controller valueForKey:@"backspaceHoldArmed"] boolValue]);
-    // 上面的换客户端按键让这个控制器成了焦点控制器（MSIMEFocusedController）。它在 main 的自动释放池里一直活着，635195ce0 起系统的模式报告和方案菜单项都转交给焦点控制器，不清掉的话后面 TestSystemInputModeReport 与 TestOptInSchemeModes 的报告都会落到这里。
-    if (MSIMEFocusedController == controller) MSIMEFocusedController = nil;
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    // 上面的换客户端按键让这个控制器成了焦点控制器（LINGYAOFocusedController）。它在 main 的自动释放池里一直活着，635195ce0 起系统的模式报告和方案菜单项都转交给焦点控制器，不清掉的话后面 TestSystemInputModeReport 与 TestOptInSchemeModes 的报告都会落到这里。
+    if (LINGYAOFocusedController == controller) LINGYAOFocusedController = nil;
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 static NSDictionary *PassthroughStatisticsCall(NSString *root, NSDictionary *action) {
     NSData *request = [NSJSONSerialization dataWithJSONObject:@{@"directory": root, @"action": action} options:0 error:nil];
-    char *raw = msime_client_typing_statistics(static_cast<const uint8_t *>(request.bytes), request.length);
+    char *raw = lingyao_client_typing_statistics(static_cast<const uint8_t *>(request.bytes), request.length);
     assert(raw);
     NSDictionary *response = [NSJSONSerialization JSONObjectWithData:[NSData dataWithBytes:raw length:strlen(raw)] options:0 error:nil];
-    msime_client_string_free(raw);
+    lingyao_client_string_free(raw);
     assert([response[@"ok"] boolValue]);
     return response[@"value"];
 }
 
 static NSDictionary *PassthroughStatisticsDetail(NSString *root) {
     // Records are written on the statistics worker; an empty block behind them drains it.
-    dispatch_sync(MSIMETypingStatisticsQueue(), ^{});
+    dispatch_sync(LINGYAOTypingStatisticsQueue(), ^{});
     return PassthroughStatisticsCall(root, @{@"operation": @"load"})[@"detail"];
 }
 
-// Keys the input method hands back to the application are typed by the application, so they are counted at the exit of handleEvent:client: like MSIME-Windows counts uneaten OnTestKeyDown keys. Counting must never change the routing decision.
+// Keys the input method hands back to the application are typed by the application, so they are counted at the exit of handleEvent:client: like LINGYAO-Windows counts uneaten OnTestKeyDown keys. Counting must never change the routing decision.
 static void TestPassthroughKeysAreCounted() {
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.passthrough-statistics." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.passthrough-statistics." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.fullWidthInput = NO;
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     [controller setValue:client forKey:@"activeClient"];
@@ -380,13 +380,13 @@ static void TestPassthroughKeysAreCounted() {
 
     // With statistics off nothing is recorded, and the opt-in gate is the controller's, not only the store's.
     PassthroughStatisticsCall(root, @{@"operation": @"set_enabled", @"enabled": @YES});
-    MSIMETypingStatisticsEnabled.store(false, std::memory_order_relaxed);
+    LINGYAOTypingStatisticsEnabled.store(false, std::memory_order_relaxed);
     appearance.englishMode = YES;
     assert(![controller handleEvent:key(@"a", 0, 0) client:client]);
     assert([PassthroughStatisticsDetail(root)[@"characters"][@"latin"] integerValue] == 0);
 
-    MSIMEReloadTypingStatisticsEnabled(root);
-    assert(MSIMETypingStatisticsEnabled.load(std::memory_order_relaxed));
+    LINGYAOReloadTypingStatisticsEnabled(root);
+    assert(LINGYAOTypingStatisticsEnabled.load(std::memory_order_relaxed));
     assert(![controller handleEvent:key(@"a", 0, 0) client:client]);
     NSDictionary *detail = PassthroughStatisticsDetail(root);
     assert([detail[@"characters"][@"latin"] integerValue] == 1);
@@ -413,23 +413,23 @@ static void TestPassthroughKeysAreCounted() {
     assert([controller handleEvent:key(@"2", 19, 0) client:client]);
     assert([PassthroughStatisticsDetail(root)[@"characters"][@"number"] integerValue] == 1);
 
-    MSIMETypingStatisticsEnabled.store(false, std::memory_order_relaxed);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAOTypingStatisticsEnabled.store(false, std::memory_order_relaxed);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
 }
 
-// The diagnostic log times every key through handleEvent:client: and, like MSIME-Windows' [key-latency] stage=handle lines, writes only a key that took at least 8 ms, recording the event type and outcome but never the key itself.
+// The diagnostic log times every key through handleEvent:client: and, like LINGYAO-Windows' [key-latency] stage=handle lines, writes only a key that took at least 8 ms, recording the event type and outcome but never the key itself.
 static void TestKeyLatencyIsLoggedWithoutTheKey() {
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.key-latency-log." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.key-latency-log." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.fullWidthInput = NO;
     appearance.englishMode = YES;
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     [controller setValue:client forKey:@"activeClient"];
@@ -442,11 +442,11 @@ static void TestKeyLatencyIsLoggedWithoutTheKey() {
     NSString *logPath = [root stringByAppendingPathComponent:@"diagnostic.log"];
 
     // Off: no timing line and no file.
-    msime_macos_diagnostic_configure(root.fileSystemRepresentation, false);
+    lingyao_macos_diagnostic_configure(root.fileSystemRepresentation, false);
     assert(![controller handleEvent:key client:client]);
     assert(![NSFileManager.defaultManager fileExistsAtPath:logPath]);
 
-    msime_macos_diagnostic_configure(root.fileSystemRepresentation, true);
+    lingyao_macos_diagnostic_configure(root.fileSystemRepresentation, true);
     assert(![controller handleEvent:key client:client]);
     NSString *fast = [NSString stringWithContentsOfFile:logPath encoding:NSUTF8StringEncoding error:nil];
     assert(![fast containsString:@"[key-latency]"]); // A key handled well under 8 ms is not written.
@@ -455,13 +455,13 @@ static void TestKeyLatencyIsLoggedWithoutTheKey() {
     assert(![controller handleEvent:key client:client]);
     assert(session.asciiCalls > 0);
     session.stall = 0;
-    msime_macos_diagnostic_configure(root.fileSystemRepresentation, false);
+    lingyao_macos_diagnostic_configure(root.fileSystemRepresentation, false);
     NSString *contents = [NSString stringWithContentsOfFile:logPath encoding:NSUTF8StringEncoding error:nil];
     assert([contents containsString:@"[key-latency] stage=handle type=down handled=0 elapsed_ms="]);
     // Timestamps, pids and labels never contain a q, so any q would be the typed key leaking.
     assert(![contents containsString:@"q"] && ![contents containsString:@"keycode"]);
 
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
 }
 
@@ -503,7 +503,7 @@ static void TestKeyLatencyIsLoggedWithoutTheKey() {
 - (void)orderOut:(id)sender { (void)sender; self.visible = NO; }
 @end
 
-@interface HiddenCandidatePanel : MSIMECandidatePanel
+@interface HiddenCandidatePanel : LINGYAOCandidatePanel
 @property(nonatomic) BOOL requestedVisible;
 @end
 @implementation HiddenCandidatePanel
@@ -512,7 +512,7 @@ static void TestKeyLatencyIsLoggedWithoutTheKey() {
 - (void)orderOut:(id)sender { (void)sender; self.requestedVisible = NO; }
 @end
 
-@interface ModeController : MSIMEInputController
+@interface ModeController : LINGYAOInputController
 @property(nonatomic) NSUInteger preparationCalls;
 // Plays secure event input, which is window-server state a test cannot turn on.
 @property(nonatomic) BOOL secureInput;
@@ -541,7 +541,7 @@ static NSEvent *KeypadKey(unsigned short code, NSString *characters, NSEventModi
     return [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:flags timestamp:0 windowNumber:0 context:nil characters:characters charactersIgnoringModifiers:characters isARepeat:repeat keyCode:code];
 }
 
-@interface HiddenKeymapPanel : MSIMEShuangpinKeymapPanel
+@interface HiddenKeymapPanel : LINGYAOShuangpinKeymapPanel
 @property(nonatomic) BOOL requestedVisible;
 @property(nonatomic) CGFloat clearance;
 @end
@@ -565,9 +565,9 @@ static NSEvent *KeypadKey(unsigned short code, NSString *characters, NSEventModi
 @end
 
 static void TestPageSizeCache() {
-    NSString *suite = [@"msime.page-cache." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.page-cache." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ModeController *controller = [ModeController alloc];
     SuccessfulPageSession *session = [SuccessfulPageSession new];
     [controller setValue:prefs forKey:@"appearance"];
@@ -606,21 +606,21 @@ static void TestPageSizeCache() {
     assert(session.pageSizeCalls == 3 && session.requestedPageSize == 9);
     [controller prepareSession];
     assert(session.focusCalls == 1 && ![[controller valueForKey:@"focusPending"] boolValue]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestSharedPunctuation() {
-    NSString *suite = [@"msime.punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ModeController *controller = [ModeController alloc];
-    MSIMEFloatingToolbarPanel *toolbar = [[MSIMEFloatingToolbarPanel alloc] init];
+    LINGYAOFloatingToolbarPanel *toolbar = [[LINGYAOFloatingToolbarPanel alloc] init];
     [controller setValue:prefs forKey:@"appearance"];
     [controller setValue:toolbar forKey:@"toolbar"];
     NSButton *toggle = (id)PreferenceControl(prefs, @selector(punctuationChanged:));
     NSButton *toolbarToggle = [toolbar valueForKey:@"punctuationButton"];
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     for (NSNumber *enabled in @[@NO, @YES, @NO]) {
         [controller applySharedToolbarPreferences:@{@"chinese_punctuation": enabled}];
         assert(prefs.chinesePunctuation == enabled.boolValue && toggle.state == (enabled.boolValue ? NSControlStateValueOn : NSControlStateValueOff));
@@ -628,7 +628,7 @@ static void TestSharedPunctuation() {
         assert([toolbarToggle.accessibilityLabel isEqual:enabled.boolValue ? @"切换到西文标点" : @"切换到中文标点"]);
         assert([[prefs sharedPreferencesByMerging:@{}][@"chinese_punctuation"] isEqual:enabled] && saves == 0);
     }
-    assert([defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil);
     for (id invalid in @[NSNull.null, @1, @"true"]) {
         [controller applySharedToolbarPreferences:@{@"chinese_punctuation": invalid}];
         assert(!prefs.chinesePunctuation && [toolbarToggle.title isEqual:@"."] && saves == 0);
@@ -637,9 +637,9 @@ static void TestSharedPunctuation() {
     [controller floatingToolbarDidRequestTogglePunctuation:toolbar];
     assert(prefs.runtimeChinesePunctuation && [toolbarToggle.title isEqual:@"。"] && saves == 0);
     assert(!prefs.chinesePunctuation && toggle.state == NSControlStateValueOff);
-    assert([defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil);
     assert([[prefs sharedPreferencesByMerging:@{}][@"chinese_punctuation"] isEqual:@NO]);
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(reopened.chinesePunctuation && reopened.runtimeChinesePunctuation); // Nothing saved, so the built-in default.
     // Re-applying the same shared value keeps the toggle; a new one is a new starting value for every app.
     [controller applySharedToolbarPreferences:@{@"chinese_punctuation": @NO}];
@@ -650,20 +650,20 @@ static void TestSharedPunctuation() {
     [controller applySharedToolbarPreferences:@{@"chinese_punctuation": @NO}];
     assert(!prefs.chinesePunctuation && !prefs.runtimeChinesePunctuation && [toolbarToggle.title isEqual:@"."] && saves == 0);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestSharedTraditionalOutput() {
-    NSString *suite = [@"msime.traditional." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.traditional." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ModeController *controller = [ModeController alloc];
-    MSIMEFloatingToolbarPanel *toolbar = [[MSIMEFloatingToolbarPanel alloc] init];
+    LINGYAOFloatingToolbarPanel *toolbar = [[LINGYAOFloatingToolbarPanel alloc] init];
     [controller setValue:prefs forKey:@"appearance"];
     [controller setValue:toolbar forKey:@"toolbar"];
     NSButton *toggle = [toolbar valueForKey:@"traditionalOutputButton"];
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     assert(!prefs.traditionalOutput);
     assert(![prefs sharedPreferencesByMerging:@{}][@"traditional_chinese_output"]);
     assert([[prefs sharedPreferencesByMerging:@{@"traditional_chinese_output":@YES}][@"traditional_chinese_output"] isEqual:@YES]);
@@ -674,7 +674,7 @@ static void TestSharedTraditionalOutput() {
         assert([controller.menu itemAtIndex:4].state == (enabled.boolValue ? NSControlStateValueOn : NSControlStateValueOff));
         assert([[prefs cloudSettingsSnapshot][@"platform.macos.traditional_chinese_output"] isEqual:enabled]);
     }
-    assert([defaults objectForKey:@"MSIMEClientTraditionalOutput"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientTraditionalOutput"] == nil);
     for (id invalid in @[NSNull.null, @1, @"true"]) {
         [controller applySharedToolbarPreferences:@{@"traditional_chinese_output":invalid}];
         assert(prefs.traditionalOutput && saves == 0);
@@ -692,21 +692,21 @@ static void TestSharedTraditionalOutput() {
     assert([[prefs sharedPreferencesByMerging:@{}][@"traditional_chinese_output"] isEqual:@NO]);
     [controller selectTraditionalOutput:nil];
     assert(prefs.traditionalOutput && saves == 3);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] traditionalOutput]);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] traditionalOutput]);
 
     // Persist through the actual shared store, then consume it with fresh local defaults.
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSError *error = nil;
-    NSDictionary *snapshot = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *snapshot = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(snapshot && !error);
-    NSDictionary *saved = [MSIMEClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
+    NSDictionary *saved = [LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
         snapshot:@{@"format_version":@1, @"revision":snapshot[@"revision"], @"preferences":[prefs sharedPreferencesByMerging:snapshot[@"preferences"]]} error:&error];
     assert(saved && !error);
-    NSDictionary *loaded = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *loaded = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(loaded && !error && [loaded[@"preferences"][@"traditional_chinese_output"] isEqual:@YES]);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
-    MSIMEAppearancePreferences *fresh = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
+    LINGYAOAppearancePreferences *fresh = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(!fresh.traditionalOutput);
     [fresh applySharedInputPreferences:loaded[@"preferences"]];
     assert(fresh.traditionalOutput);
@@ -714,16 +714,16 @@ static void TestSharedTraditionalOutput() {
 }
 
 static void TestSharedCharacterWidth() {
-    NSString *suite = [@"msime.character-width." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.character-width." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(!preferences.fullWidthInput);
     assert([[preferences sharedPreferencesByMerging:@{}][@"character_width"] isEqual:@"halfwidth"]);
 
     [preferences applySharedInputPreferences:@{@"character_width": @"fullwidth"}];
     assert(preferences.fullWidthInput);
     assert([[preferences sharedPreferencesByMerging:@{}][@"character_width"] isEqual:@"fullwidth"]);
-    assert([defaults objectForKey:@"MSIMEClientFullWidthInput"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientFullWidthInput"] == nil);
 
     [preferences applySharedInputPreferences:@{@"character_width": @"halfwidth"}];
     assert(!preferences.fullWidthInput);
@@ -735,14 +735,14 @@ static void TestSharedCharacterWidth() {
     preferences.fullWidthInput = YES;
     assert(preferences.fullWidthInput);
     assert([[preferences sharedPreferencesByMerging:@{}][@"character_width"] isEqual:@"fullwidth"]);
-    assert([defaults boolForKey:@"MSIMEClientFullWidthInput"]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    assert([defaults boolForKey:@"LINGYAOClientFullWidthInput"]);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestIndependentAssistancePreferences() {
-    NSString *suite = [@"msime.assistance." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.assistance." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(prefs.quanpinHelpcodeEnabled && prefs.shuangpinHelpcodeEnabled);
     assert(prefs.autocorrectTransposition && prefs.autocorrectNeighbor);
     assert([[prefs helpcodeOptionsForScheme:@"quanpin"] isEqual:
@@ -755,7 +755,7 @@ static void TestIndependentAssistancePreferences() {
     NSButton *shuangpin = (id)PreferenceControl(prefs, @selector(shuangpinHelpcodeChanged:));
     NSButton *autocorrect = (id)PreferenceControl(prefs, @selector(transpositionChanged:));
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     NSDictionary *shared = @{@"quanpin_helpcode": @{@"enabled": @YES, @"auto_display": @NO}, @"shuangpin_helpcode": @{@"enabled": @NO, @"future_field": @7}};
     [controller applySharedToolbarPreferences:shared];
     assert(prefs.quanpinHelpcodeEnabled && !prefs.shuangpinHelpcodeEnabled && saves == 0);
@@ -769,7 +769,7 @@ static void TestIndependentAssistancePreferences() {
     shuangpin.state = NSControlStateValueOn;
     [NSApp sendAction:shuangpin.action to:shuangpin.target from:shuangpin];
     assert(!prefs.quanpinHelpcodeEnabled && prefs.shuangpinHelpcodeEnabled && saves == 2);
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(!reopened.quanpinHelpcodeEnabled && reopened.shuangpinHelpcodeEnabled);
     NSDictionary *edited = [prefs sharedPreferencesByMerging:shared];
     assert([edited[@"quanpin_helpcode"][@"enabled"] isEqual:@NO] && [edited[@"shuangpin_helpcode"][@"enabled"] isEqual:@YES]);
@@ -778,14 +778,14 @@ static void TestIndependentAssistancePreferences() {
     assert(prefs.quanpinHelpcodeEnabled && !prefs.shuangpinHelpcodeEnabled && saves == 2);
     NSMutableDictionary *schemaControls = [NSMutableDictionary dictionary];
     NSMutableDictionary *displayControls = [NSMutableDictionary dictionary];
-    for (NSControl *control in MSIMEFindPreferenceControls(prefs.window.contentView, @selector(helpcodeSchemaChanged:)))
+    for (NSControl *control in LINGYAOFindPreferenceControls(prefs.window.contentView, @selector(helpcodeSchemaChanged:)))
         schemaControls[control.identifier] = control;
-    for (NSControl *control in MSIMEFindPreferenceControls(prefs.window.contentView, @selector(helpcodeDisplayChanged:)))
+    for (NSControl *control in LINGYAOFindPreferenceControls(prefs.window.contentView, @selector(helpcodeDisplayChanged:)))
         displayControls[control.identifier] = control;
     assert(schemaControls.count == 2 && displayControls.count == 2);
     NSDictionary *options = @{@"quanpin_helpcode": @{@"schema": @"shouyou2_0", @"show_in_candidate_window": @NO}, @"shuangpin_helpcode": @{@"schema": @"xiaohe", @"show_in_candidate_window": @YES}};
     [prefs applySharedAssistancePreferences:options];
-    assert(saves == 2 && [defaults objectForKey:@"MSIMEClientHelpcodeOptions"] == nil);
+    assert(saves == 2 && [defaults objectForKey:@"LINGYAOClientHelpcodeOptions"] == nil);
     assert([(NSPopUpButton *)schemaControls[@"quanpin"] indexOfSelectedItem] == 2);
     assert([(NSButton *)displayControls[@"quanpin"] state] == NSControlStateValueOff);
     for (NSString *scheme in @[@"quanpin", @"shuangpin"]) {
@@ -800,7 +800,7 @@ static void TestIndependentAssistancePreferences() {
             [NSApp sendAction:display.action to:display.target from:display];
             NSDictionary *merged = [prefs sharedPreferencesByMerging:options][[scheme stringByAppendingString:@"_helpcode"]];
             assert([merged[@"schema"] isEqual:identifiers[index]] && [merged[@"show_in_candidate_window"] boolValue] == (index % 2 == 1));
-            MSIMEAppearancePreferences *restored = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+            LINGYAOAppearancePreferences *restored = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
             assert([[restored helpcodeOptionsForScheme:scheme][@"schema"] isEqual:identifiers[index]]);
             assert([[restored helpcodeOptionsForScheme:scheme][@"show_in_candidate_window"] boolValue] == (index % 2 == 1));
         }
@@ -819,7 +819,7 @@ static void TestIndependentAssistancePreferences() {
     [NSApp sendAction:autocorrect.action to:autocorrect.target from:autocorrect];
     neighbor.state = NSControlStateValueOn;
     [NSApp sendAction:neighbor.action to:neighbor.target from:neighbor];
-    MSIMEAppearancePreferences *correctionRestored = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *correctionRestored = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(!correctionRestored.autocorrectTransposition && correctionRestored.autocorrectNeighbor);
     NSDictionary *correctionMerged = [prefs sharedPreferencesByMerging:@{@"quanpin": @{@"future": @7}}][@"quanpin"];
     assert([correctionMerged[@"autocorrect_transposition"] isEqual:@NO] && [correctionMerged[@"autocorrect_neighbor"] isEqual:@YES] && [correctionMerged[@"future"] isEqual:@7]);
@@ -830,14 +830,14 @@ static void TestIndependentAssistancePreferences() {
     [prefs applySharedAssistancePreferences:@{@"quanpin": @{@"autocorrect_neighbor": @1}}];
     assert(prefs.autocorrectNeighbor);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // 五笔版本和双拼键位一样随共享文档往返：`wubi_profile` 读进来驱动弹出菜单，菜单选择写回去，未知值不改变当前版本。
 static void TestSharedWubiProfile() {
-    NSString *suite = [@"msime.shared-wubi-profile." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.shared-wubi-profile." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert([prefs.wubiProfile isEqual:@"wubi86"] && [[prefs sharedPreferencesByMerging:@{}][@"wubi_profile"] isEqual:@"wubi86"]);
     ModeController *controller = [ModeController alloc];
     [controller setValue:prefs forKey:@"appearance"];
@@ -851,24 +851,24 @@ static void TestSharedWubiProfile() {
     assert([prefs.wubiProfile isEqual:@"wubi98"]);
     [profile selectItemAtIndex:0];
     [NSApp sendAction:profile.action to:profile.target from:profile];
-    assert([prefs.wubiProfile isEqual:@"wubi86"] && [[defaults stringForKey:@"MSIMEClientWubiProfile"] isEqual:@"wubi86"]);
+    assert([prefs.wubiProfile isEqual:@"wubi86"] && [[defaults stringForKey:@"LINGYAOClientWubiProfile"] isEqual:@"wubi86"]);
     assert([[prefs sharedPreferencesByMerging:@{@"wubi_profile": @"wubi98"}][@"wubi_profile"] isEqual:@"wubi86"]);
     prefs.wubiProfile = @"wubi06";
     assert([prefs.wubiProfile isEqual:@"wubi86"]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestSharedInputPreferences() {
-    NSString *suite = [@"msime.shared-input." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.shared-input." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     prefs.inputScheme = @"quanpin";
     prefs.shuangpinProfile = @"xiaohe";
     prefs.shuangpinPreeditUsesRaw = YES;
     ModeController *controller = [ModeController alloc];
     [controller setValue:prefs forKey:@"appearance"];
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     NSDictionary *shared = @{@"scheme": @"shuangpin", @"shuangpin_profile": @"microsoft", @"shuangpin_preedit_uses_raw": @NO};
     [controller applySharedToolbarPreferences:shared];
     assert([prefs.inputScheme isEqual:@"shuangpin"] && [prefs.shuangpinProfile isEqual:@"microsoft"] && !prefs.shuangpinPreeditUsesRaw);
@@ -876,7 +876,7 @@ static void TestSharedInputPreferences() {
     NSPopUpButton *preedit = (id)PreferenceControl(prefs, @selector(preeditChanged:));
     assert(SelectedSchemeIndex(prefs) == 1 && profile.indexOfSelectedItem == 3 && preedit.indexOfSelectedItem == 0);
     assert(saves == 0);
-    assert([[defaults stringForKey:@"MSIMEClientInputScheme"] isEqual:@"quanpin"]);
+    assert([[defaults stringForKey:@"LINGYAOClientInputScheme"] isEqual:@"quanpin"]);
     for (NSString *key in shared) assert([[prefs sharedPreferencesByMerging:shared][key] isEqual:shared[key]]);
     [controller applySharedToolbarPreferences:@{@"scheme": NSNull.null, @"shuangpin_profile": @42, @"shuangpin_preedit_uses_raw": @1}];
     [controller applySharedToolbarPreferences:@{}];
@@ -907,11 +907,11 @@ static void TestSharedInputPreferences() {
             NSDictionary *candidate = @{@"candidate_layout": count.integerValue == 7 ? @"horizontal" : @"vertical", @"candidate_font_size": @(size), @"candidate_page_size": count};
             [controller applySharedToolbarPreferences:candidate];
             assert(prefs.vertical == (count.integerValue != 7) && prefs.fontSize == size && prefs.pageSize == count.unsignedIntegerValue);
-            assert(layout.indexOfSelectedItem == (NSInteger)(count.integerValue == 7 ? 0 : 1) && font.indexOfSelectedItem == (NSInteger)size - 12 && page.indexOfSelectedItem == (NSInteger)msime::mac::CandidatePageSizeOptionIndex(count.unsignedIntegerValue));
+            assert(layout.indexOfSelectedItem == (NSInteger)(count.integerValue == 7 ? 0 : 1) && font.indexOfSelectedItem == (NSInteger)size - 12 && page.indexOfSelectedItem == (NSInteger)lingyao::mac::CandidatePageSizeOptionIndex(count.unsignedIntegerValue));
             for (NSString *key in candidate) assert([[prefs sharedPreferencesByMerging:candidate][key] isEqual:candidate[key]]);
         }
     }
-    assert(saves == 3 && [defaults objectForKey:@"MSIMEClientCandidateFontSize"] == nil);
+    assert(saves == 3 && [defaults objectForKey:@"LINGYAOClientCandidateFontSize"] == nil);
     for (id invalid in @[NSNull.null, @YES, @0, @99, @1.5, @"18"]) {
         [controller applySharedToolbarPreferences:@{@"candidate_layout": invalid, @"candidate_font_size": invalid, @"candidate_page_size": invalid}];
         assert(prefs.vertical && prefs.fontSize == 32 && prefs.pageSize == 9 && saves == 3);
@@ -927,10 +927,10 @@ static void TestSharedInputPreferences() {
     NSDictionary *candidateEdited = [prefs sharedPreferencesByMerging:@{}];
     assert([candidateEdited[@"candidate_layout"] isEqual:@"horizontal"] && [candidateEdited[@"candidate_font_size"] isEqual:@13] && [candidateEdited[@"candidate_page_size"] isEqual:@4]);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
-static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *appearance) {
+static void TestKeymap(NSUserDefaults *defaults, LINGYAOAppearancePreferences *appearance) {
     NSPopUpButton *profiles = (id)PreferenceControl(appearance, @selector(profileChanged:));
     NSArray *identifiers = @[@"xiaohe", @"ziranma", @"shoudao", @"microsoft"];
     NSArray *titles = @[@"小鹤双拼", @"自然码双拼", @"首道双拼", @"微软双拼"];
@@ -939,7 +939,7 @@ static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *app
         [profiles selectItemAtIndex:index];
         assert([NSApp sendAction:profiles.action to:profiles.target from:profiles]);
         assert([appearance.shuangpinProfile isEqual:identifiers[index]]);
-        MSIMEAppearancePreferences *restored = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot];
+        LINGYAOAppearancePreferences *restored = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot];
         assert([restored.shuangpinProfile isEqual:identifiers[index]]);
         NSPopUpButton *restoredProfiles = (id)PreferenceControl(restored, @selector(profileChanged:));
         assert([restoredProfiles.titleOfSelectedItem isEqual:titles[index]]);
@@ -949,17 +949,17 @@ static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *app
     toggle.state = NSControlStateValueOn;
     [NSApp sendAction:toggle.action to:toggle.target from:toggle];
     assert(appearance.shuangpinKeymap);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] shuangpinKeymap]);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] shuangpinKeymap]);
     HiddenKeymapPanel *panel = [[HiddenKeymapPanel alloc] init];
     assert(panel.ignoresMouseEvents && panel.floatingPanel);
     for (NSString *profile in @[@"xiaohe", @"ziranma", @"shoudao", @"microsoft"]) {
-        NSArray *rows = MSIMEShuangpinKeymapRows(profile);
+        NSArray *rows = LINGYAOShuangpinKeymapRows(profile);
         assert(rows.count == 3 && [rows[0] count] == 10 && [rows[2] count] == 7);
         assert([rows[1] count] == ([profile isEqual:@"microsoft"] ? 10 : 9));
         [panel setProfileName:profile];
         [panel.contentView layoutSubtreeIfNeeded];
         assert([panel.contentView.accessibilityLabel containsString:@"键位提示"]);
-        assert([MSIMEShuangpinZeroInitialText(profile) containsString:@"零声母"]);
+        assert([LINGYAOShuangpinZeroInitialText(profile) containsString:@"零声母"]);
         if ([profile isEqual:@"microsoft"]) {
             assert([rows[1][9][@"key"] isEqual:@";"]);
             assert([rows[1][9][@"codes"] containsString:@"ing"]);
@@ -972,7 +972,7 @@ static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *app
             assert(bitmap != nil);
             [panel.contentView cacheDisplayInRect:panel.contentView.bounds toBitmapImageRep:bitmap];
             assert(bitmap.pixelsWide >= 620 && bitmap.pixelsHigh >= 203);
-            NSString *directory = NSProcessInfo.processInfo.environment[@"MSIME_KEYMAP_SNAPSHOT_DIR"];
+            NSString *directory = NSProcessInfo.processInfo.environment[@"LINGYAO_KEYMAP_SNAPSHOT_DIR"];
             if (directory) {
                 NSString *file = [directory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@.png", profile, theme]];
                 assert([[bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}] writeToFile:file atomically:YES]);
@@ -981,9 +981,9 @@ static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *app
         [panel updateHighlightedKey:@""];
         assert(![panel.contentView.accessibilityValue containsString:@"当前按键"]);
     }
-    NSRect frame = MSIMEShuangpinKeymapPanelFrame(NSMakeRect(30, 400, 1, 20), NSMakeSize(620, 203), 60, NSMakeRect(0, 0, 1000, 800));
+    NSRect frame = LINGYAOShuangpinKeymapPanelFrame(NSMakeRect(30, 400, 1, 20), NSMakeSize(620, 203), 60, NSMakeRect(0, 0, 1000, 800));
     assert(frame.origin.x == 30 && frame.origin.y == 129);
-    frame = MSIMEShuangpinKeymapPanelFrame(NSMakeRect(990, 20, 1, 20), NSMakeSize(620, 203), 60, NSMakeRect(0, 0, 1000, 800));
+    frame = LINGYAOShuangpinKeymapPanelFrame(NSMakeRect(990, 20, 1, 20), NSMakeSize(620, 203), 60, NSMakeRect(0, 0, 1000, 800));
     assert(frame.origin.x == 364 && frame.origin.y == 108);
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
@@ -1073,7 +1073,7 @@ static void TestKeymap(NSUserDefaults *defaults, MSIMEAppearancePreferences *app
     assert(!panel.requestedVisible && toggle.state == NSControlStateValueOff);
 }
 
-static void TestPunctuation(NSUserDefaults *defaults, MSIMEAppearancePreferences *appearance) {
+static void TestPunctuation(NSUserDefaults *defaults, LINGYAOAppearancePreferences *appearance) {
     assert(appearance.chinesePunctuation);
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
@@ -1090,11 +1090,11 @@ static void TestPunctuation(NSUserDefaults *defaults, MSIMEAppearancePreferences
     assert(appearance.runtimeChinesePunctuation && session.punctuationCalls == 0);
     session.failFinish = NO;
     [controller floatingToolbarDidRequestTogglePunctuation:nil];
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
     assert([client.committed isEqual:@"测试"]);
     assert(!appearance.runtimeChinesePunctuation && !session.chinesePunctuation);
-    assert(appearance.chinesePunctuation && [defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] chinesePunctuation]);
+    assert(appearance.chinesePunctuation && [defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] chinesePunctuation]);
     session.chinesePunctuation = YES;
     [controller prepareSession];
     assert(!session.chinesePunctuation);
@@ -1113,15 +1113,15 @@ static void TestPunctuation(NSUserDefaults *defaults, MSIMEAppearancePreferences
     session.failFinish = NO;
     assert([controller handleEvent:toggle client:client]);
     assert(!appearance.runtimeChinesePunctuation && !session.chinesePunctuation && session.punctuationCalls > calls);
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION && [client.committed isEqual:@"测试"]);
-    assert(appearance.chinesePunctuation && [defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] chinesePunctuation]);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION && [client.committed isEqual:@"测试"]);
+    assert(appearance.chinesePunctuation && [defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] chinesePunctuation]);
     calls = session.punctuationCalls;
     assert([controller handleEvent:toggleEvent(47, NSEventModifierFlagControl, YES) client:client]);
     assert(!appearance.runtimeChinesePunctuation && session.punctuationCalls == calls);
     for (NSNumber *flags in @[@0, @(NSEventModifierFlagCommand), @(NSEventModifierFlagControl | NSEventModifierFlagShift), @(NSEventModifierFlagControl | NSEventModifierFlagOption), @(NSEventModifierFlagControl | NSEventModifierFlagCommand)])
-        assert(!MSIMEPunctuationToggle(toggleEvent(47, flags.unsignedIntegerValue, NO)));
-    assert(!MSIMEPunctuationToggle(toggleEvent(65, NSEventModifierFlagControl, NO))); // Keypad decimal.
+        assert(!LINGYAOPunctuationToggle(toggleEvent(47, flags.unsignedIntegerValue, NO)));
+    assert(!LINGYAOPunctuationToggle(toggleEvent(65, NSEventModifierFlagControl, NO))); // Keypad decimal.
     // The punctuation preference can be changed while English passthrough is active.
     appearance.englishMode = YES;
     assert([controller handleEvent:toggle client:client]);
@@ -1149,15 +1149,15 @@ static void TestPunctuation(NSUserDefaults *defaults, MSIMEAppearancePreferences
 }
 
 static void TestPairedPunctuationPreferences() {
-    NSString *suite = [@"msime.paired-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.paired-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(preferences.pairedPunctuation && [preferences.punctuationLock isEqual:@"follow"]);
     NSDictionary *initial = [preferences sharedPreferencesByMerging:@{}];
     assert([initial[@"paired_punctuation"] isEqual:@YES] && [initial[@"punctuation_lock"] isEqual:@"follow"]);
     [preferences applySharedInputPreferences:@{ @"paired_punctuation": @NO, @"punctuation_lock": @"english" }];
     assert(!preferences.pairedPunctuation && [preferences.punctuationLock isEqual:@"english"]);
-    assert([defaults objectForKey:@"MSIMEClientPairedPunctuation"] == nil && [defaults objectForKey:@"MSIMEClientPunctuationLock"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientPairedPunctuation"] == nil && [defaults objectForKey:@"LINGYAOClientPunctuationLock"] == nil);
     [preferences applySharedInputPreferences:@{ @"paired_punctuation": @1, @"punctuation_lock": @"invalid" }];
     assert(!preferences.pairedPunctuation && [preferences.punctuationLock isEqual:@"english"]);
     NSButton *paired = (id)PreferenceControl(preferences, @selector(pairedPunctuationChanged:));
@@ -1168,14 +1168,14 @@ static void TestPairedPunctuationPreferences() {
     [lock selectItemAtIndex:1];
     [NSApp sendAction:lock.action to:lock.target from:lock];
     assert(preferences.pairedPunctuation && [preferences.punctuationLock isEqual:@"chinese"]);
-    assert([defaults boolForKey:@"MSIMEClientPairedPunctuation"] && [[defaults stringForKey:@"MSIMEClientPunctuationLock"] isEqual:@"chinese"]);
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    assert([defaults boolForKey:@"LINGYAOClientPairedPunctuation"] && [[defaults stringForKey:@"LINGYAOClientPunctuationLock"] isEqual:@"chinese"]);
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(reopened.pairedPunctuation && [reopened.punctuationLock isEqual:@"chinese"]);
     [preferences applySharedInputPreferences:@{ @"paired_punctuation": @NO, @"punctuation_lock": @"follow" }];
     assert(!preferences.pairedPunctuation && [preferences.punctuationLock isEqual:@"follow"]);
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     [controller setValue:preferences forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     [controller setValue:client forKey:@"activeClient"];
@@ -1183,14 +1183,14 @@ static void TestPairedPunctuationPreferences() {
     session.punctuationView = @{ @"editing_text": @"", @"candidates": @[] };
     [controller syncPunctuation];
     assert(!session.pairedPunctuation && session.punctuationLock == 0 && session.pairedPunctuationCalls == 1 && session.punctuationLockCalls == 1);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestPairedPunctuationHostExclusion() {
-    assert(MSIMEPairedPunctuationExcludedBundleIdentifier(@"com.microsoft.Excel"));
-    assert(MSIMEPairedPunctuationExcludedBundleIdentifier(@"COM.MICROSOFT.EXCEL"));
-    assert(!MSIMEPairedPunctuationExcludedBundleIdentifier(@"com.apple.TextEdit"));
-    assert(!MSIMEPairedPunctuationExcludedBundleIdentifier(nil));
+    assert(LINGYAOPairedPunctuationExcludedBundleIdentifier(@"com.microsoft.Excel"));
+    assert(LINGYAOPairedPunctuationExcludedBundleIdentifier(@"COM.MICROSOFT.EXCEL"));
+    assert(!LINGYAOPairedPunctuationExcludedBundleIdentifier(@"com.apple.TextEdit"));
+    assert(!LINGYAOPairedPunctuationExcludedBundleIdentifier(nil));
 }
 
 static void TestPairedPunctuationClosesThePair() {
@@ -1198,9 +1198,9 @@ static void TestPairedPunctuationClosesThePair() {
     // their own closing mark, and this host used to append nothing at all, so the switch was on and
     // the page promised a pair that never arrived. IMK cannot move the client's caret, so the
     // closing mark rides in the marked text after it until the composition ends.
-    NSString *suite = [@"app.msime.test.paired." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"app.lingyao.test.paired." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(appearance.pairedPunctuation);
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
@@ -1302,14 +1302,14 @@ static void TestPairedPunctuationClosesThePair() {
     [controller apply:@{@"commit": @"你好（", @"view": @{@"editing_text": @"", @"caret_position": @0}}];
     assert([client.committed isEqual:@"你好（"] && client.marked.length == 0);
     assert(session.balanceCalls == balancedSoFar);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestPairedPunctuationClosesBrace() {
     // The reference routes `{` through its punctuation path and appends `}` (`_GetPairedPunctuationClosingFor`), with or without a live composition. The Engine answers `{` as ASCII, so the host opens the pair itself and the closing mark rides after the caret like the other pairs.
-    NSString *suite = [@"app.msime.test.paired-brace." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"app.lingyao.test.paired-brace." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(appearance.pairedPunctuation && appearance.runtimeChinesePunctuation && !appearance.runtimeFullWidthInput);
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
@@ -1379,7 +1379,7 @@ static void TestPairedPunctuationClosesBrace() {
         assert(session.asciiCalls == 1 && session.lastASCII == '{' && session.punctuationASCIICalls == punctuationCalls);
         assert([client.committed isEqual:@"{"] && client.marked.length == 0);
     }
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestEmojiBridgeFallback() {
@@ -1391,9 +1391,9 @@ static void TestEmojiBridgeFallback() {
 }
 
 static void TestMixedInputPreferences() {
-    NSString *suite = [@"msime.mixed-input." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.mixed-input." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     // Emoji mixed-input starts on like the source's `emoji_mixed_input = true`; kaomoji starts off.
     assert(preferences.mixedEnglishInput && preferences.mixedEnglishMinimumPrefix == 5 &&
            preferences.mixedEmojiInput && !preferences.mixedKaomojiInput);
@@ -1404,7 +1404,7 @@ static void TestMixedInputPreferences() {
         @"english": @NO, @"minimum_prefix": @7, @"emoji": @YES, @"kaomoji": @YES } }];
     assert(!preferences.mixedEnglishInput && preferences.mixedEnglishMinimumPrefix == 7 &&
            preferences.mixedEmojiInput && preferences.mixedKaomojiInput);
-    assert([defaults objectForKey:@"MSIMEClientMixedInput"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientMixedInput"] == nil);
     [preferences applySharedInputPreferences:@{ @"mixed_input": @{
         @"english": @1, @"minimum_prefix": @9, @"emoji": @"true", @"kaomoji": NSNull.null } }];
     assert(!preferences.mixedEnglishInput && preferences.mixedEnglishMinimumPrefix == 7 &&
@@ -1427,22 +1427,22 @@ static void TestMixedInputPreferences() {
            !preferences.mixedEmojiInput && !preferences.mixedKaomojiInput && prefix.enabled);
     NSDictionary *edited = [preferences sharedPreferencesByMerging:@{}][@"mixed_input"];
     assert(([edited isEqual:@{ @"english": @YES, @"minimum_prefix": @5, @"emoji": @NO, @"kaomoji": @NO }]));
-    assert([defaults dictionaryForKey:@"MSIMEClientMixedInput"] != nil);
+    assert([defaults dictionaryForKey:@"LINGYAOClientMixedInput"] != nil);
     // An explicitly stored NO for emoji survives reopening instead of falling back to the on default.
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(reopened.mixedEnglishInput && reopened.mixedEnglishMinimumPrefix == 5 &&
            !reopened.mixedEmojiInput && !reopened.mixedKaomojiInput);
     assert([[reopened sharedPreferencesByMerging:@{}][@"mixed_input"][@"emoji"] isEqual:@NO]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // Its own preference suite, not the shared one. Every keybinding here is published only once its native
 // default has actually been written, so on an appearance other tests have already touched the merge stops
 // being a pass-through and these assertions are about cross-test isolation that does not exist.
 static void TestCharacterSetShortcut(void) {
-    NSString *suite = [@"msime.character-set." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.character-set." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(appearance.characterSetShortcut);
     NSDictionary *keys = @{@"toggle_character_set_ctrl_shift_f":@NO, @"switch_language_shift":@NO};
     assert([[appearance sharedPreferencesByMerging:@{@"keybindings":keys}][@"keybindings"] isEqual:keys]);
@@ -1461,7 +1461,7 @@ static void TestCharacterSetShortcut(void) {
     assert(([merged[@"keybindings"] isEqual:@{@"toggle_character_set_ctrl_shift_f":@YES, @"switch_language_shift":@NO}]));
     NSDictionary *patch = [appearance sharedPreferencesByMerging:@{}];
     assert([patch[@"keybindings"] isEqual:@{@"toggle_character_set_ctrl_shift_f":@YES}]);
-    assert([MSIMEMergePreferenceSnapshot(@{@"keybindings":keys}, patch)[@"keybindings"] isEqual:merged[@"keybindings"]]);
+    assert([LINGYAOMergePreferenceSnapshot(@{@"keybindings":keys}, patch)[@"keybindings"] isEqual:merged[@"keybindings"]]);
 
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
@@ -1498,14 +1498,14 @@ static void TestCharacterSetShortcut(void) {
     [appearance applySharedInputPreferences:@{@"keybindings":keys}];
     assert(![controller handleEvent:ModeKey(3, flags, NO) client:client]);
     appearance.characterSetShortcut = NO;
-    assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] characterSetShortcut]);
+    assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] characterSetShortcut]);
     appearance.characterSetShortcut = YES;
     appearance.englishMode = english;
     assert(appearance.fullWidthInput == fullWidth && appearance.chinesePunctuation == punctuation);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
-static void TestDedicatedEnglish(MSIMEAppearancePreferences *appearance) {
+static void TestDedicatedEnglish(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
     ShortcutSession *session = [ShortcutSession new];
@@ -1524,7 +1524,7 @@ static void TestDedicatedEnglish(MSIMEAppearancePreferences *appearance) {
     session.failCancel = NO;
     assert([controller handleEvent:ModeKey(14, flags, NO) client:client]);
     assert(session.dedicatedEnglish && session.englishCandidateCalls == 1 && !appearance.englishMode);
-    assert(session.lastCommand == MSIME_CANCEL && client.committed == nil && client.marked.length == 0);
+    assert(session.lastCommand == LINGYAO_CANCEL && client.committed == nil && client.marked.length == 0);
     assert([[[controller menu] itemAtIndex:2] state] == NSControlStateValueOn);
     assert([[[controller menu] itemAtIndex:0] state] == NSControlStateValueOff);
     assert([controller handleEvent:ModeKey(14, flags, YES) client:client]);
@@ -1542,7 +1542,7 @@ static void TestDedicatedEnglish(MSIMEAppearancePreferences *appearance) {
     [controller setValue:@{@"editing_text":@"hello", @"candidates":@[], @"dedicated_english":@YES} forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(14, flags, NO) client:client]);
-    assert(session.lastCommand == MSIME_CANCEL && client.committed == nil && client.marked.length == 0);
+    assert(session.lastCommand == LINGYAO_CANCEL && client.committed == nil && client.marked.length == 0);
     assert(!session.dedicatedEnglish && !appearance.englishMode);
     // Switching to English by any route leaves the candidate mode, as the reference's status task calls SetEnglishInputMode(false) whenever the mode turns English, so switching back gives pinyin.
     assert([controller handleEvent:ModeKey(14, flags, NO) client:client]);
@@ -1572,13 +1572,13 @@ static void TestDedicatedEnglish(MSIMEAppearancePreferences *appearance) {
     }
 }
 
-static void TestFullWidth(NSUserDefaults *defaults, MSIMEAppearancePreferences *appearance) {
+static void TestFullWidth(NSUserDefaults *defaults, LINGYAOAppearancePreferences *appearance) {
     assert(!appearance.fullWidthInput);
     NSButton *control = (id)PreferenceControl(appearance, @selector(fullWidthChanged:));
     control.state = NSControlStateValueOn;
     [NSApp sendAction:control.action to:control.target from:control];
     assert(appearance.fullWidthInput);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] fullWidthInput]);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] fullWidthInput]);
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
     ShortcutSession *session = [ShortcutSession new];
@@ -1591,8 +1591,8 @@ static void TestFullWidth(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     assert([controller handleEvent:ModeKey(4, chord, NO) client:client]);
     // The chord switches the current app only and syncs the Engine at once; the saved starting value stays.
     assert(!appearance.runtimeFullWidthInput && !session.fullwidth);
-    assert(appearance.fullWidthInput && [defaults boolForKey:@"MSIMEClientFullWidthInput"]);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] fullWidthInput]);
+    assert(appearance.fullWidthInput && [defaults boolForKey:@"LINGYAOClientFullWidthInput"]);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] fullWidthInput]);
     assert([controller handleEvent:ModeKey(4, chord, YES) client:client]);
     assert(!appearance.runtimeFullWidthInput);
     assert([controller handleEvent:ModeKey(4, chord, NO) client:client]);
@@ -1609,7 +1609,7 @@ static void TestFullWidth(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     [controller appearanceChanged:nil];
     assert(appearance.runtimeFullWidthInput && session.fullwidth);
     for (NSEventModifierFlags extra : {NSEventModifierFlagCommand, NSEventModifierFlagOption})
-        assert(!msime::mac::IsFullWidthInputToggle(49, windowsChord | extra));
+        assert(!lingyao::mac::IsFullWidthInputToggle(49, windowsChord | extra));
     for (NSEventModifierFlags extra : {NSEventModifierFlagCommand, NSEventModifierFlagControl}) {
         assert(![controller handleEvent:ModeKey(4, chord | extra, NO) client:client]);
         assert(appearance.runtimeFullWidthInput);
@@ -1694,12 +1694,12 @@ static void TestFullWidth(NSUserDefaults *defaults, MSIMEAppearancePreferences *
 // and if that request is ever dropped, nothing else here notices: a phrase being assembled would go
 // back to arriving in the document one piece at a time, which looks like ordinary typing.
 static void TestSessionOptions() {
-    assert(!MSIMESessionOptions(nil, nil));
-    assert(!MSIMESessionOptions((NSDictionary *)@"not a dictionary", @"/synthetic/sound-packs"));
+    assert(!LINGYAOSessionOptions(nil, nil));
+    assert(!LINGYAOSessionOptions((NSDictionary *)@"not a dictionary", @"/synthetic/sound-packs"));
 
     NSDictionary *file = @{@"api_version":@1, @"resources":@"/synthetic/resources",
         @"preferences":@{@"scheme":@"quanpin"}};
-    NSDictionary *requested = MSIMESessionOptions(file, nil);
+    NSDictionary *requested = LINGYAOSessionOptions(file, nil);
     assert([requested[@"phrase_preedit"] isEqual:@YES]);
     // Everything the file carried is passed through untouched, including nested objects.
     for (NSString *key in file) assert([requested[key] isEqual:file[key]]);
@@ -1710,29 +1710,29 @@ static void TestSessionOptions() {
 
     // An options file that already says something about it does not get to say no: this host draws
     // the field, and a stale file predates the behaviour entirely.
-    NSDictionary *stale = MSIMESessionOptions(@{@"api_version":@1, @"phrase_preedit":@NO}, nil);
+    NSDictionary *stale = LINGYAOSessionOptions(@{@"api_version":@1, @"phrase_preedit":@NO}, nil);
     assert([stale[@"phrase_preedit"] isEqual:@YES]);
 
     // The built-in sound packs live in the bundle, while resources is EngineResources in Application Support, so the host library cannot find them beside it: the bundle's directory is named, unless the options file names one itself.
-    NSDictionary *sounds = MSIMESessionOptions(file, @"/synthetic/bundle/Contents/Resources/sound-packs");
+    NSDictionary *sounds = LINGYAOSessionOptions(file, @"/synthetic/bundle/Contents/Resources/sound-packs");
     assert([sounds[@"sound_packs"] isEqual:@"/synthetic/bundle/Contents/Resources/sound-packs"]);
     assert(sounds.count == file.count + 2 && !file[@"sound_packs"]);
-    NSDictionary *named = MSIMESessionOptions(@{@"api_version":@1, @"sound_packs":@"/configured/sound-packs"}, @"/synthetic/sound-packs");
+    NSDictionary *named = LINGYAOSessionOptions(@{@"api_version":@1, @"sound_packs":@"/configured/sound-packs"}, @"/synthetic/sound-packs");
     assert([named[@"sound_packs"] isEqual:@"/configured/sound-packs"]);
 
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSString *bundlePath = [root stringByAppendingPathComponent:@"Synthetic.bundle"];
     NSString *resources = [bundlePath stringByAppendingPathComponent:@"Contents/Resources"];
     assert([NSFileManager.defaultManager createDirectoryAtPath:resources withIntermediateDirectories:YES attributes:nil error:nil]);
-    assert([@{@"CFBundleIdentifier": @"app.msime.synthetic"} writeToURL:[NSURL fileURLWithPath:[bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"]] error:nil]);
-    assert(!MSIMEBundleSoundPacks([NSBundle bundleWithPath:bundlePath]));
+    assert([@{@"CFBundleIdentifier": @"app.lingyao.synthetic"} writeToURL:[NSURL fileURLWithPath:[bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"]] error:nil]);
+    assert(!LINGYAOBundleSoundPacks([NSBundle bundleWithPath:bundlePath]));
     assert([NSFileManager.defaultManager createDirectoryAtPath:[resources stringByAppendingPathComponent:@"sound-packs"] withIntermediateDirectories:NO attributes:nil error:nil]);
-    NSString *found = MSIMEBundleSoundPacks([NSBundle bundleWithPath:bundlePath]);
+    NSString *found = LINGYAOBundleSoundPacks([NSBundle bundleWithPath:bundlePath]);
     assert([found.lastPathComponent isEqual:@"sound-packs"] && found.isAbsolutePath);
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
 }
 
-static void TestKeypadDecimal(MSIMEAppearancePreferences *appearance) {
+static void TestKeypadDecimal(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -1777,7 +1777,7 @@ static void TestKeypadDecimal(MSIMEAppearancePreferences *appearance) {
 // composition and goes back to the application", so the only thing it did was commit the pinyin.
 // Japanese converts with Space and commits with Enter.
 //
-// Romaji is not what the user typed; かな is. This host sent MSIME_COMMIT_RAW on Enter for every
+// Romaji is not what the user typed; かな is. This host sent LINGYAO_COMMIT_RAW on Enter for every
 // scheme, which in Japanese commits `nihon` where the user meant にほん - and Space committed the
 // first conversion outright, so the second one could not be reached at all. Both are what every
 // Japanese input method does differently, and both touch hosts here already did it correctly.
@@ -1799,7 +1799,7 @@ static void TestKeypadDecimal(MSIMEAppearancePreferences *appearance) {
 @end
 
 // The selected input mode, 中, 英 or 日, follows the controller's state. A mode the system reports - picked from the input menu or reached with Ctrl+Space - sets the Chinese/English state and, for 中 and 日, the scheme, and is not selected back.
-static void TestSystemInputModeReport(MSIMEAppearancePreferences *appearance) {
+static void TestSystemInputModeReport(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ModeSelectingClient *client = [ModeSelectingClient new];
     ShortcutSession *session = [ShortcutSession new];
@@ -1810,9 +1810,9 @@ static void TestSystemInputModeReport(MSIMEAppearancePreferences *appearance) {
     const BOOL english = appearance.englishMode;
     appearance.englishMode = NO;
 
-    [controller systemDidReportInputMode:MSIMEEnglishInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOEnglishInputModeID client:client];
     assert(appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEEnglishInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOEnglishInputModeID client:client];
     assert(appearance.englishMode && client.selectedModes.count == 0);
 
     // Another source is not a mode switch of this input method.
@@ -1820,35 +1820,35 @@ static void TestSystemInputModeReport(MSIMEAppearancePreferences *appearance) {
     [controller systemDidReportInputMode:nil client:client];
     assert(appearance.englishMode && client.selectedModes.count == 0);
 
-    [controller systemDidReportInputMode:MSIMEChineseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOChineseInputModeID client:client];
     assert(!appearance.englishMode && client.selectedModes.count == 0);
 
     // 日 moves the scheme to japanese, 英 over it leaves the scheme alone, and 中 goes back to the Chinese scheme japanese was entered from.
-    // 回到的方案取决于系统是否启用了「双」模式（只读查询 TIS）：启用时选「中」表示全拼（见 MSIMESchemeForReportedInputMode）。装过本输入法的开发机上「双」通常已启用，CI 上没有；两条分支由 InputModeIdentifiersTest 用桩函数确定地覆盖，这里只验证控制器把报告接到了这条规则上。
-    NSString *returned = MSIMEInputSourceIsEnabled(MSIMEShuangpinInputModeID) ? @"quanpin" : @"shuangpin";
+    // 回到的方案取决于系统是否启用了「双」模式（只读查询 TIS）：启用时选「中」表示全拼（见 LINGYAOSchemeForReportedInputMode）。装过本输入法的开发机上「双」通常已启用，CI 上没有；两条分支由 InputModeIdentifiersTest 用桩函数确定地覆盖，这里只验证控制器把报告接到了这条规则上。
+    NSString *returned = LINGYAOInputSourceIsEnabled(LINGYAOShuangpinInputModeID) ? @"quanpin" : @"shuangpin";
     NSString *scheme = appearance.inputScheme;
     appearance.inputScheme = @"shuangpin";
-    [controller systemDidReportInputMode:MSIMEJapaneseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOJapaneseInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"japanese"] && [appearance.lastChineseScheme isEqual:@"shuangpin"] &&
            !appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEEnglishInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOEnglishInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"japanese"] && appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEJapaneseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOJapaneseInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"japanese"] && !appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEChineseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOChineseInputModeID client:client];
     assert([appearance.inputScheme isEqual:returned] && !appearance.englishMode && client.selectedModes.count == 0);
 
     // 한 does the same for korean, straight from 日 too, and 中 still goes back to the Chinese scheme both were entered from.
-    [controller systemDidReportInputMode:MSIMEKoreanInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOKoreanInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"korean"] && [appearance.lastChineseScheme isEqual:returned] &&
            !appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEJapaneseInputModeID client:client];
-    [controller systemDidReportInputMode:MSIMEKoreanInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOJapaneseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOKoreanInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"korean"] && [appearance.lastChineseScheme isEqual:returned] &&
            client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEEnglishInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOEnglishInputModeID client:client];
     assert([appearance.inputScheme isEqual:@"korean"] && appearance.englishMode && client.selectedModes.count == 0);
-    [controller systemDidReportInputMode:MSIMEChineseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOChineseInputModeID client:client];
     assert([appearance.inputScheme isEqual:returned] && !appearance.englishMode && client.selectedModes.count == 0);
     appearance.inputScheme = scheme;
     appearance.englishMode = english;
@@ -1862,14 +1862,14 @@ static void TestSystemInputModeReport(MSIMEAppearancePreferences *appearance) {
 
 // Cantonese, Zhuyin and Stroke are offered only where their dictionary is installed: the input menu leaves them out, its check falls on the scheme the Engine falls back to, and the settings radios are disabled. An opt-in mode is enabled when the scheme running moves to its scheme - in this process, while the input method was not running, or by the dictionary arriving after the scheme was picked - and never for the scheme the last sync already showed.
 static void TestOptInSchemeModes() {
-    NSString *suite = [@"msime.opt-in-modes." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.opt-in-modes." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    NSString *dictionaries = [NSTemporaryDirectory() stringByAppendingPathComponent:[@"msime-language-dictionaries-" stringByAppendingString:NSUUID.UUID.UUIDString]];
+    NSString *dictionaries = [NSTemporaryDirectory() stringByAppendingPathComponent:[@"lingyao-language-dictionaries-" stringByAppendingString:NSUUID.UUID.UUIDString]];
     assert([NSFileManager.defaultManager createDirectoryAtPath:dictionaries withIntermediateDirectories:YES attributes:nil error:nil]);
-    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"msime-cantonese.db"] atomically:YES]);
+    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"lingyao-cantonese.db"] atomically:YES]);
     NSMutableArray<NSString *> *enabled = [NSMutableArray array];
-    auto makeController = [&](MSIMEAppearancePreferences *appearance, BOOL withEnabler) {
-        MSIMEInputController *controller = [MSIMEInputController alloc];
+    auto makeController = [&](LINGYAOAppearancePreferences *appearance, BOOL withEnabler) {
+        LINGYAOInputController *controller = [LINGYAOInputController alloc];
         SchemeHostSession *session = [SchemeHostSession new];
         session.hostOptions = @{@"language_dictionaries": dictionaries};
         [controller setValue:appearance forKey:@"appearance"];
@@ -1878,12 +1878,12 @@ static void TestOptInSchemeModes() {
         if (withEnabler) [controller setValue:^OSStatus(NSString *identifier) { [enabled addObject:identifier]; return noErr; } forKey:@"optInInputModeEnabler"];
         return controller;
     };
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.inputScheme = @"quanpin";
-    MSIMEInputController *controller = makeController(appearance, YES);
+    LINGYAOInputController *controller = makeController(appearance, YES);
     id client = [controller valueForKey:@"activeClient"];
 
-    // 只有 msime-cantonese.db 时菜单按引擎顺序正好列出八个方案，没有注音或笔画。
+    // 只有 lingyao-cantonese.db 时菜单按引擎顺序正好列出八个方案，没有注音或笔画。
     NSMenuItem *schemeItem = [controller.menu itemAtIndex:9];
     NSMutableArray<NSString *> *listed = [NSMutableArray array];
     for (NSMenuItem *item in schemeItem.submenu.itemArray) [listed addObject:item.representedObject];
@@ -1898,7 +1898,7 @@ static void TestOptInSchemeModes() {
     [NSApp sendAction:@selector(selectInputScheme:) to:controller from:[schemeItem.submenu itemAtIndex:6]];
     [controller syncSystemInputModeForClient:client];
     [controller syncSystemInputModeForClient:client];
-    assert(([enabled isEqualToArray:@[MSIMEVietnameseInputModeID]]) && [appearance.lastSyncedInputScheme isEqual:@"vietnamese"]);
+    assert(([enabled isEqualToArray:@[LINGYAOVietnameseInputModeID]]) && [appearance.lastSyncedInputScheme isEqual:@"vietnamese"]);
 
     // Zhuyin without its dictionary runs as quanpin: the menu checks 全拼, and nothing is enabled.
     appearance.inputScheme = @"zhuyin";
@@ -1907,38 +1907,38 @@ static void TestOptInSchemeModes() {
     schemeItem = [controller.menu itemAtIndex:9];
     assert([schemeItem.title isEqual:@"输入方案（全拼）"] && [schemeItem.submenu itemAtIndex:0].state == NSControlStateValueOn);
     // Installing the dictionary afterwards makes zhuyin the scheme running, which enables its mode.
-    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"msime-zhuyin.db"] atomically:YES]);
+    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"lingyao-zhuyin.db"] atomically:YES]);
     [controller syncSystemInputModeForClient:client];
-    assert(([enabled isEqualToArray:@[MSIMEVietnameseInputModeID, MSIMEZhuyinInputModeID]]));
+    assert(([enabled isEqualToArray:@[LINGYAOVietnameseInputModeID, LINGYAOZhuyinInputModeID]]));
     schemeItem = [controller.menu itemAtIndex:9];
     assert(schemeItem.submenu.numberOfItems == 9 && [schemeItem.title isEqual:@"输入方案（注音）"]);
 
     // A later process starting on the scheme the last sync showed enables nothing, so a mode removed from the input menu stays removed.
-    MSIMEAppearancePreferences *relaunched = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
-    MSIMEInputController *next = makeController(relaunched, YES);
+    LINGYAOAppearancePreferences *relaunched = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOInputController *next = makeController(relaunched, YES);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
     assert(enabled.count == 2);
     // A scheme picked while the input method was not running is still a change when it next syncs.
-    [defaults setObject:@"cantonese" forKey:@"MSIMEClientInputScheme"];
-    relaunched = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    [defaults setObject:@"cantonese" forKey:@"LINGYAOClientInputScheme"];
+    relaunched = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     next = makeController(relaunched, YES);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
-    assert(([enabled.lastObject isEqual:MSIMECantoneseInputModeID]) && enabled.count == 3);
+    assert(([enabled.lastObject isEqual:LINGYAOCantoneseInputModeID]) && enabled.count == 3);
 
     // 第一次同步就落在粤拼上时同样启用「粤」：持久记录出现之前就在用粤拼的人，否则永远等不到这一次切换。
-    NSString *firstSuite = [@"msime.opt-in-first-sync." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *firstSuite = [@"lingyao.opt-in-first-sync." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *firstDefaults = [[NSUserDefaults alloc] initWithSuiteName:firstSuite];
-    [firstDefaults setObject:@"cantonese" forKey:@"MSIMEClientInputScheme"];
-    MSIMEAppearancePreferences *first = [[MSIMEAppearancePreferences alloc] initWithDefaults:firstDefaults];
+    [firstDefaults setObject:@"cantonese" forKey:@"LINGYAOClientInputScheme"];
+    LINGYAOAppearancePreferences *first = [[LINGYAOAppearancePreferences alloc] initWithDefaults:firstDefaults];
     assert(!first.lastSyncedInputScheme);
     next = makeController(first, YES);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
-    assert(enabled.count == 4 && [enabled.lastObject isEqual:MSIMECantoneseInputModeID] && [first.lastSyncedInputScheme isEqual:@"cantonese"]);
-    MSIMERemoveTestPreferenceSuite(firstDefaults, firstSuite);
+    assert(enabled.count == 4 && [enabled.lastObject isEqual:LINGYAOCantoneseInputModeID] && [first.lastSyncedInputScheme isEqual:@"cantonese"]);
+    LINGYAORemoveTestPreferenceSuite(firstDefaults, firstSuite);
 
     // 系统没能启用模式时不记录这次切换，下一次同步再试，成功后才记录。
-    [defaults setObject:@"quanpin" forKey:@"MSIMEClientLastSyncedInputScheme"];
-    relaunched = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    [defaults setObject:@"quanpin" forKey:@"LINGYAOClientLastSyncedInputScheme"];
+    relaunched = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     next = makeController(relaunched, NO);
     __block OSStatus enableStatus = paramErr;
     [next setValue:^OSStatus(NSString *identifier) { [enabled addObject:identifier]; return enableStatus; } forKey:@"optInInputModeEnabler"];
@@ -1946,80 +1946,80 @@ static void TestOptInSchemeModes() {
     assert(enabled.count == 5 && [relaunched.lastSyncedInputScheme isEqual:@"quanpin"]);
     enableStatus = noErr;
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
-    assert(enabled.count == 6 && [enabled.lastObject isEqual:MSIMECantoneseInputModeID] && [relaunched.lastSyncedInputScheme isEqual:@"cantonese"]);
+    assert(enabled.count == 6 && [enabled.lastObject isEqual:LINGYAOCantoneseInputModeID] && [relaunched.lastSyncedInputScheme isEqual:@"cantonese"]);
 
     // A stand-in session with no enabler never reaches TIS, and the change stays unrecorded so a real session would still enable it.
-    [defaults setObject:@"quanpin" forKey:@"MSIMEClientLastSyncedInputScheme"];
-    relaunched = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    [defaults setObject:@"quanpin" forKey:@"LINGYAOClientLastSyncedInputScheme"];
+    relaunched = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     next = makeController(relaunched, NO);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
     assert(enabled.count == 6 && [relaunched.lastSyncedInputScheme isEqual:@"quanpin"]);
 
-    // 笔画没有 msime-stroke.db 时按全拼运行、不启用模式；词库到位后成为实际方案，启用「笔」，菜单最后一项是笔画并打勾。
-    [defaults setObject:@"stroke" forKey:@"MSIMEClientInputScheme"];
-    relaunched = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    // 笔画没有 lingyao-stroke.db 时按全拼运行、不启用模式；词库到位后成为实际方案，启用「笔」，菜单最后一项是笔画并打勾。
+    [defaults setObject:@"stroke" forKey:@"LINGYAOClientInputScheme"];
+    relaunched = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     next = makeController(relaunched, YES);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
     assert(enabled.count == 6 && [relaunched.lastSyncedInputScheme isEqual:@"quanpin"]);
-    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"msime-stroke.db"] atomically:YES]);
+    assert([NSData.data writeToFile:[dictionaries stringByAppendingPathComponent:@"lingyao-stroke.db"] atomically:YES]);
     [next syncSystemInputModeForClient:[next valueForKey:@"activeClient"]];
-    assert(enabled.count == 7 && [enabled.lastObject isEqual:MSIMEStrokeInputModeID] && [relaunched.lastSyncedInputScheme isEqual:@"stroke"]);
+    assert(enabled.count == 7 && [enabled.lastObject isEqual:LINGYAOStrokeInputModeID] && [relaunched.lastSyncedInputScheme isEqual:@"stroke"]);
     schemeItem = [next.menu itemAtIndex:9];
     assert(schemeItem.submenu.numberOfItems == 10 && [schemeItem.title isEqual:@"输入方案（笔画）"]);
     NSMenuItem *strokeItem = [schemeItem.submenu itemAtIndex:9];
     assert([strokeItem.representedObject isEqual:@"stroke"] && [strokeItem.title isEqual:@"笔画"] && strokeItem.state == NSControlStateValueOn);
-    assert([NSFileManager.defaultManager removeItemAtPath:[dictionaries stringByAppendingPathComponent:@"msime-stroke.db"] error:nil]);
-    [defaults setObject:@"cantonese" forKey:@"MSIMEClientInputScheme"];
+    assert([NSFileManager.defaultManager removeItemAtPath:[dictionaries stringByAppendingPathComponent:@"lingyao-stroke.db"] error:nil]);
+    [defaults setObject:@"cantonese" forKey:@"LINGYAOClientInputScheme"];
 
-    // The settings radios read the runtime options on disk: with only msime-cantonese.db named there, 注音 and 笔画 are disabled and say why, and the rest are enabled.
-    assert([NSFileManager.defaultManager removeItemAtPath:[dictionaries stringByAppendingPathComponent:@"msime-zhuyin.db"] error:nil]);
-    NSString *optionsPath = MSIMEDefaultRuntimeOptionsPath(NSFileManager.defaultManager);
+    // The settings radios read the runtime options on disk: with only lingyao-cantonese.db named there, 注音 and 笔画 are disabled and say why, and the rest are enabled.
+    assert([NSFileManager.defaultManager removeItemAtPath:[dictionaries stringByAppendingPathComponent:@"lingyao-zhuyin.db"] error:nil]);
+    NSString *optionsPath = LINGYAODefaultRuntimeOptionsPath(NSFileManager.defaultManager);
     assert(![NSFileManager.defaultManager fileExistsAtPath:optionsPath]);
     assert([NSFileManager.defaultManager createDirectoryAtPath:optionsPath.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil]);
     assert([[NSJSONSerialization dataWithJSONObject:@{@"language_dictionaries": dictionaries} options:0 error:nil] writeToFile:optionsPath atomically:YES]);
-    MSIMEAppearancePreferences *settings = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
-    NSArray<NSControl *> *radios = MSIMEFindPreferenceControls(settings.window.contentView, @selector(schemeRadioChanged:));
+    LINGYAOAppearancePreferences *settings = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
+    NSArray<NSControl *> *radios = LINGYAOFindPreferenceControls(settings.window.contentView, @selector(schemeRadioChanged:));
     assert(radios.count == 10);
     for (NSControl *radio in radios) {
         const BOOL missing = radio.tag == 6 || radio.tag == 9;
         assert(radio.enabled == !missing && (missing ? [radio.toolTip isEqual:@"未安装该方案的词库，暂不可用"] : radio.toolTip == nil));
     }
     // 选中粤拼而「粤」不在输入法列表里时，输入方式卡片说明去「粤语」下添加；没有探针时不显示，加进去之后也不显示。
-    auto hintRow = [](MSIMEAppearancePreferences *preferences) {
-        return MSIMEFindPreferenceView(preferences.window.contentView, ^BOOL(NSView *view) {
+    auto hintRow = [](LINGYAOAppearancePreferences *preferences) {
+        return LINGYAOFindPreferenceView(preferences.window.contentView, ^BOOL(NSView *view) {
             return [view.accessibilityLabel isEqual:@"菜单栏入口提示"];
         });
     };
-    [defaults setObject:@"cantonese" forKey:@"MSIMEClientInputScheme"];
-    settings = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    [defaults setObject:@"cantonese" forKey:@"LINGYAOClientInputScheme"];
+    settings = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(hintRow(settings).hidden);
     static BOOL cantoneseAdded = NO;
-    MSIMEInputModeEnabledProbe = [](NSString *identifier) -> BOOL {
-        return cantoneseAdded || ![identifier isEqual:MSIMECantoneseInputModeID];
+    LINGYAOInputModeEnabledProbe = [](NSString *identifier) -> BOOL {
+        return cantoneseAdded || ![identifier isEqual:LINGYAOCantoneseInputModeID];
     };
-    settings = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    settings = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     NSView *hint = hintRow(settings);
     assert(hint && !hint.hidden);
-    NSTextField *hintText = (NSTextField *)MSIMEFindPreferenceViewOfClass(hint, NSTextField.class);
+    NSTextField *hintText = (NSTextField *)LINGYAOFindPreferenceViewOfClass(hint, NSTextField.class);
     assert([hintText.stringValue containsString:@"「灵耀输入法 · 粤」"] && [hintText.stringValue containsString:@"「粤语」"]);
-    assert(MSIMEFindPreferenceControl(hint, @selector(openInputSourceSettings:)));
+    assert(LINGYAOFindPreferenceControl(hint, @selector(openInputSourceSettings:)));
     cantoneseAdded = YES;
     [NSNotificationCenter.defaultCenter postNotificationName:NSWindowDidBecomeKeyNotification object:settings.window];
     assert(hint.hidden);
-    MSIMEInputModeEnabledProbe = nullptr;
-    [defaults setObject:@"quanpin" forKey:@"MSIMEClientInputScheme"];
+    LINGYAOInputModeEnabledProbe = nullptr;
+    [defaults setObject:@"quanpin" forKey:@"LINGYAOClientInputScheme"];
 
     assert([NSFileManager.defaultManager removeItemAtPath:optionsPath error:nil]);
-    settings = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
-    radios = MSIMEFindPreferenceControls(settings.window.contentView, @selector(schemeRadioChanged:));
+    settings = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
+    radios = LINGYAOFindPreferenceControls(settings.window.contentView, @selector(schemeRadioChanged:));
     for (NSControl *radio in radios) assert(radio.enabled == (radio.tag != 5 && radio.tag != 6 && radio.tag != 9));
 
     // 藏文和越南文一样按需启用，而且不需要词库：从菜单选中藏文时启用「藏」一次，再同步同一方案不重复。
-    NSString *tibetanSuite = [@"msime.opt-in-tibetan." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *tibetanSuite = [@"lingyao.opt-in-tibetan." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *tibetanDefaults = [[NSUserDefaults alloc] initWithSuiteName:tibetanSuite];
-    MSIMEAppearancePreferences *tibetanAppearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:tibetanDefaults];
+    LINGYAOAppearancePreferences *tibetanAppearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:tibetanDefaults];
     tibetanAppearance.inputScheme = @"quanpin";
-    MSIMEInputController *tibetanController = makeController(tibetanAppearance, YES);
+    LINGYAOInputController *tibetanController = makeController(tibetanAppearance, YES);
     id tibetanClient = [tibetanController valueForKey:@"activeClient"];
     [tibetanController syncSystemInputModeForClient:tibetanClient];
     const NSUInteger enabledBefore = enabled.count;
@@ -2031,16 +2031,16 @@ static void TestOptInSchemeModes() {
     [NSApp sendAction:@selector(selectInputScheme:) to:tibetanController from:tibetanItem];
     [tibetanController syncSystemInputModeForClient:tibetanClient];
     [tibetanController syncSystemInputModeForClient:tibetanClient];
-    assert(enabled.count == enabledBefore + 1 && [enabled.lastObject isEqual:MSIMETibetanInputModeID]);
+    assert(enabled.count == enabledBefore + 1 && [enabled.lastObject isEqual:LINGYAOTibetanInputModeID]);
     assert([tibetanAppearance.lastSyncedInputScheme isEqual:@"tibetan"] && [tibetanAppearance.lastChineseScheme isEqual:@"quanpin"]);
     assert([[tibetanController.menu itemAtIndex:9].title isEqual:@"输入方案（藏文）"]);
-    MSIMERemoveTestPreferenceSuite(tibetanDefaults, tibetanSuite);
+    LINGYAORemoveTestPreferenceSuite(tibetanDefaults, tibetanSuite);
 
     [NSFileManager.defaultManager removeItemAtPath:dictionaries error:nil];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
-static void TestFloatingToolbarMenuToggle(MSIMEAppearancePreferences *appearance) {
+static void TestFloatingToolbarMenuToggle(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     appearance.floatingToolbarEnabled = YES;
@@ -2109,7 +2109,7 @@ static void TestFloatingToolbarMenuToggle(MSIMEAppearancePreferences *appearance
 @end
 
 // A gloss changes what the card shows, never the composition. Its arrival must not write the marked text again: IMK services the next key inside that synchronous call, which is how a keystroke, reranking and all, came to run nested in every gloss arrival.
-static void TestGlossArrivalRedrawsOnlyTheCard(MSIMEAppearancePreferences *appearance) {
+static void TestGlossArrivalRedrawsOnlyTheCard(LINGYAOAppearancePreferences *appearance) {
     ServiceCountingController *controller = [ServiceCountingController alloc];
     GlossArrivalSession *session = [GlossArrivalSession new];
     NestingClient *client = [NestingClient new];
@@ -2140,7 +2140,7 @@ static void TestGlossArrivalRedrawsOnlyTheCard(MSIMEAppearancePreferences *appea
 }
 
 // An apply: that writes marked text can have a newer key handled inside that call; the older transition finishing afterwards must not put its view back over the newer one.
-static void TestNestedApplyKeepsTheNewerView(MSIMEAppearancePreferences *appearance) {
+static void TestNestedApplyKeepsTheNewerView(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     NestingClient *client = [NestingClient new];
@@ -2178,7 +2178,7 @@ static void TestCandidatePanelSingleOwner() {
     assert(!currentPanel.isVisible);
 }
 
-static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
+static void TestJapaneseConversionKeys(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -2211,7 +2211,7 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
     [controller setValue:composing(3) forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(36, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_READING);
+    assert(session.lastCommand == LINGYAO_COMMIT_READING);
 
     // Space starts the conversion instead of committing it: nothing reaches the Engine, because
     // the first candidate is already the highlighted one.
@@ -2223,7 +2223,7 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
 
     // The next press steps to the following candidate.
     assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_NEXT_CANDIDATE);
+    assert(session.lastCommand == LINGYAO_NEXT_CANDIDATE);
 
     // Enter now takes the candidate that was stepped to rather than the reading.
     assert([controller handleEvent:ModeKey(36, 0, NO) client:client]);
@@ -2236,7 +2236,7 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
         assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_FIRST_CANDIDATE);
+    assert(session.lastCommand == LINGYAO_FIRST_CANDIDATE);
 
     // Editing the reading abandons the conversion: Enter is the kana again.
     [controller setValue:composing(3) forKey:@"view"];
@@ -2246,17 +2246,17 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
     [controller setValue:edited forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(36, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_READING);
+    assert(session.lastCommand == LINGYAO_COMMIT_READING);
 
     // Every other scheme keeps the keys it had: Space commits the candidate, Enter the raw input.
     [controller setValue:composing(0) forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
     [controller setValue:composing(0) forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(36, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_RAW);
+    assert(session.lastCommand == LINGYAO_COMMIT_RAW);
 
     // A Japanese composition with no candidates leaves Space alone, and a chord is never this.
     NSMutableDictionary *bare = [composing(3) mutableCopy];
@@ -2264,7 +2264,7 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
     [controller setValue:bare forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
 
     // A bare Shift+R shows its raw prefix as the one Fallback candidate (source 9). Like Windows, the first Space commits it; there is nothing to convert.
     NSMutableDictionary *fallback = [composing(3) mutableCopy];
@@ -2276,14 +2276,14 @@ static void TestJapaneseConversionKeys(MSIMEAppearancePreferences *appearance) {
     [controller setValue:fallback forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(49, 0, NO) client:client]);
-    assert(session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
     [controller setValue:composing(3) forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     [controller handleEvent:ModeKey(36, NSEventModifierFlagControl, NO) client:client];
-    assert(session.lastCommand != MSIME_COMMIT_READING);
+    assert(session.lastCommand != LINGYAO_COMMIT_READING);
 }
 
-static void TestGlossSensePage(MSIMEAppearancePreferences *appearance) {
+static void TestGlossSensePage(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -2318,7 +2318,7 @@ static void TestGlossSensePage(MSIMEAppearancePreferences *appearance) {
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(36, NSEventModifierFlagControl, NO) client:client]);
     assert([client.committed isEqual:@"hello"]);
-    assert(session.lastCommand == MSIME_CANCEL);
+    assert(session.lastCommand == LINGYAO_CANCEL);
 
     // Several senses open the page instead. The candidates on screen are the senses, and the first
     // one is highlighted.
@@ -2335,7 +2335,7 @@ static void TestGlossSensePage(MSIMEAppearancePreferences *appearance) {
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(20, 0, NO) client:client]); // 3
     assert([client.committed isEqual:@"greetings"]);
-    assert(session.lastCommand == MSIME_CANCEL);
+    assert(session.lastCommand == LINGYAO_CANCEL);
     // The page is gone afterwards, together with the composition it was drawn from.
     assert([[controller valueForKey:@"view"][@"candidates"] count] == 0);
 
@@ -2371,19 +2371,19 @@ static void TestGlossSensePage(MSIMEAppearancePreferences *appearance) {
     client.committed = nil;
     session.lastCommand = UINT32_MAX;
     assert(![controller handleEvent:ModeKey(36, NSEventModifierFlagControl, NO) client:client]);
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
 
     // With candidate translations turned off there is nothing to offer.
     appearance.candidateTranslations = NO;
     compose(@"hello; hi");
     session.lastCommand = UINT32_MAX;
     assert(![controller handleEvent:ModeKey(36, NSEventModifierFlagControl, NO) client:client]);
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
     appearance.candidateTranslations = YES;
 }
 
 // Ctrl+Enter translations, the senses page and the Option/Ctrl+digit gloss columns insert text through the same Traditional conversion as every other commit (the reference's CandidateTextForOutput), and the page that is drawn converted inserts what it shows.
-static void TestGlossSenseTraditionalOutput(MSIMEAppearancePreferences *appearance) {
+static void TestGlossSenseTraditionalOutput(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -2416,7 +2416,7 @@ static void TestGlossSenseTraditionalOutput(MSIMEAppearancePreferences *appearan
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(36, NSEventModifierFlagControl, NO) client:client]);
     assert([client.committed isEqual:@"蘋果"]);
-    assert(session.lastCommand == MSIME_CANCEL);
+    assert(session.lastCommand == LINGYAO_CANCEL);
 
     // The senses page picks the sense through the same conversion it is drawn with.
     compose(@"头发; 苹果", nil);
@@ -2426,7 +2426,7 @@ static void TestGlossSenseTraditionalOutput(MSIMEAppearancePreferences *appearan
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(19, 0, NO) client:client]); // 2
     assert([client.committed isEqual:@"蘋果"]);
-    assert(session.lastCommand == MSIME_CANCEL);
+    assert(session.lastCommand == LINGYAO_CANCEL);
 
     // Option+digit takes the first gloss column of that candidate.
     compose(@"苹果", nil);
@@ -2451,7 +2451,7 @@ static void TestGlossSenseTraditionalOutput(MSIMEAppearancePreferences *appearan
     appearance.traditionalOutput = savedTraditional;
 }
 
-static void TestSegmentEditingChords(MSIMEAppearancePreferences *appearance) {
+static void TestSegmentEditingChords(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -2463,8 +2463,8 @@ static void TestSegmentEditingChords(MSIMEAppearancePreferences *appearance) {
                                  @"candidates": @[@{@"text": @"你好"}] };
     [controller setValue:composing forKey:@"view"];
 
-    for (NSArray *entry in @[@[@51, @(MSIME_BACKSPACE_SEGMENT)], @[@123, @(MSIME_MOVE_LEFT_SEGMENT)],
-                             @[@124, @(MSIME_MOVE_RIGHT_SEGMENT)]]) {
+    for (NSArray *entry in @[@[@51, @(LINGYAO_BACKSPACE_SEGMENT)], @[@123, @(LINGYAO_MOVE_LEFT_SEGMENT)],
+                             @[@124, @(LINGYAO_MOVE_RIGHT_SEGMENT)]]) {
         const unsigned short code = [entry[0] unsignedShortValue];
         session.lastCommand = UINT32_MAX;
         assert([controller handleEvent:ModeKey(code, NSEventModifierFlagControl, NO) client:client]);
@@ -2479,7 +2479,7 @@ static void TestSegmentEditingChords(MSIMEAppearancePreferences *appearance) {
         session.lastCommand = UINT32_MAX;
         assert(![controller handleEvent:ModeKey(51, NSEventModifierFlagControl | extra.unsignedIntegerValue, NO)
                                  client:client]);
-        assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+        assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
         [controller setValue:composing forKey:@"view"];
     }
 
@@ -2488,7 +2488,7 @@ static void TestSegmentEditingChords(MSIMEAppearancePreferences *appearance) {
     [controller setValue:@{ @"focused": @YES, @"editing_text": @"", @"candidates": @[] } forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert(![controller handleEvent:ModeKey(51, NSEventModifierFlagControl, NO) client:client]);
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
 
     // A candidate page with no editing text still counts as a composition: the pinyin has been
     // consumed by earlier selections and the page is what is left to edit.
@@ -2496,41 +2496,41 @@ static void TestSegmentEditingChords(MSIMEAppearancePreferences *appearance) {
                   forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(123, NSEventModifierFlagControl, NO) client:client]);
-    assert(session.lastCommand == MSIME_MOVE_LEFT_SEGMENT);
+    assert(session.lastCommand == LINGYAO_MOVE_LEFT_SEGMENT);
 
     // A Ctrl+Backspace that emptied the reading of a half-chosen phrase leaves only the chosen piece, as the reference's `keep_creating_word_after_empty_raw` does. That is still a composition: the next Ctrl+Backspace deletes the piece instead of going to the application.
     NSDictionary *heldOnly = @{ @"focused": @YES, @"editing_text": @"", @"candidates": @[], @"phrase_prefix": @"海滩" };
-    assert(MSIMEViewHasComposition(heldOnly));
-    assert(!MSIMEViewHasComposition(@{ @"focused": @YES, @"editing_text": @"", @"candidates": @[], @"phrase_prefix": @"" }));
-    assert(!MSIMEViewHasComposition(@{}));
+    assert(LINGYAOViewHasComposition(heldOnly));
+    assert(!LINGYAOViewHasComposition(@{ @"focused": @YES, @"editing_text": @"", @"candidates": @[], @"phrase_prefix": @"" }));
+    assert(!LINGYAOViewHasComposition(@{}));
     [controller setValue:heldOnly forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert([controller handleEvent:ModeKey(51, NSEventModifierFlagControl, NO) client:client]);
-    assert(session.lastCommand == MSIME_BACKSPACE_SEGMENT);
+    assert(session.lastCommand == LINGYAO_BACKSPACE_SEGMENT);
 }
 
-// The scheme behaviour the controller used to infer from "scheme == 4" is read from the view and from msime::mac::scheme traits, so Zhuyin and Vietnamese get the rules of the scheme they behave like rather than quanpin's. The views here are what the runtime would publish; the real Korean session in TestRealSessionComposition covers scheme 4 end to end.
-static void TestSchemeTraitsFromView(MSIMEAppearancePreferences *appearance) {
+// The scheme behaviour the controller used to infer from "scheme == 4" is read from the view and from lingyao::mac::scheme traits, so Zhuyin and Vietnamese get the rules of the scheme they behave like rather than quanpin's. The views here are what the runtime would publish; the real Korean session in TestRealSessionComposition covers scheme 4 end to end.
+static void TestSchemeTraitsFromView(LINGYAOAppearancePreferences *appearance) {
     // View fields the runtime publishes are read as they are, not recomputed from the scheme.
-    assert(MSIMEScriptConversionApplies(@{@"scheme": @5, @"local_mode": @"none", @"script_conversion": @YES}));
-    assert(!MSIMEScriptConversionApplies(@{@"scheme": @0, @"local_mode": @"none", @"script_conversion": @NO}));
-    assert(!MSIMEScriptConversionApplies(@{@"scheme": @0, @"local_mode": @"none"}));
-    assert(!MSIMEScriptConversionApplies(nil));
-    assert(MSIMECandidateListOpen(@{@"scheme": @6, @"candidate_list_open": @YES, @"candidates": @[@{@"text": @"中"}]}));
-    assert(!MSIMECandidateListOpen(@{@"scheme": @4, @"candidates": @[@{@"text": @"韓"}]}));
-    assert(!MSIMECandidateListOpen(@{@"scheme": @0, @"candidate_list_open": @NO, @"candidates": @[@{@"text": @"中"}]}));
+    assert(LINGYAOScriptConversionApplies(@{@"scheme": @5, @"local_mode": @"none", @"script_conversion": @YES}));
+    assert(!LINGYAOScriptConversionApplies(@{@"scheme": @0, @"local_mode": @"none", @"script_conversion": @NO}));
+    assert(!LINGYAOScriptConversionApplies(@{@"scheme": @0, @"local_mode": @"none"}));
+    assert(!LINGYAOScriptConversionApplies(nil));
+    assert(LINGYAOCandidateListOpen(@{@"scheme": @6, @"candidate_list_open": @YES, @"candidates": @[@{@"text": @"中"}]}));
+    assert(!LINGYAOCandidateListOpen(@{@"scheme": @4, @"candidates": @[@{@"text": @"韓"}]}));
+    assert(!LINGYAOCandidateListOpen(@{@"scheme": @0, @"candidate_list_open": @NO, @"candidates": @[@{@"text": @"中"}]}));
     // Glosses: the three Chinese schemes that always had them, not temporary Japanese inside them, and none of the schemes after them. A view without a scheme is quanpin.
-    for (NSNumber *scheme in @[@0, @1, @2, @4]) assert(MSIMEViewShowsGlosses(@{@"scheme": scheme}));
-    for (NSNumber *scheme in @[@3, @5, @6, @7, @8, @9, @99]) assert(!MSIMEViewShowsGlosses(@{@"scheme": scheme}));
-    assert(!MSIMEViewShowsGlosses(@{@"scheme": @0, @"local_mode": @"temporary_japanese"}));
-    assert(MSIMEViewShowsGlosses(@{}));
+    for (NSNumber *scheme in @[@0, @1, @2, @4]) assert(LINGYAOViewShowsGlosses(@{@"scheme": scheme}));
+    for (NSNumber *scheme in @[@3, @5, @6, @7, @8, @9, @99]) assert(!LINGYAOViewShowsGlosses(@{@"scheme": scheme}));
+    assert(!LINGYAOViewShowsGlosses(@{@"scheme": @0, @"local_mode": @"temporary_japanese"}));
+    assert(LINGYAOViewShowsGlosses(@{}));
     // Scheme traits hold only while the scheme's own rules do: dedicated English and the local modes keep theirs.
-    assert(MSIMESchemeTrait(@{@"scheme": @6}, msime::mac::scheme::LocksCaret));
-    assert(MSIMESchemeTrait(@{@"scheme": @7, @"local_mode": @"none"}, msime::mac::scheme::LocksCaret));
-    assert(!MSIMESchemeTrait(@{@"scheme": @7, @"dedicated_english": @YES}, msime::mac::scheme::LocksCaret));
-    assert(MSIMESchemeTrait(@{@"scheme": @8, @"local_mode": @"none"}, msime::mac::scheme::LocksCaret));
-    assert(!MSIMESchemeTrait(@{@"scheme": @6, @"local_mode": @"emoji"}, msime::mac::scheme::LocksCaret));
-    assert(!MSIMESchemeTrait(nil, msime::mac::scheme::LocksCaret));
+    assert(LINGYAOSchemeTrait(@{@"scheme": @6}, lingyao::mac::scheme::LocksCaret));
+    assert(LINGYAOSchemeTrait(@{@"scheme": @7, @"local_mode": @"none"}, lingyao::mac::scheme::LocksCaret));
+    assert(!LINGYAOSchemeTrait(@{@"scheme": @7, @"dedicated_english": @YES}, lingyao::mac::scheme::LocksCaret));
+    assert(LINGYAOSchemeTrait(@{@"scheme": @8, @"local_mode": @"none"}, lingyao::mac::scheme::LocksCaret));
+    assert(!LINGYAOSchemeTrait(@{@"scheme": @6, @"local_mode": @"emoji"}, lingyao::mac::scheme::LocksCaret));
+    assert(!LINGYAOSchemeTrait(nil, lingyao::mac::scheme::LocksCaret));
 
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
@@ -2550,7 +2550,7 @@ static void TestSchemeTraitsFromView(MSIMEAppearancePreferences *appearance) {
         [controller setValue:composing(scheme) forKey:@"view"];
         session.lastCommand = UINT32_MAX;
         assert([controller handleEvent:ModeKey(51, NSEventModifierFlagControl, NO) client:client] == !locked);
-        assert(session.lastCommand == (locked ? MSIME_FINISH_COMPOSITION : MSIME_BACKSPACE_SEGMENT));
+        assert(session.lastCommand == (locked ? LINGYAO_FINISH_COMPOSITION : LINGYAO_BACKSPACE_SEGMENT));
     }
 
     // Option+Return opens the candidate list of a scheme that has one to open (Korean, Zhuyin) and is swallowed while composing; elsewhere it finishes the composition and goes to the application as before.
@@ -2559,7 +2559,7 @@ static void TestSchemeTraitsFromView(MSIMEAppearancePreferences *appearance) {
         [controller setValue:composing(scheme) forKey:@"view"];
         session.lastCommand = UINT32_MAX;
         assert([controller handleEvent:ModeKey(36, NSEventModifierFlagOption, NO) client:client] == opens);
-        assert(session.lastCommand == (opens ? MSIME_OPEN_CANDIDATE_LIST : MSIME_FINISH_COMPOSITION));
+        assert(session.lastCommand == (opens ? LINGYAO_OPEN_CANDIDATE_LIST : LINGYAO_FINISH_COMPOSITION));
     }
     // Dedicated English keeps its own rules inside Zhuyin: no list to open there.
     NSMutableDictionary *dedicated = [composing(@6) mutableCopy];
@@ -2567,7 +2567,7 @@ static void TestSchemeTraitsFromView(MSIMEAppearancePreferences *appearance) {
     [controller setValue:dedicated forKey:@"view"];
     session.lastCommand = UINT32_MAX;
     assert(![controller handleEvent:ModeKey(36, NSEventModifierFlagOption, NO) client:client]);
-    assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+    assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
 
     // 没有组字时，大写锁定下的大写字母交还给应用，除非方案自己组它：韩文折成不带 Shift 的字母键，越南文和藏文打出大写字母（威利转写里大写是另一个字母）。
     NSEvent *capsA = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagCapsLock timestamp:0
@@ -2590,9 +2590,9 @@ static void TestSchemeTraitsFromView(MSIMEAppearancePreferences *appearance) {
 
 // Keys a scheme spells with reach the Engine as characters before the host reads them as a candidate digit, a paging key, Space's selection or a paired mark, and Down opens a closed Zhuyin list. The views are what the runtime publishes for each state (design 3.3: Zhuyin's spelling symbols idle, composing and with the list open).
 static void TestSchemeKeyRouting() {
-    NSString *suite = [@"app.msime.test.scheme-key-routing." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"app.lingyao.test.scheme-key-routing." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.englishMode = NO;
     [appearance applySharedCandidatePreferences:@{@"navigation": @{@"minus_equal": @YES, @"arrows": @NO}}];
     assert([appearance navigationEnabled:@"minus_equal"] && ![appearance navigationEnabled:@"arrows"]);
@@ -2641,7 +2641,7 @@ static void TestSchemeKeyRouting() {
     assert(send(view(@6, @"", zhuyinIdle, NO), key(18, @"1", 0), NO) && session.lastASCII == '1');
     // With the list open, `-` spells ㄦ instead of turning a page and `0` spells ㄢ instead of picking a row.
     assert(send(view(@6, @"su3", zhuyinListOpen, YES), key(27, @"-", 0), YES) && session.lastASCII == '-');
-    assert(session.lastCommand != MSIME_PREVIOUS_PAGE);
+    assert(session.lastCommand != LINGYAO_PREVIOUS_PAGE);
     const NSUInteger selectsBefore = session.selectCalls;
     assert(send(view(@6, @"su3", zhuyinListOpen, YES), key(29, @"0", 0), YES) && session.lastASCII == '0');
     assert(session.selectCalls == selectsBefore);
@@ -2677,23 +2677,23 @@ static void TestSchemeKeyRouting() {
     const NSEventModifierFlags arrowFlags = NSEventModifierFlagFunction | NSEventModifierFlagNumericPad;
     NSString *down = [NSString stringWithFormat:@"%C", (unichar)NSDownArrowFunctionKey];
     assert(handle(view(@6, @"su3", zhuyinComposing, NO), key(125, down, arrowFlags), NO));
-    assert(session.lastCommand == MSIME_OPEN_CANDIDATE_LIST && session.asciiCalls == asciiBefore);
+    assert(session.lastCommand == LINGYAO_OPEN_CANDIDATE_LIST && session.asciiCalls == asciiBefore);
     [appearance applySharedCandidatePreferences:@{@"navigation": @{@"arrows": @YES}}];
     assert(handle(view(@6, @"su3", zhuyinComposing, NO), key(125, down, arrowFlags), NO));
-    assert(session.lastCommand == MSIME_OPEN_CANDIDATE_LIST && session.asciiCalls == asciiBefore);
+    assert(session.lastCommand == LINGYAO_OPEN_CANDIDATE_LIST && session.asciiCalls == asciiBefore);
     // With the list open Down moves the highlight as in any list, and with Shift held or nothing composing it is not the list key.
     appearance.vertical = YES;
     assert(handle(view(@6, @"su3", zhuyinListOpen, YES), key(125, down, arrowFlags), YES));
-    assert(session.lastCommand == MSIME_NEXT_CANDIDATE && session.asciiCalls == asciiBefore);
+    assert(session.lastCommand == LINGYAO_NEXT_CANDIDATE && session.asciiCalls == asciiBefore);
     appearance.vertical = NO;
     send(view(@6, @"su3", zhuyinComposing, NO), key(125, down, arrowFlags | NSEventModifierFlagShift), NO);
-    assert(session.lastCommand != MSIME_OPEN_CANDIDATE_LIST);
+    assert(session.lastCommand != LINGYAO_OPEN_CANDIDATE_LIST);
     send(view(@6, @"", zhuyinIdle, NO), key(125, down, arrowFlags), NO);
-    assert(session.lastCommand != MSIME_OPEN_CANDIDATE_LIST);
+    assert(session.lastCommand != LINGYAO_OPEN_CANDIDATE_LIST);
     // Down in a scheme without a Down-opened list keeps its arrow meaning.
     for (NSNumber *scheme in @[@0, @4, @5, @7, @9]) {
         send(view(scheme, @"abc", @"", NO), key(125, down, arrowFlags), NO);
-        assert(session.lastCommand == MSIME_NEXT_CANDIDATE);
+        assert(session.lastCommand == LINGYAO_NEXT_CANDIDATE);
     }
     [appearance applySharedCandidatePreferences:@{@"navigation": @{@"arrows": @NO}}];
 
@@ -2715,7 +2715,7 @@ static void TestSchemeKeyRouting() {
     assert(send(view(@8, @"pad", tibetanComposing, NO), key(24, @"+", NSEventModifierFlagShift), NO) && session.lastASCII == '+');
     assert(send(view(@8, @"g", tibetanComposing, NO), key(47, @".", 0), NO) && session.lastASCII == '.');
     assert(send(view(@8, @"k", tibetanComposing, NO), key(27, @"-", 0), NO) && session.lastASCII == '-');
-    assert(session.lastCommand != MSIME_PREVIOUS_PAGE);
+    assert(session.lastCommand != LINGYAO_PREVIOUS_PAGE);
     assert(send(view(@8, @"bsgra", tibetanComposing, NO), key(39, @"'", 0), NO) && session.lastASCII == '\'');
     assert(send(view(@8, @"bkra shis", tibetanComposing, NO), key(44, @"/", 0), NO) && session.lastASCII == '/');
     assert(session.punctuationASCIICalls == punctuationRoutes && session.enginePunctuationCalls == 0 && session.contextualPunctuationCalls == 0);
@@ -2724,9 +2724,9 @@ static void TestSchemeKeyRouting() {
     assert(send(view(@8, @"", tibetanIdle, NO), key(17, @"T", NSEventModifierFlagShift), NO) && session.lastASCII == 'T' && session.lastShift);
     assert(send(view(@8, @"k", tibetanComposing, NO), key(0, @"A", NSEventModifierFlagCapsLock), NO) && session.lastASCII == 'A' && !session.lastShift);
     // 空格上屏藏文加音节点、回车只上屏藏文、Esc 先退回威利原文，都是引擎命令，不是字符。
-    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(49, @" ", 0), NO) && session.lastCommand == MSIME_COMMIT_CANDIDATE && session.asciiCalls == asciiBefore);
-    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(36, @"\r", 0), NO) && session.lastCommand == MSIME_COMMIT_RAW && session.asciiCalls == asciiBefore);
-    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(53, @"\x1b", 0), NO) && session.lastCommand == MSIME_CANCEL && session.asciiCalls == asciiBefore);
+    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(49, @" ", 0), NO) && session.lastCommand == LINGYAO_COMMIT_CANDIDATE && session.asciiCalls == asciiBefore);
+    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(36, @"\r", 0), NO) && session.lastCommand == LINGYAO_COMMIT_RAW && session.asciiCalls == asciiBefore);
+    assert(handle(view(@8, @"bkra", tibetanComposing, NO), key(53, @"\x1b", 0), NO) && session.lastCommand == LINGYAO_CANCEL && session.asciiCalls == asciiBefore);
 
     // Stroke spells with the letters h s p n z and the wildcard x, so it publishes no spelling symbols: every stroke key reaches the Engine as a plain letter, idle or composing, and the Engine decides which of them start a composition.
     const struct { unsigned short code; char letter; } strokeKeys[] = {{4, 'h'}, {1, 's'}, {35, 'p'}, {45, 'n'}, {6, 'z'}, {7, 'x'}};
@@ -2745,7 +2745,7 @@ static void TestSchemeKeyRouting() {
     panel.requestedVisible = YES;
     asciiBefore = session.asciiCalls;
     assert([controller handleEvent:key(18, @"1", 0) client:client] && session.asciiCalls == asciiBefore);
-    assert(!send(stroke, key(49, @" ", 0), YES) && session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(!send(stroke, key(49, @" ", 0), YES) && session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
     assert(session.asciiCalls == asciiBefore);
 
     // Quanpin is unchanged: with the panel up a digit picks a row, `-` turns the page and Space commits the candidate.
@@ -2756,14 +2756,14 @@ static void TestSchemeKeyRouting() {
     panel.requestedVisible = YES;
     asciiBefore = session.asciiCalls;
     assert([controller handleEvent:key(18, @"1", 0) client:client] && session.asciiCalls == asciiBefore);
-    assert(!send(quanpin, key(27, @"-", 0), YES) && session.lastCommand == MSIME_PREVIOUS_PAGE);
-    assert(!send(quanpin, key(49, @" ", 0), YES) && session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(!send(quanpin, key(27, @"-", 0), YES) && session.lastCommand == LINGYAO_PREVIOUS_PAGE);
+    assert(!send(quanpin, key(49, @" ", 0), YES) && session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
     assert(session.asciiCalls == asciiBefore);
     session.nextTransition = nil;
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
-static void TestKeypadOperators(MSIMEAppearancePreferences *appearance) {
+static void TestKeypadOperators(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ShortcutClient *client = [ShortcutClient new];
@@ -2811,9 +2811,9 @@ static void TestKeypadOperators(MSIMEAppearancePreferences *appearance) {
 }
 
 static void TestSmartPunctuationPreferences() {
-    NSString *suite = [@"msime.smart-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.smart-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     // The source ships the whole smart-punctuation family off, and a fresh macOS profile follows it.
     assert(!appearance.smartPunctuation && !appearance.smartPunctuationRepeatToChinese);
     assert([[appearance sharedPreferencesByMerging:@{}][@"smart_punctuation"] isEqual:@NO]);
@@ -2917,7 +2917,7 @@ static void TestSmartPunctuationPreferences() {
     [defaults removePersistentDomainForName:suite];
 }
 
-static void TestScreenKeyboardShortcut(MSIMEAppearancePreferences *appearance) {
+static void TestScreenKeyboardShortcut(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
     [controller setValue:appearance forKey:@"appearance"];
@@ -2952,7 +2952,7 @@ static void TestScreenKeyboardShortcut(MSIMEAppearancePreferences *appearance) {
     appearance.englishMode = previousEnglishMode;
 }
 
-static void TestMaintenanceShortcuts(MSIMEAppearancePreferences *appearance) {
+static void TestMaintenanceShortcuts(LINGYAOAppearancePreferences *appearance) {
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
     ShortcutSession *session = [ShortcutSession new];
@@ -3031,9 +3031,9 @@ static void RecordBaseDeactivation(id object, SEL selector, id sender) {
 @end
 
 static void TestStaleClientDeactivation() {
-    NSString *suite = [@"msime.deactivation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.deactivation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ModeController *controller = [ModeController alloc];
     ShortcutClient *oldClient = [ShortcutClient new], *current = [ShortcutClient new];
     ShortcutSession *session = [ShortcutSession new];
@@ -3081,16 +3081,16 @@ static void TestStaleClientDeactivation() {
     [controller deactivateServer:current];
     assert(session.focusCalls == 1 && toolbar.calls == 0 && baseDeactivationCalls == 1);
     method_setImplementation(base, original);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // Key sounds, the commit sound and background music, as the controller asks the session for them. The session decides whether anything is switched on; what is pinned here is which key class each key reports, that auto-repeat, key-up and secure event input stay silent, that dictated text and results the Engine computed are kept out of what counts as typing, and that music follows the controller that is actually active.
 static void TestSoundsFollowKeysCommitsAndActivation() {
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.sounds." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.sounds." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.fullWidthInput = NO;
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
@@ -3138,8 +3138,8 @@ static void TestSoundsFollowKeysCommitsAndActivation() {
 
     // A result the expression, command or mention mode produced makes the commit sound but is not typing; ordinary text is both.
     PassthroughStatisticsCall(root, @{@"operation": @"set_enabled", @"enabled": @YES});
-    MSIMEReloadTypingStatisticsEnabled(root);
-    assert(MSIMETypingStatisticsEnabled.load(std::memory_order_relaxed));
+    LINGYAOReloadTypingStatisticsEnabled(root);
+    assert(LINGYAOTypingStatisticsEnabled.load(std::memory_order_relaxed));
     [controller apply:@{ @"handled": @YES, @"commit": @"一百二十三", @"view": idle,
                          @"commit_context": @{ @"scheme": @0, @"local_mode": @"expression", @"typing_statistics": @NO } }];
     assert(session.commitSounds == 2);
@@ -3148,9 +3148,9 @@ static void TestSoundsFollowKeysCommitsAndActivation() {
                          @"commit_context": @{ @"scheme": @0, @"local_mode": @"none", @"typing_statistics": @YES } }];
     assert(session.commitSounds == 3);
     assert([PassthroughStatisticsDetail(root)[@"characters"][@"han"] integerValue] == 2);
-    MSIMETypingStatisticsEnabled.store(false, std::memory_order_relaxed);
+    LINGYAOTypingStatisticsEnabled.store(false, std::memory_order_relaxed);
     // Dictated text lands through the same path, and is not a keystroke to answer.
-    [controller setValue:@(static_cast<NSInteger>(msime::mac::TypingSource::Voice)) forKey:@"typingSourceOverride"];
+    [controller setValue:@(static_cast<NSInteger>(lingyao::mac::TypingSource::Voice)) forKey:@"typingSourceOverride"];
     [controller apply:@{ @"handled": @YES, @"commit": @"语音", @"view": idle }];
     assert(session.commitSounds == 3);
 
@@ -3174,7 +3174,7 @@ static void TestSoundsFollowKeysCommitsAndActivation() {
     assert(([nextSession.musicStates isEqual:@[@YES, @NO]]));
     method_setImplementation(base, original);
 
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
 }
 
@@ -3218,7 +3218,7 @@ static void TestSoundsFollowKeysCommitsAndActivation() {
     return read.snapshot;
 }
 - (void)completePreferenceLoad:(NSDictionary *)snapshot error:(NSError *)error generation:(uint64_t)generation
-                       session:(MSIMEClientSession *)session client:(id)client {
+                       session:(LINGYAOClientSession *)session client:(id)client {
     assert(NSThread.isMainThread);
     [super completePreferenceLoad:snapshot error:error generation:generation session:session client:client];
     ++self.completions;
@@ -3247,9 +3247,9 @@ static void WaitForPreferenceCompletions(AsyncPreferencesController *controller,
 
 static void TestPreferenceClientGeneration() {
     for (NSNumber *returnToFirst in @[@NO, @YES]) {
-        NSString *suite = [@"msime.preference-focus." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"lingyao.preference-focus." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         prefs.englishMode = YES;
         AsyncPreferencesController *controller = [AsyncPreferencesController alloc];
         ShortcutClient *first = [ShortcutClient new], *second = [ShortcutClient new];
@@ -3288,7 +3288,7 @@ static void TestPreferenceClientGeneration() {
         WaitForPreferenceCompletions(controller, 3);
         assert(controller.appliedPreferences.count == 2 && !prefs.chinesePunctuation);
         assert(session.updates == (session ? 2 : 0));
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
 }
 
@@ -3304,9 +3304,9 @@ static void TestPreferenceClientGeneration() {
 
 // 每个控制器都观察同一份外观设置，所以改动由最先注册的那个保存，而它往往是早已失去焦点的控制器。保存后只重新载入它，持有焦点的会话就停留在原来的设置上：从 한 切到 中 要等下一次每秒一次的轮询才到达 Engine，在此之前敲的键按韩文组字，音节又把新方案挡到它结束。保存完成后，持有焦点的控制器应立即载入保存的文档。
 static void TestSavedPreferencesReachTheFocusedController() {
-    NSString *suite = [@"msime.preference-focus-save." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.preference-focus-save." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     ReloadCountingController *saver = [ReloadCountingController alloc];
     [saver setValue:prefs forKey:@"appearance"];
@@ -3324,9 +3324,9 @@ static void TestSavedPreferencesReachTheFocusedController() {
         [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
     assert(saver.reloads == 1 && focused.reloads == 1);
     NSError *error = nil;
-    assert([MSIMEClientSession loadPreferencesInDirectory:root error:&error] && !error);
+    assert([LINGYAOClientSession loadPreferencesInDirectory:root error:&error] && !error);
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // 切换输入模式就是切换方案，而方案只能通过共享文档到达 Engine。Ctrl+Space 之后敲的第一个键必须按新方案组字，此时后台保存和轮询都还没轮到运行循环：切换当场写入文档并应用到会话。用真实会话逐个方向检查，也检查输入法菜单，并且随后的保存不能改动这次切换。
@@ -3341,13 +3341,13 @@ static void TestModeSwitchReachesTheSessionBeforeTheNextKey() {
         if (![name isEqual:@"preferences"]) options[name] = path;
     }
     NSError *error = nil;
-    MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+    LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
     assert(session && !error);
     assert([session setFocused:YES error:&error] && !error);
-    NSString *suite = [@"msime.mode-switch-session." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.mode-switch-session." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
     prefs.inputScheme = @"quanpin";
     prefs.englishMode = NO;
     ShortcutClient *client = [ShortcutClient new];
@@ -3359,27 +3359,27 @@ static void TestModeSwitchReachesTheSessionBeforeTheNextKey() {
     [controller setValue:client forKey:@"activeClient"];
     [controller setValue:[root stringByAppendingPathComponent:@"preferences"] forKey:@"preferencesDirectory"];
     [controller setValue:[[HiddenCandidatePanel alloc] init] forKey:@"panel"];
-    MSIMEFocusedController = controller;
-    MSIMEResetSystemInputModeState(MSIMESharedSystemInputModeState());
+    LINGYAOFocusedController = controller;
+    LINGYAOResetSystemInputModeState(LINGYAOSharedSystemInputModeState());
     auto scheme = ^NSInteger { return [[controller valueForKey:@"view"][@"scheme"] integerValue]; };
     auto type = ^(unsigned short keyCode, NSString *letter) {
         assert([controller handleEvent:KeypadKey(keyCode, letter, 0, NO) client:client]);
     };
 
     // 中 切到 한：紧接着的字母就是韩文字母（자모）。
-    [controller systemDidReportInputMode:MSIMEKoreanInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOKoreanInputModeID client:client];
     type(15, @"r");
-    assert(scheme() == msime::mac::KoreanScheme && [client.marked isEqual:@"\u3131"]);
+    assert(scheme() == lingyao::mac::KoreanScheme && [client.marked isEqual:@"\u3131"]);
     // 音节未完成时从 한 切到 中：先把音节上屏，下一个字母按拼音处理。
-    [controller systemDidReportInputMode:MSIMEChineseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOChineseInputModeID client:client];
     assert([client.insertions.lastObject isEqual:@"\u3131"]);
     type(45, @"n");
     assert(scheme() == 0 && [client.marked isEqual:@"n"]);
     // 中 切到 日 再切回来。
-    [controller systemDidReportInputMode:MSIMEJapaneseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOJapaneseInputModeID client:client];
     type(40, @"k");
     assert(scheme() == 3);
-    [controller systemDidReportInputMode:MSIMEChineseInputModeID client:client];
+    [controller systemDidReportInputMode:LINGYAOChineseInputModeID client:client];
     type(45, @"n");
     assert(scheme() == 0 && [client.marked isEqual:@"n"]);
     // 输入法菜单里的方案项走同一条路径。
@@ -3387,7 +3387,7 @@ static void TestModeSwitchReachesTheSessionBeforeTheNextKey() {
     korean.representedObject = @"korean";
     [controller selectInputScheme:korean];
     type(15, @"r");
-    assert(scheme() == msime::mac::KoreanScheme && [client.marked isEqual:@"\u3131"]);
+    assert(scheme() == lingyao::mac::KoreanScheme && [client.marked isEqual:@"\u3131"]);
 
     // 外观改动触发的后台保存会再写一遍相同的偏好，之后的重新载入既不会再切换一次，也不会切回去。
     [controller persistAppearancePreferences];
@@ -3395,14 +3395,14 @@ static void TestModeSwitchReachesTheSessionBeforeTheNextKey() {
     NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:1.5];
     while (deadline.timeIntervalSinceNow > 0) [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     type(15, @"r");
-    assert(scheme() == msime::mac::KoreanScheme && [prefs.inputScheme isEqual:@"korean"]);
-    NSDictionary *stored = [MSIMEClientSession loadPreferencesInDirectory:[root stringByAppendingPathComponent:@"preferences"] error:&error];
+    assert(scheme() == lingyao::mac::KoreanScheme && [prefs.inputScheme isEqual:@"korean"]);
+    NSDictionary *stored = [LINGYAOClientSession loadPreferencesInDirectory:[root stringByAppendingPathComponent:@"preferences"] error:&error];
     assert(!error && [stored[@"preferences"][@"scheme"] isEqual:@"korean"]);
 
-    MSIMEFocusedController = nil;
-    MSIMEResetSystemInputModeState(MSIMESharedSystemInputModeState());
+    LINGYAOFocusedController = nil;
+    LINGYAOResetSystemInputModeState(LINGYAOSharedSystemInputModeState());
     [NSFileManager.defaultManager removeItemAtPath:root error:nil];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // The poll reads the preferences document once a second, and most of those reads find exactly what
@@ -3410,9 +3410,9 @@ static void TestModeSwitchReachesTheSessionBeforeTheNextKey() {
 // writes a diagnostic line - once a second, for nothing. It also buried the diagnostic log under
 // `preferences_applied`, which is how it was noticed at all.
 static void TestPreferenceRevisionSkipsUnchangedDocuments() {
-    NSString *suite = [@"msime.preference-revision." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.preference-revision." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     AsyncPreferencesController *controller = [AsyncPreferencesController alloc];
     ShortcutClient *client = [ShortcutClient new];
     AsyncPreferenceSession *session = [AsyncPreferenceSession new];
@@ -3461,7 +3461,7 @@ static void TestPreferenceRevisionSkipsUnchangedDocuments() {
     // A local edit invalidating what was applied - so a document rolled back to a revision this
     // session already saw is applied again - is the load state's own rule, pinned next to it in
     // preference-load-state rather than here: appearanceChanged: reaches half the controller.
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // A preferences document that is not JSON is repaired by the host and the repaired snapshot applied, once per directory: a failure that repair cannot fix must not turn the one-second poll into a repair attempt every second.
@@ -3489,7 +3489,7 @@ static void TestPreferenceRevisionSkipsUnchangedDocuments() {
     return self.recovery;
 }
 - (void)completePreferenceLoad:(NSDictionary *)snapshot error:(NSError *)error generation:(uint64_t)generation
-                       session:(MSIMEClientSession *)session client:(id)client {
+                       session:(LINGYAOClientSession *)session client:(id)client {
     [super completePreferenceLoad:snapshot error:error generation:generation session:session client:client];
     ++self.completions;
 }
@@ -3508,9 +3508,9 @@ static void WaitForRecoveringCompletions(RecoveringPreferencesController *contro
 }
 
 static void TestUnreadablePreferencesAreRecoveredOnce() {
-    NSString *suite = [@"msime.preference-recovery." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.preference-recovery." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     enum Case { Repaired, Refused, Readable };
     for (int kase : {Repaired, Refused, Readable}) {
         RecoveringPreferencesController *controller = [RecoveringPreferencesController alloc];
@@ -3572,7 +3572,7 @@ static void TestUnreadablePreferencesAreRecoveredOnce() {
     [evicted reloadPreferences];
     WaitForRecoveringCompletions(evicted, 2);
     assert(evicted.recoverCalls == 2);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 @interface VoiceSettingsPersistenceController : AsyncPreferencesController
@@ -3603,15 +3603,15 @@ static void TestProviderSettingsPersistTheSharedSnapshot() {
 
 // A Chinese/English switch is not part of the shared document, so it asks no controller to save it. Saving on every Shift tap wrote the whole in-memory view of the settings over whatever another writer had just saved.
 static void TestInputModeSwitchDoesNotSaveSharedPreferences() {
-    NSString *suite = [@"msime.mode-switch-save." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.mode-switch-save." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     VoiceSettingsPersistenceController *controller = [VoiceSettingsPersistenceController alloc];
     [controller setValue:prefs forKey:@"appearance"];
     [NSNotificationCenter.defaultCenter addObserver:controller selector:@selector(appearanceChanged:)
-                                               name:MSIMEAppearanceDidChangeNotification object:prefs];
+                                               name:LINGYAOAppearanceDidChangeNotification object:prefs];
     __block NSUInteger announcements = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++announcements; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++announcements; }];
     prefs.englishMode = YES;
     prefs.englishMode = NO;
     // Observers still hear about the switch; only the save is skipped.
@@ -3619,8 +3619,8 @@ static void TestInputModeSwitchDoesNotSaveSharedPreferences() {
     prefs.traditionalOutput = YES;
     assert(announcements == 3 && controller.persistenceRequests == 1);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    [NSNotificationCenter.defaultCenter removeObserver:controller name:MSIMEAppearanceDidChangeNotification object:prefs];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    [NSNotificationCenter.defaultCenter removeObserver:controller name:LINGYAOAppearanceDidChangeNotification object:prefs];
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 // The synthetic keyboard these cases drive: a key is held between its down and its up, which is what
@@ -3635,7 +3635,7 @@ static bool SyntheticKeyHeld(unsigned short key) { return gHeldKeys.count(key) !
 // The record then holds that key forever, and before the detector checked what is actually held,
 // every tap for the rest of the session was refused - with nothing on screen to explain it.
 static void TestModifierTapSurvivesALostRelease() {
-    MSIMEModifierTap tap;
+    LINGYAOModifierTap tap;
     gHeldKeys.clear();
     tap.setKeyHeldProbe(&SyntheticKeyHeld);
     auto down = TapEvent(NSEventTypeFlagsChanged, 56, NSEventModifierFlagShift, 2.0);
@@ -3664,7 +3664,7 @@ static void TestModifierTaps() {
         const auto flag = code == 56 || code == 60 ? NSEventModifierFlagShift : NSEventModifierFlagControl;
         auto down = TapEvent(NSEventTypeFlagsChanged, code, flag, 1.0);
         auto up = TapEvent(NSEventTypeFlagsChanged, code, 0, 1.1);
-        MSIMEModifierTap tap;
+        LINGYAOModifierTap tap;
         gHeldKeys.clear();
         tap.setKeyHeldProbe(&SyntheticKeyHeld);
         assert(!tap.observe(up, true, true)); // A release after focus acquisition cannot toggle.
@@ -3720,9 +3720,9 @@ static void TestModifierTaps() {
         assert(tap.observe(TapEvent(NSEventTypeFlagsChanged, otherSide, 0, 1.1), true, true));
     }
 
-    NSString *suite = [@"msime.modifier-taps." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.modifier-taps." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(prefs.shiftTapShortcut && !prefs.controlTapShortcut);
     assert(![prefs sharedPreferencesByMerging:@{}][@"keybindings"]);
     NSDictionary *keys = @{@"switch_language_shift":@NO, @"switch_language_ctrl":@YES, @"switch_language_ctrl_alt_space":@NO};
@@ -3738,9 +3738,9 @@ static void TestModifierTaps() {
     assert([NSApp sendAction:shift.action to:shift.target from:shift]);
     control.state = NSControlStateValueOff;
     assert([NSApp sendAction:control.action to:control.target from:control]);
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(reopened.shiftTapShortcut && !reopened.controlTapShortcut);
-    NSDictionary *merged = [MSIMEMergePreferenceSnapshot(@{@"keybindings":keys}, [prefs sharedPreferencesByMerging:@{}]) objectForKey:@"keybindings"];
+    NSDictionary *merged = [LINGYAOMergePreferenceSnapshot(@{@"keybindings":keys}, [prefs sharedPreferencesByMerging:@{}]) objectForKey:@"keybindings"];
     assert(([merged isEqual:@{@"switch_language_shift":@YES, @"switch_language_ctrl":@NO, @"switch_language_ctrl_alt_space":@NO}]));
 
     ModeController *controller = [ModeController alloc];
@@ -3768,7 +3768,7 @@ static void TestModifierTaps() {
     // dictionary does not carry leaves as what was typed. The composition is committed before the switch,
     // because switching rebuilds the session and would take the letters with it.
     prefs.englishMode = NO;
-    session.rawTransition = @{@"handled":@YES, @"commit":@"msime",
+    session.rawTransition = @{@"handled":@YES, @"commit":@"lingyao",
         @"view":@{@"editing_text":@"", @"caret_position":@0, @"candidates":@[]}};
     // After the raw commit there is no composition left, so the cancel that the mode switch performs has
     // nothing to drop: the real Engine answers handled with no commit, and the fake has to say the same or
@@ -3778,12 +3778,12 @@ static void TestModifierTaps() {
     session.finishTransition = @{@"handled":@YES,
         @"view":@{@"editing_text":@"", @"caret_position":@0, @"candidates":@[]}};
     session.cancelTransition = session.finishTransition;
-    [controller setValue:@{@"editing_text":@"msime", @"caret_position":@5, @"candidates":@[]} forKey:@"view"];
+    [controller setValue:@{@"editing_text":@"lingyao", @"caret_position":@5, @"candidates":@[]} forKey:@"view"];
     NSUInteger rawBefore = session.rawCommitCalls;
     assert(![controller handleEvent:TapEvent(NSEventTypeFlagsChanged, 56, NSEventModifierFlagShift, 3.0) client:client]);
     assert([controller handleEvent:TapEvent(NSEventTypeFlagsChanged, 56, 0, 3.1) client:client]);
     assert(session.rawCommitCalls == rawBefore + 1);
-    assert([client.committed isEqual:@"msime"] && prefs.englishMode);
+    assert([client.committed isEqual:@"lingyao"] && prefs.englishMode);
 
     // Nothing composing, nothing to send out: the tap is only the mode switch.
     prefs.englishMode = NO;
@@ -3817,7 +3817,7 @@ static void TestModifierTaps() {
     assert(![controller handleEvent:down client:other]);
     assert(![controller handleEvent:up client:nil]);
     assert(![controller handleEvent:up client:other] && prefs.englishMode);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 @interface ApplicationShortcutClient : ShortcutClient
@@ -3858,14 +3858,14 @@ static void TestRealSessionComposition() {
         options[name] = path;
     }
     NSError *error = nil;
-    MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+    LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
     assert(session && !error);
     assert([session setFocused:YES error:&error] && !error);
 
-    NSString *suite = [@"msime.real-composition." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.real-composition." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
     ShortcutClient *client = [ShortcutClient new];
     client.document = @"";
     client.caret = NSMakeRect(100, 100, 1, 16);
@@ -3926,7 +3926,7 @@ static void TestRealSessionComposition() {
     NSMutableDictionary *japanesePreferences = [options[@"preferences"] mutableCopy];
     japanesePreferences[@"scheme"] = @"japanese";
     japaneseOptions[@"preferences"] = japanesePreferences;
-    MSIMEClientSession *japaneseSession = [[MSIMEClientSession alloc] initWithOptions:japaneseOptions error:&error];
+    LINGYAOClientSession *japaneseSession = [[LINGYAOClientSession alloc] initWithOptions:japaneseOptions error:&error];
     assert(japaneseSession && !error);
     NSDictionary *japaneseView = [japaneseSession setFocused:YES error:&error];
     assert(japaneseView && !error);
@@ -3955,7 +3955,7 @@ static void TestRealSessionComposition() {
     NSMutableDictionary *koreanPreferences = [options[@"preferences"] mutableCopy];
     koreanPreferences[@"scheme"] = @"korean";
     koreanOptions[@"preferences"] = koreanPreferences;
-    MSIMEClientSession *koreanSession = [[MSIMEClientSession alloc] initWithOptions:koreanOptions error:&error];
+    LINGYAOClientSession *koreanSession = [[LINGYAOClientSession alloc] initWithOptions:koreanOptions error:&error];
     assert(koreanSession && !error);
     // Focus answers with a transition; the controller keeps the view inside it, which is where the scheme it reads lives.
     NSDictionary *koreanView = [koreanSession setFocused:YES error:&error][@"view"];
@@ -4034,9 +4034,9 @@ static void TestRealSessionComposition() {
     };
     NSDictionary *(^currentView)(void) = ^NSDictionary *{ return [controller valueForKey:@"view"]; };
     typeHan();
-    assert(!panel.isVisible && !MSIMECandidateListOpen(currentView()));
+    assert(!panel.isVisible && !LINGYAOCandidateListOpen(currentView()));
     assert([controller handleEvent:hanja client:client]);
-    assert(MSIMECandidateListOpen(currentView()) && panel.isVisible);
+    assert(LINGYAOCandidateListOpen(currentView()) && panel.isVisible);
     assert([currentView()[@"candidates"][0][@"text"] isEqual:@"韓"] && [currentView()[@"candidates"][1][@"text"] isEqual:@"漢"]);
     assert([client.marked isEqual:@"한"] && client.insertions.count == 0);
     // Hanja rows take no pin, fixed position or removal, so a right click offers no menu for them.
@@ -4044,9 +4044,9 @@ static void TestRealSessionComposition() {
     // The row draws the Hanja alone on its line and the 훈음 the Engine annotated it with on the small gloss line under it, never as the row's translation.
     NSString *hanReading = currentView()[@"candidates"][0][@"annotation"];
     assert([hanReading isKindOfClass:NSString.class] && hanReading.length);
-    MSIMECandidateButton *hanRow = nil;
+    LINGYAOCandidateButton *hanRow = nil;
     for (NSView *view in panel.contentView.subviews)
-        if ([view isKindOfClass:MSIMECandidateButton.class] && view.tag == 0) hanRow = (MSIMECandidateButton *)view;
+        if ([view isKindOfClass:LINGYAOCandidateButton.class] && view.tag == 0) hanRow = (LINGYAOCandidateButton *)view;
     assert(hanRow && [hanRow.title isEqual:@"1  韓"] && hanRow.annotation.length == 0 && hanRow.itemLayout.annotation.width == 0);
     assert([hanRow.glossReading isEqual:hanReading] && hanRow.translation.length == 0 && hanRow.itemLayout.translation.width > 0);
     assert(![hanRow.title containsString:hanReading] && [hanRow.toolTip containsString:hanReading]);
@@ -4059,7 +4059,7 @@ static void TestRealSessionComposition() {
     prefs.vertical = NO;
     typeHan();
     assert([controller handleEvent:keypadHanja client:client]);
-    assert(MSIMECandidateListOpen(currentView()));
+    assert(LINGYAOCandidateListOpen(currentView()));
     assert([controller handleEvent:KeypadKey(124, @"\uF703", NSEventModifierFlagFunction | NSEventModifierFlagNumericPad, NO) client:client]);
     assert([currentView()[@"candidates"][1][@"highlighted"] isEqual:@YES] && [client.marked isEqual:@"한"]);
     assert([controller handleEvent:enter client:client]);
@@ -4077,23 +4077,23 @@ static void TestRealSessionComposition() {
     assert([controller handleEvent:KeypadKey(124, @"\uF703", NSEventModifierFlagFunction | NSEventModifierFlagNumericPad, NO) client:client]);
     assert([currentView()[@"page"] isEqual:@1] && [client.marked isEqual:@"한"] && client.insertions.count == 3);
     assert([controller handleEvent:KeypadKey(123, @"\uF702", NSEventModifierFlagFunction | NSEventModifierFlagNumericPad, NO) client:client]);
-    assert([currentView()[@"page"] isEqual:@0] && MSIMECandidateListOpen(currentView()));
+    assert([currentView()[@"page"] isEqual:@0] && LINGYAOCandidateListOpen(currentView()));
     assert([controller handleEvent:KeypadKey(125, @"\uF701", NSEventModifierFlagFunction | NSEventModifierFlagNumericPad, NO) client:client]);
     assert([currentView()[@"candidates"][1][@"highlighted"] isEqual:@YES]);
     prefs.vertical = savedVertical;
     // With its paging binding off Page Down is swallowed while the list is on screen, as it is for any candidate list, instead of writing the syllable out for the application.
     [prefs setNavigation:@"page_up_down" enabled:NO];
     assert([controller handleEvent:KeypadKey(121, @"\uF72D", NSEventModifierFlagFunction, NO) client:client]);
-    assert(MSIMECandidateListOpen(currentView()) && [client.marked isEqual:@"한"] && client.insertions.count == 3);
+    assert(LINGYAOCandidateListOpen(currentView()) && [client.marked isEqual:@"한"] && client.insertions.count == 3);
     [prefs setNavigation:@"page_up_down" enabled:YES];
 
     // Escape closes the list and keeps the syllable composing; the trigger reopens it, and a second press closes it again.
     assert([controller handleEvent:escape client:client]);
-    assert(!MSIMECandidateListOpen(currentView()) && !panel.isVisible && [client.marked isEqual:@"한"] && client.insertions.count == 3);
+    assert(!LINGYAOCandidateListOpen(currentView()) && !panel.isVisible && [client.marked isEqual:@"한"] && client.insertions.count == 3);
     assert([controller handleEvent:hanja client:client]);
-    assert(MSIMECandidateListOpen(currentView()));
+    assert(LINGYAOCandidateListOpen(currentView()));
     assert([controller handleEvent:hanja client:client]);
-    assert(!MSIMECandidateListOpen(currentView()) && [client.marked isEqual:@"한"] && client.insertions.count == 3);
+    assert(!LINGYAOCandidateListOpen(currentView()) && [client.marked isEqual:@"한"] && client.insertions.count == 3);
 
     // The paging marks and the word-to-character pair are punctuation while the list is open: the Hangul is written with the mark, never a page turned or a Hanja picked.
     assert([prefs navigationEnabled:@"comma_period"] && [prefs navigationEnabled:@"minus_equal"]);
@@ -4114,7 +4114,7 @@ static void TestRealSessionComposition() {
     // A lone jamo has no Hanja. The chord is still swallowed while it composes, so the jamo is not written out with a line break after it; with nothing composing the chord is the application's.
     assert([controller handleEvent:letter(@"r", 15, 0) client:client]);
     assert([controller handleEvent:hanja client:client]);
-    assert([client.marked isEqual:@"ㄱ"] && client.insertions.count == 6 && !MSIMECandidateListOpen(currentView()));
+    assert([client.marked isEqual:@"ㄱ"] && client.insertions.count == 6 && !LINGYAOCandidateListOpen(currentView()));
     assert([controller handleEvent:escape client:client]);
     assert(client.marked.length == 0);
     assert(![controller handleEvent:hanja client:client]);
@@ -4124,20 +4124,20 @@ static void TestRealSessionComposition() {
     prefs.candidateTranslations = YES;
     typeHan();
     assert([controller handleEvent:hanja client:client]);
-    assert(MSIMEKoreanHanjaListOpen(currentView()));
+    assert(LINGYAOKoreanHanjaListOpen(currentView()));
     assert([controller sensesForHighlightedCandidate].count == 0);
     assert(![controller commitHighlightedGlossColumn:1 client:client] && ![controller commitHighlightedGlossColumn:2 client:client]);
-    assert(client.insertions.count == 6 && MSIMEKoreanHanjaListOpen(currentView()));
+    assert(client.insertions.count == 6 && LINGYAOKoreanHanjaListOpen(currentView()));
     for (NSEvent *glossChord in @[chord(@"1", 18, NSEventModifierFlagOption), chord(@"1", 18, NSEventModifierFlagControl),
                                   chord(@"\r", 36, NSEventModifierFlagControl)]) {
-        if (!MSIMEKoreanHanjaListOpen(currentView())) {
+        if (!LINGYAOKoreanHanjaListOpen(currentView())) {
             if (!client.marked.length) typeHan();
             assert([controller handleEvent:hanja client:client]);
         }
         [controller handleEvent:glossChord client:client];
         for (NSString *inserted in client.insertions) assert(![inserted containsString:hanReading]);
     }
-    if (MSIMEKoreanHanjaListOpen(currentView())) assert([controller handleEvent:escape client:client]);
+    if (LINGYAOKoreanHanjaListOpen(currentView())) assert([controller handleEvent:escape client:client]);
     if (client.marked.length) assert([controller handleEvent:escape client:client]);
     prefs.candidateTranslations = savedTranslations;
     [prefs applySharedInputPreferences:@{@"tsf_preedit_style": @"raw"}];
@@ -4148,7 +4148,7 @@ static void TestRealSessionComposition() {
     NSMutableDictionary *tibetanPreferences = [options[@"preferences"] mutableCopy];
     tibetanPreferences[@"scheme"] = @"tibetan";
     tibetanOptions[@"preferences"] = tibetanPreferences;
-    MSIMEClientSession *tibetanSession = [[MSIMEClientSession alloc] initWithOptions:tibetanOptions error:&error];
+    LINGYAOClientSession *tibetanSession = [[LINGYAOClientSession alloc] initWithOptions:tibetanOptions error:&error];
     assert(tibetanSession && !error);
     NSDictionary *tibetanView = [tibetanSession setFocused:YES error:&error][@"view"];
     assert(tibetanView && !error && [tibetanView[@"scheme"] isEqual:@8]);
@@ -4199,14 +4199,14 @@ static void TestRealSessionComposition() {
     [prefs applySharedInputPreferences:@{@"tsf_preedit_style": @"raw"}];
     assert([tibetanSession closeWithError:&error] && !error);
 
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     assert([NSFileManager.defaultManager removeItemAtPath:root error:nil]);
 }
 
 static void TestInputSourceModeReset() {
-    NSString *suite = [@"msime.source-reset." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.source-reset." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs activateInputModeForApplication:@"org.example.fixture"];
     prefs.englishMode = YES; // Keep an independent per-app choice.
     prefs.imeModeScope = @"global";
@@ -4218,8 +4218,8 @@ static void TestInputSourceModeReset() {
     NSString *notification = (__bridge NSString *)kTISNotifySelectedKeyboardInputSourceChanged;
     NSString *own = @"org.example.input-method";
     __block NSUInteger resets = 0, saves = 0;
-    id saveObserver = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
-    MSIMEInputSourceMonitor *monitor = [[MSIMEInputSourceMonitor alloc] initWithCenter:center bundleIdentifier:own
+    id saveObserver = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    LINGYAOInputSourceMonitor *monitor = [[LINGYAOInputSourceMonitor alloc] initWithCenter:center bundleIdentifier:own
         copySource:CopyMonitoredSource propertyGetter:MonitoredSourceProperty switchedAway:^{ assert(NSThread.isMainThread); ++resets; [prefs resetRememberedInputModes]; }];
     assert(monitor);
     for (NSDictionary *source in @[@{}, @{sourceKey:@42}, @{bundleKey:own}, @{sourceKey:own},
@@ -4292,19 +4292,19 @@ static void TestInputSourceModeReset() {
     [monitor stop];
     [center postNotificationName:notification object:nil];
     assert(resets == before);
-    __weak MSIMEInputSourceMonitor *weakMonitor = monitor;
+    __weak LINGYAOInputSourceMonitor *weakMonitor = monitor;
     monitor = nil;
     assert(weakMonitor == nil);
     [NSNotificationCenter.defaultCenter removeObserver:saveObserver];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     monitoredSource = nil;
 }
 
 // Punctuation and width are runtime state of each app, like the reference's per-thread TSF compartments: the toggles never save, another app starts from the saved value, a Chinese/English switch puts punctuation back in step with the mode, and a new saved starting value applies everywhere.
 static void TestPerApplicationPunctuationAndWidth() {
-    NSString *suite = [@"msime.runtime-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.runtime-punctuation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     prefs.imeModeScope = @"global"; // The toggles stay per app whatever the Chinese/English scope says.
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
@@ -4317,14 +4317,14 @@ static void TestPerApplicationPunctuationAndWidth() {
     [prefs activateInputModeForApplication:a.bundleIdentifier];
     assert(prefs.chinesePunctuation && !prefs.fullWidthInput && !prefs.englishMode);
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     NSEvent *period = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagControl timestamp:0 windowNumber:0 context:nil characters:@"." charactersIgnoringModifiers:@"." isARepeat:NO keyCode:47];
     const NSEventModifierFlags widthChord = NSEventModifierFlagControl | NSEventModifierFlagShift;
     assert([controller handleEvent:period client:a]);
     assert([controller handleEvent:ModeKey(49, widthChord, NO) client:a]);
     assert(!prefs.runtimeChinesePunctuation && prefs.runtimeFullWidthInput);
     assert(!session.chinesePunctuation && session.fullwidth && saves == 0);
-    assert([defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil && [defaults objectForKey:@"MSIMEClientFullWidthInput"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil && [defaults objectForKey:@"LINGYAOClientFullWidthInput"] == nil);
     assert(prefs.chinesePunctuation && !prefs.fullWidthInput);
     NSDictionary *shared = [prefs sharedPreferencesByMerging:@{}];
     assert([shared[@"chinese_punctuation"] isEqual:@YES] && [shared[@"character_width"] isEqual:@"halfwidth"]);
@@ -4383,7 +4383,7 @@ static void TestPerApplicationPunctuationAndWidth() {
     prefs.fullWidthInput = NO; // The settings checkbox is a new starting value too.
     assert(!prefs.runtimeFullWidthInput);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static NSEvent *EnglishKey(NSString *characters, unsigned short code, NSEventModifierFlags flags) {
@@ -4392,9 +4392,9 @@ static NSEvent *EnglishKey(NSString *characters, unsigned short code, NSEventMod
 
 // English mode is the reference's closed IME, whose punctuation and double/single-byte compartments still shape what is typed (KeyEventSink.cpp, ResolvePunctuationOpen).
 static void TestEnglishModePunctuationAndWidthOutput() {
-    NSString *suite = [@"msime.english-output." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.english-output." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     ModeController *controller = [ModeController alloc];
     ShortcutSession *session = [ShortcutSession new];
     ApplicationShortcutClient *client = [ApplicationShortcutClient new];
@@ -4438,7 +4438,7 @@ static void TestEnglishModePunctuationAndWidthOutput() {
     [controller setEnglishInputMode:YES];
     assert(!prefs.runtimeChinesePunctuation && type(comma) == nil);
     assert([controller handleEvent:toggle client:client]);
-    assert(prefs.runtimeChinesePunctuation && [defaults objectForKey:@"MSIMEClientChinesePunctuation"] == nil);
+    assert(prefs.runtimeChinesePunctuation && [defaults objectForKey:@"LINGYAOClientChinesePunctuation"] == nil);
     assert([type(comma) isEqual:@"，"]);
     [controller floatingToolbarDidRequestTogglePunctuation:nil];
     assert(!prefs.runtimeChinesePunctuation && type(comma) == nil);
@@ -4472,16 +4472,16 @@ static void TestEnglishModePunctuationAndWidthOutput() {
     assert(type(EnglishKey(@",", 43, NSEventModifierFlagCommand)) == nil);
     assert(type(EnglishKey(@"a", 0, NSEventModifierFlagControl)) == nil);
     assert(type(EnglishKey(@"\t", 48, 0)) == nil && type(EnglishKey(@"é", 14, 0)) == nil);
-    assert([defaults objectForKey:@"MSIMEClientFullWidthInput"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientFullWidthInput"] == nil);
     assert([controller handleEvent:widthToggle client:client] && !prefs.runtimeFullWidthInput);
     [controller setEnglishInputMode:NO];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestInputModePolicy() {
-    NSString *suite = [@"msime.mode-policy." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.mode-policy." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert([prefs.defaultImeMode isEqual:@"chinese"] && [prefs.imeModeScope isEqual:@"app"]);
     assert(![prefs sharedPreferencesByMerging:@{}][@"default_ime_mode"]);
     NSDictionary *shared = @{@"default_ime_mode":@"english", @"ime_mode_scope":@"global"};
@@ -4497,7 +4497,7 @@ static void TestInputModePolicy() {
     assert([NSApp sendAction:mode.action to:mode.target from:mode]);
     [scope selectItemAtIndex:0];
     assert([NSApp sendAction:scope.action to:scope.target from:scope]);
-    MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert([reopened.defaultImeMode isEqual:@"chinese"] && [reopened.imeModeScope isEqual:@"app"]);
     NSDictionary *patch = [prefs sharedPreferencesByMerging:@{}];
     assert([patch[@"default_ime_mode"] isEqual:@"chinese"] && [patch[@"ime_mode_scope"] isEqual:@"app"]);
@@ -4554,16 +4554,16 @@ static void TestInputModePolicy() {
     // App identities are memory-only; no per-app state is exported or persisted.
     assert([defaults objectForKey:a.bundleIdentifier] == nil);
     assert(![prefs sharedPreferencesByMerging:@{}][a.bundleIdentifier]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestControlOptionSpace() {
     NSUserDefaults *standardDefaults = NSUserDefaults.standardUserDefaults;
-    id previousHoldSpace = [standardDefaults objectForKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
-    [standardDefaults setBool:NO forKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
-    NSString *suite = [@"msime.control-option-space." stringByAppendingString:NSUUID.UUID.UUIDString];
+    id previousHoldSpace = [standardDefaults objectForKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
+    [standardDefaults setBool:NO forKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
+    NSString *suite = [@"lingyao.control-option-space." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(prefs.controlOptionSpaceShortcut);
     NSDictionary *keys = @{@"switch_language_ctrl_alt_space":@NO, @"switch_language_ctrl":@YES, @"toggle_character_set_ctrl_shift_f":@NO};
     assert([[prefs sharedPreferencesByMerging:@{@"keybindings":keys}][@"keybindings"] isEqual:keys]);
@@ -4583,8 +4583,8 @@ static void TestControlOptionSpace() {
     assert([[prefs sharedPreferencesByMerging:@{@"keybindings":keys}][@"keybindings"] isEqual:expected]);
     NSDictionary *patch = [prefs sharedPreferencesByMerging:@{}];
     assert([patch[@"keybindings"] isEqual:@{@"switch_language_ctrl_alt_space":@YES}]);
-    assert([MSIMEMergePreferenceSnapshot(@{@"keybindings":keys}, patch)[@"keybindings"] isEqual:expected]);
-    assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] controlOptionSpaceShortcut]);
+    assert([LINGYAOMergePreferenceSnapshot(@{@"keybindings":keys}, patch)[@"keybindings"] isEqual:expected]);
+    assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] controlOptionSpaceShortcut]);
 
     ModeController *controller = [ModeController alloc];
     ShortcutClient *client = [ShortcutClient new];
@@ -4606,7 +4606,7 @@ static void TestControlOptionSpace() {
     session.failCancel = NO;
     assert([controller handleEvent:ModeKey(49, flags, NO) client:client]);
     assert(prefs.englishMode && !panel.visible && client.marked.length == 0);
-    assert(session.lastCommand == MSIME_CANCEL);
+    assert(session.lastCommand == LINGYAO_CANCEL);
 
     // What the switch does to a composition in flight, which is the whole reason it sends a command
     // at all. The reference's English-mode switch is FUNCTION_CANCEL and its handler terminates the
@@ -4617,14 +4617,14 @@ static void TestControlOptionSpace() {
     prefs.englishMode = NO;
     client.committed = nil;
     client.marked = @"拼音";
-    // The controller clears marked text only where it knows it wrote some (MSIMEApplyTransitionTrackingMarkedText), so the composition set on the fake client is recorded as its own.
+    // The controller clears marked text only where it knows it wrote some (LINGYAOApplyTransitionTrackingMarkedText), so the composition set on the fake client is recorded as its own.
     [controller setValue:@YES forKey:@"clientHasMarkedText"];
     session.lastCommand = UINT32_MAX;
     session.nextTransition = @{@"handled":@YES,
         @"view":@{@"editing_text":@"", @"caret_position":@0, @"candidates":@[]}};
     [controller setValue:@{@"editing_text":@"nihao", @"caret_position":@5, @"candidates":@[]} forKey:@"view"];
     assert([controller handleEvent:ModeKey(49, flags, NO) client:client]);
-    assert(prefs.englishMode && session.lastCommand == MSIME_CANCEL);
+    assert(prefs.englishMode && session.lastCommand == LINGYAO_CANCEL);
     assert(client.committed.length == 0 && client.marked.length == 0);
     session.nextTransition = nil;
     session.lastCommand = UINT32_MAX;
@@ -4645,13 +4645,13 @@ static void TestControlOptionSpace() {
     assert(![controller handleEvent:ModeKey(49, flags, NO) client:client]);
     assert(prefs.englishMode && button.state == NSControlStateValueOff);
     prefs.controlOptionSpaceShortcut = NO;
-    assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] controlOptionSpaceShortcut]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
-    if (previousHoldSpace) [standardDefaults setObject:previousHoldSpace forKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
-    else [standardDefaults removeObjectForKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
+    assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] controlOptionSpaceShortcut]);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
+    if (previousHoldSpace) [standardDefaults setObject:previousHoldSpace forKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
+    else [standardDefaults removeObjectForKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
 }
 
-static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *appearance) {
+static void TestInputMode(NSUserDefaults *defaults, LINGYAOAppearancePreferences *appearance) {
     assert(!appearance.englishMode && appearance.inputModeShortcut);
     [appearance applySharedInputPreferences:@{@"keybindings":@{@"switch_language_shift":@NO}}];
     assert(!appearance.inputModeShortcut && !appearance.shiftTapShortcut);
@@ -4660,7 +4660,7 @@ static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     NSButton *shortcut = (id)PreferenceControl(appearance, @selector(inputModeShortcutChanged:));
     shortcut.state = NSControlStateValueOff;
     [NSApp sendAction:shortcut.action to:shortcut.target from:shortcut];
-    MSIMEAppearancePreferences *reloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot];
+    LINGYAOAppearancePreferences *reloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot];
     assert(!reloaded.inputModeShortcut);
     assert(appearance.shiftTapShortcut);
     [appearance applySharedInputPreferences:@{@"keybindings":@{@"switch_language_shift":@YES}}];
@@ -4780,7 +4780,7 @@ static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     NSString *globalTheme = appearance.globalTheme;
     appearance.globalTheme = @"system";
     NSMenuItem *themeItem = [controller.menu itemAtIndex:10];
-    const auto &catalog = msime::mac::ThemeCatalog();
+    const auto &catalog = lingyao::mac::ThemeCatalog();
     assert(themeItem.submenu.numberOfItems == (NSInteger)catalog.size());
     assert(([themeItem.title isEqual:[NSString stringWithFormat:@"主题（%@）", @(catalog[0].title.c_str())]]));
     for (size_t index = 0; index < catalog.size(); ++index) {
@@ -4834,7 +4834,7 @@ static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     appearance.fullWidthInput = beforeWidth;
     appearance.inputModeShortcut = NO;
     [controller handleEvent:ModeKey(49, NSEventModifierFlagShift, NO) client:client];
-    assert(!appearance.englishMode && session.lastCommand == MSIME_COMMIT_CANDIDATE);
+    assert(!appearance.englishMode && session.lastCommand == LINGYAO_COMMIT_CANDIDATE);
     appearance.inputModeShortcut = YES;
     session.failFinish = YES;
     session.failCancel = YES;
@@ -4867,22 +4867,22 @@ static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *
 }
 
 // The rendered order is not the candidate order: a pinned candidate is drawn first whatever its index.
-static MSIMECandidateButton *CandidateButtonWithID(NSView *container, NSDictionary *identifier) {
+static LINGYAOCandidateButton *CandidateButtonWithID(NSView *container, NSDictionary *identifier) {
     for (NSView *child in container.subviews)
-        if ([child isKindOfClass:MSIMECandidateButton.class] &&
-            [((MSIMECandidateButton *)child).candidateID isEqual:identifier])
-            return (MSIMECandidateButton *)child;
+        if ([child isKindOfClass:LINGYAOCandidateButton.class] &&
+            [((LINGYAOCandidateButton *)child).candidateID isEqual:identifier])
+            return (LINGYAOCandidateButton *)child;
     return nil;
 }
-static MSIMECandidateButton *PageButton(NSView *content, NSInteger tag) {
+static LINGYAOCandidateButton *PageButton(NSView *content, NSInteger tag) {
     for (NSView *view in content.subviews) {
-        if ([view isKindOfClass:MSIMECandidateButton.class] && view.tag == tag) return (id)view;
+        if ([view isKindOfClass:LINGYAOCandidateButton.class] && view.tag == tag) return (id)view;
     }
     return nil;
 }
 
-static void TestExternalSkin(MSIMEInputController *controller, HiddenCandidatePanel *panel, NSUserDefaults *defaults) {
-    char temporary[] = "/tmp/msime-native-skin-XXXXXX";
+static void TestExternalSkin(LINGYAOInputController *controller, HiddenCandidatePanel *panel, NSUserDefaults *defaults) {
+    char temporary[] = "/tmp/lingyao-native-skin-XXXXXX";
     assert(mkdtemp(temporary));
     const std::filesystem::path root(temporary);
     std::filesystem::create_directory(root / "synthetic");
@@ -4921,7 +4921,7 @@ show_selected_bar = true
     image = [image bitmapImageRepByRetaggingWithColorSpace:NSColorSpace.sRGBColorSpace];
     assert(image);
     assert([[image representationUsingType:NSBitmapImageFileTypePNG properties:@{}] writeToFile:@((root / "synthetic" / "decoration.png").c_str()) atomically:YES]);
-    MSIMEAppearancePreferences *external = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
+    LINGYAOAppearancePreferences *external = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
     // Skins are picked from the cards on the 皮肤 page, which is the browser itself now; the popup
     // of skin names it replaced could not show what any of them looked like.
     LingyaoSkinSettingsView *picker = (id)[external skinSettingsView];
@@ -4930,18 +4930,18 @@ show_selected_bar = true
     assert(pickerSwitches.count == 8 && [pickerSwitches.lastObject.identifier isEqual:@"synthetic"]);
     [NSApp sendAction:pickerSwitches.lastObject.action to:pickerSwitches.lastObject.target from:pickerSwitches.lastObject];
     assert([external.globalTheme isEqual:@"custom"] && [external.customCandidateSkin isEqual:@"synthetic"] && external.decorationImage);
-    MSIMEAppearancePreferences *loaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:external.skinsRoot];
+    LINGYAOAppearancePreferences *loaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:external.skinsRoot];
     assert([loaded.customCandidateSkin isEqual:@"synthetic"] && [loaded resolvedSkinForDark:NO].candidateSkin == "synthetic");
     NSDictionary *before = [[controller valueForKey:@"view"] copy];
     [controller setValue:external forKey:@"appearance"];
-    MSIMEFloatingToolbarPanel *toolbar = [MSIMEFloatingToolbarPanel new];
+    LINGYAOFloatingToolbarPanel *toolbar = [LINGYAOFloatingToolbarPanel new];
     [toolbar setFrameAutosaveName:@""];
     [controller setValue:toolbar forKey:@"toolbar"];
     LingyaoSkinSettingsView *cards = (id)[external skinSettingsView];
     NSArray<NSSwitch *> *skinSwitches = [cards valueForKey:@"switches"];
     assert([skinSwitches.lastObject.identifier isEqual:@"synthetic"]);
     [NSNotificationCenter.defaultCenter addObserver:controller selector:@selector(appearanceChanged:)
-                                              name:MSIMEAppearanceDidChangeNotification object:external];
+                                              name:LINGYAOAppearanceDidChangeNotification object:external];
     [NSApp sendAction:skinSwitches.firstObject.action to:skinSwitches.firstObject.target from:skinSwitches.firstObject];
     assert([external.globalTheme isEqual:@"system"] && !external.decorationImage);
     [NSApp sendAction:skinSwitches.lastObject.action to:skinSwitches.lastObject.target from:skinSwitches.lastObject];
@@ -4949,7 +4949,7 @@ show_selected_bar = true
     assert(skinSwitches.lastObject.state == NSControlStateValueOn);
     assert([panel.contentView.subviews.lastObject isKindOfClass:NSImageView.class]);
     assert([[controller valueForKey:@"view"] isEqual:before]);
-    [NSNotificationCenter.defaultCenter removeObserver:controller name:MSIMEAppearanceDidChangeNotification object:external];
+    [NSNotificationCenter.defaultCenter removeObserver:controller name:LINGYAOAppearanceDidChangeNotification object:external];
     for (NSNumber *vertical in @[@NO, @YES]) {
         external.vertical = vertical.boolValue;
         for (NSString *theme in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
@@ -4962,7 +4962,7 @@ show_selected_bar = true
             const auto toolbarTokens = [external toolbarSkinForDark:dark];
             assert([toolbarFill isEqual:SkinColor(toolbarTokens.surface)]);
             assert([toolbarFill isEqual:SkinColor([external resolvedSkinForDark:dark].tokens.surface)]);
-            MSIMECandidateChromeView *chrome = (id)panel.contentView;
+            LINGYAOCandidateChromeView *chrome = (id)panel.contentView;
             NSImageView *decoration = (id)chrome.subviews.lastObject;
             assert([decoration isKindOfClass:NSImageView.class] && decoration.image);
             assert(panel.frame.size.width >= 240);
@@ -4970,7 +4970,7 @@ show_selected_bar = true
             const CGFloat overhang = decoration.frame.size.height - 48;
             assert(chrome.cardTopInset == 48 && overhang > 0 && decoration.frame.size.width == decoration.frame.size.height);
             assert(NSMaxX(decoration.frame) == chrome.bounds.size.width - overhang && NSMaxY(decoration.frame) == chrome.bounds.size.height);
-            MSIMECandidateButton *first = PageButton(chrome, 0);
+            LINGYAOCandidateButton *first = PageButton(chrome, 0);
             assert(NSMaxY(first.frame) <= NSMinY(decoration.frame));
             assert(first.showSelectedBar == [theme isEqual:NSAppearanceNameDarkAqua]);
             const auto tokens = [external resolvedSkinForDark:[theme isEqual:NSAppearanceNameDarkAqua]].tokens;
@@ -5014,9 +5014,9 @@ static void WriteSolidPNG(const std::filesystem::path &path, unsigned char red, 
     assert([[image representationUsingType:NSBitmapImageFileTypePNG properties:@{}] writeToFile:@(path.c_str()) atomically:YES]);
 }
 
-// The msime-skins keys on the live panel: decoration.image over the preview and its alignment, the package card radius, the background drawn under the rows and clipped to the card, the translation colour, and the toolbar's own radius and colours.
-static void TestStyledExternalSkin(MSIMEInputController *controller, HiddenCandidatePanel *panel, NSUserDefaults *defaults) {
-    char temporary[] = "/tmp/msime-native-styled-skin-XXXXXX";
+// The lingyao-skins keys on the live panel: decoration.image over the preview and its alignment, the package card radius, the background drawn under the rows and clipped to the card, the translation colour, and the toolbar's own radius and colours.
+static void TestStyledExternalSkin(LINGYAOInputController *controller, HiddenCandidatePanel *panel, NSUserDefaults *defaults) {
+    char temporary[] = "/tmp/lingyao-native-styled-skin-XXXXXX";
     assert(mkdtemp(temporary));
     const std::filesystem::path root(temporary);
     std::filesystem::create_directories(root / "styled" / "assets");
@@ -5061,13 +5061,13 @@ background = "#F4F8FF"
     WriteSolidPNG(root / "styled" / "assets" / "character.png", 255, 0, 0);
     WriteSolidPNG(root / "styled" / "assets" / "preview.png", 0, 255, 0);
     WriteSolidPNG(root / "styled" / "assets" / "background.png", 0, 0, 255);
-    MSIMEAppearancePreferences *styled = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
+    LINGYAOAppearancePreferences *styled = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
     [styled selectExternalSkin:@"styled" base:@"system"];
     assert([styled resolvedSkinForDark:NO].candidateSkin == "styled" && styled.decorationImage && styled.backgroundImage);
     assert([styled resolvedSkinForDark:YES].decorationPath.find("character.png") != std::string::npos);
     NSDictionary *before = [[controller valueForKey:@"view"] copy];
     [controller setValue:styled forKey:@"appearance"];
-    MSIMEFloatingToolbarPanel *toolbar = [MSIMEFloatingToolbarPanel new];
+    LINGYAOFloatingToolbarPanel *toolbar = [LINGYAOFloatingToolbarPanel new];
     [toolbar setFrameAutosaveName:@""];
     [controller setValue:toolbar forKey:@"toolbar"];
     styled.vertical = NO;
@@ -5076,9 +5076,9 @@ background = "#F4F8FF"
         panel.appearance = [NSAppearance appearanceNamed:theme];
         [controller appearanceChanged:nil];
         const auto skin = [styled resolvedSkinForDark:dark];
-        MSIMECandidateChromeView *chrome = (id)panel.contentView;
+        LINGYAOCandidateChromeView *chrome = (id)panel.contentView;
         assert(chrome.cornerRadius == 30.0 && skin.tokens.radius == 30.0f);
-        assert(chrome.backgroundImage == styled.backgroundImage && chrome.backgroundFit == msime::mac::BackgroundFit::stretch && chrome.backgroundOpacity == 1.0);
+        assert(chrome.backgroundImage == styled.backgroundImage && chrome.backgroundFit == lingyao::mac::BackgroundFit::stretch && chrome.backgroundOpacity == 1.0);
         NSImageView *decoration = (id)chrome.subviews.lastObject;
         assert([decoration isKindOfClass:NSImageView.class] && decoration.image == styled.decorationImage);
         // Left-aligned: in from the card's left edge by the same inset its bottom overhangs the card's top edge (the card starts 48pt down, under the band).
@@ -5086,8 +5086,8 @@ background = "#F4F8FF"
         assert(overhang > 0 && NSMinX(decoration.frame) == overhang && decoration.frame.size.width == decoration.frame.size.height);
         // The translation colour is the package's on every row in the mode that declares one; elsewhere the rows keep the number colour.
         for (NSView *view in chrome.subviews) {
-            if (![view isKindOfClass:MSIMECandidateButton.class] || view.tag < 0) continue;
-            MSIMECandidateButton *button = (id)view;
+            if (![view isKindOfClass:LINGYAOCandidateButton.class] || view.tag < 0) continue;
+            LINGYAOCandidateButton *button = (id)view;
             if (dark) assert(skin.tokens.translation && [button.translationColor isEqual:SkinColor(*skin.tokens.translation)]);
             else if (!button.candidateFixed)
                 assert(!skin.tokens.translation && [button.translationColor isEqual:SkinColor(button.candidateHighlighted ? skin.tokens.selectedNumber : skin.tokens.number)]);
@@ -5116,7 +5116,7 @@ background = "#F4F8FF"
     writeManifest("center");
     [styled reloadSkins];
     [controller appearanceChanged:nil];
-    MSIMECandidateChromeView *chrome = (id)panel.contentView;
+    LINGYAOCandidateChromeView *chrome = (id)panel.contentView;
     NSImageView *decoration = (id)chrome.subviews.lastObject;
     assert([decoration isKindOfClass:NSImageView.class]);
     assert(std::abs(NSMidX(decoration.frame) - NSWidth(chrome.bounds) / 2) < 0.01);
@@ -5145,7 +5145,7 @@ background = "#F4F8FF"
     return @{@"applied":@YES, @"view":@{@"focused":@YES, @"preedit":@"synthetic", @"editing_text":@"synthetic", @"caret_position":@0, @"candidates":@[]}};
 }
 @end
-@interface ControlledCloudRequest : MSIMECloudCandidateRequest
+@interface ControlledCloudRequest : LINGYAOCloudCandidateRequest
 @property(nonatomic, copy) void (^reply)(NSData *);
 @property(nonatomic) BOOL started;
 @property(nonatomic) BOOL cancelled;
@@ -5158,7 +5158,7 @@ background = "#F4F8FF"
 @property(nonatomic, strong) NSMutableArray<ControlledCloudRequest *> *requests;
 @end
 @implementation CloudShortcutController
-- (MSIMECloudCandidateRequest *)cloudRequestForURL:(NSURL *)url completion:(void (^)(NSData *))completion {
+- (LINGYAOCloudCandidateRequest *)cloudRequestForURL:(NSURL *)url completion:(void (^)(NSData *))completion {
     assert([url.host isEqual:@"inputtools.google.com"]);
     ControlledCloudRequest *request = [ControlledCloudRequest new];
     request.reply = completion;
@@ -5236,7 +5236,7 @@ static void TestCloudCandidateScheduling() {
     replaced.reply(body);
     assert(session.cloudApplications == 1);
     [controller setValue:session forKey:@"session"];
-    [controller snapshotSessionReplaced:[NSNotification notificationWithName:MSIMEClientSessionDidReplaceSnapshotNotification object:session]];
+    [controller snapshotSessionReplaced:[NSNotification notificationWithName:LINGYAOClientSessionDidReplaceSnapshotNotification object:session]];
     assert(replaced.cancelled);
     replaced.reply(body);
     assert(session.cloudApplications == 1);
@@ -5291,7 +5291,7 @@ static void TestCloudCandidateRetryAfterRejectedResponse() {
 
 static void TestAiCandidateEngineDelivery() {
     NSError *bridgeError = nil;
-    NSDictionary *descriptor = [MSIMEClientSession aiHTTPRequest:@{
+    NSDictionary *descriptor = [LINGYAOClientSession aiHTTPRequest:@{
         @"config":@{@"enabled":@YES, @"provider":@"deepseek", @"endpoint":@"https://synthetic.invalid/chat", @"model":@"synthetic",
             @"token":@"synthetic-secret", @"candidate_limit":@3, @"prompt_id":@"custom_2", @"prompt_custom_2":@"synthetic prompt"},
         @"input":@{@"segmented_pinyin":@[@"ni", @"hao"], @"context":@"", @"candidate_limit":@3}} error:&bridgeError];
@@ -5300,7 +5300,7 @@ static void TestAiCandidateEngineDelivery() {
     assert([descriptor[@"body"][@"thinking"][@"type"] isEqual:@"disabled"]);
     NSData *response = [NSJSONSerialization dataWithJSONObject:@{@"choices":@[@{@"message":@{@"content":
         @"{\"candidates\":[{\"text\":\"合成候选甲\"},{\"text\":\"合成候选乙\"}]}"}}]} options:0 error:nil];
-    NSArray *parsed = [MSIMEClientSession parseAIResponse:response limit:3 error:&bridgeError];
+    NSArray *parsed = [LINGYAOClientSession parseAIResponse:response limit:3 error:&bridgeError];
     assert(!bridgeError && parsed.count == 2);
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSMutableDictionary *options = [@{@"api_version":@1, @"preferences":@{@"scheme":@"quanpin", @"learning":@NO,
@@ -5313,7 +5313,7 @@ static void TestAiCandidateEngineDelivery() {
         options[name] = path;
     }
     NSError *error = nil;
-    MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+    LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
     assert(session && !error);
     [session setFocused:YES error:&error];
     for (char byte : std::string("nihaoshijie")) [session typeASCII:byte shift:NO error:&error];
@@ -5359,7 +5359,7 @@ static void TestCloudCandidateEngineDelivery() {
         options[name] = path;
     }
     NSError *error = nil;
-    MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+    LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
     assert(session && !error);
     CloudShortcutController *controller = [CloudShortcutController alloc];
     controller.requests = [NSMutableArray array];
@@ -5394,9 +5394,9 @@ static void TestCloudCandidateEngineDelivery() {
 }
 
 static void TestCloudCandidatePreference() {
-    NSString *suite = [@"msime.cloud.preference." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.cloud.preference." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     NSSwitch *toggle = (id)PreferenceControl(prefs, @selector(cloudCandidatesChanged:));
     assert(!prefs.cloudCandidates && toggle.state == NSControlStateValueOff);
     // The switch has no title of its own — the wording naming where the query goes is on the row
@@ -5406,12 +5406,12 @@ static void TestCloudCandidatePreference() {
     assert(![prefs sharedPreferencesByMerging:@{}][@"cloud_candidates"]);
     assert([[prefs sharedPreferencesByMerging:@{@"cloud_candidates":@NO}][@"cloud_candidates"] isEqual:@NO]);
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     [prefs applySharedInputPreferences:@{@"cloud_candidates":@NO}];
     assert(!prefs.cloudCandidates && toggle.state == NSControlStateValueOff && saves == 0);
     for (id invalid in @[NSNull.null, @1, @"true"]) [prefs applySharedInputPreferences:@{@"cloud_candidates":invalid}];
     assert(!prefs.cloudCandidates && saves == 0);
-    assert([defaults objectForKey:@"MSIMEClientCloudCandidates"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientCloudCandidates"] == nil);
     toggle.state = NSControlStateValueOn;
     [NSApp sendAction:toggle.action to:toggle.target from:toggle];
     assert(prefs.cloudCandidates && saves == 1);
@@ -5437,21 +5437,21 @@ static void TestCloudCandidatePreference() {
     assert(request.cancelled && [controller valueForKey:@"cloudTimer"] == nil);
     [controller synchronizeCloudCandidates];
     assert([controller valueForKey:@"cloudTimer"] == nil);
-    assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] cloudCandidates]);
+    assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] cloudCandidates]);
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSError *error = nil;
-    NSDictionary *snapshot = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *snapshot = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(snapshot && !error);
     NSDictionary *merged = [prefs sharedPreferencesByMerging:snapshot[@"preferences"]];
     assert([merged[@"cloud_candidates"] isEqual:@NO]);
     assert([merged[@"ai_assistant"] isEqual:snapshot[@"preferences"][@"ai_assistant"]]);
-    assert(([MSIMEClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
+    assert(([LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
         snapshot:@{@"format_version":@1, @"revision":snapshot[@"revision"], @"preferences":merged} error:&error] && !error));
-    NSDictionary *loaded = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *loaded = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(loaded && !error && [loaded[@"preferences"][@"cloud_candidates"] isEqual:@NO]);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
-    MSIMEAppearancePreferences *fresh = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
+    LINGYAOAppearancePreferences *fresh = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(!fresh.cloudCandidates);
     [fresh applySharedInputPreferences:@{@"cloud_candidates":@YES}];
     assert(fresh.cloudCandidates);
@@ -5487,9 +5487,9 @@ static void TestCloudCandidateConsent() {
     NSString *preferencesFile = [root stringByAppendingPathComponent:@"preferences.json"];
 
     // 没有偏好目录、从未判断过的配置算已回答，但没有任何已存选择时和共享默认值一样不发送。
-    NSString *suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:nil userDataDirectory:nil];
     assert(prefs.cloudCandidatesAnswered && !prefs.cloudCandidates && !prefs.cloudCandidatesEnabled);
 
@@ -5531,7 +5531,7 @@ static void TestCloudCandidateConsent() {
 
     // Declining stores cloud_candidates = false in the shared preferences and sends nothing.
     __block NSUInteger changes = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
     void (^decline)(NSNumber *) = controller.answer;
     decline(@NO);
     assert(prefs.cloudCandidatesAnswered && !prefs.cloudCandidates && !prefs.cloudCandidatesEnabled && changes == 1);
@@ -5542,12 +5542,12 @@ static void TestCloudCandidateConsent() {
     DrainMainQueue();
     assert(controller.prompts == 2);
     NSError *error = nil;
-    NSDictionary *snapshot = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *snapshot = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(snapshot && !error);
     NSDictionary *merged = [prefs sharedPreferencesByMerging:snapshot[@"preferences"]];
-    assert(([MSIMEClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
+    assert(([LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
         snapshot:@{@"format_version":@1, @"revision":snapshot[@"revision"], @"preferences":merged} error:&error] && !error));
-    NSDictionary *loaded = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *loaded = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(loaded && !error && [loaded[@"preferences"][@"cloud_candidates"] isEqual:@NO]);
 
     // Enabling afterwards resumes queries.
@@ -5560,14 +5560,14 @@ static void TestCloudCandidateConsent() {
     assert(controller.requests.count == 1 && controller.requests.lastObject.started);
     [controller cancelCloudCandidates];
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 
     // Accepting from the prompt enables queries straight away.
-    suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+    suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
     defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
     NSString *empty = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:empty withIntermediateDirectories:YES attributes:nil error:nil]);
-    prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:empty userDataDirectory:nil];
     [controller setValue:prefs forKey:@"appearance"];
     [controller requestCloudCandidatesConsentIfNeeded];
@@ -5577,9 +5577,9 @@ static void TestCloudCandidateConsent() {
     accept(@YES);
     assert(prefs.cloudCandidatesEnabled && [[prefs sharedPreferencesByMerging:@{}][@"cloud_candidates"] isEqual:@YES]);
     // The native settings checkbox counts as an answer too.
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
     defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:empty userDataDirectory:nil];
     assert(!prefs.cloudCandidatesAnswered);
     NSButton *toggle = (id)PreferenceControl(prefs, @selector(cloudCandidatesChanged:));
@@ -5587,14 +5587,14 @@ static void TestCloudCandidateConsent() {
     [NSApp sendAction:toggle.action to:toggle.target from:toggle];
     assert(prefs.cloudCandidatesAnswered && !prefs.cloudCandidatesEnabled);
     [prefs.window close];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 
     // Upgrade with an existing preferences.json: answered, never asked, stored value kept (including false).
     assert([@"{}" writeToFile:[empty stringByAppendingPathComponent:@"preferences.json"] atomically:YES encoding:NSUTF8StringEncoding error:nil]);
     for (NSNumber *stored in @[@NO, @YES]) {
-        suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+        suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
         defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         [prefs applySharedInputPreferences:@{@"cloud_candidates":stored}];
         [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:empty userDataDirectory:nil];
         assert(prefs.cloudCandidatesAnswered && prefs.cloudCandidates == stored.boolValue);
@@ -5603,42 +5603,42 @@ static void TestCloudCandidateConsent() {
         [controller requestCloudCandidatesConsentIfNeeded];
         DrainMainQueue();
         assert(controller.prompts == 3);
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
 
     // Upgrade with an existing NSUserDefaults choice and no shared file: answered, value kept.
     NSString *bare = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:bare withIntermediateDirectories:YES attributes:nil error:nil]);
-    suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+    suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
     defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    [defaults setBool:NO forKey:@"MSIMEClientCloudCandidates"];
-    prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    [defaults setBool:NO forKey:@"LINGYAOClientCloudCandidates"];
+    prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:bare userDataDirectory:nil];
     assert(prefs.cloudCandidatesAnswered && !prefs.cloudCandidates);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 
     // An empty Engine user-data directory is still a fresh profile.
     NSString *userData = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:userData withIntermediateDirectories:YES attributes:nil error:nil]);
-    suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+    suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
     defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:bare userDataDirectory:userData];
     assert(!prefs.cloudCandidatesAnswered && !prefs.cloudCandidatesEnabled);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 
     // 打过字但从没改过设置的升级配置：没有 preferences.json，也没有已存选择，只有 Engine 用户数据。算已回答、不再询问，没有可沿用的值，按共享默认值关闭。
-    assert([NSData.data writeToFile:[userData stringByAppendingPathComponent:@"msime_user.db"] atomically:YES]);
-    suite = [@"msime.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
+    assert([NSData.data writeToFile:[userData stringByAppendingPathComponent:@"lingyao_user.db"] atomically:YES]);
+    suite = [@"lingyao.cloud.consent." stringByAppendingString:NSUUID.UUID.UUIDString];
     defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [prefs resolveCloudCandidatesConsentWithPreferencesDirectory:bare userDataDirectory:userData];
     assert(prefs.cloudCandidatesAnswered && !prefs.cloudCandidates && !prefs.cloudCandidatesEnabled);
     [controller setValue:prefs forKey:@"appearance"];
     [controller requestCloudCandidatesConsentIfNeeded];
     DrainMainQueue();
     assert(controller.prompts == 3);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 
     [controller setValue:nil forKey:@"appearance"];
     for (NSString *path in @[root, empty, bare, userData]) assert([NSFileManager.defaultManager removeItemAtPath:path error:nil]);
@@ -5703,7 +5703,7 @@ static void TestCloudCandidateConsent() {
     return self.snapshot;
 }
 - (void)completePreferenceLoad:(NSDictionary *)snapshot error:(NSError *)error generation:(uint64_t)generation
-                       session:(MSIMEClientSession *)session client:(id)client {
+                       session:(LINGYAOClientSession *)session client:(id)client {
     assert(NSThread.isMainThread);
     [super completePreferenceLoad:snapshot error:error generation:generation session:session client:client];
     ++self.completions;
@@ -5711,9 +5711,9 @@ static void TestCloudCandidateConsent() {
 @end
 
 static void TestPreferenceLoadReusesCandidateServiceSnapshots() {
-    NSString *suite = [@"msime.preference-service-snapshot." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.preference-service-snapshot." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.candidateTranslations = YES;
     appearance.candidateEnglishGloss = YES;
     ServiceSnapshotSession *session = [ServiceSnapshotSession new];
@@ -5729,16 +5729,16 @@ static void TestPreferenceLoadReusesCandidateServiceSnapshots() {
         [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
     assert(controller.completions == 1);
     assert(session.translationQueryCalls == 1 && session.viewCalls == 3);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestCandidateServiceSnapshotsAreReused() {
-    NSString *suite = [@"msime.service-snapshot." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.service-snapshot." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.candidateTranslations = YES;
     appearance.candidateEnglishGloss = YES;
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     ServiceSnapshotSession *session = [ServiceSnapshotSession new];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
@@ -5746,17 +5746,17 @@ static void TestCandidateServiceSnapshotsAreReused() {
     [controller setValue:@NO forKey:@"glossEnabled"];
     [controller synchronizeCandidateServices];
     assert(session.translationQueryCalls == 1 && session.viewCalls == 1);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 static void TestApplyCandidateTranslationSnapshotsAreReused() {
     NSString *suite = [@"msime.apply-service-snapshot." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.candidateTranslations = YES;
     appearance.candidateEnglishGloss = YES;
     ApplySnapshotSession *session = [ApplySnapshotSession new];
-    MSIMEInputController *controller = [MSIMEInputController alloc];
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     [controller setValue:[ShortcutClient new] forKey:@"activeClient"];
@@ -5768,7 +5768,7 @@ static void TestApplyCandidateTranslationSnapshotsAreReused() {
     session.viewCalls = 0;
     [controller applyCandidateTranslationResults];
     assert(session.translationQueryCalls == 1 && session.viewCalls == 1);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 @interface GlossController : CloudShortcutController
@@ -5821,7 +5821,7 @@ static void TestApplyCandidateTranslationSnapshotsAreReused() {
     return @{@"applied":@YES, @"view":[self viewWithError:nil]};
 }
 @end
-@interface ControlledTranslationBatch : MSIMECustomTranslationBatch
+@interface ControlledTranslationBatch : LINGYAOCustomTranslationBatch
 // Stores the completion; reading it back returns a block that replays one response the way the real batch does: onReply for every item, then the completion, or the detach block once detached.
 @property(nonatomic, copy) void (^reply)(NSArray *);
 @property(nonatomic, copy) NSArray *items;
@@ -5900,7 +5900,7 @@ static void TestApplyCandidateTranslationSnapshotsAreReused() {
 @property(nonatomic, strong) NSMutableArray<ControlledTranslationBatch *> *aiBatches;
 @end
 @implementation AIShortcutController
-- (MSIMECustomTranslationBatch *)aiBatchForItems:(NSArray<NSDictionary *> *)items
+- (LINGYAOCustomTranslationBatch *)aiBatchForItems:(NSArray<NSDictionary *> *)items
                                        completion:(void (^)(NSArray<NSDictionary *> *))completion {
     ControlledTranslationBatch *batch = [ControlledTranslationBatch new];
     batch.reply = completion;
@@ -5939,9 +5939,9 @@ static void TestAiCandidateScheduling() {
 
 // The source gates AI suggestions on ai_assistant.enabled alone (ai_eligible / UpdateAiInput); the gloss switch only governs glosses and translations, so turning it off must neither block nor cancel an AI request.
 static void TestAiCandidatesIgnoreGlossSwitch() {
-    NSString *suite = [@"msime.ai-gloss-off." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.ai-gloss-off." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     appearance.candidateTranslations = NO;
     appearance.candidateEnglishGloss = NO;
     AIShortcutController *controller = [AIShortcutController alloc];
@@ -6080,7 +6080,7 @@ static void TestAiCandidateDescriptorFailureIsRetryable() {
     assert(NSThread.isMainThread);
     self.accountQueueCancels++;
 }
-- (MSIMECustomTranslationBatch *)niuTransBatchForItems:(NSArray<NSDictionary *> *)items config:(NSDictionary *)config
+- (LINGYAOCustomTranslationBatch *)niuTransBatchForItems:(NSArray<NSDictionary *> *)items config:(NSDictionary *)config
                                            completion:(void (^)(NSArray<NSDictionary *> *))completion {
     ControlledTranslationBatch *batch = (ControlledTranslationBatch *)[self customBatchForItems:items completion:completion];
     batch.niuTransConfig = config; return batch;
@@ -6094,7 +6094,7 @@ static void TestAiCandidateDescriptorFailureIsRetryable() {
     if (self.useRealDelay) return [super customTranslationTimerWithBlock:block];
     block(nil); return nil;
 }
-- (MSIMECustomTranslationBatch *)customBatchForItems:(NSArray<NSDictionary *> *)items completion:(void (^)(NSArray<NSDictionary *> *))completion {
+- (LINGYAOCustomTranslationBatch *)customBatchForItems:(NSArray<NSDictionary *> *)items completion:(void (^)(NSArray<NSDictionary *> *))completion {
     ControlledTranslationBatch *batch = [ControlledTranslationBatch new];
     batch.reply = completion;
     batch.items = items;
@@ -6116,7 +6116,7 @@ static void TestAiCandidateDescriptorFailureIsRetryable() {
             [translations addObject:@{@"text":candidate[@"text"], @"translation":glosses[language][candidate[@"text"]]}];
     return @{@"generation":request[@"generation"], @"translations":translations};
 }
-- (MSIMECustomTranslationBatch *)tencentBatchForItems:(NSArray<NSDictionary *> *)items config:(NSDictionary *)config
+- (LINGYAOCustomTranslationBatch *)tencentBatchForItems:(NSArray<NSDictionary *> *)items config:(NSDictionary *)config
                                          completion:(void (^)(NSArray<NSDictionary *> *))completion {
     ControlledTranslationBatch *batch = (ControlledTranslationBatch *)[self customBatchForItems:items completion:completion];
     batch.tencentConfig = config;
@@ -6134,7 +6134,7 @@ static void WaitForGloss(CustomTranslationController *controller) {
     assert([controller valueForKey:@"glossResults"]);
 }
 static void TestLearnedGlossRuntime() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     // The glossary store writes into an existing preferences directory; it does not create one.
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
@@ -6151,8 +6151,8 @@ static void TestLearnedGlossRuntime() {
     assert(writer.batches.count == 1);
     writer.batches[0].reply(@[@{@"text":@"Hello", @"translation":@"学习释义"}, @{@"text":@"测试", @"translation":@"test"}]);
     // Every successful English fetch is saved, as Windows PersistGloss does; nothing is committed here.
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
-    [writer cancelCandidateTranslations]; [[MSIMETranslationCache sharedCache] clear];
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
+    [writer cancelCandidateTranslations]; [[LINGYAOTranslationCache sharedCache] clear];
     // A new controller with both providers absent reuses the persisted glosses.
     CustomTranslationController *reader = [CustomTranslationController alloc]; reader.batches = [NSMutableArray array];
     session.tencent = nil; session.generation++;
@@ -6187,14 +6187,14 @@ static void TestLearnedGlossRuntime() {
     [writer cancelCandidateTranslations];
     assert(pending.cancelled);
     pending.reply(@[@{@"text":@"stale", @"translation":@"不应保存"}]);
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
     session.tencent = nil; session.delivered = @[];
     session.page = @[@{@"text":@"late", @"source":@4}, @{@"text":@"stale", @"source":@4}];
     [reader synchronizeCandidateGloss]; WaitForGloss(reader);
     assert(([session.delivered isEqual:@[@{@"text":@"late", @"translation":@"迟到释义"}]]));
     [reader cancelCandidateTranslations];
     // With French primary and English secondary, only the English row reaches the glossary.
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     session.targetLanguage = @"fr"; session.targetLanguages = @[@"fr", @"en"]; session.tencent = TencentConfig();
     session.page = @[@{@"text":@"世界", @"source":@0}]; session.generation++;
     [writer.batches removeAllObjects];
@@ -6203,18 +6203,18 @@ static void TestLearnedGlossRuntime() {
     // Reply to the English batch first so a saved French reply would overwrite it.
     writer.batches[1].reply(@[@{@"text":@"世界", @"translation":@"world"}]);
     writer.batches[0].reply(@[@{@"text":@"世界", @"translation":@"monde"}]);
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
-    [writer cancelCandidateTranslations]; [[MSIMETranslationCache sharedCache] clear];
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
+    [writer cancelCandidateTranslations]; [[LINGYAOTranslationCache sharedCache] clear];
     session.targetLanguage = @"en"; session.targetLanguages = @[@"en"]; session.tencent = nil; session.delivered = @[];
     [reader synchronizeCandidateGloss]; WaitForGloss(reader);
     assert(([session.delivered isEqual:@[@{@"text":@"世界", @"translation":@"world"}]]));
     [reader cancelCandidateTranslations];
     NSError *error = nil;
     assert([NSFileManager.defaultManager removeItemAtPath:root error:&error] && !error);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestNiuTransCandidateScheduling() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc]; controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
     session.enabled = YES; session.generation = 1; session.targetLanguage = @"fr";
@@ -6257,10 +6257,10 @@ static void TestNiuTransCandidateScheduling() {
     [controller setValue:client forKey:@"activeClient"];
     session.localMode = @"temporary_japanese";
     assert(![controller currentCustomTranslationRequest]);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestTencentCandidateScheduling() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
@@ -6302,7 +6302,7 @@ static void TestTencentCandidateScheduling() {
     }
     // A generation that moved over the same words is not a rejection: that page still shows what the reply answers (TestGlossSurvivesHighlightMove).
     for (NSString *change in @[@"page", @"client", @"session", @"focus", @"japanese", @"disabled"]) {
-        [[MSIMETranslationCache sharedCache] clear];
+        [[LINGYAOTranslationCache sharedCache] clear];
         [controller cancelCandidateTranslations]; session.delivered = @[];
         [controller synchronizeCustomTranslations];
         ControlledTranslationBatch *pending = controller.batches.lastObject;
@@ -6335,8 +6335,8 @@ static void TestTencentCandidateScheduling() {
     NSArray *(^identity)(NSDictionary *) = ^NSArray *(NSDictionary *item) {
         return @[@"tencent", session.targetLanguage, item[@"source_language"], item[@"target_language"], item[@"key"]];
     };
-    assert([[[MSIMETranslationCache sharedCache] valueForIdentity:identity(fallback.items[0])] isEqual:@"test"]);
-    [controller cancelCandidateTranslations]; [[MSIMETranslationCache sharedCache] clear];
+    assert([[[LINGYAOTranslationCache sharedCache] valueForIdentity:identity(fallback.items[0])] isEqual:@"test"]);
+    [controller cancelCandidateTranslations]; [[LINGYAOTranslationCache sharedCache] clear];
     session.offline = NO;
     [controller synchronizeCandidateGloss];
     [controller synchronizeCustomTranslations];
@@ -6347,7 +6347,7 @@ static void TestTencentCandidateScheduling() {
     assert(pending.cancelled && ![controller currentCustomTranslationRequest] && session.delivered.count == 0);
     pending.reply(online); assert(session.delivered.count == 0);
     // The provider changed while the request was in flight, and the cache identity carries no credentials: the late reply must leave neither a gloss nor a negative entry behind.
-    for (NSDictionary *item in pending.items) assert(![[MSIMETranslationCache sharedCache] valueForIdentity:identity(item)]);
+    for (NSDictionary *item in pending.items) assert(![[LINGYAOTranslationCache sharedCache] valueForIdentity:identity(item)]);
     session.tencent = disabled; assert(![controller currentCustomTranslationRequest]);
     session.tencent = TencentConfig();
     [controller applySharedToolbarPreferences:@{@"tencent_tmt":session.tencent}];
@@ -6358,7 +6358,7 @@ static void TestTencentCandidateScheduling() {
     [controller applySharedToolbarPreferences:@{@"custom_translation":custom}];
     assert(pending.cancelled && ![controller currentCustomTranslationRequest]);
     pending.reply(online); assert(session.delivered.count == 0);
-    [controller cancelCandidateTranslations]; [[MSIMETranslationCache sharedCache] clear];
+    [controller cancelCandidateTranslations]; [[LINGYAOTranslationCache sharedCache] clear];
 }
 @interface AccountGlossSession : ShortcutSession
 @property(nonatomic, copy) NSArray *candidates;
@@ -6396,9 +6396,9 @@ static void TestTencentCandidateScheduling() {
 // nothing - which is the "it appears the second time, not the first" symptom, the second time happening to
 // reuse the same instance.
 static void TestAccountGlossCacheIsSharedAcrossControllers() {
-    NSString *suite = [@"msime.account-gloss-shared." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.account-gloss-shared." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     NSArray *candidates = @[@{@"text":@"\u6d4b\u8bd5", @"online_gloss":@YES}];
 
     CustomTranslationController *fetcher = [CustomTranslationController alloc];
@@ -6413,7 +6413,7 @@ static void TestAccountGlossCacheIsSharedAcrossControllers() {
     // The reply carries the same payload the Swift backend posts. Delivered straight to the instance that
     // asked, because these controllers are built without the activation that registers the observer.
     [fetcher accountCandidateTranslationsDidArrive:
-        [NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive" object:nil
+        [NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive" object:nil
             userInfo:@{@"generation":@1, @"target":@"en", @"translations":@{@"\u6d4b\u8bd5":@"test"}}]];
     assert([[[fetcher valueForKey:@"accountGlossResults"] valueForKey:@"translation"] containsObject:@"test"]);
 
@@ -6438,31 +6438,31 @@ static void TestAccountGlossCacheIsSharedAcrossControllers() {
     assert([fetcher valueForKey:@"accountGlossRequest"] == nil);
     fetcherSession.applied = nil;
     [fetcher accountCandidateTranslationsDidArrive:
-        [NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive" object:nil
+        [NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive" object:nil
             userInfo:@{@"generation":@1, @"target":@"en", @"translations":@{@"\u6d4b\u8bd5":@"ignored"}}]];
     assert(fetcherSession.applied == nil);
 
     // A reply for an earlier generation still answers the same word on the current page. The cache key is language and word, as on Windows, so the generation it was asked under does not make the answer wrong.
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     fetcherSession.generation = 2;
     [fetcher synchronizeAccountGloss:[fetcher currentAccountGlossRequest]];
     fetcherSession.applied = nil;
     [fetcher accountCandidateTranslationsDidArrive:
-        [NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive" object:nil
+        [NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive" object:nil
             userInfo:@{@"generation":@1, @"target":@"en", @"translations":@{@"\u6d4b\u8bd5":@"stale"}}]];
     assert([[[fetcher valueForKey:@"accountGlossResults"] firstObject][@"translation"] isEqual:@"stale"]);
     [fetcher accountCandidateTranslationsDidArrive:
-        [NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive" object:nil
+        [NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive" object:nil
             userInfo:@{@"generation":@2, @"target":@"en", @"translations":@{@"\u6d4b\u8bd5":@"fresh"}}]];
     assert([[[fetcher valueForKey:@"accountGlossResults"] firstObject][@"translation"] isEqual:@"fresh"]);
 }
 
 // An account reply is cached before the controller checks whether it still shows the page that asked, as Windows caches every completed fetch before its staleness check (cloud_translation.cpp), so typing past a page no longer throws its answers away. A word the account had nothing for is cached as a negative entry for eight minutes and not asked about again; a word whose request failed gets no reply at all and is asked about again.
 static void TestAccountGlossLateReplyAndNegatives() {
-    [[MSIMETranslationCache sharedCache] clear];
-    NSString *suite = [@"msime.account-gloss-late." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    [[LINGYAOTranslationCache sharedCache] clear];
+    NSString *suite = [@"lingyao.account-gloss-late." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     controller.accountFetches = [NSMutableArray array];
@@ -6471,7 +6471,7 @@ static void TestAccountGlossLateReplyAndNegatives() {
     [controller setValue:prefs forKey:@"appearance"];
     [controller setValue:session forKey:@"session"];
     void (^reply)(NSUInteger, NSDictionary *) = ^(NSUInteger generation, NSDictionary *translations) {
-        [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive"
+        [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive"
             object:nil userInfo:@{@"generation":@(generation), @"target":@"en", @"translations":translations}]];
     };
     void (^show)(NSUInteger, NSArray<NSString *> *) = ^(NSUInteger generation, NSArray<NSString *> *texts) {
@@ -6488,15 +6488,15 @@ static void TestAccountGlossLateReplyAndNegatives() {
     // The answer for the page the user typed past lands in the cache, but the current page, which does not show that word, is left alone.
     session.applied = nil;
     reply(1, @{@"测试":@"test"});
-    assert(([[MSIMETranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"测试"]]));
+    assert(([[LINGYAOTranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"测试"]]));
     assert([[controller valueForKey:@"accountGlossResults"] count] == 0 && session.applied == nil);
     // The account had nothing for 你好: remembered as a negative entry, with nothing shown.
     reply(2, @{@"你好":@""});
-    assert(([[MSIMETranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"你好"]] == NSNull.null));
+    assert(([[LINGYAOTranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"你好"]] == NSNull.null));
     assert([[controller valueForKey:@"accountGlossResults"] count] == 0);
     // A later empty answer for a word that already has a gloss does not evict it.
     reply(1, @{@"测试":@""});
-    assert(([[[MSIMETranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"测试"]] isEqual:@"test"]));
+    assert(([[[LINGYAOTranslationCache sharedCache] valueForIdentity:@[@"account", @"en", @"测试"]] isEqual:@"test"]));
 
     // Backing up to a page with both words asks about neither: one is answered from the cache, the other is known to have no answer.
     show(3, @[@"测试", @"你好"]);
@@ -6510,15 +6510,15 @@ static void TestAccountGlossLateReplyAndNegatives() {
     show(6, @[@"再见"]);
     assert((controller.accountFetches.count == 4 && [controller.accountFetches[3][0] isEqual:@[@"再见"]]));
     [[NSUserDefaults new] removePersistentDomainForName:suite];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 // The account is asked once typing has been idle for 500 ms, as Windows' cloud worker waits kIdleDelay after the latest job (cloud_translation.cpp): a page the user types past cancels its pending request, so fast typing costs one request rather than one per keystroke, while a cached answer still shows at once.
 static void TestAccountGlossIdleDelay() {
-    [[MSIMETranslationCache sharedCache] clear];
-    NSString *suite = [@"msime.account-gloss-idle." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    [[LINGYAOTranslationCache sharedCache] clear];
+    NSString *suite = [@"lingyao.account-gloss-idle." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.useRealDelay = YES;
     controller.batches = [NSMutableArray array];
@@ -6555,7 +6555,7 @@ static void TestAccountGlossIdleDelay() {
     assert(!second.valid && ![controller valueForKey:@"accountGlossTimer"]);
 
     // A page whose words are all cached shows them at once and schedules nothing.
-    [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive"
+    [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive"
         object:nil userInfo:@{@"generation":@2, @"target":@"en", @"translations":@{@"你好":@"hello"}}]];
     show(3, @[@"你好"]);
     assert(![controller valueForKey:@"accountGlossTimer"] && controller.accountFetches.count == 1);
@@ -6590,15 +6590,15 @@ static void TestAccountGlossIdleDelay() {
     [controller synchronizeAccountGloss:[controller currentAccountGlossRequest]];
     assert(controller.accountQueueCancels == 2 && ![controller valueForKey:@"accountGlossTimer"]);
     [[NSUserDefaults new] removePersistentDomainForName:suite];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 // The account is asked only after the local dictionaries have answered, and only for words they left empty, as Windows hands only the dictionary misses to RequestMisses (event_listener.cpp ApplyCandidateTranslations). A word the English dictionary answers costs no account quota when English is the only target, but it still goes out while another target lacks a local answer, because one word list serves every target.
 static void TestAccountGlossWaitsForDictionary() {
-    [[MSIMETranslationCache sharedCache] clear];
-    NSString *suite = [@"msime.account-gloss-wait." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    [[LINGYAOTranslationCache sharedCache] clear];
+    NSString *suite = [@"lingyao.account-gloss-wait." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     controller.accountFetches = [NSMutableArray array];
@@ -6646,7 +6646,7 @@ static void TestAccountGlossWaitsForDictionary() {
     assert([[NSSet setWithArray:[[controller valueForKey:@"accountEnglishQueries"] allKeys]] isEqual:[NSSet setWithObject:@"再见"]]);
     // 账号回复的日文行要和词典的英文行并到同一个候选下。以前按词去重，词典已经列出了 你好，账号那条就被丢掉，于是只显示英文释义。
     session.delivered = nil;
-    [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive"
+    [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive"
         object:nil userInfo:@{@"generation":@2, @"target":@"ja", @"translations":@{@"你好":@"こんにちは"}}]];
     NSDictionary *greeting = nil;
     for (NSDictionary *entry in session.delivered) if ([entry[@"text"] isEqual:@"你好"]) greeting = entry;
@@ -6659,19 +6659,19 @@ static void TestAccountGlossWaitsForDictionary() {
     assert(controller.accountFetches.count == 3 && ([controller.accountFetches[2] isEqual:@[@[@"测试"], @"en", @"ja", @3]]));
     [controller cancelCandidateTranslations];
     [[NSUserDefaults new] removePersistentDomainForName:suite];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 // An English account gloss is saved to the user glossary when it arrives, as Windows saves a fetched English gloss (cloud_translation.cpp PersistGloss), so the next page and the next launch answer it offline. It used to wait for the commit, where the account rows, which carry no Engine source, were rejected by the plan and nothing was ever saved.
 static void TestAccountGlossPersistsOnArrival() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSString *elsewhere = [root stringByAppendingPathComponent:@"another-profile"];
     // The glossary store writes into an existing preferences directory; it does not create one.
     assert([NSFileManager.defaultManager createDirectoryAtPath:elsewhere withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.account-gloss-persist." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.account-gloss-persist." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *(^attach)(AccountGlossSession *, NSString *) = ^(AccountGlossSession *session, NSString *directory) {
         CustomTranslationController *controller = [CustomTranslationController alloc];
         controller.batches = [NSMutableArray array];
@@ -6684,13 +6684,13 @@ static void TestAccountGlossPersistsOnArrival() {
     };
     void (^reply)(CustomTranslationController *, NSUInteger, NSString *, NSDictionary *) =
         ^(CustomTranslationController *controller, NSUInteger generation, NSString *target, NSDictionary *translations) {
-        [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendCandidateTranslationsDidArrive"
+        [controller accountCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendCandidateTranslationsDidArrive"
             object:nil userInfo:@{@"generation":@(generation), @"target":target, @"translations":translations}]];
     };
     NSArray *(^lookup)(NSString *) = ^(NSString *directory) {
         __block NSDictionary *found;
-        dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{
-            found = [MSIMEClientSession learnedTranslationRequest:@{@"directory":directory, @"action":@"lookup", @"target_language":@"en",
+        dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{
+            found = [LINGYAOClientSession learnedTranslationRequest:@{@"directory":directory, @"action":@"lookup", @"target_language":@"en",
                 @"generation":@1, @"items":@[@{@"text":@"测试", @"direction":@"chinese_to_english"},
                                                @{@"text":@"再见", @"direction":@"chinese_to_english"},
                                                @{@"text":@"你好", @"direction":@"chinese_to_english"}]} error:nil];
@@ -6717,19 +6717,19 @@ static void TestAccountGlossPersistsOnArrival() {
     // A candidate committed before its gloss arrived is the usual case, and its gloss is saved too.
     [writer cancelCandidateTranslations];
     reply(writer, 2, @"en", @{@"你好":@"hello"});
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
     assert(([lookup(root) isEqual:@[@{@"text":@"测试", @"translation":@"test"}, @{@"text":@"你好", @"translation":@"hello"}]]));
     assert([lookup(elsewhere) count] == 0);
     [[NSUserDefaults new] removePersistentDomainForName:suite];
     NSError *error = nil;
     assert([NSFileManager.defaultManager removeItemAtPath:root error:&error] && !error);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 static void TestAccountGlossSkipsNonChineseCandidates() {
-    NSString *suite = [@"msime.account-gloss." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.account-gloss." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     AccountGlossSession *session = [AccountGlossSession new];
@@ -6756,11 +6756,11 @@ static void TestAccountGlossSkipsNonChineseCandidates() {
     assert(![controller currentAccountGlossRequest]);
 }
 
-// Nothing reaches api.msime.app unless the user chose the MSIME account. A query without the flag, one that says no, and one whose service is the user's own (even with no usable credentials in it) all leave the account path idle: no request is formed and none is remembered.
+// Nothing reaches api.msime.app unless the user chose the LINGYAO account. A query without the flag, one that says no, and one whose service is the user's own (even with no usable credentials in it) all leave the account path idle: no request is formed and none is remembered.
 static void TestAccountGlossRequiresExplicitChoice() {
-    NSString *suite = [@"msime.account-gloss-choice." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.account-gloss-choice." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     AccountGlossSession *session = [AccountGlossSession new];
@@ -6783,7 +6783,7 @@ static void TestAccountGlossRequiresExplicitChoice() {
 }
 
 static void TestOfflineTargetGlosses() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
@@ -6841,14 +6841,14 @@ static void TestOfflineTargetGlosses() {
     assert(([session.delivered isEqual:@[@{@"text":@"测试", @"translation":@"test en ligne"}]]));
     [controller cancelCandidateTranslations];
     assert(![controller valueForKey:@"targetGlossRequest"] && ![controller valueForKey:@"targetGlossResults"]);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 // Apple's on-device translation fills only what the offline dictionaries leave empty, and only for a user without a service of their own. Replies are delivered straight to the controller, as in the account tests, because these controllers are built without the activation that registers the observer.
 static void TestOnDeviceGlosses() {
-    [[MSIMETranslationCache sharedCache] clear];
-    NSString *suite = [@"msime.on-device-gloss." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    [[LINGYAOTranslationCache sharedCache] clear];
+    NSString *suite = [@"lingyao.on-device-gloss." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     controller.onDeviceFetches = [NSMutableArray array];
@@ -6871,7 +6871,7 @@ static void TestOnDeviceGlosses() {
         DrainMainQueue();
     };
     void (^reply)(NSString *, NSDictionary *) = ^(NSString *target, NSDictionary *translations) {
-        [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendOnDeviceTranslationsDidArrive"
+        [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendOnDeviceTranslationsDidArrive"
             object:nil userInfo:@{@"target":target, @"translations":translations}]];
     };
     // Nothing is asked before the target's offline dictionary has answered; its completion asks.
@@ -6922,7 +6922,7 @@ static void TestOnDeviceGlosses() {
                                          @{@"text":@"再见", @"translation":@"goodbye"}]]));
     controller.extraEnglishGlosses = nil;
     session.targetLanguages = @[@"en", @"de"];
-    // A service of the user's own, or the MSIME account, answers every candidate; this path stays idle for both.
+    // A service of the user's own, or the LINGYAO account, answers every candidate; this path stays idle for both.
     session.generation++; session.custom = @{@"enabled":@YES, @"endpoint":@"https://on-device.invalid/api", @"api_key":@""};
     assert(![controller currentOnDeviceGlossRequest]);
     session.custom = nil; session.account = YES;
@@ -6941,17 +6941,17 @@ static void TestOnDeviceGlosses() {
     reply(@"de", @{@"测试":@"ignoriert"});
     assert(session.delivered == nil);
     [[NSUserDefaults new] removePersistentDomainForName:suite];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 // An English on-device gloss is saved to the user glossary when it arrives, as Windows saves a fetched English gloss (cloud_translation.cpp PersistGloss), so the next page and the next launch read it from the learned overlay instead of waiting on the model again.
 static void TestOnDeviceGlossPersistence() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     // The glossary store writes into an existing preferences directory; it does not create one.
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.on-device-gloss-persist." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.on-device-gloss-persist." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationSession *session = [CustomTranslationSession new];
     session.enabled = YES; session.generation = 1;
     session.targetLanguage = @"en"; session.targetLanguages = @[@"en", @"de"];
@@ -6978,13 +6978,13 @@ static void TestOnDeviceGlossPersistence() {
     };
     void (^reply)(CustomTranslationController *, NSString *, NSDictionary *) =
         ^(CustomTranslationController *controller, NSString *target, NSDictionary *translations) {
-        [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendOnDeviceTranslationsDidArrive"
+        [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendOnDeviceTranslationsDidArrive"
             object:nil userInfo:@{@"target":target, @"translations":translations}]];
     };
     NSDictionary *(^lookup)(void) = ^{
         __block NSDictionary *found;
-        dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{
-            found = [MSIMEClientSession learnedTranslationRequest:@{@"directory":root, @"action":@"lookup", @"target_language":@"en",
+        dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{
+            found = [LINGYAOClientSession learnedTranslationRequest:@{@"directory":root, @"action":@"lookup", @"target_language":@"en",
                 @"generation":@1, @"items":@[@{@"text":@"测试", @"direction":@"chinese_to_english"},
                                                @{@"text":@"再见", @"direction":@"chinese_to_english"},
                                                @{@"text":@"世界", @"direction":@"chinese_to_english"},
@@ -7003,7 +7003,7 @@ static void TestOnDeviceGlossPersistence() {
     settle(writer);
     // English first, so a German reply that reached the glossary would overwrite it. The model's line break and trailing space are formatted away before the gloss is cached or saved.
     reply(writer, @"en", @{@"测试":@"test\nfoo "});
-    assert([[[MSIMETranslationCache sharedCache] valueForIdentity:MSIMEOnDeviceGlossIdentity(@"en", @"测试")] isEqual:@"test foo"]);
+    assert([[[LINGYAOTranslationCache sharedCache] valueForIdentity:LINGYAOOnDeviceGlossIdentity(@"en", @"测试")] isEqual:@"test foo"]);
     reply(writer, @"de", @{@"测试":@"Prüfung"});
     // An empty answer is not a gloss and stays in the process cache only. The glossary store rejects it too, so this records the outcome rather than isolating the length check in persistOnDeviceGlosses.
     reply(writer, @"en", @{@"再见":@""});
@@ -7012,11 +7012,11 @@ static void TestOnDeviceGlossPersistence() {
     // Nor does the page the user typed on to have to be composing still: a candidate committed before its gloss arrived is the usual case, and its gloss is saved too.
     [writer cancelCandidateTranslations];
     reply(writer, @"en", @{@"你好":@"hello"});
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
     // Saved under the Chinese key in the Chinese-to-English direction; the lookup only finds it there.
     assert(([lookup()[@"translations"] isEqual:@[@{@"text":@"测试", @"translation":@"test foo"}, @{@"text":@"你好", @"translation":@"hello"}]]));
     // A fresh controller with an empty process cache, as after a restart, answers the saved word from the glossary and only asks the model about the rest.
-    [writer cancelCandidateTranslations]; [[MSIMETranslationCache sharedCache] clear];
+    [writer cancelCandidateTranslations]; [[LINGYAOTranslationCache sharedCache] clear];
     session.page = askedPage; session.queryCandidates = askedQuery;
     session.generation++; session.targetLanguages = @[@"en"]; session.delivered = nil;
     CustomTranslationController *reader = attach();
@@ -7027,17 +7027,17 @@ static void TestOnDeviceGlossPersistence() {
     [[NSUserDefaults new] removePersistentDomainForName:suite];
     NSError *error = nil;
     assert([NSFileManager.defaultManager removeItemAtPath:root error:&error] && !error);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 // 同一控制器先后为同一个词发起两个端侧英文释义请求时，晚到的第一个回复仍须使用它自己的 Engine 来源写入词库；不能被后一个页面的同名词覆盖。
 static void TestOnDeviceGlossDuplicateTextKeepsRequestMetadata() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSString *suite = [@"msime.on-device-gloss-duplicate." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    NSString *suite = [@"lingyao.on-device-gloss-duplicate." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationSession *session = [CustomTranslationSession new];
     session.enabled = YES; session.targetLanguage = @"en"; session.generation = 1;
     session.targetLanguages = @[@"en"];
@@ -7066,19 +7066,19 @@ static void TestOnDeviceGlossDuplicateTextKeepsRequestMetadata() {
     settle();
     assert(controller.onDeviceFetches.count == 3);
 
-    [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendOnDeviceTranslationsDidArrive"
+    [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendOnDeviceTranslationsDidArrive"
         object:nil userInfo:@{@"target": @"en", @"translations": @{@"同名": @"old reply"}}]];
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{});
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{});
     __block NSDictionary *lookup;
-    dispatch_sync([MSIMEInputController learnedTranslationQueue], ^{
-        lookup = [MSIMEClientSession learnedTranslationRequest:@{@"directory": root, @"action": @"lookup", @"target_language": @"en",
+    dispatch_sync([LINGYAOInputController learnedTranslationQueue], ^{
+        lookup = [LINGYAOClientSession learnedTranslationRequest:@{@"directory": root, @"action": @"lookup", @"target_language": @"en",
             @"generation": @1, @"items": @[@{@"text": @"同名", @"direction": @"chinese_to_english"},
                                                @{@"text": @"同名", @"direction": @"english_to_chinese"}]} error:nil];
     });
     assert(([lookup[@"translations"] isEqual:@[@{@"text": @"同名", @"translation": @"old reply"}]]));
     [[NSUserDefaults new] removePersistentDomainForName:suite];
     assert([NSFileManager.defaultManager removeItemAtPath:root error:nil]);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestCustomTranslationController() {
     CustomTranslationController *controller = [CustomTranslationController alloc];
@@ -7114,7 +7114,7 @@ static void TestCustomTranslationController() {
     // Candidate identity, client, session, focus and mode guards all reject a callback even before the next synchronization cancels transport. A generation that moved over the same words is not among them: that page still shows what the reply answers (TestGlossSurvivesHighlightMove).
     for (NSString *change in @[@"page", @"client", @"session", @"focus", @"japanese", @"disabled"]) {
         // The rejected reply still reaches the cache, so clear it to make the next round ask again.
-        [[MSIMETranslationCache sharedCache] clear];
+        [[LINGYAOTranslationCache sharedCache] clear];
         [controller cancelCandidateTranslations];
         [controller synchronizeCustomTranslations];
         ControlledTranslationBatch *batch = controller.batches.lastObject;
@@ -7163,9 +7163,9 @@ static void TestCustomTranslationController() {
     session.offline = NO;
     [controller synchronizeCandidateGloss]; [controller synchronizeCustomTranslations];
     ControlledTranslationBatch *nativePending = controller.batches.lastObject;
-    NSString *suite = [@"msime.custom.translation." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.custom.translation." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     [controller setValue:prefs forKey:@"appearance"];
     prefs.candidateTranslations = NO;
     assert(![controller currentCustomTranslationRequest]);
@@ -7174,10 +7174,10 @@ static void TestCustomTranslationController() {
     nativePending.reply(online);
     assert(session.delivered.count == 0);
     [prefs.window close];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 static void TestSecondaryTranslationScheduling() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
@@ -7203,7 +7203,7 @@ static void TestSecondaryTranslationScheduling() {
     session.targetLanguages = @[@"ja", @"fr"];
     [controller synchronizeCustomTranslations];
     assert(controller.batches.count == 2 && [session.delivered[0][@"translation"] isEqual:@"こんにちは\nbonjour"]);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     session.generation++;
     session.targetLanguage = @"fr";
     session.targetLanguages = @[@"fr", @"ja"];
@@ -7214,10 +7214,10 @@ static void TestSecondaryTranslationScheduling() {
     stale.reply(@[@{@"text":@"你好", @"translation":@"stale"}]);
     assert(![session.delivered[0][@"translation"] isEqual:@"stale"]);
     [controller cancelCandidateTranslations];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestCustomTranslationCacheDelivery() {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
@@ -7275,10 +7275,10 @@ static void TestCustomTranslationCacheDelivery() {
     session.generation++; session.page = @[@{@"text":@"third", @"source":@4}];
     [controller synchronizeCustomTranslations]; assert(controller.batches.count == 8);
     [controller cancelCandidateTranslations];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestCustomTranslationIdleDelay(BOOL tencent) {
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.useRealDelay = YES; controller.batches = [NSMutableArray array];
     CustomTranslationSession *session = [CustomTranslationSession new];
@@ -7327,7 +7327,7 @@ static void TestCustomTranslationIdleDelay(BOOL tencent) {
     NSTimer *cancelled = [controller valueForKey:@"customTimer"];
     [controller cancelCandidateTranslations]; [cancelled fire];
     assert(!cancelled.valid && controller.batches.count == 1);
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 static void TestGlossScheduling() {
     GlossController *controller = [GlossController alloc];
@@ -7365,10 +7365,10 @@ static void TestGlossScheduling() {
 
 // Moving the highlight, or a cloud candidate landing late, advances the generation without changing the words on the page. Windows keys its translation signature on the words alone and does nothing then (event_listener.cpp ApplyCandidateTranslations); here the requests leave the generation out for the same reason, so nothing is cancelled, read again or queued again, and what is held is applied once to the new generation, since the session dropped it when the generation moved.
 static void TestGlossSurvivesHighlightMove() {
-    [[MSIMETranslationCache sharedCache] clear];
-    NSString *suite = [@"msime.highlight-move." stringByAppendingString:NSUUID.UUID.UUIDString];
-    MSIMEAppearancePreferences *prefs =
-        [[MSIMEAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
+    [[LINGYAOTranslationCache sharedCache] clear];
+    NSString *suite = [@"lingyao.highlight-move." stringByAppendingString:NSUUID.UUID.UUIDString];
+    LINGYAOAppearancePreferences *prefs =
+        [[LINGYAOAppearancePreferences alloc] initWithDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite]];
     CustomTranslationController *controller = [CustomTranslationController alloc];
     controller.batches = [NSMutableArray array];
     controller.onDeviceFetches = [NSMutableArray array];
@@ -7422,7 +7422,7 @@ static void TestGlossSurvivesHighlightMove() {
     session.queryCandidates = @[@{@"text":@"测试", @"online_gloss":@YES}, @{@"text":@"你好", @"online_gloss":@YES}];
     settle();
     assert(controller.onDeviceFetches.count == 1 && ([controller.onDeviceFetches[0] isEqual:@[@[@"测试", @"你好"], @[@"en"]]]));
-    [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"MSIMEBackendOnDeviceTranslationsDidArrive"
+    [controller onDeviceCandidateTranslationsDidArrive:[NSNotification notificationWithName:@"LINGYAOBackendOnDeviceTranslationsDidArrive"
         object:nil userInfo:@{@"target":@"en", @"translations":@{@"测试":@"test"}}]];
     assert(([session.delivered isEqual:@[@{@"text":@"测试", @"translation":@"test"}]]));
     [session.appliedGenerations removeAllObjects];
@@ -7433,7 +7433,7 @@ static void TestGlossSurvivesHighlightMove() {
     [controller cancelCandidateTranslations];
 
     // The account: the pending idle timer is kept, not restarted, and the cached gloss is applied to the new generation.
-    [[MSIMETranslationCache sharedCache] rememberTranslation:@"hello" identity:@[@"account", @"en", @"你好"]];
+    [[LINGYAOTranslationCache sharedCache] rememberTranslation:@"hello" identity:@[@"account", @"en", @"你好"]];
     session.account = YES; session.generation = 5;
     settle();
     NSTimer *accountTimer = [controller valueForKey:@"accountGlossTimer"];
@@ -7449,7 +7449,7 @@ static void TestGlossSurvivesHighlightMove() {
     assert(controller.accountFetches.count == 1 && ([controller.accountFetches[0] isEqual:@[@[@"测试"], @"en", @"", @6]]));
     [controller cancelCandidateTranslations];
     [[NSUserDefaults new] removePersistentDomainForName:suite];
-    [[MSIMETranslationCache sharedCache] clear];
+    [[LINGYAOTranslationCache sharedCache] clear];
 }
 
 @interface SettingsRouteWorkspace : NSWorkspace
@@ -7459,7 +7459,7 @@ static void TestGlossSurvivesHighlightMove() {
 @end
 @implementation SettingsRouteWorkspace
 - (NSURL *)URLForApplicationWithBundleIdentifier:(NSString *)identifier {
-    assert([identifier isEqual:@"app.msime.macos"]);
+    assert([identifier isEqual:@"app.lingyao.macos"]);
     return self.installed ? [NSURL fileURLWithPath:@"/synthetic/Settings.app"] : nil;
 }
 - (void)openApplicationAtURL:(NSURL *)url configuration:(NSWorkspaceOpenConfiguration *)configuration
@@ -7468,7 +7468,7 @@ static void TestGlossSurvivesHighlightMove() {
     self.configuration = configuration; self.completion = completion;
 }
 @end
-@interface RoutedAppearancePreferences : MSIMEAppearancePreferences
+@interface RoutedAppearancePreferences : LINGYAOAppearancePreferences
 @property(strong) SettingsRouteWorkspace *testWorkspace;
 @end
 @implementation RoutedAppearancePreferences
@@ -7476,7 +7476,7 @@ static void TestGlossSurvivesHighlightMove() {
 @end
 
 static void TestCandidateTranslationPreference() {
-    NSString *suite = [@"msime.gloss.preference." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"lingyao.gloss.preference." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
     RoutedAppearancePreferences *prefs = [[RoutedAppearancePreferences alloc] initWithDefaults:defaults];
     prefs.testWorkspace = [SettingsRouteWorkspace new];
@@ -7488,18 +7488,18 @@ static void TestCandidateTranslationPreference() {
     assert(![prefs sharedPreferencesByMerging:@{}][@"candidate_english_gloss"]);
     assert([[prefs sharedPreferencesByMerging:@{@"candidate_translations":@NO}][@"candidate_translations"] isEqual:@NO]);
     __block NSUInteger saves = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++saves; }];
     [prefs applySharedInputPreferences:@{@"candidate_translations":@NO}];
     assert(!prefs.candidateTranslations && toggle.state == NSControlStateValueOff && saves == 0);
     for (id invalid in @[NSNull.null, @1, @"true"]) [prefs applySharedInputPreferences:@{@"candidate_translations":invalid}];
-    assert(!prefs.candidateTranslations && saves == 0 && ![defaults objectForKey:@"MSIMEClientCandidateTranslations"]);
+    assert(!prefs.candidateTranslations && saves == 0 && ![defaults objectForKey:@"LINGYAOClientCandidateTranslations"]);
     toggle.state = NSControlStateValueOn;
     [NSApp sendAction:toggle.action to:toggle.target from:toggle];
     assert(prefs.candidateTranslations && saves == 1);
     [prefs applySharedInputPreferences:@{@"candidate_english_gloss":@YES}];
     assert(prefs.candidateEnglishGloss && offlineToggle.state == NSControlStateValueOn && saves == 1);
     for (id invalid in @[NSNull.null, @1, @"true"]) [prefs applySharedInputPreferences:@{@"candidate_english_gloss":invalid}];
-    assert(prefs.candidateEnglishGloss && saves == 1 && ![defaults objectForKey:@"MSIMEClientCandidateEnglishGloss"]);
+    assert(prefs.candidateEnglishGloss && saves == 1 && ![defaults objectForKey:@"LINGYAOClientCandidateEnglishGloss"]);
     offlineToggle.state = NSControlStateValueOff;
     [NSApp sendAction:offlineToggle.action to:offlineToggle.target from:offlineToggle];
     assert(!prefs.candidateEnglishGloss && saves == 2);
@@ -7528,20 +7528,20 @@ static void TestCandidateTranslationPreference() {
     [(NSOperationQueue *)[controller valueForKey:@"glossQueue"] waitUntilAllOperationsAreFinished];
     [NSRunLoop.mainRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
     assert(session.applications == 0);
-    assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] candidateTranslations]);
-    assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults] candidateEnglishGloss]);
+    assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] candidateTranslations]);
+    assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults] candidateEnglishGloss]);
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSError *error = nil;
-    NSDictionary *snapshot = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *snapshot = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(snapshot && !error);
     NSDictionary *merged = [prefs sharedPreferencesByMerging:snapshot[@"preferences"]];
     assert([merged[@"candidate_translations"] isEqual:@NO]);
     assert([merged[@"candidate_english_gloss"] isEqual:@NO]);
     assert([merged[@"custom_translation"] isEqual:snapshot[@"preferences"][@"custom_translation"]]);
-    NSDictionary *saved = [MSIMEClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
+    NSDictionary *saved = [LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:[snapshot[@"revision"] unsignedLongLongValue]
         snapshot:@{@"format_version":@1, @"revision":snapshot[@"revision"], @"preferences":merged} error:&error];
     assert(saved && !error);
-    NSDictionary *loaded = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+    NSDictionary *loaded = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
     assert(loaded && !error && [loaded[@"preferences"][@"candidate_translations"] isEqual:@NO]);
     [prefs setTranslationPreferencesDirectory:root];
     NSControl *translationEntry = PreferenceControl(prefs, @selector(showTranslationSettings:));
@@ -7578,8 +7578,8 @@ static void TestCandidateTranslationPreference() {
     assert(translationWindow.window.visible);
     [translationWindow close];
     [NSNotificationCenter.defaultCenter removeObserver:observer];
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
-    MSIMEAppearancePreferences *fresh = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
+    LINGYAOAppearancePreferences *fresh = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     assert(fresh.candidateTranslations);
     [fresh applySharedInputPreferences:loaded[@"preferences"]];
     assert(!fresh.candidateTranslations);
@@ -7639,21 +7639,21 @@ static void TestGlossModePolicy() {
 // Driven through the reason and the report rather than through prepareSession, which would read whichever
 // runtime options the machine running the test happens to have installed.
 static void TestSessionUnavailableIsReported() {
-    assert([MSIMESessionUnavailableReason(nil) isEqual:@"no usable runtime options"]);
-    assert([MSIMESessionUnavailableReason(@{}) isEqual:@"session refused the runtime options"]);
+    assert([LINGYAOSessionUnavailableReason(nil) isEqual:@"no usable runtime options"]);
+    assert([LINGYAOSessionUnavailableReason(@{}) isEqual:@"session refused the runtime options"]);
 
     NSString *directory = [NSTemporaryDirectory() stringByAppendingPathComponent:
-        [@"msime.session-unavailable." stringByAppendingString:NSUUID.UUID.UUIDString]];
+        [@"lingyao.session-unavailable." stringByAppendingString:NSUUID.UUID.UUIDString]];
     assert([NSFileManager.defaultManager createDirectoryAtPath:directory withIntermediateDirectories:YES
                                                     attributes:nil error:nil]);
-    msime_macos_diagnostic_configure(directory.UTF8String, true);
-    MSIMEInputController *controller = [MSIMEInputController alloc];
-    [controller reportSessionUnavailable:MSIMESessionUnavailableReason(nil)];
-    [controller reportSessionUnavailable:MSIMESessionUnavailableReason(nil)];
-    [controller reportSessionUnavailable:MSIMESessionUnavailableReason(@{})];
+    lingyao_macos_diagnostic_configure(directory.UTF8String, true);
+    LINGYAOInputController *controller = [LINGYAOInputController alloc];
+    [controller reportSessionUnavailable:LINGYAOSessionUnavailableReason(nil)];
+    [controller reportSessionUnavailable:LINGYAOSessionUnavailableReason(nil)];
+    [controller reportSessionUnavailable:LINGYAOSessionUnavailableReason(@{})];
     NSString *log = [NSString stringWithContentsOfFile:[directory stringByAppendingPathComponent:@"diagnostic.log"]
                                               encoding:NSUTF8StringEncoding error:nil];
-    msime_macos_diagnostic_configure("", false);
+    lingyao_macos_diagnostic_configure("", false);
     [NSFileManager.defaultManager removeItemAtPath:directory error:nil];
     assert(log);
     // The repeat says nothing new; without this every focus while the dictionary is missing writes a line.
@@ -7661,17 +7661,17 @@ static void TestSessionUnavailableIsReported() {
     assert([log componentsSeparatedByString:@"reason=session refused the runtime options"].count - 1 == 1);
 }
 
-// Every preference object built here without an explicit skins root reads msime::mac::DefaultSkinsRoot(), which is otherwise the user's real skins folder: an external skin installed there adds a card to the skin page and breaks the counts below. The whole run gets an empty folder of its own, removed when main returns.
+// Every preference object built here without an explicit skins root reads lingyao::mac::DefaultSkinsRoot(), which is otherwise the user's real skins folder: an external skin installed there adds a card to the skin page and breaks the counts below. The whole run gets an empty folder of its own, removed when main returns.
 struct IsolatedDefaultSkinsRoot {
     std::filesystem::path path;
     IsolatedDefaultSkinsRoot() {
-        std::string pattern = (std::filesystem::temp_directory_path() / "msime-shortcut-skins.XXXXXX").string();
+        std::string pattern = (std::filesystem::temp_directory_path() / "lingyao-shortcut-skins.XXXXXX").string();
         assert(mkdtemp(pattern.data()) != nullptr);
         path = pattern;
-        msime::mac::SetDefaultSkinsRoot(path);
+        lingyao::mac::SetDefaultSkinsRoot(path);
     }
     ~IsolatedDefaultSkinsRoot() {
-        msime::mac::SetDefaultSkinsRoot({});
+        lingyao::mac::SetDefaultSkinsRoot({});
         std::error_code error;
         std::filesystem::remove_all(path, error);
     }
@@ -7686,7 +7686,7 @@ struct IsolatedUserHome {
         if (given != nullptr && given[0] != '\0') {
             path = given;
         } else {
-            std::string pattern = (std::filesystem::temp_directory_path() / "msime-shortcut-home.XXXXXX").string();
+            std::string pattern = (std::filesystem::temp_directory_path() / "lingyao-shortcut-home.XXXXXX").string();
             assert(mkdtemp(pattern.data()) != nullptr);
             path = pattern;
             created = true;
@@ -7709,10 +7709,10 @@ struct IsolatedUserHome {
 int main(int argc, char **argv) {
     const IsolatedUserHome userHome;
     const IsolatedDefaultSkinsRoot skinsRoot;
-    assert(msime::mac::DefaultSkinsRoot() == skinsRoot.path);
-    assert(!MSIMEShouldRegisterInputSource(1, nullptr));
+    assert(lingyao::mac::DefaultSkinsRoot() == skinsRoot.path);
+    assert(!LINGYAOShouldRegisterInputSource(1, nullptr));
     const char *registerArguments[] = {"test", "--register-input-source"};
-    assert(MSIMEShouldRegisterInputSource(2, registerArguments));
+    assert(LINGYAOShouldRegisterInputSource(2, registerArguments));
     @autoreleasepool {
         [NSApplication sharedApplication];
         // Each case drains its own pool. No run loop turns between cases, so under one outer pool every autoreleased preferences window lived to the end of main: about a hundred piled up, every later window paid for all of their notification observers and weak references, and the run grew quadratically until the sanitizer leg crossed its 240 s ceiling.
@@ -7746,8 +7746,8 @@ int main(int argc, char **argv) {
             return 0;
         }
         NSUserDefaults *standardDefaults = NSUserDefaults.standardUserDefaults;
-        id previousVoiceHoldSpace = [standardDefaults objectForKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
-        [standardDefaults setBool:NO forKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
+        id previousVoiceHoldSpace = [standardDefaults objectForKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
+        [standardDefaults setBool:NO forKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
         @autoreleasepool { TestSessionUnavailableIsReported(); }
         @autoreleasepool { TestCloudCandidateScheduling(); }
         @autoreleasepool { TestCloudCandidateRetryAfterRejectedResponse(); }
@@ -7788,9 +7788,9 @@ int main(int argc, char **argv) {
         @autoreleasepool { TestSharedPunctuation(); }
         @autoreleasepool { TestSharedTraditionalOutput(); }
         @autoreleasepool { TestPageSizeCache(); }
-        NSString *suite = [@"app.msime.test.appearance." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"app.lingyao.test.appearance." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         assert(!appearance.vertical && appearance.fontSize == 18);
         assert(appearance.candidateFollowCursor);
         assert(appearance.pageShortcut == 0);
@@ -7820,7 +7820,7 @@ int main(int argc, char **argv) {
         [followCursorControl setState:NSControlStateValueOff];
         [NSApp sendAction:followCursorControl.action to:followCursorControl.target from:followCursorControl];
         assert(!appearance.candidateFollowCursor);
-        MSIMEAppearancePreferences *followCursorLoaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *followCursorLoaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         assert(!followCursorLoaded.candidateFollowCursor);
         assert([[[appearance sharedPreferencesByMerging:@{}] objectForKey:@"candidate_follow_cursor"] isEqual:@NO]);
         [appearance applySharedCandidatePreferences:@{@"candidate_follow_cursor": @YES}];
@@ -7831,18 +7831,18 @@ int main(int argc, char **argv) {
         for (NSUInteger option = 0; option < skinIDs.count; ++option) {
             assert([skinCards[option].identifier isEqual:skinIDs[option]]);
             [NSApp sendAction:skinCards[option].action to:skinCards[option].target from:skinCards[option]];
-            MSIMEAppearancePreferences *loaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+            LINGYAOAppearancePreferences *loaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
             assert([loaded.globalTheme isEqual:skinIDs[option]]);
         }
         appearance.globalTheme = @"system";
         // The reference's set, three through nine.
-        assert(sizeControl.numberOfItems == (NSInteger)msime::mac::kOfferedCandidatePageSizes);
+        assert(sizeControl.numberOfItems == (NSInteger)lingyao::mac::kOfferedCandidatePageSizes);
         NSArray *pageSizes = @[@3, @4, @5, @6, @7, @8, @9];
-        for (NSInteger option = 0; option < (NSInteger)msime::mac::kOfferedCandidatePageSizes; ++option) {
+        for (NSInteger option = 0; option < (NSInteger)lingyao::mac::kOfferedCandidatePageSizes; ++option) {
             assert(([sizeControl.itemTitles[option] isEqual:[NSString stringWithFormat:@"%@ 个", pageSizes[option]]]));
             [sizeControl selectItemAtIndex:option];
             [NSApp sendAction:sizeControl.action to:sizeControl.target from:sizeControl];
-            MSIMEAppearancePreferences *loaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+            LINGYAOAppearancePreferences *loaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
             assert(loaded.pageSize == [pageSizes[option] unsignedIntegerValue]);
         }
         assert(([shortcutControl.itemTitles isEqual:@[@"- / =", @"[ / ]", @"Page Up / Page Down"]]));
@@ -7853,13 +7853,13 @@ int main(int argc, char **argv) {
         [appearance setWordCharacterEnabled:YES keys:@"brackets"];
         [shortcutControl selectItemAtIndex:1];
         [NSApp sendAction:shortcutControl.action to:shortcutControl.target from:shortcutControl];
-        assert([[MSIMEAppearancePreferences alloc] initWithDefaults:defaults].pageShortcut != 1);
+        assert([[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults].pageShortcut != 1);
 
         [appearance setWordCharacterEnabled:NO keys:@"brackets"];
         for (NSInteger option = 0; option < 3; ++option) {
             [shortcutControl selectItemAtIndex:option];
             [NSApp sendAction:shortcutControl.action to:shortcutControl.target from:shortcutControl];
-            MSIMEAppearancePreferences *loaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+            LINGYAOAppearancePreferences *loaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
             assert(loaded.pageShortcut == option);
         }
         appearance.pageShortcut = 0;
@@ -7870,41 +7870,41 @@ int main(int argc, char **argv) {
         for (NSInteger option = 0; option < 21; ++option) {
             [fontControl selectItemAtIndex:option];
             [NSApp sendAction:fontControl.action to:fontControl.target from:fontControl];
-            MSIMEAppearancePreferences *loaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+            LINGYAOAppearancePreferences *loaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
             assert(loaded.fontSize == (NSUInteger)option + 12);
             assert(([fontControl.titleOfSelectedItem isEqual:[NSString stringWithFormat:@"%ld pt", option + 12]]));
         }
         [fontControl selectItemAtIndex:4];
         [NSApp sendAction:fontControl.action to:fontControl.target from:fontControl];
-        MSIMEAppearancePreferences *reopened = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *reopened = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         assert(reopened.vertical && reopened.fontSize == 16);
         appearance.fontSize = 18;
-        MSIMECandidatePanel *focusPanel = [[MSIMECandidatePanel alloc] initWithContentRect:NSZeroRect styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel backing:NSBackingStoreBuffered defer:NO];
+        LINGYAOCandidatePanel *focusPanel = [[LINGYAOCandidatePanel alloc] initWithContentRect:NSZeroRect styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel backing:NSBackingStoreBuffered defer:NO];
         assert(!focusPanel.canBecomeKeyWindow && !focusPanel.canBecomeMainWindow);
-        MSIMECandidateButton *focusButton = [[MSIMECandidateButton alloc] initWithFrame:NSZeroRect];
+        LINGYAOCandidateButton *focusButton = [[LINGYAOCandidateButton alloc] initWithFrame:NSZeroRect];
         assert(!focusButton.acceptsFirstResponder);
         assert([focusButton acceptsFirstMouse:nil]);
-        assert(!MSIMEValidCaret(NSZeroRect));
-        assert(!MSIMEValidCaret(NSMakeRect(NAN, 0, 1, 20)));
-        assert(!MSIMEValidCaret(NSMakeRect(0, INFINITY, 1, 20)));
-        assert(!MSIMEValidCaret(NSMakeRect(0, 0, INFINITY, 20)));
-        assert(!MSIMEValidCaret(NSMakeRect(0, 0, 1, -1)));
-        assert(MSIMEValidCaret(NSMakeRect(-500, -200, 0, 20)));
+        assert(!LINGYAOValidCaret(NSZeroRect));
+        assert(!LINGYAOValidCaret(NSMakeRect(NAN, 0, 1, 20)));
+        assert(!LINGYAOValidCaret(NSMakeRect(0, INFINITY, 1, 20)));
+        assert(!LINGYAOValidCaret(NSMakeRect(0, 0, INFINITY, 20)));
+        assert(!LINGYAOValidCaret(NSMakeRect(0, 0, 1, -1)));
+        assert(LINGYAOValidCaret(NSMakeRect(-500, -200, 0, 20)));
         NSRect bounds = NSMakeRect(0, 0, 1000, 800);
-        assert(NSEqualPoints(MSIMECandidateOrigin(NSMakeRect(100, 500, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(100, 396)));
-        assert(NSEqualPoints(MSIMECandidateOrigin(NSMakeRect(950, 20, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(800, 44)));
+        assert(NSEqualPoints(LINGYAOCandidateOrigin(NSMakeRect(100, 500, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(100, 396)));
+        assert(NSEqualPoints(LINGYAOCandidateOrigin(NSMakeRect(950, 20, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(800, 44)));
         // Oversized content anchors at the visible origin, never outside both edges.
-        assert(NSEqualPoints(MSIMECandidateOrigin(NSMakeRect(950, 20, 1, 20), NSMakeSize(1200, 900), bounds), NSZeroPoint));
+        assert(NSEqualPoints(LINGYAOCandidateOrigin(NSMakeRect(950, 20, 1, 20), NSMakeSize(1200, 900), bounds), NSZeroPoint));
         bounds = NSMakeRect(-1000, -800, 1000, 800);
-        assert(NSEqualPoints(MSIMECandidateOrigin(NSMakeRect(-50, -780, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(-200, -756)));
+        assert(NSEqualPoints(LINGYAOCandidateOrigin(NSMakeRect(-50, -780, 1, 20), NSMakeSize(200, 100), bounds), NSMakePoint(-200, -756)));
         // Inject a session and client without registering a system input source.
-        MSIMEInputController *controller = [MSIMEInputController alloc];
+        LINGYAOInputController *controller = [LINGYAOInputController alloc];
         ShortcutSession *session = [ShortcutSession new];
         ShortcutClient *client = [ShortcutClient new];
         [controller setValue:session forKey:@"session"];
         [controller setValue:client forKey:@"activeClient"];
         [controller setValue:appearance forKey:@"appearance"];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientPinnedCandidates"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"LINGYAOClientPinnedCandidates"];
         [controller syncPageSize];
         assert(session.requestedPageSize == 9);
         appearance.pageSize = 5;
@@ -7933,7 +7933,7 @@ int main(int argc, char **argv) {
             client.marked = @"ceshi";
             NSEvent *event = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:flags.unsignedIntegerValue timestamp:0 windowNumber:0 context:nil characters:@"a" charactersIgnoringModifiers:@"a" isARepeat:NO keyCode:0];
             assert(![controller handleEvent:event client:client]);
-            assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+            assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
             assert([client.committed isEqualToString:@"测试"]);
             assert(client.marked.length == 0);
         }
@@ -7950,11 +7950,11 @@ int main(int argc, char **argv) {
             client.committed = nil;
             client.marked = @"ceshi";
             assert([controller handleEvent:event client:client]);
-            assert(session.lastCommand == (key.unsignedShortValue == 123 ? MSIME_MOVE_LEFT : MSIME_MOVE_RIGHT));
+            assert(session.lastCommand == (key.unsignedShortValue == 123 ? LINGYAO_MOVE_LEFT : LINGYAO_MOVE_RIGHT));
             panel.visible = NO;
             session.lastCommand = UINT32_MAX;
             assert([controller handleEvent:event client:client]);
-            assert(session.lastCommand == (key.unsignedShortValue == 123 ? MSIME_MOVE_LEFT : MSIME_MOVE_RIGHT));
+            assert(session.lastCommand == (key.unsignedShortValue == 123 ? LINGYAO_MOVE_LEFT : LINGYAO_MOVE_RIGHT));
         }
         appearance.vertical = arrowVertical;
         HiddenCandidatePanel *layoutPanel = [[HiddenCandidatePanel alloc] initWithContentRect:NSZeroRect styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel backing:NSBackingStoreBuffered defer:NO];
@@ -7962,10 +7962,10 @@ int main(int argc, char **argv) {
             NSEvent *event = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0 context:nil characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:key.unsignedShortValue];
             panel.visible = YES;
             assert([controller handleEvent:event client:client]);
-            assert(session.lastCommand == (key.unsignedShortValue == 115 ? MSIME_FIRST_CANDIDATE : MSIME_LAST_CANDIDATE));
+            assert(session.lastCommand == (key.unsignedShortValue == 115 ? LINGYAO_FIRST_CANDIDATE : LINGYAO_LAST_CANDIDATE));
             panel.visible = NO;
             assert([controller handleEvent:event client:client]);
-            assert(session.lastCommand == (key.unsignedShortValue == 115 ? MSIME_MOVE_HOME : MSIME_MOVE_END));
+            assert(session.lastCommand == (key.unsignedShortValue == 115 ? LINGYAO_MOVE_HOME : LINGYAO_MOVE_END));
         }
         [controller setValue:layoutPanel forKey:@"panel"];
         client.caret = NSMakeRect(NSMidX(NSScreen.mainScreen.visibleFrame), NSMidY(NSScreen.mainScreen.visibleFrame), 1, 20);
@@ -7987,7 +7987,7 @@ int main(int argc, char **argv) {
         assert(layoutPanel.frame.size.width > shortWidth);
         NSButton *rendered = (NSButton *)layoutPanel.contentView.subviews.firstObject;
         assert(rendered.font.pointSize == 18);
-        assert(fabs(((MSIMECandidateButton *)rendered).numberFont.pointSize - 14.4) < 0.01);
+        assert(fabs(((LINGYAOCandidateButton *)rendered).numberFont.pointSize - 14.4) < 0.01);
         assert([rendered.toolTip isEqualToString:@"合成候选布局测试文本"]);
         // Candidates wrap inside their column instead of being cut off with an ellipsis.
         assert(rendered.lineBreakMode == NSLineBreakByWordWrapping);
@@ -7998,8 +7998,8 @@ int main(int argc, char **argv) {
         NSMutableDictionary *pageView = [@{@"session": @1, @"generation": @2, @"focused": @YES, @"page": @0, @"page_count": @3, @"editing_text": @"ceshi", @"caret_position": @5, @"candidates": @[@{@"text": @"测试", @"highlighted": @YES}]} mutableCopy];
         [controller setValue:[pageView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *previous = (id)PageButton(layoutPanel.contentView, -1);
-        MSIMECandidateButton *next = (id)PageButton(layoutPanel.contentView, -2);
+        LINGYAOCandidateButton *previous = (id)PageButton(layoutPanel.contentView, -1);
+        LINGYAOCandidateButton *next = (id)PageButton(layoutPanel.contentView, -2);
         assert(previous && next && !previous.enabled && next.enabled);
         assert([previous.accessibilityLabel isEqual:@"上一页候选"]);
         assert([next.accessibilityLabel isEqual:@"下一页候选"]);
@@ -8015,13 +8015,13 @@ int main(int argc, char **argv) {
         NSDictionary *beforeGlossView = [glossReuseView copy];
         [controller setValue:beforeGlossView forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *reusedBeforeGloss = PageButton(layoutPanel.contentView, 0);
+        LINGYAOCandidateButton *reusedBeforeGloss = PageButton(layoutPanel.contentView, 0);
         NSMutableDictionary *glossReuseCandidate = [glossReuseView[@"candidates"][0] mutableCopy];
         glossReuseCandidate[@"translation"] = @"x";
         glossReuseView[@"candidates"] = @[glossReuseCandidate];
         [controller setValue:[glossReuseView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *reusedAfterGloss = PageButton(layoutPanel.contentView, 0);
+        LINGYAOCandidateButton *reusedAfterGloss = PageButton(layoutPanel.contentView, 0);
         assert(reusedAfterGloss == reusedBeforeGloss && [reusedAfterGloss.translation isEqual:@"x"] &&
                [reusedAfterGloss.toolTip containsString:@"\nx"]);
         [controller setValue:[pageView copy] forKey:@"view"];
@@ -8034,7 +8034,7 @@ int main(int argc, char **argv) {
             if ([child.identifier isEqual:@"candidate-page-indicator"]) pageIndicator = (id)child;
         assert(pageIndicator && [pageIndicator.stringValue isEqual:@"1 / 3"]);
         assert([pageIndicator.accessibilityLabel isEqual:@"第 1 页，共 3 页"]);
-        MSIMECandidateButton *pagedCandidate = PageButton(layoutPanel.contentView, 0);
+        LINGYAOCandidateButton *pagedCandidate = PageButton(layoutPanel.contentView, 0);
         assert(NSMinY(previous.frame) >= NSMaxY(pagedCandidate.frame) && NSMinY(next.frame) == NSMinY(previous.frame));
         assert(NSMaxX(next.frame) <= layoutPanel.contentView.bounds.size.width && NSMaxX(pageIndicator.frame) <= NSMinX(previous.frame));
         // 「1 / 3」 and ‹ › are the design's 13pt secondary run (dc.html L1324).
@@ -8053,7 +8053,7 @@ int main(int argc, char **argv) {
         [controller renderCandidates];
         // A layout-only render can keep all Engine IDs unchanged. The detached
         // button must still be rejected, just like detached candidate buttons.
-        MSIMECandidateButton *oldPageButton = next;
+        LINGYAOCandidateButton *oldPageButton = next;
         [controller renderCandidates];
         session.lastCommand = UINT32_MAX;
         [controller changeCandidatePage:oldPageButton];
@@ -8086,7 +8086,7 @@ int main(int argc, char **argv) {
         session.nextTransition = @{@"handled": @YES, @"commit": NSNull.null, @"view": [pageView copy]};
         client.committed = nil;
         [next performClick:nil];
-        assert(session.lastCommand == MSIME_NEXT_PAGE && client.committed == nil);
+        assert(session.lastCommand == LINGYAO_NEXT_PAGE && client.committed == nil);
         assert([client.marked isEqual:@"ceshi"]);
         // A previous page's retained button must not advance the current page.
         session.lastCommand = UINT32_MAX;
@@ -8098,7 +8098,7 @@ int main(int argc, char **argv) {
         pageView[@"page"] = @0;
         session.nextTransition = @{@"handled": @YES, @"commit": NSNull.null, @"view": [pageView copy]};
         [previous performClick:nil];
-        assert(session.lastCommand == MSIME_PREVIOUS_PAGE);
+        assert(session.lastCommand == LINGYAO_PREVIOUS_PAGE);
         for (NSString *changed in @[@"session", @"generation", @"focused"]) {
             [controller setValue:[pageView copy] forKey:@"view"];
             [controller renderCandidates];
@@ -8145,7 +8145,7 @@ int main(int argc, char **argv) {
             [controller renderCandidates];
             for (NSView *child in layoutPanel.contentView.subviews) {
                 if ([child.identifier isEqual:@"candidate-preedit"]) assert(child.frame.size.height >= fallbackHeight + 6);
-                if ([child isKindOfClass:MSIMECandidateButton.class]) assert(child.frame.size.height >= fallbackHeight + 12);
+                if ([child isKindOfClass:LINGYAOCandidateButton.class]) assert(child.frame.size.height >= fallbackHeight + 12);
             }
         }
         appearance.fontSize = 18;
@@ -8162,8 +8162,8 @@ int main(int argc, char **argv) {
             for (NSView *child in layoutPanel.contentView.subviews)
                 if ([child.identifier isEqual:@"candidate-preedit"]) preeditLabel = (id)child;
             assert(preeditLabel && [preeditLabel.stringValue isEqual:@"ce'shi"] && preeditLabel.font.pointSize == 32);
-            assert([preeditLabel isKindOfClass:MSIMECandidatePreeditField.class]);
-            MSIMECandidatePreeditField *caretLabel = (id)preeditLabel;
+            assert([preeditLabel isKindOfClass:LINGYAOCandidatePreeditField.class]);
+            LINGYAOCandidatePreeditField *caretLabel = (id)preeditLabel;
             assert(caretLabel.caretIndex == 2 && caretLabel.showsCaret);
             NSRect middleCaret = caretLabel.caretRect;
             assert(!NSIsEmptyRect(middleCaret) && NSContainsRect(caretLabel.bounds, middleCaret));
@@ -8200,13 +8200,13 @@ int main(int argc, char **argv) {
                     @{@"text": @"ordinary", @"highlighted": @NO}];
                 [controller setValue:colorView forKey:@"view"];
                 [controller renderCandidates];
-                MSIMECandidateChromeView *chrome = (id)layoutPanel.contentView;
-                MSIMECandidateButton *selectedButton = PageButton(chrome, 0);
-                MSIMECandidateButton *customButton = PageButton(chrome, 1);
+                LINGYAOCandidateChromeView *chrome = (id)layoutPanel.contentView;
+                LINGYAOCandidateButton *selectedButton = PageButton(chrome, 0);
+                LINGYAOCandidateButton *customButton = PageButton(chrome, 1);
                 preeditLabel = nil;
                 for (NSView *child in chrome.subviews)
                     if ([child.identifier isEqual:@"candidate-preedit"]) preeditLabel = (id)child;
-                assert(preeditLabel && [preeditLabel isKindOfClass:MSIMECandidatePreeditField.class]);
+                assert(preeditLabel && [preeditLabel isKindOfClass:LINGYAOCandidatePreeditField.class]);
                 caretLabel = (id)preeditLabel;
                 assert([chrome.fillColor isEqual:SkinColor(picked.surface)]);
                 assert([chrome.strokeColor isEqual:SkinColor(picked.border)]);
@@ -8224,12 +8224,12 @@ int main(int argc, char **argv) {
                 preeditLabel = nil;
                 for (NSView *child in layoutPanel.contentView.subviews)
                     if ([child.identifier isEqual:@"candidate-preedit"]) preeditLabel = (id)child;
-                assert(preeditLabel && [preeditLabel isKindOfClass:MSIMECandidatePreeditField.class]);
+                assert(preeditLabel && [preeditLabel isKindOfClass:LINGYAOCandidatePreeditField.class]);
                 caretLabel = (id)preeditLabel;
             }
             assert(NSContainsRect(layoutPanel.contentView.bounds, preeditLabel.frame));
             for (NSView *child in layoutPanel.contentView.subviews)
-                if ([child isKindOfClass:MSIMECandidateButton.class]) {
+                if ([child isKindOfClass:LINGYAOCandidateButton.class]) {
                     assert(!NSIntersectsRect(child.frame, preeditLabel.frame));
                     assert([((NSButton *)child).font.familyName isEqual:installedFamily]);
                 }
@@ -8242,7 +8242,7 @@ int main(int argc, char **argv) {
         appearance.showsCandidatePreedit = YES;
         appearance.preeditFontSize = 16;
         // Long rows scroll rather than truncating away the insertion point.
-        MSIMECandidatePreeditField *longPreedit = [MSIMECandidatePreeditField labelWithString:[@"ni'" stringByPaddingToLength:180 withString:@"ni'" startingAtIndex:0]];
+        LINGYAOCandidatePreeditField *longPreedit = [LINGYAOCandidatePreeditField labelWithString:[@"ni'" stringByPaddingToLength:180 withString:@"ni'" startingAtIndex:0]];
         longPreedit.frame = NSMakeRect(0, 0, 80, 28);
         longPreedit.font = [NSFont systemFontOfSize:16];
         longPreedit.showsCaret = YES;
@@ -8292,7 +8292,7 @@ int main(int argc, char **argv) {
         [controller setValue:pageView forKey:@"view"];
         [controller renderCandidates];
         CGFloat verticalHeight = layoutPanel.frame.size.height;
-        MSIMECandidateButton *clickCandidate = (id)PageButton(layoutPanel.contentView, 1);
+        LINGYAOCandidateButton *clickCandidate = (id)PageButton(layoutPanel.contentView, 1);
         assert(clickCandidate);
         // Keyboard selection is tied to the button identities in the rendered
         // panel, not a newer controller snapshot that AppKit has not painted.
@@ -8343,10 +8343,10 @@ int main(int argc, char **argv) {
             assert([controller handleEvent:deleteEvent(code, deleteModifiers, YES) client:client]);
             assert(session.maintenanceCalls == calls + 1);
             for (NSNumber *modifiers in @[@(deleteModifiers | NSEventModifierFlagCommand), @(deleteModifiers ^ NSEventModifierFlagControl), @(deleteModifiers ^ NSEventModifierFlagOption), @(deleteModifiers ^ NSEventModifierFlagShift)])
-                assert(MSIMECandidateDeletionSlot(deleteEvent(code, modifiers.unsignedIntegerValue, NO)) == NSNotFound);
+                assert(LINGYAOCandidateDeletionSlot(deleteEvent(code, modifiers.unsignedIntegerValue, NO)) == NSNotFound);
         }
         for (NSNumber *code in @[@25, @29, @83, @84, @85, @86, @87, @88, @89, @91])
-            assert(MSIMECandidateDeletionSlot(deleteEvent(code.unsignedShortValue, deleteModifiers, NO)) == NSNotFound);
+            assert(LINGYAOCandidateDeletionSlot(deleteEvent(code.unsignedShortValue, deleteModifiers, NO)) == NSNotFound);
         NSUInteger deletionCalls = session.maintenanceCalls;
         for (id invalid in @[NSNull.null, @{}, @{@"id":@{@"session":@1, @"generation":@99, @"index":@0}}]) {
             NSMutableDictionary *invalidView = [deleteView mutableCopy];
@@ -8372,16 +8372,16 @@ int main(int argc, char **argv) {
         assert([candidateMenu itemAtIndex:2].keyEquivalentModifierMask == deleteModifiers);
         NSMenu *positionMenu = [candidateMenu itemAtIndex:1].submenu;
         assert(positionMenu.numberOfItems == 7 && [positionMenu itemAtIndex:5].separatorItem);
-        [NSUserDefaults.standardUserDefaults setObject:@{@"ce'shi": @[@"布局"]} forKey:@"MSIMEClientPinnedCandidates"];
+        [NSUserDefaults.standardUserDefaults setObject:@{@"ce'shi": @[@"布局"]} forKey:@"LINGYAOClientPinnedCandidates"];
         [controller renderCandidates];
         // Pinning moves the candidate to the first slot - that is what 置顶 does - while it keeps the Engine
         // index it had, so selecting it still commits the right word. Reading slot 1 here asserted the
         // opposite of the feature, and never ran because the suite aborted earlier.
-        MSIMECandidateButton *pinnedCandidate = (id)PageButton(layoutPanel.contentView, 0);
+        LINGYAOCandidateButton *pinnedCandidate = (id)PageButton(layoutPanel.contentView, 0);
         assert(pinnedCandidate && [pinnedCandidate.title containsString:@"布局"]);
         assert([pinnedCandidate.candidateID[@"index"] isEqual:@1]);
         assert([[[pinnedCandidate menuForEvent:rightClick] itemAtIndex:0].title isEqual:@"取消置顶"]);
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientPinnedCandidates"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"LINGYAOClientPinnedCandidates"];
         [controller renderCandidates];
         clickCandidate = (id)PageButton(layoutPanel.contentView, 1);
         candidateMenu = clickCandidate.menu;
@@ -8399,7 +8399,7 @@ int main(int argc, char **argv) {
         // render in this function - including the external-skin block, which reads the first button as the
         // highlighted one - so undo it here rather than at the end. The loop is checking that each menu
         // item dispatches maintenance, not setting up state for anybody else.
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientPinnedCandidates"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"LINGYAOClientPinnedCandidates"];
         [controller renderCandidates];
         // renderCandidates rebuilds the buttons, so everything captured from the previous panel is stale.
         clickCandidate = (id)PageButton(layoutPanel.contentView, 1);
@@ -8484,24 +8484,24 @@ int main(int argc, char **argv) {
         assert(layoutPanel.frame.size.height > normalHeight);
         // 整体大小 multiplies the candidate fonts and the window's lengths together; 不透明度 fades the card and nothing on it, through the fill rather than the panel's alphaValue; 圆角大小 replaces the card radius at the window's scale and pulls the rows in with it.
         {
-            MSIMECandidateButton *(^candidateRow)(BOOL) = ^MSIMECandidateButton *(BOOL highlighted) {
+            LINGYAOCandidateButton *(^candidateRow)(BOOL) = ^LINGYAOCandidateButton *(BOOL highlighted) {
                 for (NSView *view in layoutPanel.contentView.subviews)
-                    if ([view isKindOfClass:MSIMECandidateButton.class] && view.tag >= 0 &&
-                        (!highlighted || ((MSIMECandidateButton *)view).candidateHighlighted)) return (id)view;
+                    if ([view isKindOfClass:LINGYAOCandidateButton.class] && view.tag >= 0 &&
+                        (!highlighted || ((LINGYAOCandidateButton *)view).candidateHighlighted)) return (id)view;
                 return nil;
             };
             const NSSize unscaled = layoutPanel.frame.size;
             assert(candidateRow(NO) && candidateRow(NO).font.pointSize == 20.0);
             appearance.candidateScalePercent = 150;
             [controller appearanceChanged:nil];
-            MSIMECandidateButton *scaledRow = candidateRow(NO);
+            LINGYAOCandidateButton *scaledRow = candidateRow(NO);
             assert(scaledRow && std::abs(scaledRow.font.pointSize - 30.0) < 0.01 && scaledRow.chromeScale == 1.5);
-            assert(std::abs(scaledRow.numberFont.pointSize - 30.0 * MSIMECandidateNumberScale) < 0.01);
+            assert(std::abs(scaledRow.numberFont.pointSize - 30.0 * LINGYAOCandidateNumberScale) < 0.01);
             assert(layoutPanel.frame.size.height > unscaled.height * 1.3 && layoutPanel.frame.size.width >= unscaled.width);
             appearance.candidateOpacityPercent = 50;
             appearance.candidateCornerRadius = @4;
             [controller appearanceChanged:nil];
-            MSIMECandidateChromeView *styledChrome = (id)layoutPanel.contentView;
+            LINGYAOCandidateChromeView *styledChrome = (id)layoutPanel.contentView;
             NSString *match = [styledChrome.effectiveAppearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
             const auto plain = [appearance resolvedSkinForDark:[match isEqual:NSAppearanceNameDarkAqua]].tokens;
             assert(styledChrome.cornerRadius == 6.0 && layoutPanel.alphaValue == 1.0);
@@ -8509,13 +8509,13 @@ int main(int argc, char **argv) {
             assert(std::abs(styledChrome.strokeColor.alphaComponent - plain.border.a * 0.5) < 0.002);
             scaledRow = candidateRow(NO);
             assert([scaledRow.fillColor isEqual:SkinColor(plain.selected)] && scaledRow.cornerRadius <= styledChrome.cornerRadius);
-            if (MSIMECandidateButton *highlighted = candidateRow(YES)) assert([highlighted.titleColor isEqual:SkinColor(plain.selectedText)]);
+            if (LINGYAOCandidateButton *highlighted = candidateRow(YES)) assert([highlighted.titleColor isEqual:SkinColor(plain.selectedText)]);
             appearance.candidateScalePercent = 100;
             appearance.candidateOpacityPercent = 100;
             appearance.candidateCornerRadius = nil;
             [controller appearanceChanged:nil];
             assert(NSEqualSizes(layoutPanel.frame.size, unscaled));
-            assert([((MSIMECandidateChromeView *)layoutPanel.contentView).fillColor isEqual:SkinColor(plain.surface)]);
+            assert([((LINGYAOCandidateChromeView *)layoutPanel.contentView).fillColor isEqual:SkinColor(plain.surface)]);
         }
         // Palette and native drawing coverage: every global theme, two layouts and both appearances.
         NSDictionary *preservedView = [[controller valueForKey:@"view"] copy];
@@ -8526,7 +8526,7 @@ int main(int argc, char **argv) {
                 appearance.vertical = vertical.boolValue;
                 [controller appearanceChanged:nil];
                 for (NSString *theme in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
-                    MSIMECandidateChromeView *chrome = (id)layoutPanel.contentView;
+                    LINGYAOCandidateChromeView *chrome = (id)layoutPanel.contentView;
                     chrome.appearance = [NSAppearance appearanceNamed:theme];
                     // Exercise the same callback AppKit uses for a system appearance change.
                     [chrome viewDidChangeEffectiveAppearance];
@@ -8539,8 +8539,8 @@ int main(int argc, char **argv) {
                     // By identity, not by position: a pinned candidate is drawn first whether or not it is
                     // the highlighted one, and 布局 is pinned by the menu loop above. Reading subviews[0]
                     // as "the selected one" asserted the ordering rather than the colouring.
-                    MSIMECandidateButton *selected = CandidateButtonWithID(chrome, preservedView[@"candidates"][0][@"id"]);
-                    MSIMECandidateButton *unselected = CandidateButtonWithID(chrome, preservedView[@"candidates"][1][@"id"]);
+                    LINGYAOCandidateButton *selected = CandidateButtonWithID(chrome, preservedView[@"candidates"][0][@"id"]);
+                    LINGYAOCandidateButton *unselected = CandidateButtonWithID(chrome, preservedView[@"candidates"][1][@"id"]);
                     assert(selected && unselected);
                     assert(selected.candidateHighlighted && !unselected.candidateHighlighted);
                     assert([selected.fillColor isEqual:SkinColor(tokens.selected)]);
@@ -8571,7 +8571,7 @@ int main(int argc, char **argv) {
                     for (NSView *child in chrome.subviews)
                         if ([child.identifier isEqual:@"candidate-preedit"]) {
                             assert([((NSTextField *)child).textColor isEqual:SkinColor(picked.accent)]);
-                            assert([((MSIMECandidatePreeditField *)child).caretColor isEqual:SkinColor(tokens.accent)]);
+                            assert([((LINGYAOCandidatePreeditField *)child).caretColor isEqual:SkinColor(tokens.accent)]);
                         }
                     appearance.candidateTextColor = nil;
                     appearance.globalTheme = skinID;
@@ -8601,7 +8601,7 @@ int main(int argc, char **argv) {
             session.lastCommand = UINT32_MAX;
             NSEvent *event = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0 context:nil characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:key.unsignedShortValue];
             assert([controller handleEvent:event client:client]);
-            uint32_t expected = key.unsignedShortValue == 123 ? MSIME_PREVIOUS_CANDIDATE : key.unsignedShortValue == 124 ? MSIME_NEXT_CANDIDATE : UINT32_MAX;
+            uint32_t expected = key.unsignedShortValue == 123 ? LINGYAO_PREVIOUS_CANDIDATE : key.unsignedShortValue == 124 ? LINGYAO_NEXT_CANDIDATE : UINT32_MAX;
             assert(session.lastCommand == expected);
         }
         CheckMenu([controller menu], controller);
@@ -8624,7 +8624,7 @@ int main(int argc, char **argv) {
                         assert([controller handleEvent:event client:client]);
                         BOOL paging = visible.boolValue && !shift.boolValue && ((option == 0 && i < 2) || (option == 1 && i >= 2));
                         if (paging) {
-                            assert(session.lastCommand == (i % 2 == 0 ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE));
+                            assert(session.lastCommand == (i % 2 == 0 ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE));
                             assert(session.asciiCalls == 0);
                         } else {
                             assert(session.lastCommand == UINT32_MAX && session.asciiCalls == 1);
@@ -8637,7 +8637,7 @@ int main(int argc, char **argv) {
                 layoutPanel.requestedVisible = YES;
                 NSEvent *event = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagShift timestamp:0 windowNumber:0 context:nil characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:key.unsignedShortValue];
                 assert([controller handleEvent:event client:client]);
-                assert(session.lastCommand == (key.unsignedShortValue == 116 ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE));
+                assert(session.lastCommand == (key.unsignedShortValue == 116 ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE));
             }
         }
         appearance.pairedPunctuation = pairedBeforePaging;
@@ -8742,7 +8742,7 @@ int main(int argc, char **argv) {
             layoutPanel.requestedVisible = YES;
             NSEvent *event = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:modifier.unsignedIntegerValue timestamp:0 windowNumber:0 context:nil characters:@"=" charactersIgnoringModifiers:@"=" isARepeat:NO keyCode:0];
             assert(![controller handleEvent:event client:client]);
-            assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+            assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
         }
         NSDictionary *beforeWordView = [controller valueForKey:@"view"];
         NSDictionary *beforeWordTransition = session.nextTransition;
@@ -8775,7 +8775,7 @@ int main(int argc, char **argv) {
                 session.nextTransition = @{@"handled": @NO, @"commit": NSNull.null, @"view": contestedView};
                 assert([controller handleEvent:event client:client]);
                 assert(session.edgeCalls == edges + 1 && session.lastEdge == edge);
-                assert(session.lastCommand != MSIME_PREVIOUS_PAGE && session.lastCommand != MSIME_NEXT_PAGE);
+                assert(session.lastCommand != LINGYAO_PREVIOUS_PAGE && session.lastCommand != LINGYAO_NEXT_PAGE);
             }
             // The other pair still pages, so the exclusion is about the keys word-to-character holds and
             // not about word-to-character being on at all.
@@ -8788,7 +8788,7 @@ int main(int argc, char **argv) {
             NSUInteger edges = session.edgeCalls;
             session.lastCommand = UINT32_MAX;
             assert([controller handleEvent:[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0 context:nil characters:freeGlyph charactersIgnoringModifiers:freeGlyph isARepeat:NO keyCode:freeCode] client:client]);
-            assert(session.lastCommand == MSIME_PREVIOUS_PAGE && session.edgeCalls == edges);
+            assert(session.lastCommand == LINGYAO_PREVIOUS_PAGE && session.edgeCalls == edges);
             [appearance applySharedCandidatePreferences:@{
                 @"word_character": @{@"enabled": @NO, @"keys": contested},
                 @"navigation": @{free: @NO, contested: @NO}}];
@@ -8898,7 +8898,7 @@ int main(int argc, char **argv) {
             NSUInteger punctuationCalls = session.enginePunctuationCalls;
             session.nextTransition = @{@"handled": @YES, @"commit": engineCommit, @"commit_context": context, @"view": emptyView};
             assert([controller handleEvent:bracket(last) client:client]);
-            assert(session.edgeCalls == calls + 1 && session.lastEdge == (last ? MSIME_LAST_HAN : MSIME_FIRST_HAN));
+            assert(session.edgeCalls == calls + 1 && session.lastEdge == (last ? LINGYAO_LAST_HAN : LINGYAO_FIRST_HAN));
             assert(session.enginePunctuationCalls == punctuationCalls);
             return client.committed;
         };
@@ -8929,13 +8929,13 @@ int main(int argc, char **argv) {
         // need theirs - 43 and 47. With 0 they could only ever fall through to ASCII, which is what the
         // disabled half of this loop asserts, so both halves were passing for the same wrong reason.
         // The last element is what the key does once its shortcut is off, which is not the same for all of them: comma and period are ordinary characters and go to the Engine, while Tab, Page Up/Page Down and Up/Down are navigation keys that Windows routes to the server whenever candidates are showing (CompositionProcessorEngine.cpp), where a disabled one gets NavigationIgnored - so with the panel up they are consumed with no command at all, neither a page move nor FINISH_COMPOSITION, and the composition stays.
-        for (NSArray *entry in @[@[@"comma_period", @",", @43, @(MSIME_PREVIOUS_PAGE), @1],
-                                 @[@"comma_period", @".", @47, @(MSIME_NEXT_PAGE), @1],
-                                 @[@"tab", @"\t", @48, @(MSIME_NEXT_PAGE), @0],
-                                 @[@"page_up_down", @"", @116, @(MSIME_PREVIOUS_PAGE), @0],
-                                 @[@"page_up_down", @"", @121, @(MSIME_NEXT_PAGE), @0],
-                                 @[@"arrows", @"", @126, @(MSIME_PREVIOUS_CANDIDATE), @0],
-                                 @[@"arrows", @"", @125, @(MSIME_NEXT_CANDIDATE), @0]]) {
+        for (NSArray *entry in @[@[@"comma_period", @",", @43, @(LINGYAO_PREVIOUS_PAGE), @1],
+                                 @[@"comma_period", @".", @47, @(LINGYAO_NEXT_PAGE), @1],
+                                 @[@"tab", @"\t", @48, @(LINGYAO_NEXT_PAGE), @0],
+                                 @[@"page_up_down", @"", @116, @(LINGYAO_PREVIOUS_PAGE), @0],
+                                 @[@"page_up_down", @"", @121, @(LINGYAO_NEXT_PAGE), @0],
+                                 @[@"arrows", @"", @126, @(LINGYAO_PREVIOUS_CANDIDATE), @0],
+                                 @[@"arrows", @"", @125, @(LINGYAO_NEXT_CANDIDATE), @0]]) {
             for (NSNumber *enabled in @[@NO, @YES]) {
                 [appearance applySharedCandidatePreferences:@{@"navigation": @{entry[0]:enabled}}];
                 layoutPanel.requestedVisible = YES;
@@ -8955,7 +8955,7 @@ int main(int argc, char **argv) {
         }
         layoutPanel.requestedVisible = YES;
         NSEvent *reverseTab = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagShift timestamp:0 windowNumber:0 context:nil characters:@"\t" charactersIgnoringModifiers:@"\t" isARepeat:NO keyCode:48];
-        assert([controller handleEvent:reverseTab client:client] && session.lastCommand == MSIME_PREVIOUS_PAGE);
+        assert([controller handleEvent:reverseTab client:client] && session.lastCommand == LINGYAO_PREVIOUS_PAGE);
         // Shift+Tab with tab paging off is eaten while the panel is up, like plain Tab above.
         [appearance applySharedCandidatePreferences:@{@"navigation": @{@"tab": @NO}}];
         layoutPanel.requestedVisible = YES;
@@ -8974,7 +8974,7 @@ int main(int argc, char **argv) {
                 session.lastCommand = UINT32_MAX;
                 session.nextTransition = @{@"handled": @YES, @"commit": NSNull.null, @"view": emptyView};
                 assert(![controller handleEvent:tab client:client]);
-                assert(session.lastCommand == MSIME_FINISH_COMPOSITION);
+                assert(session.lastCommand == LINGYAO_FINISH_COMPOSITION);
                 [controller setValue:emptyView forKey:@"view"];
                 layoutPanel.requestedVisible = NO;
                 session.lastCommand = UINT32_MAX;
@@ -9007,13 +9007,13 @@ int main(int argc, char **argv) {
             layoutPanel.requestedVisible = YES;
             session.lastCommand = UINT32_MAX;
             assert([controller handleEvent:tab client:client]);
-            assert(session.lastCommand == (tab == reverseTab ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE));
+            assert(session.lastCommand == (tab == reverseTab ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE));
         }
         session.nextTransition = beforeWordTransition;
         // Script selection changes only native display/commit strings, not Engine state or IDs.
         assert(!appearance.traditionalOutput);
-        assert([MSIMEChineseOutputString(@"汉语", YES) isEqual:@"漢語"]);
-        assert([MSIMEChineseOutputString(@"汉语", NO) isEqual:@"汉语"]);
+        assert([LINGYAOChineseOutputString(@"汉语", YES) isEqual:@"漢語"]);
+        assert([LINGYAOChineseOutputString(@"汉语", NO) isEqual:@"汉语"]);
         assert([CandidateDisplay(@{@"text": @"汉语", @"annotation": @"(aB)"}, YES) isEqual:@"漢語(aB)"]);
         assert([CandidateDisplay(@{@"text": @"汉语", @"annotation": NSNull.null}, NO) isEqual:@"汉语"]);
         assert(([CandidateDisplay(@{@"text":@"汉语", @"corrected":@YES, @"annotation":@"(aB)", @"source":@2}, YES) isEqual:@"漢語*(aB) ☁️"]));
@@ -9029,8 +9029,8 @@ int main(int argc, char **argv) {
         [controller selectTraditionalOutput:nil];
         [controller appearanceChanged:nil];
         assert([controller.menu itemAtIndex:4].state == NSControlStateValueOn);
-        assert([[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] traditionalOutput]);
-        MSIMECandidateButton *scriptButton = PageButton(layoutPanel.contentView, 0);
+        assert([[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:appearance.skinsRoot] traditionalOutput]);
+        LINGYAOCandidateButton *scriptButton = PageButton(layoutPanel.contentView, 0);
         assert([scriptButton.toolTip isEqual:@"漢語"] && [scriptButton.title containsString:@"漢語"]);
         assert([scriptButton.candidateID isEqual:scriptView[@"candidates"][0][@"id"]]);
         assert([[controller valueForKey:@"view"] isEqual:preserved]);
@@ -9061,9 +9061,9 @@ int main(int argc, char **argv) {
             CGFloat originalPanelHeight = layoutPanel.frame.size.height;
             word[@"translation"] = @"synthetic glossary";
             [controller renderCandidates];
-            MSIMECandidateButton *translated = PageButton(layoutPanel.contentView, 0);
+            LINGYAOCandidateButton *translated = PageButton(layoutPanel.contentView, 0);
             assert([translated.translation isEqual:@"synthetic glossary"] && translated.translationBelow == !vertical.boolValue);
-            assert(fabs(translated.translationFont.pointSize - MSIMECandidateTranslationPointSize) < 0.01);
+            assert(fabs(translated.translationFont.pointSize - LINGYAOCandidateTranslationPointSize) < 0.01);
             assert([translated.toolTip containsString:@"\nsynthetic glossary"] && [translated.candidateID isEqual:word[@"id"]]);
             // Vertical puts the gloss on the candidate's own line, so it costs width and never height, and the row does not jump when the debounced gloss arrives (Windows test_layout.cpp vertical_candidate_translation_stays_on_the_same_line); horizontal stacks the gloss underneath, and that height is already reserved, so the row does not change either.
             if (vertical.boolValue) assert(translated.frame.size.width > originalSize.width && fabs(translated.frame.size.height - originalSize.height) < 0.01 && fabs(layoutPanel.frame.size.height - originalPanelHeight) < 0.01);
@@ -9102,10 +9102,10 @@ int main(int argc, char **argv) {
                 if (valid) {
                     NSColor *color = [scriptButton.titleColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
                     assert(fabs(color.redComponent - 55.0/255) < 0.001 && fabs(color.greenComponent - 154.0/255) < 0.001 && fabs(color.blueComponent - 211.0/255) < 0.001);
-                    assert([scriptButton.translationColor isEqual:[color colorWithAlphaComponent:MSIMECandidateTranslationOpacity]]);
+                    assert([scriptButton.translationColor isEqual:[color colorWithAlphaComponent:LINGYAOCandidateTranslationOpacity]]);
                     [controller refreshCandidateSkin];
                     assert([scriptButton.titleColor isEqual:color]);
-                    assert([scriptButton.translationColor isEqual:[color colorWithAlphaComponent:MSIMECandidateTranslationOpacity]]);
+                    assert([scriptButton.translationColor isEqual:[color colorWithAlphaComponent:LINGYAOCandidateTranslationOpacity]]);
                 }
                 assert([word[@"text"] isEqual:@"汉语"]);
             }
@@ -9131,7 +9131,7 @@ int main(int argc, char **argv) {
         // The view and the commit context say whether conversion applies (`script_conversion`), as the runtime decides it from the scheme and local mode; the host no longer infers it from those. A view or context without the field converts nothing.
         for (NSDictionary *context in @[@{@"scheme": @0, @"local_mode": @"none", @"script_conversion": @YES}, @{@"scheme": @1, @"local_mode": @"quick_phrase", @"script_conversion": @YES}, @{@"scheme": @3, @"local_mode": @"none", @"script_conversion": @NO}, @{@"scheme": @0, @"local_mode": @"unicode", @"script_conversion": @NO}, @{@"scheme": @0, @"local_mode": @"temporary_japanese", @"script_conversion": @NO}, @{@"scheme": @1, @"local_mode": @"temporary_japanese", @"script_conversion": @NO}, @{@"scheme": @0, @"local_mode": @"none"}, @{}]) {
             BOOL convert = contextIndex++ < 2;
-            assert(MSIMEScriptConversionApplies(context) == convert);
+            assert(LINGYAOScriptConversionApplies(context) == convert);
             NSMutableDictionary *candidateView = [scriptView mutableCopy];
             [candidateView removeObjectForKey:@"script_conversion"];
             [candidateView addEntriesFromDictionary:context];
@@ -9218,10 +9218,10 @@ int main(int argc, char **argv) {
         @autoreleasepool { TestKeymap(defaults, appearance); }
         method_setImplementation(fontMethod, originalMonospacedFont);
         assert(missingKeyFontCalls > 0);
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientPinnedCandidates"];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
-        if (previousVoiceHoldSpace) [standardDefaults setObject:previousVoiceHoldSpace forKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
-        else [standardDefaults removeObjectForKey:@"MSIMEClientVoiceHotkeyHoldSpace"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"LINGYAOClientPinnedCandidates"];
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
+        if (previousVoiceHoldSpace) [standardDefaults setObject:previousVoiceHoldSpace forKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
+        else [standardDefaults removeObjectForKey:@"LINGYAOClientVoiceHotkeyHoldSpace"];
     }
     return 0;
 }

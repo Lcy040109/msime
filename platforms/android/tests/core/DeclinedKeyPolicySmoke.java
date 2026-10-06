@@ -1,4 +1,4 @@
-import app.msime.android.DeclinedKeyPolicy;
+import app.lingyao.android.DeclinedKeyPolicy;
 
 public final class DeclinedKeyPolicySmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

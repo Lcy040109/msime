@@ -1,6 +1,6 @@
 # HarmonyOS 迁移：来源文件逐个对照
 
-这份清单回答一个问题：**来源（MSIME-Apple）的每一个源文件，在这个仓库里落到了哪里。** 它不是又一轮比对的结论，而是把结论摊开成可逐行核对的表——[harmony-parity.md](harmony-parity.md) 记的是「用什么方法比过、发现了什么」，这里记的是「一个不漏地列出来」。macOS 的同类清单是 [macos-feature-inventory.md](macos-feature-inventory.md)。
+这份清单回答一个问题：**来源（LINGYAO-Apple）的每一个源文件，在这个仓库里落到了哪里。** 它不是又一轮比对的结论，而是把结论摊开成可逐行核对的表——[harmony-parity.md](harmony-parity.md) 记的是「用什么方法比过、发现了什么」，这里记的是「一个不漏地列出来」。macOS 的同类清单是 [macos-feature-inventory.md](macos-feature-inventory.md)。
 
 范围是来源的 `platforms/ios/App`、`platforms/ios/SharedUI`、`platforms/ios/KeyboardExtension`、`platforms/ios/KeyboardTestHost` 与 `shared`（含 `apple-bridge`、`backend`、`backend-ui`），共 **145 个** `.swift/.m/.mm/.h/.cpp` 文件，测试与 `Pods/` 的第三方依赖除外。
 
@@ -9,7 +9,7 @@
 核对方式（可重跑）：
 
 ```sh
-ref=/path/to/MSIME-Apple
+ref=/path/to/LINGYAO-Apple
 find "$ref"/platforms/ios/App "$ref"/platforms/ios/SharedUI "$ref"/platforms/ios/KeyboardExtension \
      "$ref"/platforms/ios/KeyboardTestHost "$ref"/shared -type f \
      \( -name '*.swift' -o -name '*.m' -o -name '*.mm' -o -name '*.h' -o -name '*.cpp' \) \
@@ -28,9 +28,9 @@ find "$ref"/platforms/ios/App "$ref"/platforms/ios/SharedUI "$ref"/platforms/ios
 | `DictionaryInstallation.mm/.h` | `crates/client-core/src/resources.rs`（暂存与校验），鸿蒙由 `StagedResources.ets` 调用 |
 | `DictionarySessionLease.mm/.h` | `crates/client-core/src/dictionary/access.rs` 的 `DictionaryAccess` |
 | `DictionarySnapshotBridge.mm/.h` | `crates/host-api/src/dictionary_snapshot.rs` |
-| `PersonalDictionaryBridge.mm/.h` | `crates/client-core/src/dictionary/personal.rs` + `msime_client_personal_dictionary_request`（#3411） |
-| `MSIMEBackendClient.m/.h` | `crates/client-core/src/account`；鸿蒙的传输在 `AccountCloudBridge.ts` |
-| `ShuangpinKeymap.cpp/.h` | `msime_client_shuangpin_key_hints`，由 `ShuangpinKeyHintPolicy.ts` 消费 |
+| `PersonalDictionaryBridge.mm/.h` | `crates/client-core/src/dictionary/personal.rs` + `lingyao_client_personal_dictionary_request`（#3411） |
+| `LINGYAOBackendClient.m/.h` | `crates/client-core/src/account`；鸿蒙的传输在 `AccountCloudBridge.ts` |
+| `ShuangpinKeymap.cpp/.h` | `lingyao_client_shuangpin_key_hints`，由 `ShuangpinKeyHintPolicy.ts` 消费 |
 
 ## `shared/backend`（14）——由 `crates/client-core` 取代
 
@@ -48,7 +48,7 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 | `BackendDictionaryClient.swift` | `AccountCloudBridge.dictionary` + 云词库面板 |
 | `BackendLocalStore.swift` | `FileSessionStore`（`HarmonyAccountCloudBridge.ets`） |
 | `BackendPreferencesClient.swift` | `AccountPreferencePlan.ts` + `preferencesSync`（#3331） |
-| `BackendSkinArtworkClient.swift` | `HarmonyAiSkins.ets` + `msime_client_ai_skin_plan`（#3341） |
+| `BackendSkinArtworkClient.swift` | `HarmonyAiSkins.ets` + `lingyao_client_ai_skin_plan`（#3341） |
 | `BackendSnapshotClient.swift` | `HarmonyAccountCloudBridge.snapshot` |
 | `IOSPreferencePlan.swift` | `AccountPreferencePlan.ts`，键名用 `platform.harmony.*`（#3331） |
 | `Package.swift` | SwiftPM 清单，无对应物 |
@@ -113,20 +113,20 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 | 来源 | 去处 |
 | --- | --- |
 | `CandidateGlossPreference`、`CandidateTranslationPreference` | `CandidateAnnotationPreferencePolicy.ts`、`TranslationPolicy.ts` |
-| `ChineseOutputPreference`、`ChineseTextConversion` | `ChineseOutputPolicy.ts` 决定是否转换，转换本身经 NAPI `simplifiedToTraditional` 调共享导出 `msime_client_simplified_to_traditional`（OpenCC s2t 词级转换） |
+| `ChineseOutputPreference`、`ChineseTextConversion` | `ChineseOutputPolicy.ts` 决定是否转换，转换本身经 NAPI `simplifiedToTraditional` 调共享导出 `lingyao_client_simplified_to_traditional`（OpenCC s2t 词级转换） |
 | `DictionaryLearningPreference`、`FrequencyAdjustmentPreference` | 共享 `learning` / `frequency` 偏好 |
 | `EnglishMixedCandidatesPreference`、`EnglishSuggestionsPreference` | 共享 `mixed_input` / `english_suggestions`；`EnglishSuggestionPolicy.ts` |
 | `FuzzyPinyinPreference`、`InputSchemePreference` | 共享 `fuzzy_pinyin` / `scheme`；`KeyboardScheme.ts` |
 | `KeyboardFeedbackPreference` | `KeyboardFeedback.ts` + `KeyboardFeedbackBridge.ts` |
-| `KeyboardLayoutPreference`、`KeyboardSkinPreference`、`KeyboardSkinCollection` | `touch_keyboard_layout` / `global_theme`（键盘配色由 `msime_client_resolve_theme` 给出）；`skin/KeyboardSkin.ts` |
+| `KeyboardLayoutPreference`、`KeyboardSkinPreference`、`KeyboardSkinCollection` | `touch_keyboard_layout` / `global_theme`（键盘配色由 `lingyao_client_resolve_theme` 给出）；`skin/KeyboardSkin.ts` |
 | `WubiCodeHintPreference`、`WubiMixedPinyinPreference` | `WubiCodeHintPolicy.ts`；共享 `wubi_mixed_pinyin` |
 | `CustomKeyboardSkin`、`GeneratedKeyboardSkin` | `skin/CustomKeyboardSkin.ts`（含 photo/shade/position） |
-| `KeyboardSkinTrial` | `msime_client_keyboard_skin_trial`（#3336） |
+| `KeyboardSkinTrial` | `lingyao_client_keyboard_skin_trial`（#3336） |
 | `ClipboardHistoryStore` | `clipboard/ClipboardHistoryStore.ts` |
-| `CommunityResource` | `CommunityReplyLibraryPolicy.ts` + `msime_client_community_resource_library`（#3338） |
+| `CommunityResource` | `CommunityReplyLibraryPolicy.ts` + `lingyao_client_community_resource_library`（#3338） |
 | `PersonalDictionaryStore`、`PersonalDictionaryImport`、`PersonalWordBridge` | `crates/client-core/src/dictionary/personal.rs`（#3411） |
 | `DictionarySnapshotQueue` | `HarmonyAccountCloudBridge.snapshot` + `snapshotPrepare/Activate` |
-| `TypingStatistics` | `TypingStatisticsPolicy.ts` + `msime_client_typing_statistics` |
+| `TypingStatistics` | `TypingStatisticsPolicy.ts` + `lingyao_client_typing_statistics` |
 | `ReplyKeyboardView` | `ReplyKeyboardPolicy.ts` + `KeyboardView.replyFace` |
 | `KeyboardAIView` | `AiPolishPolicy.ts` + `KeyboardView.polishFace`（#3414） |
 | `KeyboardVoiceView` | **不迁移**：iOS 的语音交接面（App 录音→键盘插入）；鸿蒙键盘自己录音 |
@@ -168,7 +168,7 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 ```sh
 python3 - <<'EOF'
 import pathlib, re
-src = pathlib.Path("<MSIME-Apple>/platforms/ios/App/Sources")
+src = pathlib.Path("<LINGYAO-Apple>/platforms/ios/App/Sources")
 ui = pathlib.Path("packages/ui/src")
 text = "\n".join(p.read_text() for p in list(ui.rglob("*.tsx")) + list(ui.rglob("*.ts")))
 han = re.compile(r'"([^"\\]*[\u4e00-\u9fff][^"\\]*)"')

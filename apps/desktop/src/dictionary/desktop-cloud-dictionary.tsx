@@ -6,7 +6,7 @@ import {
   CloudDictionaryFilesPanel,
   CloudDictionaryPanel,
   type CloudDictionaryPanelClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 // Keep all subpages in the authenticated dictionary webview. Opening another
 // window would lose the native account session's label-bound authorization.

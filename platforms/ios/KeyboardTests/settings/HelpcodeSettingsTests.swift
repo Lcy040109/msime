@@ -8,7 +8,7 @@ final class HelpcodeSettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-helpcode-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-helpcode-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

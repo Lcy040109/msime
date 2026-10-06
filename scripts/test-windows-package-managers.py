@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """winget、Scoop 与 Chocolatey 的包定义必须描述发布里实际发出的那个安装包。
 
-platforms/windows/packaging/ 下是由 platforms/windows/packaging/render.py 按 windows-v 发布填写的模板。它们重复了安装包的一些事实（AppId 以及由它得到的卸载键、发布者、显示名、架构、权限级别、文件名和静默参数），这些事实的来源是 platforms/windows/installer/msime_setup.iss、editions.iss、版本表 shared/contracts/editions.json 与 release-windows.yml；本检查让两边保持一致，用固定输入渲染全部模板，并在不联网的情况下用一份录制的发布走一遍 render.py 的 GitHub 路径；render.py 拒绝没有有效 Authenticode 签名的安装包，这里核对每条路径都经过签名检查，且包定义只在单独手动触发的工作流里渲染。
+platforms/windows/packaging/ 下是由 platforms/windows/packaging/render.py 按 windows-v 发布填写的模板。它们重复了安装包的一些事实（AppId 以及由它得到的卸载键、发布者、显示名、架构、权限级别、文件名和静默参数），这些事实的来源是 platforms/windows/installer/lingyao_setup.iss、editions.iss、版本表 shared/contracts/editions.json 与 release-windows.yml；本检查让两边保持一致，用固定输入渲染全部模板，并在不联网的情况下用一份录制的发布走一遍 render.py 的 GitHub 路径；render.py 拒绝没有有效 Authenticode 签名的安装包，这里核对每条路径都经过签名检查，且包定义只在单独手动触发的工作流里渲染。
 
 不带参数时只用标准库。加 `--schema-dir DIR` 时还按官方 schema 校验渲染结果，需要 PyYAML、jsonschema 和 lxml；DIR 里要有 microsoft/winget-cli schemas/JSON/manifests/v1.12.0 的 manifest.{version,installer,defaultLocale,locale}.1.12.0.json、Scoop 的 schema.json，以及 chocolatey/NuGet.Client src/NuGet.Core/NuGet.Packaging/compiler/resources 的 nuspec.xsd（它的 targetNamespace 是占位符「{0}」，本检查会填上）。下载命令见 platforms/windows/packaging/README.md。
 """
@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ElementTree
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PACKAGING = ROOT / "platforms/windows/packaging"
-SETUP = ROOT / "platforms/windows/installer/msime_setup.iss"
+SETUP = ROOT / "platforms/windows/installer/lingyao_setup.iss"
 EDITIONS_ISS = ROOT / "platforms/windows/installer/editions.iss"
 EDITIONS = ROOT / "shared/contracts/editions.json"
 SMOKE = ROOT / "platforms/windows/installer/tests/install-smoke.ps1"
@@ -40,7 +40,7 @@ def check(condition: bool, what: str) -> None:
 
 
 def load_render():
-    spec = importlib.util.spec_from_file_location("msime_windows_packaging_render", PACKAGING / "render.py")
+    spec = importlib.util.spec_from_file_location("lingyao_windows_packaging_render", PACKAGING / "render.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -79,7 +79,7 @@ def check_installer_facts(render) -> None:
     editions_iss = EDITIONS_ISS.read_text(encoding="utf-8")
     full = full_edition()
     # 安装包的 AppId、显示名和文件名前缀按版本取自 editions.iss，那里的值由版本表生成；包管理器只发 full，所以与版本表 full 的 Windows 段对照。Inno 的卸载键（也就是各包的 ProductCode）是 {GUID}_is1。
-    check(setup_value(setup, "AppId") == "{#MyEditionAppId}", "msime_setup.iss AppId no longer comes from editions.iss MyEditionAppId")
+    check(setup_value(setup, "AppId") == "{#MyEditionAppId}", "lingyao_setup.iss AppId no longer comes from editions.iss MyEditionAppId")
     full_branch = re.search(r'(?ms)^#if Edition == "full"$(.*?)^#elif', editions_iss)
     check(full_branch is not None, f"{EDITIONS_ISS.relative_to(ROOT)} has no full branch")
     full_defines = dict(re.findall(r'(?m)^#define\s+(\w+)\s+"([^"]*)"', full_branch.group(1))) if full_branch else {}
@@ -88,7 +88,7 @@ def check_installer_facts(render) -> None:
     product_code = app_id + "_is1"
     app_name = full["app_name"]
     check(full_defines.get("MyEditionAppName") == app_name, f"editions.iss full MyEditionAppName is not {app_name!r}")
-    check(re.search(r"(?m)^#define\s+MyAppName\s+MyEditionAppName\s*$", setup) is not None, "msime_setup.iss MyAppName no longer comes from MyEditionAppName")
+    check(re.search(r"(?m)^#define\s+MyAppName\s+MyEditionAppName\s*$", setup) is not None, "lingyao_setup.iss MyAppName no longer comes from MyEditionAppName")
     publisher = setup_define(setup, "MyAppPublisher")
     check(setup_value(setup, "AppName") == "{#MyAppName}" and setup_value(setup, "AppPublisher") == "{#MyAppPublisher}", "AppName/AppPublisher no longer come from MyAppName/MyAppPublisher")
     check(setup_value(setup, "ArchitecturesAllowed") == "x64compatible", "the installer is no longer x64 only; add or drop installers in winget, Scoop and Chocolatey to match")
@@ -105,7 +105,7 @@ def check_installer_facts(render) -> None:
 
     # 各包都以 /VERYSILENT /SUPPRESSMSGBOXES 运行安装包，拒绝数据目录时弹普通 MsgBox 会让静默安装（尤其是看不见对话框的 SYSTEM 托管部署）一直挂着；只有 SuppressibleMsgBox 会被压掉，NextButtonClick 返回 False 后静默安装随即退出。
     next_click = re.search(r"(?ms)^function NextButtonClick\(.*?^end;", setup)
-    check(next_click is not None and "SuppressibleMsgBox(Reason" in next_click.group(0) and not re.search(r"(?<!Suppressible)MsgBox\(", next_click.group(0)), "msime_setup.iss NextButtonClick must reject a data directory with SuppressibleMsgBox, not MsgBox, or silent installs hang on the dialog")
+    check(next_click is not None and "SuppressibleMsgBox(Reason" in next_click.group(0) and not re.search(r"(?<!Suppressible)MsgBox\(", next_click.group(0)), "lingyao_setup.iss NextButtonClick must reject a data directory with SuppressibleMsgBox, not MsgBox, or silent installs hang on the dialog")
 
     smoke = SMOKE.read_text(encoding="utf-8")
     check(all(f"'{switch}'" in smoke for switch in SILENT), "install-smoke.ps1 no longer installs with the switches the packages use")
@@ -123,7 +123,7 @@ def check_installer_facts(render) -> None:
     for locale in (PACKAGING / "winget").glob(f"{render.WINGET_ID}.locale.*.yaml"):
         check(yaml_scalar(locale.read_text(encoding="utf-8"), "Publisher") == [publisher], f"{locale.name} Publisher is not {publisher!r}")
 
-    scoop = json.loads((PACKAGING / "scoop/msime.json").read_text(encoding="utf-8"))
+    scoop = json.loads((PACKAGING / "scoop/lingyao.json").read_text(encoding="utf-8"))
     install_script = "\n".join(scoop["installer"]["script"])
     uninstall_script = "\n".join(scoop["uninstaller"]["script"])
     check(all(f"'{s}'" in install_script for s in SILENT), "Scoop installer script lacks the silent switches")
@@ -173,7 +173,7 @@ def check_render(render, output: pathlib.Path) -> list[pathlib.Path]:
     names = sorted(str(path.relative_to(output)) for path in written)
     expected = sorted(
         [f"winget/manifests/m/Lingyao/LingyaoIME/1.2.3/{render.WINGET_ID}{suffix}.yaml" for suffix in ("", ".installer", ".locale.en-US", ".locale.zh-CN")]
-        + ["scoop/msime.json", "chocolatey/msime/msime.nuspec", "chocolatey/msime/tools/chocolateyinstall.ps1", "chocolatey/msime/tools/chocolateyuninstall.ps1"]
+        + ["scoop/lingyao.json", "chocolatey/lingyao/lingyao.nuspec", "chocolatey/lingyao/tools/chocolateyinstall.ps1", "chocolatey/lingyao/tools/chocolateyuninstall.ps1"]
     )
     check(names == expected, f"render.py wrote {names}, expected {expected}")
     url = "https://github.com/Lcy040109/msime/releases/download/windows-v1.2.3/LingyaoIME_Setup_v1.2.3.exe"
@@ -186,17 +186,17 @@ def check_render(render, output: pathlib.Path) -> list[pathlib.Path]:
     installer_yaml = next(path for path in written if path.name.endswith(".installer.yaml")).read_text(encoding="utf-8")
     check(yaml_scalar(installer_yaml, "InstallerUrl") == [url] and yaml_scalar(installer_yaml, "InstallerSha256") == [digest.upper()], "winget installer URL or digest not rendered")
     check(yaml_scalar(installer_yaml, "ReleaseDate") == ["2026-10-05"], "winget ReleaseDate not rendered")
-    scoop = json.loads((output / "scoop/msime.json").read_text(encoding="utf-8"))
+    scoop = json.loads((output / "scoop/lingyao.json").read_text(encoding="utf-8"))
     check(scoop["version"] == "1.2.3" and scoop["architecture"]["64bit"] == {"url": url, "hash": digest}, "Scoop version, URL or hash not rendered")
-    nuspec = ElementTree.parse(output / "chocolatey/msime/msime.nuspec").getroot()
+    nuspec = ElementTree.parse(output / "chocolatey/lingyao/lingyao.nuspec").getroot()
     check(nuspec.tag == f"{{{NUSPEC_NS}}}package", "nuspec root is not a package in the nuspec namespace")
     check(nuspec.findtext(f"{{{NUSPEC_NS}}}metadata/{{{NUSPEC_NS}}}version") == "1.2.3", "nuspec version not rendered")
-    choco_install = (output / "chocolatey/msime/tools/chocolateyinstall.ps1").read_text(encoding="utf-8")
+    choco_install = (output / "chocolatey/lingyao/tools/chocolateyinstall.ps1").read_text(encoding="utf-8")
     check(f"url64bit       = '{url}'" in choco_install and f"checksum64     = '{digest}'" in choco_install, "Chocolatey URL or checksum not rendered")
 
     # --installer：对本地的安装包求摘要，文件名必须是发布时用的那个，签名必须有效。
     fake = output / "LingyaoIME_Setup_v1.2.3.exe"
-    fake.write_bytes(b"msime")
+    fake.write_bytes(b"lingyao")
     original = (render.verify_signature, render.check_can_verify)
     checked: list[str] = []
     try:
@@ -205,10 +205,10 @@ def check_render(render, output: pathlib.Path) -> list[pathlib.Path]:
         with contextlib.redirect_stdout(io.StringIO()):
             check(render.main(["--version", "1.2.3", "--installer", str(fake), "--release-date", "2026-10-05", "--output", str(output / "local")]) == 0, "render.py --installer failed")
         check(checked == [fake.name], "render.py --installer did not check the installer's signature")
-        local = json.loads((output / "local/scoop/msime.json").read_text(encoding="utf-8"))
-        check(local["architecture"]["64bit"]["hash"] == hashlib.sha256(b"msime").hexdigest(), "render.py --installer did not hash the file")
+        local = json.loads((output / "local/scoop/lingyao.json").read_text(encoding="utf-8"))
+        check(local["architecture"]["64bit"]["hash"] == hashlib.sha256(b"lingyao").hexdigest(), "render.py --installer did not hash the file")
         wrong = output / "setup.exe"
-        wrong.write_bytes(b"msime")
+        wrong.write_bytes(b"lingyao")
         with contextlib.redirect_stderr(io.StringIO()):
             check(render.main(["--version", "1.2.3", "--installer", str(wrong), "--output", str(output / "wrong")]) == 1, "render.py accepted an installer under a name the release does not publish")
 
@@ -331,7 +331,7 @@ def main() -> int:
     check_installer_facts(render)
     check_workflows()
     check_github_path(render)
-    with tempfile.TemporaryDirectory(prefix="msime-packaging-") as output:
+    with tempfile.TemporaryDirectory(prefix="lingyao-packaging-") as output:
         written = check_render(render, pathlib.Path(output))
         if args.schema_dir:
             validate_schemas(written, args.schema_dir)

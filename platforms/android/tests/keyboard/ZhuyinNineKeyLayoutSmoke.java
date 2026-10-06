@@ -1,5 +1,5 @@
-import app.msime.android.KeyPressIds;
-import app.msime.android.ZhuyinNineKeyLayout;
+import app.lingyao.android.KeyPressIds;
+import app.lingyao.android.ZhuyinNineKeyLayout;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

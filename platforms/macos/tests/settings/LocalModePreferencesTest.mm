@@ -1,6 +1,6 @@
 #import "../../src/settings/AppearancePreferences.h"
-#import "MSIMEClientSession.h"
-#include "msime_client.h"
+#import "LINGYAOClientSession.h"
+#include "lingyao_client.h"
 #include <cassert>
 #import "TestPreferenceSuite.h"
 #import "PreferenceViewLookup.h"
@@ -8,17 +8,17 @@
 int main() {
     @autoreleasepool {
         [NSApplication sharedApplication];
-        NSString *suite = [@"msime.local-modes." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"lingyao.local-modes." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
         NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
-        MSIMEAppearancePreferences *prefs = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
+        LINGYAOAppearancePreferences *prefs = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:root]];
         NSDictionary *base = @{@"local_modes": @{@"unicode": @NO, @"future_field": @42}, @"untouched": @7};
         assert([[prefs sharedPreferencesByMerging:base][@"local_modes"] isEqual:base[@"local_modes"]]);
         __block NSUInteger changes = 0;
-        id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
+        id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:prefs queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
         [prefs applySharedLocalModes:@{@"unicode": @NO}];
         assert(![prefs localModeEnabled:@"unicode"] && changes == 0);
-        assert([defaults objectForKey:@"MSIMEClientLocalModes"] == nil);
+        assert([defaults objectForKey:@"LINGYAOClientLocalModes"] == nil);
         [prefs applySharedAssistancePreferences:@{@"fuzzy_pinyin": @{@"enabled": @NO, @"rules": @[@"z-zh", @"an-ang"]}}];
         assert(!prefs.fuzzyPinyinEnabled && [prefs fuzzyPinyinRuleEnabled:@"z-zh"] && ![prefs fuzzyPinyinRuleEnabled:@"c-ch"]);
         [prefs applySharedAssistancePreferences:@{@"learning": @NO, @"frequency": @{@"mode": @"linear", @"trigger_count": @3, @"linear_step": @4}}];
@@ -28,15 +28,15 @@ int main() {
         assert(![prefs localModeEnabled:@"unicode"]);
         NSView *prefsRoot = prefs.window.contentView;
         NSMutableDictionary<NSString *, NSButton *> *buttons = [NSMutableDictionary dictionary];
-        for (NSControl *control in MSIMEFindPreferenceControls(prefsRoot, NSSelectorFromString(@"localModeChanged:")))
+        for (NSControl *control in LINGYAOFindPreferenceControls(prefsRoot, NSSelectorFromString(@"localModeChanged:")))
             buttons[control.identifier] = (id)control;
         assert(buttons.count == 8);
-        NSButton *fuzzy = (id)MSIMEFindPreferenceControl(prefsRoot, @selector(fuzzyPinyinChanged:));
-        NSView *fuzzyCard = MSIMEFindPreferenceView(prefsRoot, ^BOOL(NSView *view) {
+        NSButton *fuzzy = (id)LINGYAOFindPreferenceControl(prefsRoot, @selector(fuzzyPinyinChanged:));
+        NSView *fuzzyCard = LINGYAOFindPreferenceView(prefsRoot, ^BOOL(NSView *view) {
             return [view.accessibilityLabel isEqual:@"模糊音卡片（全拼与双拼）"];
         });
         NSMutableDictionary<NSString *, NSButton *> *fuzzyRules = [NSMutableDictionary dictionary];
-        for (NSControl *control in MSIMEFindPreferenceControls(prefsRoot, @selector(fuzzyPinyinRuleChanged:)))
+        for (NSControl *control in LINGYAOFindPreferenceControls(prefsRoot, @selector(fuzzyPinyinRuleChanged:)))
             fuzzyRules[control.identifier] = (id)control;
         assert(fuzzy != nil && fuzzyCard != nil && fuzzyRules.count == 11 && !fuzzyRules[@"z-zh"].enabled);
         fuzzy.state = NSControlStateValueOn;
@@ -47,10 +47,10 @@ int main() {
         assert(![prefs fuzzyPinyinRuleEnabled:@"z-zh"] && [prefs fuzzyPinyinRuleEnabled:@"an-ang"]);
         assert([[prefs sharedPreferencesByMerging:base][@"fuzzy_pinyin"][@"enabled"] isEqual:@YES]);
         assert([[prefs sharedPreferencesByMerging:base][@"fuzzy_pinyin"][@"rules"] isEqual:@[@"an-ang"]]);
-        NSButton *learning = (id)MSIMEFindPreferenceControl(prefsRoot, @selector(candidateLearningChanged:));
-        NSPopUpButton *frequencyMode = (id)MSIMEFindPreferenceControl(prefsRoot, @selector(frequencyModeChanged:));
-        NSPopUpButton *frequencyTrigger = (id)MSIMEFindPreferenceControl(prefsRoot, @selector(frequencyTriggerChanged:));
-        NSPopUpButton *frequencyStep = (id)MSIMEFindPreferenceControl(prefsRoot, @selector(frequencyStepChanged:));
+        NSButton *learning = (id)LINGYAOFindPreferenceControl(prefsRoot, @selector(candidateLearningChanged:));
+        NSPopUpButton *frequencyMode = (id)LINGYAOFindPreferenceControl(prefsRoot, @selector(frequencyModeChanged:));
+        NSPopUpButton *frequencyTrigger = (id)LINGYAOFindPreferenceControl(prefsRoot, @selector(frequencyTriggerChanged:));
+        NSPopUpButton *frequencyStep = (id)LINGYAOFindPreferenceControl(prefsRoot, @selector(frequencyStepChanged:));
         assert(learning != nil && learning.state == NSControlStateValueOff);
         assert(frequencyMode != nil && frequencyTrigger != nil && frequencyStep != nil);
         learning.state = NSControlStateValueOn;
@@ -71,7 +71,7 @@ int main() {
             button.state = NSControlStateValueOff;
             [NSApp sendAction:button.action to:button.target from:button];
             assert(changes == before + 1 && ![prefs localModeEnabled:mode]);
-            assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:prefs.skinsRoot] localModeEnabled:mode]);
+            assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:prefs.skinsRoot] localModeEnabled:mode]);
             assert([[prefs sharedPreferencesByMerging:base][@"local_modes"][mode] isEqual:@NO]);
             button.state = NSControlStateValueOn;
             [NSApp sendAction:button.action to:button.target from:button];
@@ -89,8 +89,8 @@ int main() {
             options[name] = path;
         }
         // Four of the eight modes are gated on a runtime resource as well as on the preference: emoji and
-        // kaomoji read msime-others.db, temporary English reads msime-english.db, temporary Japanese reads
-        // msime-japanese.dat. apply_local_mode_resource_gates turns the mode off when the file is absent, so
+        // kaomoji read lingyao-others.db, temporary English reads lingyao-english.db, temporary Japanese reads
+        // lingyao-japanese.dat. apply_local_mode_resource_gates turns the mode off when the file is absent, so
         // that a missing optional resource makes Shift+E insert a capital E rather than swallow the key.
         //
         // Without these, this test asserted something that could not hold, and it had been read as the
@@ -98,14 +98,14 @@ int main() {
         // are enough to let the preference plumbing this test is actually about run for all eight modes -
         // and keeping them empty keeps the test off the fetched dictionaries.
         NSString *resources = options[@"resources"];
-        NSArray<NSString *> *gated = @[@"msime-others.db", @"msime-english.db", @"msime-japanese.dat"];
+        NSArray<NSString *> *gated = @[@"lingyao-others.db", @"lingyao-english.db", @"lingyao-japanese.dat"];
         for (NSString *resource in gated)
             assert([NSFileManager.defaultManager createFileAtPath:[resources stringByAppendingPathComponent:resource]
                                                          contents:[NSData data] attributes:nil]);
         NSError *error = nil;
-        MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+        LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
         assert(session && !error && [session setFocused:YES error:&error]);
-        NSDictionary *shared = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+        NSDictionary *shared = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
         assert(shared && !error);
         NSUInteger revision = 0;
         NSArray<NSArray<NSString *> *> *modes = @[@[@"unicode", @"U"], @[@"date_time", @"T"],
@@ -132,16 +132,16 @@ int main() {
                 assert([[session updatePreferencesSnapshot:disabled error:&error][@"deferred"] isEqual:@YES]);
                 assert([[session viewWithError:&error][@"editing_text"] isEqual:before[@"editing_text"]]);
                 assert([[session viewWithError:&error][@"local_mode"] isEqual:mode]);
-                assert([session command:MSIME_CANCEL error:&error]);
+                assert([session command:LINGYAO_CANCEL error:&error]);
                 assert([[session updatePreferencesSnapshot:disabled error:&error][@"deferred"] isEqual:@NO]);
                 assert(![[session typeASCII:trigger shift:YES error:&error][@"view"][@"local_mode"] isEqual:mode]);
-                assert([session command:MSIME_CANCEL error:&error]);
+                assert([session command:LINGYAO_CANCEL error:&error]);
                 buttons[mode].state = NSControlStateValueOn;
                 [NSApp sendAction:buttons[mode].action to:buttons[mode].target from:buttons[mode]];
                 NSDictionary *restored = snapshot(++revision);
                 assert([[session updatePreferencesSnapshot:restored error:&error][@"deferred"] isEqual:@NO]);
                 assert([[session typeASCII:trigger shift:YES error:&error][@"view"][@"local_mode"] isEqual:mode]);
-                assert([session command:MSIME_CANCEL error:&error]);
+                assert([session command:LINGYAO_CANCEL error:&error]);
             }
         }
         assert([session closeWithError:&error] && !error);
@@ -153,7 +153,7 @@ int main() {
         for (NSString *resource in gated)
             assert([NSFileManager.defaultManager removeItemAtPath:[resources stringByAppendingPathComponent:resource]
                                                             error:nil]);
-        MSIMEClientSession *ungated = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+        LINGYAOClientSession *ungated = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
         assert(ungated && !error && [ungated setFocused:YES error:&error]);
         prefs.inputScheme = @"quanpin";
         NSDictionary *all = @{@"format_version": @1, @"revision": @(++revision),
@@ -167,11 +167,11 @@ int main() {
             // Not swallowed: unhandled is what leaves the application to insert the capital itself.
             assert([reply[@"handled"] isEqual:@NO]);
             assert([reply[@"view"][@"editing_text"] isEqual:@""]);
-            assert([ungated command:MSIME_CANCEL error:&error]);
+            assert([ungated command:LINGYAO_CANCEL error:&error]);
         }
         assert([ungated closeWithError:&error] && !error);
         [NSNotificationCenter.defaultCenter removeObserver:observer];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
         assert([NSFileManager.defaultManager removeItemAtPath:root error:nil]);
     }
 }

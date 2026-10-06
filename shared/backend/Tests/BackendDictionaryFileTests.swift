@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class DictionaryFileProtocol: URLProtocol {
   override class func canInit(with request: URLRequest) -> Bool { true }
@@ -21,7 +21,7 @@ final class BackendDictionaryFileTests: XCTestCase {
     return BackendAccountClient(configuration: config)
   }
   private func exports() throws -> Set<String> {
-    Set(try FileManager.default.contentsOfDirectory(atPath: FileManager.default.temporaryDirectory.path).filter { $0.hasPrefix("msime-export-") })
+    Set(try FileManager.default.contentsOfDirectory(atPath: FileManager.default.temporaryDirectory.path).filter { $0.hasPrefix("lingyao-export-") })
   }
   func testExportStreamsPastOrdinaryJSONLimitIntoPrivateFile() async throws {
     let file = try await client().download("/v1/users/me/dictionaries/quick/export", token: "session", filename: "test.tsv", maximumBytes: 3 * 1024 * 1024)

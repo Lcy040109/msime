@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { InputSchemeSelectorSection } from "@msime/ui";
+import { InputSchemeSelectorSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -85,7 +85,7 @@ test("an unsupported selected scheme stays selected and names the fallback", () 
   expect(screen.getByText("此平台暂不支持粤拼、注音、笔画，已回退到双拼")).toBeTruthy();
 });
 
-test("Stroke without msime-stroke.db stays selected and names the fallback", () => {
+test("Stroke without lingyao-stroke.db stays selected and names the fallback", () => {
   render(
     <InputSchemeSelectorSection
       value="stroke"

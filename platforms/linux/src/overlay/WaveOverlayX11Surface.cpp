@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 namespace {
 
 // Logical geometry at a scale of 1; every length is multiplied by the current scale before it reaches the X server.
@@ -407,4 +407,4 @@ void WaveOverlayX11Surface::hide() {
   action_pressed_ = false;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

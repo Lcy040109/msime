@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 struct SmartPunctuationMapping {
   std::string_view chinese;
@@ -138,8 +138,8 @@ inline bool space_conversion_matches_document(
 }
 
 // English-mode punctuation and fullwidth output is shared with the macOS host; see shared/input/EnglishModeOutput.h.
-using msime::input::english_mode_chinese_punctuation;
-using msime::input::english_mode_output;
-using msime::input::EnglishPunctuationState;
+using lingyao::input::english_mode_chinese_punctuation;
+using lingyao::input::english_mode_output;
+using lingyao::input::EnglishPunctuationState;
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

@@ -1,10 +1,10 @@
 source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-project 'msime-desktop.xcodeproj'
+project 'lingyao-desktop.xcodeproj'
 use_frameworks! :linkage => :static
 
-target 'msime-desktop_iOS' do
-  target 'MSIMEKeyboardExtension' do
+target 'lingyao-desktop_iOS' do
+  target 'LINGYAOKeyboardExtension' do
     pod 'MLKitDigitalInkRecognition', '8.0.0'
   end
 end

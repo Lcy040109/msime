@@ -84,7 +84,7 @@ final class LocalSpeechEngine: @unchecked Sendable {
     let threads: Int32
   }
 
-  private let queue = DispatchQueue(label: "app.msime.ios.local-speech", qos: .userInitiated)
+  private let queue = DispatchQueue(label: "app.lingyao.ios.local-speech", qos: .userInitiated)
   /// Touched only on `queue`.
   private var cached: (key: Key, recognizer: LoadedLocalRecognizer)?
   private var idleRelease: DispatchWorkItem?

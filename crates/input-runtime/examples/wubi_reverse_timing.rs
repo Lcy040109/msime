@@ -2,11 +2,11 @@
 //!
 //! 五笔方案里每次刷新都要给候选逐个反查完整编码，这个例子分别跑五笔、五笔混输拼音和全拼三种方案，打印每键平均耗时、最慢一键和平均候选数。数字要和另一份构建的结果成对比较，不要当绝对值读：同一份构建在有负载的机器上前后能差好几倍。
 //!
-//! 用法：`cargo run -p msime-input-runtime --example wubi_reverse_timing -- <资源目录>`
+//! 用法：`cargo run -p lingyao-input-runtime --example wubi_reverse_timing -- <资源目录>`
 use std::time::Instant;
 
-use msime_engine::host::{prepare_options, Command, Session};
-use msime_engine::SchemeType;
+use lingyao_engine::host::{prepare_options, Command, Session};
+use lingyao_engine::SchemeType;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resources = std::env::args_os()

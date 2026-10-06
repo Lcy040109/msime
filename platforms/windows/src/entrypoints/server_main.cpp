@@ -69,7 +69,7 @@ std::filesystem::path executable_directory() {
     return {};
   return std::filesystem::path(std::wstring(path.data(), length)).parent_path();
 }
-std::wstring voice_audio_path(const msime::windows::PreviewConfig &config,
+std::wstring voice_audio_path(const lingyao::windows::PreviewConfig &config,
                               const wchar_t *filename) {
   const auto executable = executable_directory();
   const std::array<std::filesystem::path, 5> candidates = {
@@ -77,7 +77,7 @@ std::wstring voice_audio_path(const msime::windows::PreviewConfig &config,
       config.resources / "audios" / filename,
       config.resources / "assets" / "audios" / filename,
       executable / "assets" / "audios" / filename,
-      executable.parent_path() / "share" / "msime" / "audios" / filename};
+      executable.parent_path() / "share" / "lingyao" / "audios" / filename};
   std::error_code error;
   for (const auto &candidate : candidates)
     if (std::filesystem::is_regular_file(candidate, error))
@@ -87,20 +87,20 @@ std::wstring voice_audio_path(const msime::windows::PreviewConfig &config,
 std::wstring configured_shell_command() {
   std::vector<wchar_t> value(32768);
   const DWORD length = GetEnvironmentVariableW(
-      L"MSIME_CLIENT_SETTINGS_COMMAND", value.data(),
+      L"LINGYAO_CLIENT_SETTINGS_COMMAND", value.data(),
       static_cast<DWORD>(value.size()));
   return length && length < value.size() ? std::wstring(value.data(), length)
                                          : std::wstring{};
 }
 // Resolve the global theme for one surface through the shared layer. Appearance is not worth failing a running Server over, so a refused request or an unreadable answer draws the native tokens.
-msime::windows::CandidateThemeResolution
+lingyao::windows::CandidateThemeResolution
 resolve_theme(const nlohmann::json &request) {
   try {
     const auto body = request.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-        msime_client_resolve_theme(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+        lingyao_client_resolve_theme(
             reinterpret_cast<const uint8_t *>(body.data()), body.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!owned)
       return {};
     const auto document = nlohmann::json::parse(owned.get(), nullptr, false);
@@ -108,7 +108,7 @@ resolve_theme(const nlohmann::json &request) {
         !document.value("ok", false) || !document.contains("value"))
       return {};
     if (auto theme =
-            msime::windows::candidate_theme_resolution(document.at("value")))
+            lingyao::windows::candidate_theme_resolution(document.at("value")))
       return *theme;
   } catch (const std::exception &) {
   }
@@ -117,8 +117,8 @@ resolve_theme(const nlohmann::json &request) {
 // The global theme picker's ids and titles. The catalog is built into the shared layer and cannot change while the Server runs, so it is read once; an unreadable answer leaves the tray's 主题 row without a title.
 nlohmann::json theme_catalog() {
   try {
-    std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-        msime_client_theme_catalog(), msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+        lingyao_client_theme_catalog(), lingyao_client_string_free);
     if (owned)
       return nlohmann::json::parse(owned.get(), nullptr, false);
   } catch (const std::exception &) {
@@ -126,21 +126,21 @@ nlohmann::json theme_catalog() {
   return nlohmann::json();
 }
 // The artwork and minimum width of the package a resolved theme draws. The theme names the package only when it is drawn in this layout and mode, so there is no gate here.
-msime::windows::CandidateSkinAssets
+lingyao::windows::CandidateSkinAssets
 resolve_skin_assets(const std::filesystem::path &root, const std::string &id) {
   if (root.empty() || id.empty())
     return {};
   try {
     const auto directory = root.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-        msime_client_skin_catalog(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+        lingyao_client_skin_catalog(
             reinterpret_cast<const uint8_t *>(directory.data()),
             directory.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (owned) {
       const auto catalog = nlohmann::json::parse(owned.get(), nullptr, false);
       if (!catalog.is_discarded() && catalog.value("ok", false))
-        return msime::windows::candidate_skin_assets(catalog.at("value"), id,
+        return lingyao::windows::candidate_skin_assets(catalog.at("value"), id,
                                                      root);
     }
   } catch (const std::exception &) {
@@ -165,8 +165,8 @@ struct ConsoleControl {
   ~ConsoleControl() { SetConsoleCtrlHandler(console_control, FALSE); }
 };
 // The Server is a windows-subsystem program, so a managed launch (Watchdog or TSF DLL) never opens a console window. A preview or --help run from a terminal attaches to that terminal instead, so its status lines and Ctrl+C still work there. A managed launch never attaches: the TSF DLL starts the Server from inside whatever application has focus, and that may itself be a console program whose window must not receive our output.
-void attach_launching_console(const msime::windows::ServerLaunch &launch) {
-  if (launch.kind == msime::windows::ServerLaunchKind::Managed ||
+void attach_launching_console(const lingyao::windows::ServerLaunch &launch) {
+  if (launch.kind == lingyao::windows::ServerLaunchKind::Managed ||
       !AttachConsole(ATTACH_PARENT_PROCESS))
     return;
   FILE *stream = nullptr;
@@ -186,12 +186,12 @@ bool contains(const std::filesystem::path &parent,
 }
 std::filesystem::path production_state_directory() {
 #ifdef _WIN32
-  return msime::windows::resolve_state_directory();
+  return lingyao::windows::resolve_state_directory();
 #else
   return {};
 #endif
 }
-// The anonymous account's secret and tokens belong to the Windows user running this Server, so they live in that user's %LOCALAPPDATA%\<本版本的用户目录>\account（full 是 %LOCALAPPDATA%\MSIME\account，版本表 platforms.windows.user_data_directory）。The state root is no place for them: an installed Server's is the installer's DataDir, one directory for the whole machine that every user may modify. 每个版本各自登录，退出一个版本的账号不会删掉另一个版本的令牌。
+// The anonymous account's secret and tokens belong to the Windows user running this Server, so they live in that user's %LOCALAPPDATA%\<本版本的用户目录>\account（full 是 %LOCALAPPDATA%\LINGYAO\account，版本表 platforms.windows.user_data_directory）。The state root is no place for them: an installed Server's is the installer's DataDir, one directory for the whole machine that every user may modify. 每个版本各自登录，退出一个版本的账号不会删掉另一个版本的令牌。
 std::filesystem::path anonymous_account_directory() {
 #ifdef _WIN32
   PWSTR local = nullptr;
@@ -199,19 +199,19 @@ std::filesystem::path anonymous_account_directory() {
     CoTaskMemFree(local);
     return {};
   }
-  const auto directory = std::filesystem::path(local) / MSIME_EDITION_USER_DATA_DIRECTORY / L"account";
+  const auto directory = std::filesystem::path(local) / LINGYAO_EDITION_USER_DATA_DIRECTORY / L"account";
   CoTaskMemFree(local);
   return directory;
 #else
   return {};
 #endif
 }
-// 使用统计的目录：msime::telemetry::default_directory() 是 %LOCALAPPDATA%\MSIME，本版本换成同级的用户目录（版本表 platforms.windows.user_data_directory），各版本的安装 id 和事件队列互不相干。full 的目录名就是 MSIME，结果与 default_directory() 相同。
+// 使用统计的目录：lingyao::telemetry::default_directory() 是 %LOCALAPPDATA%\LINGYAO，本版本换成同级的用户目录（版本表 platforms.windows.user_data_directory），各版本的安装 id 和事件队列互不相干。full 的目录名就是 LINGYAO，结果与 default_directory() 相同。
 std::filesystem::path edition_telemetry_directory() {
-  const auto shared = msime::telemetry::default_directory();
+  const auto shared = lingyao::telemetry::default_directory();
   if (shared.empty())
     return {};
-  return shared.parent_path() / MSIME_EDITION_USER_DATA_DIRECTORY;
+  return shared.parent_path() / LINGYAO_EDITION_USER_DATA_DIRECTORY;
 }
 std::string read_document(const std::filesystem::path &path) {
   std::ifstream input(path, std::ios::binary);
@@ -228,7 +228,7 @@ void write_document_atomic(const std::filesystem::path &path, const std::string 
   if (document.size() > kMaxConfigBytes)
     throw std::runtime_error("Configuration document oversized");
 #ifdef _WIN32
-  msime::windows::reject_reparse_ancestors(path.parent_path());
+  lingyao::windows::reject_reparse_ancestors(path.parent_path());
 #endif
   wchar_t temporary_name[MAX_PATH] = {};
   if (!GetTempFileNameW(path.parent_path().c_str(), L"msi", 0, temporary_name))
@@ -266,10 +266,10 @@ bool persist_traditional_output(const std::filesystem::path &directory,
                                 std::optional<bool> desired = std::nullopt) {
   try {
     const auto root = directory.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> loaded(
-        msime_client_load_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> loaded(
+        lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!loaded)
       return false;
     const auto response = nlohmann::json::parse(loaded.get());
@@ -286,13 +286,13 @@ bool persist_traditional_output(const std::filesystem::path &directory,
     }
     preferences["traditional_chinese_output"] = next;
     const auto serialized = snapshot.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> saved(
-        msime_client_save_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> saved(
+        lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size(),
             revision,
             reinterpret_cast<const uint8_t *>(serialized.data()),
             serialized.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!saved)
       return false;
     const auto saved_response = nlohmann::json::parse(saved.get());
@@ -305,14 +305,14 @@ bool persist_traditional_output(const std::filesystem::path &directory,
     return false;
   }
 }
-// 把安装器「联网功能」页的选择写进刚准备好的共享偏好（Linux 的 msime-linux-prepare 做同样的事）。失败时保持共享默认值，也就是关闭，不阻止输入法启动。
+// 把安装器「联网功能」页的选择写进刚准备好的共享偏好（Linux 的 lingyao-linux-prepare 做同样的事）。失败时保持共享默认值，也就是关闭，不阻止输入法启动。
 void record_installer_cloud_choice(const std::filesystem::path &directory, bool enabled) {
   try {
     const auto root = directory.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> loaded(
-        msime_client_load_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> loaded(
+        lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!loaded)
       return;
     const auto response = nlohmann::json::parse(loaded.get());
@@ -322,13 +322,13 @@ void record_installer_cloud_choice(const std::filesystem::path &directory, bool 
     const auto revision = snapshot.at("revision").get<uint64_t>();
     snapshot.at("preferences")["cloud_candidates"] = enabled;
     const auto serialized = snapshot.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> saved(
-        msime_client_save_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> saved(
+        lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size(),
             revision,
             reinterpret_cast<const uint8_t *>(serialized.data()),
             serialized.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
   } catch (...) {
   }
 }
@@ -339,10 +339,10 @@ std::optional<nlohmann::json>
 load_preference_block(const std::filesystem::path &directory) {
   try {
     const auto root = directory.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> loaded(
-        msime_client_load_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> loaded(
+        lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!loaded)
       return std::nullopt;
     const auto response = nlohmann::json::parse(loaded.get());
@@ -378,10 +378,10 @@ bool toggle_stored_flag(const std::filesystem::path &directory,
                         bool &result) {
   try {
     const auto root = directory.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> loaded(
-        msime_client_load_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> loaded(
+        lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!loaded)
       return false;
     const auto response = nlohmann::json::parse(loaded.get());
@@ -401,12 +401,12 @@ bool toggle_stored_flag(const std::filesystem::path &directory,
       preferences[field] = !current;
     }
     const auto serialized = snapshot.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> saved(
-        msime_client_save_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> saved(
+        lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size(),
             revision, reinterpret_cast<const uint8_t *>(serialized.data()),
             serialized.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!saved)
       return false;
     const auto saved_response = nlohmann::json::parse(saved.get());
@@ -424,10 +424,10 @@ bool store_input_scheme(const std::filesystem::path &directory,
                         const std::string &scheme) {
   try {
     const auto root = directory.u8string();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> loaded(
-        msime_client_load_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> loaded(
+        lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!loaded)
       return false;
     const auto response = nlohmann::json::parse(loaded.get());
@@ -443,18 +443,18 @@ bool store_input_scheme(const std::filesystem::path &directory,
     if (current == scheme)
       return true;
     // 粤拼、注音和笔画是中文方案，和其他中文方案一样被记住；日文、韩文、越南文和藏文各是独立的语言（client-core 的 ChineseScheme）。
-    if (msime::windows::scheme::is_chinese_scheme_name(scheme))
+    if (lingyao::windows::scheme::is_chinese_scheme_name(scheme))
       preferences["last_chinese_scheme"] = scheme;
-    else if (msime::windows::scheme::is_chinese_scheme_name(current))
+    else if (lingyao::windows::scheme::is_chinese_scheme_name(current))
       preferences["last_chinese_scheme"] = current;
     preferences["scheme"] = scheme;
     const auto serialized = snapshot.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> saved(
-        msime_client_save_preferences(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> saved(
+        lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(root.data()), root.size(),
             revision, reinterpret_cast<const uint8_t *>(serialized.data()),
             serialized.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!saved)
       return false;
     const auto saved_response = nlohmann::json::parse(saved.get());
@@ -465,20 +465,20 @@ bool store_input_scheme(const std::filesystem::path &directory,
   }
 }
 // The Cantonese, Zhuyin and Stroke dictionaries the package installed beside the resources, where host-api looks for them (language_dictionaries_beside). They arrive with a package, so one look at startup holds for the process.
-msime::windows::scheme::LanguageDictionaryPresence
+lingyao::windows::scheme::LanguageDictionaryPresence
 installed_language_dictionaries(const std::filesystem::path &resources) {
   const auto directory = resources.parent_path() / L"language-dictionaries";
   std::error_code error;
-  return {std::filesystem::is_regular_file(directory / L"msime-cantonese.db", error),
-          std::filesystem::is_regular_file(directory / L"msime-zhuyin.db", error),
-          std::filesystem::is_regular_file(directory / L"msime-stroke.db", error)};
+  return {std::filesystem::is_regular_file(directory / L"lingyao-cantonese.db", error),
+          std::filesystem::is_regular_file(directory / L"lingyao-zhuyin.db", error),
+          std::filesystem::is_regular_file(directory / L"lingyao-stroke.db", error)};
 }
 // The scheme the Engine runs for the stored preferences, which is the stored one unless it needs a dictionary that is not installed.
 std::string running_scheme(
     const nlohmann::json &preferences,
-    msime::windows::scheme::LanguageDictionaryPresence installed) {
-  return std::string(msime::windows::scheme::scheme_name(
-      msime::windows::scheme::effective_scheme(
+    lingyao::windows::scheme::LanguageDictionaryPresence installed) {
+  return std::string(lingyao::windows::scheme::scheme_name(
+      lingyao::windows::scheme::effective_scheme(
           preferences.value("scheme", std::string("quanpin")),
           preferences.value("last_chinese_scheme", std::string("quanpin")),
           installed)));
@@ -493,7 +493,7 @@ struct TrayMenuPreferences {
 };
 TrayMenuPreferences tray_menu_preferences(
     const nlohmann::json &preferences,
-    msime::windows::scheme::LanguageDictionaryPresence installed) {
+    lingyao::windows::scheme::LanguageDictionaryPresence installed) {
   TrayMenuPreferences result;
   result.translations = preferences.value("candidate_translations", true);
   // The scheme that runs, so a Cantonese, Zhuyin or Stroke choice made before its dictionary was installed checks the scheme the Engine fell back to, as the macOS input menu does.
@@ -504,7 +504,7 @@ TrayMenuPreferences tray_menu_preferences(
   // The same defaults the TIP reads (FanyUtils::ReadConfiguredSwitchLanguageHotkeys).
   const auto bindings =
       preferences.value("keybindings", nlohmann::json::object());
-  result.language_hint = msime::windows::tray_menu_language_hint(
+  result.language_hint = lingyao::windows::tray_menu_language_hint(
       bindings.value("switch_language_shift", true),
       bindings.value("switch_language_ctrl", false),
       bindings.value("switch_language_ctrl_alt_space", true));
@@ -518,16 +518,16 @@ TrayMenuPreferences tray_menu_preferences(
 // The token for the provider actually in use.
 //
 // Tokens are kept one per provider so switching provider restores the matching key instead of sending the previous provider's key to the new endpoint.
-msime::windows::TsfLocalConfig tsf_local_config(
+lingyao::windows::TsfLocalConfig tsf_local_config(
     const nlohmann::json &preferences,
-    msime::windows::scheme::LanguageDictionaryPresence installed) {
-  msime::windows::TsfLocalConfig config;
-  // The TIP keys the scheme the Engine runs: Zhuyin chosen without msime-zhuyin.db runs a pinyin scheme, and keying it as Zhuyin would swallow the tone digits.
+    lingyao::windows::scheme::LanguageDictionaryPresence installed) {
+  lingyao::windows::TsfLocalConfig config;
+  // The TIP keys the scheme the Engine runs: Zhuyin chosen without lingyao-zhuyin.db runs a pinyin scheme, and keying it as Zhuyin would swallow the tone digits.
   const auto scheme = running_scheme(preferences, installed);
   const auto navigation =
       preferences.value("navigation", nlohmann::json::object());
   config.paging_comma_period = navigation.value("comma_period", true);
-  config.preedit_style = msime::windows::tsf_preedit_style(preferences);
+  config.preedit_style = lingyao::windows::tsf_preedit_style(preferences);
   // PreviewConfig spells the pass-through case "local"; the TIP spells it "raw".
   if (config.preedit_style == "local")
     config.preedit_style = "raw";
@@ -545,7 +545,7 @@ msime::windows::TsfLocalConfig tsf_local_config(
   config.microsoft_shuangpin =
       scheme == "shuangpin" &&
       preferences.value("shuangpin_profile", std::string("xiaohe")) == "microsoft";
-  config.input_mode = msime::windows::scheme::input_mode(scheme);
+  config.input_mode = lingyao::windows::scheme::input_mode(scheme);
   config.tsf_diagnostic_log =
       preferences.value("diagnostic_log", nlohmann::json::object())
           .value("tsf", false);
@@ -562,8 +562,8 @@ msime::windows::TsfLocalConfig tsf_local_config(
 }
 
 // 会话控制器停下的原因，写进停止那一行；与 ControllerFailure 一一对应。
-const char *controller_failure_name(msime::windows::ControllerFailure failure) {
-  using msime::windows::ControllerFailure;
+const char *controller_failure_name(lingyao::windows::ControllerFailure failure) {
+  using lingyao::windows::ControllerFailure;
   switch (failure) {
   case ControllerFailure::None:
     return "none";
@@ -581,7 +581,7 @@ const char *controller_failure_name(msime::windows::ControllerFailure failure) {
   return "unknown";
 }
 
-void apply_diagnostic_log(msime::windows::DiagnosticLog &log,
+void apply_diagnostic_log(lingyao::windows::DiagnosticLog &log,
                           const nlohmann::json &preferences) {
   const auto switches =
       preferences.value("diagnostic_log", nlohmann::json::object());
@@ -607,16 +607,16 @@ std::string production_preview_document(const std::string &runtime_document,
   if (!preferences)
     return document.dump();
   document["preedit_style"] =
-      msime::windows::tsf_preedit_style(*preferences);
-  document["appearance"] = msime::windows::candidate_appearance(
+      lingyao::windows::tsf_preedit_style(*preferences);
+  document["appearance"] = lingyao::windows::candidate_appearance(
       std::filesystem::u8path(state), *preferences, system_prefers_dark());
-  msime::windows::apply_floating_toolbar(document, *preferences);
+  lingyao::windows::apply_floating_toolbar(document, *preferences);
   // Last line of defence. The field filtering above is deliberately
   // conservative, but a preference shape nobody anticipated must still not
   // cost the user their IME: if the assembled document would not load, drop
   // the appearance and start with the built-in card.
   try {
-    msime::windows::PreviewConfig::parse(document.dump());
+    lingyao::windows::PreviewConfig::parse(document.dump());
   } catch (...) {
     document.erase("appearance");
     document.erase("floating_toolbar_enabled");
@@ -631,8 +631,8 @@ std::string production_preview_document(const std::string &runtime_document,
 constexpr wchar_t server_mode_active_event_prefix[] = L"Local\\LingyaoImeServer_ModeActive";
 // 另一个版本的 TIP 是否有活动的输入模式：看那个版本的 Server 发布的事件。那个版本没在运行时事件不存在，按不活动处理。
 bool other_edition_mode_active() {
-  for (const wchar_t *suffix : {MSIME_EDITIONS_NAME_SUFFIXES}) {
-    if (std::wstring_view(suffix) == MSIME_EDITION_NAME_SUFFIX)
+  for (const wchar_t *suffix : {LINGYAO_EDITIONS_NAME_SUFFIXES}) {
+    if (std::wstring_view(suffix) == LINGYAO_EDITION_NAME_SUFFIX)
       continue;
     const std::wstring name = std::wstring(server_mode_active_event_prefix) + suffix;
     if (HANDLE event = OpenEventW(SYNCHRONIZE, FALSE, name.c_str())) {
@@ -648,14 +648,14 @@ class ProductionInstance final {
 public:
   ProductionInstance() {
     handle_ = CreateMutexW(nullptr, FALSE,
-                           L"Local\\LingyaoImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX);
+                           L"Local\\LingyaoImeServer_SingleInstance" LINGYAO_EDITION_NAME_SUFFIX);
     if (!handle_)
       throw std::runtime_error("Server instance guard unavailable");
     already_running_ = GetLastError() == ERROR_ALREADY_EXISTS;
     // 建不出来时别的版本只是看不到本版本的模式，维护快捷键在没有任何版本活动时照样有人处理，所以不算启动失败。
     if (!already_running_)
       mode_active_ = CreateEventW(nullptr, TRUE, FALSE,
-                                  (std::wstring(server_mode_active_event_prefix) + MSIME_EDITION_NAME_SUFFIX).c_str());
+                                  (std::wstring(server_mode_active_event_prefix) + LINGYAO_EDITION_NAME_SUFFIX).c_str());
   }
   ~ProductionInstance() {
     if (mode_active_) {
@@ -714,15 +714,15 @@ int wmain(int argc, wchar_t **argv) {
   curl_global_init(CURL_GLOBAL_DEFAULT);
   // Crash capture only writes this session's crash record to disk, and only once telemetry::begin armed it with the user's consent; the next start reports it.
   std::set_terminate([] {
-    msime::telemetry::record_terminate();
+    lingyao::telemetry::record_terminate();
     std::abort();
   });
-  msime::telemetry::install_crash_handlers();
-  using namespace msime::windows;
+  lingyao::telemetry::install_crash_handlers();
+  using namespace lingyao::windows;
   const auto launch = parse_server_arguments(argc, argv);
   attach_launching_console(launch);
   if (launch.kind == ServerLaunchKind::Help) {
-    std::cout << "MSIME Server: --config <absolute-json-path>\n"
+    std::cout << "LINGYAO Server: --config <absolute-json-path>\n"
                  "Managed launches use the installed TSF pipe names; preview "
                  "launches use names from the config. Ctrl+C stops.\n"
                  "Unsupported routes (including unobserved Enter) disconnect.\n";
@@ -742,10 +742,10 @@ int wmain(int argc, wchar_t **argv) {
         start_watchdog(executable_directory());
       const bool prepared_now = prepare_first_run(executable_directory(), default_state,
                        [](const std::string &request) {
-        std::unique_ptr<char, decltype(&msime_client_string_free)> response(
-            msime_client_prepare_host(
+        std::unique_ptr<char, decltype(&lingyao_client_string_free)> response(
+            lingyao_client_prepare_host(
                 reinterpret_cast<const uint8_t *>(request.data()), request.size()),
-            msime_client_string_free);
+            lingyao_client_string_free);
         if (!response)
           throw std::runtime_error("Host preparation failed");
         return std::string(response.get());
@@ -781,14 +781,14 @@ int wmain(int argc, wchar_t **argv) {
         nlohmann::json{{"resources", config.resources.u8string()},
                        {"state_root", config.state_root.u8string()}};
     // 不是 full 的版本把版本 id 交给宿主库：它按版本选资源锁、收窄方案，并在状态根里记下版本。full 不带这个键，请求与引入版本之前相同。
-    if constexpr (!MSIME_EDITION_IS_FULL)
-      bootstrap_document["edition"] = MSIME_EDITION_ID;
+    if constexpr (!LINGYAO_EDITION_IS_FULL)
+      bootstrap_document["edition"] = LINGYAO_EDITION_ID;
     const auto bootstrap = bootstrap_document.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> response(
-        msime_client_prepare_host(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> response(
+        lingyao_client_prepare_host(
             reinterpret_cast<const uint8_t *>(bootstrap.data()),
             bootstrap.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!response)
       throw std::runtime_error("Host preparation failed");
     const auto prepared = nlohmann::json::parse(response.get());
@@ -797,19 +797,19 @@ int wmain(int argc, wchar_t **argv) {
     if (stopping.load())
       return 0;
     apply_diagnostic_log(diagnostic_log, prepared.at("value").at("preferences"));
-    // Usage reporting, on unless the user turned usage_reporting off: one session per Server process, kept in this Windows user's %LOCALAPPDATA%\MSIME. begin closes the previous session (session_crash only when it left a crash record) and queues today's active; it is file I/O only. Delivery runs on a thread that is never joined, so an unreachable endpoint cannot delay the Server and exiting mid-request only leaves the events queued for the next start.
-    const bool usage_reporting = msime::windows::usage_reporting_enabled(prepared.at("value").at("preferences"));
+    // Usage reporting, on unless the user turned usage_reporting off: one session per Server process, kept in this Windows user's %LOCALAPPDATA%\LINGYAO. begin closes the previous session (session_crash only when it left a crash record) and queues today's active; it is file I/O only. Delivery runs on a thread that is never joined, so an unreachable endpoint cannot delay the Server and exiting mid-request only leaves the events queued for the next start.
+    const bool usage_reporting = lingyao::windows::usage_reporting_enabled(prepared.at("value").at("preferences"));
     if (const auto telemetry_directory = edition_telemetry_directory(); !telemetry_directory.empty()) {
-      msime::telemetry::begin({"windows", MSIME_WINDOWS_VERSION, telemetry_directory, usage_reporting, {}});
-      msime::telemetry::start_flushing();
+      lingyao::telemetry::begin({"windows", LINGYAO_WINDOWS_VERSION, telemetry_directory, usage_reporting, {}});
+      lingyao::telemetry::start_flushing();
     }
-    // The user's anonymous MSIME account is registered on the first run after install, as on every other platform; once anonymous-session.json exists this is a file read. It runs off the main thread for the same reason as the telemetry event, and a failure (offline, rate limited) is simply retried on the next start.
+    // The user's anonymous LINGYAO account is registered on the first run after install, as on every other platform; once anonymous-session.json exists this is a file read. It runs off the main thread for the same reason as the telemetry event, and a failure (offline, rate limited) is simply retried on the next start.
     if (const auto account = anonymous_account_directory(); production && !account.empty()) {
       std::thread([directory = account.u8string()] {
-        std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-            msime_client_ensure_anonymous_account(
+        std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+            lingyao_client_ensure_anonymous_account(
                 reinterpret_cast<const uint8_t *>(directory.data()), directory.size()),
-            msime_client_string_free);
+            lingyao_client_string_free);
       }).detach();
     }
     diagnostic_log.server(std::string(production ? "Production" : "Preview") +
@@ -819,7 +819,7 @@ int wmain(int argc, wchar_t **argv) {
     auto traditional_output = std::make_shared<std::atomic<bool>>(
         prepared.at("value").at("preferences")
             .value("traditional_chinese_output", false));
-    auto tsf_config = std::make_shared<msime::windows::TsfLocalConfig>(
+    auto tsf_config = std::make_shared<lingyao::windows::TsfLocalConfig>(
         tsf_local_config(prepared.at("value").at("preferences"),
                          language_dictionaries));
     auto tsf_config_mutex = std::make_shared<std::mutex>();
@@ -919,7 +919,7 @@ int wmain(int argc, wchar_t **argv) {
           candidate_theme->publish(preferences);
           apply_diagnostic_log(diagnostic_log, preferences);
           // Turning reporting off clears what is queued and disarms crash capture at once; turning it on starts a session as a Server start would.
-          msime::telemetry::set_enabled(msime::windows::usage_reporting_enabled(preferences));
+          lingyao::telemetry::set_enabled(lingyao::windows::usage_reporting_enabled(preferences));
           if (auto settings = floating_toolbar_settings(preferences))
             toolbar_settings->publish(snapshot.revision(), *settings);
           if (auto fonts = candidate_font_settings(preferences))
@@ -1106,10 +1106,10 @@ int wmain(int argc, wchar_t **argv) {
               {"text", normalize_clipboard_text(std::move(text))}}.dump();
           // The shared writer preserves pinned entries, timestamps and the
           // preference/history locking used by the Tauri panel.
-          std::unique_ptr<char, decltype(&msime_client_string_free)> reply(
-              msime_client_capture_clipboard_history(
+          std::unique_ptr<char, decltype(&lingyao_client_string_free)> reply(
+              lingyao_client_capture_clipboard_history(
                   reinterpret_cast<const uint8_t *>(request.data()), request.size()),
-              msime_client_string_free);
+              lingyao_client_string_free);
         });
     // Clipboard history is an optional convenience, so a monitor that cannot
     // start leaves it inert rather than taking the IME down with it. Failing
@@ -1196,9 +1196,9 @@ int wmain(int argc, wchar_t **argv) {
         prepared.at("value").at("preferences"));
     std::map<std::string, CandidateThemeResolution> resolved_themes;
     // Package assets by id, read from the catalog once per package and forgotten with the resolved themes.
-    std::map<std::string, msime::windows::CandidateSkinAssets> skin_assets;
+    std::map<std::string, lingyao::windows::CandidateSkinAssets> skin_assets;
     auto package_assets = [&](const std::string &id)
-        -> const msime::windows::CandidateSkinAssets & {
+        -> const lingyao::windows::CandidateSkinAssets & {
       auto found = skin_assets.find(id);
       if (found == skin_assets.end())
         found = skin_assets.emplace(id, resolve_skin_assets(config.skin_directory, id))
@@ -1335,7 +1335,7 @@ int wmain(int argc, wchar_t **argv) {
     TrayMenuCapabilities menu_capabilities;
     menu_capabilities.emoji_panel = preview_shell.has_value();
     // 手写模型只认汉字，不提供手写的版本（日文、越南文和藏文版）托盘菜单里没有手写，安装包里也没有手写模型。
-    menu_capabilities.handwriting_panel = preview_shell.has_value() && MSIME_EDITION_HANDWRITING != 0;
+    menu_capabilities.handwriting_panel = preview_shell.has_value() && LINGYAO_EDITION_HANDWRITING != 0;
     menu_capabilities.keyboard_panel = preview_shell.has_value();
     menu_capabilities.voice_input = true;
     menu_capabilities.settings = settings_shell.has_value();
@@ -1462,7 +1462,7 @@ int wmain(int argc, wchar_t **argv) {
     // Both statistics sinks below answer from this, never from the store: a key batch split over several Aux messages would otherwise have each message wait on the previous one's detached write for the store lock, past the DLL's 150 ms answer window. Declared before the listener so it outlives every sink call.
     const TypingStatisticsSwitch statistics_switch(
         [directory = config.state_root.u8string()] {
-          return msime_client_typing_statistics_enabled(
+          return lingyao_client_typing_statistics_enabled(
               reinterpret_cast<const uint8_t *>(directory.data()),
               directory.size());
         },
@@ -1749,7 +1749,7 @@ int wmain(int argc, wchar_t **argv) {
       // punctuation off takes effect on the text being typed now.
       if (tsf_config_dirty->load(std::memory_order_acquire)) {
         if (const auto view = server.mode_view()) {
-          msime::windows::TsfLocalConfig pending;
+          lingyao::windows::TsfLocalConfig pending;
           {
             std::lock_guard<std::mutex> lock(*tsf_config_mutex);
             pending = *tsf_config;
@@ -1887,14 +1887,14 @@ int wmain(int argc, wchar_t **argv) {
     mode_clicks.stop();
     english_reads.stop();
     // Every way out of the message loop is a normal end of this session.
-    msime::telemetry::end();
+    lingyao::telemetry::end();
     if (restart_requested.load()) {
       diagnostic_log.server("Server stopping: restart requested");
-      return msime::windows::watchdog::restart_exit_code;
+      return lingyao::windows::watchdog::restart_exit_code;
     }
     if (stop_requested.load()) {
       diagnostic_log.server("Server stopping: stop requested");
-      return msime::windows::watchdog::stop_exit_code;
+      return lingyao::windows::watchdog::stop_exit_code;
     }
     // 每个能结束主循环的组件都要在这一行里点名，否则日志只说"有组件失败"，无从查起。翻页曾经结束主循环却被记成正常停止。
     std::vector<std::string> failures;

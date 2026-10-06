@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Card geometry ported from the shipped Windows presenter. Widths arrive
 // already measured in device independent pixels; this header only composes
 // them, so it stays free of DirectWrite and is exercised without a renderer.
@@ -559,4 +559,4 @@ candidate_card_placement(const CandidatePlacementInput &input) {
   }
   return placement;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

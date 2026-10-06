@@ -1,5 +1,5 @@
 [package]
-name = "msime-host-windows"
+name = "lingyao-host-windows"
 description = "Windows TSF/Server host support for the shared client."
 version.workspace = true
 edition.workspace = true
@@ -8,12 +8,12 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dev-dependencies]
-msime-client-core = { path = "../client-core" }
+lingyao-client-core = { path = "../client-core" }
 
 # The desktop shell forbids unsafe code, so the few Win32 calls the shared
 # panels need live here behind safe wrappers.
 [target.'cfg(windows)'.dependencies]
-msime-client-core = { path = "../client-core" }
+lingyao-client-core = { path = "../client-core" }
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
   "Win32_Graphics_Gdi",

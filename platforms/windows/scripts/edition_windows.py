@@ -5,7 +5,7 @@
 
 这些值只在版本表里写一次，这里把它们变成两个提交进仓库的文件，构建时不需要 Python：
 
-- `shared/contracts/msime_edition.h`：C++ 侧（TSF DLL、Server、看门狗、prepare 工具、WinUI 设置窗口和原生测试）读的宏。构建必须定义且只定义一个 `MSIME_EDITION_<ID>`（CMake 的 `MSIME_EDITION` 缓存变量、设置窗口工程的 `MsimeEdition` 属性），否则头文件以 `#error` 拒绝编译，不会悄悄编成 full；
+- `shared/contracts/lingyao_edition.h`：C++ 侧（TSF DLL、Server、看门狗、prepare 工具、WinUI 设置窗口和原生测试）读的宏。构建必须定义且只定义一个 `LINGYAO_EDITION_<ID>`（CMake 的 `LINGYAO_EDITION` 缓存变量、设置窗口工程的 `LingyaoEdition` 属性），否则头文件以 `#error` 拒绝编译，不会悄悄编成 full；
 - `platforms/windows/installer/editions.iss`：Inno Setup 读的 `#define`，按 `ISCC /DEdition=<id>` 选出一组，缺省是 full。文件里只有预处理指令，所以 full 的预处理输出与引入版本之前逐字节相同。
 
 full 是现有产品本身：它的名字后缀是空串，管道、事件、互斥量和窗口类名与引入版本之前相同，GUID 和路径都是今天写死在代码里的值（`scripts/test-editions.py` 检查）。
@@ -16,7 +16,7 @@ full 是现有产品本身：它的名字后缀是空串，管道、事件、互
     edition_windows.py editions                      # 有 Windows 段的版本 id，逗号分隔，full 在最前
     edition_windows.py field --edition ID KEY        # 打印 Windows 段的字段，或 id、display_name.zh-Hans/en、default_scheme、arm64_host_dll
     edition_windows.py marker --edition ID --output edition.json   # Server 目录里的版本声明；full 不写，已有的删掉
-    edition_windows.py host-def --edition ID --dll msime_host_api.dll --output msime_host_api_<id>.def [--arm64]
+    edition_windows.py host-def --edition ID --dll lingyao_host_api.dll --output lingyao_host_api_<id>.def [--arm64]
                                                      # 按 DLL 的导出表写出改名用的模块定义文件，交给 lib.exe /DEF 或 dlltool 生成同名导入库；--arm64 用 ARM64 宿主的名字（见 arm64_host_dll）
 """
 
@@ -29,7 +29,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 EDITIONS = ROOT / "shared/contracts/editions.json"
-HEADER = ROOT / "shared/contracts/msime_edition.h"
+HEADER = ROOT / "shared/contracts/lingyao_edition.h"
 INNO = ROOT / "platforms/windows/installer/editions.iss"
 FULL = "full"
 # 数据目录所有权标记的文件名前缀，后面接版本的名字后缀（full 是空串，所以 full 的标记仍是 `.lingyaoime-data`）。几个版本的标记文件名各不相同：一个版本的安装器和 Server 看不到别的版本的标记，不会把别的版本的数据目录当成自己的去接管、清理或删除。
@@ -118,19 +118,19 @@ def macro_suffix(edition_id: str) -> str:
 
 def header_text(table: dict) -> str:
     editions = windows_editions(table)
-    selectors = [f"MSIME_EDITION_{macro_suffix(entry['id'])}" for entry in editions]
+    selectors = [f"LINGYAO_EDITION_{macro_suffix(entry['id'])}" for entry in editions]
     defined = " + ".join(f"defined({selector})" for selector in selectors)
     lines = [
         "#pragma once",
         "",
         "// 由 platforms/windows/scripts/edition_windows.py 从 shared/contracts/editions.json 生成，不要手改；改了版本表之后运行 `python3 platforms/windows/scripts/edition_windows.py gen` 并提交结果。",
         "//",
-        f"// 每个 Windows 构建必须定义且只定义一个版本选择宏（{', '.join(selectors)}）：CMake 按缓存变量 MSIME_EDITION 定义，WinUI 设置窗口工程按 MsimeEdition 属性定义。少了它就停在这里，而不是悄悄编成 full、去用 full 的管道和 CLSID。",
+        f"// 每个 Windows 构建必须定义且只定义一个版本选择宏（{', '.join(selectors)}）：CMake 按缓存变量 LINGYAO_EDITION 定义，WinUI 设置窗口工程按 LingyaoEdition 属性定义。少了它就停在这里，而不是悄悄编成 full、去用 full 的管道和 CLSID。",
         "//",
         "// full 的名字后缀是空串，管道、事件、互斥量和窗口类名与引入版本之前相同；其他版本的这些名字都带 `.<id>`，GUID 和路径各不相同，所以几个版本可以同时安装，两个版本的 TIP 也可以被同一个应用同时加载。",
         "",
         f"#if ({defined}) != 1",
-        f'#error "Define exactly one of {", ".join(selectors)}; platforms/windows/CMakeLists.txt does this from MSIME_EDITION"',
+        f'#error "Define exactly one of {", ".join(selectors)}; platforms/windows/CMakeLists.txt does this from LINGYAO_EDITION"',
         "#endif",
     ]
     for index, entry in enumerate(editions):
@@ -138,41 +138,41 @@ def header_text(table: dict) -> str:
         selector = selectors[index]
         lines.append(("#if" if index == 0 else "#elif") + f" defined({selector})")
         definitions = [
-            ("MSIME_EDITION_ID", narrow(entry["id"])),
-            ("MSIME_EDITION_IS_FULL", "1" if entry["id"] == FULL else "0"),
-            ("MSIME_EDITION_NAME_SUFFIX", wide(windows["name_suffix"])),
-            ("MSIME_EDITION_DISPLAY_NAME", wide(entry["display_name"]["zh-Hans"])),
-            ("MSIME_EDITION_DISPLAY_NAME_UTF8", narrow(entry["display_name"]["zh-Hans"])),
-            ("MSIME_EDITION_TEXT_SERVICE_DESCRIPTION", wide(windows["text_service_description"])),
-            ("MSIME_EDITION_LANGID", windows["langid"]),
-            ("MSIME_EDITION_LANGID_STRING", wide(windows["langid"])),
-            ("MSIME_EDITION_CLSID", guid_initializer(windows["clsid"])),
-            ("MSIME_EDITION_CLSID_STRING", wide(windows["clsid"])),
-            ("MSIME_EDITION_PROFILE_GUID", guid_initializer(windows["profile_guid"])),
-            ("MSIME_EDITION_PROFILE_GUID_STRING", wide(windows["profile_guid"])),
+            ("LINGYAO_EDITION_ID", narrow(entry["id"])),
+            ("LINGYAO_EDITION_IS_FULL", "1" if entry["id"] == FULL else "0"),
+            ("LINGYAO_EDITION_NAME_SUFFIX", wide(windows["name_suffix"])),
+            ("LINGYAO_EDITION_DISPLAY_NAME", wide(entry["display_name"]["zh-Hans"])),
+            ("LINGYAO_EDITION_DISPLAY_NAME_UTF8", narrow(entry["display_name"]["zh-Hans"])),
+            ("LINGYAO_EDITION_TEXT_SERVICE_DESCRIPTION", wide(windows["text_service_description"])),
+            ("LINGYAO_EDITION_LANGID", windows["langid"]),
+            ("LINGYAO_EDITION_LANGID_STRING", wide(windows["langid"])),
+            ("LINGYAO_EDITION_CLSID", guid_initializer(windows["clsid"])),
+            ("LINGYAO_EDITION_CLSID_STRING", wide(windows["clsid"])),
+            ("LINGYAO_EDITION_PROFILE_GUID", guid_initializer(windows["profile_guid"])),
+            ("LINGYAO_EDITION_PROFILE_GUID_STRING", wide(windows["profile_guid"])),
         ]
-        definitions += [(f"MSIME_EDITION_GUID_{key.upper()}", guid_initializer(windows["tsf_guids"][key])) for key in TSF_GUIDS]
+        definitions += [(f"LINGYAO_EDITION_GUID_{key.upper()}", guid_initializer(windows["tsf_guids"][key])) for key in TSF_GUIDS]
         definitions += [
-            ("MSIME_EDITION_REGISTRY_KEY", wide(windows["registry_key"])),
-            ("MSIME_EDITION_STATE_DIRECTORY", wide(windows["state_directory"])),
-            ("MSIME_EDITION_USER_DATA_DIRECTORY", wide(windows["user_data_directory"])),
-            ("MSIME_EDITION_DATA_DIR_ENVIRONMENT_VARIABLE", wide(windows["data_dir_environment_variable"])),
-            ("MSIME_EDITION_WATCHDOG_TASK", wide(windows["watchdog_task"])),
-            ("MSIME_EDITION_HOST_DLL", wide(windows["host_dll"])),
-            ("MSIME_EDITION_DATA_DIR_MARKER", wide(data_dir_marker(entry))),
-            ("MSIME_EDITION_DEFAULT_SCHEME", narrow(entry["default_scheme"])),
-            ("MSIME_EDITION_DEFAULT_SCHEME_W", wide(entry["default_scheme"])),
-            ("MSIME_EDITION_WUBI_MIXED_PINYIN_DEFAULT", "1" if entry["preference_defaults"].get("wubi_mixed_pinyin", False) else "0"),
-            ("MSIME_EDITION_INPUT_SCHEMES", ", ".join(narrow(scheme) for scheme in entry["input_schemes"])),
-            ("MSIME_EDITION_TEMPORARY_JAPANESE", "1" if entry["features"]["temporary_japanese"] else "0"),
+            ("LINGYAO_EDITION_REGISTRY_KEY", wide(windows["registry_key"])),
+            ("LINGYAO_EDITION_STATE_DIRECTORY", wide(windows["state_directory"])),
+            ("LINGYAO_EDITION_USER_DATA_DIRECTORY", wide(windows["user_data_directory"])),
+            ("LINGYAO_EDITION_DATA_DIR_ENVIRONMENT_VARIABLE", wide(windows["data_dir_environment_variable"])),
+            ("LINGYAO_EDITION_WATCHDOG_TASK", wide(windows["watchdog_task"])),
+            ("LINGYAO_EDITION_HOST_DLL", wide(windows["host_dll"])),
+            ("LINGYAO_EDITION_DATA_DIR_MARKER", wide(data_dir_marker(entry))),
+            ("LINGYAO_EDITION_DEFAULT_SCHEME", narrow(entry["default_scheme"])),
+            ("LINGYAO_EDITION_DEFAULT_SCHEME_W", wide(entry["default_scheme"])),
+            ("LINGYAO_EDITION_WUBI_MIXED_PINYIN_DEFAULT", "1" if entry["preference_defaults"].get("wubi_mixed_pinyin", False) else "0"),
+            ("LINGYAO_EDITION_INPUT_SCHEMES", ", ".join(narrow(scheme) for scheme in entry["input_schemes"])),
+            ("LINGYAO_EDITION_TEMPORARY_JAPANESE", "1" if entry["features"]["temporary_japanese"] else "0"),
             # 手写模型只认汉字：为 0 的版本（日文、越南文和藏文版）托盘菜单、悬浮工具栏和原生设置窗口都不提供手写。
-            ("MSIME_EDITION_HANDWRITING", "1" if entry["features"]["handwriting"] else "0"),
+            ("LINGYAO_EDITION_HANDWRITING", "1" if entry["features"]["handwriting"] else "0"),
         ]
         lines += [f"#define {name} {value}" for name, value in definitions]
     lines.append("#endif")
     lines.append("")
     lines.append("// 全部有 Windows 段的版本的名字后缀，与本次构建选的是哪个版本无关：一个版本要知道别的版本的 Server 是否在运行（看它们的单实例互斥量）时用。")
-    lines.append("#define MSIME_EDITIONS_NAME_SUFFIXES " + ", ".join(wide(entry["platforms"]["windows"]["name_suffix"]) for entry in editions))
+    lines.append("#define LINGYAO_EDITIONS_NAME_SUFFIXES " + ", ".join(wide(entry["platforms"]["windows"]["name_suffix"]) for entry in editions))
     return "\n".join(lines) + "\n"
 
 
@@ -306,7 +306,7 @@ def pe_exports(dll: bytes) -> list[str]:
 
 
 def arm64_host_dll(host_dll: str) -> str:
-    """Windows on Arm 上 Arm64X TIP 的原生 ARM64 那一半导入的宿主 DLL 名。它与 x64 宿主装在同一个版本目录里，ARM64EC 那一半在模拟的 x64 进程里导入 x64 宿主（`host_dll`），所以 ARM64 宿主换一个名字：`msime_host_api.dll` 对应 `msime_host_api_arm64.dll`。"""
+    """Windows on Arm 上 Arm64X TIP 的原生 ARM64 那一半导入的宿主 DLL 名。它与 x64 宿主装在同一个版本目录里，ARM64EC 那一半在模拟的 x64 进程里导入 x64 宿主（`host_dll`），所以 ARM64 宿主换一个名字：`lingyao_host_api.dll` 对应 `lingyao_host_api_arm64.dll`。"""
     stem, dot, extension = host_dll.rpartition(".")
     if not dot or extension.lower() != "dll":
         raise SystemExit(f"host DLL name {host_dll} does not end in .dll")
@@ -314,7 +314,7 @@ def arm64_host_dll(host_dll: str) -> str:
 
 
 def host_def(edition_id: str, dll: pathlib.Path, arm64: bool = False) -> str:
-    """把 msime-host-api 的 DLL 改成本版本的名字（版本表 `host_dll`，`arm64` 时是 `arm64_host_dll` 的名字）时用的模块定义文件。导出的函数与原 DLL 一个不差，只换模块名；拿它生成的导入库让 TSF DLL、Server 和设置窗口按新名字加载。"""
+    """把 lingyao-host-api 的 DLL 改成本版本的名字（版本表 `host_dll`，`arm64` 时是 `arm64_host_dll` 的名字）时用的模块定义文件。导出的函数与原 DLL 一个不差，只换模块名；拿它生成的导入库让 TSF DLL、Server 和设置窗口按新名字加载。"""
     name = edition_entry(edition_id)["platforms"]["windows"]["host_dll"]
     if arm64:
         name = arm64_host_dll(name)

@@ -41,19 +41,19 @@ int main() {
         VoiceFixture *voice = [VoiceFixture new]; voice.active = YES;
         PresentationFixture *presentation = [PresentationFixture new]; presentation.listening = YES;
         SessionFixture *session = [SessionFixture new]; session.completed = dispatch_semaphore_create(0);
-        MSIMEDeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, @"/tmp/synthetic-voice.sock", 42);
+        LINGYAODeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, @"/tmp/synthetic-voice.sock", 42);
         assert(!voice.active && voice.cancellations == 1);
         assert(!presentation.listening && presentation.restorations == 1);
         assert(dispatch_semaphore_wait(session.completed, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)) == 0);
         assert(session.generation == 42 && [session.path isEqual:@"/tmp/synthetic-voice.sock"]);
         assert(session.cancellations == 1);
         // Repeated cleanup must not enqueue another provider cancellation.
-        MSIMEDeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, @"/tmp/synthetic-voice.sock", 43);
+        LINGYAODeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, @"/tmp/synthetic-voice.sock", 43);
         assert(dispatch_semaphore_wait(session.completed, dispatch_time(DISPATCH_TIME_NOW, 10000000)) != 0);
         voice.active = YES;
-        MSIMEDeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, nil, 44);
+        LINGYAODeactivateVoice((id)voice, (id)session, (id)presentation, (id)presentation, nil, 44);
         assert(!voice.active && voice.cancellations == 3);
         assert(dispatch_semaphore_wait(session.completed, dispatch_time(DISPATCH_TIME_NOW, 10000000)) != 0);
-        MSIMEDeactivateVoice(nil, nil, nil, nil, nil, 0);
+        LINGYAODeactivateVoice(nil, nil, nil, nil, nil, 0);
     }
 }

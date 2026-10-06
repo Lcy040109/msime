@@ -1,6 +1,6 @@
 //! 候选排序的唯一实现：句子模型重排、整句次选读法的后移，以及交给重排器的上文窗口。
 //!
-//! 这里只做决策，不碰候选数组：`rerank_pick` 返回应移到首位的下标，`runner_up_order` 返回一个排列（新座位 -> 旧座位）。`msime-input-runtime` 把结果同步应用到它的八个并行数组上，网页引擎（`msime-engine-wasm`）也调用同一组函数，两处的排序因此不会各自漂移。
+//! 这里只做决策，不碰候选数组：`rerank_pick` 返回应移到首位的下标，`runner_up_order` 返回一个排列（新座位 -> 旧座位）。`lingyao-input-runtime` 把结果同步应用到它的八个并行数组上，网页引擎（`lingyao-engine-wasm`）也调用同一组函数，两处的排序因此不会各自漂移。
 
 use crate::SchemeType;
 

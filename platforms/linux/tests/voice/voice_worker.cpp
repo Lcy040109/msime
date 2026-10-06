@@ -7,25 +7,25 @@
 #include <thread>
 
 int main() {
-  assert(msime_voice_bound_result("灵耀") == "灵耀");
-  auto oversized = msime_voice_bound_result("灵耀灵耀", 6);
+  assert(lingyao_voice_bound_result("灵耀") == "灵耀");
+  auto oversized = lingyao_voice_bound_result("灵耀灵耀", 6);
   assert(oversized == "灵耀");
-  assert(msime_voice_result_or_transcript("最终", "中间", "预编辑") == "最终");
-  assert(msime_voice_result_or_transcript("", "中间😀", "预编辑") == "中间😀");
-  assert(msime_voice_result_or_transcript("", "", "预编辑") == "预编辑");
-  assert(msime_voice_result_or_transcript("", "", "") == "");
-  assert(std::string(msime_voice_provider_failure_notice("voice_dependency_missing:websockets")) ==
+  assert(lingyao_voice_result_or_transcript("最终", "中间", "预编辑") == "最终");
+  assert(lingyao_voice_result_or_transcript("", "中间😀", "预编辑") == "中间😀");
+  assert(lingyao_voice_result_or_transcript("", "", "预编辑") == "预编辑");
+  assert(lingyao_voice_result_or_transcript("", "", "") == "");
+  assert(std::string(lingyao_voice_provider_failure_notice("voice_dependency_missing:websockets")) ==
          "豆包语音需要 websockets 15 或更高版本，请安装 python3-websockets");
-  assert(std::string(msime_voice_provider_failure_notice("voice_dependency_missing:recorder")) ==
+  assert(std::string(lingyao_voice_provider_failure_notice("voice_dependency_missing:recorder")) ==
          "未找到录音工具，请安装 pulseaudio-utils、pipewire-bin 或 alsa-utils");
-  assert(std::string(msime_voice_provider_failure_notice("voice_dependency_missing:local_asr")) ==
+  assert(std::string(lingyao_voice_provider_failure_notice("voice_dependency_missing:local_asr")) ==
          "本地语音识别组件无法加载，请重新安装输入法");
-  assert(std::string(msime_voice_provider_failure_notice("")) ==
+  assert(std::string(lingyao_voice_provider_failure_notice("")) ==
          "语音输入失败，请检查语音服务、麦克风及提供商配置后重试");
-  assert(std::string(msime_voice_provider_failure_notice("voice_dependency_missing:token=secret")) ==
+  assert(std::string(lingyao_voice_provider_failure_notice("voice_dependency_missing:token=secret")) ==
          "语音输入失败，请检查语音服务、麦克风及提供商配置后重试");
 
-  MsimeVoiceWorker worker;
+  LingyaoVoiceWorker worker;
   std::atomic_bool delivered{false};
   worker.run(
       [](const std::atomic_bool &cancelled) {

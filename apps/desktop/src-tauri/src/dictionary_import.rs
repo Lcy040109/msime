@@ -1,11 +1,11 @@
 //! A settings-page dictionary request, with an import split into requests the host accepts.
 //!
-//! `msime_host_api::dictionary_request_json` takes at most 64 KiB per request and reads at most `import::MAX_ENTRIES` rows from one import. That is the contract `msime-client-dictionary` documents, so it stays as it is. The page instead sends a file of up to [`MAX_IMPORT_TEXT_BYTES`] as a run of line-aligned requests under both bounds and answers with one report for the whole file, the way the Windows settings page imports a file whole. Each request carries its own ID, `<id>-<n>`, so the host's per-row receipts still make a repeated import a no-op.
+//! `lingyao_host_api::dictionary_request_json` takes at most 64 KiB per request and reads at most `import::MAX_ENTRIES` rows from one import. That is the contract `lingyao-client-dictionary` documents, so it stays as it is. The page instead sends a file of up to [`MAX_IMPORT_TEXT_BYTES`] as a run of line-aligned requests under both bounds and answers with one report for the whole file, the way the Windows settings page imports a file whole. Each request carries its own ID, `<id>-<n>`, so the host's per-row receipts still make a repeated import a no-op.
 
-use msime_client_core::dictionary::import::{
+use lingyao_client_core::dictionary::import::{
     self, ImportError, ImportFailure, ImportFormat, ImportKind, REPORTED_FAILURES,
 };
-use msime_client_core::dictionary::is_han_character;
+use lingyao_client_core::dictionary::is_han_character;
 use serde_json::{json, Value};
 
 /// The largest file text the page imports. The page refuses files over 32 MiB (`MAX_DICTIONARY_FILE_BYTES` in `packages/ui/src/dictionary/dictionary-file.ts`) before reading them, and a file that size decodes to at most 48 MiB of UTF-8, since a two-byte GBK or UTF-16 character becomes three; this is that bound, so a file the page accepted is never refused here. At 60 KiB a request, text this size is at least 820 requests, and more for a file of short lines, since a request also carries at most `import::MAX_ENTRIES` rows. That takes longer than the 30 seconds input sessions stay released, so every request renews the release before it goes: the lease through `QuiescedHosts::run` on Linux and macOS, the Server's DictionaryQuiesce on Windows.
@@ -134,9 +134,9 @@ pub(crate) fn send_dictionary_action(
 /// The host's reason for a `hans` file it will not read.
 const INVALID_IMPORT: &str = "invalid dictionary import";
 
-/// Whether the host's `hans` parser would read `text` as a whole, short of asking the Engine for the readings: no control character but line breaks, at least one word, and every word at most 1024 bytes of Han characters alone. The host's own count limit is per request and the batches keep to it. These are `parse_hans_import`'s checks in `msime-host-api`, which still makes them for every batch.
+/// Whether the host's `hans` parser would read `text` as a whole, short of asking the Engine for the readings: no control character but line breaks, at least one word, and every word at most 1024 bytes of Han characters alone. The host's own count limit is per request and the batches keep to it. These are `parse_hans_import`'s checks in `lingyao-host-api`, which still makes them for every batch.
 fn hans_text_is_acceptable(text: &str) -> bool {
-    if msime_client_core::has_disallowed_control_with_line_breaks(text) {
+    if lingyao_client_core::has_disallowed_control_with_line_breaks(text) {
         return false;
     }
     let mut words = text

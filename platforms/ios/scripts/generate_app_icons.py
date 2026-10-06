@@ -2,7 +2,7 @@
 """Render every iOS icon from the one brand artwork with librsvg (brew install librsvg).
 
 The artwork lives at `apps/desktop/app-icon.svg` and is the same file the Windows client ships as
-`msime.ico`; it is not duplicated here. The alternate icons differ from the default by exactly one
+`lingyao.ico`; it is not duplicated here. The alternate icons differ from the default by exactly one
 value - the colour of the frame - so they are derived rather than drawn, and only the rendered PNGs
 are kept. Changing the logo means replacing that one master.
 
@@ -165,7 +165,7 @@ def main() -> None:
         # keeps the master's transparency rather than sitting on a hard dark square.
         logo = staging / "Logo.svg"
         logo.write_text(artwork(FRAME, field=None))
-        logo_set = ASSETS / "MSIMELogo.imageset"
+        logo_set = ASSETS / "LINGYAOLogo.imageset"
         render(logo, logo_set / "logo.png", 1024)
         # The rendering intent is part of this asset's contract with the artwork, so it is written
         # here rather than left beside it. It used to say `template`, which keeps only the alpha

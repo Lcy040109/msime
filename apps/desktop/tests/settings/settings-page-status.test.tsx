@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettingsPageStatus } from "@msime/ui";
+import { SettingsPageStatus } from "@lingyao/ui";
 
 test("composes the initial loading status", () => {
   render(

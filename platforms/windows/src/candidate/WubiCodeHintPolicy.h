@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 inline constexpr unsigned wubi_scheme = 2;
 inline constexpr std::size_t wubi_code_hint_max_length = 64;
 
@@ -46,4 +46,4 @@ Presentation with_wubi_code_hints(Presentation presentation, bool enabled) {
       candidate.annotation = "(" + candidate.wubi_code_hint + ")";
   return presentation;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

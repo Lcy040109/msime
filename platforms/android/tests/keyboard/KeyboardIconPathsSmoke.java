@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardIconPaths;
-import app.msime.android.KeyboardIconPaths.Icon;
+import app.lingyao.android.KeyboardIconPaths;
+import app.lingyao.android.KeyboardIconPaths.Icon;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public final class KeyboardIconPathsSmoke {
     private static final String SCRIPT = "platforms/android/scripts/generate_keyboard_icons.py";
-    private static final String OUTPUT = "platforms/android/java/app/msime/android/keyboard/KeyboardIconPaths.java";
+    private static final String OUTPUT = "platforms/android/java/app/lingyao/android/keyboard/KeyboardIconPaths.java";
 
     private static void check(boolean condition, String message) {
         if (!condition) throw new AssertionError(message);

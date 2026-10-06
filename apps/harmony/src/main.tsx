@@ -58,15 +58,15 @@ import {
   type PluginClient,
   type PluginPackage,
   UNBATCHED_DICTIONARY_FILE_BYTES,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import type {
   AiAssistantClient,
   ApiCredentialTestResult,
   ApiCredentialTestService,
   MobileKeyboardFeedback,
   VoiceCaptureDevice,
-} from "@msime/ui";
-import "@msime/ui/styles.css";
+} from "@lingyao/ui";
+import "@lingyao/ui/styles.css";
 
 /**
  * The settings UI, hosted by the HarmonyOS application.
@@ -104,7 +104,7 @@ interface NativeBridge {
    *
    * A bridge method that returns a Promise never settles on this platform, so the account, the
    * account-backed chat, the cloud dictionary and its snapshots, the AI model list, the AI test and
-   * the credential test are started by number and answered later through `msimeHarmonyBridgeReply`.
+   * the credential test are started by number and answered later through `lingyaoHarmonyBridgeReply`.
    *
    * The caller chooses the deadline, because the kinds do not share one: a completion is a model
    * writing text and is given the same 125 seconds the shared clients allow it, while everything
@@ -133,20 +133,20 @@ interface NativeBridge {
   /** Starts the picker and answers at once; the panel's own rescan is what shows the result. */
   importSkinFolder(): string;
   /**
-   * The 插件 page's pack store and @ name list: `{operation:"catalog"|"remove"|"load_mentions"|"save_mentions",...}`, answered by `msime_client_plugins` as `{ok,value}` or `{ok:false,error,detail?}`. An import waits for the system picker, so it goes through `startRequest` as `plugin_import` instead.
+   * The 插件 page's pack store and @ name list: `{operation:"catalog"|"remove"|"load_mentions"|"save_mentions",...}`, answered by `lingyao_client_plugins` as `{ok,value}` or `{ok:false,error,detail?}`. An import waits for the system picker, so it goes through `startRequest` as `plugin_import` instead.
    */
   plugins(action: string): string;
 }
 
 declare global {
   // eslint-disable-next-line no-var
-  var msimeHarmonyPreferencesChanged: ((reply: string) => void) | undefined;
+  var lingyaoHarmonyPreferencesChanged: ((reply: string) => void) | undefined;
   // eslint-disable-next-line no-var
-  var msimeHarmonyBridgeReply: ((id: number, reply: string) => void) | undefined;
+  var lingyaoHarmonyBridgeReply: ((id: number, reply: string) => void) | undefined;
   // eslint-disable-next-line no-var
-  var msimeHarmonyAiSkinProgress: ((requestId: string, completed: number) => void) | undefined;
+  var lingyaoHarmonyAiSkinProgress: ((requestId: string, completed: number) => void) | undefined;
   // eslint-disable-next-line no-var
-  var msimeHarmonyVoiceModelProgress: ((document: string) => void) | undefined;
+  var lingyaoHarmonyVoiceModelProgress: ((document: string) => void) | undefined;
 }
 
 /**
@@ -166,7 +166,7 @@ declare global {
 const pendingBridgeRequests = new Map<number, (reply: string) => void>();
 let nextBridgeRequestId = 1;
 
-globalThis.msimeHarmonyBridgeReply = (id: number, reply: string) => {
+globalThis.lingyaoHarmonyBridgeReply = (id: number, reply: string) => {
   const resolve = pendingBridgeRequests.get(id);
   if (!resolve) return;
   pendingBridgeRequests.delete(id);
@@ -201,7 +201,7 @@ function bridgeRequest(
 
 declare global {
   interface Window {
-    msimeHarmony?: NativeBridge;
+    lingyaoHarmony?: NativeBridge;
   }
 }
 
@@ -244,7 +244,7 @@ function whenBridgeReady(): Promise<NativeBridge> {
   return new Promise((resolve, reject) => {
     const deadline = Date.now() + 5000;
     const poll = () => {
-      const native = window.msimeHarmony;
+      const native = window.lingyaoHarmony;
       if (native) {
         resolve(native);
         return;
@@ -565,12 +565,12 @@ function aiSkinClient(native: NativeBridge): AiSkinClient {
       ).then(unwrap<Record<string, never>>);
     },
     onProgress: async (listener) => {
-      const previous = globalThis.msimeHarmonyAiSkinProgress;
-      globalThis.msimeHarmonyAiSkinProgress = (requestId: string, completed: number) => {
+      const previous = globalThis.lingyaoHarmonyAiSkinProgress;
+      globalThis.lingyaoHarmonyAiSkinProgress = (requestId: string, completed: number) => {
         listener({ requestId, completed });
       };
       return () => {
-        globalThis.msimeHarmonyAiSkinProgress = previous;
+        globalThis.lingyaoHarmonyAiSkinProgress = previous;
       };
     },
   };
@@ -585,7 +585,7 @@ function aiSkinClient(native: NativeBridge): AiSkinClient {
  */
 const voiceModelProgressListeners = new Set<(progress: LocalVoiceModelProgress) => void>();
 
-globalThis.msimeHarmonyVoiceModelProgress = (document: string) => {
+globalThis.lingyaoHarmonyVoiceModelProgress = (document: string) => {
   let progress: LocalVoiceModelProgress;
   try {
     progress = JSON.parse(document) as LocalVoiceModelProgress;
@@ -866,7 +866,7 @@ function makeClient(
     // host calls this when the settings window comes back to the front and the document has moved.
     // The reply is the one loadPreferences would have returned, so both paths parse identically.
     onPreferencesChanged: async (listener) => {
-      globalThis.msimeHarmonyPreferencesChanged = (reply: string) => {
+      globalThis.lingyaoHarmonyPreferencesChanged = (reply: string) => {
         try {
           listener(unwrap<Snapshot>(reply));
         } catch {
@@ -875,7 +875,7 @@ function makeClient(
         }
       };
       return () => {
-        globalThis.msimeHarmonyPreferencesChanged = undefined;
+        globalThis.lingyaoHarmonyPreferencesChanged = undefined;
       };
     },
     save: async (revision: number, preferences: Preferences) => {

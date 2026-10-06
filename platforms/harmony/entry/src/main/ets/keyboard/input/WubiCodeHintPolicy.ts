@@ -1,6 +1,6 @@
 /**
  * Presentation rule for the optional remaining-code hint on Wubi candidates, ported from
- * platforms/android/java/app/msime/android/WubiCodeHintPolicy.java.
+ * platforms/android/java/app/lingyao/android/WubiCodeHintPolicy.java.
  */
 const MAX_CODE_LENGTH: number = 64;
 

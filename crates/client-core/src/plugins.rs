@@ -44,16 +44,16 @@ pub const MAX_NOTICE_BYTES: u64 = 64 * 1024;
 pub const BUILTIN_SOUND_PACKS: [&str; 9] = [
     "default",
     "twinkle",
-    "msime-typewriter",
-    "msime-bubble",
-    "msime-8bit",
-    "msime-woodblock",
-    "msime-pentatonic",
-    "msime-canon",
-    "msime-ode-to-joy",
+    "lingyao-typewriter",
+    "lingyao-bubble",
+    "lingyao-8bit",
+    "lingyao-woodblock",
+    "lingyao-pentatonic",
+    "lingyao-canon",
+    "lingyao-ode-to-joy",
 ];
 /// Music pack ids the bundle ships, in the same built-in directory as the sound packs, reserved the same way.
-pub const BUILTIN_MUSIC_PACKS: [&str; 2] = ["msime-music-lofi", "msime-music-ambient"];
+pub const BUILTIN_MUSIC_PACKS: [&str; 2] = ["lingyao-music-lofi", "lingyao-music-ambient"];
 /// The sound pack a fresh profile selects.
 pub const DEFAULT_SOUND_PACK: &str = "default";
 /// The melody pack a fresh profile selects.
@@ -155,7 +155,7 @@ pub enum EffectStyle {
 }
 
 impl EffectStyle {
-    /// The style's number in `msime_client_typing_effect`'s answer.
+    /// The style's number in `lingyao_client_typing_effect`'s answer.
     pub fn code(self) -> u32 {
         match self {
             Self::Off => 0,

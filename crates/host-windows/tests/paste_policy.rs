@@ -2,7 +2,7 @@
 #[path = "../src/voice_output/paste_policy.rs"]
 mod paste_policy;
 
-use msime_client_core::clipboard::{normalize_text, MAX_TEXT_BYTES, MAX_TEXT_UTF16_UNITS};
+use lingyao_client_core::clipboard::{normalize_text, MAX_TEXT_BYTES, MAX_TEXT_UTF16_UNITS};
 use paste_policy::valid_paste_text;
 
 #[test]

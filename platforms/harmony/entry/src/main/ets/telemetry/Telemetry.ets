@@ -2,7 +2,7 @@ import bundleManager from '@ohos.bundle.bundleManager';
 import hiAppEvent from '@ohos.hiviewdfx.hiAppEvent';
 import process from '@ohos.process';
 import fs from '@ohos.file.fs';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import { KeyboardLog, describeError } from '../keyboard/KeyboardLog';
 import { CrashDestination, CrashReport, TelemetryPolicy } from './TelemetryPolicy';
 
@@ -15,7 +15,7 @@ import { CrashDestination, CrashReport, TelemetryPolicy } from './TelemetryPolic
  */
 
 const PLATFORM: string = 'harmony';
-const WATCHER_NAME: string = 'msime_crash_reports';
+const WATCHER_NAME: string = 'lingyao_crash_reports';
 const CRASH_DIRECTORY: string = 'telemetry-crashes';
 /** The keyboard's process id, remembered so the next start can tell its crash from the settings application's. */
 const KEYBOARD_PROCESS_FILE: string = 'harmony-keyboard-process.json';

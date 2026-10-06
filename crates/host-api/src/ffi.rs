@@ -2,7 +2,7 @@
 //!
 //! Every function here is a thin shim: it validates the pointers and lengths it
 //! was handed, calls into the crate's own logic, and hands back an owned JSON
-//! string the caller frees with `msime_client_string_free`. Keeping them in one
+//! string the caller frees with `lingyao_client_string_free`. Keeping them in one
 //! file separates "what the library does" from "how a foreign caller reaches
 //! it", which is the boundary the header in include/ describes.
 //!
@@ -127,7 +127,7 @@ pub(crate) fn sentence_model(
                 Err(error) => {
                     // A corrupt or mismatched model is worth saying out loud: the input method keeps
                     // working without it, so nothing else would ever reveal that it is not running.
-                    eprintln!("msime: ignoring {}: {error}", path.display());
+                    eprintln!("lingyao: ignoring {}: {error}", path.display());
                     None
                 }
             })

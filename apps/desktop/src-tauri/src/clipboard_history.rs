@@ -11,12 +11,12 @@ use crate::platform::linux::linux_clipboard;
 use crate::{
     clipboard_history_uses_preference, host_platform, ClipboardHistoryState, HostActionError,
 };
-use msime_client_core::clipboard::ClipboardHistoryEntry;
+use lingyao_client_core::clipboard::ClipboardHistoryEntry;
 #[cfg(target_os = "linux")]
-use msime_client_core::clipboard::ClipboardHistoryStore;
-use msime_client_core::preferences::PreferencesStore;
+use lingyao_client_core::clipboard::ClipboardHistoryStore;
+use lingyao_client_core::preferences::PreferencesStore;
 #[cfg(target_os = "ios")]
-use msime_tauri_mobile_platform::MobilePlatform;
+use lingyao_tauri_mobile_platform::MobilePlatform;
 use std::sync::Arc;
 #[cfg(target_os = "linux")]
 use std::sync::Mutex;
@@ -93,7 +93,7 @@ pub(crate) fn start_linux_clipboard_monitor(
     preferences: Arc<PreferencesStore>,
 ) {
     let _ = std::thread::Builder::new()
-        .name("msime-clipboard-monitor".to_owned())
+        .name("lingyao-clipboard-monitor".to_owned())
         .spawn(move || {
             let mut last_text = None;
             loop {
@@ -256,7 +256,7 @@ pub(crate) fn sync_clipboard_history_blocking(
     // The native macOS read is the monitor's: bounded, and it refuses concealed,
     // transient and password-manager pasteboards, which pbpaste would not.
     #[cfg(target_os = "macos")]
-    let text = msime_host_macos::clipboard_snapshot(true)
+    let text = lingyao_host_macos::clipboard_snapshot(true)
         .ok_or(HostActionError {
             code: "unavailable",
         })?
@@ -265,7 +265,7 @@ pub(crate) fn sync_clipboard_history_blocking(
     let text = linux_clipboard_text()?;
     #[cfg(target_os = "windows")]
     let text = Some(
-        msime_host_windows::read_clipboard_text()
+        lingyao_host_windows::read_clipboard_text()
             .map_err(|_| HostActionError {
                 code: "unavailable",
             })?
@@ -312,7 +312,7 @@ pub(crate) async fn copy_text_impl(
     #[cfg(target_os = "android")]
     {
         if text.is_empty()
-            || !msime_client_core::is_bounded_utf16(&text, 4000)
+            || !lingyao_client_core::is_bounded_utf16(&text, 4000)
             || text.contains('\0')
         {
             return Err(HostActionError {
@@ -397,7 +397,7 @@ pub(crate) async fn copy_text_impl(
 
 pub(crate) fn clipboard_text_is_valid(text: &str) -> bool {
     !text.is_empty()
-        && text.len() <= msime_client_core::clipboard::MAX_TEXT_BYTES
+        && text.len() <= lingyao_client_core::clipboard::MAX_TEXT_BYTES
         && !text.contains('\0')
 }
 
@@ -466,7 +466,7 @@ pub(crate) fn copy_text_blocking(
     #[cfg(target_os = "linux")]
     let result = write_linux_clipboard(&text);
     #[cfg(target_os = "windows")]
-    let result = msime_host_windows::write_clipboard_text(&text);
+    let result = lingyao_host_windows::write_clipboard_text(&text);
     #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
     let result = false;
     if !result {

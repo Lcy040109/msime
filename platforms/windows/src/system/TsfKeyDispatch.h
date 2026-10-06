@@ -2,7 +2,7 @@
 
 #include "KeyEventSendResult.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 enum class TsfKeyDispatchResult { Complete, Retry, AwaitingCompletion };
 
@@ -27,4 +27,4 @@ constexpr TsfKeyDispatchDecision decide_tsf_key_dispatch(
   return {TsfKeyDispatchResult::Complete, false, false};
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <optional>
 
-namespace msime::windows {
-// The class msime_client_key_sound plays for a key the Server handled: 1 space, 2 enter, 3 backspace, 0 any other key. The TIP forwards only the keys the input method takes, so a key that reaches the Server is typing; the exceptions are a bare modifier, which the TIP forwards to cancel a composition, and a chord with Ctrl or Alt, which is a shortcut. Neither makes a sound.
+namespace lingyao::windows {
+// The class lingyao_client_key_sound plays for a key the Server handled: 1 space, 2 enter, 3 backspace, 0 any other key. The TIP forwards only the keys the input method takes, so a key that reaches the Server is typing; the exceptions are a bare modifier, which the TIP forwards to cancel a composition, and a chord with Ctrl or Alt, which is a shortcut. Neither makes a sound.
 inline std::optional<uint32_t> key_sound_class(const FanyImeNamedpipeData &packet) {
   if (packet.event_type != FanyImePipeEventType::KeyEvent)
     return std::nullopt;
@@ -36,4 +36,4 @@ inline std::optional<uint32_t> key_sound_class(const FanyImeNamedpipeData &packe
     return 0u;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

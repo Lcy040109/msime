@@ -1,4 +1,4 @@
-import app.msime.android.PreferencesReloader;
+import app.lingyao.android.PreferencesReloader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;

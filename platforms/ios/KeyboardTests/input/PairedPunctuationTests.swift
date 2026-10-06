@@ -26,7 +26,7 @@ final class PairedPunctuationTests: XCTestCase {
 
   func testBalancedBookTitlesKeepOpeningTheOuterMark() {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-paired-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-paired-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.cancel()

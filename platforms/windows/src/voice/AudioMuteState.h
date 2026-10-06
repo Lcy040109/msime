@@ -16,7 +16,7 @@
 #include <unistd.h>
 #endif
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 inline constexpr std::uint64_t kAudioMuteStateMaxBytes = 1024 * 1024;
 
@@ -150,4 +150,4 @@ inline bool write_audio_mute_state(const std::filesystem::path &path,
 #endif
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

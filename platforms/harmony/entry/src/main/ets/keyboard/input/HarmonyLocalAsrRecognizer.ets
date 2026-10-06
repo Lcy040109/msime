@@ -1,5 +1,5 @@
 import { MessageEvents, worker } from '@kit.ArkTS';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import { KeyboardLog, describeError } from '../KeyboardLog';
 import { HarmonyPcmCapture } from './HarmonyPcmCapture';
 import { LocalAsrPolicy, LocalAsrReply, LocalAsrRequest } from './LocalAsrPolicy';
@@ -14,7 +14,7 @@ const MAX_DURATION_MS: number = 120000;
 const IDLE_RELEASE_MS: number = 120000;
 const HOTWORD_LIMIT: number = 200;
 
-/** A user dictionary word as `msime_client_voice_hotwords` returns it. */
+/** A user dictionary word as `lingyao_client_voice_hotwords` returns it. */
 export interface LocalHotword {
   text: string;
   pinyin: string;
@@ -53,7 +53,7 @@ interface CorrectResponse {
 /**
  * On-device dictation through sherpa-onnx: the microphone is captured here, the model runs in `workers/LocalAsrWorker.ets`, and nothing leaves the device.
  *
- * The model directory comes from `voice_input.asr_model_path`, which the shared settings page sets when the user picks an installed model. The user's own pinyin words are fetched from the host API at session start; a model that takes hotwords natively gets them at load, and one whose manifest says `pinyin` has its final text corrected through `msime_client_voice_hotword_correct`.
+ * The model directory comes from `voice_input.asr_model_path`, which the shared settings page sets when the user picks an installed model. The user's own pinyin words are fetched from the host API at session start; a model that takes hotwords natively gets them at load, and one whose manifest says `pinyin` has its final text corrected through `lingyao_client_voice_hotword_correct`.
  */
 export class HarmonyLocalAsrRecognizer {
   private readonly capture: HarmonyPcmCapture = new HarmonyPcmCapture();

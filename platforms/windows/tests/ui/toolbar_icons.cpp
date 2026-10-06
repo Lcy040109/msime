@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("Toolbar icon table failed at line " +

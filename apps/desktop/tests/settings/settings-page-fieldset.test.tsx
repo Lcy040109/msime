@@ -2,7 +2,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
-import * as ui from "@msime/ui";
+import * as ui from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -16,7 +16,7 @@ void require(bool value, const char *message) {
 int main() {
   namespace fs = std::filesystem;
   const auto root = fs::temp_directory_path() /
-                    ("msime-sound-pack-root-" +
+                    ("lingyao-sound-pack-root-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   if (!fs::create_directory(root))
     return 1;
@@ -28,7 +28,7 @@ int main() {
     }
   } cleanup{root};
   try {
-    using msime::windows::name_builtin_sound_packs;
+    using lingyao::windows::name_builtin_sound_packs;
     const nlohmann::json base = {{"api_version", 1},
                                  {"resources", (root / "resources").u8string()},
                                  {"preferences_directory", root.u8string()}};

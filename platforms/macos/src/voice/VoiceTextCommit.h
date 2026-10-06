@@ -5,15 +5,15 @@
 #include <vector>
 
 // Tag our own events so InputMethodKit does not interpret them as new input.
-static constexpr int64_t MSIMEVoiceCommitEventTag = 0x4d53494d45564f49LL;
-enum class MSIMEVoiceCommitOutcome { unavailable, posted, stale };
+static constexpr int64_t LINGYAOVoiceCommitEventTag = 0x4d53494d45564f49LL;
+enum class LINGYAOVoiceCommitOutcome { unavailable, posted, stale };
 
-static inline NSString *MSIMEVoiceCommitMode(id value) {
+static inline NSString *LINGYAOVoiceCommitMode(id value) {
     return [value isKindOfClass:NSString.class] &&
         [@[@"sendinput", @"ctrl_v"] containsObject:value] ? [value copy] : @"tsf";
 }
 
-struct MSIMEVoiceCommitIO {
+struct LINGYAOVoiceCommitIO {
     std::function<bool()> permitted = [] { return CGPreflightPostEventAccess(); };
     std::function<CGEventRef(CGKeyCode, bool)> create = [](CGKeyCode key, bool down) {
         return CGEventCreateKeyboardEvent(nullptr, key, down);
@@ -31,18 +31,18 @@ struct MSIMEVoiceCommitIO {
     };
 };
 
-struct MSIMEVoiceCommitRoute {
+struct LINGYAOVoiceCommitRoute {
     static constexpr NSUInteger kEventChunkUnits = 16;
     NSString *mode = @"tsf";
     pid_t pid = 0;
     std::function<bool()> current;
 
-    MSIMEVoiceCommitOutcome deliver(NSString *text, const MSIMEVoiceCommitIO &io = {}) const {
+    LINGYAOVoiceCommitOutcome deliver(NSString *text, const LINGYAOVoiceCommitIO &io = {}) const {
         if ([mode isEqual:@"tsf"] || ![text isKindOfClass:NSString.class] ||
             !text.length || text.length > 65536 || pid <= 0 || !current)
-            return MSIMEVoiceCommitOutcome::unavailable;
-        if (!current()) return MSIMEVoiceCommitOutcome::stale;
-        if (!io.permitted()) return MSIMEVoiceCommitOutcome::unavailable;
+            return LINGYAOVoiceCommitOutcome::unavailable;
+        if (!current()) return LINGYAOVoiceCommitOutcome::stale;
+        if (!io.permitted()) return LINGYAOVoiceCommitOutcome::unavailable;
         using Event = std::unique_ptr<__CGEvent, decltype(&CFRelease)>;
         const bool paste = [mode isEqual:@"ctrl_v"];
         std::vector<Event> events;
@@ -54,30 +54,30 @@ struct MSIMEVoiceCommitRoute {
             UniChar units[kEventChunkUnits]; [text getCharacters:units range:NSMakeRange(offset, count)];
             for (bool down : {true, false}) {
                 Event event(io.create(paste ? 9 : 0, down), CFRelease);
-                if (!event) return MSIMEVoiceCommitOutcome::unavailable;
+                if (!event) return LINGYAOVoiceCommitOutcome::unavailable;
                 CGEventSetFlags(event.get(), paste ? kCGEventFlagMaskCommand : 0);
-                CGEventSetIntegerValueField(event.get(), kCGEventSourceUserData, MSIMEVoiceCommitEventTag);
+                CGEventSetIntegerValueField(event.get(), kCGEventSourceUserData, LINGYAOVoiceCommitEventTag);
                 if (!paste) CGEventKeyboardSetUnicodeString(event.get(), count, units);
                 events.push_back(std::move(event));
             }
             if (paste) break;
             offset += count;
         }
-        if (!current()) return MSIMEVoiceCommitOutcome::stale;
-        if (paste && !io.clipboard(text)) return MSIMEVoiceCommitOutcome::unavailable;
+        if (!current()) return LINGYAOVoiceCommitOutcome::stale;
+        if (paste && !io.clipboard(text)) return LINGYAOVoiceCommitOutcome::unavailable;
         for (size_t i = 0; i < events.size(); i += 2) {
             // A partial delivery cannot fall back to IMK without duplicating text.
-            if (!current()) return i ? MSIMEVoiceCommitOutcome::posted : MSIMEVoiceCommitOutcome::stale;
+            if (!current()) return i ? LINGYAOVoiceCommitOutcome::posted : LINGYAOVoiceCommitOutcome::stale;
             io.post(pid, events[i].get());
             io.post(pid, events[i + 1].get());
         }
-        return MSIMEVoiceCommitOutcome::posted;
+        return LINGYAOVoiceCommitOutcome::posted;
     }
 };
 
-static inline MSIMEVoiceCommitRoute MSIMECaptureVoiceCommit(id mode, id client) {
-    MSIMEVoiceCommitRoute route;
-    route.mode = MSIMEVoiceCommitMode(mode);
+static inline LINGYAOVoiceCommitRoute LINGYAOCaptureVoiceCommit(id mode, id client) {
+    LINGYAOVoiceCommitRoute route;
+    route.mode = LINGYAOVoiceCommitMode(mode);
     if ([route.mode isEqual:@"tsf"] || ![client respondsToSelector:@selector(bundleIdentifier)]) return route;
     NSString *bundle = [[client bundleIdentifier] copy];
     NSRunningApplication *application = NSWorkspace.sharedWorkspace.frontmostApplication;

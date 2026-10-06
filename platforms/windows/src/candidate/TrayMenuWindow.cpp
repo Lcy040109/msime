@@ -4,11 +4,11 @@
 #include <cmath>
 #include <stdexcept>
 #include <string>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
-constexpr wchar_t class_name[] = L"MSIME.Client.Preview.TrayMenu" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t class_name[] = L"LINGYAO.Client.Preview.TrayMenu" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr size_t no_row = static_cast<size_t>(-1);
 // Segoe Fluent Icons / MDL2 CheckMark, the mark native Windows menus draw.
 constexpr wchar_t check_mark_glyph = 0xE73E;
@@ -101,7 +101,7 @@ ID2D1Bitmap *TrayMenuWindow::logo_bitmap(int pixels) {
   if (!logo_ || logo_pixels_ != pixels) {
     // Loaded at the drawn size rather than LR_SHARED's cached standard size, as the floating toolbar does, so the mark is not resampled.
     const HANDLE loaded =
-        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_MSIME_LOGO),
+        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_LINGYAO_LOGO),
                    IMAGE_ICON, pixels, pixels, LR_DEFAULTCOLOR);
     if (!loaded)
       return nullptr;
@@ -471,4 +471,4 @@ LRESULT CALLBACK TrayMenuWindow::procedure(HWND window, UINT message,
   }
   return DefWindowProcW(window, message, wparam, lparam);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

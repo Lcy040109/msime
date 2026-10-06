@@ -2,7 +2,7 @@
 #include "../../../../shared/voice/VoiceProviders.h"
 #include <cmath>
 
-@implementation MSIMEVoicePCMBuffer {
+@implementation LINGYAOVoicePCMBuffer {
     AVAudioConverter *_converter;
     NSMutableData *_pcm;
     BOOL _finished;
@@ -14,7 +14,7 @@
     NSUInteger _sampleLimit;
     uint64_t _inputLimit;
 }
-- (instancetype)init { return [self initWithSampleLimit:msime::voice::batch_capture_sample_limit]; }
+- (instancetype)init { return [self initWithSampleLimit:lingyao::voice::batch_capture_sample_limit]; }
 - (instancetype)initWithSampleLimit:(NSUInteger)sampleLimit {
     self = [super init];
     if (self) _sampleLimit = sampleLimit;
@@ -25,7 +25,7 @@
     _failed = YES;
     _pcm = nil;
     _converter = nil;
-    if (error) *error = [NSError errorWithDomain:@"app.msime.client.voice" code:3
+    if (error) *error = [NSError errorWithDomain:@"app.lingyao.client.voice" code:3
         userInfo:@{NSLocalizedDescriptionKey: @"录音格式无效"}];
     return NO;
 }

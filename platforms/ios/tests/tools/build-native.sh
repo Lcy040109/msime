@@ -6,7 +6,7 @@ export PATH="$repo_root/platforms/ios/tests/tools:$PATH"
 export IPHONEOS_DEPLOYMENT_TARGET=16.2
 export RUSTFLAGS="-C debuginfo=1"
 for variant in device simulator; do
-  export MSIME_TEST_VARIANT="$variant"
+  export LINGYAO_TEST_VARIANT="$variant"
   set +e
   bash "$repo_root/platforms/ios/build-native.sh" "$variant"
   result=$?

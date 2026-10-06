@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 全平台设计稿 Android 一栏的颜色令牌（浅色）。深色同名令牌在 values-night/colors.xml。宿主页面应当读主题属性（res/values/themes.xml 的 M3 角色与 ?attr/ms*），季节由 ThemeOverlay.MSIME.Season.* 叠加；这里的 ms_<季节>_* 是那几层叠加的取值，ms_* 不带季节的是基础主题（秋杉）。季节色由 settings/AppThemePalette.java 的同一套公式算出，改公式或种子时两边一起改。输入法进程不用 R，它自己从 AppThemePalette 取色。 -->
+<!-- 全平台设计稿 Android 一栏的颜色令牌（浅色）。深色同名令牌在 values-night/colors.xml。宿主页面应当读主题属性（res/values/themes.xml 的 M3 角色与 ?attr/ms*），季节由 ThemeOverlay.LINGYAO.Season.* 叠加；这里的 ms_<季节>_* 是那几层叠加的取值，ms_* 不带季节的是基础主题（秋杉）。季节色由 settings/AppThemePalette.java 的同一套公式算出，改公式或种子时两边一起改。输入法进程不用 R，它自己从 AppThemePalette 取色。 -->
 <resources>
     <!-- ==== 不随应用主题变化的中性色 ==== -->
     <color name="ms_text">#191C19</color>

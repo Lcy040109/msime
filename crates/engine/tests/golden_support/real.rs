@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use msime_engine::{
+use lingyao_engine::{
     Command, EnglishInputOptions, FrequencyAdjustmentMode, FrequencyAdjustmentOptions,
     LocalModeOptions, MixedExpressiveOptions, RuntimePaths, SchemeType, Session, SessionOptions,
     ShuangpinProfileKind,
@@ -12,7 +12,7 @@ use serde_json::{Map, Value};
 use super::diff::{diff_values, DiffOptions};
 use super::golden_dir;
 
-pub const RESOURCES_ENV: &str = "MSIME_EVAL_RESOURCES";
+pub const RESOURCES_ENV: &str = "LINGYAO_EVAL_RESOURCES";
 
 /// Candidates kept per row: the runtime's page size cap (`crates/input-runtime/src/runtime.rs:478`), the recorder's `--top` default.
 const TOP: usize = 9;
@@ -38,7 +38,7 @@ pub fn assert_real_set(file_name: &str) {
     };
     assert!(
         has_recorded_resources(&resources),
-        "{RESOURCES_ENV}={} lacks msime-pinyin.db, msime-english.db or the n-gram tables",
+        "{RESOURCES_ENV}={} lacks lingyao-pinyin.db, lingyao-english.db or the n-gram tables",
         resources.display()
     );
     let failures = replay_real_set(file_name, &resources);
@@ -83,7 +83,7 @@ pub fn replay_real_set(file_name: &str, resources: &std::path::Path) -> Vec<Stri
     let resources = std::path::absolute(resources).unwrap();
     let mut options = SessionOptions::new(RuntimePaths::default());
     product_options(&mut options);
-    options.paths = msime_engine::prepare_runtime_paths(
+    options.paths = lingyao_engine::prepare_runtime_paths(
         &resources,
         &root.join("user"),
         &root.join("cache"),
@@ -110,8 +110,8 @@ pub fn replay_real_set(file_name: &str, resources: &std::path::Path) -> Vec<Stri
         session.reset_context();
     }
     drop(session);
-    msime_engine::flush_personal_learning();
-    msime_engine::close_cached_databases();
+    lingyao_engine::flush_personal_learning();
+    lingyao_engine::close_cached_databases();
     failures
 }
 
@@ -201,7 +201,7 @@ pub fn row_json(
     input: &str,
     gold: &str,
     handled: bool,
-    session: &msime_engine::Session,
+    session: &lingyao_engine::Session,
 ) -> Value {
     let view = session.snapshot();
     let candidates = view
@@ -234,10 +234,10 @@ pub fn row_json(
 /// Whether `path` holds the files the real sets were recorded with; lets a caller tell a wrong directory from an engine difference.
 pub fn has_recorded_resources(path: &Path) -> bool {
     [
-        msime_engine::assets::MAIN_DICTIONARY,
-        msime_engine::assets::ENGLISH_DICTIONARY,
-        msime_engine::assets::BIGRAM_TABLE,
-        msime_engine::assets::TRIGRAM_TABLE,
+        lingyao_engine::assets::MAIN_DICTIONARY,
+        lingyao_engine::assets::ENGLISH_DICTIONARY,
+        lingyao_engine::assets::BIGRAM_TABLE,
+        lingyao_engine::assets::TRIGRAM_TABLE,
     ]
     .iter()
     .all(|name| path.join(name).is_file())

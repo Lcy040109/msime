@@ -3,8 +3,8 @@
 #include <cassert>
 #include <string>
 
-using msime::linux_host::JapaneseConversion;
-using Action = msime::linux_host::JapaneseConversion::Action;
+using lingyao::linux_host::JapaneseConversion;
+using Action = lingyao::linux_host::JapaneseConversion::Action;
 
 int main()
 {
@@ -69,7 +69,7 @@ int main()
 
     // A lone Fallback row is the raw text the Engine commits on Space, so there is nothing to convert.
     {
-        using msime::linux_host::kCandidateSourceFallback;
+        using lingyao::linux_host::kCandidateSourceFallback;
         JapaneseConversion conversion;
         assert(conversion.space("R", 1, kCandidateSourceFallback) == Action::None);
         assert(conversion.enter("R") == Action::CommitReading);

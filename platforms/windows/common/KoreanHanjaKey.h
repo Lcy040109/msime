@@ -1,10 +1,10 @@
 #pragma once
 
 #include "InputSchemeTraits.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The Hanja key of a Korean keyboard. It shares its code with VK_KANJI, so it only means Hanja while the Korean scheme is active.
 inline constexpr std::uint32_t kVirtualKeyHanja = 0x19;
 
@@ -13,7 +13,7 @@ enum class KoreanHanjaKeyKind {
   None,
   // Choose the candidate in this slot of the visible page (value is the 0-based slot).
   Select,
-  // Send this MSIME command to the session (value is the MsimeCommand).
+  // Send this LINGYAO command to the session (value is the LingyaoCommand).
   Command,
 };
 
@@ -26,28 +26,28 @@ struct KoreanHanjaKey {
 constexpr KoreanHanjaKey korean_hanja_key(std::uint32_t virtual_key, std::uint32_t text) {
   switch (virtual_key) {
   case kVirtualKeyHanja:
-    return {KoreanHanjaKeyKind::Command, MSIME_CONVERT_HANJA};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_CONVERT_HANJA};
   case 0x08: // Backspace
-    return {KoreanHanjaKeyKind::Command, MSIME_BACKSPACE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_BACKSPACE};
   case 0x1B: // Escape
-    return {KoreanHanjaKeyKind::Command, MSIME_CANCEL};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_CANCEL};
   case 0x0D: // Enter
   case 0x20: // Space
-    return {KoreanHanjaKeyKind::Command, MSIME_COMMIT_CANDIDATE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_COMMIT_CANDIDATE};
   case 0x21: // Page Up
-    return {KoreanHanjaKeyKind::Command, MSIME_PREVIOUS_PAGE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_PREVIOUS_PAGE};
   case 0x22: // Page Down
-    return {KoreanHanjaKeyKind::Command, MSIME_NEXT_PAGE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_NEXT_PAGE};
   case 0x23: // End
-    return {KoreanHanjaKeyKind::Command, MSIME_LAST_CANDIDATE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_LAST_CANDIDATE};
   case 0x24: // Home
-    return {KoreanHanjaKeyKind::Command, MSIME_FIRST_CANDIDATE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_FIRST_CANDIDATE};
   case 0x25: // Left
   case 0x26: // Up
-    return {KoreanHanjaKeyKind::Command, MSIME_PREVIOUS_CANDIDATE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_PREVIOUS_CANDIDATE};
   case 0x27: // Right
   case 0x28: // Down
-    return {KoreanHanjaKeyKind::Command, MSIME_NEXT_CANDIDATE};
+    return {KoreanHanjaKeyKind::Command, LINGYAO_NEXT_CANDIDATE};
   default:
     break;
   }
@@ -63,7 +63,7 @@ constexpr bool is_korean_hanja_list_key(std::uint32_t virtual_key, std::uint32_t
 
 inline constexpr std::uint32_t kVirtualKeyDown = 0x28;
 
-// The unmodified key that sends MSIME_OPEN_CANDIDATE_LIST while a scheme with an openable list (scheme::OpensCandidateList) composes. Korean's is the Hanja key, which opens a closed list and closes an open one. Zhuyin's is Down on a closed list, libchewing's key for it and the one macOS uses; once its list is open Down moves the highlight like any list key. The Zhuyin list opens from Space as well, but that is the first tone the Engine spells, so it goes on as a character. Every other scheme has no such key.
+// The unmodified key that sends LINGYAO_OPEN_CANDIDATE_LIST while a scheme with an openable list (scheme::OpensCandidateList) composes. Korean's is the Hanja key, which opens a closed list and closes an open one. Zhuyin's is Down on a closed list, libchewing's key for it and the one macOS uses; once its list is open Down moves the highlight like any list key. The Zhuyin list opens from Space as well, but that is the first tone the Engine spells, so it goes on as a character. Every other scheme has no such key.
 constexpr bool opens_candidate_list(int scheme, std::uint32_t virtual_key, bool list_open) {
   if (scheme == scheme::Korean)
     return virtual_key == kVirtualKeyHanja;
@@ -71,4 +71,4 @@ constexpr bool opens_candidate_list(int scheme, std::uint32_t virtual_key, bool 
     return virtual_key == kVirtualKeyDown && !list_open;
   return false;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

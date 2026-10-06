@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "java/app/msime/android/keyboard/KeyboardIconPaths.java"
+OUTPUT = ROOT / "java/app/lingyao/android/keyboard/KeyboardIconPaths.java"
 
 FILL = "FILL"
 STROKE = "STROKE"
@@ -297,7 +297,7 @@ def render() -> str:
     out: list[str] = []
     out.append("// 由 platforms/android/scripts/generate_keyboard_icons.py 生成，不要手工编辑；改图标请改脚本里的 ICONS 表再重新运行。")
     out.append("// 来源：设计令牌 §6.2（工具栏 Material Icons）、§6.3（按键描边图标）、§6.4（功能面板描边图标），viewBox 0 0 24 24；设计未给图标的几项是同网格的 Lucide 风格补充。弧线已在脚本里转成三次贝塞尔。")
-    out.append("package app.msime.android;")
+    out.append("package app.lingyao.android;")
     out.append("")
     out.append("import android.graphics.Canvas;")
     out.append("import android.graphics.Paint;")

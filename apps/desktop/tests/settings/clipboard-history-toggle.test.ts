@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useClipboardHistoryToggle, type Preferences } from "@msime/ui";
+import { useClipboardHistoryToggle, type Preferences } from "@lingyao/ui";
 
 const draft = {
   scheme: "quanpin",

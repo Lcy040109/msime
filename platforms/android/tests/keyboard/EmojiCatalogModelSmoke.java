@@ -1,4 +1,4 @@
-import app.msime.android.EmojiCatalogModel;
+import app.lingyao.android.EmojiCatalogModel;
 import java.util.ArrayList;
 import java.util.List;
 

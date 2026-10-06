@@ -1,4 +1,4 @@
-import app.msime.android.DictionaryCollectionsStore;
+import app.lingyao.android.DictionaryCollectionsStore;
 import java.util.List;
 
 public final class DictionaryCollectionsStoreSmoke {

@@ -6,12 +6,12 @@ iOS 与 macOS 的同类文档是 [ios-parity.md](ios-parity.md) 和 [macos-parit
 
 ## 范围与基线
 
-迁移的目标是 MSIME-Apple 的完整功能，而不是能编译的子集。公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态仍归 C++ Engine；平台特性按 HarmonyOS 自身的机制适配，不照搬来源的实现形态。
+迁移的目标是 LINGYAO-Apple 的完整功能，而不是能编译的子集。公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态仍归 C++ Engine；平台特性按 HarmonyOS 自身的机制适配，不照搬来源的实现形态。
 
 比对在固定对象上进行，便于复核：
 
-- 来源：`metasequoiaime/MSIME-Apple`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
-- 目标：`Lcy040109/msime` 的 `develop`。
+- 来源：`metasequoiaime/LINGYAO-Apple`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
+- 目标：`Lcy040109/lingyao` 的 `develop`。
 
 来源入口是该检出的 `platforms/ios/` 与 `shared/`。HarmonyOS 的对照面是 `platforms/harmony/entry/src/main/ets`、`apps/harmony/src` 与它渲染的 `packages/ui/src`——鸿蒙的设置界面就是那份共享 React 页，所以对照面必须把它算进来，只比 ArkTS 会把一整层功能误判成缺失。
 
@@ -19,7 +19,7 @@ iOS 与 macOS 的同类文档是 [ios-parity.md](ios-parity.md) 和 [macos-parit
 
 最有信号的一条轴不是文件也不是符号，而是 `SettingsClient`：共享设置页按宿主声明的能力决定画什么，所以「别的宿主提供而 Harmony 不提供的成员」就是「同一份页面在鸿蒙上少的那几块」。差集要把三方都算进来——`packages/ui/src/index.tsx` 的 `SettingsClient` 成员、桌面宿主、以及 `apps/desktop/src/core/mobile-host-services.ts`（Android 与 iOS 两个移动宿主共用）——只拿移动宿主做基线会漏掉桌面独有的 20 个成员。
 
-鸿蒙没有提供的 21 个成员逐条分类如下，**没有一个是 MSIME-Apple iOS 有而鸿蒙缺的功能**：
+鸿蒙没有提供的 21 个成员逐条分类如下，**没有一个是 LINGYAO-Apple iOS 有而鸿蒙缺的功能**：
 
 | 成员 | 判定 |
 | --- | --- |
@@ -32,7 +32,7 @@ iOS 与 macOS 的同类文档是 [ios-parity.md](ios-parity.md) 和 [macos-parit
 | `resetLearnedData` | 共享 C ABI 对移动端明确返回 `learned-data reset is unavailable on mobile` |
 | `clipboard` | 设置页里的剪贴板历史列表。iOS 与 Android 也都不提供——Apple 的剪贴板管理在键盘的 `KeyboardClipboardView` 里，对应本宿主的 `SURFACE_CLIPBOARD` |
 | `resolveFontFamilies` | 候选字体预览的字族解析。iOS 的 `candidate_font_controls` 为 false，根本不显示候选字体控件；本宿主与 Android 一致 |
-| `loadDefaultPreferences`、`openThirdPartyLicenses` | 「恢复默认设置」与第三方许可。MSIME-Apple 的 iOS 上都不存在（iOS 的「恢复默认」只作用于皮肤设计和键盘布局），属桌面功能 |
+| `loadDefaultPreferences`、`openThirdPartyLicenses` | 「恢复默认设置」与第三方许可。LINGYAO-Apple 的 iOS 上都不存在（iOS 的「恢复默认」只作用于皮肤设计和键盘布局），属桌面功能 |
 
 这条轴的好处是它不会因为措辞不同而误报，坏处是它只看得见「页面级」的缺失：一整块没有会被抓到，一个区块里少一节不会。
 
@@ -70,7 +70,7 @@ iOS 与 macOS 的同类文档是 [ios-parity.md](ios-parity.md) 和 [macos-parit
 
 前三条轴比的都是「有没有这个东西」——页面、文案、面板、调用点。全都通过之后仍有一类东西看不见：**同一个东西在两边行为不同**。文件在、接线在、测试绿，但做的事不一样。
 
-这一轴的做法是把 MSIME-Apple 自己的测试套件当规格读：`platforms/ios/{KeyboardTests,ServiceTests,tests}` 与 `shared/backend/Tests` 共 232 个 `func test*`、1276 条断言，函数名本身就是行为规格；挑出属于键盘宿主（而非共享设置 UI、而非 Engine）的那些，逐个去鸿蒙侧找对应实现，对不上的再读来源的测试体。成本高于前三条，但它是唯一能看见「行为不同」的。
+这一轴的做法是把 LINGYAO-Apple 自己的测试套件当规格读：`platforms/ios/{KeyboardTests,ServiceTests,tests}` 与 `shared/backend/Tests` 共 232 个 `func test*`、1276 条断言，函数名本身就是行为规格；挑出属于键盘宿主（而非共享设置 UI、而非 Engine）的那些，逐个去鸿蒙侧找对应实现，对不上的再读来源的测试体。成本高于前三条，但它是唯一能看见「行为不同」的。
 
 绝大多数直接对得上：`CandidateChipsNeverWrapToASecondLine` 对 `CandidateWrapPolicy`、`SpaceCursorMovementAccumulatesDistanceAndReverses` 对 `SpaceCursorMovement`、`WubiCandidatesCarryAndShowTheCodeLeftToType` 对 `WubiCodeHintPolicy`、`SchemeGridHasFourColumnsAtNarrowAndWideSizes` 在装机运行的截图里就是四列。对不上的逐条查实并修掉，全部是「三道机械门禁都抓不到」的那种——文件在、接线在、单测绿，缺的是一个本该发生却没发生的行为：
 

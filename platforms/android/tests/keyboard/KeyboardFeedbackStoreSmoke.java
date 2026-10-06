@@ -1,6 +1,6 @@
-package app.msime.android;
+package app.lingyao.android;
 
-import app.msime.android.KeyboardFeedbackPreferences.HapticStrength;
+import app.lingyao.android.KeyboardFeedbackPreferences.HapticStrength;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,14 +1,14 @@
 import Foundation
 import CoreFoundation
 
-private typealias MSIMEVocabularyByte = UInt8
+private typealias LINGYAOVocabularyByte = UInt8
 
-@_silgen_name("msime_client_vocabulary_review")
-private func msimeClientVocabularyReview(
-  _ request: UnsafePointer<MSIMEVocabularyByte>?, _ length: UInt
+@_silgen_name("lingyao_client_vocabulary_review")
+private func lingyaoClientVocabularyReview(
+  _ request: UnsafePointer<LINGYAOVocabularyByte>?, _ length: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientVocabularyStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientVocabularyStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 struct VocabularyWordbook: Equatable, Identifiable {
   var id: String
@@ -68,7 +68,7 @@ struct VocabularyReviewStore {
   init(directory: URL? = nil, resources: URL? = PersonalDictionaryBridge.packagedResources) {
     root = directory ?? FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: InputSchemePreference.appGroupIdentifier)?
-      .appendingPathComponent("MSIME", isDirectory: true)
+      .appendingPathComponent("LINGYAO", isDirectory: true)
       ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     self.resources = resources ?? root
   }
@@ -132,12 +132,12 @@ struct VocabularyReviewStore {
       "action": action,
     ])
     let pointer = request.withUnsafeBytes { bytes in
-      msimeClientVocabularyReview(
-        bytes.bindMemory(to: MSIMEVocabularyByte.self).baseAddress, UInt(request.count))
+      lingyaoClientVocabularyReview(
+        bytes.bindMemory(to: LINGYAOVocabularyByte.self).baseAddress, UInt(request.count))
     }
     guard let pointer else { throw Failure.unavailable }
     let response = String(cString: pointer)
-    msimeClientVocabularyStringFree(pointer)
+    lingyaoClientVocabularyStringFree(pointer)
     guard let data = response.data(using: .utf8),
           let envelope = try JSONSerialization.jsonObject(with: data) as? [String: Any]
     else { throw Failure.unavailable }

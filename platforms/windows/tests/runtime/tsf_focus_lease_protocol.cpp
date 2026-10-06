@@ -2,20 +2,20 @@
 #include <cassert>
 
 int main() {
-  using msime::windows::TsfFocusLeaseRequest;
-  using msime::windows::valid_tsf_focus_lease_request;
+  using lingyao::windows::TsfFocusLeaseRequest;
+  using lingyao::windows::valid_tsf_focus_lease_request;
   TsfFocusLeaseRequest request;
   request.client = 7;
   request.epoch = 11;
   request.token = 19;
   assert(valid_tsf_focus_lease_request(request));
   const auto frame = encode_tsf_focus_lease(request);
-  const auto decoded = msime::windows::decode_tsf_focus_lease(frame);
+  const auto decoded = lingyao::windows::decode_tsf_focus_lease(frame);
   assert(valid_tsf_focus_lease_request(decoded));
-  assert(msime::windows::matches_tsf_focus_lease(decoded, 7, 11, 19));
-  assert(!msime::windows::matches_tsf_focus_lease(decoded, 7, 11, 20));
-  assert(!msime::windows::matches_tsf_focus_lease(decoded, 8, 11, 19));
-  msime::windows::TsfFocusLeaseAuthenticator authenticator(7, 11, 19);
+  assert(lingyao::windows::matches_tsf_focus_lease(decoded, 7, 11, 19));
+  assert(!lingyao::windows::matches_tsf_focus_lease(decoded, 7, 11, 20));
+  assert(!lingyao::windows::matches_tsf_focus_lease(decoded, 8, 11, 19));
+  lingyao::windows::TsfFocusLeaseAuthenticator authenticator(7, 11, 19);
   assert(authenticator.authenticate(frame));
   authenticator.update(7, 11, 20);
   assert(!authenticator.authenticate(frame));
@@ -36,7 +36,7 @@ int main() {
   const auto complete_frame = encode_tsf_focus_lease(TsfFocusLeaseRequest{TsfFocusLeaseRequest::magic,
                                                                             TsfFocusLeaseRequest::version,
                                                                             0, 7, 11, 19});
-  msime::windows::TsfFocusLeaseFrameAssembler assembler;
+  lingyao::windows::TsfFocusLeaseFrameAssembler assembler;
   assert(!assembler.complete() && assembler.size() == 0);
   assert(assembler.append(nullptr, 0));
   assert(!assembler.append(nullptr, 1));

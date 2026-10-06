@@ -23,7 +23,7 @@ void contains(const std::string &text, const std::string &needle,
 }
 } // namespace
 
-// Run with the path to installer/msime_setup.iss. Read the actual invocation,
+// Run with the path to installer/lingyao_setup.iss. Read the actual invocation,
 // not a duplicated argument constant, and check it against the Server parser.
 int main(int argc, char **argv) {
   try {
@@ -50,9 +50,9 @@ int main(int argc, char **argv) {
         const std::wstring argument(parameter.begin(), parameter.end());
         const wchar_t *arguments[] = {L"LingyaoImeServer.exe",
                                       argument.c_str()};
-        const auto parsed = msime::windows::parse_server_arguments(
+        const auto parsed = lingyao::windows::parse_server_arguments(
             parameter.empty() ? 1 : 2, arguments);
-        if (parsed.kind != msime::windows::ServerLaunchKind::Managed ||
+        if (parsed.kind != lingyao::windows::ServerLaunchKind::Managed ||
             !parsed.config.empty())
           throw std::runtime_error(
               "Installer must launch Server in managed mode");
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
              "Data directory may contain another edition's data directory");
     contains(validation, "Overlap := OtherEditionDataDirAround(Directory);",
              "Data directory may sit inside another edition's data directory");
-    contains(validation, "'msime-write-probe-' + IntToStr(Index)",
+    contains(validation, "'lingyao-write-probe-' + IntToStr(Index)",
              "Fixed probe name can overwrite an existing user file");
     contains(validation, "SaveStringToFile(ProbePath, 'probe', False)",
              "Data-directory writability is not checked before installation");
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
     // The installer starts the Server with --production, which is not a Watchdog launch; the Server therefore brings its Watchdog back when TSF, not the Watchdog, revives it.
     const wchar_t *production[] = {L"LingyaoImeServer.exe",
                                    L"--production"};
-    if (msime::windows::parse_server_arguments(2, production).supervised)
+    if (lingyao::windows::parse_server_arguments(2, production).supervised)
       throw std::runtime_error(
           "A TSF-started Server would not restore its Watchdog");
     std::cout << "Installer launch and data-directory contracts passed\n";

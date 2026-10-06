@@ -10,7 +10,7 @@
 #include "Ipc.h"
 #include "../HostOptionsPaths.h"
 #include "../../common/InputSchemeTraits.h"
-#include <msime_client.h>
+#include <lingyao_client.h>
 #include <nlohmann/json.hpp>
 #include <utf8cpp/utf8.h>
 #include <fmt/xchar.h>
@@ -21,21 +21,21 @@ namespace FanyUtils
 {
 std::string GetIMEDataDirPath()
 {
-    return msime::tsf::default_state_directory();
+    return lingyao::tsf::default_state_directory();
 }
 
 namespace
 {
 std::optional<nlohmann::json> ReadSharedPreferences()
 {
-    const std::string directory = msime::tsf::default_state_directory();
+    const std::string directory = lingyao::tsf::default_state_directory();
     if (directory.empty())
     {
         return std::nullopt;
     }
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        msime_client_load_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size()),
-        msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        lingyao_client_load_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size()),
+        lingyao_client_string_free);
     if (!raw)
     {
         return std::nullopt;
@@ -114,8 +114,8 @@ int ReadConfiguredRunningScheme()
             lastChinese = last->get<std::string>();
         }
     }
-    msime::windows::scheme::LanguageDictionaryPresence installed;
-    const auto options = nlohmann::json::parse(msime::tsf::default_host_options_json(), nullptr, false);
+    lingyao::windows::scheme::LanguageDictionaryPresence installed;
+    const auto options = nlohmann::json::parse(lingyao::tsf::default_host_options_json(), nullptr, false);
     if (options.is_object())
     {
         const auto directory = options.find("language_dictionaries");
@@ -123,12 +123,12 @@ int ReadConfiguredRunningScheme()
         {
             const auto path = std::filesystem::u8path(directory->get<std::string>());
             std::error_code ec;
-            installed.cantonese = std::filesystem::is_regular_file(path / "msime-cantonese.db", ec);
-            installed.zhuyin = std::filesystem::is_regular_file(path / "msime-zhuyin.db", ec);
-            installed.stroke = std::filesystem::is_regular_file(path / "msime-stroke.db", ec);
+            installed.cantonese = std::filesystem::is_regular_file(path / "lingyao-cantonese.db", ec);
+            installed.zhuyin = std::filesystem::is_regular_file(path / "lingyao-zhuyin.db", ec);
+            installed.stroke = std::filesystem::is_regular_file(path / "lingyao-stroke.db", ec);
         }
     }
-    return msime::windows::scheme::effective_scheme(configured, lastChinese, installed);
+    return lingyao::windows::scheme::effective_scheme(configured, lastChinese, installed);
 }
 
 BOOL ReadConfiguredJapaneseInputMode()

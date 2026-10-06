@@ -10,7 +10,7 @@ private enum DesktopPlatform: String, CaseIterable, Identifiable {
   var repository: String {
     // Desktop installers are published from the shared client repository. The
     // platform selector changes the guidance, not the ownership of the release.
-    "msime"
+    "lingyao"
   }
   var releaseURL: URL { URL(string: "https://github.com/metasequoiaime/\(repository)/releases")! }
   var steps: [String] {
@@ -83,7 +83,7 @@ struct AboutView: View {
     List {
       Section {
         VStack(spacing: 12) {
-          Image("MSIMELogo").resizable().scaledToFit().frame(width: 72, height: 72)
+          Image("LINGYAOLogo").resizable().scaledToFit().frame(width: 72, height: 72)
             .accessibilityHidden(true)
           Text("灵耀输入法").font(.title2.bold())
           Text("让输入更自然").foregroundStyle(.secondary)

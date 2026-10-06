@@ -1,132 +1,132 @@
 import CoreFoundation
 import Foundation
 
-private typealias MSIMEByte = UInt8
+private typealias LINGYAOByte = UInt8
 
-@_silgen_name("msime_client_prepare_host")
-private func msimeClientPrepareHost(_ options: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_create")
-private func msimeClientCreate(_ options: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_destroy")
-private func msimeClientDestroy(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_focus")
-private func msimeClientFocus(_ session: UInt64, _ focused: Bool) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
-@_silgen_name("msime_client_character")
-private func msimeClientCharacter(_ session: UInt64, _ value: MSIMEByte, _ shift: Bool) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_punctuation")
-private func msimeClientPunctuation(_ session: UInt64, _ value: MSIMEByte) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_punctuation_with_context")
-private func msimeClientPunctuationWithContext(
-  _ session: UInt64, _ value: MSIMEByte, _ preceding: UInt32
+@_silgen_name("lingyao_client_prepare_host")
+private func lingyaoClientPrepareHost(_ options: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_create")
+private func lingyaoClientCreate(_ options: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_destroy")
+private func lingyaoClientDestroy(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_focus")
+private func lingyaoClientFocus(_ session: UInt64, _ focused: Bool) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_character")
+private func lingyaoClientCharacter(_ session: UInt64, _ value: LINGYAOByte, _ shift: Bool) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_punctuation")
+private func lingyaoClientPunctuation(_ session: UInt64, _ value: LINGYAOByte) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_punctuation_with_context")
+private func lingyaoClientPunctuationWithContext(
+  _ session: UInt64, _ value: LINGYAOByte, _ preceding: UInt32
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_command")
-private func msimeClientCommand(_ session: UInt64, _ command: UInt32) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_reset_cache")
-private func msimeClientResetCache(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_select")
-private func msimeClientSelect(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_select_any_candidate")
-private func msimeClientSelectAnyCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_select_edge")
-private func msimeClientSelectEdge(_ session: UInt64, _ generation: UInt64, _ index: UInt, _ edge: UInt8) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_pin_candidate")
-private func msimeClientPinCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_remove_candidate")
-private func msimeClientRemoveCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_fix_candidate_position")
-private func msimeClientFixCandidatePosition(_ session: UInt64, _ generation: UInt64, _ index: UInt, _ position: UInt8) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_clear_candidate_position")
-private func msimeClientClearCandidatePosition(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_balance_paired_punctuation_after_auto_close")
-private func msimeClientBalancePairedPunctuationAfterAutoClose(_ session: UInt64, _ opening: MSIMEByte) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_smart_punctuation_arm")
-private func msimeClientSmartPunctuationArm(_ session: UInt64, _ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_smart_punctuation_decide")
-private func msimeClientSmartPunctuationDecide(_ session: UInt64, _ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_shuangpin_key_hints")
-private func msimeClientShuangpinKeyHints(_ profile: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_choose_nine_key_spelling")
-private func msimeClientChooseNineKeySpelling(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_set_nine_key_mode")
-private func msimeClientSetNineKeyMode(_ session: UInt64, _ enabled: Bool) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_set_chinese_punctuation")
-private func msimeClientSetChinesePunctuation(_ session: UInt64, _ enabled: Bool) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_set_ai_credential")
-private func msimeClientSetAICredential(_ session: UInt64, _ token: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_set_character_width")
-private func msimeClientSetCharacterWidth(_ session: UInt64, _ fullwidth: Bool) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_update_preferences")
-private func msimeClientUpdatePreferences(_ session: UInt64, _ snapshot: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_load_preferences")
-private func msimeClientLoadPreferences(_ directory: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_save_preferences")
-private func msimeClientSavePreferences(
-  _ directory: UnsafePointer<MSIMEByte>?, _ directoryLength: UInt, _ expectedRevision: UInt64,
-  _ snapshot: UnsafePointer<MSIMEByte>?, _ snapshotLength: UInt
+@_silgen_name("lingyao_client_command")
+private func lingyaoClientCommand(_ session: UInt64, _ command: UInt32) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_reset_cache")
+private func lingyaoClientResetCache(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_select")
+private func lingyaoClientSelect(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_select_any_candidate")
+private func lingyaoClientSelectAnyCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_select_edge")
+private func lingyaoClientSelectEdge(_ session: UInt64, _ generation: UInt64, _ index: UInt, _ edge: UInt8) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_pin_candidate")
+private func lingyaoClientPinCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_remove_candidate")
+private func lingyaoClientRemoveCandidate(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_fix_candidate_position")
+private func lingyaoClientFixCandidatePosition(_ session: UInt64, _ generation: UInt64, _ index: UInt, _ position: UInt8) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_clear_candidate_position")
+private func lingyaoClientClearCandidatePosition(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_balance_paired_punctuation_after_auto_close")
+private func lingyaoClientBalancePairedPunctuationAfterAutoClose(_ session: UInt64, _ opening: LINGYAOByte) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_smart_punctuation_arm")
+private func lingyaoClientSmartPunctuationArm(_ session: UInt64, _ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_smart_punctuation_decide")
+private func lingyaoClientSmartPunctuationDecide(_ session: UInt64, _ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_shuangpin_key_hints")
+private func lingyaoClientShuangpinKeyHints(_ profile: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_choose_nine_key_spelling")
+private func lingyaoClientChooseNineKeySpelling(_ session: UInt64, _ generation: UInt64, _ index: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_set_nine_key_mode")
+private func lingyaoClientSetNineKeyMode(_ session: UInt64, _ enabled: Bool) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_set_chinese_punctuation")
+private func lingyaoClientSetChinesePunctuation(_ session: UInt64, _ enabled: Bool) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_set_ai_credential")
+private func lingyaoClientSetAICredential(_ session: UInt64, _ token: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_set_character_width")
+private func lingyaoClientSetCharacterWidth(_ session: UInt64, _ fullwidth: Bool) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_update_preferences")
+private func lingyaoClientUpdatePreferences(_ session: UInt64, _ snapshot: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_load_preferences")
+private func lingyaoClientLoadPreferences(_ directory: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_save_preferences")
+private func lingyaoClientSavePreferences(
+  _ directory: UnsafePointer<LINGYAOByte>?, _ directoryLength: UInt, _ expectedRevision: UInt64,
+  _ snapshot: UnsafePointer<LINGYAOByte>?, _ snapshotLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_view")
-private func msimeClientView(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_all_candidates")
-private func msimeClientAllCandidates(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_english_completions")
-private func msimeClientEnglishCompletions(
-  _ session: UInt64, _ prefix: UnsafePointer<MSIMEByte>?, _ prefixLength: UInt, _ limit: UInt
+@_silgen_name("lingyao_client_view")
+private func lingyaoClientView(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_all_candidates")
+private func lingyaoClientAllCandidates(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_english_completions")
+private func lingyaoClientEnglishCompletions(
+  _ session: UInt64, _ prefix: UnsafePointer<LINGYAOByte>?, _ prefixLength: UInt, _ limit: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_candidate_gloss_request")
-private func msimeClientCandidateGlossRequest(
-  _ request: UnsafePointer<MSIMEByte>?, _ requestLength: UInt,
-  _ resources: UnsafePointer<MSIMEByte>?, _ resourcesLength: UInt
+@_silgen_name("lingyao_client_candidate_gloss_request")
+private func lingyaoClientCandidateGlossRequest(
+  _ request: UnsafePointer<LINGYAOByte>?, _ requestLength: UInt,
+  _ resources: UnsafePointer<LINGYAOByte>?, _ resourcesLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_emoji_catalog_request")
-private func msimeClientEmojiCatalogRequest(
-  _ request: UnsafePointer<MSIMEByte>?, _ requestLength: UInt,
-  _ resources: UnsafePointer<MSIMEByte>?, _ resourcesLength: UInt
+@_silgen_name("lingyao_client_emoji_catalog_request")
+private func lingyaoClientEmojiCatalogRequest(
+  _ request: UnsafePointer<LINGYAOByte>?, _ requestLength: UInt,
+  _ resources: UnsafePointer<LINGYAOByte>?, _ resourcesLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_apply_translations")
-private func msimeClientApplyTranslations(
+@_silgen_name("lingyao_client_apply_translations")
+private func lingyaoClientApplyTranslations(
   _ session: UInt64, _ generation: UInt64,
-  _ translations: UnsafePointer<MSIMEByte>?, _ translationsLength: UInt
+  _ translations: UnsafePointer<LINGYAOByte>?, _ translationsLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_online_query")
-private func msimeClientOnlineQuery(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_cloud_request_url")
-private func msimeClientCloudRequestURL(_ query: UnsafePointer<MSIMEByte>?, _ queryLength: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_apply_cloud_response")
-private func msimeClientApplyCloudResponse(
-  _ session: UInt64, _ query: UnsafePointer<MSIMEByte>?, _ queryLength: UInt,
-  _ body: UnsafePointer<MSIMEByte>?, _ bodyLength: UInt
+@_silgen_name("lingyao_client_online_query")
+private func lingyaoClientOnlineQuery(_ session: UInt64) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_cloud_request_url")
+private func lingyaoClientCloudRequestURL(_ query: UnsafePointer<LINGYAOByte>?, _ queryLength: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_apply_cloud_response")
+private func lingyaoClientApplyCloudResponse(
+  _ session: UInt64, _ query: UnsafePointer<LINGYAOByte>?, _ queryLength: UInt,
+  _ body: UnsafePointer<LINGYAOByte>?, _ bodyLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_ai_request_for_query")
-private func msimeClientAIRequestForQuery(
-  _ session: UInt64, _ query: UnsafePointer<MSIMEByte>?, _ queryLength: UInt
+@_silgen_name("lingyao_client_ai_request_for_query")
+private func lingyaoClientAIRequestForQuery(
+  _ session: UInt64, _ query: UnsafePointer<LINGYAOByte>?, _ queryLength: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_parse_ai_response")
-private func msimeClientParseAIResponse(_ body: UnsafePointer<MSIMEByte>?, _ length: UInt, _ limit: UInt8) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_tencent_translation_http_request")
-private func msimeClientTencentTranslationHTTPRequest(_ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_niutrans_translation_http_request")
-private func msimeClientNiuTransTranslationHTTPRequest(_ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_custom_translation_http_request")
-private func msimeClientCustomTranslationHTTPRequest(_ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_parse_tencent_translation_response")
-private func msimeClientParseTencentTranslationResponse(_ body: UnsafePointer<MSIMEByte>?, _ length: UInt, _ expected: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_parse_niutrans_translation_response")
-private func msimeClientParseNiuTransTranslationResponse(_ body: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_parse_custom_translation_response")
-private func msimeClientParseCustomTranslationResponse(_ body: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_apply_online_candidates")
-private func msimeClientApplyOnlineCandidates(
-  _ session: UInt64, _ query: UnsafePointer<MSIMEByte>?, _ queryLength: UInt,
-  _ candidates: UnsafePointer<MSIMEByte>?, _ candidatesLength: UInt, _ source: UInt8
+@_silgen_name("lingyao_client_parse_ai_response")
+private func lingyaoClientParseAIResponse(_ body: UnsafePointer<LINGYAOByte>?, _ length: UInt, _ limit: UInt8) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_tencent_translation_http_request")
+private func lingyaoClientTencentTranslationHTTPRequest(_ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_niutrans_translation_http_request")
+private func lingyaoClientNiuTransTranslationHTTPRequest(_ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_custom_translation_http_request")
+private func lingyaoClientCustomTranslationHTTPRequest(_ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_parse_tencent_translation_response")
+private func lingyaoClientParseTencentTranslationResponse(_ body: UnsafePointer<LINGYAOByte>?, _ length: UInt, _ expected: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_parse_niutrans_translation_response")
+private func lingyaoClientParseNiuTransTranslationResponse(_ body: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_parse_custom_translation_response")
+private func lingyaoClientParseCustomTranslationResponse(_ body: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_apply_online_candidates")
+private func lingyaoClientApplyOnlineCandidates(
+  _ session: UInt64, _ query: UnsafePointer<LINGYAOByte>?, _ queryLength: UInt,
+  _ candidates: UnsafePointer<LINGYAOByte>?, _ candidatesLength: UInt, _ source: UInt8
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_dictionary")
-private func msimeClientDictionary(_ request: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_snapshot_version")
-private func msimeClientSnapshotVersion(_ options: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_snapshot_activate")
-private func msimeClientSnapshotActivate(_ handle: UInt64, _ expected: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_dictionary")
+private func lingyaoClientDictionary(_ request: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_snapshot_version")
+private func lingyaoClientSnapshotVersion(_ options: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_snapshot_activate")
+private func lingyaoClientSnapshotActivate(_ handle: UInt64, _ expected: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
 enum LingyaoCandidateAction: Equatable {
   /// `position` is 1...5, the range the shared layer accepts and the desktop candidate menu offers.
@@ -251,7 +251,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     self.appliedFuzzyPinyinRules = nil
     do {
       let bootstrap = Self.bootstrapOptions(resources: resources, stateRoot: stateRoot)
-      options = try Self.callOptions(msimeClientPrepareHost,
+      options = try Self.callOptions(lingyaoClientPrepareHost,
                                      bootstrap)
       self.stateRoot = options["preferences_directory"] as? String
         ?? bootstrap["state_root"] as? String
@@ -271,7 +271,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   }
 
   deinit {
-    if handle != 0 { _ = try? Self.decode(msimeClientDestroy(handle)) }
+    if handle != 0 { _ = try? Self.decode(lingyaoClientDestroy(handle)) }
   }
 
   /// The directory this session reads its preference document from; nil when preparing the runtime failed.
@@ -307,8 +307,8 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
       let snapshot: [String: Any]?
       do {
         snapshot = try path.withUnsafeBytes { bytes in
-          try LingyaoInputSessionBridge.decode(msimeClientLoadPreferences(
-            bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(path.count))) as? [String: Any]
+          try LingyaoInputSessionBridge.decode(lingyaoClientLoadPreferences(
+            bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(path.count))) as? [String: Any]
         }
       } catch {
         snapshot = nil
@@ -363,7 +363,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard handle != 0, !NSDictionary(dictionary: next).isEqual(to: applied) else { return }
     revision &+= 1
     let snapshot: [String: Any] = ["format_version": 1, "revision": revision, "preferences": next]
-    _ = try? Self.callUpdate(msimeClientUpdatePreferences, handle, snapshot)
+    _ = try? Self.callUpdate(lingyaoClientUpdatePreferences, handle, snapshot)
   }
 
   var fuzzyPinyinRulesApplied: UInt32? { appliedFuzzyPinyinRules }
@@ -440,7 +440,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard !enabled.isEmpty else { return nil }
     let selected = enabled.contains(scheme) ? scheme : enabled[0]
     // 手写写的是本版本的默认方案（full 是全拼）：识别由平台识别器完成，手写面板背后的 Engine 只需要跑一个本版本提供的方案，否则 host-api 会把它当作本版本不含的方案回退，偏好里记的和 Engine 跑的就对不上了。
-    let engineScheme = selected == .handwriting ? MSIMEAppEdition.defaultScheme : selected.engineScheme
+    let engineScheme = selected == .handwriting ? LINGYAOAppEdition.defaultScheme : selected.engineScheme
     let layout: String
     switch selected {
     case .nineKey, .japaneseNineKey: layout = "nine_key"
@@ -506,7 +506,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   static func loadSharedPreferences(stateRoot: URL? = nil) -> [String: Any]? {
     let directory = Data(sharedStateRoot(stateRoot).utf8)
     guard !directory.isEmpty, directory.count <= 16_384 else { return nil }
-    return (try? callDirectory(msimeClientLoadPreferences, directory))?["preferences"] as? [String: Any]
+    return (try? callDirectory(lingyaoClientLoadPreferences, directory))?["preferences"] as? [String: Any]
   }
 
   /// Change fields of the shared document from the settings app.
@@ -518,7 +518,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     persistSharedPreferences(stateRoot: sharedStateRoot(stateRoot), mutate) != nil
   }
 
-  /// `msime_client_save_preferences`'s snapshot bound: large enough for a custom skin's photo.
+  /// `lingyao_client_save_preferences`'s snapshot bound: large enough for a custom skin's photo.
   private static let preferencesDocumentLimit = 1_048_576
 
   /// The App Group directory holding the shared preference document, where the keyboard also keeps its diagnostic log.
@@ -533,7 +533,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
                                                _ mutate: (inout [String: Any]) -> Void) -> UInt64? {
     let directory = Data(stateRoot.utf8)
     guard !directory.isEmpty, directory.count <= 16_384 else { return nil }
-    guard let stored = try? callDirectory(msimeClientLoadPreferences, directory),
+    guard let stored = try? callDirectory(lingyaoClientLoadPreferences, directory),
           let storedRevision = Self.strictUInt64(stored["revision"]),
           let previous = stored["preferences"] as? [String: Any] else { return nil }
     var preferences = previous
@@ -550,10 +550,10 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     do {
       saved = try directory.withUnsafeBytes { directoryBytes -> [String: Any] in
         try snapshot.withUnsafeBytes { snapshotBytes -> [String: Any] in
-          let value = try decode(msimeClientSavePreferences(
-            directoryBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(directory.count),
+          let value = try decode(lingyaoClientSavePreferences(
+            directoryBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(directory.count),
             storedRevision,
-            snapshotBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(snapshot.count)))
+            snapshotBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(snapshot.count)))
           guard let dictionary = value as? [String: Any] else {
             throw InputBridgeFailure.invalidResponse
           }
@@ -591,20 +591,20 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   func handlePunctuation(_ character: String) -> LingyaoInputSnapshot {
     guard let byte = Self.ascii(character) else { return diagnostic("标点输入无效") }
-    return dispatch { msimeClientPunctuation(handle, byte) }
+    return dispatch { lingyaoClientPunctuation(handle, byte) }
   }
 
   func handlePunctuationWithContext(_ character: String,
                                     preceding: UInt32) -> LingyaoInputSnapshot {
     guard let byte = Self.ascii(character) else { return diagnostic("标点输入无效") }
-    return dispatch { msimeClientPunctuationWithContext(handle, byte, preceding) }
+    return dispatch { lingyaoClientPunctuationWithContext(handle, byte, preceding) }
   }
 
   /// Tell the Engine the keyboard wrote the closing half of a pair it opened. Only book titles need it: the Engine nests 《 then 〈 until it sees a 》, and an auto-closed 》 never passes through it, so without this the next < would open 〈.
   @discardableResult
   func balancePairedPunctuationAfterAutoClose(opening: String) -> Bool {
     guard let byte = Self.ascii(opening), handle != 0 else { return false }
-    return (try? Self.decode(msimeClientBalancePairedPunctuationAfterAutoClose(handle, byte))) != nil
+    return (try? Self.decode(lingyaoClientBalancePairedPunctuationAfterAutoClose(handle, byte))) != nil
   }
 
   /// What the commit just made arms, if anything.
@@ -620,7 +620,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
                                   "timestamp_ms": timestampMilliseconds,
                                   "editor_generation": editorGeneration,
                                   "auto_closed_pair": autoClosedPair]
-    return (try? Self.callUpdate(msimeClientSmartPunctuationArm, handle, request)) ?? [:]
+    return (try? Self.callUpdate(lingyaoClientSmartPunctuationArm, handle, request)) ?? [:]
   }
 
   /// What this press should do about a previously armed gesture.
@@ -637,7 +637,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
                                   "editor_generation": editorGeneration,
                                   "repeat": repeatSnapshot ?? NSNull(),
                                   "space": spaceSnapshot ?? NSNull()]
-    return (try? Self.callUpdate(msimeClientSmartPunctuationDecide, handle, request)) ?? [:]
+    return (try? Self.callUpdate(lingyaoClientSmartPunctuationDecide, handle, request)) ?? [:]
   }
 
   func handleBackspace() -> LingyaoInputSnapshot { command(0) }
@@ -657,10 +657,10 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   func moveCaretToStart() -> LingyaoInputSnapshot { command(6) }
   func moveCaretToEnd() -> LingyaoInputSnapshot { command(7) }
   func deleteForward() -> LingyaoInputSnapshot { command(8) }
-  /// MSIME_CONVERT_HANJA (msime_client.h): lists the Hanja of the composing Korean syllable as candidates, or closes that list when it is open. Unhandled when nothing is composing or the composition is a lone jamo, which has no Hanja.
+  /// LINGYAO_CONVERT_HANJA (lingyao_client.h): lists the Hanja of the composing Korean syllable as candidates, or closes that list when it is open. Unhandled when nothing is composing or the composition is a lone jamo, which has no Hanja.
   func convertHanja() -> LingyaoInputSnapshot { command(16) }
   /// Drops the Engine's cached candidate lookups, which Windows does on Ctrl+Shift+Alt+C.
-  func resetCache() -> LingyaoInputSnapshot { dispatch { msimeClientResetCache(handle) } }
+  func resetCache() -> LingyaoInputSnapshot { dispatch { lingyaoClientResetCache(handle) } }
 
   func selectCandidate(at index: UInt) -> LingyaoInputSnapshot {
     guard let rows = try? currentCandidates(), rows.indices.contains(Int(index)),
@@ -673,13 +673,13 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   func selectCandidate(generation: UInt64, globalIndex: UInt64) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
-    return dispatch { msimeClientSelect(handle, generation, index) }
+    return dispatch { lingyaoClientSelect(handle, generation, index) }
   }
 
   /// Select an entry of the expanded panel. Panel positions index the Engine's whole answer, and `selectCandidate(generation:globalIndex:)` only accepts the page the strip is showing, so anything past the ninth candidate came back as stale.
   func selectAnyCandidate(generation: UInt64, globalIndex: UInt64) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
-    return dispatch { msimeClientSelectAnyCandidate(handle, generation, index) }
+    return dispatch { lingyaoClientSelectAnyCandidate(handle, generation, index) }
   }
 
   /// Whether a whole-answer candidate sits on the page the strip is showing. Pin, remove, fix and 以词定字 are page-bounded in the runtime, so the expanded panel offers them only for these entries.
@@ -703,11 +703,11 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   func selectCandidateEdge(generation: UInt64, globalIndex: UInt64, last: Bool) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
-    return dispatch { msimeClientSelectEdge(handle, generation, index, last ? 1 : 0) }
+    return dispatch { lingyaoClientSelectEdge(handle, generation, index, last ? 1 : 0) }
   }
 
   func allCandidates() throws -> [String: Any] {
-    try Self.callHandle(msimeClientAllCandidates, handle)
+    try Self.callHandle(lingyaoClientAllCandidates, handle)
   }
 
   /// Read-only English completion lookup for the word immediately before the cursor.
@@ -720,7 +720,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     let bytes = Array(prefix.utf8)
     do {
       let response: Any = try bytes.withUnsafeBufferPointer { buffer in
-        try Self.decode(msimeClientEnglishCompletions(
+        try Self.decode(lingyaoClientEnglishCompletions(
           handle, buffer.baseAddress, UInt(buffer.count), UInt(limit)))
       }
       guard let value = response as? [String: Any],
@@ -742,9 +742,9 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     }
     return try request.withUnsafeBytes { requestBytes in
       try resourceData.withUnsafeBytes { resourceBytes in
-        let value = try decode(msimeClientCandidateGlossRequest(
-          requestBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(request.count),
-          resourceBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(resourceData.count)))
+        let value = try decode(lingyaoClientCandidateGlossRequest(
+          requestBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(request.count),
+          resourceBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(resourceData.count)))
         guard let dictionary = value as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
         return dictionary
       }
@@ -761,9 +761,9 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     }
     return try request.withUnsafeBytes { requestBytes in
       try resourceData.withUnsafeBytes { resourceBytes in
-        let value = try decode(msimeClientEmojiCatalogRequest(
-          requestBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(request.count),
-          resourceBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(resourceData.count)))
+        let value = try decode(lingyaoClientEmojiCatalogRequest(
+          requestBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(request.count),
+          resourceBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(resourceData.count)))
         guard let dictionary = value as? [String: Any] else {
           throw InputBridgeFailure.invalidResponse
         }
@@ -774,8 +774,8 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   func applyTranslations(generation: UInt64, translations: Data) throws -> [String: Any] {
     try translations.withUnsafeBytes { bytes in
-      let value = try Self.decode(msimeClientApplyTranslations(
-        handle, generation, bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(translations.count)))
+      let value = try Self.decode(lingyaoClientApplyTranslations(
+        handle, generation, bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(translations.count)))
       guard let dictionary = value as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
       return dictionary
     }
@@ -785,7 +785,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   ///
   /// The document is handed back unchanged with a provider's result; the session refuses a result for a composition that has since moved on.
   func onlineQuery() -> Data? {
-    guard handle != 0, let value = try? Self.decode(msimeClientOnlineQuery(handle)),
+    guard handle != 0, let value = try? Self.decode(lingyaoClientOnlineQuery(handle)),
           let query = value as? [String: Any],
           let data = try? JSONSerialization.data(withJSONObject: query) else { return nil }
     return data
@@ -795,7 +795,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   static func cloudRequestURL(query: Data) -> URL? {
     guard !query.isEmpty, query.count <= 16_384 else { return nil }
     let value = query.withUnsafeBytes { bytes in
-      try? decode(msimeClientCloudRequestURL(bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(query.count)))
+      try? decode(lingyaoClientCloudRequestURL(bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(query.count)))
     }
     guard let text = value as? String, let url = URL(string: text), url.scheme == "https" else { return nil }
     return url
@@ -809,9 +809,9 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     }
     return try query.withUnsafeBytes { queryBytes in
       try body.withUnsafeBytes { bodyBytes in
-        guard let dictionary = try Self.decode(msimeClientApplyCloudResponse(
-          handle, queryBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(query.count),
-          bodyBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(body.count))) as? [String: Any] else {
+        guard let dictionary = try Self.decode(lingyaoClientApplyCloudResponse(
+          handle, queryBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(query.count),
+          bodyBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(body.count))) as? [String: Any] else {
           throw InputBridgeFailure.invalidResponse
         }
         return dictionary
@@ -823,8 +823,8 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   func aiRequest(query: Data) -> [String: Any]? {
     guard handle != 0, !query.isEmpty, query.count <= 16_384 else { return nil }
     return query.withUnsafeBytes { bytes in
-      (try? Self.decode(msimeClientAIRequestForQuery(
-        handle, bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(query.count)))) as? [String: Any]
+      (try? Self.decode(lingyaoClientAIRequestForQuery(
+        handle, bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(query.count)))) as? [String: Any]
     }
   }
 
@@ -832,24 +832,24 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   static func parseAIResponse(_ body: Data, limit: Int) -> [String] {
     guard !body.isEmpty, body.count <= 1_048_576, (1...10).contains(limit) else { return [] }
     return body.withUnsafeBytes { bytes in
-      (try? decode(msimeClientParseAIResponse(
-        bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(body.count), UInt8(limit)))) as? [String] ?? []
+      (try? decode(lingyaoClientParseAIResponse(
+        bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(body.count), UInt8(limit)))) as? [String] ?? []
     }
   }
 
   /// The HTTP request the shared layer builds for one translation provider (`tencent`, `niutrans` or `custom`), or nil when the provider is off or the request is invalid. The descriptor carries credentials and must never be logged.
   static func translationRequest(provider: String, _ request: [String: Any]) -> [String: Any]? {
-    let function: (UnsafePointer<MSIMEByte>?, UInt) -> UnsafeMutablePointer<CChar>?
+    let function: (UnsafePointer<LINGYAOByte>?, UInt) -> UnsafeMutablePointer<CChar>?
     switch provider {
-    case "tencent": function = msimeClientTencentTranslationHTTPRequest
-    case "niutrans": function = msimeClientNiuTransTranslationHTTPRequest
-    case "custom": function = msimeClientCustomTranslationHTTPRequest
+    case "tencent": function = lingyaoClientTencentTranslationHTTPRequest
+    case "niutrans": function = lingyaoClientNiuTransTranslationHTTPRequest
+    case "custom": function = lingyaoClientCustomTranslationHTTPRequest
     default: return nil
     }
     guard JSONSerialization.isValidJSONObject(request),
           let data = try? JSONSerialization.data(withJSONObject: request), data.count <= 16_384 else { return nil }
     return data.withUnsafeBytes { bytes in
-      (try? decode(function(bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(data.count)))) as? [String: Any]
+      (try? decode(function(bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(data.count)))) as? [String: Any]
     }
   }
 
@@ -857,18 +857,18 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   static func parseTranslationResponse(provider: String, body: Data, expected: Int) -> [String?]? {
     guard !body.isEmpty, body.count <= 1_048_576 else { return nil }
     return body.withUnsafeBytes { bytes -> [String?]? in
-      let base = bytes.bindMemory(to: MSIMEByte.self).baseAddress
+      let base = bytes.bindMemory(to: LINGYAOByte.self).baseAddress
       switch provider {
       case "tencent":
         guard (1...9).contains(expected),
-              let values = (try? decode(msimeClientParseTencentTranslationResponse(base, UInt(body.count), UInt(expected)))) as? [Any],
+              let values = (try? decode(lingyaoClientParseTencentTranslationResponse(base, UInt(body.count), UInt(expected)))) as? [Any],
               values.count == expected else { return nil }
         return values.map { $0 as? String }
       case "niutrans", "custom":
         guard expected == 1 else { return nil }
         let pointer = provider == "niutrans"
-          ? msimeClientParseNiuTransTranslationResponse(base, UInt(body.count))
-          : msimeClientParseCustomTranslationResponse(base, UInt(body.count))
+          ? lingyaoClientParseNiuTransTranslationResponse(base, UInt(body.count))
+          : lingyaoClientParseCustomTranslationResponse(base, UInt(body.count))
         guard let value = (try? decode(pointer)) as? String else { return nil }
         return [value]
       default:
@@ -886,9 +886,9 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     }
     return try query.withUnsafeBytes { queryBytes in
       try payload.withUnsafeBytes { payloadBytes in
-        guard let dictionary = try Self.decode(msimeClientApplyOnlineCandidates(
-          handle, queryBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(query.count),
-          payloadBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(payload.count), source)) as? [String: Any] else {
+        guard let dictionary = try Self.decode(lingyaoClientApplyOnlineCandidates(
+          handle, queryBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(query.count),
+          payloadBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(payload.count), source)) as? [String: Any] else {
           throw InputBridgeFailure.invalidResponse
         }
         return dictionary
@@ -902,7 +902,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   func chooseNineKeySpelling(at index: UInt) -> LingyaoInputSnapshot {
     let generation = (try? view()).flatMap { Self.strictUInt64($0["generation"]) } ?? 0
-    return dispatch { msimeClientChooseNineKeySpelling(handle, generation, index) }
+    return dispatch { lingyaoClientChooseNineKeySpelling(handle, generation, index) }
   }
 
   @discardableResult func setLearningEnabled(_ enabled: Bool) -> Bool {
@@ -940,17 +940,17 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   func switchToNineKey() -> LingyaoInputSnapshot {
     guard updatePreferences({ $0["scheme"] = "quanpin" }) else { return diagnostic("九键模式切换失败") }
     nineKeyEnabled = true
-    return dispatch { msimeClientSetNineKeyMode(handle, true) }
+    return dispatch { lingyaoClientSetNineKeyMode(handle, true) }
   }
   /// Tell the runtime the width it commits in; from then on every commit it completes arrives already converted.
   @discardableResult func setCharacterWidth(fullwidth: Bool) -> LingyaoInputSnapshot {
     self.fullwidth = fullwidth
-    return dispatch { msimeClientSetCharacterWidth(handle, fullwidth) }
+    return dispatch { lingyaoClientSetCharacterWidth(handle, fullwidth) }
   }
   /// Chinese or ASCII marks for this session, on top of the document's `chinese_punctuation`; `punctuation_lock` still wins.
   @discardableResult func setChinesePunctuation(_ enabled: Bool) -> LingyaoInputSnapshot {
     chinesePunctuation = enabled
-    return dispatch { msimeClientSetChinesePunctuation(handle, enabled) }
+    return dispatch { lingyaoClientSetChinesePunctuation(handle, enabled) }
   }
   /// Hand the runtime the AI provider key from the Keychain for this session's candidate-bar AI requests; nil clears it. The key is never written to the shared document.
   @discardableResult func setAICredential(_ token: String?) -> Bool {
@@ -962,26 +962,26 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard handle != 0 else { return false }
     let bytes = Array((aiCredential ?? "").utf8)
     let response: Any? = try? bytes.withUnsafeBufferPointer { buffer -> Any in
-      try Self.decode(msimeClientSetAICredential(handle, buffer.baseAddress, UInt(buffer.count)))
+      try Self.decode(lingyaoClientSetAICredential(handle, buffer.baseAddress, UInt(buffer.count)))
     }
     return response as? Bool == true
   }
   /// 只改 `scheme`，会话里的 `wubi_profile` 不动，所以切过去仍是当前的 86 或 98 五笔。
   func switchToWubi() -> LingyaoInputSnapshot { switchScheme("wubi", profile: nil) }
   /// 手写面板背后跑本版本的默认方案，与 `schemeMapping` 写进偏好的一致；full 是全拼。
-  func switchToHandwriting() -> LingyaoInputSnapshot { switchScheme(MSIMEAppEdition.defaultScheme, profile: nil) }
+  func switchToHandwriting() -> LingyaoInputSnapshot { switchScheme(LINGYAOAppEdition.defaultScheme, profile: nil) }
   func switchToJapanese() -> LingyaoInputSnapshot { switchScheme("japanese", profile: nil) }
   /// Korean Hangul (Dubeolsik). Switching discards an open syllable, so callers finish the composition first.
   func switchToKorean() -> LingyaoInputSnapshot { switchScheme("korean", profile: nil) }
-  /// Cantonese Jyutping. Without msime-cantonese.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed.
+  /// Cantonese Jyutping. Without lingyao-cantonese.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed.
   func switchToCantonese() -> LingyaoInputSnapshot { switchScheme("cantonese", profile: nil) }
-  /// Dachen Zhuyin with Traditional output. Without msime-zhuyin.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed. Switching discards an open conversion, so callers finish the composition first.
+  /// Dachen Zhuyin with Traditional output. Without lingyao-zhuyin.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed. Switching discards an open conversion, so callers finish the composition first.
   func switchToZhuyin() -> LingyaoInputSnapshot { switchScheme("zhuyin", profile: nil) }
   /// Vietnamese Telex and VNI, composed in place with no candidates. Switching discards an open word, so callers finish the composition first.
   func switchToVietnamese() -> LingyaoInputSnapshot { switchScheme("vietnamese", profile: nil) }
   /// 藏文 EWTS 威利转写，就地组字，没有候选。切换会丢掉正在组的音节，所以调用方先结束组字。
   func switchToTibetan() -> LingyaoInputSnapshot { switchScheme("tibetan", profile: nil) }
-  /// 笔画输入，按笔顺查单字。缺少 language-dictionaries 里的 msime-stroke.db 时运行时继续用最近一次的中文方案，所以键盘只在文件在时提供它。
+  /// 笔画输入，按笔顺查单字。缺少 language-dictionaries 里的 lingyao-stroke.db 时运行时继续用最近一次的中文方案，所以键盘只在文件在时提供它。
   func switchToStroke() -> LingyaoInputSnapshot { switchScheme("stroke", profile: nil) }
 
   func editCandidate(at index: UInt, expectedWord: String, action: LingyaoCandidateAction) -> LingyaoInputSnapshot {
@@ -1006,13 +1006,13 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard let indexValue = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
     switch action {
     case .promote:
-      return dispatch { msimeClientPinCandidate(handle, generation, indexValue) }
+      return dispatch { lingyaoClientPinCandidate(handle, generation, indexValue) }
     case .remove:
-      return dispatch { msimeClientRemoveCandidate(handle, generation, indexValue) }
+      return dispatch { lingyaoClientRemoveCandidate(handle, generation, indexValue) }
     case .fix(let position):
-      return dispatch { msimeClientFixCandidatePosition(handle, generation, indexValue, position) }
+      return dispatch { lingyaoClientFixCandidatePosition(handle, generation, indexValue, position) }
     case .clearPosition:
-      return dispatch { msimeClientClearCandidatePosition(handle, generation, indexValue) }
+      return dispatch { lingyaoClientClearCandidatePosition(handle, generation, indexValue) }
     }
   }
 
@@ -1041,8 +1041,8 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
           let profile = snapshot["shuangpin_profile"] as? String, !profile.isEmpty,
           let data = profile.data(using: .utf8) else { return [:] }
     let response = try? data.withUnsafeBytes { bytes -> Any in
-      try Self.decode(msimeClientShuangpinKeyHints(
-        bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(data.count)))
+      try Self.decode(lingyaoClientShuangpinKeyHints(
+        bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(data.count)))
     }
     return (response as? [String: String]) ?? [:]
   }
@@ -1056,7 +1056,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard !suspended else { return true }
     guard !hasComposition else { return false }
     if handle != 0 {
-      guard (try? Self.decode(msimeClientDestroy(handle))) != nil else { return false }
+      guard (try? Self.decode(lingyaoClientDestroy(handle))) != nil else { return false }
       handle = 0
     }
     suspended = true
@@ -1086,9 +1086,9 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     var requested = options
     requested["phrase_preedit"] = true
     handle = try Self.callCreateFocused(requested)
-    if nineKeyEnabled { _ = dispatch { msimeClientSetNineKeyMode(handle, true) } }
-    if fullwidth { _ = dispatch { msimeClientSetCharacterWidth(handle, true) } }
-    if let chinesePunctuation { _ = dispatch { msimeClientSetChinesePunctuation(handle, chinesePunctuation) } }
+    if nineKeyEnabled { _ = dispatch { lingyaoClientSetNineKeyMode(handle, true) } }
+    if fullwidth { _ = dispatch { lingyaoClientSetCharacterWidth(handle, true) } }
+    if let chinesePunctuation { _ = dispatch { lingyaoClientSetChinesePunctuation(handle, chinesePunctuation) } }
     if aiCredential != nil { _ = applyAICredential() }
   }
 
@@ -1097,7 +1097,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     if let initializationDiagnostic, options["user_data"] == nil {
       throw InputBridgeFailure.response(initializationDiagnostic)
     }
-    let result = try Self.callOptions(msimeClientSnapshotVersion, options)
+    let result = try Self.callOptions(lingyaoClientSnapshotVersion, options)
     guard let version = result["version"] as? String, version.utf8.count == 64,
           let generation = result["generation"] as? String,
           generation == "legacy" || UUID(uuidString: generation)?.uuidString == generation else {
@@ -1114,7 +1114,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
             "preparedOptions": try JSONSerialization.data(withJSONObject: options)]
   }
 
-  func activateDictionarySnapshot(_ snapshot: MSIMEPreparedDictionarySnapshot,
+  func activateDictionarySnapshot(_ snapshot: LINGYAOPreparedDictionarySnapshot,
                                   expectedVersion: String) throws {
     guard handle != 0 else { throw InputBridgeFailure.unavailable }
     let fields = expectedVersion.split(separator: ":", omittingEmptySubsequences: false)
@@ -1126,12 +1126,12 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     // exclusive activation lease, then recreate the session against the
     // published generation. If activation fails, restore the old session.
     let oldHandle = handle
-    _ = try? Self.decode(msimeClientDestroy(oldHandle))
+    _ = try? Self.decode(lingyaoClientDestroy(oldHandle))
     handle = 0
     do {
       let response = try expected.withUnsafeBytes { bytes in
-        try Self.decode(msimeClientSnapshotActivate(snapshot.handle,
-                                                     bytes.bindMemory(to: MSIMEByte.self).baseAddress,
+        try Self.decode(lingyaoClientSnapshotActivate(snapshot.handle,
+                                                     bytes.bindMemory(to: LINGYAOByte.self).baseAddress,
                                                      UInt(expected.count)))
       }
       _ = response
@@ -1156,7 +1156,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     action["replacement"] = replacement ?? NSNull()
     let request: [String: Any] = ["options": options, "action": action]
     let result = try withDictionaryMaintenance {
-      try Self.callOptions(msimeClientDictionary, request)
+      try Self.callOptions(lingyaoClientDictionary, request)
     }
     guard (result["applied"] as? Bool) == true else { throw InputBridgeFailure.response("个人词条未能应用") }
   }
@@ -1168,7 +1168,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     if !query.isEmpty { action["query"] = query }
     let request: [String: Any] = ["options": options, "action": action]
     var result = try withDictionaryMaintenance {
-      try Self.callOptions(msimeClientDictionary, request)
+      try Self.callOptions(lingyaoClientDictionary, request)
     }
     if let hasMore = result.removeValue(forKey: "has_more") { result["hasMore"] = hasMore }
     return result
@@ -1181,7 +1181,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
       for page in 0..<maximumPages {
         let action: [String: Any] = ["operation": "export", "kind": kind.bridgeName, "format": format,
                                      "offset": page * 1000, "limit": 1000]
-        let result = try Self.callOptions(msimeClientDictionary, ["options": options, "action": action])
+        let result = try Self.callOptions(lingyaoClientDictionary, ["options": options, "action": action])
         guard let chunk = result["text"] as? String, let hasMore = result["has_more"] as? Bool else {
           throw InputBridgeFailure.invalidResponse
         }
@@ -1202,7 +1202,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     guard handle != 0 else { throw InputBridgeFailure.unavailable }
     guard !hasComposition else { throw InputBridgeFailure.response("请先结束当前输入再同步个人词库") }
     let previousHandle = handle
-    _ = try Self.decode(msimeClientDestroy(previousHandle))
+    _ = try Self.decode(lingyaoClientDestroy(previousHandle))
     handle = 0
     let result = Result { try operation() }
     do {
@@ -1226,16 +1226,16 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     }
     guard updated else { return diagnostic("输入方案切换失败") }
     nineKeyEnabled = false
-    return dispatch { msimeClientSetNineKeyMode(handle, false) }
+    return dispatch { lingyaoClientSetNineKeyMode(handle, false) }
   }
 
   private func command(_ value: UInt32) -> LingyaoInputSnapshot {
-    dispatch { msimeClientCommand(handle, value) }
+    dispatch { lingyaoClientCommand(handle, value) }
   }
 
   private func pointer(for character: String, shift: Bool) -> UnsafeMutablePointer<CChar>? {
     guard let byte = Self.ascii(character) else { return nil }
-    return msimeClientCharacter(handle, byte, shift)
+    return lingyaoClientCharacter(handle, byte, shift)
   }
 
   private func dispatch(_ operation: () -> UnsafeMutablePointer<CChar>?) -> LingyaoInputSnapshot {
@@ -1254,7 +1254,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   }
 
   private func view() throws -> [String: Any] {
-    try Self.callHandle(msimeClientView, handle)
+    try Self.callHandle(lingyaoClientView, handle)
   }
 
   private func currentCandidates() throws -> [[String: Any]] {
@@ -1270,7 +1270,7 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     revision &+= 1
     let snapshot: [String: Any] = ["format_version": 1, "revision": revision, "preferences": prefs]
     do {
-      let response = try Self.callUpdate(msimeClientUpdatePreferences, handle, snapshot)
+      let response = try Self.callUpdate(lingyaoClientUpdatePreferences, handle, snapshot)
       return response["deferred"] as? Bool != true
     } catch {
       options["preferences"] = previous
@@ -1293,22 +1293,22 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
 
   private static func bootstrapOptions(resources resourceOverride: URL?, stateRoot stateOverride: URL?) -> [String: Any] {
     let fm = FileManager.default
-    let group = fm.containerURL(forSecurityApplicationGroupIdentifier: MSIMEAppEdition.appGroupIdentifier)
+    let group = fm.containerURL(forSecurityApplicationGroupIdentifier: LINGYAOAppEdition.appGroupIdentifier)
       ?? fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-    let root = stateOverride ?? group.appendingPathComponent("MSIME", isDirectory: true)
+    let root = stateOverride ?? group.appendingPathComponent("LINGYAO", isDirectory: true)
     let resources = resourceOverride
       ?? Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true)
       ?? root.appendingPathComponent("resources", isDirectory: true)
     var options: [String: Any] = ["resources": resources.path, "state_root": root.path]
     // full 不传版本，请求与引入版本之前相同；其他版本让 host-api 按版本收窄方案并写进 HostOptions。
-    if !MSIMEAppEdition.isFull { options["edition"] = MSIMEAppEdition.identifier }
+    if !LINGYAOAppEdition.isFull { options["edition"] = LINGYAOAppEdition.identifier }
     return options
   }
 
   /// `View.scheme` for double pinyin, as the shared runtime numbers the Engine's schemes.
   private static let shuangpinSchemeCode: UInt8 = 1
 
-  private static func ascii(_ value: String) -> MSIMEByte? {
+  private static func ascii(_ value: String) -> LINGYAOByte? {
     guard value.utf8.count == 1, let byte = value.utf8.first else { return nil }
     return byte
   }
@@ -1379,13 +1379,13 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
           with: Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: bytes), count: length,
                      deallocator: .none))
       }
-      msimeClientStringFree(pointer)
+      lingyaoClientStringFree(pointer)
       guard let object = parsed as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
       envelope = object
     } catch let failure as InputBridgeFailure {
       throw failure
     } catch {
-      msimeClientStringFree(pointer)
+      lingyaoClientStringFree(pointer)
       throw InputBridgeFailure.invalidResponse
     }
     guard envelope["ok"] as? Bool == true else {
@@ -1395,35 +1395,35 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
   }
 
   private static func callCreate(_ options: [String: Any]) throws -> [String: Any] {
-    try callOptions(msimeClientCreate, options)
+    try callOptions(lingyaoClientCreate, options)
   }
 
   private static func callCreateFocused(_ options: [String: Any]) throws -> UInt64 {
     let handle = try number(try callCreate(options)["session"])
     do {
-      _ = try decode(msimeClientFocus(handle, true))
+      _ = try decode(lingyaoClientFocus(handle, true))
       return handle
     } catch {
-      _ = try? decode(msimeClientDestroy(handle))
+      _ = try? decode(lingyaoClientDestroy(handle))
       throw error
     }
   }
 
-  private static func callOptions(_ function: (UnsafePointer<MSIMEByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
+  private static func callOptions(_ function: (UnsafePointer<LINGYAOByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
                                   _ object: Any) throws -> [String: Any] {
     let data = try JSONSerialization.data(withJSONObject: object)
     return try data.withUnsafeBytes { bytes in
-      let value = try decode(function(bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(data.count)))
+      let value = try decode(function(bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(data.count)))
       guard let dictionary = value as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
       return dictionary
     }
   }
 
   /// Call a function that takes a raw UTF-8 path rather than a JSON document.
-  private static func callDirectory(_ function: (UnsafePointer<MSIMEByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
+  private static func callDirectory(_ function: (UnsafePointer<LINGYAOByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
                                     _ directory: Data) throws -> [String: Any] {
     try directory.withUnsafeBytes { bytes in
-      let value = try decode(function(bytes.bindMemory(to: MSIMEByte.self).baseAddress,
+      let value = try decode(function(bytes.bindMemory(to: LINGYAOByte.self).baseAddress,
                                       UInt(directory.count)))
       guard let dictionary = value as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
       return dictionary
@@ -1437,11 +1437,11 @@ final class LingyaoInputSessionBridge: @unchecked Sendable {
     return dictionary
   }
 
-  private static func callUpdate(_ function: (UInt64, UnsafePointer<MSIMEByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
+  private static func callUpdate(_ function: (UInt64, UnsafePointer<LINGYAOByte>?, UInt) -> UnsafeMutablePointer<CChar>?,
                                  _ handle: UInt64, _ object: Any) throws -> [String: Any] {
     let data = try JSONSerialization.data(withJSONObject: object)
     return try data.withUnsafeBytes { bytes in
-      let value = try decode(function(handle, bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(data.count)))
+      let value = try decode(function(handle, bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(data.count)))
       guard let dictionary = value as? [String: Any] else { throw InputBridgeFailure.invalidResponse }
       return dictionary
     }

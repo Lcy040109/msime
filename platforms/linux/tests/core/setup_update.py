@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""msime-linux-setup --update：升级之后只取回过期的那几项词库，再让宿主库切换代次。
+"""lingyao-linux-setup --update：升级之后只取回过期的那几项词库，再让宿主库切换代次。
 
-词库从本机的一个 HTTP 桩取，记下被请求的路径；msime-linux-prepare 换成桩，--refresh 时把配置指向新代次，记下调用以及那一刻输入会话是否已被请走（租约有效、会话锁被独占）。不联网，不需要真实词库。给出已构建的 msime-linux-prepare 时，另外核对它的 --refresh 在词库过期时以 3 退出且不改写配置，这是 setup 与两个宿主区分「词库过期」的依据。
+词库从本机的一个 HTTP 桩取，记下被请求的路径；lingyao-linux-prepare 换成桩，--refresh 时把配置指向新代次，记下调用以及那一刻输入会话是否已被请走（租约有效、会话锁被独占）。不联网，不需要真实词库。给出已构建的 lingyao-linux-prepare 时，另外核对它的 --refresh 在词库过期时以 3 退出且不改写配置，这是 setup 与两个宿主区分「词库过期」的依据。
 """
 from __future__ import annotations
 
@@ -18,9 +18,9 @@ import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/msime-linux-setup"
+SCRIPT = ROOT / "scripts/lingyao-linux-setup"
 
-# Stands in for msime-linux-prepare. --refresh points the options at a new generation, the observable effect of the real command, unless STUB_REFRESH_EXIT asks for a failure. It also records what the hosts would see at that moment: whether the quiesce lease is live and whether the session lock is held exclusively, and which resource directory it was asked to prepare.
+# Stands in for lingyao-linux-prepare. --refresh points the options at a new generation, the observable effect of the real command, unless STUB_REFRESH_EXIT asks for a failure. It also records what the hosts would see at that moment: whether the quiesce lease is live and whether the session lock is held exclusively, and which resource directory it was asked to prepare.
 # 首行用跑测试的同一个解释器，不经 /usr/bin/env：没有 FHS 布局的环境（Nix 构建沙箱）里没有它。
 PREPARE_STUB = f"#!{sys.executable}\n" + r'''import fcntl, json, os, sys, time
 from pathlib import Path
@@ -31,10 +31,10 @@ if sys.argv[1:2] == ["--refresh"]:
     document = json.loads(Path(sys.argv[2]).read_text())
     user = Path(document["user_data"])
     try:
-        remaining = int((user / ".msime-dictionary-quiesce").read_text()) / 1000 - time.time()
+        remaining = int((user / ".lingyao-dictionary-quiesce").read_text()) / 1000 - time.time()
     except (OSError, ValueError):
         remaining = 0
-    descriptor = os.open(user / ".msime-dictionary-access.lock", os.O_RDWR | os.O_CREAT, 0o600)
+    descriptor = os.open(user / ".lingyao-dictionary-access.lock", os.O_RDWR | os.O_CREAT, 0o600)
     try:
         fcntl.flock(descriptor, fcntl.LOCK_SH | fcntl.LOCK_NB)
         locked = False
@@ -85,10 +85,10 @@ class Harness:
         self.scratch = scratch
         self.prefix = scratch / "prefix"
         (self.prefix / "bin").mkdir(parents=True)
-        self.setup = self.prefix / "bin/msime-linux-setup"
+        self.setup = self.prefix / "bin/lingyao-linux-setup"
         self.setup.write_text(SCRIPT.read_text())
         self.setup.chmod(0o755)
-        prepare = self.prefix / "bin/msime-linux-prepare"
+        prepare = self.prefix / "bin/lingyao-linux-prepare"
         prepare.write_text(PREPARE_STUB)
         prepare.chmod(0o755)
         self.current = {"a.db": b"dictionary a, unchanged", "b.db": b"dictionary b, next release"}
@@ -101,13 +101,13 @@ class Harness:
         self.log = scratch / "prepare.log"
         self.environment = {
             key: value for key, value in os.environ.items()
-            if not key.startswith(("MSIME_", "XDG_")) and "proxy" not in key.lower()
+            if not key.startswith(("LINGYAO_", "XDG_")) and "proxy" not in key.lower()
         }
         self.environment.update(
             HOME=str(scratch / "home"),
             XDG_CONFIG_HOME=str(scratch / "config"),
             XDG_DATA_HOME=str(scratch / "data"),
-            MSIME_DICTIONARY_LOCK=str(self.lock),
+            LINGYAO_DICTIONARY_LOCK=str(self.lock),
             STUB_LOG=str(self.log),
         )
 
@@ -163,7 +163,7 @@ def options(state: Path) -> dict:
 def leftovers(state: Path) -> list[str]:
     """What an update may leave in the state or user directory besides the options: a staged options copy or the quiesce lease would be a bug."""
     names = [path.name for path in state.iterdir()] + [path.name for path in (state / "user").iterdir()]
-    return sorted(name for name in names if name.startswith((".runtime-options-", ".msime-dictionary-quiesce")))
+    return sorted(name for name in names if name.startswith((".runtime-options-", ".lingyao-dictionary-quiesce")))
 
 
 def check_setup(harness: Harness) -> None:
@@ -198,7 +198,7 @@ def check_setup(harness: Harness) -> None:
     # An input session that does not let go keeps the switch from happening: nothing is refreshed and the lease comes down again. The staged dictionaries stay for the next attempt.
     state = harness.installed("state-busy")
     before = (state / "runtime-options.json").read_bytes()
-    descriptor = os.open(state / "user/.msime-dictionary-access.lock", os.O_RDWR | os.O_CREAT, 0o600)
+    descriptor = os.open(state / "user/.lingyao-dictionary-access.lock", os.O_RDWR | os.O_CREAT, 0o600)
     try:
         fcntl.flock(descriptor, fcntl.LOCK_SH)
         result = harness.run("--update", "--download", "--state", str(state))
@@ -216,7 +216,7 @@ def check_setup(harness: Harness) -> None:
     # symlink here would let a hostile state directory make the refresh wait on
     # or lock an external inode.
     state = harness.installed("state-linked-access-lock")
-    access_lock = state / "user/.msime-dictionary-access.lock"
+    access_lock = state / "user/.lingyao-dictionary-access.lock"
     outside_lock = harness.scratch / "outside-access.lock"
     outside_lock.write_bytes(b"keep")
     access_lock.symlink_to(outside_lock)
@@ -276,20 +276,20 @@ def check_setup(harness: Harness) -> None:
     assert leftovers(state) == [], leftovers(state)
 
     # A prefix such as ~/.local puts the packaged location on the download directory of a fresh setup: those dictionaries are the user's own, and an update brings them up to date.
-    state = harness.installed("state-local-prefix", harness.prefix / "share/msime-client/resources")
+    state = harness.installed("state-local-prefix", harness.prefix / "share/lingyao-client/resources")
     result = harness.run("--update", "--download", "--state", str(state), XDG_DATA_HOME=str(harness.prefix / "share"))
     assert result.returncode == 0, result
-    assert options(state)["resources"] == str(harness.staged(harness.prefix / "share/msime-client/resources")), options(state)
-    shutil.rmtree(harness.prefix / "share/msime-client")
+    assert options(state)["resources"] == str(harness.staged(harness.prefix / "share/lingyao-client/resources")), options(state)
+    shutil.rmtree(harness.prefix / "share/lingyao-client")
 
     # Dictionaries shipped with the package belong to the package manager, even under a prefix the user can write.
-    state = harness.installed("state-packaged", harness.prefix / "share/msime-client/resources")
+    state = harness.installed("state-packaged", harness.prefix / "share/lingyao-client/resources")
     before = (state / "runtime-options.json").read_bytes()
     result = harness.run("--update", "--download", "--state", str(state))
     assert result.returncode == 1, result
     assert "包管理器" in result.stderr, result.stderr
     assert Artifacts.requested == [] and harness.prepare_calls() == []
-    assert (harness.prefix / "share/msime-client/resources/b.db").read_bytes() == harness.previous_b
+    assert (harness.prefix / "share/lingyao-client/resources/b.db").read_bytes() == harness.previous_b
     assert (state / "runtime-options.json").read_bytes() == before
 
     # The host library disagreeing with the installed lock is a broken install; the options stay as they were.
@@ -331,7 +331,7 @@ def check_setup(harness: Harness) -> None:
 
 
 def check_prepare(prepare: Path, harness: Harness) -> None:
-    """The built msime-linux-prepare against the lock it was compiled with: the fixture dictionaries match none of it."""
+    """The built lingyao-linux-prepare against the lock it was compiled with: the fixture dictionaries match none of it."""
     result = subprocess.run([str(prepare), "--refresh", "runtime-options.json"], capture_output=True, text=True, timeout=30)
     assert result.returncode == 2, result
     state = harness.installed("state-real")

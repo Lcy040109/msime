@@ -1,6 +1,6 @@
-import app.msime.android.SpaceGesturePolicy;
-import app.msime.android.SpaceGesturePolicy.Outcome;
-import app.msime.android.SpaceGesturePolicy.State;
+import app.lingyao.android.SpaceGesturePolicy;
+import app.lingyao.android.SpaceGesturePolicy.Outcome;
+import app.lingyao.android.SpaceGesturePolicy.State;
 
 public final class SpaceGesturePolicySmoke {
     public static void main(String[] args) {

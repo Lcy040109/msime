@@ -50,13 +50,13 @@ export function compareVersions(left: Version, right: Version): number {
 const installerNamePattern = /^LingyaoIME_Setup_v[\w.-]+\.exe$/i;
 const sha256Pattern = /^[0-9a-f]{64}$/i;
 
-// The asset name is shown inside a shell command the user may copy, so it is limited to characters that need no quoting and cannot start with an option dash. CPack names the Linux packages `msime-linux_VERSION_ARCH.deb` and `msime-linux-VERSION-linux-ARCH.tar.gz` (platforms/linux/cmake/packaging.cmake).
+// The asset name is shown inside a shell command the user may copy, so it is limited to characters that need no quoting and cannot start with an option dash. CPack names the Linux packages `lingyao-linux_VERSION_ARCH.deb` and `lingyao-linux-VERSION-linux-ARCH.tar.gz` (platforms/linux/cmake/packaging.cmake).
 const linuxPackagePatterns = [/^[a-z0-9][\w.+~-]*\.deb$/i, /^[a-z0-9][\w.+~-]*\.tar\.gz$/i];
 
-// 不是 full 的版本和 full 发布在同一个平台标签下（例如都在 `linux-v1.2.0` 里），靠资产名区分：Linux 包名是 `msime-linux-<id>`，Windows 安装包是 `LingyaoIME-<Id>_Setup_v<版本>.exe`（`<Id>` 是首字母大写的版本 id）。各平台的打包脚本要按这个名字产出。full 的资产名不变。
+// 不是 full 的版本和 full 发布在同一个平台标签下（例如都在 `linux-v1.2.0` 里），靠资产名区分：Linux 包名是 `lingyao-linux-<id>`，Windows 安装包是 `LingyaoIME-<Id>_Setup_v<版本>.exe`（`<Id>` 是首字母大写的版本 id）。各平台的打包脚本要按这个名字产出。full 的资产名不变。
 const editionIdPattern = /^[a-z][a-z0-9]*$/;
-/** full 的 Linux 资产模式也认得出其他版本的包（`msime-linux-wubi_…`），选 full 的资产之前先去掉它们：full 的包名在 `msime-linux` 之后紧跟 `_` 或版本号。 */
-const otherEditionLinuxPackagePattern = /^msime-linux-[a-z]/i;
+/** full 的 Linux 资产模式也认得出其他版本的包（`lingyao-linux-wubi_…`），选 full 的资产之前先去掉它们：full 的包名在 `lingyao-linux` 之后紧跟 `_` 或版本号。 */
+const otherEditionLinuxPackagePattern = /^lingyao-linux-[a-z]/i;
 
 function isFullEdition(edition: string | undefined): boolean {
   return edition === undefined || edition === "full";
@@ -67,8 +67,8 @@ function editionLinuxPackagePatterns(edition: string | undefined): readonly RegE
   if (isFullEdition(edition)) return linuxPackagePatterns;
   if (!edition || !editionIdPattern.test(edition)) return null;
   return [
-    new RegExp(`^msime-linux-${edition}_[\\w.+~-]+\\.deb$`, "i"),
-    new RegExp(`^msime-linux-${edition}-\\d[\\w.+~-]*\\.tar\\.gz$`, "i"),
+    new RegExp(`^lingyao-linux-${edition}_[\\w.+~-]+\\.deb$`, "i"),
+    new RegExp(`^lingyao-linux-${edition}-\\d[\\w.+~-]*\\.tar\\.gz$`, "i"),
   ];
 }
 

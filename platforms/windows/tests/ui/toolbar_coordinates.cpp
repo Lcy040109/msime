@@ -1,7 +1,7 @@
 #include "../../src/candidate/ToolbarCoordinates.h"
 #include <cassert>
 #include <limits>
-using namespace msime::windows;
+using namespace lingyao::windows;
 int main() {
   assert(toolbar_pixel_unit(120, 1.0) == 1.25);
   assert(toolbar_pixel_unit(144, 1.0) == 1.5);

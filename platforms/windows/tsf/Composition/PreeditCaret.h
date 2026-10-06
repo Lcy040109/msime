@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string_view>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 // TSF strings use UTF-16 code units. Preserve the Windows client's separator
 // mapping while accepting the authoritative raw caret from either input path.
 inline std::size_t MapPreeditCaret(std::wstring_view raw, std::size_t rawCaret,
@@ -22,4 +22,4 @@ inline std::size_t MapPreeditCaret(std::wstring_view raw, std::size_t rawCaret,
         while (position < preedit.size() && preedit[position] == L'\'') ++position;
     return position;
 }
-} // namespace msime::tsf
+} // namespace lingyao::tsf

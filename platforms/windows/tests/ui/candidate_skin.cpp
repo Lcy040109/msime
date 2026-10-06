@@ -3,13 +3,13 @@
 #include <fstream>
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 using Json = nlohmann::json;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Candidate skin validation failed");
 }
-// One msime_client_skin_catalog entry. SkinSummary is serialized in camelCase, and its colours are not read here: they reach the card through msime_client_resolve_theme.
+// One lingyao_client_skin_catalog entry. SkinSummary is serialized in camelCase, and its colours are not read here: they reach the card through lingyao_client_resolve_theme.
 Json package(const char *id, Json min_width, Json top, Json width) {
   return Json{{"id", id},
               {"name", "Sample"},
@@ -26,7 +26,7 @@ Json package(const char *id, Json min_width, Json top, Json width) {
 int main() {
   const auto root =
       std::filesystem::temp_directory_path() /
-      ("msime-candidate-skin-" +
+      ("lingyao-candidate-skin-" +
        std::to_string(
            std::chrono::steady_clock::now().time_since_epoch().count()));
   for (const char *id : {"mascot", "wide", "hostile"}) {
@@ -115,7 +115,7 @@ int main() {
   require(!candidate_decoration_rect(CandidateSkinAlign::right, 10, 210, 50, 8, 6, 40, 60, 120, 0));
   require(!candidate_decoration_rect(CandidateSkinAlign::right, 10, 210, 50, 8, 6, 40, 0, 120, 60));
 
-  // Corner radius, background and toolbar, as a msime-skins package declares them.
+  // Corner radius, background and toolbar, as a lingyao-skins package declares them.
   std::ofstream(root / "mascot" / "background.png") << "synthetic";
   Json styled = catalog;
   auto &entry = styled["packages"][0];

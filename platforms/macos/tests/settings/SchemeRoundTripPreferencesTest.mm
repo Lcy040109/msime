@@ -12,9 +12,9 @@
 int main(void)
 {
     @autoreleasepool {
-        NSString *suite = [@"MSIME.SchemeRoundTripTest." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"LINGYAO.SchemeRoundTripTest." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
 
         preferences.inputScheme = @"wubi";
         NSDictionary *merged = [preferences sharedPreferencesByMerging:@{}];
@@ -79,7 +79,7 @@ int main(void)
 
         // removePersistentDomainForName: empties the domain and leaves the plist on disk, so every
         // run left one behind: 185 of them had piled up on the machine this was found on.
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
     return 0;
 }

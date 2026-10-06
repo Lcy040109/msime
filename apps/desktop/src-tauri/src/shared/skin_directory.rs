@@ -57,7 +57,7 @@ fn launch_directory(directory: &Path) -> std::io::Result<()> {
     // A dedicated thread avoids inheriting a runtime worker's COM apartment;
     // the shell call itself lives in the Windows host layer.
     std::thread::spawn(move || {
-        msime_host_windows::open_directory(&directory)
+        lingyao_host_windows::open_directory(&directory)
             .then_some(())
             .ok_or_else(|| std::io::Error::other("directory opener failed"))
     })
@@ -102,7 +102,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn refuses_a_symlinked_parent_without_creating_outside_it() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let root = tempfile::tempdir().unwrap();
         let outside = tempfile::tempdir().unwrap();

@@ -1,13 +1,13 @@
 #pragma once
 #import <AppKit/AppKit.h>
 
-static inline BOOL MSIMEToolApplicationMatches(NSString *clientBundle, NSString *applicationBundle) {
+static inline BOOL LINGYAOToolApplicationMatches(NSString *clientBundle, NSString *applicationBundle) {
     return [clientBundle isKindOfClass:NSString.class] && clientBundle.length > 0 &&
            [applicationBundle isKindOfClass:NSString.class] && [clientBundle isEqualToString:applicationBundle];
 }
 
 // A successful request is not evidence that activation has completed.
-static inline BOOL MSIMEActivateToolApplication(NSApplication *host, NSRunningApplication *source,
+static inline BOOL LINGYAOActivateToolApplication(NSApplication *host, NSRunningApplication *source,
                                                 NSRunningApplication *target, BOOL cooperative = YES) {
     if (!host || !source || !target || target.terminated) return NO;
     if (cooperative) {

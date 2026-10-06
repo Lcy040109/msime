@@ -3,9 +3,9 @@
 #include <windows.h>
 
 #include <utility>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The policy header names these so it can be compiled and tested without
 // <windows.h>. Here, where the real header is in scope, each one is held to the
 // value it stands for: a rename or a typo cannot pass.
@@ -19,7 +19,7 @@ static_assert(voice_key_space == VK_SPACE);
 static_assert(voice_key_escape == VK_ESCAPE);
 
 namespace {
-constexpr wchar_t kClassName[] = L"MSIMEClientVoiceHotkeyWindow" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t kClassName[] = L"LINGYAOClientVoiceHotkeyWindow" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr UINT kStartMessage = WM_APP + 200;
 constexpr UINT kToggleMessage = WM_APP + 201;
 constexpr UINT kStopMessage = WM_APP + 202;
@@ -266,4 +266,4 @@ LRESULT CALLBACK VoiceHotkeyController::keyboard_proc(int code, WPARAM wparam,
     self.suppress_win_until_up_ = false;
   return suppressed ? 1 : CallNextHookEx(self.hook_, code, wparam, lparam);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

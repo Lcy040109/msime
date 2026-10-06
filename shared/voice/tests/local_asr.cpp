@@ -11,7 +11,7 @@
 namespace fs = std::filesystem;
 
 int main() {
-    using namespace msime::voice;
+    using namespace lingyao::voice;
     // What the transducer prints for "review 一下这个 PR，然后把 CI 修好" and what a person would have typed.
     assert(tidy_local_transcript("我们今天下午要 review 一下这个 P R， 然后把 C I 的 pipeline 修好") ==
            "我们今天下午要 review 一下这个 PR，然后把 CI 的 pipeline 修好");
@@ -21,7 +21,7 @@ int main() {
     assert(tidy_local_transcript("最后 deploy 到 staging 环境 。") == "最后 deploy 到 staging 环境。");
     assert(tidy_local_transcript("").empty());
 
-    const auto root = fs::temp_directory_path() / "msime-local-asr-test";
+    const auto root = fs::temp_directory_path() / "lingyao-local-asr-test";
     fs::remove_all(root);
     fs::create_directories(root / "model");
     assert(!is_local_model_dir(""));

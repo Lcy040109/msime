@@ -8,7 +8,7 @@ final class PunctuationSettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-punctuation-settings-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-punctuation-settings-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

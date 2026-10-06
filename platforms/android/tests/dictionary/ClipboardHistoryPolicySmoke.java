@@ -1,5 +1,5 @@
-import app.msime.android.ClipboardHistoryPolicy;
-import app.msime.android.ClipboardHistoryStore;
+import app.lingyao.android.ClipboardHistoryPolicy;
+import app.lingyao.android.ClipboardHistoryStore;
 
 public final class ClipboardHistoryPolicySmoke {
     static void check(boolean condition, String message) {

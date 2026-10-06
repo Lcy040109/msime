@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 #ifdef __cplusplus
 #import <CoreAudio/CoreAudio.h>
-struct MSIMEVoiceAudioAPI {
+struct LINGYAOVoiceAudioAPI {
     decltype(&AudioObjectGetPropertyData) get = AudioObjectGetPropertyData;
     decltype(&AudioObjectSetPropertyData) set = AudioObjectSetPropertyData;
     // Null listener functions disable following default output device changes.
@@ -10,12 +10,12 @@ struct MSIMEVoiceAudioAPI {
     decltype(&AudioObjectRemovePropertyListenerBlock) removeListener = AudioObjectRemovePropertyListenerBlock;
 };
 #endif
-@interface MSIMEVoiceAudioMuter : NSObject
+@interface LINGYAOVoiceAudioMuter : NSObject
 // Main-thread lifecycle. Injection keeps tests away from real output devices.
 #ifdef __cplusplus
-- (instancetype)initWithAudioAPI:(MSIMEVoiceAudioAPI)api;
+- (instancetype)initWithAudioAPI:(LINGYAOVoiceAudioAPI)api;
 // nil keeps injected tests entirely in memory. Production uses a private directory.
-- (instancetype)initWithAudioAPI:(MSIMEVoiceAudioAPI)api recoveryDirectory:(NSURL *)directory;
+- (instancetype)initWithAudioAPI:(LINGYAOVoiceAudioAPI)api recoveryDirectory:(NSURL *)directory;
 #endif
 // Mutes the default output device and, until restore, follows the default to whichever device replaces it, handing each previous device back to its original state.
 - (BOOL)mute:(NSError **)error;

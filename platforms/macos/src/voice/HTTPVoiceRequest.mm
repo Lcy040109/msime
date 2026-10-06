@@ -12,8 +12,8 @@ NSError *Failure(const std::string &detail = {}) {
     // The shared provider layer builds the detail from the answer, never from the token or the upload; a body that is not UTF-8 is simply not shown.
     NSString *text = detail.empty() ? nil
         : [[NSString alloc] initWithBytes:detail.data() length:detail.size() encoding:NSUTF8StringEncoding];
-    if (text.length) info[MSIMEVoiceFailureDetailKey] = text;
-    return [NSError errorWithDomain:@"app.msime.client.voice" code:6 userInfo:info];
+    if (text.length) info[LINGYAOVoiceFailureDetailKey] = text;
+    return [NSError errorWithDomain:@"app.lingyao.client.voice" code:6 userInfo:info];
 }
 std::string String(NSDictionary *options, NSString *key) {
     NSString *value = options[key];
@@ -32,14 +32,14 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
         auto provider = String(options, @"polish_provider");
         auto endpoint = String(options, @"polish_endpoint");
         auto model = String(options, @"polish_model");
-        if (endpoint.empty()) endpoint = msime::voice::default_polish_endpoint(provider);
-        if (model.empty()) model = msime::voice::default_polish_model(provider);
-        msime::windows::PolishPromptSlots slots;
+        if (endpoint.empty()) endpoint = lingyao::voice::default_polish_endpoint(provider);
+        if (model.empty()) model = lingyao::voice::default_polish_model(provider);
+        lingyao::windows::PolishPromptSlots slots;
         slots.id = String(options, @"polish_prompt_id");
         slots.custom_1 = String(options, @"polish_prompt_custom_1");
         slots.custom_2 = String(options, @"polish_prompt_custom_2");
         slots.custom_3 = String(options, @"polish_prompt_custom_3");
-        auto prompt = msime::windows::polish_prompt_for(slots);
+        auto prompt = lingyao::windows::polish_prompt_for(slots);
         if (Endpoint(endpoint)) {
             // A block captures a C++ reference as the reference, not as a copy of what it names. This one
             // runs on main after Polish has returned, when the request owning `cancelled` may already be
@@ -53,7 +53,7 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
             // below keeps the ASR text without telling anyone - so the transcript reached the provider and
             // the cleaned answer was discarded every time. Waiting is the lesser cost; sending the text and
             // binning the reply is the one nobody asked for.
-            auto polished = msime::voice::polish_cloud_text(text, provider, endpoint, model,
+            auto polished = lingyao::voice::polish_cloud_text(text, provider, endpoint, model,
                 String(options, @"polish_token"), prompt, cancelled, 30000);
             if (!polished.empty() && polished.size() <= 65536) text = std::move(polished);
         }
@@ -61,7 +61,7 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
     return text;
 }
 }
-@implementation MSIMEHTTPVoiceRequest {
+@implementation LINGYAOHTTPVoiceRequest {
     NSDictionary *_options;
     std::shared_ptr<std::atomic_bool> _cancelled;
     BOOL _started;
@@ -102,8 +102,8 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
         }
     }
     if (recognitionRequired) {
-        const auto provider = msime::voice::normalize_voice_provider(String(snapshot, @"asr_provider"));
-        const auto endpoint = msime::voice::resolved_asr_endpoint(provider, String(snapshot, @"asr_endpoint"));
+        const auto provider = lingyao::voice::normalize_voice_provider(String(snapshot, @"asr_provider"));
+        const auto endpoint = lingyao::voice::resolved_asr_endpoint(provider, String(snapshot, @"asr_endpoint"));
         // The batch multipart providers. Doubao is the streaming websocket and never reaches
         // this request; anything else is stale configuration rather than a provider choice.
         if ((provider != "openai" && provider != "groq" && provider != "siliconflow" &&
@@ -113,13 +113,13 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
         }
         snapshot[@"asr_provider"] = @(provider.c_str());
         snapshot[@"asr_endpoint"] = @(endpoint.c_str());
-        if (![snapshot[@"asr_model"] length]) snapshot[@"asr_model"] = @(msime::voice::default_asr_model(provider).c_str());
+        if (![snapshot[@"asr_model"] length]) snapshot[@"asr_model"] = @(lingyao::voice::default_asr_model(provider).c_str());
     }
     _options = [snapshot copy];
     return self;
 }
 - (NSUInteger)sampleLimit {
-    return msime::voice::batch_capture_sample_limit;
+    return lingyao::voice::batch_capture_sample_limit;
 }
 - (BOOL)recognizePCM:(NSData *)pcm completion:(void (^)(NSString *, NSError *))completion error:(NSError **)error {
     @synchronized(self) {
@@ -145,12 +145,12 @@ std::string Polish(std::string text, NSDictionary *options, const std::shared_pt
                 auto language = String(options, @"language");
                 if (language == "en-US" || language == "en-us") language = "en";
                 if (language == "zh-CN") language = "zh-cn";
-                auto text = msime::voice::recognize_cloud_asr(samples, String(options, @"asr_provider"),
+                auto text = lingyao::voice::recognize_cloud_asr(samples, String(options, @"asr_provider"),
                     String(options, @"asr_endpoint"), String(options, @"asr_model"), String(options, @"asr_token"), language, cancelled);
                 text = Polish(std::move(text), options, cancelled, polishing);
                 result = [[NSString alloc] initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
                 if (!result.length) failure = Failure();
-            } catch (const msime::voice::CloudAsrError &cloudError) { failure = Failure(cloudError.user_message()); }
+            } catch (const lingyao::voice::CloudAsrError &cloudError) { failure = Failure(cloudError.user_message()); }
             catch (const std::exception &) { failure = Failure(); }
             dispatch_async(dispatch_get_main_queue(), ^{ if (!cancelled->load()) completion(failure ? nil : result, failure); });
         });

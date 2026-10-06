@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 PreferenceWatcher::PreferenceWatcher(std::string directory, Published published)
     : directory_(std::move(directory)), published_(std::move(published)),
       worker_(&PreferenceWatcher::run, this) {}
@@ -30,7 +30,7 @@ void PreferenceWatcher::run() {
   }
 }
 std::string default_state_directory() {
-  return path_to_utf8(msime::windows::resolve_state_directory());
+  return path_to_utf8(lingyao::windows::resolve_state_directory());
 }
 std::string default_host_options_json() {
   const auto state = default_state_directory();

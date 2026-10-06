@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.content.Intent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -15,11 +15,11 @@ public final class CandidatePanelDeviceSmoke extends DeviceSmoke {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivitySync(intent);
         stage = "candidate panel focus";
-        tap(field("msime-test-plain"));
+        tap(field("lingyao-test-plain"));
         stage = "candidate panel composition";
         tap(key("n"));
         tap(key("i"));
-        await(field("msime-test-plain").and(node -> equalsText("ni", node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText("ni", node.getText())));
         stage = "candidate panel expand";
         tap(key("展开").and(AccessibilityNodeInfo::isEnabled));
         stage = "candidate panel complete count";
@@ -35,14 +35,14 @@ public final class CandidatePanelDeviceSmoke extends DeviceSmoke {
         stage = "candidate panel out-of-page selection";
         tap(candidateTen());
         stage = "candidate panel commit";
-        await(field("msime-test-plain").and(node -> node.getText() != null
+        await(field("lingyao-test-plain").and(node -> node.getText() != null
             && node.getText().length() > 0 && !equalsText("ni", node.getText())));
     }
 
     /** The expanded grid draws no title; its description carries the composition and the complete count, as 完整候选列表；ni；N 个候选. */
     private Predicate<AccessibilityNodeInfo> completeCount() {
         return node -> {
-            if (!equalsText("app.msime.android", node.getPackageName())
+            if (!equalsText("app.lingyao.android", node.getPackageName())
                     || node.getContentDescription() == null) return false;
             String value = node.getContentDescription().toString();
             if (!value.startsWith("完整候选列表；") || !value.endsWith(" 个候选")) return false;
@@ -56,7 +56,7 @@ public final class CandidatePanelDeviceSmoke extends DeviceSmoke {
     }
 
     private Predicate<AccessibilityNodeInfo> candidateTen() {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.getContentDescription() != null
             && node.getContentDescription().toString().startsWith("候选 10：")
             && node.isClickable();

@@ -2,7 +2,7 @@
 //!
 //! Importing, editing or clearing learned data needs the Engine's exclusive dictionary lock, and every open input session holds it shared. The Linux hosts (IBus, Fcitx5) and the macOS input method are other processes, so on those platforms this writes a lease beside the lock. The hosts check it on their preference timers (Fcitx5 every 250 ms, IBus and macOS every second), finish the composition, close their sessions and open no new ones while it is live; the settings window also tells the macOS input method at once over a distributed notification (the `announce` of [`QuiescedHosts`]), so it lets go without waiting for its timer. The lease holds its own expiry, so a writer that dies mid-import cannot leave input off for longer than that. The file name, the expiry on the first line and the 30 second bound are shared with `platforms/common/DictionaryQuiesceLease.h`. Moving the data directory on Linux holds the same lease for the whole copy (the desktop app's `platform::linux::linux_dictionary_quiesce`).
 //!
-//! More than one process writes the lease: the settings window and the `msime-mcp` server. Each writes a second line naming itself and removes the lease only while that line is still its own, so one writer finishing does not take down a lease another one is still working under. The hosts read only the first line.
+//! More than one process writes the lease: the settings window and the `lingyao-mcp` server. Each writes a second line naming itself and removes the lease only while that line is still its own, so one writer finishing does not take down a lease another one is still working under. The hosts read only the first line.
 //!
 //! On Windows every input session lives in the one Server process, which releases them when asked over its auxiliary pipe instead (see [`server`]). The Server does not track who asked, so one writer's resume can hand the sessions back while another is still working; that writer's next request then finds the dictionaries busy, asks again and is retried like the first.
 
@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-pub const LEASE_NAME: &str = ".msime-dictionary-quiesce";
+pub const LEASE_NAME: &str = ".lingyao-dictionary-quiesce";
 const LEASE_DURATION: Duration = Duration::from_secs(30);
 /// Long enough for the IBus host's one-second timer to come round twice.
 pub const RETRY_BUDGET: Duration = Duration::from_millis(2500);
@@ -26,7 +26,7 @@ pub const BUSY: &str = "dictionary maintenance busy";
 const MAX_LEASE_BYTES: u64 = 4096;
 
 fn reject_symlinked_path_ancestors(path: &Path) -> std::io::Result<()> {
-    msime_path_trust::reject_symlinked_components(path)
+    lingyao_path_trust::reject_symlinked_components(path)
 }
 
 fn read_lease(path: &Path) -> Option<String> {
@@ -338,7 +338,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn symlinked_user_data_is_rejected_without_writing_outside() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let target = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();
@@ -351,7 +351,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn existing_lease_below_a_symlinked_parent_is_rejected() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let target = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();
@@ -591,13 +591,13 @@ mod tests {
     #[test]
     fn lease_files_include_a_lease_being_staged() {
         assert!(is_lease_file(OsStr::new(LEASE_NAME)));
-        assert!(is_lease_file(OsStr::new(".msime-dictionary-quiesce.4242")));
+        assert!(is_lease_file(OsStr::new(".lingyao-dictionary-quiesce.4242")));
         assert!(is_lease_file(OsStr::new(
-            ".msime-dictionary-quiesce.4242-0"
+            ".lingyao-dictionary-quiesce.4242-0"
         )));
-        assert!(!is_lease_file(OsStr::new(".msime-dictionary-quiesced")));
-        assert!(!is_lease_file(OsStr::new(".msime-dictionary-access.lock")));
-        assert!(!is_lease_file(OsStr::new("msime_user.db")));
+        assert!(!is_lease_file(OsStr::new(".lingyao-dictionary-quiesced")));
+        assert!(!is_lease_file(OsStr::new(".lingyao-dictionary-access.lock")));
+        assert!(!is_lease_file(OsStr::new("lingyao_user.db")));
     }
 
     #[test]

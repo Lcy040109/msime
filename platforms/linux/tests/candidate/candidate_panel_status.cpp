@@ -8,7 +8,7 @@
 #include <string>
 
 int main() {
-  using namespace msime::linux_host;
+  using namespace lingyao::linux_host;
   // The names must match client-core's CandidatePanelLimit serde names.
   assert(candidate_panel_status_document("ibus", CandidatePanelLimit::GnomeShell) ==
          "{\"host\":\"ibus\",\"limit\":\"gnome_shell\"}\n");
@@ -37,10 +37,10 @@ int main() {
   assert(!candidate_panel_status_file(nullptr));
   assert(!candidate_panel_status_file("relative"));
   assert(*candidate_panel_status_file("/run/user/1000") ==
-         std::filesystem::path("/run/user/1000/msime-client/candidate-panel.json"));
+         std::filesystem::path("/run/user/1000/lingyao-client/candidate-panel.json"));
 
   // Synthetic runtime directory under the system temporary directory.
-  auto root = std::filesystem::temp_directory_path() / ("msime-panel-status-" + std::to_string(::getpid()));
+  auto root = std::filesystem::temp_directory_path() / ("lingyao-panel-status-" + std::to_string(::getpid()));
   std::filesystem::remove_all(root);
   std::filesystem::create_directories(root);
   const auto file = *candidate_panel_status_file(root.c_str());

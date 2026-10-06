@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useSettingsDictionaryState } from "@msime/ui";
+import { useSettingsDictionaryState } from "@lingyao/ui";
 
 vi.mock("../../../../packages/ui/src/settings/use-dictionary-manager", () => ({
   useDictionaryManager: () => ({

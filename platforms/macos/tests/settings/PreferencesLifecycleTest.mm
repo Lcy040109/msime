@@ -4,7 +4,7 @@
 #include <cassert>
 
 // Deliver AppKit close notifications to the real window delegate without presenting a window.
-@interface HiddenPreferencesController : MSIMEPreferencesWindowController
+@interface HiddenPreferencesController : LINGYAOPreferencesWindowController
 @end
 @implementation HiddenPreferencesController
 - (void)showWindow:(id)sender { (void)sender; }
@@ -24,7 +24,7 @@ int main() {
         HiddenPreferencesController *controller = [[HiddenPreferencesController alloc] initWithWindow:nil];
         __block NSUInteger closes = 0;
         id observer = [NSNotificationCenter.defaultCenter
-            addObserverForName:MSIMEStandalonePreferencesDidCloseNotification
+            addObserverForName:LINGYAOStandalonePreferencesDidCloseNotification
             object:controller queue:nil usingBlock:^(NSNotification *note) {
                 (void)note;
                 ++closes;
@@ -33,9 +33,9 @@ int main() {
         [NSApp setActivationPolicy:NSApplicationActivationPolicyProhibited];
         [controller showAndActivate];
         assert(NSApp.activationPolicy == NSApplicationActivationPolicyAccessory);
-        assert(controller.window == MSIMEAppearancePreferences.sharedPreferences.window);
+        assert(controller.window == LINGYAOAppearancePreferences.sharedPreferences.window);
         assert(controller.window.delegate == controller);
-        NSControl *uninstall = MSIMEFindPreferenceControl(controller.window.contentView, @selector(uninstallInputSource:));
+        NSControl *uninstall = LINGYAOFindPreferenceControl(controller.window.contentView, @selector(uninstallInputSource:));
         assert(uninstall && uninstall.accessibilityLabel.length > 0);
         [NSNotificationCenter.defaultCenter postNotificationName:NSWindowWillCloseNotification object:controller.window];
         DrainMainQueue();

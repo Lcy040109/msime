@@ -1,6 +1,6 @@
 #import "../../src/core/CustomTranslationBatch.h"
 #import "../../src/cloud/CloudCandidateRequest.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #include <cassert>
 
 static NSData *Response(NSString *text) {
@@ -45,7 +45,7 @@ static NSMutableArray<NSURLSessionTask *> *Tasks;
 - (void)stopLoading { @synchronized(NiuTransProtocol.class) { if (_held) ++StoppedCalls; } }
 @end
 
-@interface NiuTransFakeRequest : MSIMECloudCandidateRequest
+@interface NiuTransFakeRequest : LINGYAOCloudCandidateRequest
 @property(copy) void (^reply)(NSData *);
 @property BOOL cancelled;
 @end
@@ -54,7 +54,7 @@ static NSMutableArray<NSURLSessionTask *> *Tasks;
 - (void)startInSession:(NSURLSession *)session { assert(session); }
 - (void)cancel { self.cancelled = YES; }
 @end
-@interface NiuTransFakeBatch : MSIMECustomTranslationBatch
+@interface NiuTransFakeBatch : LINGYAOCustomTranslationBatch
 @property NSTimeInterval now;
 @property NSTimeInterval wall;
 @property NSMutableArray<NiuTransFakeRequest *> *requests;
@@ -63,13 +63,13 @@ static NSMutableArray<NSURLSessionTask *> *Tasks;
 @implementation NiuTransFakeBatch
 - (NSTimeInterval)currentTime { return self.now; }
 - (NSTimeInterval)unixTime { return self.wall; }
-- (MSIMECloudCandidateRequest *)niuTransRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+- (LINGYAOCloudCandidateRequest *)niuTransRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
     if (!self.requests) { self.requests = [NSMutableArray array]; self.descriptors = [NSMutableArray array]; }
     NiuTransFakeRequest *request = [NiuTransFakeRequest new]; request.reply = completion;
     [self.requests addObject:request]; [self.descriptors addObject:descriptor]; return request;
 }
 @end
-@interface NiuTransClockBatch : MSIMECustomTranslationBatch
+@interface NiuTransClockBatch : LINGYAOCustomTranslationBatch
 @property NSTimeInterval now;
 @end
 @implementation NiuTransClockBatch
@@ -133,17 +133,17 @@ int main() {
     @autoreleasepool {
         NSMutableDictionary *config = [@{@"enabled":@YES, @"app_id":@"app-id", @"apikey":@"api-key"} mutableCopy];
         NSDictionary *input = @{@"config":config, @"text":@"hello", @"source_language":@"en", @"target_language":@"zh", @"timestamp":@"1704067200000"};
-        NSDictionary *descriptor = [MSIMEClientSession niuTransTranslationHTTPRequest:input error:nil];
+        NSDictionary *descriptor = [LINGYAOClientSession niuTransTranslationHTTPRequest:input error:nil];
         assert([descriptor[@"body_utf8"] containsString:@"authStr=6da3515e010ef871b66e4e31ff5ba580"]);
         assert(![descriptor[@"body_utf8"] containsString:@"api-key"]);
-        assert([[MSIMEClientSession parseNiuTransTranslationResponse:Response(@" hello\nworld ") error:nil] isEqual:@"hello world"]);
-        assert(![MSIMEClientSession parseNiuTransTranslationResponse:[@"{\"errorCode\":\"401\",\"tgtText\":\"invalid\"}" dataUsingEncoding:NSUTF8StringEncoding] error:nil]);
-        assert(![MSIMEClientSession parseNiuTransTranslationResponse:[NSMutableData dataWithLength:1048577] error:nil]);
+        assert([[LINGYAOClientSession parseNiuTransTranslationResponse:Response(@" hello\nworld ") error:nil] isEqual:@"hello world"]);
+        assert(![LINGYAOClientSession parseNiuTransTranslationResponse:[@"{\"errorCode\":\"401\",\"tgtText\":\"invalid\"}" dataUsingEncoding:NSUTF8StringEncoding] error:nil]);
+        assert(![LINGYAOClientSession parseNiuTransTranslationResponse:[NSMutableData dataWithLength:1048577] error:nil]);
         ExpectedPayload = [descriptor[@"body_utf8"] dataUsingEncoding:NSUTF8StringEncoding];
         NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
         configuration.protocolClasses = @[NiuTransProtocol.class];
         __block BOOL done = NO;
-        MSIMECloudCandidateRequest *transport = [[MSIMECloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
+        LINGYAOCloudCandidateRequest *transport = [[LINGYAOCloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
             assert([body isEqual:Response(@"synthetic gloss")]); done = YES;
         }];
         assert([(NSURLRequest *)[transport valueForKey:@"translationRequest"] timeoutInterval] == 2.5);
@@ -154,7 +154,7 @@ int main() {
         while (!done && deadline.timeIntervalSinceNow > 0) [NSRunLoop.mainRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
         assert(done && TransportCalls == 1 && ![transport valueForKey:@"translationRequest"]);
         __block BOOL refused = NO;
-        MSIMECloudCandidateRequest *redirected = [[MSIMECloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); refused = YES; }];
+        LINGYAOCloudCandidateRequest *redirected = [[LINGYAOCloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); refused = YES; }];
         NSURLSession *unusedSession = [NSURLSession sessionWithConfiguration:configuration];
         NSURL *original = [NSURL URLWithString:descriptor[@"url"]];
         NSURLSessionDataTask *unusedTask = [unusedSession dataTaskWithURL:original];
@@ -167,7 +167,7 @@ int main() {
             @{@"body_utf8":@42}, @{@"body_utf8":[@"x" stringByPaddingToLength:16385 withString:@"x" startingAtIndex:0]}]) {
             NSMutableDictionary *invalid = [descriptor mutableCopy]; [invalid addEntriesFromDictionary:change];
             __block BOOL rejected = NO;
-            MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithNiuTransDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); rejected = YES; }];
+            LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithNiuTransDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); rejected = YES; }];
             [request start]; assert(rejected && TransportCalls == 1 && ![request valueForKey:@"session"]);
         }
         NSArray *items = @[@{@"text":@"HELLO", @"key":@"hello", @"source_language":@"en", @"target_language":@"zh"},

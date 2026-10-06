@@ -1,4 +1,4 @@
-import app.msime.android.CandidateScrollPolicy;
+import app.lingyao.android.CandidateScrollPolicy;
 
 public final class CandidateScrollPolicySmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

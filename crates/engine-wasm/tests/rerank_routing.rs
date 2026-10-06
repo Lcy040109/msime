@@ -1,13 +1,13 @@
 //! 句子模型把某一行提到首位之后，标点和空格上屏的必须是玩家看到的那个首位，而不是引擎自己的第 0 个候选：选择要经过 `engine_order` 座位映射。
 //!
-//! 需要真实的句子模型，只在设置了 `MSIME_EVAL_RESOURCES` 时运行，否则打印 skipped 后通过。
+//! 需要真实的句子模型，只在设置了 `LINGYAO_EVAL_RESOURCES` 时运行，否则打印 skipped 后通过。
 
 #[path = "support/eval.rs"]
 mod eval;
 
 use std::path::Path;
 
-use msime_engine_wasm::host::{Key, Out, Scheme, WebHost};
+use lingyao_engine_wasm::host::{Key, Out, Scheme, WebHost};
 
 fn host(
     dictionaries: &Path,
@@ -31,7 +31,7 @@ fn host(
 #[test]
 fn a_reranked_first_seat_is_what_punctuation_commits() {
     let Some(resources) = eval::resources() else {
-        println!("skipped: MSIME_EVAL_RESOURCES is not set");
+        println!("skipped: LINGYAO_EVAL_RESOURCES is not set");
         return;
     };
     let model = std::fs::read(resources.join("sentence-model.safetensors")).expect("model");

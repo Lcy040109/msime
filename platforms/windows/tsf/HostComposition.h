@@ -4,7 +4,7 @@
 #include "HostKoreanKey.h"
 #include <string>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 // Printable ASCII, letters included: the character a key that ends a host-composed composition puts in the document right after it, when nothing took its place.
 constexpr bool is_host_text_key(wchar_t wch) { return wch >= 0x20 && wch <= 0x7E; }
 
@@ -27,7 +27,7 @@ template<class Host> HostCompositionEnd EndHostComposition(Host &host, int schem
     std::string raw;
     EngineResult result;
     if (is_korean_text_key(wch) && wch != L' ' && !(wch >= L'0' && wch <= L'9') &&
-        msime::windows::scheme::UsesChinesePunctuation(scheme)) {
+        lingyao::windows::scheme::UsesChinesePunctuation(scheme)) {
         const bool held = host.view(&raw, error) && EngineSessionAdapter::parse_result(raw, &result, error) &&
                           !result.view.editing_text.empty();
         raw.clear();
@@ -42,24 +42,24 @@ template<class Host> HostCompositionEnd EndHostComposition(Host &host, int schem
         raw.clear();
         result = EngineResult{};
     }
-    if (host.command(MSIME_FINISH_COMPOSITION, &raw, error) && EngineSessionAdapter::parse_result(raw, &result, error) &&
+    if (host.command(LINGYAO_FINISH_COMPOSITION, &raw, error) && EngineSessionAdapter::parse_result(raw, &result, error) &&
         result.has_commit)
         end.commit = std::move(result.commit);
     end.hostLetGo = end.commit.empty();
     return end;
 }
 
-// The first Escape on a word whose cancel shows its raw keys again (scheme::CancelRestoresRaw): one MSIME_CANCEL, and true when the host session is still composing after it, so the TIP draws those keys and keeps the composition, as the Server keeps it in its own session. False without sending anything when the scheme discards on Escape or nothing composes, and false when that cancel left nothing, which is the Escape with the raw keys already showing; the caller then discards the composition as for any Escape.
+// The first Escape on a word whose cancel shows its raw keys again (scheme::CancelRestoresRaw): one LINGYAO_CANCEL, and true when the host session is still composing after it, so the TIP draws those keys and keeps the composition, as the Server keeps it in its own session. False without sending anything when the scheme discards on Escape or nothing composes, and false when that cancel left nothing, which is the Escape with the raw keys already showing; the caller then discards the composition as for any Escape.
 template<class Host> bool RestoreHostRawOnEscape(Host &host, std::string *error) {
     std::string raw;
     EngineResult current;
     if (!host.view(&raw, error) || !EngineSessionAdapter::parse_result(raw, &current, error) ||
-        !msime::windows::scheme::CancelRestoresRaw(static_cast<int>(current.view.scheme)) ||
+        !lingyao::windows::scheme::CancelRestoresRaw(static_cast<int>(current.view.scheme)) ||
         current.view.editing_text.empty())
         return false;
     raw.clear();
     EngineResult result;
-    return host.command(MSIME_CANCEL, &raw, error) && EngineSessionAdapter::parse_result(raw, &result, error) &&
+    return host.command(LINGYAO_CANCEL, &raw, error) && EngineSessionAdapter::parse_result(raw, &result, error) &&
            !result.has_commit && !result.view.editing_text.empty();
 }
-} // namespace msime::tsf
+} // namespace lingyao::tsf

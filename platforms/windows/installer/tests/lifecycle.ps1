@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-# Upgrade and uninstall contracts in msime_setup.iss: which processes are stopped, which data directory the uninstaller removes, and which permissions the data directory is given. These read the script; they do not install anything.
-$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../msime_setup.iss') -Raw -Encoding utf8
+# Upgrade and uninstall contracts in lingyao_setup.iss: which processes are stopped, which data directory the uninstaller removes, and which permissions the data directory is given. These read the script; they do not install anything.
+$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../lingyao_setup.iss') -Raw -Encoding utf8
 $script = $script -replace '\\\r?\n\s*', ' '
 function Get-Block([string]$Begin, [string]$End) {
     $first = $script.IndexOf($Begin)

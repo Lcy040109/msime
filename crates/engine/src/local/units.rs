@@ -143,7 +143,7 @@ pub fn warm_up_in_background() {
     WARM_UP.call_once(|| {
         // A failed spawn leaves the first conversion to build the context itself, which is slower but still correct.
         let _ = std::thread::Builder::new()
-            .name("msime-unit-context".to_owned())
+            .name("lingyao-unit-context".to_owned())
             .spawn(warm_up);
     });
 }

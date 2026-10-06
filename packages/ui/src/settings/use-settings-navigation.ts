@@ -57,7 +57,7 @@ export function useSettingsNavigation({
       const current = window.history.state;
       const state = {
         ...(current && typeof current === "object" ? current : {}),
-        msimeSettings: true,
+        lingyaoSettings: true,
         page: next,
       } as Record<string, unknown>;
       delete state.panel;
@@ -80,15 +80,15 @@ export function useSettingsNavigation({
   useEffect(() => {
     if (!mobilePlatform || typeof window === "undefined") return;
     const current = window.history.state;
-    if (!current || current.msimeSettings !== true) {
+    if (!current || current.lingyaoSettings !== true) {
       window.history.replaceState(
-        { ...(current && typeof current === "object" ? current : {}), msimeSettings: true, page },
+        { ...(current && typeof current === "object" ? current : {}), lingyaoSettings: true, page },
         "",
       );
     }
     const onPopState = (event: PopStateEvent) => {
       const state = event.state;
-      if (state?.msimeSettings === true && typeof state.page === "string") {
+      if (state?.lingyaoSettings === true && typeof state.page === "string") {
         const restored = requestedPage(state.page, availablePagesRef.current, "input");
         mobileLastPageByTab.current[mobileTabForPage(restored)] = restored;
         setPage(restored);

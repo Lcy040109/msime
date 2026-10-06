@@ -1,5 +1,5 @@
 //! Bounded community keyboard-skin browsing independent of UI and platform hosts.
-//! Source: MSIME-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
+//! Source: LINGYAO-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
 //! (`SkinCommunityAPI.swift`, `CustomKeyboardSkin.swift`).
 
 use super::category::{SkinCategory, INCLUDE_CATEGORY};

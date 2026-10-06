@@ -9,7 +9,7 @@
 
 #include "../candidates/CandidatePalette.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 struct WaveOverlayModel {
   enum class Action { Cancel, Confirm };
@@ -20,7 +20,7 @@ struct WaveOverlayModel {
   bool show_transcript = true;
   bool actions_visible = false;
   bool light_theme = false;
-  // The resolved theme's colours for the surfaces MSIME draws itself (X11, Wayland); unset keeps their built-in light or dark colours. The IBus fallback shows only text and ignores it.
+  // The resolved theme's colours for the surfaces LINGYAO draws itself (X11, Wayland); unset keeps their built-in light or dark colours. The IBus fallback shows only text and ignores it.
   std::optional<FloatingSurfaceColors> palette;
   std::string transcript;
   std::string status;
@@ -104,4 +104,4 @@ struct WaveOverlayModel {
   }
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

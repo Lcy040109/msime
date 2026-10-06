@@ -4,10 +4,10 @@ set -euo pipefail
 umask 077
 repo_root=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$repo_root"
-resource_dir=${1:?usage: [MSIME_EDITION=<id>] build-client-apk.sh <verified-resource-directory> [arm64-v8a|x86_64]}
+resource_dir=${1:?usage: [LINGYAO_EDITION=<id>] build-client-apk.sh <verified-resource-directory> [arm64-v8a|x86_64]}
 abi=${2:-arm64-v8a}
-# MSIME_EDITION=<id> 选产品版本，规则与 build-apk.sh 相同：本版本的资源锁、词库和语言词库，Tauri 工程按 msimeEdition 换 applicationId 和应用名，APK 按版本命名。缺省是 full，与引入版本之前相同。
-edition=${MSIME_EDITION:-full}
+# LINGYAO_EDITION=<id> 选产品版本，规则与 build-apk.sh 相同：本版本的资源锁、词库和语言词库，Tauri 工程按 lingyaoEdition 换 applicationId 和应用名，APK 按版本命名。缺省是 full，与引入版本之前相同。
+edition=${LINGYAO_EDITION:-full}
 edition_tool="$repo_root/platforms/android/scripts/edition_android.py"
 apk_name=$(python3 "$edition_tool" field --edition "$edition" apk_name)
 edition_lock=$(python3 "$edition_tool" field --edition "$edition" resource_lock)
@@ -21,7 +21,7 @@ esac
 android_sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
 [[ -n "$android_sdk" ]] || { echo "Android SDK required" >&2; exit 1; }
 [[ -f "$android_sdk/platforms/android-36/android.jar" && -x "$android_sdk/build-tools/35.0.0/apksigner" ]] || { echo "Android API 36 and build-tools 35 required" >&2; exit 1; }
-android_ndk=${MSIME_ANDROID_NDK:-$android_sdk/ndk/28.2.13676358}
+android_ndk=${LINGYAO_ANDROID_NDK:-$android_sdk/ndk/28.2.13676358}
 tauri_android_dir=${TAURI_ANDROID_DIR:-}
 if [[ -z "$tauri_android_dir" ]]; then
   tauri_manifest=$(cargo metadata --locked --format-version 1 | node -e '
@@ -37,13 +37,13 @@ if [[ -z "$tauri_android_dir" ]]; then
   tauri_android_dir="$(dirname "$tauri_manifest")/mobile/android"
 fi
 [[ -f "$tauri_android_dir/build.gradle.kts" ]] || { echo "Locked Tauri Android sources required" >&2; exit 1; }
-artifacts=$(cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$resource_dir")
+artifacts=$(cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$resource_dir")
 bash platforms/android/build-native.sh "$abi"
 tauri_jni="$repo_root/target/android/tauri-jniLibs/$abi"
 rm -rf "$tauri_jni"
 mkdir -p "$tauri_jni"
-cp "$repo_root/target/android/jniLibs/$abi/libmsime_android.so" \
-  "$repo_root/target/android/jniLibs/$abi/libmsime_host_api.so" \
+cp "$repo_root/target/android/jniLibs/$abi/liblingyao_android.so" \
+  "$repo_root/target/android/jniLibs/$abi/liblingyao_host_api.so" \
   "$repo_root/target/android/jniLibs/$abi/libsherpa-onnx-c-api.so" \
   "$repo_root/target/android/jniLibs/$abi/libonnxruntime.so" "$tauri_jni/"
 assets="$repo_root/target/android/tauri-assets"
@@ -58,7 +58,7 @@ if [ "$edition" != full ]; then
   edition_flags=(--edition "$edition")
 fi
 while IFS= read -r artifact; do cp "$resource_dir/$artifact" "$assets/dictionary/"; done <<< "$artifacts"
-cargo run --quiet -p msime-client-core --example verify_resources --locked -- ${edition_flags[@]+"${edition_flags[@]}"} "$assets/dictionary" >/dev/null
+cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- ${edition_flags[@]+"${edition_flags[@]}"} "$assets/dictionary" >/dev/null
 mkdir -p "$assets/native-notices"
 cp -R target/android/notices/. "$assets/native-notices/"
 cp LICENSE "$assets/client-LICENSE.txt"
@@ -70,7 +70,7 @@ done
 cp resources/helpcodes/ENGINE-NOTICE.md "$assets/helpcodes/NOTICE.md"
 cp resources/helpcodes/NOTICE.md "$assets/helpcodes/NOTICE-jiajia.md"
 # Optional non-English candidate glosses (scripts/build_offline_glosses.py). Bootstrap extracts them beside the resources, where the Engine looks for one zh-<lang>.db per target language; without them only English is glossed offline.
-glosses_source=${MSIME_OFFLINE_GLOSSES:-$repo_root/target/offline-glosses}
+glosses_source=${LINGYAO_OFFLINE_GLOSSES:-$repo_root/target/offline-glosses}
 rm -rf "$assets/offline-glosses"
 # 它们按中文候选查释义，不提供中文方案的版本（版本表 features.offline_glosses 为 false：日文、越南文和藏文版）不带。
 if [ "$edition_offline_glosses" != true ]; then
@@ -82,10 +82,10 @@ elif compgen -G "$glosses_source/zh-*.db" >/dev/null && [ -f "$glosses_source/of
 else
   echo "no offline glosses at $glosses_source; candidates are glossed offline in English only"
 fi
-# Optional Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `msime-dict-build languages`), as on macOS, iOS and HarmonyOS. Bootstrap extracts them to language-dictionaries/ beside the resources, where host-api finds them and names them in the runtime options; the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is packaged only with its licence text, which must travel with the data.
-languages_source=${MSIME_LANGUAGE_DICTIONARIES:-$repo_root/target/language-dictionaries}
+# Optional Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `lingyao-dict-build languages`), as on macOS, iOS and HarmonyOS. Bootstrap extracts them to language-dictionaries/ beside the resources, where host-api finds them and names them in the runtime options; the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is packaged only with its licence text, which must travel with the data.
+languages_source=${LINGYAO_LANGUAGE_DICTIONARIES:-$repo_root/target/language-dictionaries}
 # Each dictionary beside the licence file that must travel with it; the staging below and the APK check at the end read the same list.
-language_pairs="msime-cantonese.db:msime-rime_cantonese_LICENSE.txt msime-zhuyin.db:msime-libchewing_data_LICENSE.txt msime-stroke.db:msime-rime_stroke_LICENSE.txt"
+language_pairs="lingyao-cantonese.db:lingyao-rime_cantonese_LICENSE.txt lingyao-zhuyin.db:lingyao-libchewing_data_LICENSE.txt lingyao-stroke.db:lingyao-rime_stroke_LICENSE.txt"
 rm -rf "$assets/language-dictionaries"
 staged_languages=()
 for pair in $language_pairs; do
@@ -110,22 +110,22 @@ else
   echo "no language dictionaries at $languages_source; Cantonese, Zhuyin and Stroke stay unavailable"
 fi
 # A release requires every dictionary this edition packs (the edition table's language_dictionaries) that resources/language-dictionaries.lock.json pins, not a fixed list: a dictionary that has not been released yet is packaged when present but cannot fail a release, and the lock bump that publishes it makes it required.
-if [ "${MSIME_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
+if [ "${LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
   required_languages=$(python3 "$repo_root/scripts/fetch_language_dictionaries.py" --list-databases)
   if [ -z "$required_languages" ]; then
-    echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
+    echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
     exit 1
   fi
   for database in $required_languages; do
     grep -qxF "$database" <<< "$edition_languages" || continue
     if [[ " ${staged_languages[*]:-} " != *" $database "* ]]; then
-      echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, which edition $edition packs and resources/language-dictionaries.lock.json pins, was not packaged from $languages_source" >&2
+      echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, which edition $edition packs and resources/language-dictionaries.lock.json pins, was not packaged from $languages_source" >&2
       exit 1
     fi
   done
 fi
 ANDROID_HOME="$android_sdk" NDK_HOME="$android_ndk" TAURI_ANDROID_DIR="$tauri_android_dir" \
-  ORG_GRADLE_PROJECT_msimeEdition="$edition" pnpm --filter @msime/desktop tauri android build --apk --target "$tauri_target" --ci
+  ORG_GRADLE_PROJECT_lingyaoEdition="$edition" pnpm --filter @lingyao/desktop tauri android build --apk --target "$tauri_target" --ci
 unsigned="$repo_root/apps/desktop/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
 [[ -f "$unsigned" ]] || { echo "Expected Tauri APK not produced" >&2; exit 1; }
 keystore=$(bash "$repo_root/platforms/android/scripts/dev-keystore.sh")
@@ -134,7 +134,7 @@ output="$repo_root/target/android/$apk_name.apk"
   --ks-pass pass:android --key-pass pass:android --out "$output" "$unsigned"
 "$android_sdk/build-tools/35.0.0/apksigner" verify "$output"
 "$android_sdk/build-tools/35.0.0/zipalign" -c -P 16 4 "$output"
-# The package is only worth shipping if it carries each dictionary staged above, beside its licence (a release, MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1, has already refused to stage fewer than the lock pins).
+# The package is only worth shipping if it carries each dictionary staged above, beside its licence (a release, LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1, has already refused to stage fewer than the lock pins).
 apk_entries=$(unzip -Z1 "$output")
 for pair in $language_pairs; do
   [ -f "$assets/language-dictionaries/${pair%%:*}" ] || continue

@@ -10,7 +10,7 @@ import {
   type CommunityCandidateSkin,
   type CommunityCandidateSkinPage,
   type SkinCatalog,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 const renderSkinPreview = vi.hoisted(() => vi.fn());
 vi.mock("../../../../packages/ui/src/skin/skin-preview-render", () => ({

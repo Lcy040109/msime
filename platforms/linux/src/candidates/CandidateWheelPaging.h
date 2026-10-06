@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The shared "mouse wheel pages candidates" switch (navigation.mouse_wheel, off by default).
 inline bool read_candidate_wheel_paging(const nlohmann::json &preferences) {
@@ -31,4 +31,4 @@ private:
   std::optional<bool> last_;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

@@ -45,12 +45,12 @@ REVIEWED: dict[str, str] = {
         "Same release plumbing as the bullet above."
     ),
     "**installer:** 首次安装时询问云候选，不再默认静默联网": (
-        "platforms/windows/installer/msime_setup.iss: CreateInputOptionPage after the licence "
+        "platforms/windows/installer/lingyao_setup.iss: CreateInputOptionPage after the licence "
         "page, skipped on upgrade; on a fresh install the choice goes to installer-choices.json in the "
         "data directory, which the Server applies to the shared preferences on its first preparation "
         "(platforms/windows/src/system/FirstRun.h take_installer_cloud_choice), and to "
         "[general].cloud_candidates of the config.toml this install created. macOS: platforms/macos/src/input/InputController.mm activateServer: "
-        "prompt (requestCloudCandidatesConsentIfNeeded) plus the MSIMEClientCloudCandidatesConsent "
+        "prompt (requestCloudCandidatesConsentIfNeeded) plus the LINGYAOClientCloudCandidatesConsent "
         "key in platforms/macos/src/settings/AppearancePreferences.mm, asked on a fresh profile only."
     ),
     "**installer:** include release PDB symbols": (
@@ -130,7 +130,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "The settings page shows them (apps/desktop/tests/settings/typing-statistics.test.tsx)."
     ),
     "feat(installer): 安装前检查 WebView2 与 VC 运行库": (
-        "platforms/windows/installer/msime_setup.iss: ReadWebView2Version and VCRuntimeKey registry "
+        "platforms/windows/installer/lingyao_setup.iss: ReadWebView2Version and VCRuntimeKey registry "
         "checks before install, pinned by scripts/test-installer-prerequisites.py."
     ),
     "feat(engine): 整句候选把词格排到 Google 解码器之前": (
@@ -140,7 +140,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "front of it in either scheme."
     ),
     "feat(installer): 打包时生成并安装词格语言模型 sc.lm": (
-        "Deliberately absent with the KenLM scorer below: the lattice reads msime-bigram.bin/msime-trigram.bin, "
+        "Deliberately absent with the KenLM scorer below: the lattice reads lingyao-bigram.bin/lingyao-trigram.bin, "
         "which ship with the pinned dictionary release in resources/desktop-dictionary.lock.json."
     ),
     "feat(engine): 词格整句改用 kenlm 三元模型打分": (
@@ -151,17 +151,17 @@ REVIEWED_COMMITS: dict[str, str] = {
     ),
     "feat(windows): Ctrl+左右键按分词移动光标": (
         "platforms/windows/src/input/InputKeyPolicy.h is_segment_caret_key (Ctrl only) maps to "
-        "MSIME_MOVE_LEFT_SEGMENT/MSIME_MOVE_RIGHT_SEGMENT in platforms/windows/src/input/KeyEvent.h; "
+        "LINGYAO_MOVE_LEFT_SEGMENT/LINGYAO_MOVE_RIGHT_SEGMENT in platforms/windows/src/input/KeyEvent.h; "
         "the TIP side is _HandleCompositionSegmentEdit in platforms/windows/tsf/Key/KeyHandler.cpp."
     ),
     "feat(server): Ctrl+Backspace 按分词删除前置拼音（#187）": (
         "is_segment_backspace_key in platforms/windows/src/input/InputKeyPolicy.h sends "
-        "MSIME_BACKSPACE_SEGMENT; once the reading is empty, ReplyComposer::restore_segment in "
+        "LINGYAO_BACKSPACE_SEGMENT; once the reading is empty, ReplyComposer::restore_segment in "
         "platforms/windows/src/ipc/ReplyComposer.cpp and _creatingWordRestoreHistory in "
         "platforms/windows/tsf/Key/KeyHandler.cpp take back the last selected segment."
     ),
     "feat(installer): 安装时可自定义数据目录位置": (
-        "platforms/windows/installer/msime_setup.iss: DataDirPage and GetDataDir, the DataDir "
+        "platforms/windows/installer/lingyao_setup.iss: DataDirPage and GetDataDir, the DataDir "
         "registry value and MigrateUserDataDir for a moved directory."
     ),
     "feat(candidate): Ctrl+Enter 上屏候选右侧的译文": (
@@ -280,7 +280,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "platforms/windows/src/entrypoints/server_main.cpp."
     ),
     "feat(ui): DeviceResources 与 Window 支持渲染 DPI 覆写": (
-        "SetDpiOverride in platforms/windows/msimeui/include/msimeui/DeviceResources.h and Window.h."
+        "SetDpiOverride in platforms/windows/lingyaoui/include/lingyaoui/DeviceResources.h and Window.h."
     ),
     "feat(ui-html): 设置页新增输入纠错双开关": (
         "quanpinAutocorrect toggles in packages/ui/src/index.tsx "
@@ -337,7 +337,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "platforms/windows/tests/input/word_character_policy.cpp."
     ),
     "feat(candidate): support cross-page arrow navigation": (
-        "Arrow keys send MSIME_NEXT_CANDIDATE/MSIME_PREVIOUS_CANDIDATE "
+        "Arrow keys send LINGYAO_NEXT_CANDIDATE/LINGYAO_PREVIOUS_CANDIDATE "
         "(platforms/windows/src/input/NavigationPolicy.h); the shared runtime keeps one highlight "
         "across pages and clamps at the ends (Action::NextCandidate in crates/input-runtime/src/runtime.rs)."
     ),
@@ -408,7 +408,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "crates/input-runtime/src/runtime.rs, reached from CandidateMenuLayout.h."
     ),
     "feat: preserve user dictionary changes across updates": (
-        "ReplayUserDictionary in platforms/windows/installer/msime_setup.iss; the journal replay is "
+        "ReplayUserDictionary in platforms/windows/installer/lingyao_setup.iss; the journal replay is "
         "described at crates/host-api/src/lib.rs (package upgrade)."
     ),
     "feat: persist and apply appearance theme mode for settings and small windows": (
@@ -493,7 +493,7 @@ def parse(text: str) -> set[str]:
 def main() -> int:
     resolved = changelog_features()
     if resolved is None:
-        print("skipped: no MSIME-Windows checkout beside this repository to compare against")
+        print("skipped: no LINGYAO-Windows checkout beside this repository to compare against")
         print(f"  expected a git checkout at {REFERENCE} carrying {CHANGELOG}")
         return 0
     features, ref, sha = resolved

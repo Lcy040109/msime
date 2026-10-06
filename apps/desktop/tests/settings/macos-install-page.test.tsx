@@ -6,7 +6,7 @@ import {
   nextSimulatedProgress,
   type InputSourceStartupStatus,
   type MacosInstallClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 beforeEach(() => {
   vi.useFakeTimers();

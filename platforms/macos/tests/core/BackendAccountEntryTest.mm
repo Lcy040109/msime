@@ -1,7 +1,7 @@
 #import "../../src/backend/account/BackendAccountEntry.h"
 #include <cassert>
 
-@interface RecordingAccountWindow : NSObject <MSIMEBackendAccountEntry>
+@interface RecordingAccountWindow : NSObject <LINGYAOBackendAccountEntry>
 @property(nonatomic) NSUInteger presentations;
 @property(nonatomic) NSUInteger clipboards;
 @end
@@ -22,16 +22,16 @@
 
 int main() {
     @autoreleasepool {
-        assert(!MSIMEOpenBackendAccount(Nil));
-        assert(!MSIMEOpenBackendClipboard(Nil));
-        assert(!MSIMEOpenBackendClipboard(NSObject.class));
-        assert(!MSIMEOpenBackendClipboard(InvalidAccountWindow.class));
-        assert(MSIMEOpenBackendClipboard(RecordingAccountWindow.class));
+        assert(!LINGYAOOpenBackendAccount(Nil));
+        assert(!LINGYAOOpenBackendClipboard(Nil));
+        assert(!LINGYAOOpenBackendClipboard(NSObject.class));
+        assert(!LINGYAOOpenBackendClipboard(InvalidAccountWindow.class));
+        assert(LINGYAOOpenBackendClipboard(RecordingAccountWindow.class));
         assert(((RecordingAccountWindow *)[RecordingAccountWindow shared]).clipboards == 1);
-        assert(!MSIMEOpenBackendAccount(NSObject.class));
-        assert(!MSIMEOpenBackendAccount(InvalidAccountWindow.class));
-        assert(MSIMEOpenBackendAccount(RecordingAccountWindow.class));
-        assert(MSIMEOpenBackendAccount(RecordingAccountWindow.class));
+        assert(!LINGYAOOpenBackendAccount(NSObject.class));
+        assert(!LINGYAOOpenBackendAccount(InvalidAccountWindow.class));
+        assert(LINGYAOOpenBackendAccount(RecordingAccountWindow.class));
+        assert(LINGYAOOpenBackendAccount(RecordingAccountWindow.class));
         assert(((RecordingAccountWindow *)[RecordingAccountWindow shared]).presentations == 2);
     }
 }

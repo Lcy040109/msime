@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value, const char *what) {
   if (!value)

@@ -46,7 +46,7 @@ pub enum Command {
     CommitReading = 10,
     /// Commit the letters as typed without learning them as an English word.
     CommitRawWithoutLearning = 11,
-    /// Open or close the active scheme's candidate list (the Korean Hanja list, the Zhuyin conversion list); unhandled in a scheme without one. Hosts may call it `MSIME_OPEN_CANDIDATE_LIST`.
+    /// Open or close the active scheme's candidate list (the Korean Hanja list, the Zhuyin conversion list); unhandled in a scheme without one. Hosts may call it `LINGYAO_OPEN_CANDIDATE_LIST`.
     ConvertHanja = 12,
 }
 
@@ -319,7 +319,7 @@ impl Session {
                 )
                 .unwrap_or_else(|error| {
                     eprintln!(
-                        "msime: helpcode schema {} unavailable, using an empty table: {error}",
+                        "lingyao: helpcode schema {} unavailable, using an empty table: {error}",
                         self.options.helpcode_schema
                     );
                     HelpcodeKeymap::default()
@@ -579,7 +579,7 @@ impl Session {
     }
 }
 
-/// The C++ registered `PersonalNgramStore::flush_all` with `atexit` (personal_ngram_store.cpp:255), so context learned in the last ~2 s reached the journal when the host quit. Rust runs no destructors for statics and `atexit` needs unsafe, so the session writes its journal's queue when the host drops it, which hosts do on deactivation and shutdown. A host that can exit without dropping its sessions (macOS `[NSApp terminate:]` runs `exit()`) calls `flush_personal_learning`, through host-api's `msime_client_flush_all`, from its will-terminate hook instead.
+/// The C++ registered `PersonalNgramStore::flush_all` with `atexit` (personal_ngram_store.cpp:255), so context learned in the last ~2 s reached the journal when the host quit. Rust runs no destructors for statics and `atexit` needs unsafe, so the session writes its journal's queue when the host drops it, which hosts do on deactivation and shutdown. A host that can exit without dropping its sessions (macOS `[NSApp terminate:]` runs `exit()`) calls `flush_personal_learning`, through host-api's `lingyao_client_flush_all`, from its will-terminate hook instead.
 impl Drop for Session {
     fn drop(&mut self) {
         let journal = runtime_paths(&self.options).user(assets::USER_JOURNAL);

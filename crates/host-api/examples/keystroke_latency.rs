@@ -8,7 +8,7 @@
 // library root carries does not reach them. Same boundary, same reason: this
 // target drives the C ABI directly.
 #![allow(unsafe_code)]
-use msime_host_api::*;
+use lingyao_host_api::*;
 use serde_json::{json, Value};
 use std::ffi::{c_char, CString};
 use std::time::Instant;
@@ -47,14 +47,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resources = std::fs::canonicalize(resources)?;
     let request = json!({"resources": resources, "state_root": state.path()}).to_string();
     let mut options: Value =
-        read(unsafe { msime_client_prepare_host(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_prepare_host(request.as_ptr(), request.len()) });
     options["preferences"]["scheme"] = json!(scheme);
     options["preferences"]["candidate_page_size"] = json!(9);
     let options_value = options;
     let options = options_value.to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     let handle = created["session"].as_u64().unwrap();
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
 
     // Words a person actually types, not one long buffer: the cost of a key depends on how much
     // is already composed, so a realistic run has to keep committing and starting over.
@@ -79,14 +79,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for word in words {
             for byte in word.bytes() {
                 let started = Instant::now();
-                read(msime_client_character(handle, byte, false));
+                read(lingyao_client_character(handle, byte, false));
                 character.push(started.elapsed().as_secs_f64() * 1000.0);
                 let started = Instant::now();
-                read(msime_client_view(handle));
+                read(lingyao_client_view(handle));
                 view.push(started.elapsed().as_secs_f64() * 1000.0);
             }
             let started = Instant::now();
-            read(msime_client_command(handle, 9));
+            read(lingyao_client_command(handle, 9));
             commit.push(started.elapsed().as_secs_f64() * 1000.0);
         }
     }
@@ -103,12 +103,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // 3 is Cancel. 0 is Backspace, which only removes one key - using it here left the
         // composition growing across passes until it was hundreds of characters long, which is
         // not typing and made the numbers say so.
-        read(msime_client_command(handle, 3));
+        read(lingyao_client_command(handle, 3));
         let long = "buzhidaogaizenmebanzheshi";
         for (index, byte) in long.bytes().enumerate().take(24) {
             let started = Instant::now();
-            read(msime_client_character(handle, byte, false));
-            read(msime_client_view(handle));
+            read(lingyao_client_character(handle, byte, false));
+            read(lingyao_client_view(handle));
             let ms = started.elapsed().as_secs_f64() * 1000.0;
             by_position[index].push(ms);
             if ms > 16.0 {
@@ -121,25 +121,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_data = options_value["user_data"].as_str().unwrap().to_owned();
     let statistics = |action: Value| {
         let request = json!({"directory": user_data, "action": action}).to_string();
-        read(unsafe { msime_client_typing_statistics(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_typing_statistics(request.as_ptr(), request.len()) })
     };
     let mut selections = Vec::new();
     for enabled in [true, false] {
         statistics(json!({"operation": "set_enabled", "enabled": enabled}));
-        read(msime_client_focus(handle, true));
+        read(lingyao_client_focus(handle, true));
         let mut select = Vec::new();
         for round in 0..SELECTIONS {
-            read(msime_client_command(handle, 3));
+            read(lingyao_client_command(handle, 3));
             let mut current = Value::Null;
             for byte in words[round % words.len()].bytes() {
-                current = read(msime_client_character(handle, byte, false))["view"].clone();
+                current = read(lingyao_client_character(handle, byte, false))["view"].clone();
             }
             // Only a selection that commits is counted, so a candidate that covers part of the word is followed by the first candidate for the rest until something commits, and only that last call is kept.
             let mut index = round % current["candidates"].as_array().unwrap().len().min(9);
             loop {
                 let generation = current["generation"].as_u64().unwrap();
                 let started = Instant::now();
-                let result = read(msime_client_select(handle, generation, index));
+                let result = read(lingyao_client_select(handle, generation, index));
                 let elapsed = started.elapsed().as_secs_f64() * 1000.0;
                 if !result["commit"].is_null() {
                     select.push(elapsed);
@@ -150,7 +150,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         let started = Instant::now();
-        read(msime_client_focus(handle, false));
+        read(lingyao_client_focus(handle, false));
         let blur = started.elapsed().as_secs_f64() * 1000.0;
         selections.push((enabled, select, blur));
     }
@@ -191,6 +191,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (pass, key, ms) in &stalls {
         println!("  pass {pass:<3} key {key:<2} {ms:7.2}ms");
     }
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
     Ok(())
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""msime-linux-ibus-launcher 的崩溃守护：宿主崩溃后按退避重启，升级退出立即重启且不影响退避，维护退出、总线断开、配置失效、宿主程序已被删除和停止请求都不重启。
+"""lingyao-linux-ibus-launcher 的崩溃守护：宿主崩溃后按退避重启，升级退出立即重启且不影响退避，维护退出、总线断开、配置失效、宿主程序已被删除和停止请求都不重启。
 
-用桩代替 msime-linux-ibus，按预设剧本逐次崩溃或退出，只看启动器起了它几次、间隔多久、带了什么参数。不需要 IBus、D-Bus 或词库。
+用桩代替 lingyao-linux-ibus，按预设剧本逐次崩溃或退出，只看启动器起了它几次、间隔多久、带了什么参数。不需要 IBus、D-Bus 或词库。
 """
 import json
 import os
@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LAUNCHER = ROOT / "scripts/msime-linux-ibus-launcher"
+LAUNCHER = ROOT / "scripts/lingyao-linux-ibus-launcher"
 STOP_STATUS = 77
 UPGRADED_STATUS = 78
 
@@ -63,19 +63,19 @@ class Fixture:
         self.scratch = scratch
         self.bin_dir = scratch / "bin"
         self.bin_dir.mkdir()
-        launcher = self.bin_dir / "msime-linux-ibus-launcher"
+        launcher = self.bin_dir / "lingyao-linux-ibus-launcher"
         launcher.write_text(LAUNCHER.read_text())
         launcher.chmod(0o755)
         self.options = scratch / "options/runtime-options.json"
         self.options.parent.mkdir()
         self.environment = {
-            key: value for key, value in os.environ.items() if not key.startswith("MSIME_")
+            key: value for key, value in os.environ.items() if not key.startswith("LINGYAO_")
         }
         self.environment.update(HOME=str(scratch / "home"), XDG_CONFIG_HOME=str(scratch / "config"))
 
     def reset(self, plan: list) -> None:
         # Rewritten every time because a case may delete the stub or clear its execute bit.
-        stub = self.bin_dir / "msime-linux-ibus"
+        stub = self.bin_dir / "lingyao-linux-ibus"
         stub.write_text(STUB.format(python=sys.executable, scratch=str(self.scratch)))
         stub.chmod(0o755)
         for name in ("runs.log", "signals.log"):
@@ -85,7 +85,7 @@ class Fixture:
 
     def start(self) -> subprocess.Popen:
         return subprocess.Popen(
-            [str(self.bin_dir / "msime-linux-ibus-launcher"), str(self.options)],
+            [str(self.bin_dir / "lingyao-linux-ibus-launcher"), str(self.options)],
             env=self.environment, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
         )
 

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { aiSettingsPreferences } from "@msime/ui";
+import { aiSettingsPreferences } from "@lingyao/ui";
 
 test("uses the shared AI defaults when no draft exists", () => {
   const values = aiSettingsPreferences();

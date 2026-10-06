@@ -2,7 +2,7 @@
 #include "ToolbarLayout.h"
 #include <cmath>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Win32 events and window sizes are pixels; Direct2D already applies system
 // DPI to its DIPs. Only the user scale belongs in the drawing coordinates.
 inline double toolbar_pixel_unit(unsigned dpi, double scale) {
@@ -27,4 +27,4 @@ inline bool toolbar_drag_at_pixel(double x, double y, unsigned dpi, double scale
          y / unit < metrics.shadow.top + metrics.height &&
          toolbar_is_drag_strip(x / unit, metrics);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

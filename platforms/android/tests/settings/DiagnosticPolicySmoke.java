@@ -1,4 +1,4 @@
-import app.msime.android.InputDiagnosticPolicy;
+import app.lingyao.android.InputDiagnosticPolicy;
 
 public final class DiagnosticPolicySmoke {
     private static void check(boolean condition) {

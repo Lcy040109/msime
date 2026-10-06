@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msimeui {
+namespace lingyaoui {
 
 // Text panels are non-activating windows. Capture the editor that was in the
 // foreground before the panel was opened and only inject while that same
@@ -68,5 +68,5 @@ private:
     HWND target_ = nullptr;
 };
 
-} // namespace msimeui
+} // namespace lingyaoui
 #endif

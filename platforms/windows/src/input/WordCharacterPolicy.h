@@ -4,7 +4,7 @@
 #include <optional>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class WordCharacterBinding { Disabled, Brackets, MinusEqual };
 inline WordCharacterBinding
 preference_word_character(const nlohmann::json &preferences) {
@@ -37,10 +37,10 @@ word_character_edge(const FanyImeNamedpipeData &packet,
     return std::nullopt;
   if (packet.keycode == (minus ? 0xBDu : 0xDBu) &&
       packet.wch == (minus ? '-' : '['))
-    return MSIME_FIRST_HAN;
+    return LINGYAO_FIRST_HAN;
   if (packet.keycode == (minus ? 0xBBu : 0xDDu) &&
       packet.wch == (minus ? '=' : ']'))
-    return MSIME_LAST_HAN;
+    return LINGYAO_LAST_HAN;
   return std::nullopt;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

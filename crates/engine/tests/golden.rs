@@ -1,6 +1,6 @@
 //! Golden differential tests: replay the scenarios and real-dictionary sets recorded from the C++ reference engine (`tools/engine-golden/README.md`) against the public API and fail with a per-step diff.
 //!
-//! `MSIME_GOLDEN_SCENARIO=<name>[,<name>...]` limits the scripted run to those scenarios. The real sets need the `dict-v2.0.1` resource directory in `MSIME_EVAL_RESOURCES` and are skipped, with the reason printed, without it.
+//! `LINGYAO_GOLDEN_SCENARIO=<name>[,<name>...]` limits the scripted run to those scenarios. The real sets need the `dict-v2.0.1` resource directory in `LINGYAO_EVAL_RESOURCES` and are skipped, with the reason printed, without it.
 
 mod golden_support;
 

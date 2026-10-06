@@ -14,27 +14,27 @@ static NSView *FindView(NSView *view, NSString *identifier) {
 int main() {
     @autoreleasepool {
         [NSApplication sharedApplication];
-        MSIMESupportWindowController *controller = [MSIMESupportWindowController sharedController];
+        LINGYAOSupportWindowController *controller = [LINGYAOSupportWindowController sharedController];
         assert(controller != nil && controller.window != nil);
 
-        [controller showPage:MSIMESupportPageHelp];
-        assert(controller.page == MSIMESupportPageHelp);
+        [controller showPage:LINGYAOSupportPageHelp];
+        assert(controller.page == LINGYAOSupportPageHelp);
         assert([controller.window.title isEqualToString:@"灵耀输入法帮助"]);
-        assert(FindView(controller.window.contentView, @"MSIMESupportPreferences") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportPreferences") != nil);
 
-        [controller showPage:MSIMESupportPageAbout];
-        assert(controller.page == MSIMESupportPageAbout);
+        [controller showPage:LINGYAOSupportPageAbout];
+        assert(controller.page == LINGYAOSupportPageAbout);
         assert([controller.window.title isEqualToString:@"关于灵耀输入法"]);
-        assert(FindView(controller.window.contentView, @"MSIMESupportCheckForUpdates") != nil);
-        assert(FindView(controller.window.contentView, @"MSIMESupportLicense") != nil);
-        assert(FindView(controller.window.contentView, @"MSIMESupportPrivacy") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportCheckForUpdates") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportLicense") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportPrivacy") != nil);
 
-        [controller showPage:MSIMESupportPageFeedback];
-        assert(controller.page == MSIMESupportPageFeedback);
+        [controller showPage:LINGYAOSupportPageFeedback];
+        assert(controller.page == LINGYAOSupportPageFeedback);
         assert([controller.window.title isEqualToString:@"反馈与交流"]);
-        assert(FindView(controller.window.contentView, @"MSIMESupportIssues") != nil);
-        assert(FindView(controller.window.contentView, @"MSIMESupportQQ") != nil);
-        assert(FindView(controller.window.contentView, @"MSIMESupportTelegram") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportIssues") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportQQ") != nil);
+        assert(FindView(controller.window.contentView, @"LINGYAOSupportTelegram") != nil);
         [controller.window orderOut:nil];
     }
     return 0;

@@ -5,15 +5,15 @@
 
 #include "LinuxEdition.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// On Windows the installer prepares the data directory, so the input method is ready the moment it can be selected. A Linux package installs no user state; until msime-linux-setup (or the settings window's first-run page) publishes runtime-options.json, selecting MSIME cannot open a session. The frontends tell that state apart from a broken configuration and point the user at setup instead of a generic error.
-// 产品名和首次配置命令按版本取（LinuxEdition.h）：五笔版要叫用户运行 msime-linux-wubi-setup，而不是 full 的那个。
+// On Windows the installer prepares the data directory, so the input method is ready the moment it can be selected. A Linux package installs no user state; until lingyao-linux-setup (or the settings window's first-run page) publishes runtime-options.json, selecting LINGYAO cannot open a session. The frontends tell that state apart from a broken configuration and point the user at setup instead of a generic error.
+// 产品名和首次配置命令按版本取（LinuxEdition.h）：五笔版要叫用户运行 lingyao-linux-wubi-setup，而不是 full 的那个。
 inline constexpr std::string_view kFirstRunHint =
-    MSIME_EDITION_DISPLAY_NAME "尚未完成首次配置：请打开「" MSIME_EDITION_DISPLAY_NAME "」设置，或在终端运行 " MSIME_EDITION_SETUP_PROGRAM;
+    LINGYAO_EDITION_DISPLAY_NAME "尚未完成首次配置：请打开「" LINGYAO_EDITION_DISPLAY_NAME "」设置，或在终端运行 " LINGYAO_EDITION_SETUP_PROGRAM;
 
 // Installed beside the IBus launcher; it opens the settings window and posts a notification at most once per login session. Both frontends call the same script so that limit is shared between them.
-inline constexpr std::string_view kFirstRunGuideProgram = "msime-linux-first-run-guide";
+inline constexpr std::string_view kFirstRunGuideProgram = "lingyao-linux-first-run-guide";
 
 enum class RuntimeOptionsState { Found, NotConfigured, Invalid };
 
@@ -36,7 +36,7 @@ inline RuntimeOptionsLocation locate_runtime_options(const char *override_path,
                                : home && *home ? std::filesystem::path(home) / ".config"
                                                : std::filesystem::path();
   if (!path.is_absolute()) return {RuntimeOptionsState::Invalid, {}};
-  path /= MSIME_EDITION_CLIENT_DIRECTORY "/runtime-options.json";
+  path /= LINGYAO_EDITION_CLIENT_DIRECTORY "/runtime-options.json";
   if (std::filesystem::exists(path) || std::filesystem::is_symlink(path))
     return {RuntimeOptionsState::Found, path};
   if (!system_path.is_absolute()) return {RuntimeOptionsState::Invalid, {}};
@@ -45,4 +45,4 @@ inline RuntimeOptionsLocation locate_runtime_options(const char *override_path,
   return {RuntimeOptionsState::NotConfigured, system_path};
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

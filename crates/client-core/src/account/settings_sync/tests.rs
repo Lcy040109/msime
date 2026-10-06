@@ -513,7 +513,7 @@ fn settings_sync_host_feedback_is_read_only_when_the_document_has_it() {
 fn settings_sync_new_android_keys_round_trip() {
     let mut expected = Preferences::default();
     expected.touch_toolbar.ai = !expected.touch_toolbar.ai;
-    expected.plugins.key_sound.pack = "msime-woodblock".into();
+    expected.plugins.key_sound.pack = "lingyao-woodblock".into();
     expected.voice_input.language = "en-US".into();
     expected.validate().unwrap();
     let exported = export_android_settings(&expected, None).unwrap();

@@ -1,5 +1,5 @@
 #include "../src/core/ClientEngine.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <algorithm>
 #include <cstdlib>
 #include <fcntl.h>
@@ -316,7 +316,7 @@ GVariant *call(GDBusConnection *connection, const char *destination,
                               ? "org.freedesktop.DBus.Properties"
                               : "org.freedesktop.IBus.Engine";
   g_dbus_connection_call(
-      connection, destination, "/app/msime/test/engine", interface, method,
+      connection, destination, "/app/lingyao/test/engine", interface, method,
       parameters, nullptr, G_DBUS_CALL_FLAGS_NONE, 5000, nullptr,
       +[](GObject *source, GAsyncResult *result, gpointer data) {
         auto &p = *static_cast<Call *>(data);
@@ -345,10 +345,10 @@ int main(int argc, char **argv) {
     return 2;
   try {
     // This fixture asserts RegisterProperties and must exercise the real menu path.
-    g_unsetenv("MSIME_DISABLE_IBUS_PROPERTIES");
+    g_unsetenv("LINGYAO_DISABLE_IBUS_PROPERTIES");
     // Synthetic fixture only; the production host does not invoke this
     // bootstrap.
-    gchar *temporary = g_dir_make_tmp("msime-ibus-test-XXXXXX", nullptr);
+    gchar *temporary = g_dir_make_tmp("lingyao-ibus-test-XXXXXX", nullptr);
     require(temporary != nullptr, "Cannot create test directory");
     std::filesystem::path root(temporary);
     g_free(temporary);
@@ -369,11 +369,11 @@ int main(int argc, char **argv) {
         {"resources", argv[1]},
         {"state_root",
          root.string()}}.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> prepared(
-        msime_client_prepare_host(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> prepared(
+        lingyao_client_prepare_host(
             reinterpret_cast<const uint8_t *>(bootstrap.data()),
             bootstrap.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     auto result = nlohmann::json::parse(prepared.get());
     require(result.at("ok").get<bool>(), "Locked dictionary bootstrap failed");
     auto options = result.at("value");
@@ -401,7 +401,7 @@ int main(int argc, char **argv) {
         {"format_version", 1},
         {"revision", 0},
         {"preferences", options.at("preferences")}}.dump();
-    msime_ibus_configure(options.dump());
+    lingyao_ibus_configure(options.dump());
     ibus_init();
     auto bus = g_test_dbus_new(G_TEST_DBUS_NONE);
     g_test_dbus_up(bus);
@@ -420,9 +420,9 @@ int main(int argc, char **argv) {
     require(server && client, "Private D-Bus unavailable");
     auto create_engine = [&] {
       auto created = IBUS_ENGINE(
-          g_object_new(msime_ibus_engine_get_type(), "engine-name",
-                     "msime-linux", "object-path",
-                     "/app/msime/test/engine", "connection", server, nullptr));
+          g_object_new(lingyao_ibus_engine_get_type(), "engine-name",
+                     "lingyao-linux", "object-path",
+                     "/app/lingyao/test/engine", "connection", server, nullptr));
       g_object_ref_sink(created);
       return created;
     };
@@ -437,12 +437,12 @@ int main(int argc, char **argv) {
     // rather than reading a decision. Other cases in this fixture drop the
     // directory for the same reason.
     missing_emoji_options.erase("preferences_directory");
-    msime_ibus_configure(missing_emoji_options.dump());
+    lingyao_ibus_configure(missing_emoji_options.dump());
     auto engine = create_engine();
     const char *destination = g_dbus_connection_get_unique_name(server);
     guint subscription = g_dbus_connection_signal_subscribe(
         client, destination, "org.freedesktop.IBus.Engine", nullptr,
-        "/app/msime/test/engine", nullptr, G_DBUS_SIGNAL_FLAGS_NONE, signal,
+        "/app/lingyao/test/engine", nullptr, G_DBUS_SIGNAL_FLAGS_NONE, signal,
         &seen, nullptr);
     auto invoke = [&](const char *method, GVariant *params = nullptr) {
       auto value = call(client, destination, method, params);
@@ -523,7 +523,7 @@ int main(int argc, char **argv) {
       g_object_unref(bus);
     };
     if (argc == 3 && std::string(argv[2]) == "--ctrl-space") {
-      msime_ibus_configure(options.dump());
+      lingyao_ibus_configure(options.dump());
       invoke("FocusIn");
       const auto chord = [&] {
         const bool pressed = key(IBUS_space, IBUS_CONTROL_MASK);
@@ -582,7 +582,7 @@ int main(int argc, char **argv) {
       visibility["preferences"]["candidate_preedit_style"] = "empty";
       visibility["preferences"].erase("show_candidate_page_number");
       const auto compose = [&] {
-        msime_ibus_configure(visibility.dump());
+        lingyao_ibus_configure(visibility.dump());
         invoke("FocusIn");
         invoke("Reset");
         phrase();
@@ -591,7 +591,7 @@ int main(int argc, char **argv) {
       require(seen.auxiliary.rfind("1/", 0) == 0 && seen.auxiliary_visible,
               "Legacy page indicator missing");
       visibility["preferences"]["show_candidate_page_number"] = false;
-      msime_ibus_configure(visibility.dump());
+      lingyao_ibus_configure(visibility.dump());
       require(wait_until([&] { return seen.auxiliary.empty() && !seen.auxiliary_visible; }) &&
                   seen.lookup_visible && seen.preedit == "nihao",
               "Page visibility did not hot-reload or hid the candidates");
@@ -662,7 +662,7 @@ int main(int argc, char **argv) {
       std::filesystem::rename(live_directory / "next.json", live_directory / "preferences.json");
     };
     save_live_preferences(1);
-    msime_ibus_configure(live_options.dump());
+    lingyao_ibus_configure(live_options.dump());
     engine = create_engine();
     seen = Observation{};
     invoke("FocusIn");
@@ -709,7 +709,7 @@ int main(int argc, char **argv) {
       english["preferences"]["default_ime_mode"] = "english";
       english["preferences"]["character_width"] = "fullwidth";
       english["preferences"]["punctuation_lock"] = "chinese";
-      msime_ibus_configure(english.dump());
+      lingyao_ibus_configure(english.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -750,7 +750,7 @@ int main(int argc, char **argv) {
       english_voice["preferences"]["ime_mode_scope"] = "app";
       english_voice["preferences"]["default_ime_mode"] = "english";
       english_voice["preferences"]["keybindings"]["switch_language_shift"] = true;
-      msime_ibus_configure(english_voice.dump());
+      lingyao_ibus_configure(english_voice.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -870,7 +870,7 @@ int main(int argc, char **argv) {
       follow["preferences"]["punctuation_lock"] = "follow";
       follow["preferences"]["chinese_punctuation"] = true;
       follow["preferences"]["keybindings"]["switch_language_shift"] = true;
-      msime_ibus_configure(follow.dump());
+      lingyao_ibus_configure(follow.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -919,7 +919,7 @@ int main(int argc, char **argv) {
               "A mode round trip did not drop the English-mode Ctrl+. choice");
 #if IBUS_CHECK_VERSION(1, 5, 27)
       // A mode the focus restores is a mode switch too: toggling Ctrl+. twice in an English app leaves nothing behind for a Chinese app focused next.
-      invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/english-app", "msime-english-app"));
+      invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/english-app", "lingyao-english-app"));
       require(!seen.input_enabled, "Naming the English-mode focus changed its mode");
       for (int press = 0; press < 2; ++press) {
         require(key(IBUS_period, IBUS_CONTROL_MASK) &&
@@ -930,7 +930,7 @@ int main(int argc, char **argv) {
       }
       require(!seen.punctuation_enabled,
               "Two English-mode Ctrl+. presses did not return to ASCII punctuation");
-      invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/chinese-app", "msime-chinese-app"));
+      invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/chinese-app", "lingyao-chinese-app"));
       require(seen.input_enabled && seen.punctuation_enabled,
               "An app restored to Chinese inherited the English-mode Ctrl+. choice of the previous app");
 #endif
@@ -941,7 +941,7 @@ int main(int argc, char **argv) {
       auto english_lock = follow;
       english_lock["preferences"]["default_ime_mode"] = "english";
       english_lock["preferences"]["punctuation_lock"] = "english";
-      msime_ibus_configure(english_lock.dump());
+      lingyao_ibus_configure(english_lock.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -956,7 +956,7 @@ int main(int argc, char **argv) {
       // The same lock holds in Chinese mode, as Windows resolves Ctrl+. and the toolbar switch through ResolvePunctuationOpen: the chord is eaten and Chinese punctuation stays off.
       auto chinese_english_lock = english_lock;
       chinese_english_lock["preferences"]["default_ime_mode"] = "chinese";
-      msime_ibus_configure(chinese_english_lock.dump());
+      lingyao_ibus_configure(chinese_english_lock.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -983,7 +983,7 @@ int main(int argc, char **argv) {
       // With smart punctuation off, Chinese punctuation mode types the Chinese mark for every key, as Windows _ResolveSmartPunctuation returns ResolvePunctuation unchanged.
       auto smart_off = follow;
       smart_off["preferences"]["smart_punctuation"] = false;
-      msime_ibus_configure(smart_off.dump());
+      lingyao_ibus_configure(smart_off.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1007,7 +1007,7 @@ int main(int argc, char **argv) {
       repeat_unpaired["preferences"]["paired_punctuation"] = false;
       repeat_unpaired["preferences"]["smart_punctuation"] = true;
       repeat_unpaired["preferences"]["smart_punctuation_repeat"] = true;
-      msime_ibus_configure(repeat_unpaired.dump());
+      lingyao_ibus_configure(repeat_unpaired.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1045,7 +1045,7 @@ int main(int argc, char **argv) {
       initial["preferences"]["ime_mode_scope"] = scope;
       initial["preferences"]["keybindings"]["switch_language_shift"] = false;
       initial.erase("preferences_directory");
-      msime_ibus_configure(initial.dump());
+      lingyao_ibus_configure(initial.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1111,7 +1111,7 @@ int main(int argc, char **argv) {
       online["preferences"]["cloud_candidates"] = true;
       online["preferences"]["candidate_page_size"] = 9;
       online["preferences"]["ai_assistant"]["enabled"] = false;
-      msime_ibus_configure(online.dump());
+      lingyao_ibus_configure(online.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1169,7 +1169,7 @@ int main(int argc, char **argv) {
       // Candidate translations share the fixture socket through the online fallback, so the private-field block below can prove translation requests stop there too.
       online["preferences"]["candidate_translations"] = true;
       online["preferences"]["translation_target_language"] = "fr";
-      msime_ibus_configure(online.dump());
+      lingyao_ibus_configure(online.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1234,7 +1234,7 @@ int main(int argc, char **argv) {
       offline.erase("preferences_directory");
       offline["preferences"]["candidate_translations"] = false;
       offline["preferences"]["candidate_english_gloss"] = true;
-      msime_ibus_configure(offline.dump());
+      lingyao_ibus_configure(offline.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1259,7 +1259,7 @@ int main(int argc, char **argv) {
       offline.erase("preferences_directory");
       offline["preferences"]["candidate_translations"] = false;
       offline["preferences"]["candidate_english_gloss"] = false;
-      msime_ibus_configure(offline.dump());
+      lingyao_ibus_configure(offline.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1286,7 +1286,7 @@ int main(int argc, char **argv) {
       translated["preferences"]["translation_target_language"] = "fr";
       translated["preferences"]["candidate_page_size"] = 9;
       translated["preferences"]["candidate_translations"] = false;
-      msime_ibus_configure(translated.dump());
+      lingyao_ibus_configure(translated.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1373,7 +1373,7 @@ int main(int argc, char **argv) {
       learned.erase("translation_provider_socket");
       learned["preferences"]["candidate_translations"] = true;
       learned["preferences"]["translation_target_language"] = "en";
-      msime_ibus_configure(learned.dump());
+      lingyao_ibus_configure(learned.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1388,7 +1388,7 @@ int main(int argc, char **argv) {
       ibus_object_destroy(IBUS_OBJECT(engine));
       g_object_unref(engine);
       learned["translation_provider_socket"] = socket;
-      msime_ibus_configure(learned.dump());
+      lingyao_ibus_configure(learned.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1463,7 +1463,7 @@ int main(int argc, char **argv) {
                                 directory / "preferences.json");
       };
       save(1);
-      msime_ibus_configure(translated.dump());
+      lingyao_ibus_configure(translated.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1564,7 +1564,7 @@ int main(int argc, char **argv) {
       translated["translation_provider_socket"] = socket;
       translated["preferences"]["candidate_translations"] = true;
       translated["preferences"]["candidate_page_size"] = 2;
-      // Not English. The packaged msime-english.db answers 你好 offline with the single
+      // Not English. The packaged lingyao-english.db answers 你好 offline with the single
       // sense "hello", and an offline hit is shown without ever reaching the
       // provider - which is the documented behaviour and what Windows does. With
       // English as the target, the provider's multi-sense gloss therefore landed
@@ -1572,7 +1572,7 @@ int main(int argc, char **argv) {
       // Ctrl+Enter committed that single sense instead of opening the page this
       // case exists to check. Any other target language goes straight online.
       translated["preferences"]["translation_target_language"] = "ja";
-      msime_ibus_configure(translated.dump());
+      lingyao_ibus_configure(translated.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1635,7 +1635,7 @@ int main(int argc, char **argv) {
         translated["preferences"]["candidate_page_size"] = 1;
         translated["preferences"]["translation_target_language"] = "ja";
         translated["preferences"]["navigation"]["mouse_wheel"] = wheel;
-        msime_ibus_configure(translated.dump());
+        lingyao_ibus_configure(translated.dump());
         engine = create_engine();
         seen = Observation{};
         invoke("FocusIn");
@@ -1682,7 +1682,7 @@ int main(int argc, char **argv) {
         translated["preferences"]["candidate_page_size"] = 1;
         translated["preferences"]["translation_target_language"] = "ja";
         translated["preferences"]["navigation"]["tab"] = tab;
-        msime_ibus_configure(translated.dump());
+        lingyao_ibus_configure(translated.dump());
         engine = create_engine();
         seen = Observation{};
         invoke("FocusIn");
@@ -1739,7 +1739,7 @@ int main(int argc, char **argv) {
       auto oversized_clipboard = options;
       oversized_clipboard["clipboard_history_path"] = oversized_history_path.string();
       oversized_clipboard["preferences"]["clipboard_history"] = true;
-      msime_ibus_configure(oversized_clipboard.dump());
+      lingyao_ibus_configure(oversized_clipboard.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1764,7 +1764,7 @@ int main(int argc, char **argv) {
       auto clipboard = options;
       clipboard["clipboard_history_path"] = history_path.string();
       clipboard["preferences"]["clipboard_history"] = true;
-      msime_ibus_configure(clipboard.dump());
+      lingyao_ibus_configure(clipboard.dump());
       engine = create_engine();
       seen = Observation{};
       invoke("FocusIn");
@@ -1806,7 +1806,7 @@ int main(int argc, char **argv) {
       ibus_object_destroy(IBUS_OBJECT(engine));
       g_object_unref(engine);
     }
-    msime_ibus_configure(options.dump());
+    lingyao_ibus_configure(options.dump());
     engine = create_engine();
     seen = Observation{};
     invoke("FocusIn");
@@ -1856,7 +1856,7 @@ int main(int argc, char **argv) {
         }
         return ready();
       };
-      g_setenv("MSIME_CLIENT_SETTINGS_COMMAND", panel_launcher.c_str(), TRUE);
+      g_setenv("LINGYAO_CLIENT_SETTINGS_COMMAND", panel_launcher.c_str(), TRUE);
       invoke("PropertyActivate",
              g_variant_new("(su)", "Toolbar/Emoji", PROP_STATE_UNCHECKED));
       require(wait_panel([&] { return panel_routes().size() == 1; }) &&
@@ -1908,17 +1908,17 @@ int main(int argc, char **argv) {
                     panel_routes().back() == "keyboard",
                 "Ctrl+Shift+Super+K did not launch the screen keyboard");
       }
-      g_unsetenv("MSIME_CLIENT_SETTINGS_COMMAND");
+      g_unsetenv("LINGYAO_CLIENT_SETTINGS_COMMAND");
     }
     auto relative_preferences = options;
     relative_preferences["preferences_directory"] = "relative";
     invoke("FocusOut");
-    msime_ibus_configure(relative_preferences.dump());
+    lingyao_ibus_configure(relative_preferences.dump());
     invoke("FocusIn");
     require(!seen.clipboard_toggle_sensitive,
             "Relative preferences directory enabled the clipboard toggle");
     invoke("FocusOut");
-    msime_ibus_configure(options.dump());
+    lingyao_ibus_configure(options.dump());
     invoke("FocusIn");
     require(seen.clipboard_toggle_sensitive,
             "Absolute preferences directory did not restore the clipboard toggle");
@@ -1958,25 +1958,25 @@ int main(int argc, char **argv) {
     require(seen.preedit_visible && seen.preedit == "nihao",
             "Repeated focus cancelled active composition");
 #if IBUS_CHECK_VERSION(1, 5, 27)
-    invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/context1", "msime-test"));
+    invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/context1", "lingyao-test"));
     require(seen.preedit_visible && seen.preedit == "nihao",
             "Delayed focus identity cancelled composition");
-    invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/context1", "msime-test"));
+    invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/context1", "lingyao-test"));
     require(seen.preedit_visible && seen.preedit == "nihao",
             "Repeated focus identity cancelled composition");
-    invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/context2", "msime-test"));
+    invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/context2", "lingyao-test"));
     require(!seen.preedit_visible && !seen.lookup_visible && !key(IBUS_Return),
             "Different context retained old composition");
     phrase();
-    invoke("FocusOutId", g_variant_new("(s)", "/app/msime/test/context1"));
+    invoke("FocusOutId", g_variant_new("(s)", "/app/lingyao/test/context1"));
     require(seen.preedit_visible && seen.preedit == "nihao" && key('x'),
             "Old context focus loss cancelled the active context");
-    invoke("FocusOutId", g_variant_new("(s)", "/app/msime/test/context2"));
+    invoke("FocusOutId", g_variant_new("(s)", "/app/lingyao/test/context2"));
     require(!seen.preedit_visible && !seen.lookup_visible && !key('n'),
             "Current context focus loss did not stop input");
     invoke("FocusIn");
     phrase();
-    invoke("FocusOutId", g_variant_new("(s)", "/app/msime/test/legacy"));
+    invoke("FocusOutId", g_variant_new("(s)", "/app/lingyao/test/legacy"));
     require(!seen.preedit_visible && !key('n'),
             "Focus loss without a known context identity did not stop input");
     invoke("FocusIn");
@@ -1994,8 +1994,8 @@ int main(int argc, char **argv) {
             ibus_serializable_serialize(IBUS_SERIALIZABLE(text)),
             selection < 0 ? start : end, selection < 0 ? end : start));
         g_object_unref(text);
-        invoke("FocusInId", g_variant_new("(ss)", "/app/msime/test/surrounding",
-            qt ? "QIBusInputContext" : "msime-test"));
+        invoke("FocusInId", g_variant_new("(ss)", "/app/lingyao/test/surrounding",
+            qt ? "QIBusInputContext" : "lingyao-test"));
         const auto before = seen.committed;
         require(key(IBUS_period) && seen.committed == before + ".",
                 "Delayed client identity lost the surrounding selection start");
@@ -2183,14 +2183,14 @@ int main(int argc, char **argv) {
           // sees the injected preference depends on where the tick lands.
           disabled.erase("preferences_directory");
           disabled["preferences"]["keybindings"]["switch_language_ctrl_alt_space"] = false;
-          msime_ibus_configure(disabled.dump());
+          lingyao_ibus_configure(disabled.dump());
           invoke("FocusIn");
         }
         require(key(IBUS_space, remaining) && !seen.input_enabled,
                 "Consumed mode chord repeat escaped after modifiers or binding changed");
         require(key(IBUS_space, remaining | IBUS_RELEASE_MASK) && !seen.input_enabled,
                 "Consumed mode chord release escaped after modifiers or binding changed");
-        msime_ibus_configure(options.dump());
+        lingyao_ibus_configure(options.dump());
         invoke("FocusIn");
         require(!key(IBUS_space),
                 "Completed mode chord consumed the next independent Space stroke");
@@ -2245,13 +2245,13 @@ int main(int argc, char **argv) {
       const bool ctrl = modifier_key == IBUS_Control_L || modifier_key == IBUS_Control_R;
       disabled["preferences"]["keybindings"][ctrl ? "switch_language_ctrl"
                                                    : "switch_language_shift"] = false;
-      msime_ibus_configure(disabled.dump());
+      lingyao_ibus_configure(disabled.dump());
       invoke("FocusIn");
       require(!key(modifier_key, IBUS_RELEASE_MASK) && seen.input_enabled,
               "Disabled modifier binding toggled input on release");
       require(seen.preedit_visible && seen.preedit == "nihao" && seen.committed.empty(),
               "Disabled modifier binding changed the active composition");
-      msime_ibus_configure(options.dump());
+      lingyao_ibus_configure(options.dump());
       invoke("FocusIn");
       invoke("Reset");
     }
@@ -2528,7 +2528,7 @@ int main(int argc, char **argv) {
       // Keep the store out of it, as with the mode chord fixture: the reload tick would otherwise restore the stored preference.
       ralt_off.erase("preferences_directory");
       ralt_off["preferences"]["voice_input"]["hotkey_ralt"] = false;
-      msime_ibus_configure(ralt_off.dump());
+      lingyao_ibus_configure(ralt_off.dump());
       invoke("FocusIn");
       const auto starts = voice_provider.started.load();
       require(!key(IBUS_Alt_R) && !key(IBUS_Alt_R, IBUS_MOD1_MASK | IBUS_RELEASE_MASK),
@@ -2537,7 +2537,7 @@ int main(int argc, char **argv) {
       while (g_main_context_iteration(nullptr, FALSE)) {}
       require(voice_provider.started.load() == starts,
               "Right Alt started voice with its shortcut disabled");
-      msime_ibus_configure(options.dump());
+      lingyao_ibus_configure(options.dump());
       invoke("FocusIn");
     }
 
@@ -2957,14 +2957,14 @@ int main(int argc, char **argv) {
     invoke("Reset");
     seen.committed.clear();
     require(key('y', IBUS_SHIFT_MASK), "Temporary English mode could not restart");
-    for (const char character : std::string("MSIME"))
+    for (const char character : std::string("LINGYAO"))
       require(key(static_cast<guint>(character)), "Temporary English input was not consumed");
-    require(seen.preedit == "YMSIME" && seen.candidates.size() >= 1 &&
-                seen.candidates.front() == "MSIME",
+    require(seen.preedit == "YLINGYAO" && seen.candidates.size() >= 1 &&
+                seen.candidates.front() == "LINGYAO",
             "Temporary English mode did not expose its raw candidate");
     const bool settled_commit_5 = key(IBUS_Return);
     settle_lookup();
-    require(settled_commit_5 && seen.committed == "MSIME" && !seen.preedit_visible &&
+    require(settled_commit_5 && seen.committed == "LINGYAO" && !seen.preedit_visible &&
                 !seen.lookup_visible,
             "Temporary English raw text was not committed through IBus");
 
@@ -3134,7 +3134,7 @@ int main(int argc, char **argv) {
       require(key('r') && key('k') && !key('1') &&
                   seen.committed == before + "안녀가.가" && !seen.preedit_visible,
               "A digit did not end the Korean syllable");
-      // Hangul_Hanja or a bare F9 converts the composing syllable to Hanja (msime_client.h, MSIME_CONVERT_HANJA). With the list open the candidate keys choose, Escape only closes it, a paging mark writes the Hangul with it, and a trigger is never passed on while a syllable composes.
+      // Hangul_Hanja or a bare F9 converts the composing syllable to Hanja (lingyao_client.h, LINGYAO_CONVERT_HANJA). With the list open the candidate keys choose, Escape only closes it, a paging mark writes the Hangul with it, and a trigger is never passed on while a syllable composes.
       auto hanja_commit = seen.committed;
       require(!key(IBUS_F9) && !key(IBUS_Hangul_Hanja) && seen.committed == hanja_commit,
               "A Hanja key with nothing composing was not left to the application");
@@ -3449,7 +3449,7 @@ int main(int argc, char **argv) {
     phrase();
     require(seen.candidates.size() == 4,
             "Settings did not recover after writer unlock");
-    // Only a dictionary row has a weight for the configured frequency mode to move. The lattice puts its generated sentences for nihao (倪好, 你号, ...) straight after the exact dictionary hits at the top, so the first two-character rows after 你好 are usually generated. Selecting one of those stores it as a user phrase instead (the Engine's standalone sentence learning, ported from MSIME-Windows 01c5bca3), which ignores the frequency mode and gives the row a fixed starting weight; it is not expected to come first. Learn a two-character dictionary row - one that shares nihao's two segments - wherever it is paged to. Returns its page position, or -1 if none shows up.
+    // Only a dictionary row has a weight for the configured frequency mode to move. The lattice puts its generated sentences for nihao (倪好, 你号, ...) straight after the exact dictionary hits at the top, so the first two-character rows after 你好 are usually generated. Selecting one of those stores it as a user phrase instead (the Engine's standalone sentence learning, ported from LINGYAO-Windows 01c5bca3), which ignores the frequency mode and gives the row a fixed starting weight; it is not expected to come first. Learn a two-character dictionary row - one that shares nihao's two segments - wherever it is paged to. Returns its page position, or -1 if none shows up.
     auto dictionary_two_segment_index = [&] {
       auto menus = seen.candidate_menus;
       for (int page = 0; page < 24; ++page) {
@@ -3502,7 +3502,7 @@ int main(int argc, char **argv) {
         std::error_code error;
         for (const auto &entry :
              std::filesystem::recursive_directory_iterator(root, error)) {
-          if (entry.path().filename() == "msime_user.db")
+          if (entry.path().filename() == "lingyao_user.db")
             journal = entry.path().string() + " size=" +
                       std::to_string(std::filesystem::file_size(entry.path(), error));
         }
@@ -3760,7 +3760,7 @@ int main(int argc, char **argv) {
             "Disabled edge binding did not restore normal punctuation");
     options["preferences"]["word_character"]["enabled"] = true;
     options.erase("preferences_directory");
-    msime_ibus_configure(options.dump());
+    lingyao_ibus_configure(options.dump());
     invoke("Set",
            g_variant_new("(ssv)", "org.freedesktop.IBus.Engine", "ContentType",
                          g_variant_new("(uu)", IBUS_INPUT_PURPOSE_FREE_FORM,
@@ -3796,7 +3796,7 @@ int main(int argc, char **argv) {
     external_skin["preferences"]["candidate_theme"] = "light";
     external_skin["preferences"]["custom_theme"] = {
         {"candidate_skin", "sakura"}, {"candidate_colors", {{"surface", "#123456"}}}};
-    msime_ibus_configure(external_skin.dump());
+    lingyao_ibus_configure(external_skin.dump());
     engine = create_engine();
     seen = Observation{};
     invoke("FocusIn");
@@ -3811,7 +3811,7 @@ int main(int argc, char **argv) {
     // Screen keyboard keys arrive over panel-input.sock and go through the engine before the editor, the way SendInput passes through the IME on Windows. Text from handwriting, emoji and voice is still committed as it is.
     {
       require(key(IBUS_Escape), "Screen keyboard fixture could not cancel the composition");
-      const auto panel_socket = runtime / "msime-client" / "panel-input.sock";
+      const auto panel_socket = runtime / "lingyao-client" / "panel-input.sock";
       require(std::filesystem::exists(panel_socket), "Panel input socket did not open on focus");
       // The host serves the socket from this thread's main loop, so keep iterating it until the reply arrives.
       auto panel = [&](const nlohmann::json &request) {
@@ -3929,7 +3929,7 @@ int main(int argc, char **argv) {
       const auto restart = [&] {
         ibus_object_destroy(IBUS_OBJECT(engine));
         g_object_unref(engine);
-        msime_ibus_configure(languages.dump());
+        lingyao_ibus_configure(languages.dump());
         engine = create_engine();
         seen = Observation{};
         invoke("FocusIn");
@@ -3958,7 +3958,7 @@ int main(int argc, char **argv) {
               "Stroke was selected without its dictionary");
       invoke("Reset");
       // With the dictionary installed the saved Zhuyin runs and is offered.
-      const auto fixture = std::string("python3 '") + MSIME_ZHUYIN_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
+      const auto fixture = std::string("python3 '") + LINGYAO_ZHUYIN_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
       require(std::system(fixture.c_str()) == 0, "Zhuyin dictionary fixture was not written");
       restart();
       require(offered("Scheme/Zhuyin") && checked("Scheme/Chinese") && checked("Scheme/Zhuyin") &&
@@ -4117,9 +4117,9 @@ int main(int argc, char **argv) {
       require(key('g') && key('a') && seen.preedit == "ག" && seen.committed == before,
               "The Tibetan syllable survived the focus change");
       invoke("Reset");
-      // 笔画：装好 msime-stroke.db 并重新读取选项后出现在菜单里，并从菜单选中，这样能发现 PropertyActivate 白名单或 id 映射漏掉的 Scheme/Stroke 一项。
+      // 笔画：装好 lingyao-stroke.db 并重新读取选项后出现在菜单里，并从菜单选中，这样能发现 PropertyActivate 白名单或 id 映射漏掉的 Scheme/Stroke 一项。
       const auto stroke_fixture =
-          std::string("python3 '") + MSIME_STROKE_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
+          std::string("python3 '") + LINGYAO_STROKE_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
       require(std::system(stroke_fixture.c_str()) == 0, "Stroke dictionary fixture was not written");
       languages["preferences"]["scheme"] = "quanpin";
       // The shared fixture pages two candidates at a time; the stroke lists below are read as one page.

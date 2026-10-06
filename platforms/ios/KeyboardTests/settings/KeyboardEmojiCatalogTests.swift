@@ -75,7 +75,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
 
   func testSharedBridgeReadsVerifiedPackagedCatalog() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-emoji-catalog-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-emoji-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
@@ -134,7 +134,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
 
   func testSharedBridgeReadsPackagedSymbolCatalog() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-symbol-catalog-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-symbol-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
@@ -151,7 +151,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
 
   func testSymbolSearchFindsSymbolsByEnglishPinyinAndInitials() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-symbol-search-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-symbol-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
@@ -323,7 +323,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
 
   func testSharedBridgeSearchesPackagedCatalogByPinyinAndEnglish() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-emoji-search-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-emoji-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
@@ -408,7 +408,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     XCTAssertNil(KeyboardEmojiCatalog.search("笑", kaomoji: true))
 
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-kaomoji-search-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-kaomoji-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let resources = try XCTUnwrap(LingyaoInputSessionBridge(stateRoot: state).candidateGlossResources())
     for query in ["kiss", "qian"] {
@@ -500,7 +500,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
 
   func testSharedBridgeReadsPackagedKaomoji() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-kaomoji-catalog-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-kaomoji-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())

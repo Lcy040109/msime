@@ -1,6 +1,6 @@
 #import "DoubaoVoiceRequest.h"
 #import "VoiceFailureMessages.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <cmath>
 #include <cstring>
 #include <memory>
@@ -14,8 +14,8 @@ constexpr NSUInteger kDoubaoResponseLimit = 1024 * 1024;
 constexpr NSUInteger kDoubaoQueuedBytesLimit = 320000;
 NSError *DoubaoFailure(NSString *detail = nil) {
     NSMutableDictionary *info = [@{NSLocalizedDescriptionKey:@"豆包语音请求失败，请检查服务设置或重试"} mutableCopy];
-    if (detail.length) info[MSIMEVoiceFailureDetailKey] = detail;
-    return [NSError errorWithDomain:@"app.msime.client.voice.doubao" code:1 userInfo:info];
+    if (detail.length) info[LINGYAOVoiceFailureDetailKey] = detail;
+    return [NSError errorWithDomain:@"app.lingyao.client.voice.doubao" code:1 userInfo:info];
 }
 // The full client request, sequence 1. Nil when the options cannot be encoded.
 NSData *StartFrame(bool enableITN, bool enablePunctuation, bool enableDDC, NSString *boostingTable) {
@@ -23,10 +23,10 @@ NSData *StartFrame(bool enableITN, bool enablePunctuation, bool enableDDC, NSStr
     const auto *tableBytes = static_cast<const uint8_t *>(table.bytes);
     size_t length = 0;
     // A null, zero-capacity output only asks for the size.
-    msime_client_doubao_start_frame(enableITN, enablePunctuation, enableDDC, tableBytes, table.length, nullptr, 0, &length);
+    lingyao_client_doubao_start_frame(enableITN, enablePunctuation, enableDDC, tableBytes, table.length, nullptr, 0, &length);
     if (!length) return nil;
     NSMutableData *frame = [NSMutableData dataWithLength:length];
-    if (!msime_client_doubao_start_frame(enableITN, enablePunctuation, enableDDC, tableBytes, table.length,
+    if (!lingyao_client_doubao_start_frame(enableITN, enablePunctuation, enableDDC, tableBytes, table.length,
             static_cast<uint8_t *>(frame.mutableBytes), frame.length, &length) || length != frame.length)
         return nil;
     return frame;
@@ -42,10 +42,10 @@ NSData *AudioFrame(const float *samples, std::size_t count, int32_t sequence, bo
         pcm[2 * i + 1] = static_cast<uint8_t>(value >> 8);
     }
     size_t length = 0;
-    msime_client_doubao_audio_frame(sequence, pcm.data(), pcm.size(), last, nullptr, 0, &length);
+    lingyao_client_doubao_audio_frame(sequence, pcm.data(), pcm.size(), last, nullptr, 0, &length);
     if (!length) return nil;
     NSMutableData *frame = [NSMutableData dataWithLength:length];
-    if (!msime_client_doubao_audio_frame(sequence, pcm.data(), pcm.size(), last,
+    if (!lingyao_client_doubao_audio_frame(sequence, pcm.data(), pcm.size(), last,
             static_cast<uint8_t *>(frame.mutableBytes), frame.length, &length) || length != frame.length)
         return nil;
     return frame;
@@ -74,9 +74,9 @@ struct DoubaoResponse {
 // One complete WebSocket binary message. NO when it is not a valid Doubao response; an error frame's code is reported and its body never becomes text.
 BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
     if (!message.length || message.length > kDoubaoResponseLimit) return NO;
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        msime_client_doubao_decode_frame(static_cast<const uint8_t *>(message.bytes), message.length),
-        msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        lingyao_client_doubao_decode_frame(static_cast<const uint8_t *>(message.bytes), message.length),
+        lingyao_client_string_free);
     if (!raw) return NO;
     id envelope = [NSJSONSerialization JSONObjectWithData:[NSData dataWithBytes:raw.get() length:std::strlen(raw.get())]
                                                   options:0 error:nil];
@@ -104,9 +104,9 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
 }
 // Never follow a redirect with custom authentication headers. This separate
 // delegate does not retain the request owner, so dropping it cancels the socket.
-@interface MSIMEDoubaoSocketPolicy : NSObject <NSURLSessionTaskDelegate>
+@interface LINGYAODoubaoSocketPolicy : NSObject <NSURLSessionTaskDelegate>
 @end
-@implementation MSIMEDoubaoSocketPolicy
+@implementation LINGYAODoubaoSocketPolicy
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
     willPerformHTTPRedirection:(NSHTTPURLResponse *)response newRequest:(NSURLRequest *)request
     completionHandler:(void (^)(NSURLRequest *))completionHandler {
@@ -115,7 +115,7 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
 }
 @end
 
-@implementation MSIMEDoubaoVoiceRequest {
+@implementation LINGYAODoubaoVoiceRequest {
     NSURLRequest *_request;
     NSData *_initialPacket;
     NSURLSession *_session;
@@ -126,7 +126,7 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
     int32_t _sequence;
     BOOL _started, _finishing, _done, _cancelled, _sending, _finalDispatched, _legacyAuth, _opened;
     NSString *_lastText;
-    MSIMEDoubaoResult _result;
+    LINGYAODoubaoResult _result;
 }
 - (instancetype)initWithOptions:(NSDictionary *)options error:(NSError **)error {
     self = [super init];
@@ -162,9 +162,9 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
         @"auth_mode":snapshot[@"doubao_auth_mode"] ?: @"", @"app_id":snapshot[@"asr_app_key"] ?: @"",
         @"token":snapshot[@"asr_token"] ?: @"", @"resource_id":[snapshot[@"asr_resource_id"] length]
             ? snapshot[@"asr_resource_id"] : @"volc.bigasr.sauc.duration"} options:0 error:nil];
-    std::unique_ptr<char, decltype(&msime_client_string_free)> authRaw(
-        msime_client_doubao_auth_headers(static_cast<const uint8_t *>(authInput.bytes), authInput.length),
-        msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> authRaw(
+        lingyao_client_doubao_auth_headers(static_cast<const uint8_t *>(authInput.bytes), authInput.length),
+        lingyao_client_string_free);
     id auth = authRaw ? [NSJSONSerialization JSONObjectWithData:[NSData dataWithBytes:authRaw.get()
         length:std::strlen(authRaw.get())] options:0 error:nil] : nil;
     if (![auth isKindOfClass:NSDictionary.class] || ![auth[@"ok"] isEqual:@YES] ||
@@ -198,7 +198,7 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
     return self;
 }
 - (void)deliver:(NSString *)text final:(BOOL)final error:(NSError *)error {
-    MSIMEDoubaoResult result = _result;
+    LINGYAODoubaoResult result = _result;
     if (final) {
         _done = YES;
         _result = nil;
@@ -206,9 +206,9 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
         [_socket cancelWithCloseCode:NSURLSessionWebSocketCloseCodeNormalClosure reason:nil];
         [_session invalidateAndCancel]; _socket = nil; _session = nil;
     }
-    __weak MSIMEDoubaoVoiceRequest *weakSelf = self;
+    __weak LINGYAODoubaoVoiceRequest *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        MSIMEDoubaoVoiceRequest *owner = weakSelf;
+        LINGYAODoubaoVoiceRequest *owner = weakSelf;
         if (!owner) return;
         @synchronized(owner) { if (owner->_cancelled) return; }
         if (result) result(text, final, error);
@@ -221,15 +221,15 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
     return [response isKindOfClass:NSHTTPURLResponse.class] && response.statusCode == 101;
 }
 - (void)receive {
-    __weak MSIMEDoubaoVoiceRequest *weakSelf = self;
+    __weak LINGYAODoubaoVoiceRequest *weakSelf = self;
     [_socket receiveMessageWithCompletionHandler:^(NSURLSessionWebSocketMessage *message, NSError *error) {
-        MSIMEDoubaoVoiceRequest *owner = weakSelf;
+        LINGYAODoubaoVoiceRequest *owner = weakSelf;
         if (!owner) return;
         @synchronized(owner) {
             if (owner->_done || owner->_cancelled) return;
             if (error) {
                 [owner deliver:nil final:YES error:[owner socketOpened] ? DoubaoFailure()
-                    : DoubaoFailure(MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureConnect, owner->_legacyAuth, 0))];
+                    : DoubaoFailure(LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureConnect, owner->_legacyAuth, 0))];
                 return;
             }
             owner->_opened = YES;
@@ -239,7 +239,7 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
             DoubaoResponse response;
             if (!ParseResponse(message.data, &response)) { [owner deliver:nil final:YES error:DoubaoFailure()]; return; }
             if (response.code) {
-                [owner deliver:nil final:YES error:DoubaoFailure(MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureServerCode,
+                [owner deliver:nil final:YES error:DoubaoFailure(LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureServerCode,
                     owner->_legacyAuth, response.code))];
                 return;
             }
@@ -263,9 +263,9 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
     [_packets removeObjectAtIndex:0];
     _sending = YES;
     if (_finishing && !_packets.count) _finalDispatched = YES;
-    __weak MSIMEDoubaoVoiceRequest *weakSelf = self;
+    __weak LINGYAODoubaoVoiceRequest *weakSelf = self;
     [_socket sendMessage:[[NSURLSessionWebSocketMessage alloc] initWithData:data] completionHandler:^(NSError *error) {
-        MSIMEDoubaoVoiceRequest *owner = weakSelf;
+        LINGYAODoubaoVoiceRequest *owner = weakSelf;
         if (!owner) return;
         @synchronized(owner) {
             if (owner->_done || owner->_cancelled) return;
@@ -274,21 +274,21 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
             if (!error) { [owner pump]; return; }
             // Windows names the two failures before any audio moves: a socket that never opened, and an opening request that could not be sent over one that did. A later audio send failing is left to the generic message, as Windows shows none of its own.
             NSString *detail = nil;
-            if (![owner socketOpened]) detail = MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureConnect, owner->_legacyAuth, 0);
-            else if (data == owner->_initialPacket) detail = MSIMEDoubaoFailureMessage(MSIMEDoubaoFailureHandshake, owner->_legacyAuth, 0);
+            if (![owner socketOpened]) detail = LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureConnect, owner->_legacyAuth, 0);
+            else if (data == owner->_initialPacket) detail = LINGYAODoubaoFailureMessage(LINGYAODoubaoFailureHandshake, owner->_legacyAuth, 0);
             [owner deliver:nil final:YES error:DoubaoFailure(detail)];
         }
     }];
 }
-- (BOOL)startWithResult:(MSIMEDoubaoResult)result error:(NSError **)error {
+- (BOOL)startWithResult:(LINGYAODoubaoResult)result error:(NSError **)error {
     @synchronized(self) {
         if (_started || _cancelled || !result) { if (error) *error = DoubaoFailure(); return NO; }
         _started = YES; _result = [result copy];
         NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
         configuration.HTTPCookieStorage = nil; configuration.URLCredentialStorage = nil; configuration.URLCache = nil;
-        // No whole-session budget. The old 100 s one was sized for a 60 s recording, while MSIME-Windows streams for as long as the user records and bounds only individual network operations; a fixed session length cut dictation off while the user was still speaking. The 30 s request timeout stays, and a finished stream still has its own deadline in finishWithError:.
+        // No whole-session budget. The old 100 s one was sized for a 60 s recording, while LINGYAO-Windows streams for as long as the user records and bounds only individual network operations; a fixed session length cut dictation off while the user was still speaking. The 30 s request timeout stays, and a finished stream still has its own deadline in finishWithError:.
         configuration.timeoutIntervalForRequest = 30;
-        _session = [NSURLSession sessionWithConfiguration:configuration delegate:[MSIMEDoubaoSocketPolicy new] delegateQueue:nil];
+        _session = [NSURLSession sessionWithConfiguration:configuration delegate:[LINGYAODoubaoSocketPolicy new] delegateQueue:nil];
         _socket = [_session webSocketTaskWithRequest:_request];
         _socket.maximumMessageSize = kDoubaoResponseLimit;
         [_socket resume];
@@ -331,9 +331,9 @@ BOOL ParseResponse(NSData *message, DoubaoResponse *response) {
             if (error) *error = DoubaoFailure(); [self deliver:nil final:YES error:DoubaoFailure()]; return NO;
         }
         [_packets addObject:packet]; _queuedBytes += packet.length; _pending.clear(); [self pump];
-        __weak MSIMEDoubaoVoiceRequest *weakSelf = self;
+        __weak LINGYAODoubaoVoiceRequest *weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            MSIMEDoubaoVoiceRequest *owner = weakSelf;
+            LINGYAODoubaoVoiceRequest *owner = weakSelf;
             if (!owner) return;
             @synchronized(owner) { if (!owner->_done && !owner->_cancelled) [owner deliver:nil final:YES error:DoubaoFailure()]; }
         });

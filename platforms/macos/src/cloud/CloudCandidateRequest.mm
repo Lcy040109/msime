@@ -1,15 +1,15 @@
 #import "CloudCandidateRequest.h"
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
-static BOOL MSIMEIsAllowedDescriptorURL(NSURL *url) {
+static BOOL LINGYAOIsAllowedDescriptorURL(NSURL *url) {
     if ([url.scheme isEqual:@"https"]) return YES;
     if (![url.scheme isEqual:@"http"]) return NO;
     NSString *host = url.host.lowercaseString;
     return [host isEqual:@"localhost"] || [host isEqual:@"127.0.0.1"] || [host isEqual:@"::1"];
 }
 
-@implementation MSIMECloudCandidateRequest {
+@implementation LINGYAOCloudCandidateRequest {
     NSURL *_url;
     NSURLSessionConfiguration *_configuration;
     NSURLSession *_session;
@@ -31,7 +31,7 @@ static BOOL MSIMEIsAllowedDescriptorURL(NSURL *url) {
         _maximumBodyBytes = 262144;
         // NSURLSession has no separate connect budget, so the total is what can be honoured here;
         // the connect half of the shared pair is a subset of it.
-        _timeout = MSIME_CLOUD_REQUEST_TIMEOUT_MS / 1000.0;
+        _timeout = LINGYAO_CLOUD_REQUEST_TIMEOUT_MS / 1000.0;
     }
     return self;
 }
@@ -46,7 +46,7 @@ static BOOL MSIMEIsAllowedDescriptorURL(NSURL *url) {
     if ([address lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 2048 ||
         [address rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location != NSNotFound) return self;
     NSURL *url = [NSURL URLWithString:address];
-    if (!MSIMEIsAllowedDescriptorURL(url) || !url.host.length || url.user || url.password || url.fragment) return self;
+    if (!LINGYAOIsAllowedDescriptorURL(url) || !url.host.length || url.user || url.password || url.fragment) return self;
     NSDictionary *headers = descriptor[@"headers"];
     if (![headers isKindOfClass:NSDictionary.class] || headers.count > 2 || ![headers[@"Content-Type"] isEqual:@"application/json"]) return self;
     for (id key in headers) {
@@ -131,7 +131,7 @@ static BOOL MSIMEIsAllowedDescriptorURL(NSURL *url) {
     NSString *address = descriptor[@"url"];
     NSURL *url = [NSURL URLWithString:address];
     NSDictionary *headers = descriptor[@"headers"];
-    if ([address lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 2048 || !MSIMEIsAllowedDescriptorURL(url) ||
+    if ([address lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 2048 || !LINGYAOIsAllowedDescriptorURL(url) ||
         !url.host.length || url.user || url.password || url.fragment || ![headers isKindOfClass:NSDictionary.class] ||
         headers.count != 2 || ![headers[@"Content-Type"] isEqual:@"application/json"] ||
         ![headers[@"Authorization"] isKindOfClass:NSString.class] || ![headers[@"Authorization"] hasPrefix:@"Bearer "]) return self;

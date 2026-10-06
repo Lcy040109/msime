@@ -1,11 +1,11 @@
 /**
  * What the 2in1 typing effect draws and when the combo tier-up sound plays, decided without a device.
  *
- * The combo itself is counted by host-api (`msime_client_typing_effect`, `crates/host-api/src/key_sound/effect.rs`); this host only decodes the integer it answers with and turns it into a flash of the candidate card and a combo badge. The desktop player queues the tier-up sound itself, but host-api links no audio stack on HarmonyOS, so this host plays it: the key pack's commit sample raised `TIER_SEMITONES` per tier, as `player.rs` pitches it.
+ * The combo itself is counted by host-api (`lingyao_client_typing_effect`, `crates/host-api/src/key_sound/effect.rs`); this host only decodes the integer it answers with and turns it into a flash of the candidate card and a combo badge. The desktop player queues the tier-up sound itself, but host-api links no audio stack on HarmonyOS, so this host plays it: the key pack's commit sample raised `TIER_SEMITONES` per tier, as `player.rs` pitches it.
  */
 import { PluginPreferenceDocument } from "./KeySoundPolicy";
 
-/** Event codes, in the low byte of the event `msime_client_typing_effect` takes. 0-3 are the key sound classes. */
+/** Event codes, in the low byte of the event `lingyao_client_typing_effect` takes. 0-3 are the key sound classes. */
 export const TYPING_EFFECT_COMMIT: number = 4;
 /** A delete that did not go through a key sound; it ends the combo as Backspace does. */
 export const TYPING_EFFECT_BACKSPACE: number = 5;
@@ -57,7 +57,7 @@ export interface TypingEffectSettings {
   readonly color: string | undefined;
 }
 
-/** The value of `msime_client_typing_effect_settings`, as host-api resolves it. Only the fields this host draws are read; HarmonyOS draws no sparks, so `particles` is ignored. */
+/** The value of `lingyao_client_typing_effect_settings`, as host-api resolves it. Only the fields this host draws are read; HarmonyOS draws no sparks, so `particles` is ignored. */
 export interface ResolvedTypingEffectDocument {
   pack: string | null;
   issue: string | null;
@@ -66,7 +66,7 @@ export interface ResolvedTypingEffectDocument {
   duration_ms: number | null;
 }
 
-/** One answer of `msime_client_typing_effect`, unpacked. */
+/** One answer of `lingyao_client_typing_effect`, unpacked. */
 export interface TypingEffect {
   /** The combo count; 0 while the combo counter is off. */
   readonly count: number;
@@ -160,7 +160,7 @@ export class TypingEffectPolicy {
     return TypingEffectStyle.OFF;
   }
 
-  /** Whether keys are handed to `msime_client_typing_effect` at all: the header asks for the call only while a style is drawn, an effect pack is selected or the combo is counted. */
+  /** Whether keys are handed to `lingyao_client_typing_effect` at all: the header asks for the call only while a style is drawn, an effect pack is selected or the combo is counted. */
   static active(settings: TypingEffectSettings): boolean {
     return (
       settings.style !== TypingEffectStyle.OFF || settings.pack !== "" || settings.comboCounter

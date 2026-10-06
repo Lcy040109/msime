@@ -22,7 +22,7 @@
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/community_kinds"
-        style="@style/Widget.MSIME.SegmentGroup"
+        style="@style/Widget.LINGYAO.SegmentGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/ms_large_title_padding_horizontal"

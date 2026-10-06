@@ -5,7 +5,7 @@ import {
   TypingStatisticsPage,
   type TypingStatistics,
   type TypingStatisticsStatus,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(cleanup);
 

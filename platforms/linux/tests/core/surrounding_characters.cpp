@@ -32,7 +32,7 @@ void require(bool ok, const char *message) {
 int main() {
   try {
     const std::string text = "甲乙丙丁";
-    const auto result = msime::linux_host::preceding_characters_from_byte_offset(
+    const auto result = lingyao::linux_host::preceding_characters_from_byte_offset(
         text, text.size(), 3);
     require(result && *result == std::vector<std::string>{"乙", "丙", "丁"},
             "preceding characters preserve order");
@@ -40,7 +40,7 @@ int main() {
     using TrackedVector = std::vector<std::string, CountingAllocator<std::string>>;
     CountingAllocator<std::string>::allocations = 0;
     const auto tracked =
-        msime::linux_host::preceding_characters_from_byte_offset_with_storage<TrackedVector>(
+        lingyao::linux_host::preceding_characters_from_byte_offset_with_storage<TrackedVector>(
             text, text.size(), 3);
     require(tracked && tracked->size() == 3 && tracked->at(0) == "乙" &&
                 tracked->at(1) == "丙" && tracked->at(2) == "丁",
@@ -48,18 +48,18 @@ int main() {
     require(CountingAllocator<std::string>::allocations == 1,
             "preceding characters reserve before appending");
 
-    const auto at_start = msime::linux_host::preceding_characters_from_byte_offset(text, 0, 3);
+    const auto at_start = lingyao::linux_host::preceding_characters_from_byte_offset(text, 0, 3);
     require(at_start && at_start->empty(), "preceding characters stop at the document start");
     const auto prefix = std::string("甲乙");
-    const auto shorter = msime::linux_host::preceding_characters_from_byte_offset(
+    const auto shorter = lingyao::linux_host::preceding_characters_from_byte_offset(
         text, prefix.size(), 5);
     require(shorter && *shorter == std::vector<std::string>{"甲", "乙"},
             "preceding characters truncate count at the document start");
-    const auto beyond = msime::linux_host::preceding_characters_from_byte_offset(
+    const auto beyond = lingyao::linux_host::preceding_characters_from_byte_offset(
         text, text.size() + 1, 1);
     require(!beyond, "preceding characters reject a byte offset beyond the document");
     const std::string invalid("\xff", 1);
-    const auto invalid_result = msime::linux_host::preceding_characters_from_byte_offset(
+    const auto invalid_result = lingyao::linux_host::preceding_characters_from_byte_offset(
         invalid, invalid.size(), 1);
     require(invalid_result && invalid_result->size() == 1 && invalid_result->front() == invalid,
             "preceding characters preserve the existing invalid-byte behavior");

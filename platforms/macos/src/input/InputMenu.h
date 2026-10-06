@@ -30,7 +30,7 @@ inline void ApplyLingyaoMenuTheme(NSMenu *menu, NSDictionary *preferences)
 
 inline NSMenu *CreateLingyaoInputMenu(id target, BOOL englishMode, BOOL traditionalOutput)
 {
-    NSMenu *menu = [[NSMenu alloc] initWithTitle:MSIMEEditionDisplayName()];
+    NSMenu *menu = [[NSMenu alloc] initWithTitle:LINGYAOEditionDisplayName()];
     menu.autoenablesItems = NO;
     [menu addItem:CreateInputModeItem(@"中文输入", @selector(selectChineseMode:), target, !englishMode)];
     [menu addItem:CreateInputModeItem(@"英文输入", @selector(selectEnglishMode:), target, englishMode)];
@@ -42,7 +42,7 @@ inline NSMenu *CreateLingyaoInputMenu(id target, BOOL englishMode, BOOL traditio
     palette.target = target; palette.enabled = YES; [menu addItem:palette];
     NSMenuItem *update = [[NSMenuItem alloc] initWithTitle:@"检查更新…" action:@selector(checkForUpdates:) keyEquivalent:@""];
     update.target = target; update.enabled = YES; [menu addItem:update];
-    NSMenuItem *settings = [[NSMenuItem alloc] initWithTitle:[MSIMEEditionDisplayName() stringByAppendingString:@"设置…"] action:@selector(showPreferences:) keyEquivalent:@""];
+    NSMenuItem *settings = [[NSMenuItem alloc] initWithTitle:[LINGYAOEditionDisplayName() stringByAppendingString:@"设置…"] action:@selector(showPreferences:) keyEquivalent:@""];
     settings.target = target; settings.enabled = YES; [menu addItem:settings];
     [menu addItem:[NSMenuItem separatorItem]];
     NSMenuItem *voice = [[NSMenuItem alloc] initWithTitle:@"开始/结束语音输入（⌃⌥V）" action:@selector(showVoicePanel) keyEquivalent:@""];

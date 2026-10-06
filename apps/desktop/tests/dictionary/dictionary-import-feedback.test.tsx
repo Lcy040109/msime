@@ -7,7 +7,7 @@ import {
   UNBATCHED_DICTIONARY_FILE_BYTES,
   describeImportResult,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

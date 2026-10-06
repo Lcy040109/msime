@@ -1,4 +1,4 @@
-# Runs the Inno Setup uninstaller the installer registered. Its uninstall key is the installer's AppId plus Inno's "_is1" suffix (platforms/windows/installer/msime_setup.iss), so the key is matched by name rather than by display name.
+# Runs the Inno Setup uninstaller the installer registered. Its uninstall key is the installer's AppId plus Inno's "_is1" suffix (platforms/windows/installer/lingyao_setup.iss), so the key is matched by name rather than by display name.
 $ErrorActionPreference = 'Stop'
 
 $productCode = '{A7C3E91F-4B2D-4E8A-9F1C-6D5E8B0A2C4D}_is1'

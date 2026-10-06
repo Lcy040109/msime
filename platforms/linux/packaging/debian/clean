@@ -1,7 +1,7 @@
 apps/desktop/dist/
 debian/cargo-home/
-debian/msime.postinst
-debian/msime.prerm
+debian/lingyao.postinst
+debian/lingyao.prerm
 debian/notices/
 debian/voice-runtime/
 target/

@@ -1,4 +1,4 @@
-import app.msime.android.CandidateManagementAction;
+import app.lingyao.android.CandidateManagementAction;
 import java.util.Arrays;
 
 public final class CandidateManagementSmoke {

@@ -6,18 +6,18 @@
 #include <vector>
 
 using Json = nlohmann::json;
-using msime::linux_host::apply_theme_choice;
-using msime::linux_host::candidate_corner_radius;
-using msime::linux_host::candidate_corner_radius_preference;
-using msime::linux_host::candidate_skin_corner_radius;
-using msime::linux_host::candidate_skin_package;
-using msime::linux_host::CandidateSkinAlign;
-using msime::linux_host::current_theme_choice;
-using msime::linux_host::find_theme_choice;
-using msime::linux_host::parse_configured_skins;
-using msime::linux_host::safe_skin_id;
-using msime::linux_host::theme_choice_change;
-using msime::linux_host::theme_choices;
+using lingyao::linux_host::apply_theme_choice;
+using lingyao::linux_host::candidate_corner_radius;
+using lingyao::linux_host::candidate_corner_radius_preference;
+using lingyao::linux_host::candidate_skin_corner_radius;
+using lingyao::linux_host::candidate_skin_package;
+using lingyao::linux_host::CandidateSkinAlign;
+using lingyao::linux_host::current_theme_choice;
+using lingyao::linux_host::find_theme_choice;
+using lingyao::linux_host::parse_configured_skins;
+using lingyao::linux_host::safe_skin_id;
+using lingyao::linux_host::theme_choice_change;
+using lingyao::linux_host::theme_choices;
 
 int main() {
   // The document the desktop settings write (sync_runtime_options, host_candidate_catalog): the manifest name under `title`, the manifest base and layouts, and a palette for exactly the declared modes, empty when a mode sets no colour.
@@ -54,7 +54,7 @@ int main() {
   assert(parse_configured_skins(Json::object()).empty());
   assert(parse_configured_skins(Json{{"candidate_skin_catalog", {{"packages", Json::object()}}}}).empty());
 
-  // The package entry goes to msime_client_resolve_theme unchanged.
+  // The package entry goes to lingyao_client_resolve_theme unchanged.
   const auto &catalog = options["candidate_skin_catalog"];
   assert(*candidate_skin_package(catalog, "sakura") == catalog["packages"][1]);
   assert(!candidate_skin_package(catalog, "absent"));
@@ -126,14 +126,14 @@ int main() {
   assert(!theme_choice_change(choices, "unsafe/id"));
 
   // A decoration comes with its bounds and an absolute image path, as the shared host catalog publishes it; IBus reads the same package and simply has no use for it.
-  using msime::linux_host::candidate_skin_decoration;
-  using msime::linux_host::parse_skin_decoration;
+  using lingyao::linux_host::candidate_skin_decoration;
+  using lingyao::linux_host::parse_skin_decoration;
   const auto decorated = nlohmann::json::parse(
       R"({"id":"sakura","title":"樱花","base":"light","layouts":["vertical"],"decoration_top_dip":24.5,"decoration_width_dip":180,)"
-      R"("decoration_image":"/home/u/.local/share/msime/skins/sakura/images/ears.png"})");
+      R"("decoration_image":"/home/u/.local/share/lingyao/skins/sakura/images/ears.png"})");
   const auto decoration = parse_skin_decoration(decorated);
   assert(decoration && decoration->top_dip == 24.5 && decoration->width_dip == 180);
-  assert(decoration->image == "/home/u/.local/share/msime/skins/sakura/images/ears.png");
+  assert(decoration->image == "/home/u/.local/share/lingyao/skins/sakura/images/ears.png");
   assert(parse_configured_skins(nlohmann::json{{"candidate_skin_catalog", {{"packages", nlohmann::json::array({decorated})}}}}).size() == 1);
   // The manifest's own bounds hold at both ends.
   auto edge = decorated;

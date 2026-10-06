@@ -6,7 +6,7 @@
 #include <vector>
 #include <optional>
 
-namespace msime::mac {
+namespace lingyao::mac {
 
 inline std::optional<std::string> paired_closing_for_key(char key, bool fullwidth) {
   switch (key) {
@@ -67,4 +67,4 @@ inline bool paired_closing_should_skip(PairedPunctuationTracker &tracker,
                          paired_closing_modifiers_allowed(flags, control, option, command));
 }
 
-}  // namespace msime::mac
+}  // namespace lingyao::mac

@@ -1,6 +1,6 @@
 #include "EngineSessionAdapter.h"
 #include <nlohmann/json.hpp>
-namespace msime::tsf {
+namespace lingyao::tsf {
 using json = nlohmann::json;
 bool EngineSessionAdapter::parse_result(const std::string &text,
                                         EngineResult *out,
@@ -50,4 +50,4 @@ bool EngineSessionAdapter::parse_result(const std::string &text,
     return false;
   }
 }
-} // namespace msime::tsf
+} // namespace lingyao::tsf

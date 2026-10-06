@@ -87,7 +87,7 @@ pub struct ZhuyinScheme {
 }
 
 impl ZhuyinScheme {
-    /// An idle editor reading `dictionary` (`msime-zhuyin.db`).
+    /// An idle editor reading `dictionary` (`lingyao-zhuyin.db`).
     pub fn new(dictionary: LanguageDictionary) -> Self {
         Self {
             dictionary,
@@ -117,7 +117,7 @@ impl ZhuyinScheme {
         self.nine_key
     }
 
-    /// The `msime-zhuyin.db` connection, given back when the editor is replaced so the next one reuses it.
+    /// The `lingyao-zhuyin.db` connection, given back when the editor is replaced so the next one reuses it.
     pub fn into_dictionary(self) -> LanguageDictionary {
         self.dictionary
     }
@@ -407,7 +407,7 @@ impl ZhuyinScheme {
         Ok(true)
     }
 
-    /// 九键索引，第一次用到时从 `msime-zhuyin.db` 的音节表建立，大千用户不付出这份代价。
+    /// 九键索引，第一次用到时从 `lingyao-zhuyin.db` 的音节表建立，大千用户不付出这份代价。
     fn nine_key_index(&mut self) -> Result<&NineKeyIndex> {
         let index = match self.nine_key_index.take() {
             Some(index) => index,
@@ -724,7 +724,7 @@ mod tests {
 
     fn scheme_with(entries: &[(&str, &str, i64)]) -> (tempfile::TempDir, ZhuyinScheme) {
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("msime-zhuyin.db");
+        let path = dir.path().join("lingyao-zhuyin.db");
         let connection = Connection::open(&path).unwrap();
         connection.execute_batch(SCHEMA).unwrap();
         connection

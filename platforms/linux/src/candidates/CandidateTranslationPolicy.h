@@ -8,12 +8,12 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The dictionary joins multiple senses with either an ASCII or a full-width semicolon; IBus and Fcitx5 present them as the same secondary translation choices. The rule is shared with every other host - see shared/input/GlossSenses.h.
 inline std::vector<std::string>
 split_translation_gloss(std::string_view gloss) {
-  return msime::input::gloss_senses(gloss);
+  return lingyao::input::gloss_senses(gloss);
 }
 
 // Folds the user's own translator's answers into a non-English offline dictionary's glosses for the same page.
@@ -47,4 +47,4 @@ inline bool should_retry_translation_after_provider(bool requested, bool respons
   return requested && (!response_valid || !answered);
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

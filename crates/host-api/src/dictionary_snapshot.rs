@@ -1,18 +1,18 @@
 //! Native-only snapshot preparation. Staged paths stay private until a future
 //! activation transaction can own publication and session coordination.
 use super::{response, DictionaryAccess, HostOptions, HOST_OPTIONS_DOCUMENT_LIMIT};
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     AccountDictionarySnapshotRestore, AccountError, BackendAccountClient,
 };
-use msime_client_core::cloud::snapshot_queue::{
+use lingyao_client_core::cloud::snapshot_queue::{
     local_version, local_version_digest, DictionarySnapshotQueue, SnapshotQueueError,
 };
-use msime_client_core::cloud::snapshot_validation::{
+use lingyao_client_core::cloud::snapshot_validation::{
     has_keys as snapshot_has_keys, parse_strict_object, required_integer as snapshot_integer,
     required_text as snapshot_text, valid_timestamp as snapshot_timestamp,
 };
-use msime_client_core::resources::{ResourceSet, ResourceStore};
-use msime_engine::host::{
+use lingyao_client_core::resources::{ResourceSet, ResourceStore};
+use lingyao_engine::host::{
     dictionary_state_revision, stage_dictionary_state, EngineOptions, Session, SnapshotReadError,
 };
 use serde::{Deserialize, Serialize};
@@ -34,13 +34,13 @@ mod record;
 const BUFFER_LIMIT: usize = 65536;
 const REQUEST_LIMIT: usize = HOST_OPTIONS_DOCUMENT_LIMIT;
 const HANDLE_LIMIT: usize = 8;
-const ACTIVATION_RECEIPT_NAME: &str = ".msime-snapshot-activation";
+const ACTIVATION_RECEIPT_NAME: &str = ".lingyao-snapshot-activation";
 const MAX_ACTIVATION_RECEIPT_BYTES: u64 = 36;
 const MAX_SNAPSHOT_BYTES: u64 = 512 * 1024 * 1024;
 const MAX_SNAPSHOT_LINE_BYTES: usize = 65_536;
 const MAX_SNAPSHOT_RECORDS: usize = 500_000;
 // The guard's own file, which stays put while everything around it is swapped.
-const DICTIONARY_ACCESS_LOCK_NAME: &str = ".msime-dictionary-access.lock";
+const DICTIONARY_ACCESS_LOCK_NAME: &str = ".lingyao-dictionary-access.lock";
 static NEXT: AtomicU64 = AtomicU64::new(1);
 static PREPARED: OnceLock<Mutex<HashMap<u64, Prepared>>> = OnceLock::new();
 fn registry() -> &'static Mutex<HashMap<u64, Prepared>> {
@@ -279,7 +279,7 @@ fn inspect_snapshot_record(
 }
 
 fn reject_symlinked_snapshot_path(path: &Path) -> Result<(), &'static str> {
-    msime_path_trust::reject_symlinked_components(path).map_err(|_| "snapshot file unavailable")
+    lingyao_path_trust::reject_symlinked_components(path).map_err(|_| "snapshot file unavailable")
 }
 
 /// Validate the complete NDJSON envelope before a host calls the expensive Engine staging path.
@@ -353,7 +353,7 @@ pub(crate) fn inspect_snapshot(path: &Path) -> Result<SnapshotMetadata, &'static
                     || revision.is_some()
                     || !snapshot_has_keys(&map, &["type", "format", "version", "revision"])
                     || map.get("format").and_then(Value::as_str)
-                        != Some("msime-dictionary-snapshot")
+                        != Some("lingyao-dictionary-snapshot")
                     || map.get("version").and_then(Value::as_i64) != Some(1)
                 {
                     return Err("invalid snapshot document");
@@ -451,14 +451,14 @@ pub(crate) fn inspect_snapshot(path: &Path) -> Result<SnapshotMetadata, &'static
     })
 }
 
-/// 把本机用户词库写成与 `GET /v1/users/me/dictionary/snapshot` 相同的 NDJSON（`msime-dictionary-snapshot` 第 1 版：header、每个词一条 `entry` 和一条同权重的 `overlay`、footer 带正文 SHA-256），写完再用 [`inspect_snapshot`] 按云端格式校验一遍，返回同样的元数据。
+/// 把本机用户词库写成与 `GET /v1/users/me/dictionary/snapshot` 相同的 NDJSON（`lingyao-dictionary-snapshot` 第 1 版：header、每个词一条 `entry` 和一条同权重的 `overlay`、footer 带正文 SHA-256），写完再用 [`inspect_snapshot`] 按云端格式校验一遍，返回同样的元数据。
 ///
 /// 这是离线导出：不需要登录，修订号固定为 1。位置调整和选词计数是 Engine 内部的学习状态，没有只读接口，不导出。调用方已经持有词库的会话访问权。
 pub(crate) fn export_local_snapshot(
     options: &EngineOptions,
     destination: &Path,
 ) -> Result<Value, &'static str> {
-    use msime_engine::host::DictionaryKind;
+    use lingyao_engine::host::DictionaryKind;
     const REVISION: i64 = 1;
     const CHUNK: usize = 1000;
     let parent = destination
@@ -484,7 +484,7 @@ pub(crate) fn export_local_snapshot(
     let mut skipped = 0usize;
     let mut offset = 0usize;
     loop {
-        let page = msime_engine::host::dictionary_entries(options, offset, CHUNK)
+        let page = lingyao_engine::host::dictionary_entries(options, offset, CHUNK)
             .map_err(|_| "dictionary read rejected")?;
         let count = page.entries.len();
         for entry in page.entries {
@@ -528,7 +528,7 @@ pub(crate) fn export_local_snapshot(
     };
     push(json!({
         "type": "header",
-        "format": "msime-dictionary-snapshot",
+        "format": "lingyao-dictionary-snapshot",
         "version": 1,
         "revision": REVISION,
     }));
@@ -600,7 +600,7 @@ fn restore_snapshot_with(
     path: &Path,
     upload: impl FnOnce(&Path, i64, &str) -> Result<AccountDictionarySnapshotRestore, AccountError>,
 ) -> Result<Value, String> {
-    if request.revision < 0 || !msime_client_core::is_lower_hex(&request.expected_sha256, 64) {
+    if request.revision < 0 || !lingyao_client_core::is_lower_hex(&request.expected_sha256, 64) {
         return Err("account_invalid".to_owned());
     }
     let metadata = inspect_snapshot(path).map_err(|_| "account_invalid".to_owned())?;
@@ -641,7 +641,7 @@ fn version(options: &EngineOptions) -> Result<String, &'static str> {
     .map_err(|_| "snapshot access unavailable")?
     .ok_or("snapshot access busy")?;
     let mut hash = Sha256::new();
-    hash.update(b"msime-host-dictionary-version-v1");
+    hash.update(b"lingyao-host-dictionary-version-v1");
     for path in [
         &options.resources,
         &options.user_data,
@@ -714,7 +714,7 @@ fn prepare(
     request: PrepareRequest,
     specification: &ResourceSet,
     on_demand: &[&str],
-    stream: impl Iterator<Item = Result<msime_engine::host::DictionaryStateRecord, SnapshotReadError>>
+    stream: impl Iterator<Item = Result<lingyao_engine::host::DictionaryStateRecord, SnapshotReadError>>
         + 'static,
 ) -> Result<Prepared, &'static str> {
     if request.records > 500_000 || request.expected_version.len() != 64 {
@@ -827,8 +827,8 @@ fn activate(handle: u64, expected: &str) -> Result<Value, &'static str> {
     // Windows cannot rename SQLite files while the probe keeps them open.
     drop(replacement_session);
     // The same step `reset_learned_data` takes before it replaces files in place: write the queued personal context into the journal that is about to become the backup, then close every cached journal, personal-context and local-mode connection, so nothing in this process keeps reading or writing the files being moved out (Windows would also refuse to move them).
-    msime_engine::close_cached_databases();
-    let suffix = format!(".msime-snapshot-old-{handle}");
+    lingyao_engine::close_cached_databases();
+    let suffix = format!(".lingyao-snapshot-old-{handle}");
     let pairs = [
         (&active.user_data, &staged.user_data),
         (&active.cache, &staged.cache),
@@ -866,7 +866,7 @@ fn activate(handle: u64, expected: &str) -> Result<Value, &'static str> {
     let mut moved: Vec<(std::path::PathBuf, std::path::PathBuf)> = Vec::with_capacity(pairs.len());
     let rollback = |moved: &[(std::path::PathBuf, std::path::PathBuf)]| {
         // Anything opened on a moved file while the swap ran would outlive its move back.
-        msime_engine::close_cached_databases();
+        lingyao_engine::close_cached_databases();
         for (from, to) in moved.iter().rev() {
             let _ = std::fs::rename(to, from);
         }
@@ -942,7 +942,7 @@ fn activate(handle: u64, expected: &str) -> Result<Value, &'static str> {
         }
     }
     // A reader that opened a file while the swap ran holds the old one; the next access opens the restored files.
-    msime_engine::close_cached_databases();
+    lingyao_engine::close_cached_databases();
     for backup in &backups {
         let _ = std::fs::remove_dir_all(backup);
     }
@@ -989,7 +989,7 @@ fn prepare_snapshot_backup(path: &Path) -> std::io::Result<()> {
 
 fn version_without_access(options: &EngineOptions) -> Result<String, &'static str> {
     let mut hash = Sha256::new();
-    hash.update(b"msime-host-dictionary-version-v1");
+    hash.update(b"lingyao-host-dictionary-version-v1");
     for path in [
         &options.resources,
         &options.user_data,
@@ -1090,7 +1090,7 @@ impl SnapshotFileRecords {
 }
 
 impl Iterator for SnapshotFileRecords {
-    type Item = Result<msime_engine::host::DictionaryStateRecord, SnapshotReadError>;
+    type Item = Result<lingyao_engine::host::DictionaryStateRecord, SnapshotReadError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.failed {
@@ -1298,7 +1298,7 @@ fn run_snapshot_queue(action: SnapshotQueueAction) -> Result<Value, String> {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_snapshot_queue(
+pub unsafe extern "C" fn lingyao_client_snapshot_queue(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1317,7 +1317,7 @@ pub unsafe extern "C" fn msime_client_snapshot_queue(
 /// # Safety
 /// `path` points to `length` readable UTF-8 bytes naming an absolute file path.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_snapshot_inspect(
+pub unsafe extern "C" fn lingyao_client_snapshot_inspect(
     path: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1342,7 +1342,7 @@ pub unsafe extern "C" fn msime_client_snapshot_inspect(
 /// `request` points to `request_length` readable JSON bytes and `path` points to
 /// `path_length` readable UTF-8 bytes naming an absolute private file path.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_snapshot_restore(
+pub unsafe extern "C" fn lingyao_client_snapshot_restore(
     request: *const u8,
     request_length: usize,
     path: *const u8,
@@ -1378,7 +1378,7 @@ pub unsafe extern "C" fn msime_client_snapshot_restore(
 /// # Safety
 /// `options` points to `length` readable bytes. Trusted native paths only.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_snapshot_version(
+pub unsafe extern "C" fn lingyao_client_snapshot_version(
     options: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1398,7 +1398,7 @@ pub unsafe extern "C" fn msime_client_snapshot_version(
 /// Request/context remain valid for this synchronous call. The callback obeys
 /// SnapshotNext, writes at most capacity bytes, and does not unwind or retain buffer.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_snapshot_prepare(
+pub unsafe extern "C" fn lingyao_client_snapshot_prepare(
     request: *const u8,
     length: usize,
     next: Option<SnapshotNext>,
@@ -1450,12 +1450,12 @@ fn discard(handle: u64) -> Result<Value, &'static str> {
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_snapshot_discard(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_snapshot_discard(handle: u64) -> *mut c_char {
     response(|| discard(handle).map_err(|error| error.to_string()))
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_snapshot_activate(
+pub extern "C" fn lingyao_client_snapshot_activate(
     handle: u64,
     expected: *const u8,
     length: usize,

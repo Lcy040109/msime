@@ -1,11 +1,11 @@
-//! WebHost 的按键路由，跑在 `make_fixture` 写出的最小词库上（不读 `MSIME_EVAL_RESOURCES`，所以期望值不随发布的词库变化）。
+//! WebHost 的按键路由，跑在 `make_fixture` 写出的最小词库上（不读 `LINGYAO_EVAL_RESOURCES`，所以期望值不随发布的词库变化）。
 
 #[path = "support/fixture.rs"]
 mod fixture;
 
 use std::path::Path;
 
-use msime_engine_wasm::host::{Frame, Key, Out, Row, Scheme, WebHost};
+use lingyao_engine_wasm::host::{Frame, Key, Out, Row, Scheme, WebHost};
 use tempfile::TempDir;
 
 /// 一个会话和它的三个临时目录；目录随它一起删掉。
@@ -18,7 +18,7 @@ struct Fixture {
 
 fn open(scheme: Scheme, only_wubi86: bool) -> Fixture {
     let resources = tempfile::tempdir().expect("resource directory");
-    fixture::write(&resources.path().join("msime.db"), only_wubi86).expect("fixture db");
+    fixture::write(&resources.path().join("lingyao.db"), only_wubi86).expect("fixture db");
     let user = tempfile::tempdir().expect("user directory");
     let cache = tempfile::tempdir().expect("cache directory");
     let host =
@@ -569,7 +569,7 @@ fn a_batch_reports_every_output_in_order() {
 #[test]
 fn page_size_is_bounded() {
     let resources = tempfile::tempdir().unwrap();
-    fixture::write(&resources.path().join("msime.db"), false).unwrap();
+    fixture::write(&resources.path().join("lingyao.db"), false).unwrap();
     let user = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     for size in [0, 10] {

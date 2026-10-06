@@ -2,7 +2,7 @@
 #include "InputQueue.h"
 #include "MainTransport.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class PumpResult {
   Disconnected,
   QueueUnavailable,
@@ -58,4 +58,4 @@ private:
   Presentation presentation_;
   std::shared_ptr<std::mutex> transactions_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

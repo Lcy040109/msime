@@ -48,7 +48,7 @@ pub fn launch(program: &str, arguments: &[&str], check: Duration) -> bool {
             }
             Ok(None) => {
                 let _ = std::thread::Builder::new()
-                    .name("msime-launcher-reaper".to_owned())
+                    .name("lingyao-launcher-reaper".to_owned())
                     .spawn(move || {
                         let _ = child.wait();
                     });
@@ -269,7 +269,7 @@ mod tests {
         let check = Duration::from_secs(1);
         assert!(super::launch("/bin/sh", &["-c", "exit 0"], check));
         assert!(!super::launch("/bin/sh", &["-c", "exit 4"], check));
-        assert!(!super::launch("/nonexistent/msime-launcher", &[], check));
+        assert!(!super::launch("/nonexistent/lingyao-launcher", &[], check));
         // A launcher that keeps running is a handler that opened, not a hang.
         let started = std::time::Instant::now();
         assert!(super::launch(

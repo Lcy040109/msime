@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   for (bool system_dark : {false, true}) {
     for (const char *global : {"dark", "light", "system"}) {
       for (const char *surface : {"follow", "dark", "light"}) {
@@ -20,7 +20,7 @@ int main() {
     }
   }
   // The request for one surface: the stored global theme (system when none is stored), that surface's own mode, the layout being drawn and the absolute skin root.
-  const auto root = std::filesystem::temp_directory_path() / "msime-skins";
+  const auto root = std::filesystem::temp_directory_path() / "lingyao-skins";
   const nlohmann::json custom{
       {"base", "system"},
       {"candidate_skin", "sample"},

@@ -86,7 +86,7 @@
         "spdx": "LicenseRef-FunASR-Model-License-1.1",
         "source": "https://github.com/FunAudioLLM/SenseVoice",
         "terms": "https://github.com/modelscope/FunASR/blob/main/MODEL_LICENSE",
-        "notice": "SenseVoice-Small by Alibaba Tongyi Lab (FunAudioLLM), used under the FunASR Model License v1.1. Converted to ONNX by the k2-fsa/sherpa-onnx project. The model name and this attribution must be kept; it is downloaded on request and not shipped with MSIME."
+        "notice": "SenseVoice-Small by Alibaba Tongyi Lab (FunAudioLLM), used under the FunASR Model License v1.1. Converted to ONNX by the k2-fsa/sherpa-onnx project. The model name and this attribution must be kept; it is downloaded on request and not shipped with LINGYAO."
       }
     },
     {

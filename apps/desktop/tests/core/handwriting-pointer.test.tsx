@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { HandwritingPanel } from "@msime/ui";
+import { HandwritingPanel } from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -86,9 +86,9 @@ pub enum CandidatePanelLimit {
 }
 
 impl CandidatePanelLimit {
-    /// The file the running Linux host writes its finding to: `candidate-panel.json` under `$XDG_RUNTIME_DIR/msime-client`, the per-session directory that goes away with the session the finding describes. A relative or missing runtime directory yields nothing.
+    /// The file the running Linux host writes its finding to: `candidate-panel.json` under `$XDG_RUNTIME_DIR/lingyao-client`, the per-session directory that goes away with the session the finding describes. A relative or missing runtime directory yields nothing.
     ///
-    /// 目录名随本进程所在安装包的版本（`Edition::linux_package_identity_or_full`，full 是 `msime-client`），读的是同一版本宿主写的那一份。
+    /// 目录名随本进程所在安装包的版本（`Edition::linux_package_identity_or_full`，full 是 `lingyao-client`），读的是同一版本宿主写的那一份。
     pub fn status_file(runtime_directory: Option<&std::ffi::OsStr>) -> Option<std::path::PathBuf> {
         let directory = std::path::PathBuf::from(runtime_directory?);
         directory.is_absolute().then(|| {
@@ -284,7 +284,7 @@ pub struct HostCapabilities {
     pub plugin_triggers: bool,
     /// The host streams the selected music pack while it is the active input method.
     pub music: bool,
-    /// The host draws the typing effects and the combo count that `msime_client_typing_effect` answers with. Each host flips this only in the change that wires the call, as with the flags above.
+    /// The host draws the typing effects and the combo count that `lingyao_client_typing_effect` answers with. Each host flips this only in the change that wires the call, as with the flags above.
     pub typing_effects: bool,
     /// The operating system release, as the machine reports it, for the feedback
     /// page to attach. Not a platform assumption like the flags above -- the host
@@ -573,7 +573,7 @@ impl HostCapabilities {
                     | HostPlatform::Linux
                     | HostPlatform::Ios
             ),
-            // Every host calls `msime_client_set_character_width` when its session starts and
+            // Every host calls `lingyao_client_set_character_width` when its session starts and
             // from its own width switch, so the preference always has something to act on.
             character_width: true,
             // The Android recognition window shows the transcript once it is settled and has no row for a partial one; putting half-written text there that the final result may contradict is worse than waiting for it. iOS records in the app, because a keyboard extension cannot use the microphone, and hands the keyboard only the final transcript, so it has no row for one either. Every other host draws its own composition.

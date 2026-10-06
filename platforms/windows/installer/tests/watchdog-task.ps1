@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../msime_setup.iss') -Raw
+$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../lingyao_setup.iss') -Raw
 $script = $script -replace '\\\r?\n\s*', ' '
 
 $create = [regex]::Match(
@@ -32,7 +32,7 @@ if (($expression -replace "'(?:[^']|'')*'|\bWatchdogPath\b|\+|\s", '') -ne '') {
     throw 'The schtasks argument expression uses something this probe cannot evaluate'
 }
 $watchdogPath = 'C:\Program Files\lingyaoime\server\LingyaoImeWatchdog.exe'
-$taskName = 'MSIME Watchdog Quote Probe ' + [Guid]::NewGuid().ToString('N')
+$taskName = 'LINGYAO Watchdog Quote Probe ' + [Guid]::NewGuid().ToString('N')
 $arguments = -join @($tokens | ForEach-Object {
     if ($_.Value -eq 'WatchdogPath') { $watchdogPath } else { $_.Value.Substring(1, $_.Value.Length - 2).Replace("''", "'") }
 })

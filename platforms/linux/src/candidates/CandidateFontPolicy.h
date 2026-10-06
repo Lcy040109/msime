@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Windows draws its own candidate window and reads candidate_font_family, the fallback chain and
 // candidate_font_size straight into it. Neither Linux host draws the list: IBus hands it to the
@@ -118,4 +118,4 @@ private:
   std::optional<std::string> last_;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

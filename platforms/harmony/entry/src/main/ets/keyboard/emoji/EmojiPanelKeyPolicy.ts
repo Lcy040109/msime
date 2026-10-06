@@ -1,7 +1,7 @@
 import { KeyboardGeometry } from '../KeyboardGeometry';
 
 /**
- * What a hardware key does while the 2in1 emoji panel is open, ported from `EmojiPanel::OnKeyDown` and the panel's search box in MSIME-Windows/server/src/emoji-panel/EmojiPanel.cpp.
+ * What a hardware key does while the 2in1 emoji panel is open, ported from `EmojiPanel::OnKeyDown` and the panel's search box in LINGYAO-Windows/server/src/emoji-panel/EmojiPanel.cpp.
  *
  * The Windows panel is its own focused window, so arrows move its selection, Enter or Space inserts the selected item, and printable keys land in its search box instead of the editor. The 2in1 panel lives in the candidate window and the editor keeps focus, so every key arrives here first; without this the arrows moved the document caret and Return put a newline under an open panel. Keys the panel has no use for are left to the editor, the way `OnKeyDown` answers false for them: a chord, Tab, or a Backspace with nothing typed into the search, which deletes in the document the same as the panel's own delete key.
  *

@@ -2,7 +2,7 @@
 #include <cstdint>
 
 // Main-thread gate. A stale completion must not release a newer in-flight load.
-struct MSIMEPreferenceLoadState {
+struct LINGYAOPreferenceLoadState {
     std::uint64_t generation = 0;
     bool loading = false;
     /// The revision last applied to this session, so an unchanged document read by the poll is not

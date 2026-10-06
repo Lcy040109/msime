@@ -268,7 +268,7 @@ pub struct TranslationQuery {
     pub sentence: bool,
     /// The service the user selected; every query carries it so the provider never guesses.
     pub provider: TranslationService,
-    /// The user explicitly selected the hosted MSIME translation account. Linux
+    /// The user explicitly selected the hosted LINGYAO translation account. Linux
     /// carries this flag through its provider socket; it is not a provider enum
     /// value because the provider owns the account credentials.
     #[serde(default, skip_serializing_if = "is_false")]

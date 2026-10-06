@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct ClipboardPresentation {
   uint64_t revision = 0;
   bool enabled = false;
@@ -23,4 +23,4 @@ private:
   std::optional<ClipboardPresentation> latest_;
   uint64_t revision_ = 0;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

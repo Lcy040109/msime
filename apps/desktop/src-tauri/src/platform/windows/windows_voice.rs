@@ -1,7 +1,7 @@
 use crate::shared::voice::voice_sessions::VoiceSessions;
 use crate::voice::{VoiceRecognitionRequest, VoiceRecognitionResult, VoiceRecognitionUpdate};
 use crate::HostActionError;
-use msime_client_core::voice::controller::{Error, Phase};
+use lingyao_client_core::voice::controller::{Error, Phase};
 use std::sync::atomic::Ordering;
 use tauri::{Emitter, Manager};
 
@@ -11,7 +11,7 @@ pub(crate) async fn recognize(
 ) -> Result<VoiceRecognitionResult, HostActionError> {
     let sessions = app.state::<VoiceSessions>();
     // 本版本 Server 的语音控制管道；安装包的版本声明坏了时没有可连的 Server。
-    let pipe = msime_host_windows::voice_controller::pipe_name().ok_or(HostActionError {
+    let pipe = lingyao_host_windows::voice_controller::pipe_name().ok_or(HostActionError {
         code: "unavailable",
     })?;
     let session = sessions
@@ -21,7 +21,7 @@ pub(crate) async fn recognize(
     let cancelled = session.cancelled.clone();
     let worker_app = app.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        msime_host_windows::voice_controller::recognize(
+        lingyao_host_windows::voice_controller::recognize(
             &request.language,
             generation,
             &session.stopped,

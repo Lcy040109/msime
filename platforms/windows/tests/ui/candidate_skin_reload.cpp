@@ -4,7 +4,7 @@
 #include <fstream>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   const auto custom = [](const std::string &id) {
     return nlohmann::json{{"global_theme", "custom"},
                           {"custom_theme",
@@ -31,7 +31,7 @@ int main() {
   assert(candidate_theme_package(nlohmann::json::object()).empty());
   const auto root =
       std::filesystem::temp_directory_path() /
-      ("msime-skin-reload-" +
+      ("lingyao-skin-reload-" +
        std::to_string(
            std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directories(root / "sample");

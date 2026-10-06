@@ -28,7 +28,7 @@ final class KeyboardEmojiPickerView: UIView, UICollectionViewDataSource, UIColle
   private let onDelete: () -> Void
   private let onCatalogChange: (() -> Void)?
   private let loader: PageLoader
-  private let loadQueue = DispatchQueue(label: "app.msime.ios.emoji-catalog", qos: .userInitiated)
+  private let loadQueue = DispatchQueue(label: "app.lingyao.ios.emoji-catalog", qos: .userInitiated)
   private let tabs = UIStackView()
   private let tabScroll = UIScrollView()
   private let status = UILabel()

@@ -9,28 +9,28 @@
 
 int main() {
   const auto directory = std::filesystem::temp_directory_path() /
-                         ("msime-macos-diagnostic-" + std::to_string(getpid()));
+                         ("lingyao-macos-diagnostic-" + std::to_string(getpid()));
   std::filesystem::remove_all(directory);
   std::filesystem::create_directories(directory);
   const auto log = directory / "diagnostic.log";
 
-  msime_macos_diagnostic_configure(directory.string(), false);
-  assert(!msime_macos_diagnostic_enabled());
-  msime_macos_diagnostic_write("disabled_event");
-  msime_macos_diagnostic_writef("disabled_formatted elapsed_ms=%.1f", 1.5);
+  lingyao_macos_diagnostic_configure(directory.string(), false);
+  assert(!lingyao_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_write("disabled_event");
+  lingyao_macos_diagnostic_writef("disabled_formatted elapsed_ms=%.1f", 1.5);
   assert(!std::filesystem::exists(log));
 
   // A relative directory is refused, so the gate stays closed and formatting is skipped.
-  msime_macos_diagnostic_configure("relative", true);
-  assert(!msime_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_configure("relative", true);
+  assert(!lingyao_macos_diagnostic_enabled());
 
-  msime_macos_diagnostic_configure(directory.string(), true);
-  assert(msime_macos_diagnostic_enabled());
-  msime_macos_diagnostic_write("focus_in");
-  msime_macos_diagnostic_write("operation_failed operation=synthetic\nprivate");
-  msime_macos_diagnostic_writef("[key-latency] stage=handle type=%s handled=%d elapsed_ms=%.1f", "down", 1, 2.5);
-  msime_macos_diagnostic_writef("formatted %s", "tab\there");
-  msime_macos_diagnostic_writef("long %s", std::string(400, 'x').c_str());
+  lingyao_macos_diagnostic_configure(directory.string(), true);
+  assert(lingyao_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_write("focus_in");
+  lingyao_macos_diagnostic_write("operation_failed operation=synthetic\nprivate");
+  lingyao_macos_diagnostic_writef("[key-latency] stage=handle type=%s handled=%d elapsed_ms=%.1f", "down", 1, 2.5);
+  lingyao_macos_diagnostic_writef("formatted %s", "tab\there");
+  lingyao_macos_diagnostic_writef("long %s", std::string(400, 'x').c_str());
   std::ifstream input(log);
   const std::string contents((std::istreambuf_iterator<char>(input)), {});
   assert(contents.find("focus_in") != std::string::npos);
@@ -63,20 +63,20 @@ int main() {
   std::filesystem::create_directory(outside);
   const auto linked = directory / "linked-parent";
   std::filesystem::create_directory_symlink(outside, linked);
-  msime_macos_diagnostic_configure(linked.string(), true);
-  assert(!msime_macos_diagnostic_enabled());
-  msime_macos_diagnostic_write("must_not_escape");
+  lingyao_macos_diagnostic_configure(linked.string(), true);
+  assert(!lingyao_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_write("must_not_escape");
   assert(!std::filesystem::exists(outside / "diagnostic.log"));
   std::filesystem::remove(linked);
   std::filesystem::remove_all(outside);
 
-  msime_macos_diagnostic_configure(directory.string(), true);
-  assert(msime_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_configure(directory.string(), true);
+  assert(lingyao_macos_diagnostic_enabled());
 
-  msime_macos_diagnostic_configure(directory.string(), false);
-  assert(!msime_macos_diagnostic_enabled());
-  msime_macos_diagnostic_write("after_disable");
-  msime_macos_diagnostic_writef("after_disable_formatted %d", 1);
+  lingyao_macos_diagnostic_configure(directory.string(), false);
+  assert(!lingyao_macos_diagnostic_enabled());
+  lingyao_macos_diagnostic_write("after_disable");
+  lingyao_macos_diagnostic_writef("after_disable_formatted %d", 1);
   std::ifstream after(log);
   const std::string unchanged((std::istreambuf_iterator<char>(after)), {});
   assert(unchanged == contents);

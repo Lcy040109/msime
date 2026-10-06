@@ -1,4 +1,4 @@
-import app.msime.android.SpaceCursorMovement;
+import app.lingyao.android.SpaceCursorMovement;
 
 public final class SpaceCursorMovementSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

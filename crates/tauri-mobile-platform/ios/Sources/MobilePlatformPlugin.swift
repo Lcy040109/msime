@@ -395,7 +395,7 @@ private final class IOSVoiceTranscriptionService {
   private func transcriptionRequest(_ args: VoiceTranscriptionArgs, audio: Data) -> URLRequest? {
     let endpoint = args.endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
     guard let url = URL(string: endpoint) else { return nil }
-    let boundary = "MSIME-\(UUID().uuidString)"
+    let boundary = "LINGYAO-\(UUID().uuidString)"
     var body = Data()
     func append(_ value: String) { body.append(Data(value.utf8)) }
     append("--\(boundary)\r\n")
@@ -458,7 +458,7 @@ private final class VoiceTextHandoffWriter {
   private let directory: URL?
 
   init() {
-    directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.app.msime.ios")?
+    directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.app.lingyao.ios")?
       .appendingPathComponent("VoiceHandoff", isDirectory: true)
   }
 
@@ -513,9 +513,9 @@ private struct SaveKeyboardAIArgs: Decodable {
 /// settings document lives in Rust; this mirror exists because the extension
 /// cannot call into the Tauri WebView while it is active.
 private final class IOSKeyboardAIStore {
-  private static let group = "group.app.msime.ios"
+  private static let group = "group.app.lingyao.ios"
   private static let configurationKey = "keyboard.ai.configuration"
-  private static let keychainService = "app.msime.ios.keyboard-ai"
+  private static let keychainService = "app.lingyao.ios.keyboard-ai"
   private static let providers: Set<String> = [
     "everyAPI", "openAI", "anthropic", "gemini", "deepSeek", "qwen", "kimi",
     "zhipu", "siliconFlow", "openRouter", "custom",
@@ -606,7 +606,7 @@ private final class IOSKeyboardAIStore {
 
 /// App Group adapter for preferences that the keyboard extension can change
 /// without opening the Tauri settings app. The keys and fallback behaviour are
-/// fixed to MSIME-Apple develop@81e79abec7b53e7243fb8cbe82a42a4dde1e528f.
+/// fixed to LINGYAO-Apple develop@81e79abec7b53e7243fb8cbe82a42a4dde1e528f.
 private struct IOSKeyboardPreferenceStore {
   static let maximumCustomSkinBytes = 800_000
   static let schemeOrder = [
@@ -622,7 +622,7 @@ private struct IOSKeyboardPreferenceStore {
   static let hapticStrengths = ["light", "medium", "strong"]
 
   private var defaults: UserDefaults {
-    UserDefaults(suiteName: "group.app.msime.ios") ?? .standard
+    UserDefaults(suiteName: "group.app.lingyao.ios") ?? .standard
   }
 
   private func enabledSchemes() -> [String] {
@@ -711,7 +711,7 @@ private struct AccountSessionKeychain {
   private var query: [String: Any] {
     [
       kSecClass as String: kSecClassGenericPassword,
-      kSecAttrService as String: "app.msime.backend.account",
+      kSecAttrService as String: "app.lingyao.backend.account",
       kSecAttrAccount as String: "https://api.msime.app",
     ]
   }
@@ -1210,7 +1210,7 @@ final class MobilePlatformPlugin: Plugin {
   }
 }
 
-@_cdecl("init_plugin_msime_mobile_platform")
+@_cdecl("init_plugin_lingyao_mobile_platform")
 func initPlugin() -> Plugin {
   MobilePlatformPlugin()
 }

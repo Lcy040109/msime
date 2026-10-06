@@ -21,18 +21,18 @@
 #include "AtomicWrite.h"
 #include "../core/LinuxEdition.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// Fcitx5's classic UI draws the candidate list from a named theme. MSIME publishes its palette as a theme of its own, so the list looks the same as on IBus and Windows, while a theme the user picked in fcitx5-configtool is never replaced: only Fcitx5's stock themes, or MSIME's own, are taken over.
+// Fcitx5's classic UI draws the candidate list from a named theme. LINGYAO publishes its palette as a theme of its own, so the list looks the same as on IBus and Windows, while a theme the user picked in fcitx5-configtool is never replaced: only Fcitx5's stock themes, or LINGYAO's own, are taken over.
 // 主题名与 Fcitx5 插件名相同（LinuxEdition.h）：两个版本的插件在同一个 fcitx5 里各写各的主题，不互相覆盖。
-inline constexpr std::string_view kFcitxCandidateTheme = MSIME_EDITION_FCITX5_ADDON;
+inline constexpr std::string_view kFcitxCandidateTheme = LINGYAO_EDITION_FCITX5_ADDON;
 
 inline bool fcitx_theme_replaceable(std::string_view current) {
   return current.empty() || current == "default" || current == "default-dark" ||
          current == kFcitxCandidateTheme;
 }
 
-// Whether the classic UI draws MSIME's theme in both appearances. The light `Theme` and, on Fcitx5 releases that have one, the `DarkTheme` are taken over separately and only while each holds a stock theme, so a user's own dark theme stays in place and is what Fcitx5 draws in dark mode.
+// Whether the classic UI draws LINGYAO's theme in both appearances. The light `Theme` and, on Fcitx5 releases that have one, the `DarkTheme` are taken over separately and only while each holds a stock theme, so a user's own dark theme stays in place and is what Fcitx5 draws in dark mode.
 inline bool fcitx_candidate_theme_drawn(std::string_view theme, const std::string *dark_theme) {
   return fcitx_theme_replaceable(theme) && (!dark_theme || fcitx_theme_replaceable(*dark_theme));
 }
@@ -294,10 +294,10 @@ inline FcitxThemeFiles fcitx_candidate_theme_files(const CandidateColors &colors
   std::ostringstream conf;
   conf << "SupportedScale=2\n\n"
           "[Metadata]\n"
-          "Name=MSIME\n"
+          "Name=LINGYAO\n"
           "Version=1\n"
-          "Author=MSIME\n"
-          "Description=Generated from the MSIME candidate settings; edits are replaced when they change\n"
+          "Author=LINGYAO\n"
+          "Description=Generated from the LINGYAO candidate settings; edits are replaced when they change\n"
           "ScaleWithDPI=True\n\n"
           "[InputPanel]\n"
        << "NormalColor=" << fcitx_theme_color(text) << "\n"
@@ -472,7 +472,7 @@ inline std::string fcitx_overlay_stamp(const std::optional<CandidateSkinDecorati
   return stamp.str();
 }
 
-// Write the theme for these colours and decoration into `file`. The images are written before theme.conf so the theme never names a file that is not there, and the images of an earlier theme are removed once theme.conf no longer names them. A decoration that cannot be staged leaves the theme without it rather than without MSIME's colours; a shape that cannot be written leaves theme.conf unchanged. Returns whether theme.conf now holds the theme.
+// Write the theme for these colours and decoration into `file`. The images are written before theme.conf so the theme never names a file that is not there, and the images of an earlier theme are removed once theme.conf no longer names them. A decoration that cannot be staged leaves the theme without it rather than without LINGYAO's colours; a shape that cannot be written leaves theme.conf unchanged. Returns whether theme.conf now holds the theme.
 inline bool write_fcitx_candidate_theme(const std::filesystem::path &file, const CandidateColors &colors, bool dark,
                                         const std::optional<CandidateSkinDecoration> &decoration,
                                         const std::optional<double> &corner_radius = std::nullopt,
@@ -493,4 +493,4 @@ inline bool write_fcitx_candidate_theme(const std::filesystem::path &file, const
   return true;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

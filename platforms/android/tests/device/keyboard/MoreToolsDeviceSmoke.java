@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.content.Intent;
 import android.graphics.Rect;
@@ -16,7 +16,7 @@ public final class MoreToolsDeviceSmoke extends DeviceSmoke {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivitySync(intent);
         stage = "more tools focus";
-        tap(field("msime-test-plain"));
+        tap(field("lingyao-test-plain"));
         stage = "keyboard shortcut bar";
         await(shortcutBar());
         // The scheme entry shows the scheme in use in its description, so only the prefix identifies it; the skin and hide entries keep fixed faces, and the brand key is 更多.
@@ -110,7 +110,7 @@ public final class MoreToolsDeviceSmoke extends DeviceSmoke {
     }
 
     private Predicate<AccessibilityNodeInfo> shortcutBar() {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText("键盘快捷栏", node.getContentDescription());
     }
 

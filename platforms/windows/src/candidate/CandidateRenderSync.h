@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // A keyboard selection may race the asynchronous candidate-window paint.  A
 // rendered generation of zero means that no paint receipt has arrived yet.
@@ -23,4 +23,4 @@ inline constexpr bool should_wait_for_candidate_render(
   return rendered_generation < current_generation;
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

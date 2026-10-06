@@ -446,7 +446,7 @@ fn write_zip(
         writer.write_all(bytes).map_err(DiagnosticsError::Write)
     };
     let manifest = serde_json::json!({
-        "format": "msime-diagnostics",
+        "format": "lingyao-diagnostics",
         "version": 1,
         "counts": counts,
     });

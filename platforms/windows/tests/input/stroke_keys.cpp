@@ -4,7 +4,7 @@
 #include "../core/TestHostOptions.h"
 #include <cassert>
 #include <chrono>
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 FanyImeNamedpipeData key(uint64_t request, uint32_t code, char16_t text, uint32_t modifiers = 0) {
@@ -38,7 +38,7 @@ uint32_t us_key(char text) {
   return 0;
 }
 
-// The Server side of the Stroke scheme, run against a real Engine session and a synthetic msime-stroke.db. Stroke composes in the Server's candidate window like Cantonese: the TIP keeps its own composition in step key for key, so every key has to leave the Server's session where the TIP's host session leaves its own.
+// The Server side of the Stroke scheme, run against a real Engine session and a synthetic lingyao-stroke.db. Stroke composes in the Server's candidate window like Cantonese: the TIP keeps its own composition in step key for key, so every key has to leave the Server's session where the TIP's host session leaves its own.
 struct Fixture {
   ServerSession session;
   ReplyComposer composer{42, 1};
@@ -71,11 +71,11 @@ struct Fixture {
 };
 } // namespace
 
-// argv[1] is tests/input/fixtures/msime-stroke.db: the synthetic rows of the Engine's stroke fixture (crates/engine/src/stroke/mod.rs, made-up weights) in the language dictionary schema, written by Python's sqlite3 with a 512-byte page size. The Windows build links no SQLite of its own, so the file is checked in rather than built here.
+// argv[1] is tests/input/fixtures/lingyao-stroke.db: the synthetic rows of the Engine's stroke fixture (crates/engine/src/stroke/mod.rs, made-up weights) in the language dictionary schema, written by Python's sqlite3 with a 512-byte page size. The Windows build links no SQLite of its own, so the file is checked in rather than built here.
 int main(int argc, char **argv) {
   assert(argc == 2);
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-stroke-keys-" +
+                    ("lingyao-stroke-keys-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   // A copy beside the resources, where the packaged dictionary goes, so the checked-in file is never opened for writing.
   const auto dictionaries = root / "language-dictionaries";
   std::filesystem::create_directory(dictionaries);
-  std::filesystem::copy_file(std::filesystem::path(argv[1]), dictionaries / "msime-stroke.db");
+  std::filesystem::copy_file(std::filesystem::path(argv[1]), dictionaries / "lingyao-stroke.db");
   auto options = test_host_options(root);
   options["language_dictionaries"] = dictionaries.u8string();
   options["preferences"]["scheme"] = "stroke";
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     for (const auto &item : stroke.candidates())
       earth += item.at("text").get<std::string>() == "土" ? 1 : 0;
     assert(earth == 1);
-    // Rows come from the read-only msime-stroke.db: no 置顶, 固定 or 删除 is offered for them.
+    // Rows come from the read-only lingyao-stroke.db: no 置顶, 固定 or 删除 is offered for them.
     const auto presented = candidate_presentation_from_view(FocusLease{{42, {1, 2, 3}}, 1, 1}, stroke.view(), 0, 0, "");
     assert(presented.visible && presented.preedit == "一丨" && !presented.candidates.empty());
     for (const auto &item : presented.candidates)

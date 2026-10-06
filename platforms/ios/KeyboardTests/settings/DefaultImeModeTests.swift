@@ -8,7 +8,7 @@ final class DefaultImeModeTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-default-ime-mode-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-default-ime-mode-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

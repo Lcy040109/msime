@@ -7,7 +7,7 @@ export function mcpFailureMessage(error: unknown, name: string): string {
     case "mcp_config_invalid":
       return `${name} 的配置文件不是有效的 JSON，已保持原样。请先修正该文件。`;
     case "mcp_server_missing":
-      return "没有找到 msime-mcp，请重新安装输入法。";
+      return "没有找到 lingyao-mcp，请重新安装输入法。";
     case "mcp_options_missing":
       return "输入法尚未完成初始化，请先完成设置向导。";
   }

@@ -12,11 +12,11 @@
 - 资源组件互不重叠，并集恰好等于 `resources/desktop-dictionary.lock.json` 的条目；
 - 生成的资源锁没有漂移：`resources/components/` 和 `resources/editions/` 下的文件与 `scripts/editions.py gen-locks` 的输出逐字节相同，没有多余文件，全部组件的并集逐字节等于 `resources/desktop-dictionary.lock.json`；
 - 只认中文的功能：非英文离线释义（`features.offline_glosses`）和手写（`features.handwriting`）都只对中文候选、汉字有用，所以两者必须等于本版本是否提供中文方案（与 client-core 的 `ChineseScheme::of` 是同一组方案，这里另外核对那组方案没有变）；日文、越南文和藏文版两者都是 false，各平台的打包和设置据此不带这些数据、不提供这些入口；
-- 数据依赖：用到 msime-pinyin.db 的方案（全拼、双拼、五笔，与 Engine 的 `SchemeSet::reads_main_dictionary` 相同）要带 chinese-main，反过来没有这些方案的版本（日文、越南文、藏文）不带 chinese-main 和 ngram——Engine 给它们准备的代次里本来就没有 msime-pinyin.db，带上也没人读；功能开关要带对应组件，粤语、注音和笔画要列出对应语言词库；
+- 数据依赖：用到 lingyao-pinyin.db 的方案（全拼、双拼、五笔，与 Engine 的 `SchemeSet::reads_main_dictionary` 相同）要带 chinese-main，反过来没有这些方案的版本（日文、越南文、藏文）不带 chinese-main 和 ngram——Engine 给它们准备的代次里本来就没有 lingyao-pinyin.db，带上也没人读；功能开关要带对应组件，粤语、注音和笔画要列出对应语言词库；
 - macOS 身份标识：每个字段在所有版本间两两不同（不区分大小写），一个版本的输入法 bundle id 不能是另一个版本输入模式标识符的前缀，钥匙串服务名连同 `.refresh` 和语音服务凭据的服务名（`EditionIdentity.h` 从 bundle id 推出）也不能撞，使用统计目录（同样由 `EditionIdentity.h` 从版本 id 推出）互不嵌套；full 的值等于今天的 Info.plist.in、tauri.macos.conf.json、cask 和 DMG 名；
-- Windows 身份标识：全部版本的全部 GUID（CLSID、profile、TSF 内部 GUID、Inno AppId）两两不同（不区分大小写），名字类字段两两不同，注册表键互不嵌套，%LOCALAPPDATA% 下的目录名（安装器默认数据目录、状态目录、用户目录）两两不同；不是 full 的版本的名字后缀、host DLL 名和安装包名按版本 id 推出，安装包名与 `update-manifest.ts` 认的形式一致；full 的值等于今天的 Globals.cpp、msime_setup.iss、StateDirectory.h 和 tauri.windows.conf.json；
-- Linux 身份标识：每个字段在所有版本间两两不同（不区分大小写），一个版本的安装前缀不能嵌在另一个版本的前缀里，由包名推出的 systemd 用户单元、图标和 /usr/bin 命令名也两两不同；不是 full 的版本按版本 id 推出（`msime-linux-<id>`、`/opt/msime-linux-<id>`、`msime-client-<id>`、`msime-<id>`、`app.msime.linux.<id>`）；full 的值等于今天的包名（packaging.cmake 从版本表取）、IBus 组件、Fcitx5 配置、msime-linux-setup 和 tauri.linux.conf.json 里的值；
-- Android 身份标识：applicationId 和 APK 名在所有版本间两两不同（不区分大小写），不是 full 的版本按版本 id 推出（`app.msime.android.<id>`、`msime-client-<id>`），清单里每个 ContentProvider 的 authority 都写成 `${applicationId}.<名字>`，所以各版本的 authority 也两两不同；full 的值等于今天 gradle-app 的 applicationId、tauri.android.conf.json 的 identifier 和 build-apk.sh 产出的 APK 名，主资源的应用名等于 full 的显示名；其他版本的 `platforms/android/editions/<id>/res` 里应用名等于版本的显示名，覆盖的另外几句与主资源只差产品名，method.xml 与主资源只差子类型标签和语言，子类型的语言是版本输入的那个语言（中文的版本与主资源同为 zh_CN，日文、越南文、藏文版是 ja_JP、vi_VN、bo）；Tauri 包的 `src/editions/<id>/res-msime` 里启动器标题与 `src/main/res-msime` 只差产品名，tauri_method.xml 同样只差子类型标签和语言；
+- Windows 身份标识：全部版本的全部 GUID（CLSID、profile、TSF 内部 GUID、Inno AppId）两两不同（不区分大小写），名字类字段两两不同，注册表键互不嵌套，%LOCALAPPDATA% 下的目录名（安装器默认数据目录、状态目录、用户目录）两两不同；不是 full 的版本的名字后缀、host DLL 名和安装包名按版本 id 推出，安装包名与 `update-manifest.ts` 认的形式一致；full 的值等于今天的 Globals.cpp、lingyao_setup.iss、StateDirectory.h 和 tauri.windows.conf.json；
+- Linux 身份标识：每个字段在所有版本间两两不同（不区分大小写），一个版本的安装前缀不能嵌在另一个版本的前缀里，由包名推出的 systemd 用户单元、图标和 /usr/bin 命令名也两两不同；不是 full 的版本按版本 id 推出（`lingyao-linux-<id>`、`/opt/lingyao-linux-<id>`、`lingyao-client-<id>`、`lingyao-<id>`、`app.lingyao.linux.<id>`）；full 的值等于今天的包名（packaging.cmake 从版本表取）、IBus 组件、Fcitx5 配置、lingyao-linux-setup 和 tauri.linux.conf.json 里的值；
+- Android 身份标识：applicationId 和 APK 名在所有版本间两两不同（不区分大小写），不是 full 的版本按版本 id 推出（`app.lingyao.android.<id>`、`lingyao-client-<id>`），清单里每个 ContentProvider 的 authority 都写成 `${applicationId}.<名字>`，所以各版本的 authority 也两两不同；full 的值等于今天 gradle-app 的 applicationId、tauri.android.conf.json 的 identifier 和 build-apk.sh 产出的 APK 名，主资源的应用名等于 full 的显示名；其他版本的 `platforms/android/editions/<id>/res` 里应用名等于版本的显示名，覆盖的另外几句与主资源只差产品名，method.xml 与主资源只差子类型标签和语言，子类型的语言是版本输入的那个语言（中文的版本与主资源同为 zh_CN，日文、越南文、藏文版是 ja_JP、vi_VN、bo）；Tauri 包的 `src/editions/<id>/res-lingyao` 里启动器标题与 `src/main/res-lingyao` 只差产品名，tauri_method.xml 同样只差子类型标签和语言；
 - 只追加不改写：`shared/contracts/editions.frozen.json` 里的每个版本都还在，冻结的平台标识一字未改，新写入的平台标识必须同时冻结。
 
 不带参数运行时检查仓库里的文件；`--editions` 和 `--frozen` 可以换成别的文件，用来确认某种错误确实会被拦下。
@@ -55,9 +55,9 @@ LINUX_ROOT = ROOT / "platforms/linux"
 
 FULL = "full"
 PLATFORMS = ["macos", "windows", "linux", "android", "ios", "harmony"]
-# 这些方案的候选来自 msime-pinyin.db（拼音表和五笔码表），五笔混拼也走全拼引擎。与 Engine 的 `SchemeSet::reads_main_dictionary` 是同一组方案：没有这些方案的版本，Engine 准备的代次里没有 msime-pinyin.db。
+# 这些方案的候选来自 lingyao-pinyin.db（拼音表和五笔码表），五笔混拼也走全拼引擎。与 Engine 的 `SchemeSet::reads_main_dictionary` 是同一组方案：没有这些方案的版本，Engine 准备的代次里没有 lingyao-pinyin.db。
 CHINESE_MAIN_SCHEMES = {"quanpin", "shuangpin", "wubi"}
-# 只有读 msime-pinyin.db 的方案才用得上的组件：n-gram 表给拼音整句的词格用。
+# 只有读 lingyao-pinyin.db 的方案才用得上的组件：n-gram 表给拼音整句的词格用。
 CHINESE_ONLY_COMPONENTS = ["chinese-main", "ngram"]
 ENGINE_TYPES = ROOT / "crates/engine/src/types.rs"
 # 写中文的方案，与 client-core 的 `ChineseScheme::of` 是同一组。非英文离线释义按中文候选查，手写模型只认汉字，所以只有提供其中任何一个方案的版本才有这两个功能。
@@ -68,19 +68,19 @@ CHINESE_FEATURES = ["offline_glosses", "handwriting"]
 # 功能开关和它依赖的资源组件。
 FEATURE_COMPONENTS = {"temporary_japanese": "japanese", "neural_keyboard": "sentence-model"}
 # 方案和它依赖的语言词库。
-SCHEME_LANGUAGE_DICTIONARIES = {"cantonese": "msime-cantonese.db", "zhuyin": "msime-zhuyin.db", "stroke": "msime-stroke.db"}
+SCHEME_LANGUAGE_DICTIONARIES = {"cantonese": "lingyao-cantonese.db", "zhuyin": "lingyao-zhuyin.db", "stroke": "lingyao-stroke.db"}
 # 版本默认值只对含某个方案的版本有意义。
 PREFERENCE_DEFAULT_SCHEMES = {"wubi_mixed_pinyin": "wubi"}
 # full 今天写死在 macOS 各处的标识。改了其中任何一个，已安装的用户就会被当成另一个产品：输入源、偏好域、状态目录、钥匙串条目、cask 和更新资产都对不上。
 FULL_MACOS = {
-    "input_method_bundle_id": "app.msime.inputmethod.LingyaoIME",
+    "input_method_bundle_id": "app.lingyao.inputmethod.LingyaoIME",
     "input_method_name": "灵耀输入法",
-    "settings_bundle_id": "app.msime.macos",
-    "keychain_service": "com.lingyao.msime.account",
-    "cask": "msime",
-    "dmg_prefix": "msime-macos",
+    "settings_bundle_id": "app.lingyao.macos",
+    "keychain_service": "com.lingyao.ime.account",
+    "cask": "lingyao",
+    "dmg_prefix": "lingyao-macos",
 }
-# full 今天写死在 Windows 各处的标识：TSF 的 GUID 在 tsf/Global/Globals.cpp，名字在 common/StateDirectory.h、tsf/IME/LingyaoIME.cpp 和 installer/msime_setup.iss。改了其中任何一个，已经装着的 full 就会被当成另一个产品：TIP 注册、卸载项、数据目录和登录任务都对不上。
+# full 今天写死在 Windows 各处的标识：TSF 的 GUID 在 tsf/Global/Globals.cpp，名字在 common/StateDirectory.h、tsf/IME/LingyaoIME.cpp 和 installer/lingyao_setup.iss。改了其中任何一个，已经装着的 full 就会被当成另一个产品：TIP 注册、卸载项、数据目录和登录任务都对不上。
 FULL_WINDOWS = {
     "langid": "0x0804",
     "clsid": "{E3062E9A-D834-4637-8958-ED8CFA427D01}",
@@ -106,39 +106,39 @@ FULL_WINDOWS = {
     "text_service_description": "Lingyao 灵耀输入法",
     "install_dir": "lingyaoime",
     "registry_key": "Software\\Lingyao\\LingyaoIME",
-    "state_directory": "MSIME-Client",
-    "user_data_directory": "MSIME",
+    "state_directory": "LINGYAO-Client",
+    "user_data_directory": "LINGYAO",
     "data_dir_environment_variable": "LINGYAO_IME_DATA_DIR",
     "name_suffix": "",
     "watchdog_task": "Lingyao IME Watchdog",
-    "host_dll": "msime_host_api.dll",
-    "tauri_identifier": "app.msime.windows",
+    "host_dll": "lingyao_host_api.dll",
+    "tauri_identifier": "app.lingyao.windows",
     "installer_base_name": "LingyaoIME_Setup",
 }
 # Windows 段里两两不同的名字类字段（GUID 另查）。
 WINDOWS_UNIQUE_NAMES = ["app_name", "text_service_description", "install_dir", "registry_key", "state_directory", "user_data_directory", "data_dir_environment_variable", "name_suffix", "watchdog_task", "host_dll", "tauri_identifier", "installer_base_name"]
 # 落在 %LOCALAPPDATA% 下的目录名：安装器的默认数据目录（install_dir）、没有 DataDir 时的状态目录和按用户的账号与统计目录。任意两个版本的任意两个撞名，一个版本就会读写、卸载时删掉另一个版本的数据。
 WINDOWS_LOCAL_APP_DATA_NAMES = ["install_dir", "state_directory", "user_data_directory"]
-# full 今天的 Linux 标识：包名写在 platforms/linux/cmake/packaging.cmake，IBus 组件和引擎名在 data/msime-linux.xml.in，Fcitx5 插件和输入法条目是 fcitx5/msime.conf 与 fcitx5/msime-inputmethod.conf（装成 inputmethod/msime.conf），状态目录 ~/.config/msime-client 写在 msime-linux-setup 和各宿主里，identifier 在 tauri.linux.conf.json。改了其中任何一个，已经装着的 msime-linux 就会被当成另一个产品：包升级不上来，输入法列表里的条目、用户服务和状态目录都对不上。
+# full 今天的 Linux 标识：包名写在 platforms/linux/cmake/packaging.cmake，IBus 组件和引擎名在 data/lingyao-linux.xml.in，Fcitx5 插件和输入法条目是 fcitx5/lingyao.conf 与 fcitx5/lingyao-inputmethod.conf（装成 inputmethod/lingyao.conf），状态目录 ~/.config/lingyao-client 写在 lingyao-linux-setup 和各宿主里，identifier 在 tauri.linux.conf.json。改了其中任何一个，已经装着的 lingyao-linux 就会被当成另一个产品：包升级不上来，输入法列表里的条目、用户服务和状态目录都对不上。
 FULL_LINUX = {
-    "package": "msime-linux",
+    "package": "lingyao-linux",
     "install_prefix": "/usr",
-    "client_directory": "msime-client",
-    "ibus_engine": "msime-linux",
-    "fcitx5_addon": "msime",
-    "tauri_identifier": "app.msime.linux",
+    "client_directory": "lingyao-client",
+    "ibus_engine": "lingyao-linux",
+    "fcitx5_addon": "lingyao",
+    "tauri_identifier": "app.lingyao.linux",
 }
 # 由包名推出、不单独写进版本表的 Linux 名字：systemd 用户单元、图标和 /usr/bin 下的命令。与 platforms/linux/scripts/edition_linux.py 的推出规则相同。
 LINUX_UNITS = ["online.socket", "online.service", "voice.socket", "voice.service", "clipboard.service"]
 LINUX_COMMANDS = ["setup", "settings"]
 # full 今天的 Android 标识：applicationId 写在 gradle-app/app/build.gradle.kts 的 defaultConfig 和 tauri.android.conf.json 里，APK 名是 build-apk.sh 产出、release-android.yml 发布的文件名。改了 applicationId，已装的用户就收不到覆盖升级，私有数据也换了一个目录。
-FULL_ANDROID = {"application_id": "app.msime.android", "apk_name": "msime-client"}
+FULL_ANDROID = {"application_id": "app.lingyao.android", "apk_name": "lingyao-client"}
 # 默认方案是这些语言方案的版本，输入法子类型登记在这个语言下（method.xml 的 imeSubtypeLocale），系统设置的语言列表和键盘切换器把它列在日语、越南语、藏语下；其他版本与主资源相同（zh_CN）。
 ANDROID_SUBTYPE_LOCALES = {"japanese": "ja_JP", "vietnamese": "vi_VN", "tibetan": "bo"}
 ANDROID_NAMESPACE = "{http://schemas.android.com/apk/res/android}"
 # macOS 上不写进版本表、由 EditionIdentity.h 从版本身份推出的标识：full 沿用今天的值，其他版本按下面的规则推出。
-FULL_VOICE_PROVIDER_SERVICE = "app.msime.client.voice.providers"
-FULL_USAGE_REPORTING_DIRECTORY = "MSIME/telemetry"
+FULL_VOICE_PROVIDER_SERVICE = "app.lingyao.client.voice.providers"
+FULL_USAGE_REPORTING_DIRECTORY = "LINGYAO/telemetry"
 
 
 def voice_provider_service(edition_id: str, section: dict) -> str:
@@ -146,7 +146,7 @@ def voice_provider_service(edition_id: str, section: dict) -> str:
 
 
 def usage_reporting_directory(edition_id: str) -> str:
-    return FULL_USAGE_REPORTING_DIRECTORY if edition_id == FULL else f"MSIME/{edition_id}/telemetry"
+    return FULL_USAGE_REPORTING_DIRECTORY if edition_id == FULL else f"LINGYAO/{edition_id}/telemetry"
 
 
 def load_generator():
@@ -284,7 +284,7 @@ def check_editions(errors: list[str], table: dict, frozen: dict) -> None:
     for entry in editions:
         edition_id = entry["id"]
         where = f"edition {edition_id}"
-        # No hyphen: the id is spliced into asset names after a hyphen (`msime-linux-<id>-<version>`), and packages/ui/src/settings/update-manifest.ts only accepts `[a-z][a-z0-9]*`.
+        # No hyphen: the id is spliced into asset names after a hyphen (`lingyao-linux-<id>-<version>`), and packages/ui/src/settings/update-manifest.ts only accepts `[a-z][a-z0-9]*`.
         if not re.fullmatch(r"[a-z][a-z0-9]*", edition_id):
             errors.append(f"{where}: id must be lowercase letters and digits, starting with a letter")
 
@@ -317,7 +317,7 @@ def check_editions(errors: list[str], table: dict, frozen: dict) -> None:
         if "core" not in chosen:
             errors.append(f"{where}: resources.components must include core")
         if CHINESE_MAIN_SCHEMES & set(schemes) and "chinese-main" not in chosen:
-            errors.append(f"{where}: {sorted(CHINESE_MAIN_SCHEMES & set(schemes))} read msime-pinyin.db, so resources.components must include chinese-main")
+            errors.append(f"{where}: {sorted(CHINESE_MAIN_SCHEMES & set(schemes))} read lingyao-pinyin.db, so resources.components must include chinese-main")
         if not CHINESE_MAIN_SCHEMES & set(schemes):
             for component in CHINESE_ONLY_COMPONENTS:
                 if component in chosen:
@@ -456,10 +456,10 @@ def check_macos(errors: list[str], editions: list[dict]) -> None:
     # 推出规则写在 EditionIdentity.h 里，这里的副本和它对不上时，上面的检查查的就不是装到机器上的那个名字。
     identity = EDITION_IDENTITY.read_text(encoding="utf-8")
     for fragment in [
-        f'MSIMEFullVoiceProviderKeychainService = @"{FULL_VOICE_PROVIDER_SERVICE}"',
-        f'MSIMEFullUsageReportingDirectoryName = @"{FULL_USAGE_REPORTING_DIRECTORY}"',
+        f'LINGYAOFullVoiceProviderKeychainService = @"{FULL_VOICE_PROVIDER_SERVICE}"',
+        f'LINGYAOFullUsageReportingDirectoryName = @"{FULL_USAGE_REPORTING_DIRECTORY}"',
         'stringByAppendingString:@".voice"',
-        '@"MSIME/%@/telemetry"',
+        '@"LINGYAO/%@/telemetry"',
     ]:
         if fragment not in identity:
             errors.append(f"{EDITION_IDENTITY.relative_to(ROOT)} no longer contains {fragment!r}; update the derived identifiers in this script")
@@ -519,7 +519,7 @@ def check_windows(errors: list[str], editions: list[dict]) -> None:
             continue
         expected = {
             "name_suffix": f".{edition_id}",
-            "host_dll": f"msime_host_api_{edition_id}.dll",
+            "host_dll": f"lingyao_host_api_{edition_id}.dll",
             "installer_base_name": installer_base_name(edition_id),
         }
         for key, value in expected.items():
@@ -575,12 +575,12 @@ def check_linux(errors: list[str], editions: list[dict]) -> None:
                 errors.append(f"edition full: platforms.linux must be the identifiers the product ships with today: {FULL_LINUX}")
             continue
         expected = {
-            "package": f"msime-linux-{edition_id}",
-            "install_prefix": f"/opt/msime-linux-{edition_id}",
-            "client_directory": f"msime-client-{edition_id}",
-            "ibus_engine": f"msime-linux-{edition_id}",
-            "fcitx5_addon": f"msime-{edition_id}",
-            "tauri_identifier": f"app.msime.linux.{edition_id}",
+            "package": f"lingyao-linux-{edition_id}",
+            "install_prefix": f"/opt/lingyao-linux-{edition_id}",
+            "client_directory": f"lingyao-client-{edition_id}",
+            "ibus_engine": f"lingyao-linux-{edition_id}",
+            "fcitx5_addon": f"lingyao-{edition_id}",
+            "tauri_identifier": f"app.lingyao.linux.{edition_id}",
         }
         for key, value in expected.items():
             if section[key] != value:
@@ -591,17 +591,17 @@ def check_linux(errors: list[str], editions: list[dict]) -> None:
     # full 的值与今天写死在 Linux 宿主各处的值逐个对照：这些文件就是 full 的包装出来的样子。
     # 包名由 packaging.cmake 从版本表取（cmake/Edition.cmake 读出），所以 full 的包名就是上面对照过的 FULL_LINUX["package"]。
     packaging = (LINUX_ROOT / "cmake/packaging.cmake").read_text(encoding="utf-8")
-    if 'set(CPACK_PACKAGE_NAME "${MSIME_EDITION_PACKAGE}")' not in packaging:
-        errors.append("platforms/linux/cmake/packaging.cmake must take CPACK_PACKAGE_NAME from the edition table (MSIME_EDITION_PACKAGE)")
-    component = (LINUX_ROOT / "data/msime-linux.xml.in").read_text(encoding="utf-8")
+    if 'set(CPACK_PACKAGE_NAME "${LINGYAO_EDITION_PACKAGE}")' not in packaging:
+        errors.append("platforms/linux/cmake/packaging.cmake must take CPACK_PACKAGE_NAME from the edition table (LINGYAO_EDITION_PACKAGE)")
+    component = (LINUX_ROOT / "data/lingyao-linux.xml.in").read_text(encoding="utf-8")
     if component.count(f"<name>{full['ibus_engine']}</name>") != 2:
-        errors.append("edition full: platforms.linux.ibus_engine must be the component and engine <name> in platforms/linux/data/msime-linux.xml.in")
+        errors.append("edition full: platforms.linux.ibus_engine must be the component and engine <name> in platforms/linux/data/lingyao-linux.xml.in")
     if f"/{full['client_directory']}/runtime-options.json" not in component:
-        errors.append("edition full: platforms.linux.client_directory must be the /etc directory platforms/linux/data/msime-linux.xml.in passes to the launcher")
-    setup = (LINUX_ROOT / "scripts/msime-linux-setup").read_text(encoding="utf-8")
+        errors.append("edition full: platforms.linux.client_directory must be the /etc directory platforms/linux/data/lingyao-linux.xml.in passes to the launcher")
+    setup = (LINUX_ROOT / "scripts/lingyao-linux-setup").read_text(encoding="utf-8")
     for fragment in [f'IBUS_ENGINE = "{full["ibus_engine"]}"', f'FCITX5_INPUT_METHOD = "{full["fcitx5_addon"]}"', f'config_home() / "{full["client_directory"]}"']:
         if fragment not in setup:
-            errors.append(f"edition full: platforms/linux/scripts/msime-linux-setup no longer contains {fragment!r}")
+            errors.append(f"edition full: platforms/linux/scripts/lingyao-linux-setup no longer contains {fragment!r}")
     if not (LINUX_ROOT / f"fcitx5/{full['fcitx5_addon']}.conf").is_file():
         errors.append(f"edition full: platforms.linux.fcitx5_addon must name platforms/linux/fcitx5/{full['fcitx5_addon']}.conf")
     identifier = json.loads(TAURI_LINUX_CONF.read_text(encoding="utf-8")).get("identifier")
@@ -660,8 +660,8 @@ def check_android(errors: list[str], editions: list[dict]) -> None:
     main_strings = android_strings(ANDROID_ROOT / "res/values/strings.xml")
     main_method = without_subtype_label(ANDROID_ROOT / "res/xml/method.xml")
     main_locales = subtype_locales(ANDROID_ROOT / "res/xml/method.xml")
-    tauri_main_strings = android_strings(TAURI_ANDROID_RES / "main/res-msime/values/strings.xml")
-    tauri_main_method = without_subtype_label(TAURI_ANDROID_RES / "main/res-msime/xml/tauri_method.xml")
+    tauri_main_strings = android_strings(TAURI_ANDROID_RES / "main/res-lingyao/values/strings.xml")
+    tauri_main_method = without_subtype_label(TAURI_ANDROID_RES / "main/res-lingyao/xml/tauri_method.xml")
     for edition_id, entry, section in sections:
         name = entry["display_name"]["zh-Hans"]
         if edition_id == FULL:
@@ -709,7 +709,7 @@ def check_android(errors: list[str], editions: list[dict]) -> None:
         if 'android:label="@string/app_name"' not in method:
             errors.append(f"edition {edition_id}: {method_path.relative_to(ROOT)} must label its subtype with @string/app_name")
         # Tauri 包的启动器入口和输入法声明用的是自己的资源，不是上面那两个。
-        tauri_resources = TAURI_ANDROID_RES / "editions" / edition_id / "res-msime"
+        tauri_resources = TAURI_ANDROID_RES / "editions" / edition_id / "res-lingyao"
         tauri_strings_path = tauri_resources / "values/strings.xml"
         tauri_method_path = tauri_resources / "xml/tauri_method.xml"
         if not tauri_strings_path.is_file() or not tauri_method_path.is_file():
@@ -720,7 +720,7 @@ def check_android(errors: list[str], editions: list[dict]) -> None:
         if tauri_strings != {"main_activity_title": expected_title}:
             errors.append(f"edition {edition_id}: {tauri_strings_path.relative_to(ROOT)} must override only main_activity_title, as {expected_title!r}")
         if without_subtype_label(tauri_method_path) != tauri_main_method:
-            errors.append(f"edition {edition_id}: {tauri_method_path.relative_to(ROOT)} must equal src/main/res-msime/xml/tauri_method.xml apart from the subtype label and locale")
+            errors.append(f"edition {edition_id}: {tauri_method_path.relative_to(ROOT)} must equal src/main/res-lingyao/xml/tauri_method.xml apart from the subtype label and locale")
         if subtype_locales(tauri_method_path) != subtype_locales(method_path):
             errors.append(f"edition {edition_id}: {tauri_method_path.relative_to(ROOT)} must register its subtypes under the same locales as {method_path.relative_to(ROOT)}")
         if 'android:label="@string/app_name"' not in tauri_method_path.read_text(encoding="utf-8"):

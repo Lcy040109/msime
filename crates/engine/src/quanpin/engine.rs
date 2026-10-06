@@ -248,7 +248,7 @@ mod tests {
         assert_eq!(rows.len(), 30);
     }
 
-    /// With the keyboard model loaded the trimmed context is part of the series slot: an online row is read back only under the context it was stored with, and a store lands in the slot of the last query's context. Fails if `query` stops passing the request's context to the dictionary. Needs the keyboard model in `MSIME_EVAL_RESOURCES`.
+    /// With the keyboard model loaded the trimmed context is part of the series slot: an online row is read back only under the context it was stored with, and a store lands in the slot of the last query's context. Fails if `query` stops passing the request's context to the dictionary. Needs the keyboard model in `LINGYAO_EVAL_RESOURCES`.
     #[test]
     fn online_rows_follow_the_reranker_context_slot() {
         let model =

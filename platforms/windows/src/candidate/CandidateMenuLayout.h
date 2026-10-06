@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The candidate card's right-click menu: contents, geometry and hit testing.
 //
 // The menu itself used to be a TrackPopupMenuEx, which runs a nested modal
@@ -230,4 +230,4 @@ candidate_submenu_bounds(int parent_left, int parent_right, int row_top,
   return {(std::clamp)(x, left, right - width),
           (std::clamp)(row_top, top, bottom - height), width, height};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

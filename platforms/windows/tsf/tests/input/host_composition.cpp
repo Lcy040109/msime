@@ -5,8 +5,8 @@
 #include <vector>
 
 namespace {
-using msime::tsf::EndHostComposition;
-namespace scheme = msime::windows::scheme;
+using lingyao::tsf::EndHostComposition;
+namespace scheme = lingyao::windows::scheme;
 
 std::string answer(const std::string &commit, const std::string &editing, int scheme_number) {
     const std::string committed = commit.empty() ? "null" : "\"" + commit + "\"";
@@ -28,7 +28,7 @@ struct Host {
         return true;
     }
     bool command(uint32_t command, std::string *raw, std::string *) {
-        if (command != MSIME_FINISH_COMPOSITION) std::abort();
+        if (command != LINGYAO_FINISH_COMPOSITION) std::abort();
         calls.push_back("finish");
         const std::string commit = editing.empty() ? std::string{} : converted;
         editing.clear();
@@ -63,7 +63,7 @@ struct EscapeHost {
         return true;
     }
     bool command(uint32_t command, std::string *raw, std::string *) {
-        if (command != MSIME_CANCEL) std::abort();
+        if (command != LINGYAO_CANCEL) std::abort();
         ++cancels;
         if ((scheme_number == scheme::Vietnamese || scheme_number == scheme::Tibetan) && !shown.empty() &&
             !raw_showing) {
@@ -148,12 +148,12 @@ int main() {
     // Vietnamese 'tieng5' and Escape: the host session shows 'tieng5' and keeps composing; a second Escape empties it, and the caller discards the composition.
     {
         EscapeHost host;
-        check(msime::tsf::RestoreHostRawOnEscape(host, &error));
+        check(lingyao::tsf::RestoreHostRawOnEscape(host, &error));
         check(host.shown == "tieng5" && host.cancels == 1);
-        check(!msime::tsf::RestoreHostRawOnEscape(host, &error));
+        check(!lingyao::tsf::RestoreHostRawOnEscape(host, &error));
         check(host.shown.empty() && host.cancels == 2);
         // Nothing composing: nothing is sent.
-        check(!msime::tsf::RestoreHostRawOnEscape(host, &error) && host.cancels == 2);
+        check(!lingyao::tsf::RestoreHostRawOnEscape(host, &error) && host.cancels == 2);
     }
 
     // 藏文 'bkra' 和 Esc：宿主会话显示威利原文 'bkra' 并继续组字；第二次 Esc 清空它。回车结束组字时只上屏藏文，后面不跟任何字符。
@@ -162,9 +162,9 @@ int main() {
         host.scheme_number = scheme::Tibetan;
         host.shown = "བཀྲ";
         host.keys = "bkra";
-        check(msime::tsf::RestoreHostRawOnEscape(host, &error));
+        check(lingyao::tsf::RestoreHostRawOnEscape(host, &error));
         check(host.shown == "bkra" && host.cancels == 1);
-        check(!msime::tsf::RestoreHostRawOnEscape(host, &error));
+        check(!lingyao::tsf::RestoreHostRawOnEscape(host, &error));
         check(host.shown.empty() && host.cancels == 2);
     }
     {
@@ -182,7 +182,7 @@ int main() {
         EscapeHost host;
         host.scheme_number = other;
         host.shown = "su3";
-        check(!msime::tsf::RestoreHostRawOnEscape(host, &error) && host.cancels == 0 && host.shown == "su3");
+        check(!lingyao::tsf::RestoreHostRawOnEscape(host, &error) && host.cancels == 0 && host.shown == "su3");
     }
     return EXIT_SUCCESS;
 }

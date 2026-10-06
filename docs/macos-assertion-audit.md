@@ -5,7 +5,7 @@
 范围是来源 `platforms/macos/tests` 下全部 93 条 `require(...)` 断言，按测试文件分组。核对方式（可重跑）：
 
 ```sh
-ref=/path/to/MSIME-apple
+ref=/path/to/LINGYAO-apple
 grep -rhoE 'require\([^,]*,\s*"[^"]+"' "$ref"/platforms/macos/tests/*.mm "$ref"/platforms/macos/tests/*.cpp \
   | sed -E 's/.*"([^"]+)"/\1/' | wc -l   # 93
 ```
@@ -32,18 +32,18 @@ grep -rhoE 'require\([^,]*,\s*"[^"]+"' "$ref"/platforms/macos/tests/*.mm "$ref"/
 
 输入菜单。这 16 条断言钉的是来源菜单的条目集合、分隔位置与 selector，对应物是 `platforms/macos/src/input/InputMenu.h` 里的菜单构造器，由 CTest `input-menu` 覆盖；`InputMenu.h` 同时提供生效菜单使用的主题处理（`ApplyLingyaoMenuTheme` 按 `menu_theme` / `theme` 解析 dark/light/system）。
 
-实际生效的输入菜单此后按 MSIME-Windows 的托盘菜单重排，由 `-[MSIMEInputController menu]`（`platforms/macos/src/input/InputController.mm`）构造：中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 灵耀表情面板… / 云剪贴板… / 灵耀屏幕键盘… / 手写输入… / 开始/结束语音输入 / 灵耀输入法设置… / 关于灵耀输入法…。简繁输出是一个勾选项，输入方案与主题各是一个以当前选择命名的子菜单，词库从设置窗口进入。来源里单列的「检查更新…」「语音输入设置…」收进设置窗与悬浮工具栏，管理页统一进设置窗口。这份菜单的条目数、标题与 selector 由 `platforms/macos/tests/input/ShortcutTest.mm` 断言，CTest 目标 `shortcut`。
+实际生效的输入菜单此后按 LINGYAO-Windows 的托盘菜单重排，由 `-[LINGYAOInputController menu]`（`platforms/macos/src/input/InputController.mm`）构造：中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 灵耀表情面板… / 云剪贴板… / 灵耀屏幕键盘… / 手写输入… / 开始/结束语音输入 / 灵耀输入法设置… / 关于灵耀输入法…。简繁输出是一个勾选项，输入方案与主题各是一个以当前选择命名的子菜单，词库从设置窗口进入。来源里单列的「检查更新…」「语音输入设置…」收进设置窗与悬浮工具栏，管理页统一进设置窗口。这份菜单的条目数、标题与 selector 由 `platforms/macos/tests/input/ShortcutTest.mm` 断言，CTest 目标 `shortcut`。
 
 ## InputControllerKeyRoutingTests.mm（14 条）
 
 11 条是组合输出（你 / 你们 / 爷 / 你好 / 日期），由引擎驱动；目标的等价覆盖是 `platforms/macos/tests/input/ShortcutTest.mm` 的 `TestRealSessionComposition()`（#3240），走真引擎 → 真控制器 → 文本客户端。
 
-- `Wubi auto-commit fired before the fourth code.` — `platforms/macos/src/core/WubiCommitPolicy.h` 的 `MSIMEShouldAutoCommitWubi`，控制器直接引用。
+- `Wubi auto-commit fired before the fourth code.` — `platforms/macos/src/core/WubiCommitPolicy.h` 的 `LINGYAOShouldAutoCommitWubi`，控制器直接引用。
 - `IMKCandidates does not support moveUp:/pageUp:.` — 这两条是参考在**记录平台限制**，说明它为什么自绘候选窗。目标同样自绘（`platforms/macos/src/candidate/CandidatePanel.mm`），结论已内化，没有要实现的东西。
 
 ## UninstallerTests.mm（12 条）
 
-保留用户数据卸载、连用户数据一起删、重复卸载、bundle 已不在时清残留、报告去向、落入废纸篓。目标是 `crates/host-macos/native/uninstaller.mm` 的 `msime_macos_uninstall_input_source`，CTest 目标 `shared-uninstaller`。
+保留用户数据卸载、连用户数据一起删、重复卸载、bundle 已不在时清残留、报告去向、落入废纸篓。目标是 `crates/host-macos/native/uninstaller.mm` 的 `lingyao_macos_uninstall_input_source`，CTest 目标 `shared-uninstaller`。
 
 ## UpdateControllerTests.mm（5 条）
 

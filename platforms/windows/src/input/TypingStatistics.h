@@ -14,12 +14,12 @@
 #include <thread>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Private aggregate typing statistics for the Windows Server.
 //
 // The Server is the only process that sees every committed string, so it is
 // where the shared store is fed from. Nothing here retains text: the string is
-// handed straight to `msime_client_typing_statistics`, which classifies it in
+// handed straight to `lingyao_client_typing_statistics`, which classifies it in
 // memory and persists counts only. Same enum and identifiers as the Linux and
 // macOS hosts, because they all write the same document.
 enum class TypingSource {
@@ -248,7 +248,7 @@ typing_statistics_record_keys_request(std::string_view directory,
 // The statistics switch as the Aux listener sees it. The listener must answer every statistics message within the DLL's 150 ms window, but the store keeps its enabled flag behind the same exclusive file lock a detached record holds for a whole read, validate, serialize and fsync, so asking the store from the listener thread makes the second message of a multi-part batch wait on the first one's write. The listener answers from this cached copy instead; a copy older than `lifetime` is refreshed on a detached thread while the stale answer is returned. A stale "on" records nothing, because the store checks the switch itself on every write; a stale "off" only delays counting until the DLL's next probe.
 class TypingStatisticsSwitch {
 public:
-  // `read` follows msime_client_typing_statistics_enabled: 1 is on, 0 is off and anything else is an unreadable store, which counts as off. It is called once here, on the constructing thread, so the first answer is a real one.
+  // `read` follows lingyao_client_typing_statistics_enabled: 1 is on, 0 is off and anything else is an unreadable store, which counts as off. It is called once here, on the constructing thread, so the first answer is a real one.
   TypingStatisticsSwitch(std::function<int()> read,
                          std::chrono::steady_clock::duration lifetime)
       : state_(std::make_shared<State>(std::move(read), lifetime)) {
@@ -295,4 +295,4 @@ private:
   };
   std::shared_ptr<State> state_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

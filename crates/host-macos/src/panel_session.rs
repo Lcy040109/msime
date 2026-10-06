@@ -95,11 +95,11 @@ impl PanelSession {
     /// Main thread only. The caller hides its panel before handing focus back.
     pub fn activate_target(&self) -> bool {
         unsafe extern "C" {
-            fn msime_macos_activate_panel_target(pid: i32, launched: f64) -> bool;
+            fn lingyao_macos_activate_panel_target(pid: i32, launched: f64) -> bool;
         }
         // SAFETY: scalar ABI; native code checks thread, identity and foreground.
         unsafe {
-            msime_macos_activate_panel_target(
+            lingyao_macos_activate_panel_target(
                 self.configuration.target_pid,
                 self.configuration.target_started,
             )
@@ -160,7 +160,7 @@ impl PanelSession {
 pub fn validate_clipboard_text(text: &str) -> Result<(), SessionError> {
     if text.is_empty()
         || text.len() > 12_000
-        || !msime_client_core::is_bounded_utf16(text, 4_000)
+        || !lingyao_client_core::is_bounded_utf16(text, 4_000)
         || text.contains('\0')
     {
         return Err(SessionError::Invalid);

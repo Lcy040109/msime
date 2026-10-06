@@ -50,16 +50,16 @@ export function candidateCornerRadiusPatch(value: number | null): CandidateWindo
   return { candidate_corner_radius: value ?? undefined };
 }
 
-/** The preview's custom properties for the window style: the scale zooms the card, the opacity mixes the surface and border towards transparent, and a set radius replaces the skin package's `--msime-skin-radius`. Spread it after the skin geometry so the user's radius wins, as it does on the hosts. The set radius is also `--msime-candidate-user-radius`, the only radius the rows are clamped to: a package's radius leaves them as the hosts leave theirs. */
+/** The preview's custom properties for the window style: the scale zooms the card, the opacity mixes the surface and border towards transparent, and a set radius replaces the skin package's `--lingyao-skin-radius`. Spread it after the skin geometry so the user's radius wins, as it does on the hosts. The set radius is also `--lingyao-candidate-user-radius`, the only radius the rows are clamped to: a package's radius leaves them as the hosts leave theirs. */
 export function candidateWindowStyle(preferences: CandidateWindowStylePreferences): CSSProperties {
   const radius = candidateCornerRadius(preferences.candidate_corner_radius);
   return {
-    "--msime-candidate-scale": String(
+    "--lingyao-candidate-scale": String(
       candidateScalePercent(preferences.candidate_scale_percent) / 100,
     ),
-    "--msime-candidate-opacity": `${candidateOpacityPercent(preferences.candidate_opacity_percent)}%`,
+    "--lingyao-candidate-opacity": `${candidateOpacityPercent(preferences.candidate_opacity_percent)}%`,
     ...(radius === null
       ? {}
-      : { "--msime-skin-radius": `${radius}px`, "--msime-candidate-user-radius": `${radius}px` }),
+      : { "--lingyao-skin-radius": `${radius}px`, "--lingyao-candidate-user-radius": `${radius}px` }),
   } as CSSProperties;
 }

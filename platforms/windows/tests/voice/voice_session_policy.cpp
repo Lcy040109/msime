@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value, int line) {
   if (!value)
@@ -38,7 +38,7 @@ int main() {
     const auto empty = voice_batch_capture(0, 0, 10000);
     REQUIRE(empty.keep == 0 && !empty.full);
 
-    // Starting: a disabled voice input stays silent; every other refusal says why, in MSIME-Windows' words.
+    // Starting: a disabled voice input stays silent; every other refusal says why, in LINGYAO-Windows' words.
     REQUIRE(voice_start_verdict({false, false, "", "", "", ""}).check == VoiceStartCheck::Disabled);
     REQUIRE(voice_start_verdict({false, false, "", "", "", ""}).message.empty());
     const auto no_token = voice_start_verdict({true, true, "", "wss://synthetic", "", "synthetic"});

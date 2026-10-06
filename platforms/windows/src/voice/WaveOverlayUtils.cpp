@@ -4,7 +4,7 @@
 
 #include <atomic>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 using GetDpiForMonitorFn = HRESULT(WINAPI *)(HMONITOR, int /*MONITOR_DPI_TYPE*/,
                                              UINT *, UINT *);
@@ -60,4 +60,4 @@ bool wave_overlay_monitor_metrics(WaveOverlayMonitorMetrics *metrics) {
   metrics->dpi = monitor_effective_dpi(monitor);
   return true;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

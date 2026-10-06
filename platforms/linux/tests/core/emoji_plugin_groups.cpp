@@ -5,7 +5,7 @@
 #include <vector>
 
 int main() {
-  using namespace msime::linux_host;
+  using namespace lingyao::linux_host;
   using Json = nlohmann::json;
 
   // Host API 的 plugin_symbol_groups：包按名字、组按清单；坏组跳过，不影响其它组。

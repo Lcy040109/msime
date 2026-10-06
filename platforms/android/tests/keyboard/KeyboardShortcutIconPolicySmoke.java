@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardShortcutIconPolicy;
-import app.msime.android.KeyboardShortcutIconPolicy.Icon;
+import app.lingyao.android.KeyboardShortcutIconPolicy;
+import app.lingyao.android.KeyboardShortcutIconPolicy.Icon;
 
 public final class KeyboardShortcutIconPolicySmoke {
     private static void check(boolean condition, String message) {

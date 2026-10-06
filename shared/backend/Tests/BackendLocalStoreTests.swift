@@ -3,11 +3,11 @@ import XCTest
 #if canImport(Darwin)
 import Darwin
 #endif
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 final class BackendLocalStoreTests: XCTestCase {
   func testStoreSerializesAccessThroughAStableLockFile() throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-test-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-test-\(UUID().uuidString)")
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = BackendLocalStore(fileName: "session.json", directory: directory)
     let user = BackendAccountClient.User(id: "synthetic-user", display_name: "", created_at: "2026-09-26")
@@ -43,8 +43,8 @@ final class BackendLocalStoreTests: XCTestCase {
 
   func testSaveRejectsASymlinkedLockFile() throws {
     #if canImport(Darwin)
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-lock-symlink-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-lock-target-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-lock-symlink-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-lock-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: directory)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -69,8 +69,8 @@ final class BackendLocalStoreTests: XCTestCase {
 
   func testLoadRejectsASymlinkedSessionFile() throws {
     #if canImport(Darwin)
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-session-symlink-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-session-target-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-session-symlink-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-session-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: directory)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -91,8 +91,8 @@ final class BackendLocalStoreTests: XCTestCase {
 
   func testReadTreatsASymlinkedIdentityFileAsMissing() throws {
     #if canImport(Darwin)
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-identity-symlink-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-identity-target-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-identity-symlink-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-identity-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: directory)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -110,8 +110,8 @@ final class BackendLocalStoreTests: XCTestCase {
 
   func testSaveRejectsASymlinkedDirectoryBeforeWritingExternalStore() throws {
     #if canImport(Darwin)
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-directory-symlink-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-directory-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-directory-symlink-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-directory-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -132,7 +132,7 @@ final class BackendLocalStoreTests: XCTestCase {
   }
 
   func testClearReportsWhenTheSessionCannotBeRemoved() throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-clear-test-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-clear-test-\(UUID().uuidString)")
     defer { try? FileManager.default.removeItem(at: directory) }
     let session = directory.appendingPathComponent("session.json")
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -151,7 +151,7 @@ final class BackendLocalStoreTests: XCTestCase {
   }
 
   func testWriteIfAbsentAllowsOnlyOneCreator() throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-create-test-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-create-test-\(UUID().uuidString)")
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = BackendLocalStore(fileName: "anonymous-account.json", directory: directory)
     let first = Data("synthetic-first".utf8)
@@ -178,7 +178,7 @@ final class BackendLocalStoreTests: XCTestCase {
   }
 
   func testLoadRejectsAnOversizedSessionDocument() throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-store-limit-test-\(UUID().uuidString)")
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-store-limit-test-\(UUID().uuidString)")
     defer { try? FileManager.default.removeItem(at: directory) }
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     try Data(repeating: 0x41, count: BackendLocalStore.maximumSessionBytes + 1)

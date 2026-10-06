@@ -4,7 +4,7 @@
 // library root carries does not reach them. Same boundary, same reason: this
 // target drives the C ABI directly.
 #![allow(unsafe_code)]
-use msime_host_api::*;
+use lingyao_host_api::*;
 use serde_json::{json, Value};
 use std::ffi::{c_char, CStr};
 
@@ -12,16 +12,16 @@ fn read(pointer: *mut c_char) -> Value {
     assert!(!pointer.is_null());
     // SAFETY: every pointer here is an owned host-api response.
     let value = unsafe { serde_json::from_slice(CStr::from_ptr(pointer).to_bytes()).unwrap() };
-    unsafe { msime_client_string_free(pointer) };
+    unsafe { lingyao_client_string_free(pointer) };
     value
 }
 fn request(options: &Value, action: Value) -> Value {
     let bytes = serde_json::to_vec(&json!({ "options": options, "action": action })).unwrap();
-    read(unsafe { msime_client_dictionary(bytes.as_ptr(), bytes.len()) })
+    read(unsafe { lingyao_client_dictionary(bytes.as_ptr(), bytes.len()) })
 }
 fn create(options: &Value) -> u64 {
     let bytes = serde_json::to_vec(options).unwrap();
-    let result = read(unsafe { msime_client_create(bytes.as_ptr(), bytes.len()) });
+    let result = read(unsafe { lingyao_client_create(bytes.as_ptr(), bytes.len()) });
     assert_eq!(result["ok"], true);
     result["value"]["session"].as_u64().unwrap()
 }
@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         request(&options, add.clone())["error"],
         "dictionary maintenance busy"
     );
-    read(msime_client_destroy(session));
+    read(lingyao_client_destroy(session));
     assert_eq!(request(&options, add.clone())["value"]["applied"], true);
     assert_eq!(request(&options, add)["value"]["applied"], true);
     assert_eq!(
@@ -52,14 +52,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         json!([entry])
     );
     let session = create(&options);
-    read(msime_client_focus(session, true));
-    read(msime_client_character(session, b'K', true));
+    read(lingyao_client_focus(session, true));
+    read(lingyao_client_character(session, b'K', true));
     for byte in b"fixture" {
-        read(msime_client_character(session, *byte, false));
+        read(lingyao_client_character(session, *byte, false));
     }
-    let result = read(msime_client_command(session, 1));
+    let result = read(lingyao_client_command(session, 1));
     assert_eq!(result["value"]["commit"], "测试短语");
-    read(msime_client_destroy(session));
+    read(lingyao_client_destroy(session));
     let remove = json!({ "operation": "edit", "previous": entry, "replacement": null, "request_id": "native-remove" });
     assert_eq!(request(&options, remove.clone())["ok"], true);
     assert_eq!(request(&options, remove)["ok"], true);
@@ -85,14 +85,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // And it is reachable by typing the code, which is the point of folding it rather than
     // storing what was typed into the box.
     let session = create(&options);
-    read(msime_client_focus(session, true));
-    read(msime_client_character(session, b'K', true));
+    read(lingyao_client_focus(session, true));
+    read(lingyao_client_character(session, b'K', true));
     for byte in b"qq" {
-        read(msime_client_character(session, *byte, false));
+        read(lingyao_client_character(session, *byte, false));
     }
-    let typed = read(msime_client_command(session, 1));
+    let typed = read(lingyao_client_command(session, 1));
     assert_eq!(typed["value"]["commit"], "企鹅");
-    read(msime_client_destroy(session));
+    read(lingyao_client_destroy(session));
 
     // Removing it with the form that created it works, because both sides fold the same way.
     let remove_shouted = json!({ "operation": "edit", "previous": shouted, "replacement": null, "request_id": "native-fold-remove" });
@@ -130,12 +130,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // The point of storing two texts: typing the code offers the word. Temporary English mode is
     // Shift+Y, the same key the reference documents for it.
     let session = create(&options);
-    read(msime_client_focus(session, true));
-    read(msime_client_character(session, b'Y', true));
+    read(lingyao_client_focus(session, true));
+    read(lingyao_client_character(session, b'Y', true));
     for byte in b"dont" {
-        read(msime_client_character(session, *byte, false));
+        read(lingyao_client_character(session, *byte, false));
     }
-    let view = read(msime_client_view(session));
+    let view = read(lingyao_client_view(session));
     let offered: Vec<String> = view["value"]["candidates"]
         .as_array()
         .map(|list| {
@@ -148,7 +148,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         offered.iter().any(|text| text == "don't"),
         "typing the code offers the word it types out; got {offered:?}"
     );
-    read(msime_client_destroy(session));
+    read(lingyao_client_destroy(session));
 
     let remove_contraction = json!({ "operation": "edit", "previous": contraction, "replacement": null, "request_id": "native-english-remove" });
     assert_eq!(request(&options, remove_contraction)["ok"], true);

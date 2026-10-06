@@ -5,7 +5,7 @@
 跑法：
 
 ```sh
-cargo run --release -p msime-input-runtime --example convert_eval -- \
+cargo run --release -p lingyao-input-runtime --example convert_eval -- \
   --resources <已校验的词库目录> \
   --set resources/eval/sentences-v1.tsv \
   --baseline resources/eval/baseline-sentences.json
@@ -20,7 +20,7 @@ cargo run --release -p msime-input-runtime --example convert_eval -- \
 同一批输入还用来量重排的代价。`convert_eval` 回答「排得对不对」，`rerank_latency` 回答「一次按键为此多花多少毫秒」：
 
 ```sh
-cargo run --release -p msime-input-runtime --example rerank_latency -- \
+cargo run --release -p lingyao-input-runtime --example rerank_latency -- \
   --resources <已校验的词库目录> \
   --set resources/eval/sentences-v1.tsv
 ```
@@ -35,13 +35,13 @@ cargo run --release -p msime-input-runtime --example rerank_latency -- \
 
 ### `quanpin-words-v1.tsv` — 25,119 条词级
 
-由 `build_eval_set` 从 microsoft/Windows-classic-samples 的 `SampleIMESimplifiedQuanPin.txt` 固化而来，MIT 授权，本仓库不收录该文件，没有任何构建脚本读它，也不进入 `msime-pinyin.db`，所以一次性固化进仓库；重新生成需要自备那份源文件。
+由 `build_eval_set` 从 microsoft/Windows-classic-samples 的 `SampleIMESimplifiedQuanPin.txt` 固化而来，MIT 授权，本仓库不收录该文件，没有任何构建脚本读它，也不进入 `lingyao-pinyin.db`，所以一次性固化进仓库；重新生成需要自备那份源文件。
 
 生成时丢弃 27,561 条单字、1,955 条截断条目，无解析失败。截断过滤用 Engine 自己的 `normalize_full_pinyin` 判断「key 能否恰好切成 gold 字数个音节」，而不是长度阈值——该格式在 12 字符处截断，但 `chulufengma`、`shumenshul` 这类更短的 key 同样被砍，长度阈值漏得掉。
 
 **它测的是词典命中与排序，不是整句能力。** 实测 `gold_source` 几乎全是 `database`，词图一次都没有贡献过正确答案。
 
-**不要用 `msime-pinyin.db` 自身出题。** 它就是解码器查的那张表，等于让系统考自己；而 1–2 音节的排序实现就是 `ORDER BY weight DESC`，拿 weight 当金标准是在考 SQLite。
+**不要用 `lingyao-pinyin.db` 自身出题。** 它就是解码器查的那张表，等于让系统考自己；而 1–2 音节的排序实现就是 `ORDER BY weight DESC`，拿 weight 当金标准是在考 SQLite。
 
 #### `--nine-key`：同一个词级集在九键上打
 
@@ -102,7 +102,7 @@ cargo run --release -p msime-input-runtime --example rerank_latency -- \
 ### 一、收割
 
 ```sh
-cargo run --release -p msime-input-runtime --example harvest_eval_set -- \
+cargo run --release -p lingyao-input-runtime --example harvest_eval_set -- \
   --resources <已校验的词库目录> \
   --corpus <一行一篇的纯文本> \
   --out target/harvest.tsv \
@@ -124,7 +124,7 @@ cargo run --release -p msime-input-runtime --example harvest_eval_set -- \
 评审要看真实候选，所以先让 `convert_eval` 把收割文件跑一遍并导出。它读第 6 列作上文，多出来的两列忽略：
 
 ```sh
-cargo run --release -p msime-input-runtime --example convert_eval -- \
+cargo run --release -p lingyao-input-runtime --example convert_eval -- \
   --resources <已校验的词库目录> \
   --set target/harvest.tsv \
   --dump target/harvest.jsonl
@@ -162,7 +162,7 @@ TYPESAFE_API_KEY=... scripts/review-harvested-cases.py target/harvest.jsonl targ
 
 ## 为什么报告要分 source
 
-候选带 `source`，对应 `msime_engine::CandidateSource`。3 音节以上时 Engine 加入词图路径（`sentence_alternatives` 打开时是多条）。Google 回退已删除，source 9 不再占据位置 1。runtime 的 `demote_runner_up_readings` 对 3 字及以上的读法保留三条词图整句，紧跟在第一条之后，其余移到列表末尾；2 字读法只保留一条。
+候选带 `source`，对应 `lingyao_engine::CandidateSource`。3 音节以上时 Engine 加入词图路径（`sentence_alternatives` 打开时是多条）。Google 回退已删除，source 9 不再占据位置 1。runtime 的 `demote_runner_up_readings` 对 3 字及以上的读法保留三条词图整句，紧跟在第一条之后，其余移到列表末尾；2 字读法只保留一条。
 
 所以位置 1 到底是谁，随输入而变——词图的改动能不能反映到 top-1 也随之而变。`top1_source` 和 `gold_source` 每次运行都记录实际情况，而不是假定其中一种。
 

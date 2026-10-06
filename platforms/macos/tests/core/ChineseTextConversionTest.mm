@@ -24,7 +24,7 @@ int main()
                 "Traditional output did not convert the visible Chinese text.");
         require(LingyaoChineseOutputString(simplified, NO) == simplified,
                 "Simplified output unnecessarily copied or transformed its text.");
-        require([LingyaoChineseOutputString(@"MSIME 123 😀", YES) isEqualToString:@"MSIME 123 😀"],
+        require([LingyaoChineseOutputString(@"LINGYAO 123 😀", YES) isEqualToString:@"LINGYAO 123 😀"],
                 "Traditional output changed non-Chinese text.");
         require([LingyaoChineseOutputString(@"", YES) isEqualToString:@""],
                 "Traditional output did not preserve an empty string.");

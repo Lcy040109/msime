@@ -2,7 +2,7 @@
 //!
 //! iOS and Android serve the page through their account session alone; the three desktop shells fall back to theirs when no provider socket or native input-method session answers. The body is generic over the session's backend and storage so each target passes the session its own `AccountState` holds, and so the tests can drive it against a synthetic backend.
 
-use msime_client_core::account::{AccountApi, AccountSessionStorage, BackendAccountSession};
+use lingyao_client_core::account::{AccountApi, AccountSessionStorage, BackendAccountSession};
 use serde_json::Value;
 use std::sync::Arc;
 
@@ -82,7 +82,7 @@ pub(crate) async fn cloud_clipboard_request<A: AccountApi, S: AccountSessionStor
 #[cfg(test)]
 mod tests {
     use super::cloud_clipboard_request;
-    use msime_client_core::account::{
+    use lingyao_client_core::account::{
         AccountApi, AccountChallenge, AccountClipboardItem, AccountClipboardPage, AccountError,
         AccountProfile, AccountSessionStorage, AccountTokens, AccountUser, BackendAccountSession,
         SavedAccountSession,

@@ -6,7 +6,7 @@ use crate::*;
 
 /// Native presentation override; changes wait for the current composition to end.
 #[no_mangle]
-pub extern "C" fn msime_client_set_candidate_page_size(handle: u64, size: u8) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_candidate_page_size(handle: u64, size: u8) -> *mut c_char {
     response(|| {
         if !(1..=9).contains(&size) {
             return Err("candidate page size must be between 1 and 9".into());
@@ -27,7 +27,7 @@ pub extern "C" fn msime_client_set_candidate_page_size(handle: u64, size: u8) ->
 
 /// Override the live host punctuation mode without persisting preferences.
 #[no_mangle]
-pub extern "C" fn msime_client_set_chinese_punctuation(handle: u64, enabled: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_chinese_punctuation(handle: u64, enabled: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             let lock = session
@@ -44,7 +44,7 @@ pub extern "C" fn msime_client_set_chinese_punctuation(handle: u64, enabled: boo
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_set_paired_punctuation(handle: u64, enabled: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_paired_punctuation(handle: u64, enabled: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session
@@ -58,7 +58,7 @@ pub extern "C" fn msime_client_set_paired_punctuation(handle: u64, enabled: bool
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_set_punctuation_lock(handle: u64, lock: u8) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_punctuation_lock(handle: u64, lock: u8) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session
@@ -77,7 +77,7 @@ pub extern "C" fn msime_client_set_punctuation_lock(handle: u64, lock: u8) -> *m
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_set_english_mode(handle: u64, enabled: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_english_mode(handle: u64, enabled: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session
@@ -92,7 +92,7 @@ pub extern "C" fn msime_client_set_english_mode(handle: u64, enabled: bool) -> *
 
 /// 标出隐私会话：隐私模式或不允许学习的输入框。只影响打字统计（选词位置和上屏效率不计），学习仍由偏好里的 `learning` 决定。
 #[no_mangle]
-pub extern "C" fn msime_client_set_private_session(handle: u64, enabled: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_private_session(handle: u64, enabled: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session.statistics_private = enabled;
@@ -103,7 +103,7 @@ pub extern "C" fn msime_client_set_private_session(handle: u64, enabled: bool) -
 
 /// 在组字空闲后开启引擎负责的九键数字处理：全拼九宫格，或注音九键。
 #[no_mangle]
-pub extern "C" fn msime_client_set_nine_key_mode(handle: u64, enabled: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_nine_key_mode(handle: u64, enabled: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session
@@ -117,7 +117,7 @@ pub extern "C" fn msime_client_set_nine_key_mode(handle: u64, enabled: bool) -> 
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_set_character_width(handle: u64, fullwidth: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_set_character_width(handle: u64, fullwidth: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session.runtime.set_character_width(if fullwidth {
@@ -131,7 +131,7 @@ pub extern "C" fn msime_client_set_character_width(handle: u64, fullwidth: bool)
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_character(handle: u64, ascii: u8, shift: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_character(handle: u64, ascii: u8, shift: bool) -> *mut c_char {
     dispatch(
         handle,
         Action::Character {
@@ -142,7 +142,7 @@ pub extern "C" fn msime_client_character(handle: u64, ascii: u8, shift: bool) ->
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_command(handle: u64, command: u32) -> *mut c_char {
+pub extern "C" fn lingyao_client_command(handle: u64, command: u32) -> *mut c_char {
     let action = match command {
         0 => Action::Command(Command::Backspace),
         1 => Action::SelectHighlighted,
@@ -174,7 +174,7 @@ pub extern "C" fn msime_client_command(handle: u64, command: u32) -> *mut c_char
 
 /// Explicit native punctuation route, even when a local mode consumes characters.
 #[no_mangle]
-pub extern "C" fn msime_client_punctuation(handle: u64, ascii: u8) -> *mut c_char {
+pub extern "C" fn lingyao_client_punctuation(handle: u64, ascii: u8) -> *mut c_char {
     dispatch(handle, Action::Punctuation(ascii))
 }
 
@@ -182,7 +182,7 @@ pub extern "C" fn msime_client_punctuation(handle: u64, ascii: u8) -> *mut c_cha
 /// Unicode scalar. Zero means that no preceding scalar is available. Only the
 /// scalar value crosses the host boundary; document text is never retained.
 #[no_mangle]
-pub extern "C" fn msime_client_punctuation_with_context(
+pub extern "C" fn lingyao_client_punctuation_with_context(
     handle: u64,
     ascii: u8,
     preceding: u32,
@@ -206,9 +206,9 @@ pub extern "C" fn msime_client_punctuation_with_context(
             .get(&handle)
             .ok_or_else(|| "unknown session or wrong thread".to_owned())?;
         let lock = match session.punctuation_lock_override {
-            Some(1) => msime_client_core::preferences::PunctuationLock::Chinese,
-            Some(2) => msime_client_core::preferences::PunctuationLock::English,
-            Some(_) => msime_client_core::preferences::PunctuationLock::Follow,
+            Some(1) => lingyao_client_core::preferences::PunctuationLock::Chinese,
+            Some(2) => lingyao_client_core::preferences::PunctuationLock::English,
+            Some(_) => lingyao_client_core::preferences::PunctuationLock::Follow,
             None => session.applied.punctuation_lock,
         };
         let route = punctuation_route(PunctuationContext {
@@ -245,9 +245,9 @@ pub extern "C" fn msime_client_punctuation_with_context(
 /// was away must not carry a gesture across the gap.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_smart_punctuation_arm(
+pub unsafe extern "C" fn lingyao_client_smart_punctuation_arm(
     handle: u64,
     request: *const u8,
     length: usize,
@@ -287,14 +287,14 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_arm(
                         | SchemeType::Tibetan
                 )
             );
-            let repeat = msime_client_core::punctuation::arm_repeat(
+            let repeat = lingyao_client_core::punctuation::arm_repeat(
                 value.ascii,
                 &value.commit,
                 value.timestamp_ms,
                 value.editor_generation,
             )
             .filter(|_| smart && session.applied.smart_punctuation_repeat && smart_scheme);
-            let space = msime_client_core::punctuation::arm_space_convert(
+            let space = lingyao_client_core::punctuation::arm_space_convert(
                 &value.commit,
                 value.auto_closed_pair,
                 smart,
@@ -325,9 +325,9 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_arm(
 /// snapshot can never rewrite the wrong character.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
+pub unsafe extern "C" fn lingyao_client_smart_punctuation_decide(
     handle: u64,
     request: *const u8,
     length: usize,
@@ -379,7 +379,7 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
         };
         let repeat_snapshot = match value.repeat {
             None => None,
-            Some(armed) => Some(msime_client_core::punctuation::RepeatSnapshot {
+            Some(armed) => Some(lingyao_client_core::punctuation::RepeatSnapshot {
                 ascii: armed.ascii,
                 committed: single(&armed.committed)?,
                 timestamp_ms: armed.timestamp_ms,
@@ -388,7 +388,7 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
         };
         let space_snapshot = match value.space {
             None => None,
-            Some(armed) => Some(msime_client_core::punctuation::SpaceConvertSnapshot {
+            Some(armed) => Some(lingyao_client_core::punctuation::SpaceConvertSnapshot {
                 chinese: single(&armed.chinese)?,
                 ascii: armed.ascii,
                 editor_generation: armed.editor_generation,
@@ -405,9 +405,9 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
                 .as_ref()
                 .map(|_| session.runtime.candidate_page_len())
                 .unwrap_or(0);
-            let replace = msime_client_core::punctuation::should_replace_repeat(
+            let replace = lingyao_client_core::punctuation::should_replace_repeat(
                 repeat_snapshot,
-                msime_client_core::punctuation::RepeatContext {
+                lingyao_client_core::punctuation::RepeatContext {
                     ascii: value.character,
                     preceding,
                     timestamp_ms: value.timestamp_ms,
@@ -418,7 +418,7 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
                     candidate_count,
                 },
             );
-            let space = msime_client_core::punctuation::decide_space_convert(
+            let space = lingyao_client_core::punctuation::decide_space_convert(
                 space_snapshot,
                 value.character,
                 preceding,
@@ -435,7 +435,7 @@ pub unsafe extern "C" fn msime_client_smart_punctuation_decide(
 
 /// Notify Engine that a host-emitted paired closing mark completed the opening.
 #[no_mangle]
-pub extern "C" fn msime_client_balance_paired_punctuation_after_auto_close(
+pub extern "C" fn lingyao_client_balance_paired_punctuation_after_auto_close(
     handle: u64,
     opening: u8,
 ) -> *mut c_char {
@@ -454,7 +454,7 @@ pub extern "C" fn msime_client_balance_paired_punctuation_after_auto_close(
 /// mark. This is kept separate from Engine punctuation so a platform host can
 /// apply its own surrounding-text policy without changing the shared table.
 #[no_mangle]
-pub extern "C" fn msime_client_punctuation_ascii(handle: u64, ascii: u8) -> *mut c_char {
+pub extern "C" fn lingyao_client_punctuation_ascii(handle: u64, ascii: u8) -> *mut c_char {
     dispatch(handle, Action::PunctuationAscii(ascii))
 }
 
@@ -469,7 +469,7 @@ pub extern "C" fn msime_client_punctuation_ascii(handle: u64, ascii: u8) -> *mut
 /// after a reorder. The false case is common and lets hosts leave the candidate window alone
 /// without serializing a view they will discard.
 #[no_mangle]
-pub extern "C" fn msime_client_rerank_settled(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_rerank_settled(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             let moved = session.runtime.rerank_settled();
@@ -484,7 +484,7 @@ pub extern "C" fn msime_client_rerank_settled(handle: u64) -> *mut c_char {
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_select(handle: u64, generation: u64, index: usize) -> *mut c_char {
+pub extern "C" fn lingyao_client_select(handle: u64, generation: u64, index: usize) -> *mut c_char {
     dispatch(
         handle,
         Action::Select(CandidateId {
@@ -495,10 +495,10 @@ pub extern "C" fn msime_client_select(handle: u64, generation: u64, index: usize
     )
 }
 
-/// Select any candidate returned by `msime_client_all_candidates` for the exact
-/// session generation. Regular `msime_client_select` remains page-bounded.
+/// Select any candidate returned by `lingyao_client_all_candidates` for the exact
+/// session generation. Regular `lingyao_client_select` remains page-bounded.
 #[no_mangle]
-pub extern "C" fn msime_client_select_any_candidate(
+pub extern "C" fn lingyao_client_select_any_candidate(
     handle: u64,
     generation: u64,
     index: usize,
@@ -514,7 +514,7 @@ pub extern "C" fn msime_client_select_any_candidate(
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_pin_candidate(
+pub extern "C" fn lingyao_client_pin_candidate(
     handle: u64,
     generation: u64,
     index: usize,
@@ -530,7 +530,7 @@ pub extern "C" fn msime_client_pin_candidate(
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_remove_candidate(
+pub extern "C" fn lingyao_client_remove_candidate(
     handle: u64,
     generation: u64,
     index: usize,
@@ -546,7 +546,7 @@ pub extern "C" fn msime_client_remove_candidate(
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_fix_candidate_position(
+pub extern "C" fn lingyao_client_fix_candidate_position(
     handle: u64,
     generation: u64,
     index: usize,
@@ -569,7 +569,7 @@ pub extern "C" fn msime_client_fix_candidate_position(
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_clear_candidate_position(
+pub extern "C" fn lingyao_client_clear_candidate_position(
     handle: u64,
     generation: u64,
     index: usize,
@@ -586,7 +586,7 @@ pub extern "C" fn msime_client_clear_candidate_position(
 
 /// Select one spelling from View.nine_key_spellings for the exact view generation.
 #[no_mangle]
-pub extern "C" fn msime_client_choose_nine_key_spelling(
+pub extern "C" fn lingyao_client_choose_nine_key_spelling(
     handle: u64,
     generation: u64,
     index: usize,
@@ -603,7 +603,7 @@ pub extern "C" fn msime_client_choose_nine_key_spelling(
 
 /// Copy every cached Engine candidate only when a host opens an expanded panel.
 #[no_mangle]
-pub extern "C" fn msime_client_all_candidates(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_all_candidates(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             serde_json::to_value(session.runtime.all_candidates()).map_err(|e| e.to_string())
@@ -617,7 +617,7 @@ pub extern "C" fn msime_client_all_candidates(handle: u64) -> *mut c_char {
 /// # Safety
 /// `prefix` must point to `prefix_length` readable UTF-8 bytes. The buffer is not retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_english_completions(
+pub unsafe extern "C" fn lingyao_client_english_completions(
     handle: u64,
     prefix: *const u8,
     prefix_length: usize,
@@ -629,11 +629,11 @@ pub unsafe extern "C" fn msime_client_english_completions(
         }
         let bytes = unsafe { std::slice::from_raw_parts(prefix, prefix_length) };
         let prefix = std::str::from_utf8(bytes).map_err(|_| "invalid English completion prefix")?;
-        if !msime_client_core::is_ascii_alphabetic(prefix) {
+        if !lingyao_client_core::is_ascii_alphabetic(prefix) {
             return Err("invalid English completion prefix".into());
         }
         with_session(handle, |session| {
-            let words = msime_engine::host::english_completions(
+            let words = lingyao_engine::host::english_completions(
                 &session.options.dictionaries,
                 prefix,
                 limit,

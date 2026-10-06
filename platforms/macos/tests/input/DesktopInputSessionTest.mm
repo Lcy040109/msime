@@ -12,9 +12,9 @@
 static void Check(std::vector<unsigned char> body, uint32_t declared, bool authorized,
                   bool accept, bool expectedCall, int expectedResponse, bool clipboard = false, bool fragmented = false) {
     __block unsigned calls = 0;
-    MSIMEDesktopInputSession *session = [[MSIMEDesktopInputSession alloc]
+    LINGYAODesktopInputSession *session = [[LINGYAODesktopInputSession alloc]
         initWithTargetPID:getpid() launchTime:42 clipboard:clipboard handler:^(NSString *text, double deadline,
-                                                        MSIMEPanelTextCompletion completion) {
+                                                        LINGYAOPanelTextCompletion completion) {
             assert(NSThread.isMainThread);
             assert([text isEqualToString:[[NSString alloc] initWithBytes:body.data() length:body.size() encoding:NSUTF8StringEncoding]]);
             assert(deadline > NSProcessInfo.processInfo.systemUptime);
@@ -24,7 +24,7 @@ static void Check(std::vector<unsigned char> body, uint32_t declared, bool autho
         }];
     assert(session);
     [session authorizePID:authorized ? getpid() : getpid() + 1 stillValid:^BOOL { return YES; }];
-    NSData *json = [session.launchEnvironment[@"MSIME_CLIENT_PANEL_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *json = [session.launchEnvironment[@"LINGYAO_CLIENT_PANEL_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *configuration = [NSJSONSerialization JSONObjectWithData:json options:0 error:nil];
     NSString *path = configuration[@"path"];
     struct stat info{};

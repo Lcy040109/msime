@@ -1,4 +1,4 @@
-//! Run with `cargo run -p msime-desktop --example macos_keyboard_window_check`.
+//! Run with `cargo run -p lingyao-desktop --example macos_keyboard_window_check`.
 //! Creates hidden synthetic windows only. Never requests permissions or posts input.
 #[cfg(all(target_os = "macos", not(test)))]
 #[allow(dead_code)]
@@ -7,17 +7,17 @@ mod macos_keyboard;
 
 #[cfg(all(target_os = "macos", not(test)))]
 fn startup_panel_for_route(
-    route: Option<msime_client_core::host_surface::SurfaceRoute>,
-    expected: msime_client_core::host_surface::SurfaceRoute,
-) -> Option<msime_client_core::host_surface::PanelSurface> {
+    route: Option<lingyao_client_core::host_surface::SurfaceRoute>,
+    expected: lingyao_client_core::host_surface::SurfaceRoute,
+) -> Option<lingyao_client_core::host_surface::PanelSurface> {
     route.filter(|route| *route == expected)?.panel()
 }
 
 #[cfg(all(target_os = "macos", not(test)))]
 fn prepare_windows_for_route(
     windows: &mut [tauri::utils::config::WindowConfig],
-    route: Option<msime_client_core::host_surface::SurfaceRoute>,
-    expected: msime_client_core::host_surface::SurfaceRoute,
+    route: Option<lingyao_client_core::host_surface::SurfaceRoute>,
+    expected: lingyao_client_core::host_surface::SurfaceRoute,
 ) {
     if startup_panel_for_route(route, expected).is_some() {
         for window in windows.iter_mut().filter(|window| window.label == "main") {
@@ -68,7 +68,7 @@ fn main() {
     std::panic::set_hook(Box::new(|info| {
         eprintln!("synthetic native check panic: {info}")
     }));
-    let mut target = msime_host_macos::capture_launch_target();
+    let mut target = lingyao_host_macos::capture_launch_target();
     let mut completed = 0;
     tauri::Builder::default()
         .plugin(tauri_nspanel::init())
@@ -78,7 +78,7 @@ fn main() {
             let run = match event {
                 tauri::RunEvent::Ready => {
                     if let Some(target) = target.take() {
-                        let _ = msime_host_macos::restore_launch_target(target);
+                        let _ = lingyao_host_macos::restore_launch_target(target);
                     }
                     true
                 }

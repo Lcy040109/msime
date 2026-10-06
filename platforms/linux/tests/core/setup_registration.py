@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""msime-linux-setup 在状态目录就绪后把输入法加入正在运行的宿主的输入法列表，--unregister 在卸载时把它从这些列表里移除，--register 在发行版的包替换另一个包之后把两者都恢复。
+"""lingyao-linux-setup 在状态目录就绪后把输入法加入正在运行的宿主的输入法列表，--unregister 在卸载时把它从这些列表里移除，--register 在发行版的包替换另一个包之后把两者都恢复。
 
-用桩代替 pgrep、gdbus、gsettings、ibus、systemctl 和 msime-linux-prepare：桩把收到的调用记进日志，把 Fcitx5 输入法组、dconf 设置和 IBus 已知的引擎存在一份 JSON 里。不需要词库、不联网，也不碰真实的 D-Bus 会话或 dconf。
+用桩代替 pgrep、gdbus、gsettings、ibus、systemctl 和 lingyao-linux-prepare：桩把收到的调用记进日志，把 Fcitx5 输入法组、dconf 设置和 IBus 已知的引擎存在一份 JSON 里。不需要词库、不联网，也不碰真实的 D-Bus 会话或 dconf。
 """
 import hashlib
 import importlib.machinery
@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/msime-linux-setup"
+SCRIPT = ROOT / "scripts/lingyao-linux-setup"
 
 # One stub serves every tool; it dispatches on the name it was invoked as. Arguments the setup script writes are Python literals once GVariant's text form is read back, so the stub parses them with ast rather than reusing the code under test.
 # 首行用跑测试的同一个解释器，不经 /usr/bin/env：没有 FHS 布局的环境（Nix 构建沙箱）里没有它。
@@ -50,8 +50,8 @@ def save():
 
 if name == "pgrep":
     sys.exit(0 if arguments[-1] in state["running"] else 1)
-if name in ("systemctl", "msime-linux-prepare"):
-    if name == "msime-linux-prepare":
+if name in ("systemctl", "lingyao-linux-prepare"):
+    if name == "lingyao-linux-prepare":
         Path(arguments[-1]).mkdir(parents=True)
     sys.exit(0)
 if name == "gdbus":
@@ -106,7 +106,7 @@ if name == "ibus":
         print("  xkb:us::eng - English (US)")
         if ibus["known"]:
             print("language: Chinese")
-            print("  msime-linux - Lingyao 灵耀输入法")
+            print("  lingyao-linux - Lingyao 灵耀输入法")
     elif arguments == ["restart"]:
         # The new daemon reads the component files, including the one installed after the old daemon started.
         ibus["known"] = ibus["installed"]
@@ -122,7 +122,7 @@ IBUS = "org.freedesktop.ibus.general"
 
 def load_setup():
     spec = importlib.util.spec_from_loader(
-        "msime_client_setup", importlib.machinery.SourceFileLoader("msime_client_setup", str(SCRIPT))
+        "lingyao_client_setup", importlib.machinery.SourceFileLoader("lingyao_client_setup", str(SCRIPT))
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -141,8 +141,8 @@ def gvariant_round_trip() -> None:
     assert setup.parse_gvariant(setup.gvariant_text(value)) == value
     assert setup.gvariant_text(("Default",)) == "('Default',)"
     # 布尔值按 GVariant 的小写写法读；字符串里的 true 不动。
-    assert setup.parse_gvariant("([('msime', 'true', '', '', '', 'zh_CN', true), ('x', '', '', '', '', '', false)],)") == (
-        [("msime", "true", "", "", "", "zh_CN", True), ("x", "", "", "", "", "", False)],
+    assert setup.parse_gvariant("([('lingyao', 'true', '', '', '', 'zh_CN', true), ('x', '', '', '', '', '', false)],)") == (
+        [("lingyao", "true", "", "", "", "zh_CN", True), ("x", "", "", "", "", "", False)],
     )
     try:
         setup.parse_gvariant("<not gvariant>")
@@ -157,7 +157,7 @@ class Harness:
         self.scratch = scratch
         prefix = scratch / "prefix"
         (prefix / "bin").mkdir(parents=True)
-        self.setup = prefix / "bin/msime-linux-setup"
+        self.setup = prefix / "bin/lingyao-linux-setup"
         self.setup.write_text(SCRIPT.read_text())
         self.setup.chmod(0o755)
         tools = scratch / "tools"
@@ -167,14 +167,14 @@ class Harness:
         stub.chmod(0o755)
         for tool in TOOLS:
             (tools / tool).symlink_to(stub)
-        (prefix / "bin/msime-linux-prepare").symlink_to(stub)
+        (prefix / "bin/lingyao-linux-prepare").symlink_to(stub)
         resources = scratch / "resources"
         resources.mkdir()
         payload = b"synthetic dictionary"
-        (resources / "msime-pinyin.db").write_bytes(payload)
+        (resources / "lingyao-pinyin.db").write_bytes(payload)
         lock = scratch / "desktop-dictionary.lock.json"
         lock.write_text(json.dumps({"artifacts": [
-            {"name": "msime-pinyin.db", "size": len(payload), "sha256": hashlib.sha256(payload).hexdigest(),
+            {"name": "lingyao-pinyin.db", "size": len(payload), "sha256": hashlib.sha256(payload).hexdigest(),
              "url": "https://example.invalid/msime-pinyin.db"},
         ]}))
         self.resources = resources
@@ -183,14 +183,14 @@ class Harness:
         self.runs = 0
         self.environment = {
             key: value for key, value in os.environ.items()
-            if not key.startswith(("MSIME_", "XDG_"))
+            if not key.startswith(("LINGYAO_", "XDG_"))
         }
         self.environment.update(
             PATH=f"{tools}:{os.environ.get('PATH', '/usr/bin:/bin')}",
             HOME=str(scratch / "home"),
             XDG_CONFIG_HOME=str(scratch / "config"),
             XDG_DATA_HOME=str(scratch / "data"),
-            MSIME_DICTIONARY_LOCK=str(lock),
+            LINGYAO_DICTIONARY_LOCK=str(lock),
             STUB_STATE=str(self.state_file),
             STUB_LOG=str(self.log),
         )
@@ -221,8 +221,8 @@ class Harness:
         assert result.returncode == 0, result
         assert "Traceback" not in result.stderr, result.stderr
         # Only the lists: no dictionary check, no state preparation, no services.
-        assert self.calls("msime-linux-prepare") == [] and self.calls("systemctl") == [], self.log.read_text()
-        assert not (self.scratch / "config/msime-client").exists()
+        assert self.calls("lingyao-linux-prepare") == [] and self.calls("systemctl") == [], self.log.read_text()
+        assert not (self.scratch / "config/lingyao-client").exists()
         assert "词库" not in result.stdout, result.stdout
         return result
 
@@ -234,7 +234,7 @@ class Harness:
         )
 
     def run(self, *extra: str) -> subprocess.CompletedProcess:
-        # msime-linux-setup refuses to prepare a directory that exists, so every run gets a fresh one.
+        # lingyao-linux-setup refuses to prepare a directory that exists, so every run gets a fresh one.
         self.runs += 1
         state = self.scratch / f"state-{self.runs}"
         result = subprocess.run(
@@ -251,8 +251,8 @@ def fcitx5_world(**overrides) -> dict:
     world = {
         "current": "Default",
         "groups": {"Default": ["us", [["keyboard-us", ""], ["pinyin", ""]]], "Other": ["de", []]},
-        "loaded": ["keyboard-us", "pinyin", "msime"],
-        "installed": ["keyboard-us", "pinyin", "msime"],
+        "loaded": ["keyboard-us", "pinyin", "lingyao"],
+        "installed": ["keyboard-us", "pinyin", "lingyao"],
     }
     world.update(overrides)
     return world
@@ -263,11 +263,11 @@ def unregistering() -> None:
         harness = Harness(Path(name))
         set_group = "org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo"
         everywhere = {
-            GNOME: {"sources": [["xkb", "us"], ["ibus", "msime-linux"], ["ibus", "mozc-jp"]]},
-            IBUS: {"preload-engines": ["xkb:us::eng", "msime-linux", "libpinyin"]},
+            GNOME: {"sources": [["xkb", "us"], ["ibus", "lingyao-linux"], ["ibus", "mozc-jp"]]},
+            IBUS: {"preload-engines": ["xkb:us::eng", "lingyao-linux", "libpinyin"]},
         }
         fcitx5 = fcitx5_world(groups={
-            "Default": ["us", [["keyboard-us", ""], ["msime", ""], ["pinyin", ""]]], "Other": ["de", [["msime", ""]]],
+            "Default": ["us", [["keyboard-us", ""], ["lingyao", ""], ["pinyin", ""]]], "Other": ["de", [["lingyao", ""]]],
         })
 
         # 卸载：从 Fcitx5 当前组、GNOME 输入源和 IBus 预载引擎三处移除，其余项保持原来的顺序，别的组不动。卸载从用户的 systemd 实例里运行，那里往往没有 XDG_CURRENT_DESKTOP，所以两份 IBus 列表都清理，与当前跑的是哪个宿主无关。
@@ -279,7 +279,7 @@ def unregistering() -> None:
         assert result.stderr == "", result.stderr
         state = harness.state()
         assert state["fcitx5"]["groups"] == {
-            "Default": ["us", [["keyboard-us", ""], ["pinyin", ""]]], "Other": ["de", [["msime", ""]]],
+            "Default": ["us", [["keyboard-us", ""], ["pinyin", ""]]], "Other": ["de", [["lingyao", ""]]],
         }, state["fcitx5"]
         assert state["gsettings"][GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"]], state["gsettings"]
         assert state["gsettings"][IBUS]["preload-engines"] == ["xkb:us::eng", "libpinyin"], state["gsettings"]
@@ -302,7 +302,7 @@ def unregistering() -> None:
         assert harness.state() == state
 
         # 列表里只有灵耀：移除后会变空，空列表会让桌面退回一个未必是用户原来的默认值，Fcitx5 空组则没有可切回的键盘布局，所以保持原样。
-        alone = {GNOME: {"sources": [["ibus", "msime-linux"]]}, IBUS: {"preload-engines": ["msime-linux"]}}
+        alone = {GNOME: {"sources": [["ibus", "lingyao-linux"]]}, IBUS: {"preload-engines": ["lingyao-linux"]}}
         harness.world(fcitx5=fcitx5_world(current="Other", groups=fcitx5["groups"]), gsettings=alone)
         before = harness.state()
         result = harness.unregister()
@@ -353,11 +353,11 @@ def unregistering() -> None:
 
 
 def registering_again() -> None:
-    """--register：发行版的包替换掉发布页的 msime-linux（或 AUR 的 msime 与 msime-bin 互换）时，被替换的包按卸载处理，停用了用户单元并运行了 --unregister。新包装好后对每个用户运行 --register，把这两样恢复，不碰词库和状态。"""
+    """--register：发行版的包替换掉发布页的 lingyao-linux（或 AUR 的 lingyao 与 lingyao-bin 互换）时，被替换的包按卸载处理，停用了用户单元并运行了 --unregister。新包装好后对每个用户运行 --register，把这两样恢复，不碰词库和状态。"""
     with tempfile.TemporaryDirectory() as name:
         harness = Harness(Path(name))
-        state = Path(name) / "config/msime-client"
-        units = ["msime-linux-online.socket", "msime-linux-voice.socket", "msime-linux-clipboard.service"]
+        state = Path(name) / "config/lingyao-client"
+        units = ["lingyao-linux-online.socket", "lingyao-linux-voice.socket", "lingyao-linux-clipboard.service"]
 
         # 还没配置过的用户（新装的机器上就是所有人）：什么也不做，不启用服务、不碰任何列表。
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world())
@@ -367,7 +367,7 @@ def registering_again() -> None:
         assert harness.log.read_text() == "", harness.log.read_text()
         assert not state.exists()
 
-        # 配置过的用户：启用首次配置启用的那几个单元，把输入法加回 Fcitx5 当前组；不检查词库，不运行 msime-linux-prepare，状态目录原样。
+        # 配置过的用户：启用首次配置启用的那几个单元，把输入法加回 Fcitx5 当前组；不检查词库，不运行 lingyao-linux-prepare，状态目录原样。
         state.mkdir(parents=True)
         (state / "runtime-options.json").write_text('{"resources": "/synthetic"}')
         before = {path.name: path.read_bytes() for path in state.iterdir()}
@@ -377,8 +377,8 @@ def registering_again() -> None:
         assert result.returncode == 0 and result.stderr == "", result
         assert harness.calls("systemctl") == [["--user", "enable", "--now", *units]], harness.calls("systemctl")
         assert "已把「灵耀输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result.stdout
-        assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["msime", ""]]]
-        assert harness.calls("msime-linux-prepare") == [], harness.log.read_text()
+        assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["lingyao", ""]]]
+        assert harness.calls("lingyao-linux-prepare") == [], harness.log.read_text()
         assert "词库" not in result.stdout, result.stdout
         assert {path.name: path.read_bytes() for path in state.iterdir()} == before
 
@@ -387,7 +387,7 @@ def registering_again() -> None:
         harness.world(running=["ibus-daemon"], desktop="GNOME", gsettings=everywhere, ibus={"known": True, "installed": True})
         harness.register()
         registered = harness.state()["gsettings"]
-        assert registered[GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"], ["ibus", "msime-linux"]], registered
+        assert registered[GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"], ["ibus", "lingyao-linux"]], registered
         # 不用 harness.unregister：它断言状态目录不存在，这里的用户是配置过的。
         result = subprocess.run([str(harness.setup), "--unregister"], env=harness.environment, capture_output=True, text=True, timeout=30)
         assert result.returncode == 0, result
@@ -412,7 +412,7 @@ def registering_again() -> None:
         result = harness.register()
         assert result.returncode == 0, result
         assert harness.calls("systemctl") == [["--user", "enable", "--now", *units]], harness.calls("systemctl")
-        assert "msime-linux-setup --register" in result.stdout, result.stdout
+        assert "lingyao-linux-setup --register" in result.stdout, result.stdout
         assert harness.calls("gdbus") == [] and harness.calls("gsettings") == [] and harness.calls("ibus") == []
 
         # 两个方向不能同时要。
@@ -434,13 +434,13 @@ def main() -> int:
         # 托盘入口的提示与是否自动加入无关，照常打印。
         assert "状态栏上的中英文" in result.stdout, result.stdout
         groups = harness.state()["fcitx5"]["groups"]
-        assert groups["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["msime", ""]]], groups
+        assert groups["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["lingyao", ""]]], groups
         assert groups["Other"] == ["de", []], groups
         writes = [call for call in harness.calls("gdbus") if "org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call]
         assert writes == [[
             "call", "--session", "--dest", "org.fcitx.Fcitx5", "--object-path", "/controller", "--method",
             "org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo",
-            "'Default'", "'us'", "[('keyboard-us', ''), ('pinyin', ''), ('msime', '')]",
+            "'Default'", "'us'", "[('keyboard-us', ''), ('pinyin', ''), ('lingyao', '')]",
         ]], writes
         assert harness.calls("gsettings") == [] and harness.calls("ibus") == [], harness.log.read_text()
         assert not any("org.fcitx.Fcitx.Controller1.Restart" in call for call in harness.calls("gdbus")), harness.log.read_text()
@@ -455,17 +455,17 @@ def main() -> int:
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(current="Other"))
         result = harness.run()
         assert "未能自动加入输入法列表：Fcitx5 当前输入法组「Other」为空" in result.stderr, result
-        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
+        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「LINGYAO」）加入当前输入法组。" in result.stdout, result
         assert harness.state()["fcitx5"]["groups"]["Other"] == ["de", []]
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
-        # Fcitx5 在装包之前就已启动、还没加载 msime：先让它重启一次，加载新装的输入法之后再加入当前组。
+        # Fcitx5 在装包之前就已启动、还没加载 lingyao：先让它重启一次，加载新装的输入法之后再加入当前组。
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(loaded=["keyboard-us", "pinyin"]))
         result = harness.run()
         assert "已把「灵耀输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result
         restarts = [call for call in harness.calls("gdbus") if "org.fcitx.Fcitx.Controller1.Restart" in call]
         assert len(restarts) == 1, harness.log.read_text()
-        assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["msime", ""]]]
+        assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["lingyao", ""]]]
 
         # 再跑一次：已经加载，不再重启 Fcitx5，也不重复写入。
         harness.log.write_text("")
@@ -477,8 +477,8 @@ def main() -> int:
         # 重启之后仍没有加载（比如插件没装到 Fcitx5 找得到的位置）：不写，退回手动步骤，不谎报成功。
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(loaded=["keyboard-us", "pinyin"], installed=["keyboard-us", "pinyin"]))
         result = harness.run()
-        assert "未能自动加入输入法列表：Fcitx5 重启之后仍没有加载 msime" in result.stderr, result
-        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
+        assert "未能自动加入输入法列表：Fcitx5 重启之后仍没有加载 lingyao" in result.stderr, result
+        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「LINGYAO」）加入当前输入法组。" in result.stdout, result
         assert "已把" not in result.stdout, result.stdout
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
@@ -506,7 +506,7 @@ def main() -> int:
         assert "已把「Lingyao 灵耀输入法」加入输入源列表" in result.stdout, result
         assert harness.calls("ibus").count(["restart"]) == 1, harness.calls("ibus")
         settings = harness.state()["gsettings"]
-        assert settings[GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"], ["ibus", "msime-linux"]], settings
+        assert settings[GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"], ["ibus", "lingyao-linux"]], settings
         assert settings[IBUS]["preload-engines"] == ["xkb:us::eng"], settings
         assert harness.calls("gdbus") == [], harness.log.read_text()
 
@@ -527,7 +527,7 @@ def main() -> int:
         assert "已把「Lingyao 灵耀输入法」加入输入源列表" in result.stdout, result
         assert ["restart"] not in harness.calls("ibus"), harness.calls("ibus")
         settings = harness.state()["gsettings"]
-        assert settings[IBUS]["preload-engines"] == ["xkb:us::eng", "libpinyin", "msime-linux"], settings
+        assert settings[IBUS]["preload-engines"] == ["xkb:us::eng", "libpinyin", "lingyao-linux"], settings
         assert settings[GNOME]["sources"] == [["xkb", "us"]], settings
 
         # 列表为空说明桌面在用没有写进这一项的默认输入源，只写入本引擎会把它顶掉：不写，退回手动步骤。

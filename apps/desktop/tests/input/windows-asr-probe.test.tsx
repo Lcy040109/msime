@@ -2,7 +2,7 @@
 import { testHost } from "../support/host";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ASR_PROVIDER_DEFAULTS, SettingsPage, type Snapshot } from "@msime/ui";
+import { ASR_PROVIDER_DEFAULTS, SettingsPage, type Snapshot } from "@lingyao/ui";
 
 afterEach(cleanup);
 test.each(

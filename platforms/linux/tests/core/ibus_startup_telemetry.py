@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """IBus 宿主的使用上报：会话在启动时开始（文件 I/O，不联网），投递在注册 component 之后的后台线程里进行，端点挂起也不耽误注册和主循环；崩溃守护重启（--recovered）同样开始新会话，上一会话留下崩溃记录时补报 crash 和 session_crash；宿主收到崩溃信号时只把崩溃记录写到磁盘。
 
-跑的是真的 msime-linux-ibus、真的 platforms/common/Telemetry.cpp 和它包装的 Host API。ibus-daemon 由一个普通 dbus-daemon 加 ibus-registration-bus 桩代替，桩只应答 RegisterComponent 并打出注册时刻和宿主的总线名。端点挂起期间，桩的 probe 模式向宿主的 IBusFactory 请求一个不存在的引擎：这个错误只能由宿主主循环回出来，所以投递一旦回到主线程同步执行，探测就会超时。投递经 HTTPS_PROXY（Host API 的 HTTP 客户端自己认）指到本地一个只 accept、从不回应的 TCP 监听，所以请求永远到不了 api.msime.app，而且对宿主来说就是一个挂起的端点。事件先排进 $XDG_STATE_HOME/msime/telemetry.json，内容从那里核对。
+跑的是真的 lingyao-linux-ibus、真的 platforms/common/Telemetry.cpp 和它包装的 Host API。ibus-daemon 由一个普通 dbus-daemon 加 ibus-registration-bus 桩代替，桩只应答 RegisterComponent 并打出注册时刻和宿主的总线名。端点挂起期间，桩的 probe 模式向宿主的 IBusFactory 请求一个不存在的引擎：这个错误只能由宿主主循环回出来，所以投递一旦回到主线程同步执行，探测就会超时。投递经 HTTPS_PROXY（Host API 的 HTTP 客户端自己认）指到本地一个只 accept、从不回应的 TCP 监听，所以请求永远到不了 api.msime.app，而且对宿主来说就是一个挂起的端点。事件先排进 $XDG_STATE_HOME/lingyao/telemetry.json，内容从那里核对。
 
 用法：ibus_startup_telemetry.py HOST REGISTRATION_BUS EXPECTED_VERSION
 """
@@ -143,7 +143,7 @@ def run_host(host, registration_bus, scratch, recovered):
         raise
 
 
-STATE = "state/msime"
+STATE = "state/lingyao"
 
 
 def events(scratch):
@@ -204,7 +204,7 @@ def main():
         (state / "telemetry-session.json").write_text(json.dumps(
             {"id": previous, "platform": "linux", "version": "0.0.1", "started_at_unix_ms": 1}))
         (state / "telemetry-crashes" / f"{previous}.crash").write_text(
-            "SIGSEGV: segmentation fault\n/home/someone/.local/lib/libmsime_host_api.so(+0x1f) [0x7f00]\n")
+            "SIGSEGV: segmentation fault\n/home/someone/.local/lib/liblingyao_host_api.so(+0x1f) [0x7f00]\n")
         registered, _, endpoint, process, cleanup = run_host(host, registration_bus, scratch, recovered=True)
         try:
             wait_for(lambda: endpoint.connections, "queued events were never sent")
@@ -215,7 +215,7 @@ def main():
             session_crash, crash, _ = queued
             assert session_crash["id"] == f"session-{previous}" and session_crash["version"] == "0.0.1", session_crash
             assert crash["message"] == "SIGSEGV: segmentation fault", crash
-            assert crash["stack"] == "libmsime_host_api.so(+0x1f) [0x7f00]", crash
+            assert crash["stack"] == "liblingyao_host_api.so(+0x1f) [0x7f00]", crash
             assert "someone" not in json.dumps(queued)
             assert not crash_records(scratch)
         finally:

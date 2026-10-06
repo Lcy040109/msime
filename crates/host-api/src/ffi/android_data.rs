@@ -3,21 +3,21 @@
 //! Part of the C ABI; see the parent module for what these shims guarantee. 每个函数都读写文件，宿主在工作线程调用。
 
 use crate::*;
-use msime_client_core::account::settings_sync::{
+use lingyao_client_core::account::settings_sync::{
     android_local_settings, apply_android_settings, custom_keyboard_skins, export_android_settings,
     insert_android_local_settings, insert_custom_keyboard_skins, HostKeyboardFeedback,
     CUSTOM_KEYBOARD_SKINS,
 };
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     merge_account_preferences, AccountPreferenceSchema, AccountPreferenceValue, AccountPreferences,
 };
-use msime_client_core::common_phrases::{CommonPhrasesAction, CommonPhrasesStore};
-use msime_client_core::diagnostics::{build_bundle, DiagnosticBundleRequest};
-use msime_client_core::dictionary::collections::{
+use lingyao_client_core::common_phrases::{CommonPhrasesAction, CommonPhrasesStore};
+use lingyao_client_core::diagnostics::{build_bundle, DiagnosticBundleRequest};
+use lingyao_client_core::dictionary::collections::{
     DictionaryCollectionsAction, DictionaryCollectionsStore, HanReadings,
 };
-use msime_client_core::dictionary::personal::PersonalDictionaryStore;
-use msime_client_core::edition::{
+use lingyao_client_core::dictionary::personal::PersonalDictionaryStore;
+use lingyao_client_core::edition::{
     filter_downloaded_account_settings, filter_uploaded_account_settings,
 };
 
@@ -49,9 +49,9 @@ struct CommonPhrasesRequest {
 /// 无编码常用语。请求 `{directory: 偏好目录的绝对路径, action: {operation, ...}}`，操作见 client-core `common_phrases`。成功时返回整份文档 `{phrases, packs, skipped?}`；失败时 `error` 是稳定错误码（`common_phrases_*`）。
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_common_phrases(
+pub unsafe extern "C" fn lingyao_client_common_phrases(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -89,7 +89,7 @@ struct EngineReadings<'a>(&'a EngineOptions);
 
 impl HanReadings for EngineReadings<'_> {
     fn pinyin(&self, word: &str) -> Option<String> {
-        let key = msime_engine::host::hanzi_to_pinyin(self.0, word);
+        let key = lingyao_engine::host::hanzi_to_pinyin(self.0, word);
         (!key.is_empty()).then_some(key)
     }
 }
@@ -97,9 +97,9 @@ impl HanReadings for EngineReadings<'_> {
 /// 命名词库。请求 `{options: 宿主选项（须带 preferences_directory）, action: {operation, ...}}`，操作见 client-core `dictionary::collections`。词条经个人词库队列（`<preferences_directory>/PersonalDictionary`）送进 Engine，键盘下次同步时应用。成功时返回集合视图；失败时 `error` 是稳定错误码（`collections_*`、`builtin_locked`、`unsupported_format` 等）。
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary_collections(
+pub unsafe extern "C" fn lingyao_client_dictionary_collections(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -148,9 +148,9 @@ pub unsafe extern "C" fn msime_client_dictionary_collections(
 /// 诊断包。请求 `{state_root: 偏好目录, include: {crash_logs, performance_logs, input_events, config_snapshot}, sources: {crash_logs, performance_logs, input_events: 绝对路径|null}, destination: 绝对路径|null}`。输入事件和性能记录逐行按白名单（只许 `t_ms`、`kind` 枚举、`duration_ms`）校验，不合规的行丢弃并计数；配置快照里的凭据换成 `"<redacted>"`。有 `destination` 时写出 zip，返回 `{path, bytes, counts}`；没有时返回 `{counts, sections}`，`sections` 就是上传 MCP 快照的那个对象。失败时 `error` 是 `diagnostics_*` 错误码。
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_diagnostic_bundle(
+pub unsafe extern "C" fn lingyao_client_diagnostic_bundle(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -193,9 +193,9 @@ struct AccountSettingsExportRequest {
 /// 把本机设置导出成账号设置文档的键值。请求 `{preferences_directory, feedback?: {soundEnabled, hapticsEnabled, hapticStrength}|null, custom_keyboard_skins?: JSON 数组字符串|null, android_local?: {同步键: 值}|null, schema?: 服务端字段表|null, cloud?: 云端文档 {revision, settings}|null}`。`android_local` 是 Android 本地设置文件里参与同步的值（应用主题、单手、按键细节、工具栏的常用语/输入方式/隐藏、手写、离线语音），不在表里或取值不合规的键不导出。结果 `{settings, merged?}`：`settings` 已按本机版本过滤，带 `schema` 时只留字段表收录的键；同时带 `schema` 和 `cloud` 时 `merged` 是合并后的整份文档，宿主拿它按 `revision` 做 CAS 上传。凭据和诊断日志永远不导出；隐私模式、开发者选项和语音数据贡献只在 Android 本地设置里，也不在可同步的键里。
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_account_settings_export(
+pub unsafe extern "C" fn lingyao_client_account_settings_export(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -258,9 +258,9 @@ struct AccountSettingsApplyRequest {
 /// 把云端设置文档应用到本机偏好并保存。请求 `{preferences_directory, cloud: {revision, settings}, schema, feedback?: 宿主当前的按键反馈|null}`；文档里有按键反馈的键而没有传 `feedback` 时失败。取值不认识或超出本机范围的键只跳过它自己。结果 `{preferences: 保存后的快照, feedback: 应用后的按键反馈|null（宿主写回自己的存储）, custom_keyboard_skins: 云端的皮肤库 JSON|null（宿主合并进自己的皮肤库）, android_local: {同步键: 值}（宿主写回本地设置文件）, skipped: [键名]}`。偏好在锁内按读到的修订号比较并交换写回，期间被别处改过时以 `preferences changed; reload before saving` 失败。
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_account_settings_apply(
+pub unsafe extern "C" fn lingyao_client_account_settings_apply(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {

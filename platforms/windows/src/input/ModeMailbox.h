@@ -4,7 +4,7 @@
 #include "MainTransport.h"
 #include "ReplyCodec.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct ModePresentation {
   FocusLease lease;
   // Activation does not carry these values. Unknown is not an assumed default.
@@ -96,4 +96,4 @@ private:
   bool stopped_ = false;
   std::optional<ModePresentation> latest_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

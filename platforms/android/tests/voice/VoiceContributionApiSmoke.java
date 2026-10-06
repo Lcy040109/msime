@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 /** 语音贡献的本地校验：WAV 头、大小、时长与字段。 */
 public final class VoiceContributionApiSmoke {

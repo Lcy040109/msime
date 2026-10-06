@@ -1,4 +1,4 @@
-import app.msime.android.ChineseSymbolFaces;
+import app.lingyao.android.ChineseSymbolFaces;
 
 public final class ChineseSymbolFacesSmoke {
     private static void check(boolean condition, String message) {

@@ -3,10 +3,10 @@
 #include <cstddef>
 #include <string_view>
 
-#include "../../../shared/contracts/msime_edition.h"
+#include "../../../shared/contracts/lingyao_edition.h"
 
 // Scheme behaviour the Windows Server and TIP decide from a view's `scheme` number or from the configured scheme. The view publishes `chinese_text`, `script_conversion`, `spelling_symbols` and `candidate_list_open` itself, and those are read from the view where it is at hand; everything here is either a host-only trait or an Engine trait the view does not carry. An unknown scheme number answers false everywhere, the way host-api reads `SchemeType::from_u8`. scripts/test-scheme-traits-parity.py checks every Engine mirror below against crates/engine/src/types.rs.
-namespace msime::windows::scheme
+namespace lingyao::windows::scheme
 {
 // The Engine's `SchemeType` ordinals (crates/engine/src/types.rs), as they appear in a view's `scheme`.
 constexpr int Quanpin = 0;
@@ -31,13 +31,13 @@ constexpr bool CapsLockBypassExempt(int scheme) { return scheme == Korean || sch
 // 字母直接组成要写的文字（一个韩文音节、一个越南文词、一串藏文音节），而不是经候选转换的读音。TIP 从自己的宿主会话写出这段文字（ReplyPath::SyllableCommit），没有词可以取字，组字之外的任何按键都会结束它。
 constexpr bool LetterComposition(int scheme) { return scheme == Korean || scheme == Vietnamese || scheme == Tibetan; }
 
-// Candidates appear only in a list the user opens (MSIME_OPEN_CANDIDATE_LIST: the Korean Hanja list, the Zhuyin list), and that list's keys follow common/KoreanHanjaKey.h rather than the Chinese navigation bindings.
+// Candidates appear only in a list the user opens (LINGYAO_OPEN_CANDIDATE_LIST: the Korean Hanja list, the Zhuyin list), and that list's keys follow common/KoreanHanjaKey.h rather than the Chinese navigation bindings.
 constexpr bool OpensCandidateList(int scheme) { return scheme == Korean || scheme == Zhuyin; }
 
 // The composition is always drawn inline whatever the preedit display preference says: until a list is opened there is no candidate window to show it in, and hidden it would be text the user cannot see being written.
 constexpr bool AlwaysInlinePreedit(int scheme) { return LetterComposition(scheme) || OpensCandidateList(scheme); }
 
-// 第一次 Esc 把正在组的词重新显示为打过的按键并继续组字，只有按键已经显示出来时的 Esc 才丢弃它（crates/engine/src/ime/mod.rs 的 `restore_vietnamese_raw` 和 `restore_tibetan_raw`）。TIP 和 Server 各为这个键发一次 MSIME_CANCEL，两边的会话走同一步。
+// 第一次 Esc 把正在组的词重新显示为打过的按键并继续组字，只有按键已经显示出来时的 Esc 才丢弃它（crates/engine/src/ime/mod.rs 的 `restore_vietnamese_raw` 和 `restore_tibetan_raw`）。TIP 和 Server 各为这个键发一次 LINGYAO_CANCEL，两边的会话走同一步。
 constexpr bool CancelRestoresRaw(int scheme) { return scheme == Vietnamese || scheme == Tibetan; }
 
 
@@ -239,7 +239,7 @@ constexpr std::string_view scheme_name(int scheme)
     }
 }
 
-// Which of the Cantonese, Zhuyin and Stroke dictionaries are installed (language-dictionaries/msime-cantonese.db, msime-zhuyin.db and msime-stroke.db beside the resources).
+// Which of the Cantonese, Zhuyin and Stroke dictionaries are installed (language-dictionaries/lingyao-cantonese.db, lingyao-zhuyin.db and lingyao-stroke.db beside the resources).
 struct LanguageDictionaryPresence
 {
     bool cantonese = false;
@@ -277,14 +277,14 @@ constexpr OfferedSchemes all_schemes()
     return result;
 }
 
-// 本次构建的版本提供的方案（shared/contracts/msime_edition.h）。
+// 本次构建的版本提供的方案（shared/contracts/lingyao_edition.h）。
 constexpr OfferedSchemes edition_schemes()
 {
-    constexpr const char *names[] = {MSIME_EDITION_INPUT_SCHEMES};
+    constexpr const char *names[] = {LINGYAO_EDITION_INPUT_SCHEMES};
     OfferedSchemes result;
     for (const char *name : names)
         result.offered[scheme_from_name(name)] = true;
-    result.fallback = scheme_from_name(MSIME_EDITION_DEFAULT_SCHEME);
+    result.fallback = scheme_from_name(LINGYAO_EDITION_DEFAULT_SCHEME);
     return result;
 }
 
@@ -363,4 +363,4 @@ constexpr int mode_scheme(InputMode mode)
     }
     return Quanpin;
 }
-} // namespace msime::windows::scheme
+} // namespace lingyao::windows::scheme

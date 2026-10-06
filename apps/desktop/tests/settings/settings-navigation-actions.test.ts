@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsNavigationActions } from "@msime/ui";
+import { createSettingsNavigationActions } from "@lingyao/ui";
 
 test("creates available navigation and native actions", () => {
   const selectPage = vi.fn();

@@ -452,7 +452,7 @@ static FLUSH_WORKER: LazyLock<&'static FlushWorker> = LazyLock::new(|| {
         wake: Condvar::new(),
     }));
     std::thread::Builder::new()
-        .name("msime-personal-context".to_owned())
+        .name("lingyao-personal-context".to_owned())
         .spawn(move || worker.run())
         .expect("the personal context flush thread could not be started");
     worker
@@ -884,7 +884,7 @@ mod tests {
         );
     }
 
-    /// user_dictionary_journal.cpp:445-452: the reference opened msime's journal per call, so the thread that writes the queue keeps no journal handle of its own afterwards.
+    /// user_dictionary_journal.cpp:445-452: the reference opened lingyao's journal per call, so the thread that writes the queue keeps no journal handle of its own afterwards.
     #[test]
     fn the_thread_that_writes_the_queue_keeps_no_journal_handle() {
         use super::super::journal::{release_thread_journal, thread_holds_journal};

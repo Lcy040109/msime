@@ -7,9 +7,9 @@
 
 #include "CandidateSkinCatalog.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// One entry of the 主题 menu both frontends draw: a global theme from msime_client_theme_catalog, or an installed skin package, which selects the custom theme drawn over that package the way the settings page's package card does. The host keeps no copy of the theme ids or titles; they all come from the shared catalogue.
+// One entry of the 主题 menu both frontends draw: a global theme from lingyao_client_theme_catalog, or an installed skin package, which selects the custom theme drawn over that package the way the settings page's package card does. The host keeps no copy of the theme ids or titles; they all come from the shared catalogue.
 struct ThemeChoice {
   std::string id;
   std::string title;
@@ -93,4 +93,4 @@ inline void apply_theme_choice(nlohmann::json &preferences, const nlohmann::json
   }
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

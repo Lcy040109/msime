@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-@interface CursorProbeButton : MSIMECandidateButton
+@interface CursorProbeButton : LINGYAOCandidateButton
 @property(nonatomic, strong) NSCursor *capturedCursor;
 @property(nonatomic) NSRect capturedRect;
 @end
@@ -20,7 +20,7 @@ int main()
     @autoreleasepool
     {
         [NSApplication sharedApplication];
-        MSIMECandidateButton *button = [MSIMECandidateButton buttonWithTitle:@"1  候选" target:nil action:nil];
+        LINGYAOCandidateButton *button = [LINGYAOCandidateButton buttonWithTitle:@"1  候选" target:nil action:nil];
         button.frame = NSMakeRect(0, 0, 160, 36);
         button.hoverColor = [NSColor colorWithSRGBRed:0.2 green:0.3 blue:0.4 alpha:0.5];
         [button updateTrackingAreas];

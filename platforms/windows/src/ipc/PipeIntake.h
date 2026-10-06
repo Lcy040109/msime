@@ -5,7 +5,7 @@
 #include <functional>
 #include <thread>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct IntakeStats {
   size_t queued = 0;
   size_t active = 0;
@@ -53,4 +53,4 @@ private:
   std::vector<std::thread> workers_;
   IntakeStats stats_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

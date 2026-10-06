@@ -1,7 +1,7 @@
 #pragma once
 
 // Scheme behaviour this host decides from a view's `scheme` number. The view publishes `chinese_text`, `script_conversion` and `candidate_list_open` itself, and those are read from the view; everything here is either a host-only trait or an Engine trait the view does not carry. An unknown scheme number answers false everywhere, the way host-api reads `SchemeType::from_u8`.
-namespace msime::mac::scheme
+namespace lingyao::mac::scheme
 {
 // The Engine's `SchemeType` ordinals (crates/engine/src/types.rs), as they appear in a view's `scheme`.
 constexpr int Quanpin = 0;
@@ -26,7 +26,7 @@ constexpr bool CapsLockBypassExempt(int scheme) { return scheme == Korean || sch
 // 字母直接拼出要写的文字（一个韩文音节、一个越南文词、一串藏文音节），而不是经候选转换的读音，所以没有可以取字的词。
 constexpr bool LetterComposition(int scheme) { return scheme == Korean || scheme == Vietnamese || scheme == Tibetan; }
 
-// Candidates appear only in a list the user opens with MSIME_OPEN_CANDIDATE_LIST (the Korean Hanja list, the Zhuyin list).
+// Candidates appear only in a list the user opens with LINGYAO_OPEN_CANDIDATE_LIST (the Korean Hanja list, the Zhuyin list).
 constexpr bool OpensCandidateList(int scheme) { return scheme == Korean || scheme == Zhuyin; }
 
 // The composition is always drawn inline whatever the preedit display preference says: until a list is opened there is no candidate window to show it in, and hidden it would be text the user cannot see being written.
@@ -62,4 +62,4 @@ constexpr bool WidensFullWidth(int scheme)
 
 // `shows_glosses`: candidates may carry translation glosses.
 constexpr bool ShowsGlosses(int scheme) { return scheme == Quanpin || scheme == Shuangpin || scheme == Wubi || scheme == Korean; }
-} // namespace msime::mac::scheme
+} // namespace lingyao::mac::scheme

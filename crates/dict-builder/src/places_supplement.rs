@@ -1,4 +1,4 @@
-//! `places-supplement`: generates msime-dictionary's `sources/pinyin/places.txt`, the administrative place names the shipped pinyin dictionary lacks or ranks too low, from the modood/Administrative-divisions-of-China tables `places` also reads.
+//! `places-supplement`: generates lingyao-dictionary's `sources/pinyin/places.txt`, the administrative place names the shipped pinyin dictionary lacks or ranks too low, from the modood/Administrative-divisions-of-China tables `places` also reads.
 //!
 //! Every province, prefecture-level and county-level division contributes its full name and, where one remains, its short name: the name without its administrative suffix (省, 自治区, 市, 自治州, 地区, 盟, 区, 县, 旗, 自治县, 自治旗, 特区, 林区, 矿区) and the ethnic names an autonomous division carries (广西壮族自治区 → 广西, 双江拉祜族佤族布朗族傣族自治县 → 双江). A short name must keep at least two Han characters, must not be an ethnic name itself, and a banner or autonomous county whose name ends in a position qualifier (土默特左旗, 喀喇沁左翼蒙古族自治县, 达尔罕茂明安联合旗) gets none, since the bare stem is not what the place is called.
 //!
@@ -10,7 +10,7 @@
 //!
 //! A floor must not take the first candidate of a key away from a common word either. The common weight is the 90th percentile (lower nearest rank) of the `sources/pinyin/rime-ice.txt` weights, computed from the data like the floors. When another word of the comparison set has the same full pinyin at a weight above it, the name's weight is capped one below that word's (盐城 under 严惩, 辽阳 under 疗养, 崇左 under 重做); a name whose capped weight is not above the weight it already has is not written. Words of the same key at or below the common weight do not cap the floor, since a rarer word should not keep a place name off the first position. Nor does a word whose weight is a placeholder: among the `sources/pinyin/rime-ice.txt` rows above the common weight, a single weight value held by more than `PLACEHOLDER_PERCENT`% of them is a fill-in value rather than a frequency (9999 holds thousands of such rows: 紧皱, 爆闪, 吃粥 ...), detected from the data like the common weight. Such a word is skipped and the highest other word of the key with a real weight decides the cap (锦州 is not held under 紧皱, while 盐城 stays under 严惩).
 //!
-//! The build merges the file before `custom/words.txt` with the same raise-only rule (`msime::apply_custom_words`): a missing row is inserted, a lower one raised, a higher one left alone.
+//! The build merges the file before `custom/words.txt` with the same raise-only rule (`lingyao::apply_custom_words`): a missing row is inserted, a lower one raised, a higher one left alone.
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt::Write as _;
@@ -814,7 +814,7 @@ pub struct Provenance<'a> {
     pub compared: &'a [(&'a str, &'a str)],
     /// `(path, sha256)` of the single-character readings.
     pub single_chars: (&'a str, &'a str),
-    /// 运行生成器的 msime 提交；构建器有未提交改动时带 `-dirty` 后缀。
+    /// 运行生成器的 lingyao 提交；构建器有未提交改动时带 `-dirty` 后缀。
     pub generator_commit: &'a str,
 }
 
@@ -835,10 +835,10 @@ pub fn render(supplement: &Supplement, provenance: &Provenance) -> String {
     let common = supplement.common;
     let placeholders = placeholder_list(&supplement.placeholders);
     let mut out = String::new();
-    let _ = writeln!(out, "# 行政区划地名补充表，由 msime 仓库提交 {} 的 crates/dict-builder/src/places_supplement.rs 以 `msime-dict-build places-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out sources/pinyin/places.txt` 生成；不要手工编辑。", provenance.generator_commit);
+    let _ = writeln!(out, "# 行政区划地名补充表，由 lingyao 仓库提交 {} 的 crates/dict-builder/src/places_supplement.rs 以 `lingyao-dict-build places-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out sources/pinyin/places.txt` 生成；不要手工编辑。", provenance.generator_commit);
     let _ = writeln!(out, "# 上游：https://github.com/modood/Administrative-divisions-of-China 提交 {} 的 dist/provinces.csv、dist/cities.csv、dist/areas.csv（WTFPL）。", provenance.upstream_commit);
     let _ = writeln!(out, "# 收录：省级、地级、县级区划的全称，以及去掉行政后缀（省、自治区、市、自治州、地区、盟、区、县、旗、自治县、自治旗、特区、林区（只用于神农架林区）、矿区）和民族名后至少两个汉字的简称；名称以左、右、前、后、中、合、左翼、右翼结尾的旗与自治县不取简称。排除区划代码末两位为 71–79 的功能区，名称含 {} 的单位（其中含 新区 的正式区划如 浦东新区 也一并排除；{} 是 清新+区，保留），泛名 {}，以及读音有争议、找不到权威出处的 {}。", EXCLUDED_FRAGMENTS.join("、"), FRAGMENT_EXCEPTIONS.join("、"), GENERIC_NAMES.join("、"), UNSOURCED_NAMES.join("、"));
-    let _ = writeln!(out, "# 读音：msime places.rs 的 READINGS 加逐字拼音，简称取全称读音的前几个音节。在 sources/pinyin/single-chars.txt 里有多个读音或没有收录的字，必须落在对照集合里同音的至少两字片段中，或是按固定读音（区 qu、县 xian、市 shi 等）读出的全称行政后缀，否则整词不收；音节不在该字读音之列的不收；对照集合里已有同词异音的不收（不论是否也有同音行），例外是除全称行政后缀外整词读音都来自 READINGS 里两字及以上的条目、且对照集合也有这个读音的词（六合 lu'he、宕昌 tan'chang）。");
+    let _ = writeln!(out, "# 读音：lingyao places.rs 的 READINGS 加逐字拼音，简称取全称读音的前几个音节。在 sources/pinyin/single-chars.txt 里有多个读音或没有收录的字，必须落在对照集合里同音的至少两字片段中，或是按固定读音（区 qu、县 xian、市 shi 等）读出的全称行政后缀，否则整词不收；音节不在该字读音之列的不收；对照集合里已有同词异音的不收（不论是否也有同音行），例外是除全称行政后缀外整词读音都来自 READINGS 里两字及以上的条目、且对照集合也有这个读音的词（六合 lu'he、宕昌 tan'chang）。");
     let _ = writeln!(out, "# 去重与权重：对照集合是 {compared}；字音表是 {single_chars}（SHA-256 {single_chars_sha256}）。权重下限由生成器从对照集合算出：省级、地级取同层同形（全称或简称）在对照集合里权重大于 {RANKED_WEIGHT} 的已有词的权重中位数，县级取 sources/pinyin/rime-ice.txt 全部行权重的中位数；本次为 {floors}。一个词出现在多个层级时取最高的下限。只写出对照集合里没有、或权重不超过 {RANKED_WEIGHT} 且低于下限的词，权重写下限；对照集合里权重已大于 {RANKED_WEIGHT} 的词保留原权重，不抬升。下限不抢常用词的首位：常用线取 sources/pinyin/rime-ice.txt 全部行权重的第 {COMMON_PERCENTILE} 百分位（本次为 {common}），对照集合里同一全拼的其他词最高权重超过常用线时，权重降到比它低 1（不超过下限），降后不高于已有权重的词不写出；比较时跳过权重为占位值的词，占位值是 rime-ice.txt 里权重超过常用线的行中被超过 {PLACEHOLDER_PERCENT}% 的行共用的单个权重值（本次为 {placeholders}），这类词不触发封顶，由同一全拼下其余非占位权重的最高者决定；构建的 places-supplement 阶段在 custom/words.txt 之前按只升不降并入：没有的插入，更低的调高到这里的权重，更高的不变。");
     for entry in &supplement.entries {
         let _ = writeln!(out, "{}\t{}\t{}", entry.word, entry.key, entry.weight);
@@ -1352,7 +1352,7 @@ mod tests {
         let lines: Vec<&str> = text.lines().collect();
         assert!(lines[0].starts_with("# 行政区划地名补充表"));
         assert!(
-            lines[0].contains("msime 仓库提交 0123456789abcdef0123456789abcdef01234567"),
+            lines[0].contains("lingyao 仓库提交 0123456789abcdef0123456789abcdef01234567"),
             "{}",
             lines[0]
         );
@@ -1375,7 +1375,7 @@ mod tests {
         assert!(text.ends_with('\n') && !text.contains('\r'));
         for line in body {
             assert!(
-                crate::msime::parse_custom_word(line).unwrap().is_some(),
+                crate::lingyao::parse_custom_word(line).unwrap().is_some(),
                 "{line}"
             );
         }

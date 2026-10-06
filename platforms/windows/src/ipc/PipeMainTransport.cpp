@@ -2,7 +2,7 @@
 #include <cstring>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 PipeMainTransport::PipeMainTransport(PipeRegistry &registry, DWORD timeout)
     : registry_(registry), timeout_(timeout) {
   if (!timeout || timeout == INFINITE)
@@ -37,4 +37,4 @@ KeyEventSendResult PipeMainTransport::send(const PipeTicket &ticket,
 void PipeMainTransport::close(const PipeTicket &ticket) noexcept {
   registry_.remove(ticket, FanyImePipeRole::Main);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

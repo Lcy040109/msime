@@ -6,7 +6,7 @@
 #include <memory>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // One I/O worker exclusively owns this connection. It does not own microphone
 // or TSF state, and may not execute callbacks while holding the UI/focus lock.
 // The dispatcher must separately bind/revalidate its Server-owned target lease
@@ -87,4 +87,4 @@ private:
   uint64_t last_request_;
   std::optional<uint64_t> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

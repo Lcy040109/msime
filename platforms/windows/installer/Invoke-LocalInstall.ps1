@@ -38,7 +38,7 @@ try {
         DesktopResourcesDirectory = $DesktopResourcesDirectory; Light = $Light
         ServerReleaseDirectory = 'target/windows-full/x64/bin'
         Tsf32ReleaseDirectory = 'target/windows-full/x86/bin'; Tsf64ReleaseDirectory = 'target/windows-full/x64/bin'
-        DesktopExecutable = 'target/windows-full/x64/bin/msime-client-settings.exe'
+        DesktopExecutable = 'target/windows-full/x64/bin/lingyao-client-settings.exe'
     }
     Invoke-InstallerStage (Join-Path $PSScriptRoot 'Sign-PackageBinaries-Local.ps1') @{}
     Invoke-InstallerStage (Join-Path $PSScriptRoot 'Compile-Installer.ps1') @{ Light = $Light }

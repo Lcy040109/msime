@@ -6,4 +6,4 @@
 // switcher are the same image rather than two drifting copies.
 #include "src/ipc/ServerResources.h"
 
-IDI_MSIME_LOGO ICON "installer/assets/icons/msime.ico"
+IDI_LINGYAO_LOGO ICON "installer/assets/icons/lingyao.ico"

@@ -20,11 +20,11 @@ uid_t link_owner(const std::filesystem::path &link) {
 } // namespace
 
 int main() {
-  using msime::linux_host::is_root_only_link;
-  using msime::linux_host::storage_directory_path_is_safe;
+  using lingyao::linux_host::is_root_only_link;
+  using lingyao::linux_host::storage_directory_path_is_safe;
   namespace fs = std::filesystem;
 
-  std::string pattern = (fs::temp_directory_path() / "msime-safe-path-XXXXXX").string();
+  std::string pattern = (fs::temp_directory_path() / "lingyao-safe-path-XXXXXX").string();
   const fs::path directory = ::mkdtemp(pattern.data());
   assert(!directory.empty());
   const auto canonical = fs::canonical(directory);

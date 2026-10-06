@@ -1,4 +1,4 @@
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #import <Foundation/Foundation.h>
 #include <sqlite3.h>
 #include <cassert>
@@ -7,12 +7,12 @@ int main() {
     @autoreleasepool {
         NSFileManager *files = NSFileManager.defaultManager;
         NSURL *directory = [NSURL fileURLWithPath:[NSTemporaryDirectory()
-            stringByAppendingPathComponent:[@"msime-host-cursor-" stringByAppendingString:NSUUID.UUID.UUIDString]]];
+            stringByAppendingPathComponent:[@"lingyao-host-cursor-" stringByAppendingString:NSUUID.UUID.UUIDString]]];
         NSError *error = nil;
         assert([files createDirectoryAtURL:directory withIntermediateDirectories:NO attributes:nil error:&error]);
         @try {
             sqlite3 *db = nullptr;
-            assert(sqlite3_open([[directory URLByAppendingPathComponent:@"msime-others.db"].path fileSystemRepresentation], &db) == SQLITE_OK);
+            assert(sqlite3_open([[directory URLByAppendingPathComponent:@"lingyao-others.db"].path fileSystemRepresentation], &db) == SQLITE_OK);
             const char *sql =
                 "CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);"
                 "CREATE TABLE kaomoji_catalog(kaomoji TEXT,keywords TEXT,sort_order INTEGER);"
@@ -26,7 +26,7 @@ int main() {
             assert(sqlite3_close(db) == SQLITE_OK);
             for (NSString *category in @[@"", @"kaomoji", @"symbols"]) {
                 auto request = ^NSDictionary *(NSUInteger offset, BOOL cursor) {
-                    return [MSIMEClientSession emojiCatalogRequest:@{
+                    return [LINGYAOClientSession emojiCatalogRequest:@{
                         @"resources": directory.path, @"category": category, @"search": @"match",
                         @"offset": @(offset), @"limit": @2, @"cursor": @(cursor)
                     }];
@@ -49,7 +49,7 @@ int main() {
                 assert(!legacy[@"error"] && [legacy[@"items"] count] == 1);
                 assert(!legacy[@"next_offset"] && !legacy[@"complete"]);
             }
-            NSDictionary *invalid = [MSIMEClientSession emojiCatalogRequest:@{@"resources": @"relative", @"cursor": @YES}];
+            NSDictionary *invalid = [LINGYAOClientSession emojiCatalogRequest:@{@"resources": @"relative", @"cursor": @YES}];
             assert(invalid[@"error"] != nil);
             puts("Native Objective-C/Rust/SQLite emoji cursor integration passed");
         } @finally {

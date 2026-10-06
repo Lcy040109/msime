@@ -1,5 +1,5 @@
-import app.msime.android.CandidateTextPolicy;
-import app.msime.android.WordCharacterPolicy.Edge;
+import app.lingyao.android.CandidateTextPolicy;
+import app.lingyao.android.WordCharacterPolicy.Edge;
 
 /** The host's half of 以词定字: what to commit when the Engine declines the candidate. */
 public final class CandidateTextPolicySmoke {

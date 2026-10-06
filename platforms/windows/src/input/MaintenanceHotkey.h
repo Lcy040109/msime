@@ -6,7 +6,7 @@
 
 #include <functional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Installs the global maintenance shortcuts on a low-level keyboard hook.
 //
 // A hook is what the reference uses and what these shortcuts require: they must
@@ -37,4 +37,4 @@ private:
   HHOOK hook_ = nullptr;
   static MaintenanceHotkeyController *instance_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

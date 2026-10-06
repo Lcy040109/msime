@@ -63,7 +63,7 @@ final class DoubaoVoiceCoordinator {
   }
 
   /// Runs a complete PCM recording using a host-injected codec. The codec is
-  /// normally backed by `MSIMEClientSession` and therefore keeps wire layout
+  /// normally backed by `LINGYAOClientSession` and therefore keeps wire layout
   /// ownership in client-core instead of duplicating it in Swift.
   func run(endpoint: URL, handshake: DoubaoHandshake, generation: UInt64,
            pcm: Data, codec: FrameCodec) async throws {

@@ -7,18 +7,18 @@ import subprocess
 import sys
 import tempfile
 
-if os.environ.get("MSIME_ISOLATED_LINUX_TEST") != "1":
+if os.environ.get("LINGYAO_ISOLATED_LINUX_TEST") != "1":
     sys.exit("Run only in the dedicated Linux test container")
 
 binary, library, resources = sys.argv[1:]
 host = ctypes.CDLL(library)
-for name in ("msime_client_prepare_host", "msime_client_create"):
+for name in ("lingyao_client_prepare_host", "lingyao_client_create"):
     function = getattr(host, name)
     function.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
     function.restype = ctypes.c_void_p
-host.msime_client_destroy.argtypes = [ctypes.c_uint64]
-host.msime_client_destroy.restype = ctypes.c_void_p
-host.msime_client_string_free.argtypes = [ctypes.c_void_p]
+host.lingyao_client_destroy.argtypes = [ctypes.c_uint64]
+host.lingyao_client_destroy.restype = ctypes.c_void_p
+host.lingyao_client_string_free.argtypes = [ctypes.c_void_p]
 
 
 def decode(pointer):
@@ -26,7 +26,7 @@ def decode(pointer):
     try:
         return json.loads(ctypes.string_at(pointer))
     finally:
-        host.msime_client_string_free(pointer)
+        host.lingyao_client_string_free(pointer)
 
 
 def native(name, document):
@@ -36,8 +36,8 @@ def native(name, document):
     return result["value"]
 
 
-with tempfile.TemporaryDirectory(prefix="msime-dictionary-cli-") as directory:
-    options = native("msime_client_prepare_host", {
+with tempfile.TemporaryDirectory(prefix="lingyao-dictionary-cli-") as directory:
+    options = native("lingyao_client_prepare_host", {
         "resources": resources, "state_root": directory,
     })
 
@@ -64,10 +64,10 @@ with tempfile.TemporaryDirectory(prefix="msime-dictionary-cli-") as directory:
         {"kind": "quick_phrase", "key": "fixture", "value": "测试短语", "weight": 12345},
         {"kind": "english", "key": "fixture", "value": "fixture", "weight": 12345},
     ]
-    session = native("msime_client_create", options)["session"]
+    session = native("lingyao_client_create", options)["session"]
     edit(None, entries[0], "busy-fixture", False)
     assert listing()["entries"] == [], "Busy edit changed the dictionary"
-    assert decode(host.msime_client_destroy(session))["ok"], "Cannot close fixture session"
+    assert decode(host.lingyao_client_destroy(session))["ok"], "Cannot close fixture session"
     for index, entry in enumerate(entries):
         edit(None, entry, f"add-fixture-{index}")
         edit(None, entry, f"add-fixture-{index}")

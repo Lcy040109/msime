@@ -29,7 +29,7 @@ def load(name, filename):
     return module
 
 
-online = load("ai_service_online_provider", "msime-linux-online-provider")
+online = load("ai_service_online_provider", "lingyao-linux-online-provider")
 
 PRIVATE = {
     "provider": "synthetic",
@@ -41,7 +41,7 @@ PRIVATE = {
 
 class AiServiceContract(unittest.TestCase):
     def setUp(self):
-        self.directory = tempfile.TemporaryDirectory(prefix="msime-ai-service-")
+        self.directory = tempfile.TemporaryDirectory(prefix="lingyao-ai-service-")
         self.addCleanup(self.directory.cleanup)
         path = Path(self.directory.name) / "ai-provider.json"
         path.write_text(json.dumps(PRIVATE))

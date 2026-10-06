@@ -1,7 +1,7 @@
 #include "DoubaoAsrClient.h"
 #include "DoubaoTranscript.h"
 #include "../../../../shared/voice/DoubaoAuth.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <nlohmann/json.hpp>
 #include <windows.h>
@@ -63,7 +63,7 @@ template <typename Build> std::vector<std::uint8_t> BuildFrame(Build build)
 std::vector<std::uint8_t> StartFrame(bool enable_itn, bool enable_punc, bool enable_ddc, const std::string &boosting_table_id)
 {
     return BuildFrame([&](std::uint8_t *output, std::size_t capacity, std::size_t *length) {
-        return msime_client_doubao_start_frame(enable_itn, enable_punc, enable_ddc,
+        return lingyao_client_doubao_start_frame(enable_itn, enable_punc, enable_ddc,
                                                reinterpret_cast<const std::uint8_t *>(boosting_table_id.data()),
                                                boosting_table_id.size(), output, capacity, length);
     });
@@ -73,7 +73,7 @@ std::vector<std::uint8_t> StartFrame(bool enable_itn, bool enable_punc, bool ena
 std::vector<std::uint8_t> AudioFrame(std::int32_t sequence, const std::uint8_t *pcm, std::size_t size, bool final_chunk)
 {
     return BuildFrame([&](std::uint8_t *output, std::size_t capacity, std::size_t *length) {
-        return msime_client_doubao_audio_frame(sequence, pcm, size, final_chunk, output, capacity, length);
+        return lingyao_client_doubao_audio_frame(sequence, pcm, size, final_chunk, output, capacity, length);
     });
 }
 
@@ -97,8 +97,8 @@ ParsedResponse ParseResponse(const std::vector<std::uint8_t> &message)
     ParsedResponse response;
     if (message.empty())
         return response;
-    const std::unique_ptr<char, decltype(&msime_client_string_free)> decoded(
-        msime_client_doubao_decode_frame(message.data(), message.size()), msime_client_string_free);
+    const std::unique_ptr<char, decltype(&lingyao_client_string_free)> decoded(
+        lingyao_client_doubao_decode_frame(message.data(), message.size()), lingyao_client_string_free);
     if (!decoded)
         return response;
     try
@@ -113,7 +113,7 @@ ParsedResponse ParseResponse(const std::vector<std::uint8_t> &message)
             return response;
         }
         response.last = value.at("last").get<bool>();
-        response.text = msime::windows::doubao_transcript(nlohmann::json::parse(value.at("payload").get<std::string>()));
+        response.text = lingyao::windows::doubao_transcript(nlohmann::json::parse(value.at("payload").get<std::string>()));
     }
     catch (...)
     {
@@ -149,7 +149,7 @@ bool ReceiveMessage(HINTERNET websocket, std::vector<std::uint8_t> &message)
 HINTERNET ConnectWebSocket(const std::string &endpoint, const std::string &auth_mode, const std::string &app_key, const std::string &access_key,
                            const std::string &resource_id, WinHttpHandle &session, WinHttpHandle &connection)
 {
-    const auto auth = msime::voice::doubao_auth_headers(auth_mode, app_key, access_key, resource_id);
+    const auto auth = lingyao::voice::doubao_auth_headers(auth_mode, app_key, access_key, resource_id);
     if (!auth)
         return nullptr;
     std::string crackable_endpoint = endpoint;

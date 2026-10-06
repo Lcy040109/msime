@@ -1,6 +1,6 @@
 import { testHost } from "../support/host";
 import { expect, test } from "vitest";
-import { settingsPlatformContext, type HostCapabilities } from "@msime/ui";
+import { settingsPlatformContext, type HostCapabilities } from "@lingyao/ui";
 
 const host = (platform: HostCapabilities["platform"], mobile_settings?: boolean) =>
   testHost({ platform, mobile_settings });

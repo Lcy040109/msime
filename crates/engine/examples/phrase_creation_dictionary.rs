@@ -9,7 +9,7 @@
 //! whole-sentence candidate, so `海滩跑步` leads the list whether or not it was ever stored. What
 //! separates the two is the abbreviation: a stored phrase answers `htpb`, a regenerated sentence
 //! does not.
-use msime_engine::host::{prepare_options, EngineOptions, Session};
+use lingyao_engine::host::{prepare_options, EngineOptions, Session};
 
 const KEYS: &str = "haitanpaobu";
 const ABBREVIATION: &str = "htpb";

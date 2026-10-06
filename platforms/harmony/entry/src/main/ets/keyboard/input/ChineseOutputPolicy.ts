@@ -2,7 +2,7 @@ import { SchemeTraits } from "../SchemeTraits";
 
 /**
  * Simplified/Traditional output boundary, ported from
- * platforms/android/java/app/msime/android/ChineseOutputPolicy.java.
+ * platforms/android/java/app/lingyao/android/ChineseOutputPolicy.java.
  *
  * Only the schemes the switch applies to (`script_conversion_applies`) convert: Japanese, Korean and Vietnamese have nothing to convert, and Cantonese and Zhuyin are Traditional as typed. A converter that fails must not lose the text, so any error falls back to the original.
  */

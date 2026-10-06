@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string_view>
 
-namespace msime::windows
+namespace lingyao::windows
 {
 inline bool valid_candidate_url(std::string_view url, bool allow_http = false)
 {
@@ -57,4 +57,4 @@ inline bool valid_candidate_header_value(std::string_view value)
         return ch == '\t' || (ch >= 0x20 && ch != 0x7f);
     });
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

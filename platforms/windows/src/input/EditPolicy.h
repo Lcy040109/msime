@@ -3,7 +3,7 @@
 #include <string_view>
 #include <nlohmann/json.hpp>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class TsfPreeditStyle { Local, Pinyin, Empty };
 inline TsfPreeditStyle preference_tsf_preedit_style(const nlohmann::json &p) {
   const auto value = p.value("tsf_preedit_style", "raw");
@@ -95,4 +95,4 @@ inline EditKind edit_kind(const FanyImeNamedpipeData &packet,
     return EditKind::Character;
   return EditKind::None;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

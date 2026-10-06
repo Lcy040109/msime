@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""A stand-in for msime-voice-local that speaks its stdin/stdout protocol without a model.
+"""A stand-in for lingyao-voice-local that speaks its stdin/stdout protocol without a model.
 
-LocalVoiceRequestTest points MSIME_VOICE_LOCAL_HELPER here. The session's language picks a behaviour, so each case drives one helper path:
+LocalVoiceRequestTest points LINGYAO_VOICE_LOCAL_HELPER here. The session's language picks a behaviour, so each case drives one helper path:
 - anything else: one partial per audio message counting the samples so far, and on finish a final naming the sample count and the hotwords the start carried;
 - "exit": the process exits as soon as audio arrives, as a crashed helper would;
 - "error": the start fails the way a model that will not load does.
-Every request line is appended to the file named by MSIME_LOCAL_VOICE_FIXTURE_LOG, so the test can check what was sent after the request is gone.
+Every request line is appended to the file named by LINGYAO_LOCAL_VOICE_FIXTURE_LOG, so the test can check what was sent after the request is gone.
 """
 import base64
 import json
 import os
 import sys
 
-log_path = os.environ.get("MSIME_LOCAL_VOICE_FIXTURE_LOG")
+log_path = os.environ.get("LINGYAO_LOCAL_VOICE_FIXTURE_LOG")
 
 
 def emit(message):

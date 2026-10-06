@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   const FocusLease lease{{42, {1, 2, 3}}, 1, 1};
   PendingReply reply{};
   reply.source.client_id = 42;

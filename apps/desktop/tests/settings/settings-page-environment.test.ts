@@ -1,6 +1,6 @@
 import { testHost } from "../support/host";
 import { expect, test } from "vitest";
-import { settingsPageEnvironment } from "@msime/ui";
+import { settingsPageEnvironment } from "@lingyao/ui";
 
 test("combines host context and capability projection", () => {
   const environment = settingsPageEnvironment({

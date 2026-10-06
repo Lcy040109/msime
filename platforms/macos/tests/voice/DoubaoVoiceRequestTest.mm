@@ -42,7 +42,7 @@ int main(int argc, const char *argv[]) {
             @{@"asr_token":@"fixture-token", @"doubao_enable_itn":@1}
         ]) {
             NSError *error = nil;
-            assert(![[MSIMEDoubaoVoiceRequest alloc] initWithOptions:invalid error:&error] && error);
+            assert(![[LINGYAODoubaoVoiceRequest alloc] initWithOptions:invalid error:&error] && error);
         }
         // An unset mode is the API key route even with an App ID stored.
         for (NSString *path in @[@"/api", @"/legacy", @"/unset", @"/masked-app", @"/trimmed", @"/trimmed-legacy"]) {
@@ -56,7 +56,7 @@ int main(int argc, const char *argv[]) {
                 snapshot[@"asr_app_key"] = @" stale-fixture-app ";
                 snapshot[@"asr_resource_id"] = @" volc.bigasr.sauc.duration ";
             }
-            MSIMEDoubaoVoiceRequest *request = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:snapshot error:nil];
+            LINGYAODoubaoVoiceRequest *request = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:snapshot error:nil];
             assert(request);
             snapshot[@"asr_token"] = @"changed-after-snapshot";
             __block BOOL partial = NO, final = NO;
@@ -76,7 +76,7 @@ int main(int argc, const char *argv[]) {
             Until(^BOOL { return final; });
             assert(calls == 2);
         }
-        // The failures MSIME-Windows names carry its sentence, with the credential hint for the console in use; the rest keep only the generic description. None carries the token.
+        // The failures LINGYAO-Windows names carry its sentence, with the credential hint for the console in use; the rest keep only the generic description. None carries the token.
         NSMutableDictionary *refusedLegacy = [options(@"/refused") mutableCopy];
         refusedLegacy[@"asr_endpoint"] = @"ws://127.0.0.1:1/refused";
         refusedLegacy[@"doubao_auth_mode"] = @"legacy";
@@ -86,12 +86,12 @@ int main(int argc, const char *argv[]) {
             @[options(@"/redirect"), @"无法连接豆包语音识别。请检查 API Key 和接口地址。"],
             @[refusedLegacy, @"无法连接豆包语音识别。请检查 App ID、Access Token 和接口地址。"]];
         for (NSArray *failure in failures) {
-            MSIMEDoubaoVoiceRequest *request = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:failure[0] error:nil];
+            LINGYAODoubaoVoiceRequest *request = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:failure[0] error:nil];
             id expected = failure[1];
             __block BOOL failed = NO;
             assert([request startWithResult:^(NSString *text, BOOL final, NSError *error) {
                 assert(NSThread.isMainThread && final && error && !text);
-                assert([error.domain isEqual:@"app.msime.client.voice.doubao"]);
+                assert([error.domain isEqual:@"app.lingyao.client.voice.doubao"]);
                 if (expected == NSNull.null) assert(error.userInfo.count == 1);
                 else assert(error.userInfo.count == 2 && [error.userInfo[NSLocalizedFailureReasonErrorKey] isEqual:expected]);
                 assert(![error.userInfo.description containsString:@"fixture-token"]);
@@ -100,7 +100,7 @@ int main(int argc, const char *argv[]) {
             Until(^BOOL { return failed; });
         }
         // Streaming has no length cap: 61 s of audio, one second past the old limit, is all sent and recognised.
-        MSIMEDoubaoVoiceRequest *longStream = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:options(@"/long") error:nil];
+        LINGYAODoubaoVoiceRequest *longStream = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:options(@"/long") error:nil];
         __block NSString *longFinal = nil;
         assert([longStream startWithResult:^(NSString *text, BOOL final, NSError *error) {
             assert(!error); if (final) longFinal = text;
@@ -109,7 +109,7 @@ int main(int argc, const char *argv[]) {
         assert([longStream finishWithError:nil]);
         Until(^BOOL { return longFinal != nil; }, 10);
         assert([longFinal isEqual:@"synthetic long 976000"]);
-        MSIMEDoubaoVoiceRequest *cancelled = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:options(@"/cancel") error:nil];
+        LINGYAODoubaoVoiceRequest *cancelled = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:options(@"/cancel") error:nil];
         __block BOOL heard = NO;
         __block NSUInteger calls = 0;
         assert([cancelled startWithResult:^(NSString *, BOOL final, NSError *error) {
@@ -121,10 +121,10 @@ int main(int argc, const char *argv[]) {
         assert(![cancelled finishWithError:nil] && ![cancelled appendPCM:PCM(1) error:nil]);
         [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
         assert(calls == 1);
-        __weak MSIMEDoubaoVoiceRequest *released;
+        __weak LINGYAODoubaoVoiceRequest *released;
         __block BOOL dropPartial = NO;
         @autoreleasepool {
-            MSIMEDoubaoVoiceRequest *drop = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:options(@"/drop") error:nil];
+            LINGYAODoubaoVoiceRequest *drop = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:options(@"/drop") error:nil];
             released = drop;
             assert([drop startWithResult:^(NSString *, BOOL final, NSError *error) {
                 assert(!final && !error); dropPartial = YES;
@@ -134,7 +134,7 @@ int main(int argc, const char *argv[]) {
             drop = nil;
         }
         Until(^BOOL { return released == nil; });
-        MSIMEDoubaoVoiceRequest *invalidPCM = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:options(@"/invalid-pcm") error:nil];
+        LINGYAODoubaoVoiceRequest *invalidPCM = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:options(@"/invalid-pcm") error:nil];
         __block BOOL rejected = NO;
         assert([invalidPCM startWithResult:^(NSString *text, BOOL final, NSError *error) {
             assert(!text && final && error); rejected = YES;
@@ -142,7 +142,7 @@ int main(int argc, const char *argv[]) {
         float nan = std::numeric_limits<float>::quiet_NaN();
         assert(![invalidPCM appendPCM:[NSData dataWithBytes:&nan length:sizeof(nan)] error:nil]);
         Until(^BOOL { return rejected; });
-        MSIMEDoubaoVoiceRequest *silent = [[MSIMEDoubaoVoiceRequest alloc] initWithOptions:options(@"/silent") error:nil];
+        LINGYAODoubaoVoiceRequest *silent = [[LINGYAODoubaoVoiceRequest alloc] initWithOptions:options(@"/silent") error:nil];
         __block BOOL timedOut = NO;
         assert([silent startWithResult:^(NSString *text, BOOL final, NSError *error) {
             assert(!text && final && error); timedOut = YES;

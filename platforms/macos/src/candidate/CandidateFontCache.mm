@@ -21,7 +21,7 @@ static void ClearCandidateFontCache() {
     os_unfair_lock_unlock(&CandidateFontCacheLock);
 }
 
-NSFontDescriptor *MSIMEInstalledFontFamilyDescriptor(NSString *family) {
+NSFontDescriptor *LINGYAOInstalledFontFamilyDescriptor(NSString *family) {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         CandidateFontCache = [NSMutableDictionary dictionary];

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
-import { CommunityGalleryHeading } from "@msime/ui";
+import { CommunityGalleryHeading } from "@lingyao/ui";
 
 afterEach(cleanup);
 

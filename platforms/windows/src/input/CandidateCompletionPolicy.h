@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // Shared Engine CandidateSource values. These sources represent complete
 // results in the Windows server; database/UserDatabase and AI candidates may
@@ -16,4 +16,4 @@ constexpr bool candidate_finishes_composition(uint8_t source) noexcept {
          source == 8u;    // Generated sentence
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

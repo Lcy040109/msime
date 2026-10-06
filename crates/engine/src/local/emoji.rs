@@ -168,7 +168,7 @@ mod tests {
     };
 
     fn fixture(dir: &Path) -> PathBuf {
-        let path = dir.join("msime-others.db");
+        let path = dir.join("lingyao-others.db");
         Connection::open(&path)
             .unwrap()
             .execute_batch(

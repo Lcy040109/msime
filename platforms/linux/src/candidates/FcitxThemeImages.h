@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The Fcitx5 classic UI draws a panel either as a flat colour rectangle or from a nine-slice image in the theme directory; rounded corners and a drop shadow are only possible through the image. This header draws those images and encodes them as PNG, which cairo reads natively on every Fcitx5 release, without a new dependency: the PNG is written with stored (uncompressed) deflate blocks, which every inflater accepts, and the images are a few kilobytes each. Geometry is given in logical pixels and drawn at an integer scale, so the theme can ship an @2x copy for Fcitx5 releases that load one.
 
@@ -237,4 +237,4 @@ inline std::string fcitx_png_encode(const FcitxCanvas &canvas) {
   return fcitx_png_encode(canvas.width(), canvas.height(), canvas.straight_rgba());
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

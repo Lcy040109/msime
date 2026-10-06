@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { DataDirectorySection } from "@msime/ui";
+import { DataDirectorySection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -14,7 +14,7 @@ test("data directory section reports a directory selection request", () => {
     <DataDirectorySection
       visible
       linux={false}
-      dataDirectory={{ path: "/Users/example/Library/Application Support/MSIME", isDefault: true }}
+      dataDirectory={{ path: "/Users/example/Library/Application Support/LINGYAO", isDefault: true }}
       busy={false}
       result=""
       onChoose={onChoose}
@@ -22,7 +22,7 @@ test("data directory section reports a directory selection request", () => {
   );
 
   expect(screen.getByText("数据目录")).toBeTruthy();
-  expect(screen.getByText("/Users/example/Library/Application Support/MSIME")).toBeTruthy();
+  expect(screen.getByText("/Users/example/Library/Application Support/LINGYAO")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "选择位置…" }));
   expect(onChoose).toHaveBeenCalledOnce();
 });
@@ -32,7 +32,7 @@ test("data directory section shows Linux credential note and status", () => {
     <DataDirectorySection
       visible
       linux
-      dataDirectory={{ path: "/home/example/.local/share/msime", isDefault: false }}
+      dataDirectory={{ path: "/home/example/.local/share/lingyao", isDefault: false }}
       busy
       result="数据已移动。设置窗口即将关闭。"
       onChoose={vi.fn()}

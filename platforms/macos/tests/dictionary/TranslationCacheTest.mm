@@ -1,6 +1,6 @@
 #import "../../src/cloud/TranslationCache.h"
 #include <cassert>
-@interface TestTranslationCache : MSIMETranslationCache
+@interface TestTranslationCache : LINGYAOTranslationCache
 @property(nonatomic) NSTimeInterval now;
 @end
 @implementation TestTranslationCache

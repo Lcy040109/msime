@@ -35,7 +35,7 @@
       "required": ["id", "display_name", "input_schemes", "default_scheme", "preference_defaults", "resources", "features", "language_dictionaries", "platforms"],
       "properties": {
         "id": {
-          "description": "版本 id，小写字母开头，只含小写字母和数字（不含连字符：它会拼进 `msime-linux-<id>-<版本>` 这类资产名，更新检查也只认这种 id）。写入后不能改名：它会成为状态目录、包名等标识的一部分，由 editions.frozen.json 守住。",
+          "description": "版本 id，小写字母开头，只含小写字母和数字（不含连字符：它会拼进 `lingyao-linux-<id>-<版本>` 这类资产名，更新检查也只认这种 id）。写入后不能改名：它会成为状态目录、包名等标识的一部分，由 editions.frozen.json 守住。",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*$"
         },
@@ -78,7 +78,7 @@
           "required": ["components"],
           "properties": {
             "components": {
-              "description": "resource_components 里的组件名。必须包含 core；full 包含全部组件。提供全拼、双拼或五笔的版本必须包含 chinese-main（msime-pinyin.db）；三者都不提供的版本（日文、越南文、藏文）不能包含 chinese-main 和 ngram：Engine 为它们准备的代次里没有 msime-pinyin.db，用户词库只收英文词。",
+              "description": "resource_components 里的组件名。必须包含 core；full 包含全部组件。提供全拼、双拼或五笔的版本必须包含 chinese-main（lingyao-pinyin.db）；三者都不提供的版本（日文、越南文、藏文）不能包含 chinese-main 和 ngram：Engine 为它们准备的代次里没有 lingyao-pinyin.db，用户词库只收英文词。",
               "type": "array",
               "minItems": 1,
               "uniqueItems": true,
@@ -111,7 +111,7 @@
           }
         },
         "language_dictionaries": {
-          "description": "本版本需要的语言词库，取值是 resources/language-dictionaries.lock.json 里的条目名。含 cantonese 方案的版本必须列出 msime-cantonese.db，含 zhuyin 的必须列出 msime-zhuyin.db，含 stroke 的必须列出 msime-stroke.db，不需要的不能列。",
+          "description": "本版本需要的语言词库，取值是 resources/language-dictionaries.lock.json 里的条目名。含 cantonese 方案的版本必须列出 lingyao-cantonese.db，含 zhuyin 的必须列出 lingyao-zhuyin.db，含 stroke 的必须列出 lingyao-stroke.db，不需要的不能列。",
           "type": "array",
           "uniqueItems": true,
           "items": { "type": "string" }
@@ -131,7 +131,7 @@
                 "input_method_bundle_id": {
                   "description": "InputMethodKit bundle 的 CFBundleIdentifier，也是它的 NSUserDefaults 域、os_log 子系统和 TIS 输入模式标识符的前缀；连接名是它加上 `_Connection`。不能等于另一个版本的 bundle id，也不能以另一个版本的 bundle id 加点开头，否则一个版本的输入模式会和另一个版本撞名。",
                   "type": "string",
-                  "pattern": "^app\\.msime\\.inputmethod\\.[A-Za-z][A-Za-z0-9]*$"
+                  "pattern": "^app\\.lingyao\\.inputmethod\\.[A-Za-z][A-Za-z0-9]*$"
                 },
                 "input_method_name": {
                   "description": "输入法 bundle 的文件名（不含 .app）和可执行文件名。Dock 和进程列表显示的就是它。",
@@ -141,7 +141,7 @@
                 "settings_bundle_id": {
                   "description": "设置应用（Tauri）的 bundle identifier，也是 Application Support 下状态目录的名字和设置应用的 NSUserDefaults 域。",
                   "type": "string",
-                  "pattern": "^app\\.msime\\.macos(\\.[a-z][a-z0-9]*)?$"
+                  "pattern": "^app\\.lingyao\\.macos(\\.[a-z][a-z0-9]*)?$"
                 },
                 "keychain_service": {
                   "description": "原生账号窗口存访问令牌的钥匙串服务名；刷新令牌存在它加上 `.refresh` 的服务名下。",
@@ -161,7 +161,7 @@
               }
             },
             "windows": {
-              "description": "Windows 的身份标识。所有版本的每个 GUID 两两不同（不区分大小写），名字类字段两两不同，一个版本的注册表键、目录不能嵌在另一个版本的里面，由 scripts/test-editions.py 检查；full 的值等于今天写死在 TSF、Server、安装器和 tauri.windows.conf.json 里的值。C++ 侧从 platforms/windows/scripts/edition_windows.py 生成的 shared/contracts/msime_edition.h 读，Inno Setup 从同一个脚本生成的 platforms/windows/installer/editions.iss 读，Rust 侧由 crates/client-core/src/edition.rs 解析。",
+              "description": "Windows 的身份标识。所有版本的每个 GUID 两两不同（不区分大小写），名字类字段两两不同，一个版本的注册表键、目录不能嵌在另一个版本的里面，由 scripts/test-editions.py 检查；full 的值等于今天写死在 TSF、Server、安装器和 tauri.windows.conf.json 里的值。C++ 侧从 platforms/windows/scripts/edition_windows.py 生成的 shared/contracts/lingyao_edition.h 读，Inno Setup 从同一个脚本生成的 platforms/windows/installer/editions.iss 读，Rust 侧由 crates/client-core/src/edition.rs 解析。",
               "type": [
                 "object",
                 "null"
@@ -346,14 +346,14 @@
                   "minLength": 1
                 },
                 "host_dll": {
-                  "description": "msime-host-api 的 DLL 文件名。TSF DLL 被加载进每个宿主应用，同一个进程里两个版本的 TIP 按导入表找同名 DLL 时会拿到先加载的那一个，所以每个版本的名字不同。",
+                  "description": "lingyao-host-api 的 DLL 文件名。TSF DLL 被加载进每个宿主应用，同一个进程里两个版本的 TIP 按导入表找同名 DLL 时会拿到先加载的那一个，所以每个版本的名字不同。",
                   "type": "string",
-                  "pattern": "^msime_host_api(_[a-z][a-z0-9]*)?\\.dll$"
+                  "pattern": "^lingyao_host_api(_[a-z][a-z0-9]*)?\\.dll$"
                 },
                 "tauri_identifier": {
-                  "description": "MSIME.exe（Tauri）的 identifier，决定它的应用数据目录和单实例互斥量。",
+                  "description": "LINGYAO.exe（Tauri）的 identifier，决定它的应用数据目录和单实例互斥量。",
                   "type": "string",
-                  "pattern": "^app\\.msime\\.windows(\\.[a-z][a-z0-9]*)?$"
+                  "pattern": "^app\\.lingyao\\.windows(\\.[a-z][a-z0-9]*)?$"
                 },
                 "installer_base_name": {
                   "description": "安装包文件名前缀，完整文件名是 `<installer_base_name>_v<版本>.exe`；不是 full 时必须是 packages/ui/src/settings/update-manifest.ts 认的 `LingyaoIME-<Id>_Setup`。",
@@ -363,7 +363,7 @@
               }
             },
             "linux": {
-              "description": "Linux 的身份标识。各版本是各自独立的安装包，可以同时安装：full 仍是今天装在 /usr 下的 msime-linux，包结构不变；其他版本整个装在自己的前缀（/opt/<package>）下，只有系统按名字查找的那几样（IBus 组件、Fcitx5 插件与输入法条目、systemd 用户单元、桌面入口、XDG 自启动项、图标和 /usr/bin 下的两个命令）装到系统目录，名字都带版本。所有版本的每个字段两两不同，一个版本的前缀不能嵌在另一个版本的前缀里，由 scripts/test-editions.py 检查；不是 full 的版本按版本 id 推出（package 是 msime-linux-<id>，其余字段同理）。full 的值等于今天写死在 CMake、IBus 组件、Fcitx5 配置和 tauri.linux.conf.json 里的值。systemd 用户单元、图标和 /usr/bin 命令名由 package 推出（<package>-online.socket、<package>-setup 等），Fcitx5 主题名与 fcitx5_addon 相同，登记的语言（IBus 的 `<language>`、Fcitx5 的 `LangCode`）由默认方案推出（中文方案是 zh / zh_CN，日文、越南文、藏文是 ja、vi、bo，见 platforms/linux/scripts/edition_linux.py 的 SCHEME_LANGUAGES），都不单独列在这里。C++ 侧读 platforms/linux/scripts/edition_linux.py 生成的 platforms/linux/src/core/LinuxEdition.h，Rust 侧由 crates/client-core/src/edition.rs 解析。",
+              "description": "Linux 的身份标识。各版本是各自独立的安装包，可以同时安装：full 仍是今天装在 /usr 下的 lingyao-linux，包结构不变；其他版本整个装在自己的前缀（/opt/<package>）下，只有系统按名字查找的那几样（IBus 组件、Fcitx5 插件与输入法条目、systemd 用户单元、桌面入口、XDG 自启动项、图标和 /usr/bin 下的两个命令）装到系统目录，名字都带版本。所有版本的每个字段两两不同，一个版本的前缀不能嵌在另一个版本的前缀里，由 scripts/test-editions.py 检查；不是 full 的版本按版本 id 推出（package 是 lingyao-linux-<id>，其余字段同理）。full 的值等于今天写死在 CMake、IBus 组件、Fcitx5 配置和 tauri.linux.conf.json 里的值。systemd 用户单元、图标和 /usr/bin 命令名由 package 推出（<package>-online.socket、<package>-setup 等），Fcitx5 主题名与 fcitx5_addon 相同，登记的语言（IBus 的 `<language>`、Fcitx5 的 `LangCode`）由默认方案推出（中文方案是 zh / zh_CN，日文、越南文、藏文是 ja、vi、bo，见 platforms/linux/scripts/edition_linux.py 的 SCHEME_LANGUAGES），都不单独列在这里。C++ 侧读 platforms/linux/scripts/edition_linux.py 生成的 platforms/linux/src/core/LinuxEdition.h，Rust 侧由 crates/client-core/src/edition.rs 解析。",
               "type": [
                 "object",
                 "null"
@@ -379,34 +379,34 @@
               ],
               "properties": {
                 "package": {
-                  "description": "deb 和 rpm 的包名，也是发布资产名的前缀、IBus 组件文件名、图标名，以及 systemd 用户单元和 /usr/bin 命令名的前缀。full 是 `msime-linux`；其他版本是 `msime-linux-<id>`。",
+                  "description": "deb 和 rpm 的包名，也是发布资产名的前缀、IBus 组件文件名、图标名，以及 systemd 用户单元和 /usr/bin 命令名的前缀。full 是 `lingyao-linux`；其他版本是 `lingyao-linux-<id>`。",
                   "type": "string",
-                  "pattern": "^msime-linux(-[a-z][a-z0-9]*)?$"
+                  "pattern": "^lingyao-linux(-[a-z][a-z0-9]*)?$"
                 },
                 "install_prefix": {
                   "description": "CMAKE_INSTALL_PREFIX。full 是 `/usr`；其他版本是 `/opt/<package>`，程序、词库、宿主库和文档都在这个前缀下，互不覆盖。",
                   "type": "string",
-                  "pattern": "^/(usr|opt/msime-linux-[a-z][a-z0-9]*)$"
+                  "pattern": "^/(usr|opt/lingyao-linux-[a-z][a-z0-9]*)$"
                 },
                 "client_directory": {
-                  "description": "每个用户的状态目录（$XDG_CONFIG_HOME/<client_directory>）、运行时目录（$XDG_RUNTIME_DIR/<client_directory>，放 panel-input.sock 等 socket 和状态文件）、自行下载的词库目录（$XDG_DATA_HOME/<client_directory>）和缓存目录的名字，也是前缀下 share、lib、doc 和 /etc 里的子目录名。full 是 `msime-client`；其他版本是 `msime-client-<id>`。",
+                  "description": "每个用户的状态目录（$XDG_CONFIG_HOME/<client_directory>）、运行时目录（$XDG_RUNTIME_DIR/<client_directory>，放 panel-input.sock 等 socket 和状态文件）、自行下载的词库目录（$XDG_DATA_HOME/<client_directory>）和缓存目录的名字，也是前缀下 share、lib、doc 和 /etc 里的子目录名。full 是 `lingyao-client`；其他版本是 `lingyao-client-<id>`。",
                   "type": "string",
-                  "pattern": "^msime-client(-[a-z][a-z0-9]*)?$"
+                  "pattern": "^lingyao-client(-[a-z][a-z0-9]*)?$"
                 },
                 "ibus_engine": {
-                  "description": "IBus 组件名和引擎名，也是 GNOME 输入源和 IBus preload-engines 里记的名字。full 是 `msime-linux`；其他版本是 `msime-linux-<id>`。",
+                  "description": "IBus 组件名和引擎名，也是 GNOME 输入源和 IBus preload-engines 里记的名字。full 是 `lingyao-linux`；其他版本是 `lingyao-linux-<id>`。",
                   "type": "string",
-                  "pattern": "^msime-linux(-[a-z][a-z0-9]*)?$"
+                  "pattern": "^lingyao-linux(-[a-z][a-z0-9]*)?$"
                 },
                 "fcitx5_addon": {
-                  "description": "Fcitx5 插件名和输入法条目名（addon 与 inputmethod 下的 <名字>.conf，插件库是 lib<名字>-fcitx5.so），也是宿主生成的 Fcitx5 主题名和 Omarchy 钩子名。full 是 `msime`；其他版本是 `msime-<id>`。",
+                  "description": "Fcitx5 插件名和输入法条目名（addon 与 inputmethod 下的 <名字>.conf，插件库是 lib<名字>-fcitx5.so），也是宿主生成的 Fcitx5 主题名和 Omarchy 钩子名。full 是 `lingyao`；其他版本是 `lingyao-<id>`。",
                   "type": "string",
-                  "pattern": "^msime(-[a-z][a-z0-9]*)?$"
+                  "pattern": "^lingyao(-[a-z][a-z0-9]*)?$"
                 },
                 "tauri_identifier": {
                   "description": "设置应用（Tauri）的 identifier，决定它的应用数据目录和单实例的 D-Bus 名。",
                   "type": "string",
-                  "pattern": "^app\\.msime\\.linux(\\.[a-z][a-z0-9]*)?$"
+                  "pattern": "^app\\.lingyao\\.linux(\\.[a-z][a-z0-9]*)?$"
                 }
               }
             },
@@ -417,12 +417,12 @@
               "required": ["application_id", "apk_name"],
               "properties": {
                 "application_id": {
-                  "description": "APK 的 applicationId，也是系统里的包名、私有数据目录和输入法服务的组件包名。full 是 `app.msime.android`；其他版本是它加上 `.<id>`，Gradle 里写成 flavor 的 applicationIdSuffix。",
+                  "description": "APK 的 applicationId，也是系统里的包名、私有数据目录和输入法服务的组件包名。full 是 `app.lingyao.android`；其他版本是它加上 `.<id>`，Gradle 里写成 flavor 的 applicationIdSuffix。",
                   "type": "string",
-                  "pattern": "^app\\.msime\\.android(\\.[a-z][a-z0-9]*)?$"
+                  "pattern": "^app\\.lingyao\\.android(\\.[a-z][a-z0-9]*)?$"
                 },
                 "apk_name": {
-                  "description": "build-apk.sh 产出、发布到 android-v 版本页的 APK 文件名（不含 `.apk`）。full 是 `msime-client`；其他版本是 `msime-client-<id>`。",
+                  "description": "build-apk.sh 产出、发布到 android-v 版本页的 APK 文件名（不含 `.apk`）。full 是 `lingyao-client`；其他版本是 `lingyao-client-<id>`。",
                   "type": "string",
                   "pattern": "^[a-z][a-z0-9-]*$"
                 }

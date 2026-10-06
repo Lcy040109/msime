@@ -23,7 +23,7 @@ import {
   type PluginPreferences,
   type Preferences,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -953,12 +953,12 @@ test("lists the built-in packs by their Chinese names, each under its own kind",
   const builtin: PluginCatalogResult = {
     packages: [
       pack({ id: "default", kind: "sound", name: "清脆键盘", builtin: true, mode: "keys" }),
-      pack({ id: "msime-typewriter", kind: "sound", name: "打字机", builtin: true, mode: "keys" }),
-      pack({ id: "msime-8bit", kind: "sound", name: "8 位游戏机", builtin: true, mode: "keys" }),
+      pack({ id: "lingyao-typewriter", kind: "sound", name: "打字机", builtin: true, mode: "keys" }),
+      pack({ id: "lingyao-8bit", kind: "sound", name: "8 位游戏机", builtin: true, mode: "keys" }),
       pack({ id: "twinkle", kind: "sound", name: "小星星", builtin: true, mode: "sequence" }),
-      pack({ id: "msime-canon", kind: "sound", name: "卡农", builtin: true, mode: "sequence" }),
+      pack({ id: "lingyao-canon", kind: "sound", name: "卡农", builtin: true, mode: "sequence" }),
       pack({
-        id: "msime-music-lofi",
+        id: "lingyao-music-lofi",
         kind: "music",
         name: "Lo-fi 午后",
         builtin: true,

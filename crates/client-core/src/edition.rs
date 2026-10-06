@@ -72,23 +72,23 @@ pub struct LinuxIdentity {
 }
 
 impl LinuxIdentity {
-    /// 本版本的一个 systemd 用户单元名，`unit` 是去掉包名前缀的部分，例如 `voice.socket` 得到 `msime-linux-wubi-voice.socket`；full 仍是 `msime-linux-voice.socket`。
+    /// 本版本的一个 systemd 用户单元名，`unit` 是去掉包名前缀的部分，例如 `voice.socket` 得到 `lingyao-linux-wubi-voice.socket`；full 仍是 `lingyao-linux-voice.socket`。
     pub fn user_unit(&self, unit: &str) -> String {
         format!("{}-{unit}", self.package)
     }
 
-    /// 本版本的首次配置命令名：full 是 `msime-linux-setup`，其他版本是 `msime-linux-<id>-setup`。
+    /// 本版本的首次配置命令名：full 是 `lingyao-linux-setup`，其他版本是 `lingyao-linux-<id>-setup`。
     pub fn setup_program(&self) -> String {
         format!("{}-setup", self.package)
     }
 
-    /// 本版本的设置应用启动命令名：full 是 `msime-linux-settings`，其他版本是 `msime-linux-<id>-settings`。
+    /// 本版本的设置应用启动命令名：full 是 `lingyao-linux-settings`，其他版本是 `lingyao-linux-<id>-settings`。
     pub fn settings_program(&self) -> String {
         format!("{}-settings", self.package)
     }
 }
 
-/// 一个版本在 Windows 上的身份标识（版本表 `platforms.windows`）。所有版本两两不同，多个版本可以同时安装，两个版本的 TIP 也可以被同一个应用同时加载。C++ 侧（TSF、Server、看门狗、设置窗口）读同一份值生成的 `shared/contracts/msime_edition.h`，Rust 侧在这里读；两边拼出来的管道、事件和目录名必须一样。
+/// 一个版本在 Windows 上的身份标识（版本表 `platforms.windows`）。所有版本两两不同，多个版本可以同时安装，两个版本的 TIP 也可以被同一个应用同时加载。C++ 侧（TSF、Server、看门狗、设置窗口）读同一份值生成的 `shared/contracts/lingyao_edition.h`，Rust 侧在这里读；两边拼出来的管道、事件和目录名必须一样。
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct WindowsIdentity {
@@ -120,9 +120,9 @@ pub struct WindowsIdentity {
     pub name_suffix: String,
     /// 看门狗的登录计划任务名。
     pub watchdog_task: String,
-    /// msime-host-api 的 DLL 文件名。
+    /// lingyao-host-api 的 DLL 文件名。
     pub host_dll: String,
-    /// MSIME.exe（Tauri）的 identifier。
+    /// LINGYAO.exe（Tauri）的 identifier。
     pub tauri_identifier: String,
     /// 安装包文件名前缀。
     pub installer_base_name: String,
@@ -313,12 +313,12 @@ impl Edition {
         self.offers(input)
     }
 
-    /// 本版本在 AI 助手配置文件 `mcpServers` 下登记 `msime-mcp` 用的键：full 仍是 `msime`，其他版本是 `msime-<id>`。多个版本同时安装时，每个版本各登记一条，互不覆盖。
+    /// 本版本在 AI 助手配置文件 `mcpServers` 下登记 `lingyao-mcp` 用的键：full 仍是 `lingyao`，其他版本是 `lingyao-<id>`。多个版本同时安装时，每个版本各登记一条，互不覆盖。
     pub fn mcp_server_name(&self) -> String {
         if self.is_full() {
-            "msime".to_owned()
+            "lingyao".to_owned()
         } else {
-            format!("msime-{}", self.id)
+            format!("lingyao-{}", self.id)
         }
     }
 
@@ -346,7 +346,7 @@ impl Edition {
         self.platforms.linux.as_ref()
     }
 
-    /// 安装包里声明版本的文件名。macOS 的设置应用把它放在 `Contents/Resources/` 下，Windows 的安装包把它放在 Server 目录（`MSIME.exe`、`msime-mcp.exe` 所在的目录）下，Linux 的安装包把它放在前缀的 `bin` 目录（`msime-linux-desktop`、`msime-mcp` 所在的目录）下，内容是 `{"edition": "<id>"}`。full 的包不带这个文件，所以 full 的包与引入版本之前相同。
+    /// 安装包里声明版本的文件名。macOS 的设置应用把它放在 `Contents/Resources/` 下，Windows 的安装包把它放在 Server 目录（`LINGYAO.exe`、`lingyao-mcp.exe` 所在的目录）下，Linux 的安装包把它放在前缀的 `bin` 目录（`lingyao-linux-desktop`、`lingyao-mcp` 所在的目录）下，内容是 `{"edition": "<id>"}`。full 的包不带这个文件，所以 full 的包与引入版本之前相同。
     pub const PACKAGE_MARKER_FILE: &'static str = "edition.json";
 
     /// 读取安装包里的版本声明（见 [`Edition::PACKAGE_MARKER_FILE`]）。文件不存在时是 full；文件存在但读不了、不是合法的声明、或声明了版本表里没有的 id 时是错误：一个声明了版本的包不能被当成 full 运行，否则它会去读写 full 的状态目录和输入法。
@@ -369,7 +369,7 @@ impl Edition {
             .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "unknown edition"))
     }
 
-    /// 本进程所在 macOS 安装包声明的版本。设置应用和 `msime-mcp` 的可执行文件都在 `<App>.app/Contents/MacOS/` 下，声明在 `Contents/Resources/edition.json`（[`Edition::PACKAGE_MARKER_FILE`]）。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
+    /// 本进程所在 macOS 安装包声明的版本。设置应用和 `lingyao-mcp` 的可执行文件都在 `<App>.app/Contents/MacOS/` 下，声明在 `Contents/Resources/edition.json`（[`Edition::PACKAGE_MARKER_FILE`]）。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
     ///
     /// 声明坏了（读不了、不是合法的声明、或者是本构建不认识的版本）时是错误而不是 full：一个声明了版本的包不能去停、去改 full 的输入法和状态目录。设置应用启动时就检查它，坏了直接退出。
     pub fn of_macos_bundle() -> Result<&'static Edition, &'static str> {
@@ -377,7 +377,7 @@ impl Edition {
         *EDITION.get_or_init(|| {
             let executable =
                 std::env::current_exe().map_err(|_| "cannot locate the running executable")?;
-            // macOS 的 `current_exe` 返回的是启动时用的路径，不解析符号链接；从 PATH 里的链接（如 `~/.local/bin/msime`）启动 `msime-mcp` 时要先找到链接指向的安装包，否则五笔等版本会被当成 full。
+            // macOS 的 `current_exe` 返回的是启动时用的路径，不解析符号链接；从 PATH 里的链接（如 `~/.local/bin/lingyao`）启动 `lingyao-mcp` 时要先找到链接指向的安装包，否则五笔等版本会被当成 full。
             let executable = std::fs::canonicalize(&executable).unwrap_or(executable);
             let Some(contents) = executable.parent().and_then(Path::parent) else {
                 return Ok(Self::full());
@@ -387,7 +387,7 @@ impl Edition {
         })
     }
 
-    /// 本进程所在 Windows 安装包声明的版本。`MSIME.exe` 和 `msime-mcp.exe` 安装在 Server 目录里，声明是同目录下的 [`Edition::PACKAGE_MARKER_FILE`]；只有管理员能写 Program Files，普通进程改不了它。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
+    /// 本进程所在 Windows 安装包声明的版本。`LINGYAO.exe` 和 `lingyao-mcp.exe` 安装在 Server 目录里，声明是同目录下的 [`Edition::PACKAGE_MARKER_FILE`]；只有管理员能写 Program Files，普通进程改不了它。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
     ///
     /// 声明坏了时是错误而不是 full，理由同 [`Edition::of_macos_bundle`]：一个声明了版本的包不能去连 full 的 Server、改 full 的状态目录。
     pub fn of_windows_package() -> Result<&'static Edition, &'static str> {
@@ -395,7 +395,7 @@ impl Edition {
         *EDITION.get_or_init(Self::declared_beside_executable)
     }
 
-    /// 本进程所在 Linux 安装包声明的版本。`msime-linux-desktop` 和 `msime-mcp` 安装在前缀的 `bin` 目录里，声明是同目录下的 [`Edition::PACKAGE_MARKER_FILE`]；full 装在 `/usr` 下，不带这个文件，其他版本装在 root 才能写的 `/opt/<package>` 下。`/usr/bin` 里指向其他版本的命令是符号链接，`current_exe` 解析到的是链接的目标，所以读到的是目标所在前缀的声明。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
+    /// 本进程所在 Linux 安装包声明的版本。`lingyao-linux-desktop` 和 `lingyao-mcp` 安装在前缀的 `bin` 目录里，声明是同目录下的 [`Edition::PACKAGE_MARKER_FILE`]；full 装在 `/usr` 下，不带这个文件，其他版本装在 root 才能写的 `/opt/<package>` 下。`/usr/bin` 里指向其他版本的命令是符号链接，`current_exe` 解析到的是链接的目标，所以读到的是目标所在前缀的声明。没有这个文件就是 full：full 的包、开发运行和测试进程都是这样。只在第一次调用时读，之后返回同一个结果。
     ///
     /// 声明坏了时是错误而不是 full，理由同 [`Edition::of_macos_bundle`]：一个声明了版本的包不能去连 full 的 socket、改 full 的状态目录。
     pub fn of_linux_package() -> Result<&'static Edition, &'static str> {
@@ -599,7 +599,7 @@ mod tests {
             }
         );
         assert_eq!(full.display_name.zh_hans, "灵耀输入法");
-        assert_eq!(full.display_name.en, "MSIME");
+        assert_eq!(full.display_name.en, "LINGYAO");
     }
 
     #[test]
@@ -612,7 +612,7 @@ mod tests {
         assert_eq!(pinyin.default_scheme, InputScheme::Quanpin);
         assert!(pinyin.features.temporary_japanese);
         assert_eq!(pinyin.display_name.zh_hans, "灵耀拼音");
-        assert_eq!(pinyin.display_name.en, "MSIME Pinyin");
+        assert_eq!(pinyin.display_name.en, "LINGYAO Pinyin");
     }
 
     #[test]
@@ -627,7 +627,7 @@ mod tests {
         assert!(wubi.offers(InputScheme::Wubi));
         assert!(!wubi.offers(InputScheme::Quanpin));
         assert_eq!(wubi.display_name.zh_hans, "灵耀五笔");
-        assert_eq!(wubi.display_name.en, "MSIME Wubi");
+        assert_eq!(wubi.display_name.en, "LINGYAO Wubi");
     }
 
     /// 日文、越南文和藏文各是只有一个方案的版本：默认方案就是它，不带临时日文和键盘神经联想，也没有任何版本默认值。
@@ -638,15 +638,15 @@ mod tests {
                 "japanese",
                 InputScheme::Japanese,
                 "灵耀日语",
-                "MSIME Japanese",
+                "LINGYAO Japanese",
             ),
             (
                 "vietnamese",
                 InputScheme::Vietnamese,
                 "灵耀越南语",
-                "MSIME Vietnamese",
+                "LINGYAO Vietnamese",
             ),
-            ("tibetan", InputScheme::Tibetan, "灵耀藏文", "MSIME Tibetan"),
+            ("tibetan", InputScheme::Tibetan, "灵耀藏文", "LINGYAO Tibetan"),
         ] {
             let edition = Edition::by_id(id).unwrap();
             assert_eq!(edition.input_schemes, [scheme], "{id}");
@@ -669,7 +669,7 @@ mod tests {
             assert!(edition.language_dictionaries.is_empty(), "{id}");
             assert_eq!(edition.display_name.zh_hans, zh_hans);
             assert_eq!(edition.display_name.en, en);
-            assert_eq!(edition.mcp_server_name(), format!("msime-{id}"));
+            assert_eq!(edition.mcp_server_name(), format!("lingyao-{id}"));
         }
     }
 
@@ -741,14 +741,14 @@ mod tests {
 
     #[test]
     fn full_keeps_the_mcp_server_name_and_the_others_get_their_own() {
-        assert_eq!(Edition::full().mcp_server_name(), "msime");
+        assert_eq!(Edition::full().mcp_server_name(), "lingyao");
         assert_eq!(
             Edition::by_id("wubi").unwrap().mcp_server_name(),
-            "msime-wubi"
+            "lingyao-wubi"
         );
         assert_eq!(
             Edition::by_id("pinyin").unwrap().mcp_server_name(),
-            "msime-pinyin"
+            "lingyao-pinyin"
         );
     }
 
@@ -800,7 +800,7 @@ mod tests {
             .collect()
     }
 
-    /// full 的资源锁逐字节就是原文件，代次与引入版本之前相同：用户词库目录 `user/dictionaries/<代次>` 不变，升级不会重新准备。期望值是按当前这份锁（msime-dictionary 的 `dict-v2.0.14`）算出的代次；换词库版本时它理应变化，届时连同锁文件一起更新。
+    /// full 的资源锁逐字节就是原文件，代次与引入版本之前相同：用户词库目录 `user/dictionaries/<代次>` 不变，升级不会重新准备。期望值是按当前这份锁（lingyao-dictionary 的 `dict-v2.0.14`）算出的代次；换词库版本时它理应变化，届时连同锁文件一起更新。
     #[test]
     fn full_keeps_the_desktop_lock_and_its_generation() {
         let full = Edition::full();
@@ -848,21 +848,21 @@ mod tests {
         }
     }
 
-    /// 五笔版不带临时日文和整句重排模型，带五笔码表 msime-wubi.db、五笔混拼要用的 msime-pinyin.db 和整句词格要用的 n-gram 表。
+    /// 五笔版不带临时日文和整句重排模型，带五笔码表 lingyao-wubi.db、五笔混拼要用的 lingyao-pinyin.db 和整句词格要用的 n-gram 表。
     #[test]
     fn the_wubi_lock_leaves_out_japanese_and_the_sentence_model() {
         let set = Edition::by_id("wubi").unwrap().resource_set().unwrap();
         assert_eq!(
             artifact_names(&set),
             BTreeSet::from([
-                "msime-bigram.bin",
-                "msime-dictionary-manifest.json",
-                "msime-english.db",
-                "msime-pinyin.db",
-                "msime-others.db",
-                "msime-scowl_Copyright.txt",
-                "msime-trigram.bin",
-                "msime-wubi.db",
+                "lingyao-bigram.bin",
+                "lingyao-dictionary-manifest.json",
+                "lingyao-english.db",
+                "lingyao-pinyin.db",
+                "lingyao-others.db",
+                "lingyao-scowl_Copyright.txt",
+                "lingyao-trigram.bin",
+                "lingyao-wubi.db",
             ])
         );
         assert_ne!(
@@ -875,20 +875,20 @@ mod tests {
         );
     }
 
-    /// 日文、越南文和藏文版只带核心资源（英文词库及其 SCOWL 许可声明、符号表和清单），日文版另带日文词典和两份 Mozc 许可文本；三者都不带 msime-pinyin.db、msime-wubi.db、n-gram 表和整句模型。
+    /// 日文、越南文和藏文版只带核心资源（英文词库及其 SCOWL 许可声明、符号表和清单），日文版另带日文词典和两份 Mozc 许可文本；三者都不带 lingyao-pinyin.db、lingyao-wubi.db、n-gram 表和整句模型。
     #[test]
     fn the_language_edition_locks_carry_no_chinese_dictionary() {
         let core = BTreeSet::from([
-            "msime-dictionary-manifest.json",
-            "msime-english.db",
-            "msime-others.db",
-            "msime-scowl_Copyright.txt",
+            "lingyao-dictionary-manifest.json",
+            "lingyao-english.db",
+            "lingyao-others.db",
+            "lingyao-scowl_Copyright.txt",
         ]);
         let mut japanese = core.clone();
         japanese.extend([
-            "msime-japanese.dat",
-            "msime-mozc_dictionary_oss_README.txt",
-            "msime-mozc_LICENSE.txt",
+            "lingyao-japanese.dat",
+            "lingyao-mozc_dictionary_oss_README.txt",
+            "lingyao-mozc_LICENSE.txt",
         ]);
         let full_generation = Edition::full()
             .resource_set()
@@ -1051,13 +1051,13 @@ mod tests {
         let full = Edition::full().macos().unwrap();
         assert_eq!(
             full.input_method_bundle_id,
-            "app.msime.inputmethod.LingyaoIME"
+            "app.lingyao.inputmethod.LingyaoIME"
         );
         assert_eq!(full.input_method_bundle_name(), "灵耀输入法.app");
-        assert_eq!(full.settings_bundle_id, "app.msime.macos");
-        assert_eq!(full.keychain_service, "com.lingyao.msime.account");
-        assert_eq!(full.cask, "msime");
-        assert_eq!(full.dmg_prefix, "msime-macos");
+        assert_eq!(full.settings_bundle_id, "app.lingyao.macos");
+        assert_eq!(full.keychain_service, "com.lingyao.ime.account");
+        assert_eq!(full.cask, "lingyao");
+        assert_eq!(full.dmg_prefix, "lingyao-macos");
         let wubi = Edition::by_id("wubi").unwrap().macos().unwrap();
         assert_eq!(wubi.input_method_bundle_name(), "灵耀五笔.app");
         // 还没有 macOS 段的版本（值为 null）不参与比较，由引入该平台的阶段补齐。
@@ -1080,27 +1080,27 @@ mod tests {
         let full = Edition::full().windows().unwrap();
         assert_eq!(full.clsid, "{E3062E9A-D834-4637-8958-ED8CFA427D01}");
         assert_eq!(full.registry_key, r"Software\Lingyao\LingyaoIME");
-        assert_eq!(full.state_directory, "MSIME-Client");
+        assert_eq!(full.state_directory, "LINGYAO-Client");
         assert_eq!(
             full.data_dir_environment_variable,
             "LINGYAO_IME_DATA_DIR"
         );
-        assert_eq!(full.host_dll, "msime_host_api.dll");
+        assert_eq!(full.host_dll, "lingyao_host_api.dll");
         assert_eq!(full.tsf_guids.len(), 14);
         assert_eq!(
             full.pipe_name("FanyImeAuxNamedPipe"),
             r"\\.\pipe\FanyImeAuxNamedPipe"
         );
         assert_eq!(
-            full.named(r"Local\MSIME.Client.ClipboardHistoryChanged"),
-            r"Local\MSIME.Client.ClipboardHistoryChanged"
+            full.named(r"Local\LINGYAO.Client.ClipboardHistoryChanged"),
+            r"Local\LINGYAO.Client.ClipboardHistoryChanged"
         );
         let wubi = Edition::by_id("wubi").unwrap().windows().unwrap();
         assert_eq!(
             wubi.pipe_name("FanyImeAuxNamedPipe"),
             r"\\.\pipe\FanyImeAuxNamedPipe.wubi"
         );
-        assert_eq!(wubi.state_directory, "MSIME-Client-wubi");
+        assert_eq!(wubi.state_directory, "LINGYAO-Client-wubi");
         // 还没有 Windows 段的版本（值为 null）不参与比较，由引入该平台的阶段补齐。
         let sections: Vec<_> = Edition::all().iter().filter_map(Edition::windows).collect();
         assert!(sections.len() >= 3);
@@ -1119,26 +1119,26 @@ mod tests {
     #[test]
     fn full_keeps_its_linux_identifiers_and_the_others_derive_theirs_from_the_id() {
         let full = Edition::full().linux().unwrap();
-        assert_eq!(full.package, "msime-linux");
+        assert_eq!(full.package, "lingyao-linux");
         assert_eq!(full.install_prefix, "/usr");
-        assert_eq!(full.client_directory, "msime-client");
-        assert_eq!(full.ibus_engine, "msime-linux");
-        assert_eq!(full.fcitx5_addon, "msime");
-        assert_eq!(full.tauri_identifier, "app.msime.linux");
-        assert_eq!(full.user_unit("voice.socket"), "msime-linux-voice.socket");
-        assert_eq!(full.setup_program(), "msime-linux-setup");
-        assert_eq!(full.settings_program(), "msime-linux-settings");
+        assert_eq!(full.client_directory, "lingyao-client");
+        assert_eq!(full.ibus_engine, "lingyao-linux");
+        assert_eq!(full.fcitx5_addon, "lingyao");
+        assert_eq!(full.tauri_identifier, "app.lingyao.linux");
+        assert_eq!(full.user_unit("voice.socket"), "lingyao-linux-voice.socket");
+        assert_eq!(full.setup_program(), "lingyao-linux-setup");
+        assert_eq!(full.settings_program(), "lingyao-linux-settings");
         let wubi = Edition::by_id("wubi").unwrap().linux().unwrap();
-        assert_eq!(wubi.package, "msime-linux-wubi");
-        assert_eq!(wubi.install_prefix, "/opt/msime-linux-wubi");
-        assert_eq!(wubi.client_directory, "msime-client-wubi");
-        assert_eq!(wubi.ibus_engine, "msime-linux-wubi");
-        assert_eq!(wubi.fcitx5_addon, "msime-wubi");
+        assert_eq!(wubi.package, "lingyao-linux-wubi");
+        assert_eq!(wubi.install_prefix, "/opt/lingyao-linux-wubi");
+        assert_eq!(wubi.client_directory, "lingyao-client-wubi");
+        assert_eq!(wubi.ibus_engine, "lingyao-linux-wubi");
+        assert_eq!(wubi.fcitx5_addon, "lingyao-wubi");
         assert_eq!(
             wubi.user_unit("voice.socket"),
-            "msime-linux-wubi-voice.socket"
+            "lingyao-linux-wubi-voice.socket"
         );
-        assert_eq!(wubi.setup_program(), "msime-linux-wubi-setup");
+        assert_eq!(wubi.setup_program(), "lingyao-linux-wubi-setup");
         // 还没有 Linux 段的版本（值为 null）不参与比较，由引入该平台的阶段补齐。
         let sections: Vec<_> = Edition::all().iter().filter_map(Edition::linux).collect();
         assert!(sections.len() >= 3);
@@ -1154,7 +1154,7 @@ mod tests {
         assert!(Edition::of_linux_package().unwrap().is_full());
         assert_eq!(
             Edition::linux_package_identity().unwrap().client_directory,
-            "msime-client"
+            "lingyao-client"
         );
     }
 
@@ -1163,7 +1163,7 @@ mod tests {
         assert!(Edition::of_windows_package().unwrap().is_full());
         assert_eq!(
             Edition::windows_package_identity().unwrap().state_directory,
-            "MSIME-Client"
+            "LINGYAO-Client"
         );
     }
 

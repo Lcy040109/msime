@@ -1,12 +1,12 @@
 //! 桌面按需下载的资源包。macOS 发布包不再内置日文词典和粤拼/注音/笔画词库，由设置页在用户选用对应方案时下载；手写模型在第一次打开手写面板时下载（Windows 只在 Ink 没有中文识别器、Linux 只在安装前缀里没有随包模型时才需要）；桌面落定重排模型在打开「桌面神经联想」时下载，三个桌面平台都是这样。
 //!
-//! 资源包装在 `<state_root>/resource-packs/<id>/`，state_root 就是偏好目录（`PreferencesStore::directory`：macOS 上是 `macos_launch` 解析出的 preferences_directory，Windows 上是 Server 的 DataDir，Linux 上是运行时选项里的状态目录），也是 host-api 查找已下载资源包的同一个目录。下载、校验和整体发布由 `msime_client_core::resource_packs` 完成；这里只负责决定本机提供哪些资源包、在命令线程之外运行安装、把进度作为 `resource-pack-progress` 事件发给页面，并与语音模型共用 `LocalModelInstalls` 的取消和互斥登记。
+//! 资源包装在 `<state_root>/resource-packs/<id>/`，state_root 就是偏好目录（`PreferencesStore::directory`：macOS 上是 `macos_launch` 解析出的 preferences_directory，Windows 上是 Server 的 DataDir，Linux 上是运行时选项里的状态目录），也是 host-api 查找已下载资源包的同一个目录。下载、校验和整体发布由 `lingyao_client_core::resource_packs` 完成；这里只负责决定本机提供哪些资源包、在命令线程之外运行安装、把进度作为 `resource-pack-progress` 事件发给页面，并与语音模型共用 `LocalModelInstalls` 的取消和互斥登记。
 
 use crate::voice::local_models::{run_install, saved_model_mirror, LocalModelInstalls};
 use crate::{DictionaryHostOptions, HostActionError, PreferencesStore};
-use msime_client_core::edition::Edition;
-use msime_client_core::preferences::{ChineseScheme, InputScheme, Preferences};
-use msime_client_core::resource_packs::{self, PackState, ResourcePack, ResourcePackStatus};
+use lingyao_client_core::edition::Edition;
+use lingyao_client_core::preferences::{ChineseScheme, InputScheme, Preferences};
+use lingyao_client_core::resource_packs::{self, PackState, ResourcePack, ResourcePackStatus};
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -58,18 +58,18 @@ impl Installation {
             handwriting_model: crate::handwriting_model_without_pack(host_options),
             ink_chinese_recognizer: ink_chinese_recognizer(),
             settled_model: host_options
-                .and_then(msime_host_api::packaged_settled_model)
+                .and_then(lingyao_host_api::packaged_settled_model)
                 .is_some(),
             // 还没有运行时选项（Linux 首次运行）时不知道装了什么，按带齐处理，与设置页可选方案的判断一致。
             language_dictionaries: host_options
-                .is_none_or(msime_host_api::packaged_language_dictionaries),
+                .is_none_or(lingyao_host_api::packaged_language_dictionaries),
         }
     }
 }
 
 #[cfg(target_os = "windows")]
 fn ink_chinese_recognizer() -> bool {
-    msime_host_windows::ink::has_chinese_recognizer()
+    lingyao_host_windows::ink::has_chinese_recognizer()
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -271,7 +271,7 @@ pub(crate) fn ensure_saved_packs<R: tauri::Runtime>(app: tauri::AppHandle<R>) {
             .await
         };
         let Ok(Some((needed, statuses))) = loaded else {
-            eprintln!("msime: resource packs: cannot read preferences");
+            eprintln!("lingyao: resource packs: cannot read preferences");
             return;
         };
         let installs = app.state::<LocalModelInstalls>();
@@ -285,7 +285,7 @@ pub(crate) fn ensure_saved_packs<R: tauri::Runtime>(app: tauri::AppHandle<R>) {
             }
             if let Err(error) = install_pack(&app, &installs, store.clone(), pack).await {
                 eprintln!(
-                    "msime: resource pack {} was not installed: {}",
+                    "lingyao: resource pack {} was not installed: {}",
                     pack.id(),
                     error.code
                 );
@@ -337,7 +337,7 @@ mod tests {
             needed_packs(Scheme::Quanpin, Some(Last::Zhuyin)),
             [ResourcePack::LanguageDictionaries]
         );
-        // 笔画也读语言词库里的 msime-stroke.db。
+        // 笔画也读语言词库里的 lingyao-stroke.db。
         assert_eq!(
             needed_packs(Scheme::Stroke, None),
             [ResourcePack::LanguageDictionaries]
@@ -575,14 +575,14 @@ mod tests {
         for pack in ResourcePack::ALL {
             let key = install_key(pack);
             assert!(key.starts_with("resource-pack:"));
-            assert!(!msime_client_core::is_bounded_ascii_identifier(&key, 128));
+            assert!(!lingyao_client_core::is_bounded_ascii_identifier(&key, 128));
         }
         assert!(known_pack("japanese").is_ok());
         assert!(known_pack("settled-model").is_ok());
         assert_eq!(known_pack("voice").unwrap_err().code, "local_model_unknown");
     }
 
-    /// state_root 下已完整安装的手写资源包里的模型才算数：缺少 `msime-model.json` 的目录可能是中断的安装。
+    /// state_root 下已完整安装的手写资源包里的模型才算数：缺少 `lingyao-model.json` 的目录可能是中断的安装。
     #[test]
     fn downloaded_handwriting_model_needs_a_published_pack() {
         let state = tempfile::tempdir().unwrap();
@@ -594,7 +594,7 @@ mod tests {
         std::fs::write(&model, b"placeholder").unwrap();
         assert_eq!(crate::downloaded_handwriting_model(Some(&document)), None);
         std::fs::write(
-            pack.join(msime_client_core::voice::local_models::MANIFEST_FILE),
+            pack.join(lingyao_client_core::voice::local_models::MANIFEST_FILE),
             serde_json::to_vec(&ResourcePack::Handwriting.manifest()).unwrap(),
         )
         .unwrap();
@@ -616,7 +616,7 @@ mod tests {
         let pack = resource_packs::root(state.path()).join(ResourcePack::Handwriting.id());
         std::fs::create_dir_all(&pack).unwrap();
         std::fs::write(
-            pack.join(msime_client_core::voice::local_models::MANIFEST_FILE),
+            pack.join(lingyao_client_core::voice::local_models::MANIFEST_FILE),
             serde_json::to_vec(&ResourcePack::Handwriting.manifest()).unwrap(),
         )
         .unwrap();

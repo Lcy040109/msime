@@ -4,12 +4,12 @@ import Foundation
 ///
 /// App Group 标识只写在这里一处，其他代码一律引用 `appGroupIdentifier`：`UserDefaults(suiteName:) ?? .standard` 和 `containerURL(...)` 在标识不对时不报错，漏改的那一处会悄悄读写另一份数据。放在这个文件里，是因为 iOS App、键盘扩展、各测试目标和 Tauri 公共组件的 iOS 工程都编译它。
 ///
-/// 版本身份写在 App 和键盘扩展各自的 Info.plist 里，键名与 macOS 相同（platforms/macos/src/core/EditionIdentity.h）：`MSIMEEdition` 是版本 id，`MSIMEInputSchemes` 是本版本提供的方案，`MSIMEDefaultScheme` 是回退方案，`MSIMEWubiMixedPinyinDefault` 是五笔混拼的默认值。full 不带这些键，没有 `MSIMEEdition` 就是 full，每个值都取引入版本之前的那个；测试进程同样读到 full。其他版本的 App Group 是 full 的标识加 `.<版本 id>`，两个版本同时装在一台设备上也不会读写对方的数据。只有 iOS 读 Info.plist，macOS 等平台编译这个文件时始终是 full，它们的版本身份另有来源。
-enum MSIMEAppEdition {
+/// 版本身份写在 App 和键盘扩展各自的 Info.plist 里，键名与 macOS 相同（platforms/macos/src/core/EditionIdentity.h）：`LINGYAOEdition` 是版本 id，`LINGYAOInputSchemes` 是本版本提供的方案，`LINGYAODefaultScheme` 是回退方案，`LINGYAOWubiMixedPinyinDefault` 是五笔混拼的默认值。full 不带这些键，没有 `LINGYAOEdition` 就是 full，每个值都取引入版本之前的那个；测试进程同样读到 full。其他版本的 App Group 是 full 的标识加 `.<版本 id>`，两个版本同时装在一台设备上也不会读写对方的数据。只有 iOS 读 Info.plist，macOS 等平台编译这个文件时始终是 full，它们的版本身份另有来源。
+enum LINGYAOAppEdition {
   static let fullIdentifier = "full"
-  static let fullAppGroupIdentifier = "group.app.msime.ios"
+  static let fullAppGroupIdentifier = "group.app.lingyao.ios"
   static let fullDefaultScheme = "quanpin"
-  static let fullURLScheme = "msime"
+  static let fullURLScheme = "lingyao"
 
   #if os(iOS)
   private static var info: [String: Any] { Bundle.main.infoDictionary ?? [:] }
@@ -21,7 +21,7 @@ enum MSIMEAppEdition {
   static let identifier = identifier(in: info)
   /// App 与键盘扩展共用的 App Group，也是两者共用的钥匙串访问组。
   static let appGroupIdentifier = appGroupIdentifier(in: info)
-  /// 键盘扩展拉起本版本 App 用的 URL scheme，App 在 Info.plist 的 `CFBundleURLTypes` 里注册它。多个 App 声明同一个自定义 scheme 时由系统任选一个打开，所以每个版本各用一个：full 是 `msime`，其他版本是 `msime-<版本 id>`。
+  /// 键盘扩展拉起本版本 App 用的 URL scheme，App 在 Info.plist 的 `CFBundleURLTypes` 里注册它。多个 App 声明同一个自定义 scheme 时由系统任选一个打开，所以每个版本各用一个：full 是 `lingyao`，其他版本是 `lingyao-<版本 id>`。
   static let urlScheme = urlScheme(in: info)
   /// 本版本提供的方案（版本表里的方案名）；nil 表示 full，即全部方案。
   static let inputSchemes = inputSchemes(in: info)
@@ -36,7 +36,7 @@ enum MSIMEAppEdition {
   static func offers(_ scheme: String) -> Bool { inputSchemes?.contains(scheme) ?? true }
 
   static func identifier(in info: [String: Any]) -> String {
-    guard let value = info["MSIMEEdition"] as? String, !value.isEmpty else { return fullIdentifier }
+    guard let value = info["LINGYAOEdition"] as? String, !value.isEmpty else { return fullIdentifier }
     return value
   }
 
@@ -52,19 +52,19 @@ enum MSIMEAppEdition {
 
   static func inputSchemes(in info: [String: Any]) -> [String]? {
     guard identifier(in: info) != fullIdentifier,
-          let schemes = info["MSIMEInputSchemes"] as? [String], !schemes.isEmpty else { return nil }
+          let schemes = info["LINGYAOInputSchemes"] as? [String], !schemes.isEmpty else { return nil }
     return schemes
   }
 
   static func wubiMixedPinyinDefault(in info: [String: Any]) -> Bool {
     guard identifier(in: info) != fullIdentifier else { return false }
-    return info["MSIMEWubiMixedPinyinDefault"] as? Bool ?? false
+    return info["LINGYAOWubiMixedPinyinDefault"] as? Bool ?? false
   }
 
   /// 声明的默认方案不在本版本的方案里时取第一个方案，保证回退到的方案本版本一定能跑。
   static func defaultScheme(in info: [String: Any]) -> String {
     guard let schemes = inputSchemes(in: info) else { return fullDefaultScheme }
-    if let declared = info["MSIMEDefaultScheme"] as? String, schemes.contains(declared) { return declared }
+    if let declared = info["LINGYAODefaultScheme"] as? String, schemes.contains(declared) { return declared }
     return schemes[0]
   }
 }
@@ -263,7 +263,7 @@ struct BackendAccountClient: Sendable {
     request.httpMethod = method
     request.timeoutInterval = timeout
     request.httpBody = body
-    request.setValue("MSIME/Apple", forHTTPHeaderField: "User-Agent")
+    request.setValue("LINGYAO/Apple", forHTTPHeaderField: "User-Agent")
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
     if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
@@ -285,7 +285,7 @@ struct BackendAccountClient: Sendable {
     guard response.statusCode == 200 else { throw Failure(status: response.statusCode) }
     guard response.expectedContentLength <= maximumBytes,
           response.mimeType == mediaType else { throw Failure(status: 0) }
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-export-" + UUID().uuidString)
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-export-" + UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
     var complete = false
     defer { if !complete { try? FileManager.default.removeItem(at: directory) } }

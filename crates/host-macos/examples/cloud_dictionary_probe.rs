@@ -1,15 +1,15 @@
 //! Synthetic cross-process account/export fixture, with no account access.
 #[cfg(target_os = "macos")]
 fn main() {
-    use msime_host_macos::cloud_clipboard::{CloudClipboardError, CloudClipboardSession};
+    use lingyao_host_macos::cloud_clipboard::{CloudClipboardError, CloudClipboardSession};
     use std::io::Read;
     let mut ready = [0];
     std::io::stdin().read_exact(&mut ready).unwrap();
     let session = CloudClipboardSession::parse(
-        &std::env::var("MSIME_CLIENT_CLOUD_DICTIONARY_SESSION").unwrap(),
+        &std::env::var("LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION").unwrap(),
     )
     .unwrap();
-    assert!(std::env::var("MSIME_CLIENT_CLOUD_CLIPBOARD_SESSION").is_err());
+    assert!(std::env::var("LINGYAO_CLIENT_CLOUD_CLIPBOARD_SESSION").is_err());
     let listed = session
         .request_dictionary(
             &serde_json::json!({"operation":"list","kind":"pinyin","offset":100,"search":"合成"}),
@@ -29,7 +29,7 @@ fn main() {
         .unwrap();
     let path = exported["export_file"]["path"].as_str().unwrap();
     let size = exported["export_file"]["bytes"].as_u64().unwrap();
-    let text = msime_host_macos::cloud_dictionary::read_export(
+    let text = lingyao_host_macos::cloud_dictionary::read_export(
         std::path::Path::new(path),
         "dictionary-pinyin.tsv",
         size,

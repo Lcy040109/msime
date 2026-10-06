@@ -1,7 +1,7 @@
-//! `web` 子命令：从词库 release 的 `msime-pinyin.db`（全拼表与 `quick_parases`）和 `msime-wubi.db`（`wubi86`、`wubi98`）裁出网页内置输入法用的两个词库。两个输入先在临时副本里合成拆分前那种单个主库的布局，再按下面的规则裁剪，所以输出的表结构和拆分前一样。
+//! `web` 子命令：从词库 release 的 `lingyao-pinyin.db`（全拼表与 `quick_parases`）和 `lingyao-wubi.db`（`wubi86`、`wubi98`）裁出网页内置输入法用的两个词库。两个输入先在临时副本里合成拆分前那种单个主库的布局，再按下面的规则裁剪，所以输出的表结构和拆分前一样。
 //!
-//! - `msime-pinyin.db`：全拼与双拼共用。保留全部单字表 `tbl_1_*`，多字表 `tbl_{2..7,others}_*` 只保留全局按权重排名前 N 行，清空 `wubi86`、`wubi98` 和 `quick_parases`。
-//! - `msime-wubi86.db`：只保留 `wubi86`，清空全部全拼表、`wubi98` 和 `quick_parases`。
+//! - `lingyao-pinyin.db`：全拼与双拼共用。保留全部单字表 `tbl_1_*`，多字表 `tbl_{2..7,others}_*` 只保留全局按权重排名前 N 行，清空 `wubi86`、`wubi98` 和 `quick_parases`。
+//! - `lingyao-wubi86.db`：只保留 `wubi86`，清空全部全拼表、`wubi98` 和 `quick_parases`。
 //!
 //! 两个库都保留全部表结构和索引，被清空的表查询时返回空结果而不是报错。输出逐字节可复现：同一个输入跑两次得到相同的 sha256。
 
@@ -10,15 +10,15 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
-use msime_engine::format::{quanpin_table, SHIPPED_INITIALS};
+use lingyao_engine::format::{quanpin_table, SHIPPED_INITIALS};
 use rusqlite::types::Value;
 use rusqlite::{Connection, OpenFlags};
 
-use crate::msime::quanpin_tables;
+use crate::lingyao::quanpin_tables;
 use crate::sqlite;
 
-pub const PINYIN: &str = "msime-pinyin.db";
-pub const WUBI86: &str = "msime-wubi86.db";
+pub const PINYIN: &str = "lingyao-pinyin.db";
+pub const WUBI86: &str = "lingyao-wubi86.db";
 
 /// 默认保留的多字词行数，对应评测里的 d200000。
 pub const DEFAULT_KEEP_MULTI: usize = 200_000;
@@ -66,9 +66,9 @@ struct Tables {
 /// 两个输入库，都只读打开。
 #[derive(Clone, Copy)]
 pub struct Inputs<'a> {
-    /// release 的 `msime-pinyin.db`。
+    /// release 的 `lingyao-pinyin.db`。
     pub pinyin: &'a Path,
-    /// release 的 `msime-wubi.db`。
+    /// release 的 `lingyao-wubi.db`。
     pub wubi: &'a Path,
 }
 
@@ -154,7 +154,7 @@ fn open_read_only(path: &Path) -> Result<Connection> {
         .with_context(|| format!("opening {}", path.display()))
 }
 
-/// 把 `msime-wubi.db` 的表和索引原样复制进 `msime-pinyin.db` 的临时副本，得到拆分前单个主库的布局。行按 rowid 顺序复制：运行时反查五笔编码以 rowid 作最后的排序键。`msime-wubi.db` 里只能有 `wubi86`、`wubi98`（和 SQLite 自己的统计表），拼音库里也不能已有同名表，否则说明两个输入给反了或不是拆分后的 release。
+/// 把 `lingyao-wubi.db` 的表和索引原样复制进 `lingyao-pinyin.db` 的临时副本，得到拆分前单个主库的布局。行按 rowid 顺序复制：运行时反查五笔编码以 rowid 作最后的排序键。`lingyao-wubi.db` 里只能有 `wubi86`、`wubi98`（和 SQLite 自己的统计表），拼音库里也不能已有同名表，否则说明两个输入给反了或不是拆分后的 release。
 fn merge_wubi(connection: &mut Connection, wubi: &Path) -> Result<()> {
     let source = open_read_only(wubi)?;
     let mut statement = source.prepare(
@@ -188,7 +188,7 @@ fn merge_wubi(connection: &mut Connection, wubi: &Path) -> Result<()> {
                 |row| row.get(0),
             )?;
             if present {
-                bail!("the pinyin dictionary already has {name}; pass the msime-pinyin.db and msime-wubi.db of a split release");
+                bail!("the pinyin dictionary already has {name}; pass the lingyao-pinyin.db and lingyao-wubi.db of a split release");
             }
         }
         transaction.execute_batch(sql)?;

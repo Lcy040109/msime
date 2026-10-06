@@ -1,12 +1,12 @@
-use msime_client_core::host_surface::{PanelSurface, SurfaceRoute};
-use msime_host_macos::cloud_clipboard::CloudClipboardSession;
+use lingyao_client_core::host_surface::{PanelSurface, SurfaceRoute};
+use lingyao_host_macos::cloud_clipboard::CloudClipboardSession;
 use serde_json::Value;
 
 pub(crate) struct CloudState(Option<CloudClipboardSession>);
 impl CloudState {
     pub(crate) fn from_environment() -> Result<Self, &'static str> {
         super::native_cloud_session_from_environment(
-            "MSIME_CLIENT_CLOUD_CLIPBOARD_SESSION",
+            "LINGYAO_CLIENT_CLOUD_CLIPBOARD_SESSION",
             "Invalid native cloud session",
         )
         .map(Self)

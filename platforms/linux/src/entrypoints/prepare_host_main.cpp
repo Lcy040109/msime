@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include "../core/LinuxEdition.h"
 #include "../core/PreparePaths.h"
 #include "../core/PrepareState.h"
@@ -79,7 +79,7 @@ bool installer_account_state(const std::filesystem::path &state) {
   return !error && found;
 }
 
-using Owned = std::unique_ptr<char, decltype(&msime_client_string_free)>;
+using Owned = std::unique_ptr<char, decltype(&lingyao_client_string_free)>;
 
 nlohmann::json value_of(Owned raw) {
   if (!raw) throw std::runtime_error("host call failed");
@@ -88,7 +88,7 @@ nlohmann::json value_of(Owned raw) {
   return result.at("value");
 }
 
-// msime-linux-setup --update runs this once it has dictionaries matching the installed lock (staged in a new directory beside the recorded one, named in a copy of the options it publishes only after this succeeds) and the quiesce lease has closed both hosts' sessions: the same refresh the input method hosts run at startup, so the new generation is prepared and the user dictionary replayed into it the way the Windows installer replays it after an upgrade, without waiting for the next host start. Exit 3 is the one failure setup can explain itself: the recorded dictionaries still do not match this version.
+// lingyao-linux-setup --update runs this once it has dictionaries matching the installed lock (staged in a new directory beside the recorded one, named in a copy of the options it publishes only after this succeeds) and the quiesce lease has closed both hosts' sessions: the same refresh the input method hosts run at startup, so the new generation is prepared and the user dictionary replayed into it the way the Windows installer replays it after an upgrade, without waiting for the next host start. Exit 3 is the one failure setup can explain itself: the recorded dictionaries still do not match this version.
 int refresh(const std::filesystem::path &options) {
   if (!options.is_absolute()) {
     std::cerr << "The runtime options path must be absolute\n";
@@ -96,10 +96,10 @@ int refresh(const std::filesystem::path &options) {
   }
   try {
     umask(0077);
-    const bool rewritten = msime::linux_host::refresh_runtime_options(options);
+    const bool rewritten = lingyao::linux_host::refresh_runtime_options(options);
     std::cout << (rewritten ? "refreshed" : "current") << '\n';
     return std::cout ? 0 : 1;
-  } catch (const msime::linux_host::DictionaryOutdated &) {
+  } catch (const lingyao::linux_host::DictionaryOutdated &) {
     std::cerr << "The recorded dictionaries do not match this version; runtime options were left unchanged\n";
     return 3;
   } catch (...) {
@@ -113,24 +113,24 @@ int refresh(const std::filesystem::path &options) {
 void record_cloud_candidates(const std::filesystem::path &state, nlohmann::json &options, bool enabled) {
   const auto directory = state.string();
   auto snapshot = value_of(Owned(
-      msime_client_load_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size()),
-      msime_client_string_free));
+      lingyao_client_load_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size()),
+      lingyao_client_string_free));
   snapshot.at("preferences")["cloud_candidates"] = enabled;
   const auto revision = snapshot.at("revision").get<uint64_t>();
   const auto document = snapshot.dump();
   const auto saved = value_of(Owned(
-      msime_client_save_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size(), revision,
+      lingyao_client_save_preferences(reinterpret_cast<const uint8_t *>(directory.data()), directory.size(), revision,
                                     reinterpret_cast<const uint8_t *>(document.data()), document.size()),
-      msime_client_string_free));
+      lingyao_client_string_free));
   options["preferences"] = saved.at("preferences");
 }
 } // namespace
 
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "--help") {
-    std::cout << "Usage: msime-linux-prepare [--cloud-candidates|--no-cloud-candidates] <absolute-resource-directory> <absolute-new-state-directory>\n"
-                 "       msime-linux-prepare [--cloud-candidates|--no-cloud-candidates] --installed <absolute-new-state-directory>\n"
-                 "       msime-linux-prepare --refresh <absolute-runtime-options.json>\n"
+    std::cout << "Usage: lingyao-linux-prepare [--cloud-candidates|--no-cloud-candidates] <absolute-resource-directory> <absolute-new-state-directory>\n"
+                 "       lingyao-linux-prepare [--cloud-candidates|--no-cloud-candidates] --installed <absolute-new-state-directory>\n"
+                 "       lingyao-linux-prepare --refresh <absolute-runtime-options.json>\n"
                  "The state directory must not exist (except for installer-created anonymous account files); its parent must exist.\n"
                  "--installed uses the resource bundle installed beside this executable.\n"
                  "Cloud candidates start off; --cloud-candidates turns them on in the new preferences, --no-cloud-candidates records them off.\n"
@@ -148,9 +148,9 @@ int main(int argc, char **argv) {
     ++argv;
   }
   if (argc != 3) {
-    std::cerr << "Usage: msime-linux-prepare [--cloud-candidates|--no-cloud-candidates] <absolute-resource-directory> <absolute-new-state-directory>\n"
-                 "       msime-linux-prepare [--cloud-candidates|--no-cloud-candidates] --installed <absolute-new-state-directory>\n"
-                 "       msime-linux-prepare --refresh <absolute-runtime-options.json>\n";
+    std::cerr << "Usage: lingyao-linux-prepare [--cloud-candidates|--no-cloud-candidates] <absolute-resource-directory> <absolute-new-state-directory>\n"
+                 "       lingyao-linux-prepare [--cloud-candidates|--no-cloud-candidates] --installed <absolute-new-state-directory>\n"
+                 "       lingyao-linux-prepare --refresh <absolute-runtime-options.json>\n";
     return 2;
   }
   try {
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
         std::cerr << "Cannot locate the installed executable resource bundle\n";
         return 1;
       }
-      const auto discovered = msime_linux::installed_resource_directory(executable);
+      const auto discovered = lingyao_linux::installed_resource_directory(executable);
       if (discovered.empty()) {
         std::cerr << "Installed Engine resources were not found; provide a packaged resource bundle\n";
         return 1;
@@ -182,11 +182,11 @@ int main(int argc, char **argv) {
     auto bootstrap = nlohmann::json({{"resources", std::filesystem::canonical(resources).string()},
                                      {"state_root", state.string()}});
     // 不是 full 的版本把版本 id 交给宿主库：它按本版本的资源锁校验词库，在 HostOptions 里记下版本，并写下本版本的默认偏好。full 不写，请求与引入版本之前相同。
-    if (!MSIME_EDITION_IS_FULL) bootstrap["edition"] = MSIME_EDITION_ID;
+    if (!LINGYAO_EDITION_IS_FULL) bootstrap["edition"] = LINGYAO_EDITION_ID;
     const auto request = bootstrap.dump();
     if (request.size() > 16384) return 2;
     umask(0077);
-    if (!msime_linux::state_directory_path_is_safe(state)) {
+    if (!lingyao_linux::state_directory_path_is_safe(state)) {
       std::cerr << "Cannot create a fresh state directory; existing state is never replaced\n";
       return 1;
     }
@@ -207,9 +207,9 @@ int main(int argc, char **argv) {
         return 1;
       }
     }
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        msime_client_prepare_host(reinterpret_cast<const uint8_t *>(request.data()), request.size()),
-        msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        lingyao_client_prepare_host(reinterpret_cast<const uint8_t *>(request.data()), request.size()),
+        lingyao_client_string_free);
     if (!raw) throw std::runtime_error("prepare failed");
     const auto result = nlohmann::json::parse(raw.get());
     if (!result.value("ok", false) || !result.at("value").is_object()) {

@@ -17,7 +17,7 @@ final class KeyboardGeometrySettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-geometry-settings-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-geometry-settings-\(UUID().uuidString)", isDirectory: true)
     previous = (KeyboardLayoutPreference.keySpacing, KeyboardLayoutPreference.rowSpacing,
                 KeyboardLayoutPreference.heightAdjustment, KeyboardLayoutPreference.voiceShortcutEnabled)
   }
@@ -51,7 +51,7 @@ final class KeyboardGeometrySettingsTests: XCTestCase {
     XCTAssertTrue(KeyboardLayoutPreference.saveGeometry(
       keySpacing: 5, rowSpacing: 9, heightAdjustment: -8, voiceShortcut: false, stateRoot: state))
     let fresh = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-geometry-defaults-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-geometry-defaults-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: fresh) }
     _ = LingyaoInputSessionBridge(stateRoot: fresh)
     let defaults = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: fresh))

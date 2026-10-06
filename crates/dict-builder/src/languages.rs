@@ -1,4 +1,4 @@
-//! `languages`: the dictionaries that ship beside the resource set rather than inside it (`msime-cantonese.db`, `msime-zhuyin.db`, `msime-stroke.db`), each with its licence text, plus `msime-language-dictionaries-SHA256SUMS` over everything written. None of this touches the desktop dictionary product (`STAGES`, `product::SHIPPING_ARTIFACTS`, the manifest): a host ships these files only for the schemes it offers.
+//! `languages`: the dictionaries that ship beside the resource set rather than inside it (`lingyao-cantonese.db`, `lingyao-zhuyin.db`, `lingyao-stroke.db`), each with its licence text, plus `lingyao-language-dictionaries-SHA256SUMS` over everything written. None of this touches the desktop dictionary product (`STAGES`, `product::SHIPPING_ARTIFACTS`, the manifest): a host ships these files only for the schemes it offers.
 
 use std::path::Path;
 
@@ -11,7 +11,7 @@ use crate::stroke;
 use crate::text;
 use crate::zhuyin;
 
-pub const SUMS: &str = "msime-language-dictionaries-SHA256SUMS";
+pub const SUMS: &str = "lingyao-language-dictionaries-SHA256SUMS";
 
 /// Builds every language dictionary into `out` with the licence texts from `licenses` (`resources/licenses/`), verifies each, and writes the checksums. Returns one summary line per dictionary.
 pub fn build(sources: &Sources, licenses: &Path, out: &Path) -> Result<Vec<String>> {
@@ -135,7 +135,7 @@ fn copy_license(licenses: &Path, source: &str, out: &Path, name: &str) -> Result
     Ok(())
 }
 
-/// `sha256  name` lines in name order, the `sha256sum` format of the desktop product's `msime-SHA256SUMS.txt`.
+/// `sha256  name` lines in name order, the `sha256sum` format of the desktop product's `lingyao-SHA256SUMS.txt`.
 fn write_sums(out: &Path, names: &[&str]) -> Result<()> {
     let mut names = names.to_vec();
     names.sort_unstable();
@@ -167,14 +167,14 @@ mod tests {
         );
     }
 
-    /// 从 `MSIME_DICTIONARY` 指向的 msime-dictionary checkout 完整构建一次，不下载任何文件。
+    /// 从 `LINGYAO_DICTIONARY` 指向的 lingyao-dictionary checkout 完整构建一次，不下载任何文件。
     #[test]
-    #[ignore = "needs MSIME_DICTIONARY=<msime-dictionary checkout> and downloads nothing"]
+    #[ignore = "needs LINGYAO_DICTIONARY=<lingyao-dictionary checkout> and downloads nothing"]
     fn builds_from_a_dictionary_checkout() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let lock = Lock::load(&root.join("resources/dictionary-sources.lock.json")).unwrap();
         let dictionary = Dictionary::open(
-            std::path::PathBuf::from(std::env::var("MSIME_DICTIONARY").expect("MSIME_DICTIONARY")),
+            std::path::PathBuf::from(std::env::var("LINGYAO_DICTIONARY").expect("LINGYAO_DICTIONARY")),
             &lock,
         )
         .unwrap();

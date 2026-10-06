@@ -54,10 +54,10 @@
       <span id="status">加载中…</span>
     </div>
     <textarea id="text" placeholder="加载完成后在这里打字。单按 Shift 切换中英文。" disabled></textarea>
-    <p><small>引擎完全运行在你的浏览器里，输入的内容不会发送到任何服务器。<a href="msime/assets/NOTICE.md">第三方许可声明</a></small></p>
+    <p><small>引擎完全运行在你的浏览器里，输入的内容不会发送到任何服务器。<a href="lingyao/assets/NOTICE.md">第三方许可声明</a></small></p>
     <script type="module">
-      // msime/ 是 `msime-web-engine copy site/msime` 复制出来的目录；改用 CDN 时把这里换成 https://cdn.jsdelivr.net/npm/@msime/web-engine@<版本>/index.js。
-      import { createMsimeEngine, attachInput } from "./msime/index.js";
+      // lingyao/ 是 `lingyao-web-engine copy site/lingyao` 复制出来的目录；改用 CDN 时把这里换成 https://cdn.jsdelivr.net/npm/@msime/web-engine@<版本>/index.js。
+      import { createLingyaoEngine, attachInput } from "./lingyao/index.js";
 
       const text = document.getElementById("text");
       const status = document.getElementById("status");
@@ -90,7 +90,7 @@
         text.disabled = true;
         status.textContent = "加载中…";
         try {
-          engine = await createMsimeEngine({
+          engine = await createLingyaoEngine({
             scheme,
             onProgress: (loaded, total) => (status.textContent = `下载中 ${Math.round((loaded / total) * 100)}%`),
           });

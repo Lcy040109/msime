@@ -3,7 +3,7 @@
 //! Same `mod tests` as before, so `use super::*` still names the parent.
 
 use super::*;
-use msime_client_core::host_surface::compiled_input_schemes;
+use lingyao_client_core::host_surface::compiled_input_schemes;
 use sha2::{Digest, Sha256};
 
 #[test]
@@ -26,7 +26,7 @@ fn selection_statistics_use_the_candidate_id_absolute_index() {
 fn completed_transition_keeps_dispatch_view_without_pending_changes() {
     let directory = tempfile::tempdir().unwrap();
     let handle = test_host(directory.path());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     SESSIONS.with(|sessions| {
         let mut sessions = sessions.borrow_mut();
         let session = sessions.get_mut(&handle).unwrap();
@@ -48,7 +48,7 @@ fn completed_transition_keeps_dispatch_view_without_pending_changes() {
         });
         assert_eq!(completed.view.generation, expected.generation);
     });
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
@@ -81,7 +81,7 @@ fn resource_verification_rejects_a_symlinked_state_root() {
     std::fs::write(resources.join("fixture.db"), b"fixture").unwrap();
     let specification = ResourceSet {
         source_commit: "a".repeat(40),
-        artifacts: vec![msime_client_core::resources::Artifact {
+        artifacts: vec![lingyao_client_core::resources::Artifact {
             name: "fixture.db".into(),
             url: "https://example.invalid/fixture.db".into(),
             sha256: hex::encode(Sha256::digest(b"fixture")),
@@ -107,7 +107,7 @@ fn resource_verification_rejects_an_existing_state_root_below_a_symlink() {
     std::fs::write(resources.join("fixture.db"), b"fixture").unwrap();
     let specification = ResourceSet {
         source_commit: "a".repeat(40),
-        artifacts: vec![msime_client_core::resources::Artifact {
+        artifacts: vec![lingyao_client_core::resources::Artifact {
             name: "fixture.db".into(),
             url: "https://example.invalid/fixture.db".into(),
             sha256: hex::encode(Sha256::digest(b"fixture")),
@@ -118,7 +118,7 @@ fn resource_verification_rejects_an_existing_state_root_below_a_symlink() {
     std::fs::create_dir(outside.path().join("state")).unwrap();
     let parent = tempfile::tempdir().unwrap();
     let linked = parent.path().join("linked");
-    msime_path_trust::untrusted_symlink(outside.path(), &linked).unwrap();
+    lingyao_path_trust::untrusted_symlink(outside.path(), &linked).unwrap();
     let state = linked.join("state");
 
     assert!(
@@ -133,7 +133,7 @@ fn resource_verification_rejects_an_existing_state_root_below_a_symlink() {
 #[test]
 fn local_mode_resource_gates_preserve_unrelated_modes() {
     let root = tempfile::tempdir().unwrap();
-    for name in ["msime-others.db", "msime-english.db", "msime-japanese.dat"] {
+    for name in ["lingyao-others.db", "lingyao-english.db", "lingyao-japanese.dat"] {
         std::fs::write(root.path().join(name), b"fixture").unwrap();
     }
     let mut options = EngineOptions {
@@ -142,7 +142,7 @@ fn local_mode_resource_gates_preserve_unrelated_modes() {
         cache: root.path().to_string_lossy().into_owned(),
         dictionaries: root.path().to_string_lossy().into_owned(),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: false,
@@ -179,7 +179,7 @@ fn local_mode_resource_gates_preserve_unrelated_modes() {
         mention_entries: Vec::new(),
         quick_phrase_table: Vec::new(),
         helpcode_table: None,
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -203,8 +203,8 @@ fn local_mode_resource_gates_preserve_unrelated_modes() {
     assert!(options.local_temporary_english);
     assert!(options.local_temporary_japanese);
 
-    std::fs::remove_file(root.path().join("msime-others.db")).unwrap();
-    std::fs::remove_file(root.path().join("msime-japanese.dat")).unwrap();
+    std::fs::remove_file(root.path().join("lingyao-others.db")).unwrap();
+    std::fs::remove_file(root.path().join("lingyao-japanese.dat")).unwrap();
     apply_local_mode_resource_gates(&mut options, Edition::full());
     assert!(!options.local_emoji);
     assert!(!options.local_kaomoji);
@@ -218,7 +218,7 @@ fn local_mode_resource_gates_preserve_unrelated_modes() {
 
 #[test]
 fn doubao_frame_codec_is_available_through_c_abi() {
-    let request = msime_client_core::voice::doubao_frame::encode_json_frame(
+    let request = lingyao_client_core::voice::doubao_frame::encode_json_frame(
         9,
         0,
         1,
@@ -228,7 +228,7 @@ fn doubao_frame_codec_is_available_through_c_abi() {
     response.extend_from_slice(&request[8..12]);
     response.extend_from_slice(&request[12..]);
     let decoded =
-        read(unsafe { msime_client_doubao_decode_frame(response.as_ptr(), response.len()) });
+        read(unsafe { lingyao_client_doubao_decode_frame(response.as_ptr(), response.len()) });
     assert_eq!(decoded["ok"], true);
     assert_eq!(decoded["value"]["last"], false);
     assert_eq!(
@@ -238,13 +238,13 @@ fn doubao_frame_codec_is_available_through_c_abi() {
 
     let error = [0x11, 0xf0, 0x11, 0, 0, 0, 0, 7, 0, 0, 0, 42];
     let decoded_error =
-        read(unsafe { msime_client_doubao_decode_frame(error.as_ptr(), error.len()) });
+        read(unsafe { lingyao_client_doubao_decode_frame(error.as_ptr(), error.len()) });
     assert_eq!(decoded_error["value"]["error_code"], 7);
 
     let mut start = vec![0u8; 4096];
     let mut written = 0usize;
     assert!(unsafe {
-        msime_client_doubao_start_frame(
+        lingyao_client_doubao_start_frame(
             true,
             false,
             true,
@@ -261,7 +261,7 @@ fn doubao_frame_codec_is_available_through_c_abi() {
     // Mobile bindings size their Java/ArkTS result from a null, zero-capacity probe.
     let mut required = 0usize;
     assert!(!unsafe {
-        msime_client_doubao_start_frame(
+        lingyao_client_doubao_start_frame(
             true,
             false,
             true,
@@ -277,7 +277,7 @@ fn doubao_frame_codec_is_available_through_c_abi() {
     let mut audio = vec![0u8; 1024];
     let mut audio_written = 0usize;
     assert!(unsafe {
-        msime_client_doubao_audio_frame(
+        lingyao_client_doubao_audio_frame(
             2,
             [0u8, 1, 2, 3].as_ptr(),
             4,
@@ -291,7 +291,7 @@ fn doubao_frame_codec_is_available_through_c_abi() {
 
     let mut audio_required = 0usize;
     assert!(!unsafe {
-        msime_client_doubao_audio_frame(
+        lingyao_client_doubao_audio_frame(
             2,
             [0u8, 1, 2, 3].as_ptr(),
             4,
@@ -308,7 +308,7 @@ fn doubao_frame_codec_is_available_through_c_abi() {
 fn surface_route_boundary_resolves_panels_and_rejects_bad_buffers() {
     let parse = |value: &str| {
         // SAFETY: the slice outlives the call.
-        read(unsafe { msime_client_parse_surface_route(value.as_ptr(), value.len()) })
+        read(unsafe { lingyao_client_parse_surface_route(value.as_ptr(), value.len()) })
     };
 
     let keyboard = parse("keyboard");
@@ -334,17 +334,17 @@ fn surface_route_boundary_resolves_panels_and_rejects_bad_buffers() {
 
     // A null buffer and an oversized length are refused, not dereferenced.
     assert_eq!(
-        read(unsafe { msime_client_parse_surface_route(std::ptr::null(), 8) })["ok"],
+        read(unsafe { lingyao_client_parse_surface_route(std::ptr::null(), 8) })["ok"],
         false
     );
     let value = "settings";
     assert_eq!(
-        read(unsafe { msime_client_parse_surface_route(value.as_ptr(), 4096) })["ok"],
+        read(unsafe { lingyao_client_parse_surface_route(value.as_ptr(), 4096) })["ok"],
         false
     );
     let invalid = [0xff_u8, 0xfe];
     assert_eq!(
-        read(unsafe { msime_client_parse_surface_route(invalid.as_ptr(), invalid.len()) })["ok"],
+        read(unsafe { lingyao_client_parse_surface_route(invalid.as_ptr(), invalid.len()) })["ok"],
         false
     );
 }
@@ -364,12 +364,12 @@ fn smart_punctuation_gesture_boundary_arms_and_decides_from_the_session() {
     let arm = |body: serde_json::Value| {
         let text = body.to_string();
         // SAFETY: the buffer outlives the call.
-        read(unsafe { msime_client_smart_punctuation_arm(handle, text.as_ptr(), text.len()) })
+        read(unsafe { lingyao_client_smart_punctuation_arm(handle, text.as_ptr(), text.len()) })
     };
     let decide = |body: serde_json::Value| {
         let text = body.to_string();
         // SAFETY: the buffer outlives the call.
-        read(unsafe { msime_client_smart_punctuation_decide(handle, text.as_ptr(), text.len()) })
+        read(unsafe { lingyao_client_smart_punctuation_decide(handle, text.as_ptr(), text.len()) })
     };
 
     // An ASCII mark the host committed arms the repeat gesture and nothing else.
@@ -431,7 +431,7 @@ fn smart_punctuation_gesture_boundary_arms_and_decides_from_the_session() {
 
     // Malformed buffers are refused, not dereferenced.
     assert_eq!(
-        read(unsafe { msime_client_smart_punctuation_arm(handle, std::ptr::null(), 8) })["ok"],
+        read(unsafe { lingyao_client_smart_punctuation_arm(handle, std::ptr::null(), 8) })["ok"],
         false
     );
     let body = json!({
@@ -440,7 +440,7 @@ fn smart_punctuation_gesture_boundary_arms_and_decides_from_the_session() {
     })
     .to_string();
     assert_eq!(
-        read(unsafe { msime_client_smart_punctuation_decide(handle, body.as_ptr(), body.len()) })
+        read(unsafe { lingyao_client_smart_punctuation_decide(handle, body.as_ptr(), body.len()) })
             ["ok"],
         false,
         "preceding must be a single scalar"
@@ -453,7 +453,7 @@ fn smart_punctuation_gestures_follow_their_own_switches() {
     let arm = |handle: u64, body: serde_json::Value| {
         let text = body.to_string();
         // SAFETY: the buffer outlives the call.
-        read(unsafe { msime_client_smart_punctuation_arm(handle, text.as_ptr(), text.len()) })
+        read(unsafe { lingyao_client_smart_punctuation_arm(handle, text.as_ptr(), text.len()) })
     };
     let comma = json!({
         "ascii": 44, "commit": ",", "timestamp_ms": 0,
@@ -510,7 +510,7 @@ fn smart_punctuation_gestures_follow_their_own_switches() {
 fn shuangpin_key_hint_boundary_publishes_the_engine_face() {
     let hints = |value: &str| {
         // SAFETY: the slice outlives the call.
-        read(unsafe { msime_client_shuangpin_key_hints(value.as_ptr(), value.len()) })
+        read(unsafe { lingyao_client_shuangpin_key_hints(value.as_ptr(), value.len()) })
     };
 
     let xiaohe = hints("xiaohe");
@@ -536,12 +536,12 @@ fn shuangpin_key_hint_boundary_publishes_the_engine_face() {
 
     // A null buffer and an oversized length are refused, not dereferenced.
     assert_eq!(
-        read(unsafe { msime_client_shuangpin_key_hints(std::ptr::null(), 6) })["ok"],
+        read(unsafe { lingyao_client_shuangpin_key_hints(std::ptr::null(), 6) })["ok"],
         false
     );
     let value = "xiaohe";
     assert_eq!(
-        read(unsafe { msime_client_shuangpin_key_hints(value.as_ptr(), 4096) })["ok"],
+        read(unsafe { lingyao_client_shuangpin_key_hints(value.as_ptr(), 4096) })["ok"],
         false
     );
 }
@@ -550,7 +550,7 @@ fn shuangpin_key_hint_boundary_publishes_the_engine_face() {
 fn shuangpin_zero_initial_boundary_publishes_the_engine_table() {
     let codes = |value: &str| {
         // SAFETY: the slice outlives the call.
-        read(unsafe { msime_client_shuangpin_zero_initials(value.as_ptr(), value.len()) })
+        read(unsafe { lingyao_client_shuangpin_zero_initials(value.as_ptr(), value.len()) })
     };
 
     let xiaohe = codes("xiaohe");
@@ -563,7 +563,7 @@ fn shuangpin_zero_initial_boundary_publishes_the_engine_table() {
     assert_eq!(unknown["value"].as_object().unwrap().len(), 0);
 
     assert_eq!(
-        read(unsafe { msime_client_shuangpin_zero_initials(std::ptr::null(), 6) })["ok"],
+        read(unsafe { lingyao_client_shuangpin_zero_initials(std::ptr::null(), 6) })["ok"],
         false
     );
 }
@@ -572,7 +572,7 @@ fn shuangpin_zero_initial_boundary_publishes_the_engine_table() {
 fn host_capability_boundary_describes_each_platform() {
     let capabilities = |value: &str| {
         // SAFETY: the slice outlives the call.
-        read(unsafe { msime_client_host_capabilities(value.as_ptr(), value.len()) })
+        read(unsafe { lingyao_client_host_capabilities(value.as_ptr(), value.len()) })
     };
 
     let linux = capabilities("linux");
@@ -605,7 +605,7 @@ fn host_capability_boundary_describes_each_platform() {
     assert_eq!(capabilities("bsd")["ok"], false);
     assert_eq!(capabilities("")["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_host_capabilities(std::ptr::null(), 5) })["ok"],
+        read(unsafe { lingyao_client_host_capabilities(std::ptr::null(), 5) })["ok"],
         false
     );
 }
@@ -614,7 +614,7 @@ fn host_capability_boundary_describes_each_platform() {
 fn traditional_conversion_boundary_returns_text_or_null() {
     let convert = |bytes: &[u8]| {
         // SAFETY: the slice outlives the call.
-        let raw = unsafe { msime_client_simplified_to_traditional(bytes.as_ptr(), bytes.len()) };
+        let raw = unsafe { lingyao_client_simplified_to_traditional(bytes.as_ptr(), bytes.len()) };
         if raw.is_null() {
             return None;
         }
@@ -624,7 +624,7 @@ fn traditional_conversion_boundary_returns_text_or_null() {
             .unwrap()
             .to_owned();
         // SAFETY: released exactly once.
-        unsafe { msime_client_string_free(raw) };
+        unsafe { lingyao_client_string_free(raw) };
         Some(text)
     };
     assert_eq!(convert("头发".as_bytes()).as_deref(), Some("頭髮"));
@@ -632,19 +632,19 @@ fn traditional_conversion_boundary_returns_text_or_null() {
     assert_eq!(convert(b"\xff\xfe"), None);
     assert_eq!(convert(b"a\0b"), None);
     // SAFETY: null is part of the documented contract.
-    assert!(unsafe { msime_client_simplified_to_traditional(std::ptr::null(), 4) }.is_null());
+    assert!(unsafe { lingyao_client_simplified_to_traditional(std::ptr::null(), 4) }.is_null());
     // A native length is bounded before the borrowed slice is formed, so a malformed or stale
     // length cannot make the ABI scan beyond the caller's intended text buffer.
     let fixture = b"fixture";
     assert!(
-        unsafe { msime_client_simplified_to_traditional(fixture.as_ptr(), (1 << 20) + 1) }
+        unsafe { lingyao_client_simplified_to_traditional(fixture.as_ptr(), (1 << 20) + 1) }
             .is_null()
     );
 }
 
 #[test]
 fn abi_version_reports_the_theme_revision() {
-    assert_eq!(msime_client_abi_version(), 3);
+    assert_eq!(lingyao_client_abi_version(), 3);
 }
 #[test]
 fn native_preference_save_clears_history_only_after_successful_disable() {
@@ -668,7 +668,7 @@ fn native_preference_save_clears_history_only_after_successful_disable() {
     let save = |revision, snapshot: &PreferencesSnapshot| {
         let bytes = serde_json::to_vec(snapshot).unwrap();
         read(unsafe {
-            msime_client_save_preferences(
+            lingyao_client_save_preferences(
                 path.as_ptr(),
                 path.len(),
                 revision,
@@ -712,16 +712,16 @@ fn native_preference_save_clears_history_only_after_successful_disable() {
 
 #[test]
 fn mixed_input_changes_defer_until_composition_ends() {
-    use msime_client_core::preferences::MixedInputPreferences;
+    use lingyao_client_core::preferences::MixedInputPreferences;
     let dir = tempfile::tempdir().unwrap();
     // Start with every mixed-input switch opposite to the update below, whatever the platform's factory default is, so the deferral is observable for each one.
     let mut initial = chinese_preferences();
     initial.mixed_input.emoji = false;
     initial.mixed_input.kaomoji = false;
     let handle = test_host_preferences(dir.path(), initial);
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
-    let before = read(msime_client_view(handle));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
+    let before = read(lingyao_client_view(handle));
     let mut preferences = Preferences {
         mixed_input: MixedInputPreferences {
             english: false,
@@ -732,7 +732,7 @@ fn mixed_input_changes_defer_until_composition_ends() {
         ..Preferences::default()
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], true);
-    assert_eq!(read(msime_client_view(handle)), before);
+    assert_eq!(read(lingyao_client_view(handle)), before);
     SESSIONS.with(|sessions| {
         let sessions = sessions.borrow();
         let options = &sessions[&handle].options;
@@ -740,7 +740,7 @@ fn mixed_input_changes_defer_until_composition_ends() {
         assert!(!options.mixed_emoji);
         assert!(!options.mixed_kaomoji);
     });
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| {
         let sessions = sessions.borrow();
         let options = &sessions[&handle].options;
@@ -750,16 +750,16 @@ fn mixed_input_changes_defer_until_composition_ends() {
     });
     preferences.mixed_input.minimum_prefix = 9;
     assert_eq!(update(handle, 2, &preferences)["ok"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn frequency_changes_wait_for_composition_and_reject_invalid_updates() {
-    use msime_client_core::preferences::{FrequencyMode, FrequencyPreferences};
+    use lingyao_client_core::preferences::{FrequencyMode, FrequencyPreferences};
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
-    let before = read(msime_client_view(handle));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
+    let before = read(lingyao_client_view(handle));
     let mut preferences = Preferences {
         frequency: FrequencyPreferences {
             mode: FrequencyMode::Linear,
@@ -769,10 +769,10 @@ fn frequency_changes_wait_for_composition_and_reject_invalid_updates() {
         ..Preferences::default()
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], true);
-    assert_eq!(read(msime_client_view(handle)), before);
+    assert_eq!(read(lingyao_client_view(handle)), before);
     SESSIONS
         .with(|sessions| assert_eq!(sessions.borrow()[&handle].options.frequency_mode, "promote"));
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| {
         let sessions = sessions.borrow();
         assert_eq!(sessions[&handle].options.frequency_mode, "linear");
@@ -781,16 +781,16 @@ fn frequency_changes_wait_for_composition_and_reject_invalid_updates() {
     });
     preferences.frequency.trigger_count = 0;
     assert_eq!(update(handle, 2, &preferences)["ok"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn fuzzy_pinyin_changes_wait_for_composition_and_disabled_rules_are_retained() {
-    use msime_client_core::preferences::{FuzzyPinyinPreferences, FuzzyPinyinRule};
+    use lingyao_client_core::preferences::{FuzzyPinyinPreferences, FuzzyPinyinRule};
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'z', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'z', false));
     let mut preferences = Preferences {
         fuzzy_pinyin: FuzzyPinyinPreferences {
             enabled: true,
@@ -802,7 +802,7 @@ fn fuzzy_pinyin_changes_wait_for_composition_and_disabled_rules_are_retained() {
     let queued = update(handle, 1, &preferences);
     assert_eq!(queued["value"]["deferred"], true);
     SESSIONS.with(|sessions| assert_eq!(sessions.borrow()[&handle].options.fuzzy_pinyin_rules, 0));
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| assert_eq!(sessions.borrow()[&handle].options.fuzzy_pinyin_rules, 1));
 
     preferences.fuzzy_pinyin.enabled = false;
@@ -818,15 +818,15 @@ fn fuzzy_pinyin_changes_wait_for_composition_and_disabled_rules_are_retained() {
             .rules
             .contains(&FuzzyPinyinRule::ZZh));
     });
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn wubi_mixed_pinyin_reaches_engine_and_applies_after_composition() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'a', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'a', false));
     let mut preferences = Preferences {
         scheme: InputScheme::Wubi,
         wubi_mixed_pinyin: true,
@@ -838,7 +838,7 @@ fn wubi_mixed_pinyin_reaches_engine_and_applies_after_composition() {
         assert!(!sessions.borrow()[&handle].options.wubi_mixed_pinyin);
     });
 
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| {
         let session = &sessions.borrow()[&handle];
         assert!(session.options.wubi_mixed_pinyin);
@@ -851,12 +851,12 @@ fn wubi_mixed_pinyin_reaches_engine_and_applies_after_composition() {
     SESSIONS.with(|sessions| {
         assert!(!sessions.borrow()[&handle].options.wubi_mixed_pinyin);
     });
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn wubi_profile_reaches_engine_options() {
-    use msime_client_core::preferences::WubiProfile;
+    use lingyao_client_core::preferences::WubiProfile;
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
     SESSIONS.with(|sessions| {
@@ -873,12 +873,12 @@ fn wubi_profile_reaches_engine_options() {
         assert_eq!(session.options.wubi_profile, 1);
         assert_eq!(session.applied.wubi_profile, WubiProfile::Wubi98);
     });
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn japanese_mode_switch_defers_and_restores_chinese_profile() {
-    use msime_client_core::preferences::ChineseScheme;
+    use lingyao_client_core::preferences::ChineseScheme;
     let dir = tempfile::tempdir().unwrap();
     let chinese = Preferences {
         scheme: InputScheme::Shuangpin,
@@ -887,9 +887,9 @@ fn japanese_mode_switch_defers_and_restores_chinese_profile() {
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), chinese.clone());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'b', false));
-    read(msime_client_character(handle, b';', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'b', false));
+    read(lingyao_client_character(handle, b';', false));
     let japanese = Preferences {
         scheme: InputScheme::Japanese,
         touch_keyboard_layout: TouchKeyboardLayout::NineKey,
@@ -901,7 +901,7 @@ fn japanese_mode_switch_defers_and_restores_chinese_profile() {
         queued["value"]["view"]["touch_keyboard_layout"],
         "twenty_six_key"
     );
-    let committed = read(msime_client_command(handle, 2));
+    let committed = read(lingyao_client_command(handle, 2));
     assert_eq!(committed["value"]["commit"], "b;");
     assert_eq!(committed["value"]["commit_context"]["scheme"], 1);
     assert_eq!(committed["value"]["view"]["scheme"], 3);
@@ -910,78 +910,78 @@ fn japanese_mode_switch_defers_and_restores_chinese_profile() {
         committed["value"]["view"]["touch_keyboard_layout"],
         "nine_key"
     );
-    let kana = read(msime_client_character(handle, b'a', false));
+    let kana = read(lingyao_client_character(handle, b'a', false));
     assert_eq!(kana["ok"], true);
     assert_eq!(kana["value"]["view"]["preedit"], "a");
     assert_eq!(kana["value"]["view"]["reading"], "あ");
     assert_eq!(kana["value"]["view"]["scheme"], 3);
     assert_eq!(kana["value"]["view"]["candidates"][0]["text"], "あ");
     assert_eq!(kana["value"]["view"]["candidates"][1]["text"], "ア");
-    let small_kana = read(msime_client_command(handle, 10));
+    let small_kana = read(lingyao_client_command(handle, 10));
     assert_eq!(small_kana["value"]["handled"], true);
     assert_eq!(small_kana["value"]["view"]["reading"], "ぁ");
-    let committed_small_kana = read(msime_client_command(handle, 11));
+    let committed_small_kana = read(lingyao_client_command(handle, 11));
     assert_eq!(committed_small_kana["value"]["commit"], "ぁ");
     assert_eq!(committed_small_kana["value"]["view"]["reading"], "");
-    read(msime_client_character(handle, b'a', false));
-    let committed_kana = read(msime_client_command(handle, 11));
+    read(lingyao_client_character(handle, b'a', false));
+    let committed_kana = read(lingyao_client_command(handle, 11));
     assert_eq!(committed_kana["value"]["commit"], "あ");
     assert_eq!(committed_kana["value"]["view"]["reading"], "");
-    read(msime_client_command(handle, 3));
-    read(msime_client_character(handle, b'n', false));
-    let syllable_separator = read(msime_client_character(handle, b'\'', false));
+    read(lingyao_client_command(handle, 3));
+    read(lingyao_client_character(handle, b'n', false));
+    let syllable_separator = read(lingyao_client_character(handle, b'\'', false));
     assert_eq!(syllable_separator["ok"], true);
     assert_eq!(
         syllable_separator["value"]["view"]["candidates"][0]["text"],
         "ん"
     );
     assert_eq!(update(handle, 2, &chinese)["value"]["deferred"], true);
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     assert_eq!(
-        read(msime_client_view(handle))["value"]["touch_keyboard_layout"],
+        read(lingyao_client_view(handle))["value"]["touch_keyboard_layout"],
         "twenty_six_key"
     );
-    read(msime_client_character(handle, b'b', false));
+    read(lingyao_client_character(handle, b'b', false));
     assert_eq!(
-        read(msime_client_character(handle, b';', false))["value"]["view"]["editing_text"],
+        read(lingyao_client_character(handle, b';', false))["value"]["view"]["editing_text"],
         "b;"
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn raw_commit_without_learning_crosses_the_host_boundary() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for character in b"xq" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let committed = read(msime_client_command(handle, 15));
+    let committed = read(lingyao_client_command(handle, 15));
     assert_eq!(committed["ok"], true);
     assert_eq!(committed["value"]["commit"], "xq");
     assert_eq!(committed["value"]["view"]["editing_text"], "");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn japanese_commands_are_unhandled_for_non_japanese_schemes() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    let typed = read(msime_client_character(handle, b'a', false));
+    read(lingyao_client_focus(handle, true));
+    let typed = read(lingyao_client_character(handle, b'a', false));
     assert_eq!(typed["value"]["view"]["reading"], "");
 
-    let variant = read(msime_client_command(handle, 10));
+    let variant = read(lingyao_client_command(handle, 10));
     assert_eq!(variant["value"]["handled"], false);
     assert_eq!(variant["value"]["view"]["editing_text"], "a");
     assert_eq!(variant["value"]["view"]["reading"], "");
 
-    let reading = read(msime_client_command(handle, 11));
+    let reading = read(lingyao_client_command(handle, 11));
     assert_eq!(reading["value"]["handled"], false);
     assert!(reading["value"]["commit"].is_null());
     assert_eq!(reading["value"]["view"]["reading"], "");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -995,21 +995,21 @@ fn japanese_commands_apply_to_the_twenty_six_key_scheme() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
-    let typed = read(msime_client_character(handle, b'a', false));
+    read(lingyao_client_focus(handle, true));
+    let typed = read(lingyao_client_character(handle, b'a', false));
     assert_eq!(
         typed["value"]["view"]["touch_keyboard_layout"],
         "twenty_six_key"
     );
     assert_eq!(typed["value"]["view"]["reading"], "あ");
 
-    let variant = read(msime_client_command(handle, 10));
+    let variant = read(lingyao_client_command(handle, 10));
     assert_eq!(variant["value"]["handled"], true);
     assert_eq!(variant["value"]["view"]["reading"], "ぁ");
-    let committed = read(msime_client_command(handle, 11));
+    let committed = read(lingyao_client_command(handle, 11));
     assert_eq!(committed["value"]["commit"], "ぁ");
     assert_eq!(committed["value"]["view"]["reading"], "");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 // 藏文经过宿主边界：大写字母是拼写，组字时显示转换后的藏文，空格加音节点、`/` 加垂符上屏，回车不加音节点，拼写符号随组字状态变化。
@@ -1023,12 +1023,12 @@ fn tibetan_scheme_crosses_the_host_boundary() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
-    let idle = read(msime_client_command(handle, 3));
+    read(lingyao_client_focus(handle, true));
+    let idle = read(lingyao_client_command(handle, 3));
     assert_eq!(idle["value"]["view"]["spelling_symbols"], "'/");
     let mut typed = Value::Null;
     for character in b"bkra" {
-        typed = read(msime_client_character(handle, *character, false));
+        typed = read(lingyao_client_character(handle, *character, false));
         assert_eq!(typed["value"]["handled"], true);
     }
     let view = &typed["value"]["view"];
@@ -1036,29 +1036,29 @@ fn tibetan_scheme_crosses_the_host_boundary() {
     assert_eq!(view["preedit"], "བཀྲ");
     assert_eq!(view["candidates"], json!([]));
     assert_eq!(view["spelling_symbols"], "'+-./");
-    let space = read(msime_client_character(handle, b' ', false));
+    let space = read(lingyao_client_character(handle, b' ', false));
     assert_eq!(space["value"]["handled"], true);
     assert_eq!(space["value"]["commit"], "བཀྲ་");
     assert_eq!(space["value"]["commit_context"]["scheme"], 8);
 
     for character in b"shis" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let shad = read(msime_client_character(handle, b'/', false));
+    let shad = read(lingyao_client_character(handle, b'/', false));
     assert_eq!(shad["value"]["handled"], true);
     assert_eq!(shad["value"]["commit"], "ཤིས།");
-    let alone = read(msime_client_character(handle, b'/', false));
+    let alone = read(lingyao_client_character(handle, b'/', false));
     assert_eq!(alone["value"]["handled"], true);
     assert_eq!(alone["value"]["commit"], "།");
 
     // 大写字母是拼写而不是 Shift 命令：`Ta` 是反写字母 ཊ。
-    read(msime_client_character(handle, b'T', true));
-    let retroflex = read(msime_client_character(handle, b'a', false));
+    read(lingyao_client_character(handle, b'T', true));
+    let retroflex = read(lingyao_client_character(handle, b'a', false));
     assert_eq!(retroflex["value"]["view"]["preedit"], "ཊ");
-    let enter = read(msime_client_command(handle, 2));
+    let enter = read(lingyao_client_command(handle, 2));
     assert_eq!(enter["value"]["handled"], true);
     assert_eq!(enter["value"]["commit"], "ཊ");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 // 全角输出开着时，中文方案的上屏都转成全角，网址例外：上屏后 view 已回到 `none`，所以按上屏前的 `commit_context.local_mode` 豁免。
@@ -1066,52 +1066,52 @@ fn tibetan_scheme_crosses_the_host_boundary() {
 fn url_commits_stay_half_width_in_full_width_mode() {
     let directory = tempfile::tempdir().unwrap();
     let handle = test_host(directory.path());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    read(msime_client_set_character_width(handle, true));
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    read(lingyao_client_set_character_width(handle, true));
 
     // 对照：同样的 ASCII 字母不在网址模式时照旧变成全角。
     for character in b"abc" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let plain = read(msime_client_command(handle, 2));
+    let plain = read(lingyao_client_command(handle, 2));
     assert_eq!(plain["value"]["commit"], "ａｂｃ");
 
     for character in b"www" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let opened = read(msime_client_punctuation(handle, b'.'));
+    let opened = read(lingyao_client_punctuation(handle, b'.'));
     assert!(opened["value"]["commit"].is_null());
     assert_eq!(opened["value"]["view"]["local_mode"], "url");
     for character in b"a1" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    read(msime_client_punctuation(handle, b'/'));
-    let committed = read(msime_client_command(handle, 2));
+    read(lingyao_client_punctuation(handle, b'/'));
+    let committed = read(lingyao_client_command(handle, 2));
     assert_eq!(committed["value"]["commit"], "www.a1/");
     assert_eq!(committed["value"]["commit_context"]["local_mode"], "url");
     assert_eq!(committed["value"]["view"]["local_mode"], "none");
 
     // 空格上屏同样保持半角，末尾不带空格。
     for character in b"www" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    read(msime_client_punctuation(handle, b'.'));
-    read(msime_client_character(handle, b'a', false));
-    let spaced = read(msime_client_command(handle, 1));
+    read(lingyao_client_punctuation(handle, b'.'));
+    read(lingyao_client_character(handle, b'a', false));
+    let spaced = read(lingyao_client_command(handle, 1));
     assert_eq!(spaced["value"]["commit"], "www.a");
     assert_eq!(spaced["value"]["commit_context"]["local_mode"], "url");
 
     // 结束网址的英文标点不属于网址，和普通组字后的同一个键一样转全角。
-    read(msime_client_set_chinese_punctuation(handle, false));
+    read(lingyao_client_set_chinese_punctuation(handle, false));
     for character in b"www" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    read(msime_client_punctuation(handle, b'.'));
-    read(msime_client_character(handle, b'a', false));
-    let finished = read(msime_client_punctuation(handle, b'<'));
+    read(lingyao_client_punctuation(handle, b'.'));
+    read(lingyao_client_character(handle, b'a', false));
+    let finished = read(lingyao_client_punctuation(handle, b'<'));
     assert_eq!(finished["value"]["commit_context"]["local_mode"], "url");
     assert_eq!(finished["value"]["commit"], "www.a\u{ff1c}");
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
@@ -1124,11 +1124,11 @@ fn korean_scheme_crosses_the_host_boundary() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for character in b"gk" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let typed = read(msime_client_character(handle, b's', false));
+    let typed = read(lingyao_client_character(handle, b's', false));
     assert_eq!(typed["value"]["handled"], true);
     assert!(typed["value"]["commit"].is_null());
     let view = &typed["value"]["view"];
@@ -1140,68 +1140,68 @@ fn korean_scheme_crosses_the_host_boundary() {
     assert_eq!(view["candidates"], json!([]));
     assert_eq!(view["page_count"], 0);
     assert_eq!(
-        read(msime_client_online_query(handle))["value"],
+        read(lingyao_client_online_query(handle))["value"],
         Value::Null
     );
 
     // The next syllable's first key commits the previous one in the same transition.
-    let next = read(msime_client_character(handle, b'r', false));
+    let next = read(lingyao_client_character(handle, b'r', false));
     assert_eq!(next["value"]["handled"], true);
     assert_eq!(next["value"]["commit"], "한");
     assert_eq!(next["value"]["commit_context"]["scheme"], 4);
     assert_eq!(next["value"]["view"]["reading"], "ㄱ");
 
     // Shift selects the double consonant.
-    read(msime_client_command(handle, 0));
-    let double = read(msime_client_character(handle, b'R', true));
+    read(lingyao_client_command(handle, 0));
+    let double = read(lingyao_client_character(handle, b'R', true));
     assert_eq!(double["value"]["view"]["local_mode"], "none");
     assert_eq!(double["value"]["view"]["reading"], "ㄲ");
 
     // Space commits the syllable and is left for the host to insert.
-    let space = read(msime_client_command(handle, 1));
+    let space = read(lingyao_client_command(handle, 1));
     assert_eq!(space["value"]["handled"], false);
     assert_eq!(space["value"]["commit"], "ㄲ");
     assert_eq!(space["value"]["view"]["editing_text"], "");
     // Paging has nothing to page and leaves the key to the host.
-    let page = read(msime_client_command(handle, 100));
+    let page = read(lingyao_client_command(handle, 100));
     assert_eq!(page["value"]["handled"], false);
 
     // Punctuation is half-width ASCII even with Chinese punctuation on and full-width output selected.
-    read(msime_client_set_character_width(handle, true));
+    read(lingyao_client_set_character_width(handle, true));
     for character in b"rk" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let period = read(msime_client_punctuation_with_context(handle, b'.', 0));
+    let period = read(lingyao_client_punctuation_with_context(handle, b'.', 0));
     assert_eq!(period["value"]["handled"], true);
     assert_eq!(period["value"]["commit"], "가.");
-    let idle = read(msime_client_punctuation_with_context(handle, b',', 0));
+    let idle = read(lingyao_client_punctuation_with_context(handle, b',', 0));
     assert_eq!(idle["value"]["handled"], false);
     assert!(idle["value"]["commit"].is_null());
     let arm = json!({"ascii": b'.', "commit": ".", "timestamp_ms": 1, "editor_generation": 1, "auto_closed_pair": false}).to_string();
     let armed =
-        read(unsafe { msime_client_smart_punctuation_arm(handle, arm.as_ptr(), arm.len()) });
+        read(unsafe { lingyao_client_smart_punctuation_arm(handle, arm.as_ptr(), arm.len()) });
     assert!(armed["value"]["repeat"].is_null());
 
     // Leaving the client commits the open syllable instead of dropping it.
     for character in b"rk" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let left = read(msime_client_focus(handle, false));
+    let left = read(lingyao_client_focus(handle, false));
     assert_eq!(left["value"]["commit"], "가");
     assert_eq!(left["value"]["view"]["editing_text"], "");
 
     // The dedicated English mode keeps its own rules under the Korean scheme: full-width output widens its commits.
-    read(msime_client_focus(handle, true));
-    read(msime_client_set_english_mode(handle, true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_set_english_mode(handle, true));
     for character in b"ab" {
-        read(msime_client_character(handle, *character, false));
+        read(lingyao_client_character(handle, *character, false));
     }
-    let english = read(msime_client_command(handle, 2));
+    let english = read(lingyao_client_command(handle, 2));
     assert_eq!(english["value"]["commit"], "ａｂ");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
-/// MSIME_CONVERT_HANJA (16) reaches the Korean engine through the runtime: it opens the composing syllable's Hanja list, the ordinary candidate commands choose from it, and Cancel and Finish keep the Hangul.
+/// LINGYAO_CONVERT_HANJA (16) reaches the Korean engine through the runtime: it opens the composing syllable's Hanja list, the ordinary candidate commands choose from it, and Cancel and Finish keep the Hangul.
 #[test]
 fn korean_hanja_conversion_crosses_the_host_boundary() {
     let dir = tempfile::tempdir().unwrap();
@@ -1212,15 +1212,15 @@ fn korean_hanja_conversion_crosses_the_host_boundary() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     let type_keys = |keys: &[u8]| {
         for character in keys {
-            read(msime_client_character(handle, *character, false));
+            read(lingyao_client_character(handle, *character, false));
         }
     };
 
     type_keys(b"gks");
-    let opened = read(msime_client_command(handle, 16));
+    let opened = read(lingyao_client_command(handle, 16));
     assert_eq!(opened["value"]["handled"], true);
     assert!(opened["value"]["commit"].is_null());
     let view = &opened["value"]["view"];
@@ -1235,8 +1235,8 @@ fn korean_hanja_conversion_crosses_the_host_boundary() {
     assert!(view["page_count"].as_u64().unwrap() > 1);
 
     // The ordinary candidate commands: next candidate, then commit the highlighted one.
-    read(msime_client_command(handle, 102));
-    let chosen = read(msime_client_command(handle, 1));
+    read(lingyao_client_command(handle, 102));
+    let chosen = read(lingyao_client_command(handle, 1));
     assert_eq!(chosen["value"]["handled"], true);
     assert_eq!(chosen["value"]["commit"], "漢");
     assert_eq!(chosen["value"]["commit_context"]["scheme"], 4);
@@ -1244,39 +1244,39 @@ fn korean_hanja_conversion_crosses_the_host_boundary() {
 
     // Cancel closes the list and keeps the syllable; the trigger reopens it and Finish commits the Hangul.
     type_keys(b"gks");
-    read(msime_client_command(handle, 16));
-    let cancelled = read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 16));
+    let cancelled = read(lingyao_client_command(handle, 3));
     assert_eq!(cancelled["value"]["handled"], true);
     assert_eq!(cancelled["value"]["view"]["preedit"], "한");
     assert_eq!(cancelled["value"]["view"]["candidates"], json!([]));
-    read(msime_client_command(handle, 16));
-    read(msime_client_command(handle, 102));
-    let finished = read(msime_client_command(handle, 9));
+    read(lingyao_client_command(handle, 16));
+    read(lingyao_client_command(handle, 102));
+    let finished = read(lingyao_client_command(handle, 9));
     assert_eq!(finished["value"]["commit"], "한");
     assert_eq!(finished["value"]["view"]["candidates"], json!([]));
 
     // A lone jamo has no Hanja: the command is unhandled and the jamo keeps composing.
     type_keys(b"r");
-    let refused = read(msime_client_command(handle, 16));
+    let refused = read(lingyao_client_command(handle, 16));
     assert_eq!(refused["value"]["handled"], false);
     assert!(refused["value"]["commit"].is_null());
     assert_eq!(refused["value"]["view"]["preedit"], "ㄱ");
 
     // 16 is the last command before the navigation block; the next number is still unknown.
     assert_eq!(
-        read(msime_client_command(handle, 17))["error"],
+        read(lingyao_client_command(handle, 17))["error"],
         "unknown input command"
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn handwriting_layout_is_exposed_only_after_pending_composition_finishes() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'n', false));
-    read(msime_client_character(handle, b'i', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'n', false));
+    read(lingyao_client_character(handle, b'i', false));
     let handwriting = Preferences {
         touch_keyboard_layout: TouchKeyboardLayout::Handwriting,
         ..Preferences::default()
@@ -1287,45 +1287,45 @@ fn handwriting_layout_is_exposed_only_after_pending_composition_finishes() {
         queued["value"]["view"]["touch_keyboard_layout"],
         "twenty_six_key"
     );
-    let finished = read(msime_client_command(handle, 9));
+    let finished = read(lingyao_client_command(handle, 9));
     assert_eq!(finished["value"]["commit"], "ni");
     assert_eq!(
         finished["value"]["view"]["touch_keyboard_layout"],
         "handwriting"
     );
     assert_eq!(finished["value"]["view"]["nine_key"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn nine_key_mode_and_spelling_identity_cross_the_host_boundary() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    let enabled = read(msime_client_set_nine_key_mode(handle, true));
+    read(lingyao_client_focus(handle, true));
+    let enabled = read(lingyao_client_set_nine_key_mode(handle, true));
     assert_eq!(enabled["value"]["nine_key"], true);
-    let typed = read(msime_client_character(handle, b'6', false));
+    let typed = read(lingyao_client_character(handle, b'6', false));
     assert_eq!(typed["value"]["handled"], true);
     let view = &typed["value"]["view"];
     let generation = view["generation"].as_u64().unwrap();
     assert!(!view["nine_key_spellings"].as_array().unwrap().is_empty());
     assert_eq!(
-        read(msime_client_choose_nine_key_spelling(
+        read(lingyao_client_choose_nine_key_spelling(
             handle,
             generation - 1,
             0
         ))["ok"],
         false
     );
-    let selected = read(msime_client_choose_nine_key_spelling(handle, generation, 0));
+    let selected = read(lingyao_client_choose_nine_key_spelling(handle, generation, 0));
     assert_eq!(selected["value"]["handled"], true);
     assert_eq!(
-        read(msime_client_set_nine_key_mode(handle, false))["ok"],
+        read(lingyao_client_set_nine_key_mode(handle, false))["ok"],
         false
     );
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     assert_eq!(
-        read(msime_client_set_nine_key_mode(handle, false))["value"]["nine_key"],
+        read(lingyao_client_set_nine_key_mode(handle, false))["value"]["nine_key"],
         false
     );
 
@@ -1353,9 +1353,9 @@ fn nine_key_mode_and_spelling_identity_cross_the_host_boundary() {
         update(handle, 4, &preferences)["value"]["view"]["touch_keyboard_layout"],
         "handwriting"
     );
-    assert_eq!(read(msime_client_view(handle))["value"]["nine_key"], false);
+    assert_eq!(read(lingyao_client_view(handle))["value"]["nine_key"], false);
     assert_eq!(
-        read(msime_client_set_nine_key_mode(handle, true))["value"]["nine_key"],
+        read(lingyao_client_set_nine_key_mode(handle, true))["value"]["nine_key"],
         true
     );
     preferences.candidate_page_size = 3;
@@ -1369,10 +1369,10 @@ fn nine_key_mode_and_spelling_identity_cross_the_host_boundary() {
         false
     );
     assert_eq!(
-        read(msime_client_set_nine_key_mode(handle, true))["ok"],
+        read(lingyao_client_set_nine_key_mode(handle, true))["ok"],
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 
     let persisted_dir = tempfile::tempdir().unwrap();
     let persisted = test_host_preferences(
@@ -1383,10 +1383,10 @@ fn nine_key_mode_and_spelling_identity_cross_the_host_boundary() {
         },
     );
     assert_eq!(
-        read(msime_client_view(persisted))["value"]["nine_key"],
+        read(lingyao_client_view(persisted))["value"]["nine_key"],
         true
     );
-    read(msime_client_destroy(persisted));
+    read(lingyao_client_destroy(persisted));
 }
 
 #[test]
@@ -1400,13 +1400,13 @@ fn a_fallen_back_scheme_starts_in_the_nine_key_mode_a_rebuild_gives_it() {
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), preferences.clone());
-    let view = read(msime_client_view(handle));
+    let view = read(lingyao_client_view(handle));
     assert_eq!(view["value"]["scheme"], 0);
     assert_eq!(view["value"]["nine_key"], true);
     let rebuilt = update(handle, 1, &preferences);
     assert_eq!(rebuilt["value"]["view"]["scheme"], 0);
     assert_eq!(rebuilt["value"]["view"]["nine_key"], true);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -1428,7 +1428,7 @@ fn nine_key_mode_follows_only_the_scheme_the_grid_spells() {
         let handle = test_host_preferences(dir.path(), preferences.clone());
         let expected = scheme == InputScheme::Quanpin;
         assert_eq!(
-            read(msime_client_view(handle))["value"]["nine_key"],
+            read(lingyao_client_view(handle))["value"]["nine_key"],
             expected,
             "{scheme:?} at creation"
         );
@@ -1444,14 +1444,14 @@ fn nine_key_mode_follows_only_the_scheme_the_grid_spells() {
             rebuilt["value"]["view"]["nine_key"], expected,
             "{scheme:?} after a rebuild"
         );
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
     }
 }
 
-// 注音配九键布局：宿主接口按布局自动开启九键模式，数字和声调字母拼音节，候选读音和全拼九键一样经 `nine_key_spellings` 和 `msime_client_choose_nine_key_spelling` 往返。
+// 注音配九键布局：宿主接口按布局自动开启九键模式，数字和声调字母拼音节，候选读音和全拼九键一样经 `nine_key_spellings` 和 `lingyao_client_choose_nine_key_spelling` 往返。
 #[test]
 fn zhuyin_with_the_nine_key_layout_starts_in_nine_key_mode() {
-    use msime_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
+    use lingyao_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
     let dir = tempfile::tempdir().unwrap();
     let path = |name| {
         let path = dir.path().join(name);
@@ -1460,7 +1460,7 @@ fn zhuyin_with_the_nine_key_layout_starts_in_nine_key_mode() {
     };
     let language_dictionaries = path("language-dictionaries");
     let connection =
-        rusqlite::Connection::open(language_dictionaries.join("msime-zhuyin.db")).unwrap();
+        rusqlite::Connection::open(language_dictionaries.join("lingyao-zhuyin.db")).unwrap();
     connection.execute_batch(SCHEMA).unwrap();
     connection
         .execute(
@@ -1482,12 +1482,12 @@ fn zhuyin_with_the_nine_key_layout_starts_in_nine_key_mode() {
         ..chinese_preferences()
     };
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": layout_only, "language_dictionaries": language_dictionaries }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let dachen = created["value"]["session"].as_u64().unwrap();
-    read(msime_client_focus(dachen, true));
-    assert_eq!(read(msime_client_view(dachen))["value"]["nine_key"], false);
-    read(msime_client_destroy(dachen));
+    read(lingyao_client_focus(dachen, true));
+    assert_eq!(read(lingyao_client_view(dachen))["value"]["nine_key"], false);
+    read(lingyao_client_destroy(dachen));
 
     let mut preferences = Preferences {
         scheme: InputScheme::Zhuyin,
@@ -1500,36 +1500,36 @@ fn zhuyin_with_the_nine_key_layout_starts_in_nine_key_mode() {
         .insert(TouchKeyboardScheme::ZhuyinNineKey);
     preferences.touch_keyboard_schemes.selected = Some(TouchKeyboardScheme::ZhuyinNineKey);
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": preferences, "language_dictionaries": language_dictionaries }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
-    read(msime_client_focus(handle, true));
-    let view = read(msime_client_view(handle));
+    read(lingyao_client_focus(handle, true));
+    let view = read(lingyao_client_view(handle));
     assert_eq!(view["value"]["scheme"], 6);
     assert_eq!(view["value"]["nine_key"], true);
     assert_eq!(view["value"]["spelling_symbols"], "1234567890");
 
     let mut typed = Value::Null;
     for key in *b"28c" {
-        typed = read(msime_client_character(handle, key, false));
+        typed = read(lingyao_client_character(handle, key, false));
         assert_eq!(typed["value"]["handled"], true, "{}", char::from(key));
     }
     let view = &typed["value"]["view"];
     assert_eq!(view["editing_text"], "28c");
     assert_eq!(view["nine_key_spellings"], json!(["ㄌㄧˇ", "ㄋㄧˇ"]));
     let generation = view["generation"].as_u64().unwrap();
-    let chosen = read(msime_client_choose_nine_key_spelling(handle, generation, 1));
+    let chosen = read(lingyao_client_choose_nine_key_spelling(handle, generation, 1));
     assert_eq!(chosen["value"]["handled"], true);
     assert_eq!(chosen["value"]["view"]["nine_key_spellings"], json!([]));
-    let committed = read(msime_client_command(handle, 9));
+    let committed = read(lingyao_client_command(handle, 9));
     assert_eq!(committed["value"]["commit"], "你");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 // 宿主为全拼九键打开的覆盖不能带进注音：从全拼切到注音时按注音自己的布局判断，没选「注音 9 键」就是大千键位。
 #[test]
 fn a_quanpin_nine_key_override_does_not_carry_into_zhuyin() {
-    use msime_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
+    use lingyao_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
     let dir = tempfile::tempdir().unwrap();
     let path = |name| {
         let path = dir.path().join(name);
@@ -1538,7 +1538,7 @@ fn a_quanpin_nine_key_override_does_not_carry_into_zhuyin() {
     };
     let language_dictionaries = path("language-dictionaries");
     let connection =
-        rusqlite::Connection::open(language_dictionaries.join("msime-zhuyin.db")).unwrap();
+        rusqlite::Connection::open(language_dictionaries.join("lingyao-zhuyin.db")).unwrap();
     connection.execute_batch(SCHEMA).unwrap();
     connection
         .execute(
@@ -1556,12 +1556,12 @@ fn a_quanpin_nine_key_override_does_not_carry_into_zhuyin() {
         ..chinese_preferences()
     };
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": quanpin, "language_dictionaries": language_dictionaries }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     assert_eq!(
-        read(msime_client_set_nine_key_mode(handle, true))["value"]["nine_key"],
+        read(lingyao_client_set_nine_key_mode(handle, true))["value"]["nine_key"],
         true
     );
     let zhuyin = update(
@@ -1574,7 +1574,7 @@ fn a_quanpin_nine_key_override_does_not_carry_into_zhuyin() {
     );
     assert_eq!(zhuyin["value"]["view"]["scheme"], 6, "{zhuyin}");
     assert_eq!(zhuyin["value"]["view"]["nine_key"], false, "{zhuyin}");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -1602,10 +1602,10 @@ fn the_repeat_gesture_arms_except_in_schemes_that_write_no_chinese_marks() {
         let arm = json!({"ascii": b'.', "commit": ".", "timestamp_ms": 1, "editor_generation": 1, "auto_closed_pair": false}).to_string();
         // SAFETY: the buffer outlives the call.
         let armed =
-            read(unsafe { msime_client_smart_punctuation_arm(handle, arm.as_ptr(), arm.len()) });
+            read(unsafe { lingyao_client_smart_punctuation_arm(handle, arm.as_ptr(), arm.len()) });
         assert_eq!(armed["ok"], true);
         assert_eq!(!armed["value"]["repeat"].is_null(), arms, "{scheme:?}");
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
     }
 }
 
@@ -1626,10 +1626,10 @@ fn japanese_candidates_ask_for_no_translation() {
                 ..chinese_preferences()
             },
         );
-        read(msime_client_focus(handle, true));
+        read(lingyao_client_focus(handle, true));
         let mut view = Value::Null;
         for byte in keys {
-            view = read(msime_client_character(
+            view = read(lingyao_client_character(
                 handle,
                 *byte,
                 byte.is_ascii_uppercase(),
@@ -1641,11 +1641,11 @@ fn japanese_candidates_ask_for_no_translation() {
             "{scheme:?} offered no candidates"
         );
         assert_eq!(
-            !read(msime_client_translation_query(handle))["value"].is_null(),
+            !read(lingyao_client_translation_query(handle))["value"].is_null(),
             expected,
             "{scheme:?}"
         );
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
     }
 }
 
@@ -1660,34 +1660,34 @@ fn url_candidates_ask_for_no_translation() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"U4e2d" {
-        read(msime_client_character(
+        read(lingyao_client_character(
             handle,
             *byte,
             byte.is_ascii_uppercase(),
         ));
     }
-    assert!(!read(msime_client_translation_query(handle))["value"].is_null());
-    read(msime_client_command(handle, 3));
+    assert!(!read(lingyao_client_translation_query(handle))["value"].is_null());
+    read(lingyao_client_command(handle, 3));
 
     for byte in b"www" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    read(msime_client_punctuation(handle, b'.'));
-    let view = read(msime_client_character(handle, b'a', false))["value"]["view"].clone();
+    read(lingyao_client_punctuation(handle, b'.'));
+    let view = read(lingyao_client_character(handle, b'a', false))["value"]["view"].clone();
     assert_eq!(view["local_mode"], "url");
     assert!(!view["candidates"].as_array().unwrap().is_empty());
-    assert!(read(msime_client_translation_query(handle))["value"].is_null());
-    read(msime_client_destroy(handle));
+    assert!(read(lingyao_client_translation_query(handle))["value"].is_null());
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn the_c_header_aliases_the_candidate_list_command_and_extends_the_scheme_legend() {
-    const HEADER: &str = include_str!("../include/msime_client.h");
-    // One command number under two names: hosts written for Korean keep MSIME_CONVERT_HANJA, and the dispatch reads 16 either way.
-    assert!(HEADER.contains("MSIME_CONVERT_HANJA = 16,"));
-    assert!(HEADER.contains("MSIME_OPEN_CANDIDATE_LIST = 16,"));
+    const HEADER: &str = include_str!("../include/lingyao_client.h");
+    // One command number under two names: hosts written for Korean keep LINGYAO_CONVERT_HANJA, and the dispatch reads 16 either way.
+    assert!(HEADER.contains("LINGYAO_CONVERT_HANJA = 16,"));
+    assert!(HEADER.contains("LINGYAO_OPEN_CANDIDATE_LIST = 16,"));
     // platforms/android/check-host.sh greps the Korean legend line, so it stays as it was.
     assert!(HEADER.contains("4 korean (preferences scheme \"korean\")"));
     for legend in [
@@ -1703,12 +1703,12 @@ fn the_c_header_aliases_the_candidate_list_command_and_extends_the_scheme_legend
 
 #[test]
 fn nine_key_digits_offer_ranked_english_across_the_host_boundary() {
-    use msime_client_core::preferences::MixedInputPreferences;
+    use lingyao_client_core::preferences::MixedInputPreferences;
 
     let dir = tempfile::tempdir().unwrap();
     let dictionaries = dir.path().join("dictionaries");
     std::fs::create_dir_all(&dictionaries).unwrap();
-    let db = rusqlite::Connection::open(dictionaries.join("msime-english.db")).unwrap();
+    let db = rusqlite::Connection::open(dictionaries.join("lingyao-english.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE english_words(word TEXT,display TEXT,weight INTEGER);
          INSERT INTO english_words VALUES('ok','ok',900);
@@ -1733,15 +1733,15 @@ fn nine_key_digits_offer_ranked_english_across_the_host_boundary() {
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     assert_eq!(
-        read(msime_client_character(handle, b'6', false))["value"]["handled"],
+        read(lingyao_client_character(handle, b'6', false))["value"]["handled"],
         true
     );
-    let typed = read(msime_client_character(handle, b'5', false));
+    let typed = read(lingyao_client_character(handle, b'5', false));
     assert_eq!(typed["value"]["view"]["nine_key"], true);
 
-    let complete = read(msime_client_all_candidates(handle));
+    let complete = read(lingyao_client_all_candidates(handle));
     let candidates = complete["value"]["candidates"].as_array().unwrap();
     let position = |text: &str| {
         candidates
@@ -1755,10 +1755,10 @@ fn nine_key_digits_offer_ranked_english_across_the_host_boundary() {
 
     let generation = complete["value"]["generation"].as_u64().unwrap();
     let index = candidates[ok]["id"]["index"].as_u64().unwrap() as usize;
-    let selected = read(msime_client_select_any_candidate(handle, generation, index));
+    let selected = read(lingyao_client_select_any_candidate(handle, generation, index));
     assert_eq!(selected["value"]["handled"], true);
     assert_eq!(selected["value"]["commit"], "ok");
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
@@ -1783,7 +1783,7 @@ fn helpcode_defaults_follow_windows_for_each_pinyin_scheme() {
         assert_eq!(session.options.helpcode_schema, "lantian");
         assert!(session.options.show_helpcode);
     });
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -1791,7 +1791,7 @@ fn english_completion_boundary_is_read_only_and_case_insensitive() {
     let dir = tempfile::tempdir().unwrap();
     let dictionaries = dir.path().join("dictionaries");
     std::fs::create_dir_all(&dictionaries).unwrap();
-    let db = rusqlite::Connection::open(dictionaries.join("msime-english.db")).unwrap();
+    let db = rusqlite::Connection::open(dictionaries.join("lingyao-english.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE english_words(word TEXT,display TEXT,weight INTEGER);
          INSERT INTO english_words VALUES('hello','hello',1000);
@@ -1801,26 +1801,26 @@ fn english_completion_boundary_is_read_only_and_case_insensitive() {
     .unwrap();
     drop(db);
     let handle = test_host(dir.path());
-    let before = read(msime_client_view(handle))["value"].clone();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     let prefix = b"He";
     let result =
-        read(unsafe { msime_client_english_completions(handle, prefix.as_ptr(), prefix.len(), 2) });
+        read(unsafe { lingyao_client_english_completions(handle, prefix.as_ptr(), prefix.len(), 2) });
     assert_eq!(result["ok"], true, "{result}");
     assert_eq!(result["value"]["completions"], json!(["hello", "help"]));
-    assert_eq!(read(msime_client_view(handle))["value"], before);
-    let invalid = read(unsafe { msime_client_english_completions(handle, b"he!".as_ptr(), 3, 2) });
+    assert_eq!(read(lingyao_client_view(handle))["value"], before);
+    let invalid = read(unsafe { lingyao_client_english_completions(handle, b"he!".as_ptr(), 3, 2) });
     assert_eq!(invalid["ok"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn helpcode_settings_switch_independently_after_composition() {
-    use msime_client_core::preferences::{HelpcodePreferences, HelpcodeSchema};
+    use lingyao_client_core::preferences::{HelpcodePreferences, HelpcodeSchema};
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
-    let before = read(msime_client_view(handle))["value"].clone();
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
+    let before = read(lingyao_client_view(handle))["value"].clone();
     let mut preferences = Preferences {
         quanpin_helpcode: HelpcodePreferences {
             enabled: false,
@@ -1835,9 +1835,9 @@ fn helpcode_settings_switch_independently_after_composition() {
         ..Preferences::default()
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], true);
-    assert_eq!(read(msime_client_view(handle))["value"], before);
+    assert_eq!(read(lingyao_client_view(handle))["value"], before);
     SESSIONS.with(|sessions| assert!(sessions.borrow()[&handle].options.helpcode));
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| {
         assert!(!sessions.borrow()[&handle].options.helpcode);
         assert_eq!(sessions.borrow()[&handle].options.helpcode_schema, "xiaohe");
@@ -1856,37 +1856,37 @@ fn helpcode_settings_switch_independently_after_composition() {
     preferences.scheme = InputScheme::Quanpin;
     update(handle, 3, &preferences);
     SESSIONS.with(|sessions| assert!(!sessions.borrow()[&handle].options.helpcode));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn autocorrect_update_waits_for_composition_end() {
     let dir = tempfile::tempdir().unwrap();
     let disabled_preferences = Preferences {
-        quanpin: msime_client_core::preferences::QuanpinPreferences {
+        quanpin: lingyao_client_core::preferences::QuanpinPreferences {
             autocorrect_transposition: false,
             autocorrect_neighbor: false,
         },
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), disabled_preferences.clone());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
-    let before = read(msime_client_view(handle))["value"].clone();
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
+    let before = read(lingyao_client_view(handle))["value"].clone();
     let preferences = Preferences {
-        quanpin: msime_client_core::preferences::QuanpinPreferences {
+        quanpin: lingyao_client_core::preferences::QuanpinPreferences {
             autocorrect_transposition: true,
             autocorrect_neighbor: true,
         },
         ..Preferences::default()
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], true);
-    assert_eq!(read(msime_client_view(handle))["value"], before);
+    assert_eq!(read(lingyao_client_view(handle))["value"], before);
     SESSIONS.with(|sessions| {
         assert!(!sessions.borrow()[&handle].options.autocorrect_transposition);
         assert!(!sessions.borrow()[&handle].options.autocorrect_neighbor);
     });
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     SESSIONS.with(|sessions| {
         assert!(sessions.borrow()[&handle].options.autocorrect_transposition);
         assert!(sessions.borrow()[&handle].options.autocorrect_neighbor);
@@ -1899,7 +1899,7 @@ fn autocorrect_update_waits_for_composition_end() {
         assert!(!sessions.borrow()[&handle].options.autocorrect_transposition);
         assert!(!sessions.borrow()[&handle].options.autocorrect_neighbor);
     });
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -1907,7 +1907,7 @@ fn autocorrect_update_waits_for_composition_end() {
 fn skin_catalog_reaches_native_presenters_without_the_settings_shell() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().join("skins");
-    let scan = |path: &str| read(unsafe { msime_client_skin_catalog(path.as_ptr(), path.len()) });
+    let scan = |path: &str| read(unsafe { lingyao_client_skin_catalog(path.as_ptr(), path.len()) });
     let path = root.to_str().unwrap().to_owned();
     // An absent root is an empty catalog, not a failure the presenter shows.
     assert_eq!(
@@ -1935,12 +1935,12 @@ fn skin_catalog_reaches_native_presenters_without_the_settings_shell() {
     assert_eq!(catalog["value"]["issues"][0]["folder"], "broken");
     assert_eq!(
         catalog["value"],
-        serde_json::to_value(msime_client_core::skin::catalog::scan(&root)).unwrap()
+        serde_json::to_value(lingyao_client_core::skin::catalog::scan(&root)).unwrap()
     );
     let relative = "skins";
     assert_eq!(scan(relative)["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_skin_catalog(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_skin_catalog(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -1950,7 +1950,7 @@ fn custom_helpcode_schemas_reach_native_presenters_without_the_settings_shell() 
     let directory = tempfile::tempdir().unwrap();
     let resources = directory.path().join("resources");
     let scan =
-        |path: &str| read(unsafe { msime_client_helpcode_schemas(path.as_ptr(), path.len()) });
+        |path: &str| read(unsafe { lingyao_client_helpcode_schemas(path.as_ptr(), path.len()) });
     let path = resources.to_str().unwrap().to_owned();
 
     // Missing optional assets are an empty catalog, not an unavailable settings surface.
@@ -1979,7 +1979,7 @@ fn custom_helpcode_schemas_reach_native_presenters_without_the_settings_shell() 
 
     assert_eq!(scan("relative/resources")["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_helpcode_schemas(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_helpcode_schemas(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -1999,7 +1999,7 @@ fn a_picked_skin_folder_is_copied_in_through_the_c_abi() {
     )
     .unwrap();
     let call = |request: String| {
-        read(unsafe { msime_client_skin_import(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_skin_import(request.as_ptr(), request.len()) })
     };
     let imported = call(json!({"source": source, "directory": root}).to_string());
     assert_eq!(imported, json!({"ok": true, "value": {"id": "sakura"}}));
@@ -2015,7 +2015,7 @@ fn a_picked_skin_folder_is_copied_in_through_the_c_abi() {
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_skin_import(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_skin_import(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2026,10 +2026,10 @@ fn skin_package_resolves_one_manifest_with_the_catalog_loader() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().join("skins");
     let call =
-        |request: &str| read(unsafe { msime_client_skin_package(request.as_ptr(), request.len()) });
+        |request: &str| read(unsafe { lingyao_client_skin_package(request.as_ptr(), request.len()) });
     let request = |id: &str| json!({"directory": root, "id": id}).to_string();
     assert_eq!(
-        read(unsafe { msime_client_skin_package(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_skin_package(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(call("not json")["ok"], false);
@@ -2054,7 +2054,7 @@ fn skin_package_resolves_one_manifest_with_the_catalog_loader() {
     assert_eq!(package["value"]["candidate"]["light"]["accent"], "#123456");
     let catalog = read(unsafe {
         let path = root.to_str().unwrap();
-        msime_client_skin_catalog(path.as_ptr(), path.len())
+        lingyao_client_skin_catalog(path.as_ptr(), path.len())
     });
     assert_eq!(package["value"], catalog["value"]["packages"][0]);
     assert_eq!(call(&request("night"))["error"], "invalid skin id");
@@ -2067,7 +2067,7 @@ fn skin_package_resolves_one_manifest_with_the_catalog_loader() {
 
 #[test]
 fn theme_catalog_lists_every_theme_in_picker_order() {
-    let catalog = read(msime_client_theme_catalog());
+    let catalog = read(lingyao_client_theme_catalog());
     assert_eq!(catalog["ok"], true);
     assert_eq!(catalog["value"]["default"], "system");
     let ids: Vec<_> = catalog["value"]["themes"]
@@ -2090,7 +2090,7 @@ fn theme_catalog_lists_every_theme_in_picker_order() {
 
 #[test]
 fn app_theme_catalog_and_resolution_have_the_documented_shape() {
-    let catalog = read(msime_client_app_theme_catalog());
+    let catalog = read(lingyao_client_app_theme_catalog());
     assert_eq!(catalog["ok"], true);
     assert_eq!(catalog["value"]["default"], "siji");
     let themes = catalog["value"]["app_themes"].as_array().unwrap();
@@ -2119,7 +2119,7 @@ fn app_theme_catalog_and_resolution_have_the_documented_shape() {
 
     let call = |request: Value| {
         let request = request.to_string();
-        read(unsafe { msime_client_resolve_app_theme(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_resolve_app_theme(request.as_ptr(), request.len()) })
     };
     let autumn = call(json!({"app_theme": "siji", "month": 10, "dark": true}));
     assert_eq!(autumn["ok"], true, "{autumn}");
@@ -2153,7 +2153,7 @@ fn app_theme_catalog_and_resolution_have_the_documented_shape() {
         assert_eq!(refused["error"], "invalid app theme request", "{why}");
     }
     assert_eq!(
-        read(unsafe { msime_client_resolve_app_theme(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_resolve_app_theme(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2172,7 +2172,7 @@ fn restoring_default_preferences_is_a_locked_compare_and_swap() {
     let path = dir.path().to_str().unwrap();
     let call = |revision: u64| {
         read(unsafe {
-            msime_client_restore_default_preferences(path.as_ptr(), path.len(), revision)
+            lingyao_client_restore_default_preferences(path.as_ptr(), path.len(), revision)
         })
     };
     let stale = call(saved.revision + 5);
@@ -2193,12 +2193,12 @@ fn restoring_default_preferences_is_a_locked_compare_and_swap() {
     let relative = "relative/preferences";
     assert_eq!(
         read(unsafe {
-            msime_client_restore_default_preferences(relative.as_ptr(), relative.len(), 0)
+            lingyao_client_restore_default_preferences(relative.as_ptr(), relative.len(), 0)
         })["error"],
         "preferences directory must be absolute"
     );
     assert_eq!(
-        read(unsafe { msime_client_restore_default_preferences(std::ptr::null(), 0, 0) })["ok"],
+        read(unsafe { lingyao_client_restore_default_preferences(std::ptr::null(), 0, 0) })["ok"],
         false
     );
 }
@@ -2219,7 +2219,7 @@ fn resolve_theme_reads_the_package_from_either_source() {
     .unwrap();
     let call = |request: Value| {
         let request = request.to_string();
-        read(unsafe { msime_client_resolve_theme(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_resolve_theme(request.as_ptr(), request.len()) })
     };
     let custom = json!({"candidate_skin": "sakura", "candidate_colors": {"text": "#010203"}});
 
@@ -2239,8 +2239,8 @@ fn resolve_theme_reads_the_package_from_either_source() {
     assert!(value["keyboard"].is_object());
 
     // The Linux hosts pass the entry they read from candidate_skin_catalog instead of the root.
-    let entry = msime_client_core::skin::catalog::host_candidate_catalog(
-        &msime_client_core::skin::catalog::scan(&root),
+    let entry = lingyao_client_core::skin::catalog::host_candidate_catalog(
+        &lingyao_client_core::skin::catalog::scan(&root),
         &root,
         "sakura",
     )["packages"][0]
@@ -2297,7 +2297,7 @@ fn resolve_theme_reads_the_package_from_either_source() {
 
     // A SkinSummary is not a catalog entry: passing one as `package` is refused, not read without its declared modes.
     let summary = serde_json::to_value(
-        msime_client_core::skin::catalog::load_package(&root, "sakura").unwrap(),
+        lingyao_client_core::skin::catalog::load_package(&root, "sakura").unwrap(),
     )
     .unwrap();
     let refused = call(json!({
@@ -2350,7 +2350,7 @@ fn resolve_theme_reads_the_package_from_either_source() {
         assert_eq!(call(request)["error"], error);
     }
     assert_eq!(
-        read(unsafe { msime_client_resolve_theme(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_resolve_theme(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2361,14 +2361,14 @@ fn custom_skin_library_reaches_a_c_abi_host_without_a_second_store() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().to_str().unwrap().to_owned();
     let call = |request: String| {
-        read(unsafe { msime_client_custom_skin_library(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_custom_skin_library(request.as_ptr(), request.len()) })
     };
     let read_library = || call(json!({"directory": root}).to_string());
     // An untouched library is an empty list rather than a failure to show.
     assert_eq!(read_library(), json!({"ok": true, "value": []}));
 
     let design =
-        serde_json::to_value(msime_client_core::preferences::TouchKeyboardSkinDesign::default())
+        serde_json::to_value(lingyao_client_core::preferences::TouchKeyboardSkinDesign::default())
             .unwrap();
     let created = call(
         json!({
@@ -2428,7 +2428,7 @@ fn custom_skin_library_reaches_a_c_abi_host_without_a_second_store() {
     // process happens to have as its working directory.
     assert_eq!(call(json!({"directory": "skins"}).to_string())["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_custom_skin_library(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_custom_skin_library(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(call("not json".to_owned())["error"], "community_invalid");
@@ -2440,13 +2440,13 @@ fn installing_a_community_skin_is_one_step_so_a_failed_import_ends_its_trial() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().to_str().unwrap().to_owned();
     let install = |request: String| {
-        read(unsafe { msime_client_community_skin_install(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_community_skin_install(request.as_ptr(), request.len()) })
     };
     let trial = |request: String| {
-        read(unsafe { msime_client_keyboard_skin_trial(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_keyboard_skin_trial(request.as_ptr(), request.len()) })
     };
-    let preferences = msime_client_core::preferences::PreferencesStore::new(directory.path());
-    let design = serde_json::to_value(msime_client_core::preferences::TouchKeyboardSkinDesign {
+    let preferences = lingyao_client_core::preferences::PreferencesStore::new(directory.path());
+    let design = serde_json::to_value(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
         background: 0x102030,
         ..Default::default()
     })
@@ -2464,7 +2464,7 @@ fn installing_a_community_skin_is_one_step_so_a_failed_import_ends_its_trial() {
     let applied = preferences.load().unwrap();
     assert_eq!(
         applied.preferences.global_theme,
-        msime_client_core::skin::theme::GlobalTheme::Custom
+        lingyao_client_core::skin::theme::GlobalTheme::Custom
     );
     assert_eq!(
         applied
@@ -2492,11 +2492,11 @@ fn installing_a_community_skin_is_one_step_so_a_failed_import_ends_its_trial() {
     let reverted = preferences.load().unwrap();
     assert_ne!(
         reverted.preferences.global_theme,
-        msime_client_core::skin::theme::GlobalTheme::Custom
+        lingyao_client_core::skin::theme::GlobalTheme::Custom
     );
     // The library keeps it: declining the trial is declining to wear it now, not to own it.
     let library = json!({"directory": root}).to_string();
-    let saved = read(unsafe { msime_client_custom_skin_library(library.as_ptr(), library.len()) });
+    let saved = read(unsafe { lingyao_client_custom_skin_library(library.as_ptr(), library.len()) });
     assert_eq!(saved["value"][0]["id"], id);
 
     // Recovery is safe with nothing pending, because that is exactly when it runs: at startup,
@@ -2520,11 +2520,11 @@ fn installing_a_community_skin_is_one_step_so_a_failed_import_ends_its_trial() {
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_community_skin_install(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_community_skin_install(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_keyboard_skin_trial(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_keyboard_skin_trial(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2540,7 +2540,7 @@ fn the_reply_library_a_keyboard_rereads_is_written_through_its_own_store() {
         .unwrap()
         .to_owned();
     let call = |request: String| {
-        read(unsafe { msime_client_community_resource_library(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_community_resource_library(request.as_ptr(), request.len()) })
     };
     let template = |id: &str, prompt: &str| {
         json!({
@@ -2638,7 +2638,7 @@ fn the_reply_library_a_keyboard_rereads_is_written_through_its_own_store() {
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_community_resource_library(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_community_resource_library(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2647,7 +2647,7 @@ fn the_reply_library_a_keyboard_rereads_is_written_through_its_own_store() {
 #[cfg(not(target_os = "android"))]
 fn ai_skin_planning_keeps_the_instruction_and_the_parser_together() {
     let call = |request: String| {
-        read(unsafe { msime_client_ai_skin_plan(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_ai_skin_plan(request.as_ptr(), request.len()) })
     };
 
     // The host does not write the instruction. It names the exact document the parser accepts, so
@@ -2662,7 +2662,7 @@ fn ai_skin_planning_keeps_the_instruction_and_the_parser_together() {
     assert_eq!(composed["value"]["body"]["messages"][0]["role"], "system");
     assert_eq!(
         composed["value"]["body"]["messages"][0]["content"],
-        msime_client_core::skin::ai::AI_SKIN_SYSTEM_PROMPT
+        lingyao_client_core::skin::ai::AI_SKIN_SYSTEM_PROMPT
     );
     assert_eq!(
         composed["value"]["body"]["messages"][1]["content"],
@@ -2779,7 +2779,7 @@ fn ai_skin_planning_keeps_the_instruction_and_the_parser_together() {
         "ai_skin_response"
     );
     assert_eq!(
-        read(unsafe { msime_client_ai_skin_plan(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_ai_skin_plan(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2806,7 +2806,7 @@ fn skin_resource_bridge_revalidates_kind_and_package_containment() {
     let directory = root.to_str().unwrap().to_owned();
     let call = |request: Value| {
         let document = request.to_string();
-        read(unsafe { msime_client_skin_resource(document.as_ptr(), document.len()) })
+        read(unsafe { lingyao_client_skin_resource(document.as_ptr(), document.len()) })
     };
     let image = call(json!({
         "directory": directory,
@@ -2845,7 +2845,7 @@ fn skin_resource_bridge_revalidates_kind_and_package_containment() {
     });
     let stylesheet_document = stylesheet_request.to_string();
     let stylesheet = read(unsafe {
-        msime_client_skin_toolbar_stylesheet(
+        lingyao_client_skin_toolbar_stylesheet(
             stylesheet_document.as_ptr(),
             stylesheet_document.len(),
         )
@@ -2854,7 +2854,7 @@ fn skin_resource_bridge_revalidates_kind_and_package_containment() {
         stylesheet,
         json!({"ok": true, "value": ".sample { color: red; }"})
     );
-    let invalid = read(unsafe { msime_client_skin_resource(std::ptr::null(), 0) });
+    let invalid = read(unsafe { lingyao_client_skin_resource(std::ptr::null(), 0) });
     assert_eq!(invalid["ok"], false);
 }
 #[test]
@@ -2862,7 +2862,7 @@ fn skin_resource_bridge_revalidates_kind_and_package_containment() {
 fn try_preferences_reader_reports_contention_without_defaults() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().to_str().unwrap();
-    let load = || read(unsafe { msime_client_try_load_preferences(path.as_ptr(), path.len()) });
+    let load = || read(unsafe { lingyao_client_try_load_preferences(path.as_ptr(), path.len()) });
     let initial = load();
     assert_eq!(initial["ok"], true);
     assert_eq!(initial["value"]["revision"], 0);
@@ -2878,7 +2878,7 @@ fn try_preferences_reader_reports_contention_without_defaults() {
     std::fs::write(directory.path().join("preferences.json"), "broken").unwrap();
     assert_eq!(load()["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_try_load_preferences(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_try_load_preferences(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -2888,7 +2888,7 @@ fn try_preferences_reader_reports_contention_without_defaults() {
 fn recover_preferences_backs_up_malformed_documents_only() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().to_str().unwrap();
-    let recover = || read(unsafe { msime_client_recover_preferences(path.as_ptr(), path.len()) });
+    let recover = || read(unsafe { lingyao_client_recover_preferences(path.as_ptr(), path.len()) });
     let document = directory.path().join("preferences.json");
 
     // Missing: nothing is written.
@@ -2912,7 +2912,7 @@ fn recover_preferences_backs_up_malformed_documents_only() {
         backup.file_name().unwrap().to_str().unwrap()
     );
     assert_eq!(std::fs::read(&backup).unwrap(), b"{\"format_version\":1,");
-    let loaded = read(unsafe { msime_client_load_preferences(path.as_ptr(), path.len()) });
+    let loaded = read(unsafe { lingyao_client_load_preferences(path.as_ptr(), path.len()) });
     assert_eq!(loaded["value"], value["snapshot"]);
 
     // Valid now: a second call is a no-op.
@@ -2927,12 +2927,12 @@ fn recover_preferences_backs_up_malformed_documents_only() {
     assert_eq!(std::fs::read_to_string(&document).unwrap(), future);
 
     assert_eq!(
-        read(unsafe { msime_client_recover_preferences(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_recover_preferences(std::ptr::null(), 0) })["ok"],
         false
     );
     let relative = "relative";
     assert_eq!(
-        read(unsafe { msime_client_recover_preferences(relative.as_ptr(), relative.len()) })["ok"],
+        read(unsafe { lingyao_client_recover_preferences(relative.as_ptr(), relative.len()) })["ok"],
         false
     );
 }
@@ -2945,7 +2945,7 @@ fn save_preferences_uses_compare_and_swap_and_rejects_invalid_snapshots() {
     let snapshot = serde_json::to_string(&PreferencesSnapshot::default()).unwrap();
     let save = |revision, document: &str| {
         read(unsafe {
-            msime_client_save_preferences(
+            lingyao_client_save_preferences(
                 path.as_ptr(),
                 path.len(),
                 revision,
@@ -2981,9 +2981,9 @@ fn a_document_holding_a_custom_skin_photo_can_still_be_saved_and_applied() {
     let photo = format!("iVBORw0KGgoA{}", "AAAA".repeat(10_000));
     let mut preferences = Preferences::default();
     preferences.custom_theme.keyboard =
-        Some(msime_client_core::preferences::TouchKeyboardSkinDesign {
+        Some(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
             photo: Some(photo.clone()),
-            ..msime_client_core::preferences::TouchKeyboardSkinDesign::default()
+            ..lingyao_client_core::preferences::TouchKeyboardSkinDesign::default()
         });
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().to_string_lossy().into_owned();
@@ -2995,7 +2995,7 @@ fn a_document_holding_a_custom_skin_photo_can_still_be_saved_and_applied() {
     .unwrap();
     assert!(snapshot.len() > 16_384);
     let saved = read(unsafe {
-        msime_client_save_preferences(
+        lingyao_client_save_preferences(
             path.as_ptr(),
             path.len(),
             0,
@@ -3016,7 +3016,7 @@ fn a_document_holding_a_custom_skin_photo_can_still_be_saved_and_applied() {
 
     let handle = test_host(&directory.path().join("host"));
     assert_eq!(update(handle, 1, &preferences)["ok"], true);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 
     // HostOptions carries the same preference object. Session creation must
     // accept the saved design too; the old 16 KiB boundary rejected this
@@ -3035,10 +3035,10 @@ fn a_document_holding_a_custom_skin_photo_can_still_be_saved_and_applied() {
     }
     assert!(oversized_options.len() > 16_384);
     let oversized_handle =
-        read(unsafe { msime_client_create(oversized_options.as_ptr(), oversized_options.len()) });
+        read(unsafe { lingyao_client_create(oversized_options.as_ptr(), oversized_options.len()) });
     assert_eq!(oversized_handle["ok"], true, "{oversized_handle}");
     let oversized_handle = oversized_handle["value"]["session"].as_u64().unwrap();
-    read(msime_client_destroy(oversized_handle));
+    read(lingyao_client_destroy(oversized_handle));
 }
 #[test]
 fn background_preferences_reader_uses_shared_store_and_preserves_bad_files() {
@@ -3049,7 +3049,7 @@ fn background_preferences_reader_uses_shared_store_and_preserves_bad_files() {
     let path = directory.path().to_str().unwrap().to_owned();
     let load = |path: String| {
         std::thread::spawn(move || {
-            read(unsafe { msime_client_load_preferences(path.as_ptr(), path.len()) })
+            read(unsafe { lingyao_client_load_preferences(path.as_ptr(), path.len()) })
         })
         .join()
         .unwrap()
@@ -3064,7 +3064,7 @@ fn background_preferences_reader_uses_shared_store_and_preserves_bad_files() {
     assert_eq!(std::fs::read_to_string(file).unwrap(), "broken");
     assert_eq!(load("relative".into())["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_load_preferences(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_load_preferences(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -3077,7 +3077,7 @@ fn typing_statistics_boundary_persists_only_aggregate_counts() {
             "action": action,
         }))
         .unwrap();
-        read(unsafe { msime_client_typing_statistics(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_typing_statistics(request.as_ptr(), request.len()) })
     };
     // Statistics ship off, so a fresh directory records nothing until asked. That is the
     // boundary's behaviour too, and it is asserted before turning them on.
@@ -3130,7 +3130,7 @@ fn typing_statistics_boundary_persists_only_aggregate_counts() {
     assert_eq!(reset["value"]["total"], 0);
     assert_eq!(reset["value"]["enabled"], false);
     assert_eq!(
-        read(unsafe { msime_client_typing_statistics(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_typing_statistics(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -3143,7 +3143,7 @@ fn typing_statistics_boundary_records_key_press_counts() {
             "action": action,
         }))
         .unwrap();
-        read(unsafe { msime_client_typing_statistics(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_typing_statistics(request.as_ptr(), request.len()) })
     };
     let batch = json!({
         "operation": "record_keys",
@@ -3190,17 +3190,17 @@ fn selection_statistics_host(
     let store = TypingStatisticsStore::new(root.join("user"));
     store.set_enabled(enabled).unwrap();
     let handle = test_host_with_pinyin_fixture(root, chinese_preferences());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     (handle, store)
 }
 /// Type `nihao` and commit the candidate at `index` by position, as a click or a tap does.
 fn commit_candidate_by_position(handle: u64, index: usize) {
     let mut view = Value::Null;
     for byte in b"nihao" {
-        view = read(msime_client_character(handle, *byte, false))["value"]["view"].clone();
+        view = read(lingyao_client_character(handle, *byte, false))["value"]["view"].clone();
     }
     let generation = view["generation"].as_u64().unwrap();
-    let selected = read(msime_client_select(handle, generation, index));
+    let selected = read(lingyao_client_select(handle, generation, index));
     assert!(selected["value"]["commit"].is_string(), "{selected}");
 }
 #[test]
@@ -3212,16 +3212,16 @@ fn selection_statistics_reach_the_store_at_focus_out() {
     }
     // Held in the session until the field ends, which is the point: no document cycle per selection.
     assert_eq!(store.load().unwrap().selections.total(), 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     let selections = store.load().unwrap().selections;
     assert_eq!(selections.ranks[0], 1);
     assert_eq!(selections.ranks[1], 2);
     assert_eq!(selections.total(), 3);
     // A second focus-out has nothing left to write and must not count anything twice.
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 3);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
     assert_eq!(store.load().unwrap().selections.total(), 3);
 }
 /// 用户自己关掉学习不影响统计；宿主标出的隐私会话（Android 的隐私模式和不允许学习的输入框）不计选词位置，取消标记后照常计数。
@@ -3236,31 +3236,31 @@ fn only_a_private_session_counts_no_selection_statistics() {
     };
     let handle = test_host_with_pinyin_fixture(dir.path(), preferences);
     SESSIONS.with(|sessions| assert!(!sessions.borrow()[&handle].options.learning));
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     for index in [0, 1] {
         commit_candidate_by_position(handle, index);
     }
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 2);
 
     assert_eq!(
-        read(msime_client_set_private_session(handle, true))["value"],
+        read(lingyao_client_set_private_session(handle, true))["value"],
         true
     );
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     commit_candidate_by_position(handle, 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 2);
 
     assert_eq!(
-        read(msime_client_set_private_session(handle, false))["value"],
+        read(lingyao_client_set_private_session(handle, false))["value"],
         false
     );
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     commit_candidate_by_position(handle, 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 3);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// 上屏效率：一次带输入码的选择计一次上屏和按下的字母数，宿主标出的隐私会话什么都不计。
@@ -3269,28 +3269,28 @@ fn a_committed_selection_counts_its_efficiency_and_a_private_session_counts_noth
     let dir = tempfile::tempdir().unwrap();
     let (handle, store) = selection_statistics_host(dir.path(), true);
     commit_candidate_by_position(handle, 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     let efficiency = store.load().unwrap().efficiency;
     assert_eq!(efficiency.commits, 1);
     assert_eq!(efficiency.typed_keys, 5);
     // 你好按全拼也是 nihao 五个键：不少按，也不多按。
     assert_eq!(efficiency.spelled_keys, 5);
     assert_eq!(efficiency.prediction_commits, 0);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 
     let dir = tempfile::tempdir().unwrap();
     let store = TypingStatisticsStore::new(dir.path().join("user"));
     store.set_enabled(true).unwrap();
     let handle = test_host_with_pinyin_fixture(dir.path(), chinese_preferences());
     assert_eq!(
-        read(msime_client_set_private_session(handle, true))["ok"],
+        read(lingyao_client_set_private_session(handle, true))["ok"],
         true
     );
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     commit_candidate_by_position(handle, 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     assert_eq!(store.load().unwrap().efficiency.commits, 0);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// 双拼的「少按键」也以全拼为基准：小鹤双拼 nihc 四个键打出的词，按全拼要 nihao 五个键。
@@ -3305,20 +3305,20 @@ fn a_shuangpin_commit_counts_its_keys_against_quanpin() {
         ..chinese_preferences()
     };
     let handle = test_host_with_pinyin_fixture(dir.path(), preferences);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let mut view = Value::Null;
     for byte in b"nihc" {
-        view = read(msime_client_character(handle, *byte, false))["value"]["view"].clone();
+        view = read(lingyao_client_character(handle, *byte, false))["value"]["view"].clone();
     }
     let generation = view["generation"].as_u64().unwrap();
-    let selected = read(msime_client_select(handle, generation, 0));
+    let selected = read(lingyao_client_select(handle, generation, 0));
     assert!(selected["value"]["commit"].is_string(), "{selected}");
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     let efficiency = store.load().unwrap().efficiency;
     assert_eq!(efficiency.commits, 1);
     assert_eq!(efficiency.typed_keys, 4);
     assert_eq!(efficiency.spelled_keys, 5);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// 后台写效率只有一个线程：写的时候排进来的批次由同一个线程接着写，一批也不丢。
@@ -3327,7 +3327,7 @@ fn background_efficiency_batches_share_one_writer_and_all_land() {
     let dir = tempfile::tempdir().unwrap();
     let (handle, store) = selection_statistics_host(dir.path(), true);
     let options = SESSIONS.with(|sessions| sessions.borrow()[&handle].options.clone());
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
     let commit = || EfficiencyCandidate {
         text: "ok".into(),
         typed_keys: 2,
@@ -3362,13 +3362,13 @@ fn efficiency_is_not_counted_while_statistics_are_off() {
     let dir = tempfile::tempdir().unwrap();
     let (handle, store) = selection_statistics_host(dir.path(), false);
     commit_candidate_by_position(handle, 0);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     // 写这一批时读到了关着的开关，直接留作下一批的缓存，不在输入线程上再读一遍文件。
     SESSIONS.with(|sessions| {
         assert_eq!(sessions.borrow()[&handle].statistics_enabled, Some(false));
     });
     assert_eq!(store.load().unwrap().efficiency.commits, 0);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// A result of the expression mode is picked, not typed: the preference opens the mode through the host, and the pick is kept out of the selection statistics as it is kept out of learning.
@@ -3380,8 +3380,8 @@ fn generated_mode_selections_stay_out_of_selection_statistics() {
     let store = TypingStatisticsStore::new(dir.path().join("user"));
     store.set_enabled(true).unwrap();
     let handle = test_host_with_pinyin_fixture(dir.path(), preferences);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    let entered = read(msime_client_character(handle, b'V', true));
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    let entered = read(lingyao_client_character(handle, b'V', true));
     assert_eq!(entered["value"]["view"]["local_mode"], "expression");
     assert_eq!(
         entered["value"]["view"]["spelling_symbols"],
@@ -3389,10 +3389,10 @@ fn generated_mode_selections_stay_out_of_selection_statistics() {
     );
     let mut view = Value::Null;
     for byte in b"1+2" {
-        view = read(msime_client_character(handle, *byte, false))["value"]["view"].clone();
+        view = read(lingyao_client_character(handle, *byte, false))["value"]["view"].clone();
     }
     let generation = view["generation"].as_u64().unwrap();
-    let selected = read(msime_client_select(handle, generation, 1));
+    let selected = read(lingyao_client_select(handle, generation, 1));
     assert_eq!(selected["value"]["commit"], "1+2=3");
     assert_eq!(
         selected["value"]["commit_context"]["local_mode"],
@@ -3403,11 +3403,11 @@ fn generated_mode_selections_stay_out_of_selection_statistics() {
         false
     );
     commit_candidate_by_position(handle, 1);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
     let selections = store.load().unwrap().selections;
     assert_eq!(selections.ranks[1], 1);
     assert_eq!(selections.total(), 1);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn selection_statistics_reach_the_store_when_the_session_is_destroyed() {
@@ -3417,13 +3417,13 @@ fn selection_statistics_reach_the_store_when_the_session_is_destroyed() {
     commit_candidate_by_position(handle, 0);
     assert_eq!(store.load().unwrap().selections.total(), 0);
     // No focus-out first: a host tearing the session down directly still keeps what it counted.
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
     let selections = store.load().unwrap().selections;
     assert_eq!(selections.ranks[0], 1);
     assert_eq!(selections.ranks[1], 1);
     assert_eq!(selections.total(), 2);
 }
-/// personal_ngram_store.cpp:254-255 wrote the queued personal context from `atexit`. A host that quits without a focus-out or destroy (macOS `[NSApp terminate:]`) calls `msime_client_flush_all` first, which writes the selection counts its sessions hold and every queued personal-context transition.
+/// personal_ngram_store.cpp:254-255 wrote the queued personal context from `atexit`. A host that quits without a focus-out or destroy (macOS `[NSApp terminate:]`) calls `lingyao_client_flush_all` first, which writes the selection counts its sessions hold and every queued personal-context transition.
 #[test]
 fn flush_all_writes_what_live_sessions_still_hold() {
     let dir = tempfile::tempdir().unwrap();
@@ -3431,9 +3431,9 @@ fn flush_all_writes_what_live_sessions_still_hold() {
     commit_candidate_by_position(handle, 1);
     commit_candidate_by_position(handle, 0);
     assert_eq!(store.load().unwrap().selections.total(), 0);
-    assert_eq!(read(msime_client_flush_all())["ok"], true);
+    assert_eq!(read(lingyao_client_flush_all())["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 2);
-    let pairs: i64 = rusqlite::Connection::open(dir.path().join("user/msime_user.db"))
+    let pairs: i64 = rusqlite::Connection::open(dir.path().join("user/lingyao_user.db"))
         .unwrap()
         .query_row(
             "SELECT count(*) FROM personal_bigram WHERE previous=char(1) AND word='拟好'",
@@ -3443,9 +3443,9 @@ fn flush_all_writes_what_live_sessions_still_hold() {
         .unwrap();
     assert!(pairs > 0, "the queued personal context was not written");
     // The session is untouched and a second call has nothing left to count twice.
-    assert_eq!(read(msime_client_flush_all())["ok"], true);
+    assert_eq!(read(lingyao_client_flush_all())["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 2);
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
     assert_eq!(store.load().unwrap().selections.total(), 2);
 }
 #[test]
@@ -3464,12 +3464,12 @@ fn selection_statistics_are_written_once_a_batch_fills() {
     assert_eq!(store.load().unwrap().efficiency.commits, SELECTION_BATCH);
     commit_candidate_by_position(handle, 1);
     assert_eq!(store.load().unwrap().selections.total(), SELECTION_BATCH);
-    read(msime_client_focus(handle, false));
+    read(lingyao_client_focus(handle, false));
     let selections = store.load().unwrap().selections;
     assert_eq!(selections.total(), SELECTION_BATCH + 1);
     assert_eq!(selections.ranks[0], SELECTION_BATCH / 2 + 1);
     assert_eq!(selections.ranks[1], SELECTION_BATCH / 2);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn selection_statistics_write_nothing_while_switched_off() {
@@ -3481,8 +3481,8 @@ fn selection_statistics_write_nothing_while_switched_off() {
     for round in 0..SELECTION_BATCH as usize + 3 {
         commit_candidate_by_position(handle, round % 2);
     }
-    read(msime_client_focus(handle, false));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_focus(handle, false));
+    read(lingyao_client_destroy(handle));
     assert_eq!(std::fs::read(&path).unwrap(), before);
     assert_eq!(
         std::fs::metadata(&path).unwrap().modified().unwrap(),
@@ -3494,7 +3494,7 @@ fn selection_statistics_write_nothing_while_switched_off() {
 fn clipboard_reader_respects_preferences_and_preserves_history() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().to_str().unwrap();
-    let load = || read(unsafe { msime_client_load_clipboard_history(path.as_ptr(), path.len()) });
+    let load = || read(unsafe { lingyao_client_load_clipboard_history(path.as_ptr(), path.len()) });
     let store = PreferencesStore::new(directory.path());
     let saved = store
         .save(
@@ -3530,15 +3530,15 @@ fn clipboard_reader_respects_preferences_and_preserves_history() {
     std::fs::write(directory.path().join("preferences.json"), "broken").unwrap();
     assert_eq!(load()["error"], "history preferences unavailable");
     assert_eq!(
-        read(unsafe { msime_client_load_clipboard_history(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_load_clipboard_history(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_load_clipboard_history(b"relative".as_ptr(), 8) })["ok"],
+        read(unsafe { lingyao_client_load_clipboard_history(b"relative".as_ptr(), 8) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_load_clipboard_history([255u8].as_ptr(), 1) })["ok"],
+        read(unsafe { lingyao_client_load_clipboard_history([255u8].as_ptr(), 1) })["ok"],
         false
     );
 }
@@ -3552,7 +3552,7 @@ fn mobile_clipboard_uses_structured_actions() {
             "action": action,
         }))
         .unwrap();
-        read(unsafe { msime_client_mobile_clipboard_history(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_mobile_clipboard_history(request.as_ptr(), request.len()) })
     };
     assert_eq!(
         call(json!({"operation": "load"}))["value"]["entries"],
@@ -3593,14 +3593,14 @@ fn mobile_clipboard_uses_structured_actions() {
     );
 
     // A corrupt shared history is refused rather than replaced.
-    let shared = directory.path().join("MSIME/clipboard_history.json");
+    let shared = directory.path().join("LINGYAO/clipboard_history.json");
     let corrupt = b"invalid synthetic current history";
     std::fs::write(&shared, corrupt).unwrap();
     let refused = call(json!({"operation": "capture", "text": "synthetic rejected"}));
     assert_eq!(refused["ok"], false);
     assert_eq!(std::fs::read(&shared).unwrap(), corrupt);
 
-    let null = read(unsafe { msime_client_mobile_clipboard_history(std::ptr::null(), 0) });
+    let null = read(unsafe { lingyao_client_mobile_clipboard_history(std::ptr::null(), 0) });
     assert_eq!(null["ok"], false);
     let relative = serde_json::to_vec(&json!({
         "directory": "relative",
@@ -3608,7 +3608,7 @@ fn mobile_clipboard_uses_structured_actions() {
     }))
     .unwrap();
     assert_eq!(
-        read(unsafe { msime_client_mobile_clipboard_history(relative.as_ptr(), relative.len()) })
+        read(unsafe { lingyao_client_mobile_clipboard_history(relative.as_ptr(), relative.len()) })
             ["ok"],
         false
     );
@@ -3630,14 +3630,14 @@ fn history_removal_is_exact_idempotent_and_respects_disabled_setting() {
         .unwrap();
     let remove = |path: &std::path::Path, text: &str| {
         let request = serde_json::to_vec(&json!({"directory": path, "text": text})).unwrap();
-        read(unsafe { msime_client_remove_clipboard_history(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_remove_clipboard_history(request.as_ptr(), request.len()) })
     };
     std::fs::write(&file, br#"["synthetic first","synthetic second"]"#).unwrap();
     assert_eq!(
         remove(directory.path(), "synthetic first")["value"]["removed"],
         true
     );
-    let upgraded: Vec<msime_client_core::clipboard::ClipboardHistoryEntry> =
+    let upgraded: Vec<lingyao_client_core::clipboard::ClipboardHistoryEntry> =
         serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
     assert_eq!(upgraded.len(), 1);
     assert_eq!(upgraded[0].text, "synthetic second");
@@ -3650,7 +3650,7 @@ fn history_removal_is_exact_idempotent_and_respects_disabled_setting() {
         remove(std::path::Path::new("relative"), "synthetic")["ok"],
         false
     );
-    let maximum = msime_client_core::clipboard::MAX_TEXT_BYTES;
+    let maximum = lingyao_client_core::clipboard::MAX_TEXT_BYTES;
     assert_eq!(remove(directory.path(), &"x".repeat(maximum))["ok"], true);
     assert_eq!(
         remove(directory.path(), &"x".repeat(maximum + 1))["ok"],
@@ -3663,15 +3663,15 @@ fn history_removal_is_exact_idempotent_and_respects_disabled_setting() {
         remove(directory.path(), "synthetic second")["error"],
         "clipboard history disabled"
     );
-    let preserved: Vec<msime_client_core::clipboard::ClipboardHistoryEntry> =
+    let preserved: Vec<lingyao_client_core::clipboard::ClipboardHistoryEntry> =
         serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
     assert_eq!(preserved, upgraded);
     assert_eq!(
-        read(unsafe { msime_client_remove_clipboard_history(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_remove_clipboard_history(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_remove_clipboard_history(b"{".as_ptr(), 1) })["ok"],
+        read(unsafe { lingyao_client_remove_clipboard_history(b"{".as_ptr(), 1) })["ok"],
         false
     );
 }
@@ -3681,7 +3681,7 @@ fn history_capture_bridge_validates_and_returns_no_text() {
     let directory = tempfile::tempdir().unwrap();
     let capture = |request: Value| {
         let bytes = serde_json::to_vec(&request).unwrap();
-        read(unsafe { msime_client_capture_clipboard_history(bytes.as_ptr(), bytes.len()) })
+        read(unsafe { lingyao_client_capture_clipboard_history(bytes.as_ptr(), bytes.len()) })
     };
     let request = json!({"directory": directory.path(), "text": "synthetic capture"});
     assert_eq!(
@@ -3703,7 +3703,7 @@ fn history_capture_bridge_validates_and_returns_no_text() {
         capture(json!({"directory": "relative", "text": "synthetic"}))["ok"],
         false
     );
-    let maximum = msime_client_core::clipboard::MAX_TEXT_BYTES;
+    let maximum = lingyao_client_core::clipboard::MAX_TEXT_BYTES;
     assert_eq!(
         capture(json!({"directory": directory.path(), "text": "x".repeat(maximum)}))["ok"],
         true
@@ -3714,7 +3714,7 @@ fn history_capture_bridge_validates_and_returns_no_text() {
     );
     assert_eq!(capture(json!({"directory": directory.path()}))["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_capture_clipboard_history(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_capture_clipboard_history(std::ptr::null(), 0) })["ok"],
         false
     );
     std::fs::write(directory.path().join("preferences.json"), "broken").unwrap();
@@ -3729,7 +3729,7 @@ fn test_host(root: &std::path::Path) -> u64 {
 }
 fn chinese_preferences() -> Preferences {
     Preferences {
-        default_ime_mode: msime_client_core::preferences::DefaultImeMode::Chinese,
+        default_ime_mode: lingyao_client_core::preferences::DefaultImeMode::Chinese,
         ..Preferences::default()
     }
 }
@@ -3740,7 +3740,7 @@ fn test_host_preferences(root: &std::path::Path, preferences: Preferences) -> u6
         path
     };
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": preferences }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true);
     created["value"]["session"].as_u64().unwrap()
 }
@@ -3758,13 +3758,13 @@ fn test_host_with_pinyin_fixture(root: &std::path::Path, preferences: Preference
                    CREATE TABLE quick_parases(key TEXT,value TEXT,weight INTEGER);
                    CREATE INDEX idx_quick_parases_key_weight ON quick_parases(key,weight DESC);";
     for directory in [&resources, &dictionaries] {
-        rusqlite::Connection::open(directory.join("msime-pinyin.db"))
+        rusqlite::Connection::open(directory.join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(fixture)
             .unwrap();
     }
     let options = json!({ "api_version": 1, "resources": resources, "user_data": path("user"), "cache": path("cache"), "dictionaries": dictionaries, "preferences": preferences }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true);
     created["value"]["session"].as_u64().unwrap()
 }
@@ -3783,7 +3783,7 @@ fn session_reads_live_preferences_when_the_options_copy_carries_a_retired_field(
         json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences_directory": preferences_directory, "preferences": stale }).to_string()
     };
     let create =
-        |options: String| read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+        |options: String| read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
 
     // Nothing to stand in for the copy: refused as before, and the directory is not created by looking.
     let missing = directory.path().join("missing");
@@ -3800,19 +3800,19 @@ fn session_reads_live_preferences_when_the_options_copy_carries_a_retired_field(
     let created = create(options(&state));
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
 fn settled_rerank_without_movement_omits_the_unused_view() {
     let directory = tempfile::tempdir().unwrap();
     let handle = test_host(directory.path());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    let result = read(msime_client_rerank_settled(handle));
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    let result = read(lingyao_client_rerank_settled(handle));
     assert_eq!(result["ok"], true);
     assert_eq!(result["value"]["moved"], false);
     assert!(result["value"].get("view").is_none());
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// The desktop model preference switches the runtime's settled rerank, at creation and on a later update, and the keyboard model switch reaches the rebuilt Engine the same way.
@@ -3843,13 +3843,13 @@ fn sentence_model_switches_follow_the_preferences() {
     preferences.sentence_association.neural_desktop = true;
     assert_eq!(update(handle, 2, &preferences)["ok"], true);
     assert_eq!(switches(), (true, false));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 fn update(handle: u64, revision: u64, preferences: &Preferences) -> Value {
     let snapshot = json!({ "format_version": 1, "revision": revision, "preferences": preferences })
         .to_string();
-    read(unsafe { msime_client_update_preferences(handle, snapshot.as_ptr(), snapshot.len()) })
+    read(unsafe { lingyao_client_update_preferences(handle, snapshot.as_ptr(), snapshot.len()) })
 }
 
 #[test]
@@ -3860,10 +3860,10 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
         ..Preferences::default()
     };
     let handle = test_host_preferences(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     let mut view = Value::Null;
     for byte in b"U4e2d" {
-        view = read(msime_client_character(
+        view = read(lingyao_client_character(
             handle,
             *byte,
             byte.is_ascii_uppercase(),
@@ -3872,14 +3872,14 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     }
     assert!(!view["candidates"].as_array().unwrap().is_empty());
     assert_eq!(
-        read(msime_client_translation_query(handle))["value"],
+        read(lingyao_client_translation_query(handle))["value"],
         Value::Null
     );
     preferences.candidate_translations = true;
     preferences.translation_target_language =
-        msime_client_core::preferences::TranslationTargetLanguage::Fr;
+        lingyao_client_core::preferences::TranslationTargetLanguage::Fr;
     preferences.translation_secondary_language =
-        Some(msime_client_core::preferences::TranslationTargetLanguage::Ja);
+        Some(lingyao_client_core::preferences::TranslationTargetLanguage::Ja);
     preferences.custom_translation.enabled = true;
     preferences.custom_translation.endpoint = "https://translation.example.invalid".into();
     preferences.tencent_tmt.secret_id = "AKIDsynthetic".into();
@@ -3887,7 +3887,7 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     let changed = update(handle, 1, &preferences);
     assert_eq!(changed["value"]["deferred"], true);
     assert_eq!(changed["value"]["view"]["generation"], view["generation"]);
-    let query = read(msime_client_translation_query(handle));
+    let query = read(lingyao_client_translation_query(handle));
     assert_eq!(query["value"]["generation"], view["generation"]);
     assert_eq!(query["value"]["target_language"], "fr");
     assert_eq!(query["value"]["target_languages"], json!(["fr", "ja"]));
@@ -3900,7 +3900,7 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     assert!(query["value"]["tencent_tmt"].is_null());
     preferences.custom_translation.enabled = false;
     update(handle, 2, &preferences);
-    let tencent_query = read(msime_client_translation_query(handle));
+    let tencent_query = read(lingyao_client_translation_query(handle));
     assert_eq!(tencent_query["value"]["generation"], view["generation"]);
     assert_eq!(
         tencent_query["value"]["tencent_tmt"]["region"],
@@ -3912,15 +3912,15 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     );
     preferences.tencent_tmt.enabled = false;
     update(handle, 3, &preferences);
-    assert!(read(msime_client_translation_query(handle))["value"]["tencent_tmt"].is_null());
+    assert!(read(lingyao_client_translation_query(handle))["value"]["tencent_tmt"].is_null());
     preferences.tencent_tmt.enabled = true;
     preferences.tencent_tmt.secret_key.clear();
     update(handle, 4, &preferences);
-    assert!(read(msime_client_translation_query(handle))["value"]["tencent_tmt"].is_null());
+    assert!(read(lingyao_client_translation_query(handle))["value"]["tencent_tmt"].is_null());
     preferences.candidate_translations = false;
     update(handle, 5, &preferences);
     assert_eq!(
-        read(msime_client_translation_query(handle))["value"],
+        read(lingyao_client_translation_query(handle))["value"],
         Value::Null
     );
 
@@ -3929,9 +3929,9 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     // and was why Windows could not offer the setting at all.
     preferences.candidate_english_gloss = true;
     preferences.translation_target_language =
-        msime_client_core::preferences::TranslationTargetLanguage::En;
+        lingyao_client_core::preferences::TranslationTargetLanguage::En;
     update(handle, 6, &preferences);
-    let gloss = read(msime_client_translation_query(handle));
+    let gloss = read(lingyao_client_translation_query(handle));
     assert_eq!(gloss["value"]["generation"], view["generation"]);
     assert_eq!(gloss["value"]["english_gloss"], true);
     assert_eq!(gloss["value"]["target_language"], "en");
@@ -3947,20 +3947,20 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     // language is an online request or nothing - never a wrong-language
     // gloss.
     preferences.translation_target_language =
-        msime_client_core::preferences::TranslationTargetLanguage::Ja;
+        lingyao_client_core::preferences::TranslationTargetLanguage::Ja;
     update(handle, 7, &preferences);
     assert_eq!(
-        read(msime_client_translation_query(handle))["value"],
+        read(lingyao_client_translation_query(handle))["value"],
         Value::Null
     );
 
     // An English secondary language still enables the packaged offline
     // dictionary while preserving the user's primary target.
     preferences.translation_secondary_language =
-        Some(msime_client_core::preferences::TranslationTargetLanguage::En);
+        Some(lingyao_client_core::preferences::TranslationTargetLanguage::En);
     preferences.candidate_english_gloss = true;
     update(handle, 8, &preferences);
-    let secondary_gloss = read(msime_client_translation_query(handle));
+    let secondary_gloss = read(lingyao_client_translation_query(handle));
     assert_eq!(
         secondary_gloss["value"]["target_languages"],
         json!(["ja", "en"])
@@ -3972,15 +3972,15 @@ fn translation_queries_use_latest_preferences_without_resetting_composition() {
     // private to offline lookup.
     preferences.candidate_english_gloss = false;
     preferences.translation_target_language =
-        msime_client_core::preferences::TranslationTargetLanguage::En;
+        lingyao_client_core::preferences::TranslationTargetLanguage::En;
     preferences.candidate_translations = true;
     preferences.tencent_tmt.secret_key = "synthetic".into();
     update(handle, 9, &preferences);
-    let online = read(msime_client_translation_query(handle));
+    let online = read(lingyao_client_translation_query(handle));
     assert_eq!(online["value"]["english_gloss"], false);
     assert!(online["value"]["resources"].is_null());
     assert!(online["value"]["user_data"].is_string());
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 fn offline_gloss_fixture(path: &std::path::Path, language: &str) {
@@ -4022,7 +4022,7 @@ fn candidate_gloss_request_retries_traditional_candidates_under_their_simplified
     }))
     .unwrap();
     let reply = read(unsafe {
-        msime_client_candidate_gloss_request(
+        lingyao_client_candidate_gloss_request(
             request.as_ptr(),
             request.len(),
             resources.as_ptr(),
@@ -4048,14 +4048,14 @@ fn translation_query_lists_installed_offline_gloss_languages() {
     let mut preferences = Preferences {
         candidate_translations: false,
         candidate_english_gloss: true,
-        translation_target_language: msime_client_core::preferences::TranslationTargetLanguage::Fr,
+        translation_target_language: lingyao_client_core::preferences::TranslationTargetLanguage::Fr,
         ..Preferences::default()
     };
     preferences.tencent_tmt.enabled = false;
     let handle = test_host_preferences(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"U4e2d" {
-        read(msime_client_character(
+        read(lingyao_client_character(
             handle,
             *byte,
             byte.is_ascii_uppercase(),
@@ -4063,21 +4063,21 @@ fn translation_query_lists_installed_offline_gloss_languages() {
     }
     // Nothing installed: French with translation off has no gloss source, as before.
     assert_eq!(
-        read(msime_client_translation_query(handle))["value"],
+        read(lingyao_client_translation_query(handle))["value"],
         Value::Null
     );
     preferences.candidate_translations = true;
     update(handle, 1, &preferences);
-    let plain = read(msime_client_translation_query(handle));
+    let plain = read(lingyao_client_translation_query(handle));
     assert!(plain["value"].get("offline_gloss_languages").is_none());
     assert!(plain["value"]["resources"].is_null());
 
     offline_gloss_fixture(&dir.path().join("offline-glosses/zh-fr.db"), "fr");
     offline_gloss_fixture(&dir.path().join("offline-glosses/zh-ko.db"), "ko");
     preferences.translation_secondary_language =
-        Some(msime_client_core::preferences::TranslationTargetLanguage::Ja);
+        Some(lingyao_client_core::preferences::TranslationTargetLanguage::Ja);
     update(handle, 2, &preferences);
-    let installed = read(msime_client_translation_query(handle));
+    let installed = read(lingyao_client_translation_query(handle));
     // Korean is installed but not a target; Japanese is a target but not installed.
     assert_eq!(installed["value"]["offline_gloss_languages"], json!(["fr"]));
     assert!(installed["value"]["resources"].is_string());
@@ -4086,7 +4086,7 @@ fn translation_query_lists_installed_offline_gloss_languages() {
     // The offline switch alone reaches it, with online translation off and no provider implied.
     preferences.candidate_translations = false;
     update(handle, 3, &preferences);
-    let offline = read(msime_client_translation_query(handle));
+    let offline = read(lingyao_client_translation_query(handle));
     assert_eq!(offline["value"]["offline_gloss_languages"], json!(["fr"]));
     assert_eq!(offline["value"]["translation_account"], false);
     assert!(offline["value"]["tencent_tmt"].is_null());
@@ -4095,10 +4095,10 @@ fn translation_query_lists_installed_offline_gloss_languages() {
     preferences.candidate_english_gloss = false;
     update(handle, 4, &preferences);
     assert_eq!(
-        read(msime_client_translation_query(handle))["value"],
+        read(lingyao_client_translation_query(handle))["value"],
         Value::Null
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -4112,7 +4112,7 @@ fn candidate_gloss_request_reads_the_offline_dictionary_for_its_target_language(
     let call = |request: Value| {
         let request = serde_json::to_vec(&request).unwrap();
         read(unsafe {
-            msime_client_candidate_gloss_request(
+            lingyao_client_candidate_gloss_request(
                 request.as_ptr(),
                 request.len(),
                 resources.as_ptr(),
@@ -4188,9 +4188,9 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
         ..Preferences::default()
     };
     let handle = test_host_preferences(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"U4e2d" {
-        read(msime_client_character(
+        read(lingyao_client_character(
             handle,
             *byte,
             byte.is_ascii_uppercase(),
@@ -4222,7 +4222,7 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
         std::thread::scope(|scope| {
             let call = scope.spawn(|| {
                 read(unsafe {
-                    msime_client_translation_provider_request(
+                    lingyao_client_translation_provider_request(
                         request.as_ptr(),
                         request.len(),
                         path.as_ptr(),
@@ -4258,15 +4258,15 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
         })
     };
 
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["provider"], "tencent");
-    // Without the stored choice the MSIME account endpoint is not used.
+    // Without the stored choice the LINGYAO account endpoint is not used.
     assert_eq!(query["translation_account"], false);
     assert_eq!(forward(&query).unwrap()["query"]["provider"], "tencent");
 
     preferences.tencent_tmt.enabled = false;
     update(handle, 1, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["provider"], "none");
     assert!(
         forward(&query).is_none(),
@@ -4275,7 +4275,7 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
 
     preferences.niutrans.enabled = true;
     update(handle, 2, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["provider"], "niutrans");
     assert!(query["niutrans"].is_null() && query["tencent_tmt"].is_null());
     let received = forward(&query).unwrap();
@@ -4285,7 +4285,7 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
     preferences.niutrans.enabled = false;
     preferences.custom_translation.enabled = true;
     update(handle, 3, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["provider"], "custom");
     assert!(query["custom_translation"].is_null());
     assert_eq!(forward(&query).unwrap()["query"]["provider"], "custom");
@@ -4296,7 +4296,7 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
     preferences.custom_translation.enabled = false;
     preferences.translation_account = true;
     update(handle, 4, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["translation_account"], true);
     assert_eq!(query["provider"], "account");
     let received = forward(&query).expect("an account query should reach the provider");
@@ -4306,19 +4306,19 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
     // Tencent's default `enabled: true` without usable secrets is not a user choice and does not displace the account; usable secrets do.
     preferences.tencent_tmt.enabled = true;
     update(handle, 5, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["translation_account"], true);
     preferences.tencent_tmt.secret_id = "id".into();
     preferences.tencent_tmt.secret_key = "key".into();
     update(handle, 6, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["translation_account"], false);
     preferences.tencent_tmt.enabled = false;
 
     // The user's own service wins over the account.
     preferences.niutrans.enabled = true;
     update(handle, 7, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["translation_account"], false);
 
     // The offline English gloss keeps the query alive with candidate translations off, and must not carry the account.
@@ -4326,22 +4326,22 @@ fn translation_query_names_the_selected_service_through_the_provider_socket() {
     preferences.candidate_translations = false;
     preferences.candidate_english_gloss = true;
     preferences.translation_target_language =
-        msime_client_core::preferences::TranslationTargetLanguage::En;
+        lingyao_client_core::preferences::TranslationTargetLanguage::En;
     update(handle, 8, &preferences);
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["english_gloss"], true);
     assert_eq!(query["translation_account"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn translation_results_reject_control_characters_atomically() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     let mut view = Value::Null;
     for byte in b"U4e2d" {
-        view = read(msime_client_character(
+        view = read(lingyao_client_character(
             handle,
             *byte,
             byte.is_ascii_uppercase(),
@@ -4353,7 +4353,7 @@ fn translation_results_reject_control_characters_atomically() {
     let apply = |values: Value| {
         let encoded = serde_json::to_vec(&values).unwrap();
         read(unsafe {
-            msime_client_apply_translations(handle, generation, encoded.as_ptr(), encoded.len())
+            lingyao_client_apply_translations(handle, generation, encoded.as_ptr(), encoded.len())
         })
     };
 
@@ -4377,8 +4377,8 @@ fn translation_results_reject_control_characters_atomically() {
             assert_eq!(rejected["error"], "translation entries exceed limits");
         }
     }
-    assert_eq!(read(msime_client_view(handle))["value"], before);
-    read(msime_client_destroy(handle));
+    assert_eq!(read(lingyao_client_view(handle))["value"], before);
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -4392,7 +4392,7 @@ fn translation_queries_follow_active_japanese_mode() {
             // path without depending on a packaged model.
             std::fs::create_dir_all(dir.path().join("resources")).unwrap();
             std::fs::write(
-                dir.path().join("resources/msime-japanese.dat"),
+                dir.path().join("resources/lingyao-japanese.dat"),
                 b"synthetic",
             )
             .unwrap();
@@ -4407,18 +4407,18 @@ fn translation_queries_follow_active_japanese_mode() {
             ..chinese_preferences()
         };
         let handle = test_host_preferences(dir.path(), preferences.clone());
-        read(msime_client_focus(handle, true));
+        read(lingyao_client_focus(handle, true));
         if temporary {
-            read(msime_client_character(handle, b'R', true));
+            read(lingyao_client_character(handle, b'R', true));
         }
-        let view = read(msime_client_character(handle, b'a', false))["value"]["view"].clone();
+        let view = read(lingyao_client_character(handle, b'a', false))["value"]["view"].clone();
         assert!(!view["candidates"].as_array().unwrap().is_empty());
         assert_eq!(view["local_mode"] == "temporary_japanese", temporary);
         assert_eq!(
-            read(msime_client_translation_query(handle))["value"],
+            read(lingyao_client_translation_query(handle))["value"],
             Value::Null
         );
-        read(msime_client_command(handle, 3));
+        read(lingyao_client_command(handle, 3));
         update(
             handle,
             1,
@@ -4428,17 +4428,17 @@ fn translation_queries_follow_active_japanese_mode() {
             },
         );
         for byte in b"U4e2d" {
-            read(msime_client_character(
+            read(lingyao_client_character(
                 handle,
                 *byte,
                 byte.is_ascii_uppercase(),
             ));
         }
-        let query = read(msime_client_translation_query(handle));
+        let query = read(lingyao_client_translation_query(handle));
         assert!(query["value"]["candidates"]
             .as_array()
             .is_some_and(|items| !items.is_empty()));
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
     }
 }
 
@@ -4450,9 +4450,9 @@ fn shuangpin_preedit_mode_is_applied_after_composition() {
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), raw.clone());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'h', false));
-    let before = read(msime_client_character(handle, b'k', false))["value"]["view"].clone();
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'h', false));
+    let before = read(lingyao_client_character(handle, b'k', false))["value"]["view"].clone();
     let expanded = Preferences {
         shuangpin_preedit_uses_raw: false,
         ..raw.clone()
@@ -4460,18 +4460,18 @@ fn shuangpin_preedit_mode_is_applied_after_composition() {
     let queued = update(handle, 1, &expanded);
     assert_eq!(queued["value"]["deferred"], true);
     assert_eq!(queued["value"]["view"], before);
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     assert_eq!(update(handle, 1, &expanded)["value"]["deferred"], false);
-    read(msime_client_character(handle, b'h', false));
-    let after = read(msime_client_character(handle, b'k', false))["value"]["view"].clone();
+    read(lingyao_client_character(handle, b'h', false));
+    let after = read(lingyao_client_character(handle, b'k', false))["value"]["view"].clone();
     assert_eq!(after["editing_text"], before["editing_text"]);
     assert_ne!(after["preedit"], before["preedit"]);
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     update(handle, 2, &raw);
-    read(msime_client_character(handle, b'h', false));
-    let restored = read(msime_client_character(handle, b'k', false));
+    read(lingyao_client_character(handle, b'h', false));
+    let restored = read(lingyao_client_character(handle, b'k', false));
     assert_eq!(restored["value"]["view"]["preedit"], before["preedit"]);
-    msime_client_destroy(handle);
+    lingyao_client_destroy(handle);
 }
 
 #[test]
@@ -4483,15 +4483,15 @@ fn shuangpin_profile_creation_and_deferred_replacement_use_real_engine() {
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), microsoft.clone());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'b', false));
-    let first = read(msime_client_character(handle, b';', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'b', false));
+    let first = read(lingyao_client_character(handle, b';', false));
     assert_eq!(first["value"]["view"]["editing_text"], "b;");
     let xiaohe = Preferences {
         shuangpin_profile: ShuangpinProfile::Xiaohe,
         ..microsoft.clone()
     };
-    let before = read(msime_client_view(handle))["value"].clone();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     let queued = update(handle, 1, &xiaohe);
     assert_eq!(before["microsoft_shuangpin"], true);
     assert_eq!(before["shuangpin_profile"], "microsoft");
@@ -4499,60 +4499,60 @@ fn shuangpin_profile_creation_and_deferred_replacement_use_real_engine() {
     assert_eq!(queued["value"]["view"], before);
     // The old composition completes under Microsoft before replacing Engine.
     assert_eq!(
-        read(msime_client_command(handle, 2))["value"]["commit"],
+        read(lingyao_client_command(handle, 2))["value"]["commit"],
         "b;"
     );
     assert_eq!(update(handle, 1, &xiaohe)["value"]["deferred"], false);
     assert_eq!(
-        read(msime_client_view(handle))["value"]["shuangpin_profile"],
+        read(lingyao_client_view(handle))["value"]["shuangpin_profile"],
         "xiaohe"
     );
     assert_eq!(
-        read(msime_client_view(handle))["value"]["microsoft_shuangpin"],
+        read(lingyao_client_view(handle))["value"]["microsoft_shuangpin"],
         false
     );
-    read(msime_client_character(handle, b'b', false));
-    let replaced = read(msime_client_character(handle, b';', false));
+    read(lingyao_client_character(handle, b'b', false));
+    let replaced = read(lingyao_client_character(handle, b';', false));
     assert_ne!(replaced["value"]["view"]["editing_text"], "b;");
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     assert_eq!(update(handle, 2, &microsoft)["value"]["deferred"], false);
-    read(msime_client_character(handle, b'b', false));
+    read(lingyao_client_character(handle, b'b', false));
     assert_eq!(
-        read(msime_client_character(handle, b';', false))["value"]["view"]["editing_text"],
+        read(lingyao_client_character(handle, b';', false))["value"]["view"]["editing_text"],
         "b;"
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 /// A lock to Chinese carries the punctuation switch with it, as the Windows host turns the switch on whenever punctuation is locked; unlocking hands the switch back.
 #[test]
 fn chinese_punctuation_lock_overrides_a_switched_off_punctuation_mode() {
     let comma =
-        |handle| read(msime_client_punctuation_with_context(handle, b',', 0))["value"].clone();
+        |handle| read(lingyao_client_punctuation_with_context(handle, b',', 0))["value"].clone();
     let dir = tempfile::tempdir().unwrap();
     let locked = test_host_preferences(
         dir.path(),
         Preferences {
             chinese_punctuation: false,
-            punctuation_lock: msime_client_core::preferences::PunctuationLock::Chinese,
+            punctuation_lock: lingyao_client_core::preferences::PunctuationLock::Chinese,
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(locked, true));
+    read(lingyao_client_focus(locked, true));
     assert_eq!(comma(locked)["commit"], "，");
-    read(msime_client_set_chinese_punctuation(locked, false));
+    read(lingyao_client_set_chinese_punctuation(locked, false));
     assert_eq!(comma(locked)["commit"], "，");
-    read(msime_client_set_punctuation_lock(locked, 0));
+    read(lingyao_client_set_punctuation_lock(locked, 0));
     assert_ne!(comma(locked)["commit"], "，");
-    read(msime_client_set_punctuation_lock(locked, 1));
+    read(lingyao_client_set_punctuation_lock(locked, 1));
     assert_eq!(comma(locked)["commit"], "，");
-    read(msime_client_destroy(locked));
+    read(lingyao_client_destroy(locked));
 
     let dir = tempfile::tempdir().unwrap();
     let follow = test_host_preferences(dir.path(), chinese_preferences());
-    read(msime_client_focus(follow, true));
-    read(msime_client_set_chinese_punctuation(follow, false));
+    read(lingyao_client_focus(follow, true));
+    read(lingyao_client_set_chinese_punctuation(follow, false));
     assert_ne!(comma(follow)["commit"], "，");
-    read(msime_client_destroy(follow));
+    read(lingyao_client_destroy(follow));
 }
 
 /// Windows keeps punctuation Chinese in English mode while it is locked to Chinese (`ResolvePunctuationOpen`), so a host that hands English-mode punctuation over under the lock must get the Chinese mark back.
@@ -4562,17 +4562,17 @@ fn chinese_punctuation_lock_holds_in_english_mode() {
     let handle = test_host_preferences(
         dir.path(),
         Preferences {
-            punctuation_lock: msime_client_core::preferences::PunctuationLock::Chinese,
+            punctuation_lock: lingyao_client_core::preferences::PunctuationLock::Chinese,
             ..chinese_preferences()
         },
     );
-    read(msime_client_focus(handle, true));
-    read(msime_client_set_english_mode(handle, true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_set_english_mode(handle, true));
     assert_eq!(
-        read(msime_client_punctuation_with_context(handle, b',', 0))["value"]["commit"],
+        read(lingyao_client_punctuation_with_context(handle, b',', 0))["value"]["commit"],
         "，"
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -4580,25 +4580,25 @@ fn explicit_punctuation_finishes_unicode_and_rejects_invalid_bytes() {
     for enabled in [true, false] {
         let dir = tempfile::tempdir().unwrap();
         let handle = test_host(dir.path());
-        assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-        read(msime_client_set_chinese_punctuation(handle, enabled));
-        read(msime_client_character(handle, b'U', true));
+        assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+        read(lingyao_client_set_chinese_punctuation(handle, enabled));
+        read(lingyao_client_character(handle, b'U', true));
         for byte in b"4e2d" {
-            read(msime_client_character(handle, *byte, false));
+            read(lingyao_client_character(handle, *byte, false));
         }
-        let before = read(msime_client_view(handle));
+        let before = read(lingyao_client_view(handle));
         for invalid in [b'a', b' ', 0, 128, 255] {
-            assert_eq!(read(msime_client_punctuation(handle, invalid))["ok"], false);
-            assert_eq!(read(msime_client_view(handle)), before);
+            assert_eq!(read(lingyao_client_punctuation(handle, invalid))["ok"], false);
+            assert_eq!(read(lingyao_client_view(handle)), before);
         }
         assert_eq!(
-            std::thread::spawn(move || read(msime_client_punctuation(handle, b','))["ok"].clone())
+            std::thread::spawn(move || read(lingyao_client_punctuation(handle, b','))["ok"].clone())
                 .join()
                 .unwrap(),
             false
         );
-        assert_eq!(read(msime_client_view(handle)), before);
-        let result = read(msime_client_punctuation(handle, b','));
+        assert_eq!(read(lingyao_client_view(handle)), before);
+        let result = read(lingyao_client_punctuation(handle, b','));
         assert_eq!(result["ok"], true);
         assert_eq!(result["value"]["handled"], true);
         assert_eq!(
@@ -4606,8 +4606,8 @@ fn explicit_punctuation_finishes_unicode_and_rejects_invalid_bytes() {
             if enabled { "中，" } else { "中," }
         );
         assert_eq!(result["value"]["view"]["editing_text"], "");
-        read(msime_client_destroy(handle));
-        assert_eq!(read(msime_client_punctuation(handle, b','))["ok"], false);
+        read(lingyao_client_destroy(handle));
+        assert_eq!(read(lingyao_client_punctuation(handle, b','))["ok"], false);
     }
 }
 
@@ -4624,11 +4624,11 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
             ..chinese_preferences()
         },
     );
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
 
     for preceding in [u32::from('0'), u32::from('a'), u32::from('Z')] {
         for punctuation in *b",.:" {
-            let result = read(msime_client_punctuation_with_context(
+            let result = read(lingyao_client_punctuation_with_context(
                 handle,
                 punctuation,
                 preceding,
@@ -4638,13 +4638,13 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
         }
     }
     for preceding in [0, u32::from('中'), u32::from(' ')] {
-        let result = read(msime_client_punctuation_with_context(
+        let result = read(lingyao_client_punctuation_with_context(
             handle, b',', preceding,
         ));
         assert_eq!(result["value"]["commit"], "，");
     }
     assert_eq!(
-        read(msime_client_punctuation_with_context(
+        read(lingyao_client_punctuation_with_context(
             handle,
             b'?',
             u32::from('a')
@@ -4665,39 +4665,39 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
             ..chinese_preferences()
         },
     );
-    assert_eq!(read(msime_client_focus(plain, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(plain, true))["ok"], true);
     for preceding in [u32::from('0'), u32::from('a')] {
         assert_eq!(
-            read(msime_client_punctuation_with_context(
+            read(lingyao_client_punctuation_with_context(
                 plain, b',', preceding
             ))["value"]["commit"],
             "，"
         );
     }
 
-    read(msime_client_set_punctuation_lock(handle, 1));
+    read(lingyao_client_set_punctuation_lock(handle, 1));
     assert_eq!(
-        read(msime_client_punctuation_with_context(
+        read(lingyao_client_punctuation_with_context(
             handle,
             b',',
             u32::from('a')
         ))["value"]["commit"],
         "，"
     );
-    read(msime_client_set_punctuation_lock(handle, 2));
+    read(lingyao_client_set_punctuation_lock(handle, 2));
     assert_eq!(
-        read(msime_client_punctuation_with_context(
+        read(lingyao_client_punctuation_with_context(
             handle,
             b',',
             u32::from('中')
         ))["value"]["handled"],
         false
     );
-    read(msime_client_set_punctuation_lock(handle, 0));
+    read(lingyao_client_set_punctuation_lock(handle, 0));
 
-    read(msime_client_character(handle, b'n', false));
-    read(msime_client_character(handle, b'i', false));
-    let composed = read(msime_client_punctuation_with_context(
+    read(lingyao_client_character(handle, b'n', false));
+    read(lingyao_client_character(handle, b'i', false));
+    let composed = read(lingyao_client_punctuation_with_context(
         handle,
         b',',
         u32::from('a'),
@@ -4712,7 +4712,7 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
     assert_eq!(
-        read(msime_client_punctuation_with_context(
+        read(lingyao_client_punctuation_with_context(
             handle,
             b'.',
             u32::from('7')
@@ -4720,7 +4720,7 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
         "。"
     );
     assert_eq!(
-        read(msime_client_punctuation_with_context(
+        read(lingyao_client_punctuation_with_context(
             handle,
             b'a',
             u32::from('7')
@@ -4728,46 +4728,46 @@ fn contextual_punctuation_respects_editor_context_preferences_and_composition() 
         false
     );
     assert_eq!(
-        read(msime_client_punctuation_with_context(handle, b',', 0xd800))["ok"],
+        read(lingyao_client_punctuation_with_context(handle, b',', 0xd800))["ok"],
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn paired_book_title_auto_close_balance_is_narrow_and_owned() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(
-        read(msime_client_punctuation(handle, b'<'))["value"]["commit"],
+        read(lingyao_client_punctuation(handle, b'<'))["value"]["commit"],
         "《"
     );
-    let before = read(msime_client_view(handle));
+    let before = read(lingyao_client_view(handle));
     for invalid in [b'(', b'>', b'a', b' ', 0, 128, 255] {
         assert_eq!(
-            read(msime_client_balance_paired_punctuation_after_auto_close(
+            read(lingyao_client_balance_paired_punctuation_after_auto_close(
                 handle, invalid
             ))["ok"],
             false
         );
-        assert_eq!(read(msime_client_view(handle)), before);
+        assert_eq!(read(lingyao_client_view(handle)), before);
     }
-    let balanced = read(msime_client_balance_paired_punctuation_after_auto_close(
+    let balanced = read(lingyao_client_balance_paired_punctuation_after_auto_close(
         handle, b'<',
     ));
     assert_eq!(balanced["ok"], true);
     assert_eq!(balanced["value"], before["value"]);
     assert_eq!(
-        read(msime_client_punctuation(handle, b'<'))["value"]["commit"],
+        read(lingyao_client_punctuation(handle, b'<'))["value"]["commit"],
         "《"
     );
-    read(msime_client_balance_paired_punctuation_after_auto_close(
+    read(lingyao_client_balance_paired_punctuation_after_auto_close(
         handle, b'<',
     ));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
     assert_eq!(
-        read(msime_client_balance_paired_punctuation_after_auto_close(
+        read(lingyao_client_balance_paired_punctuation_after_auto_close(
             handle, b'<',
         ))["ok"],
         false
@@ -4779,15 +4779,15 @@ fn unpaired_punctuation_keeps_quote_alternation_and_book_title_nesting() {
     // With paired completion off (or in an excluded host) nothing supplies the closing half, so the Engine's own alternation and nesting are the only way to type it - the reference's GetPunctuation does both regardless of the setting.
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(
-        read(msime_client_set_paired_punctuation(handle, false))["ok"],
+        read(lingyao_client_set_paired_punctuation(handle, false))["ok"],
         true
     );
     let marks = |keys: &[u8]| -> Vec<String> {
         keys.iter()
             .map(|&key| {
-                read(msime_client_punctuation(handle, key))["value"]["commit"]
+                read(lingyao_client_punctuation(handle, key))["value"]["commit"]
                     .as_str()
                     .unwrap_or_default()
                     .to_owned()
@@ -4803,11 +4803,11 @@ fn unpaired_punctuation_keeps_quote_alternation_and_book_title_nesting() {
     // The state belongs to the session, not to the setting: turning pairing on mid-quote does not reset it, as the reference's toggle is never reset by the switch either. With pairing on, the same state carries over: the next quote closes the one left open and a book-title mark nests inside the open 《.
     assert_eq!(marks(b"\"<"), ["“", "《"]);
     assert_eq!(
-        read(msime_client_set_paired_punctuation(handle, true))["ok"],
+        read(lingyao_client_set_paired_punctuation(handle, true))["ok"],
         true
     );
     assert_eq!(marks(b"\"<>>"), ["”", "〈", "〉", "》"]);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -4816,12 +4816,12 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
         for (edge, expected) in [(0, first), (1, last)] {
             let dir = tempfile::tempdir().unwrap();
             let handle = test_host(dir.path());
-            read(msime_client_focus(handle, true));
-            read(msime_client_character(handle, b'U', true));
+            read(lingyao_client_focus(handle, true));
+            read(lingyao_client_character(handle, b'U', true));
             for byte in code.bytes() {
-                read(msime_client_character(handle, byte, false));
+                read(lingyao_client_character(handle, byte, false));
             }
-            let before = read(msime_client_view(handle))["value"].clone();
+            let before = read(lingyao_client_view(handle))["value"].clone();
             assert!(
                 before["candidates"]
                     .as_array()
@@ -4833,13 +4833,13 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
             let index = id["index"].as_u64().unwrap() as usize;
             for invalid in [2, 255] {
                 assert_eq!(
-                    read(msime_client_select_edge(handle, generation, index, invalid))["ok"],
+                    read(lingyao_client_select_edge(handle, generation, index, invalid))["ok"],
                     false
                 );
-                assert_eq!(read(msime_client_view(handle))["value"], before);
+                assert_eq!(read(lingyao_client_view(handle))["value"], before);
             }
             assert_eq!(
-                read(msime_client_select_edge(
+                read(lingyao_client_select_edge(
                     handle,
                     generation - 1,
                     index,
@@ -4848,7 +4848,7 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
                 false
             );
             assert_eq!(
-                read(msime_client_select_edge(
+                read(lingyao_client_select_edge(
                     handle,
                     generation,
                     usize::MAX,
@@ -4857,7 +4857,7 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
                 false
             );
             assert_eq!(
-                std::thread::spawn(move || read(msime_client_select_edge(
+                std::thread::spawn(move || read(lingyao_client_select_edge(
                     handle, generation, index, edge
                 ))["ok"]
                     .clone())
@@ -4865,8 +4865,8 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
                 .unwrap(),
                 false
             );
-            assert_eq!(read(msime_client_view(handle))["value"], before);
-            let result = read(msime_client_select_edge(handle, generation, index, edge));
+            assert_eq!(read(lingyao_client_view(handle))["value"], before);
+            let result = read(lingyao_client_select_edge(handle, generation, index, edge));
             assert_eq!(result["ok"], true);
             assert_eq!(result["value"]["handled"], !expected.is_empty());
             if expected.is_empty() {
@@ -4888,12 +4888,12 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
                     .is_empty());
             }
             assert_eq!(
-                read(msime_client_select_edge(handle, generation, index, edge))["ok"],
+                read(lingyao_client_select_edge(handle, generation, index, edge))["ok"],
                 false
             );
-            read(msime_client_destroy(handle));
+            read(lingyao_client_destroy(handle));
             assert_eq!(
-                read(msime_client_select_edge(handle, generation, index, edge))["ok"],
+                read(lingyao_client_select_edge(handle, generation, index, edge))["ok"],
                 false
             );
         }
@@ -4904,14 +4904,14 @@ fn candidate_edge_uses_engine_han_text_and_preserves_unsupported_composition() {
 fn live_punctuation_preserves_composition_and_survives_preferences() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
     for byte in b"4e2d" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let before = read(msime_client_view(handle))["value"].clone();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     for _ in 0..2 {
-        let toggled = read(msime_client_set_chinese_punctuation(handle, false));
+        let toggled = read(lingyao_client_set_chinese_punctuation(handle, false));
         assert_eq!(toggled["value"], before);
     }
     let preferences = Preferences {
@@ -4919,31 +4919,31 @@ fn live_punctuation_preserves_composition_and_survives_preferences() {
         ..Preferences::default()
     };
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], true);
-    let committed = read(msime_client_command(handle, 9));
+    let committed = read(lingyao_client_command(handle, 9));
     assert_eq!(committed["value"]["commit"], "中");
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
-    let ascii = read(msime_client_character(handle, b',', false));
+    let ascii = read(lingyao_client_character(handle, b',', false));
     assert_eq!(ascii["value"]["handled"], false);
     assert!(ascii["value"]["commit"].is_null());
     assert_eq!(
-        read(msime_client_set_chinese_punctuation(handle, true))["ok"],
+        read(lingyao_client_set_chinese_punctuation(handle, true))["ok"],
         true
     );
     assert_eq!(
-        read(msime_client_character(handle, b',', false))["value"]["commit"],
+        read(lingyao_client_character(handle, b',', false))["value"]["commit"],
         "，"
     );
     assert_eq!(
         std::thread::spawn(
-            move || read(msime_client_set_chinese_punctuation(handle, false))["ok"].clone()
+            move || read(lingyao_client_set_chinese_punctuation(handle, false))["ok"].clone()
         )
         .join()
         .unwrap(),
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
     assert_eq!(
-        read(msime_client_set_chinese_punctuation(handle, true))["ok"],
+        read(lingyao_client_set_chinese_punctuation(handle, true))["ok"],
         false
     );
 }
@@ -4952,39 +4952,39 @@ fn live_punctuation_preserves_composition_and_survives_preferences() {
 fn dedicated_english_mode_switches_through_host_api() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    let enabled = read(msime_client_set_english_mode(handle, true));
+    read(lingyao_client_focus(handle, true));
+    let enabled = read(lingyao_client_set_english_mode(handle, true));
     assert_eq!(enabled["ok"], true);
     assert_eq!(enabled["value"]["focused"], true);
     assert_eq!(enabled["value"]["dedicated_english"], true);
-    let typed = read(msime_client_character(handle, b'a', false));
+    let typed = read(lingyao_client_character(handle, b'a', false));
     assert_eq!(typed["value"]["view"]["dedicated_english"], true);
     assert_eq!(typed["value"]["view"]["local_mode"], "none");
-    let disabled = read(msime_client_set_english_mode(handle, false));
+    let disabled = read(lingyao_client_set_english_mode(handle, false));
     assert_eq!(disabled["ok"], true);
     assert_eq!(disabled["value"]["dedicated_english"], false);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn enabling_dedicated_english_cancels_active_composition() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'n', false));
-    let composing = read(msime_client_character(handle, b'i', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'n', false));
+    let composing = read(lingyao_client_character(handle, b'i', false));
     assert!(!composing["value"]["view"]["editing_text"]
         .as_str()
         .unwrap()
         .is_empty());
-    let enabled = read(msime_client_set_english_mode(handle, true));
+    let enabled = read(lingyao_client_set_english_mode(handle, true));
     assert_eq!(enabled["value"]["dedicated_english"], true);
     assert_eq!(enabled["value"]["editing_text"], "");
     assert!(enabled["value"]["candidates"]
         .as_array()
         .unwrap()
         .is_empty());
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 // 默认输入状态 = 英文 is the host's passthrough state: the host keeps the
@@ -4999,34 +4999,34 @@ fn english_default_ime_mode_leaves_dedicated_english_off() {
     let handle = test_host_preferences(
         dir.path(),
         Preferences {
-            default_ime_mode: msime_client_core::preferences::DefaultImeMode::English,
+            default_ime_mode: lingyao_client_core::preferences::DefaultImeMode::English,
             ..Preferences::default()
         },
     );
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     assert_eq!(
-        read(msime_client_view(handle))["value"]["dedicated_english"],
+        read(lingyao_client_view(handle))["value"]["dedicated_english"],
         false
     );
-    let typed = read(msime_client_character(handle, b'n', false));
+    let typed = read(lingyao_client_character(handle, b'n', false));
     assert_eq!(typed["value"]["view"]["dedicated_english"], false);
     // Still reachable - it just has to be asked for, by the menu row or
     // the hotkey that owns it.
-    let enabled = read(msime_client_set_english_mode(handle, true));
+    let enabled = read(lingyao_client_set_english_mode(handle, true));
     assert_eq!(enabled["value"]["dedicated_english"], true);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
 fn preferences_wait_for_commit_keep_handle_and_reject_old_revisions() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
     for byte in b"4e2d" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let before = read(msime_client_view(handle))["value"].clone();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     let prefs = Preferences {
         chinese_punctuation: false,
         candidate_page_size: 2,
@@ -5038,7 +5038,7 @@ fn preferences_wait_for_commit_keep_handle_and_reject_old_revisions() {
     SESSIONS.with(|sessions| {
         assert!(sessions.borrow().get(&handle).unwrap().preferences_pending);
     });
-    let committed = read(msime_client_command(handle, 1));
+    let committed = read(lingyao_client_command(handle, 1));
     assert_eq!(committed["value"]["commit"], "中");
     assert_eq!(committed["value"]["view"]["session"], handle);
     assert_eq!(committed["value"]["view"]["focused"], true);
@@ -5047,24 +5047,24 @@ fn preferences_wait_for_commit_keep_handle_and_reject_old_revisions() {
         assert!(!sessions.borrow().get(&handle).unwrap().preferences_pending);
     });
     assert_eq!(
-        read(msime_client_character(handle, b',', false))["value"]["handled"],
+        read(lingyao_client_character(handle, b',', false))["value"]["handled"],
         false
     );
     assert_eq!(update(handle, 0, &prefs)["ok"], false);
     assert_eq!(update(handle, 1, &Preferences::default())["ok"], false);
     let generation = before["generation"].as_u64().unwrap();
     assert_eq!(
-        read(msime_client_select(handle, generation, 0))["ok"],
+        read(lingyao_client_select(handle, generation, 0))["ok"],
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn newest_pending_preferences_win_on_blur_and_invalid_values_are_rejected() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
     let off = Preferences {
         chinese_punctuation: false,
         ..Preferences::default()
@@ -5076,10 +5076,10 @@ fn newest_pending_preferences_win_on_blur_and_invalid_values_are_rejected() {
     };
     assert_eq!(update(handle, 20, &invalid)["ok"], false);
     assert_eq!(update(handle, 2, &Preferences::default())["ok"], true);
-    read(msime_client_focus(handle, false));
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, false));
+    read(lingyao_client_focus(handle, true));
     assert_eq!(
-        read(msime_client_character(handle, b',', false))["value"]["commit"],
+        read(lingyao_client_character(handle, b',', false))["value"]["commit"],
         "，"
     );
     let wrong = std::thread::spawn(move || update(handle, 3, &Preferences::default()))
@@ -5087,19 +5087,19 @@ fn newest_pending_preferences_win_on_blur_and_invalid_values_are_rejected() {
         .unwrap();
     assert_eq!(wrong["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_update_preferences(handle, std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_update_preferences(handle, std::ptr::null(), 0) })["ok"],
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn failed_rebuild_preserves_completed_input_and_retries_later() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'U', true));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'U', true));
     for byte in b"4e2d" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
     let prefs = Preferences {
         chinese_punctuation: false,
@@ -5112,7 +5112,7 @@ fn failed_rebuild_preserves_completed_input_and_retries_later() {
         let host = sessions.get_mut(&handle).unwrap();
         std::mem::replace(&mut host.options.resources, "relative".into())
     });
-    let committed = read(msime_client_command(handle, 1));
+    let committed = read(lingyao_client_command(handle, 1));
     assert_eq!(committed["value"]["commit"], "中");
     assert!(committed["value"]["diagnostic"]
         .as_str()
@@ -5128,10 +5128,10 @@ fn failed_rebuild_preserves_completed_input_and_retries_later() {
     });
     assert_eq!(update(handle, 1, &prefs)["value"]["deferred"], false);
     assert_eq!(
-        read(msime_client_character(handle, b',', false))["value"]["handled"],
+        read(lingyao_client_character(handle, b',', false))["value"]["handled"],
         false
     );
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 /// The contract the input hosts' dictionary-maintenance release relies on: a live session is what keeps maintenance out, destroying it is all it takes to let maintenance in, and a session asked for while maintenance runs is refused rather than queued.
 #[test]
@@ -5144,7 +5144,7 @@ fn a_session_and_dictionary_maintenance_exclude_each_other() {
     };
     let (user, dictionaries) = (path("user"), path("dictionaries"));
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": user, "cache": path("cache"), "dictionaries": dictionaries, "preferences": { "scheme": "quanpin", "default_ime_mode": "chinese", "candidate_page_size": 5, "learning": false, "chinese_punctuation": true } }).to_string();
-    let create = || read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let create = || read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
 
     let maintenance = DictionaryAccess::try_maintenance(&user, &dictionaries)
         .unwrap()
@@ -5160,7 +5160,7 @@ fn a_session_and_dictionary_maintenance_exclude_each_other() {
     assert!(DictionaryAccess::try_maintenance(&user, &dictionaries)
         .unwrap()
         .is_none());
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
     // Other tests spawn processes concurrently, and a fork can briefly inherit the released lock before close-on-exec runs.
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
     while DictionaryAccess::try_maintenance(&user, &dictionaries)
@@ -5188,30 +5188,30 @@ fn native_boundary_drives_real_engine_and_rejects_wrong_thread() {
         path
     };
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": { "scheme": "quanpin", "default_ime_mode": "chinese", "candidate_page_size": 5, "learning": false, "chinese_punctuation": true } }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
-    let wrong_thread = std::thread::spawn(move || read(msime_client_view(handle)))
+    let wrong_thread = std::thread::spawn(move || read(lingyao_client_view(handle)))
         .join()
         .unwrap();
     assert_eq!(wrong_thread["ok"], false);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    read(msime_client_character(handle, b'U', true));
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    read(lingyao_client_character(handle, b'U', true));
     for byte in b"4e2d" {
         assert_eq!(
-            read(msime_client_character(handle, *byte, false))["ok"],
+            read(lingyao_client_character(handle, *byte, false))["ok"],
             true
         );
     }
-    let result = read(msime_client_command(handle, 1));
+    let result = read(lingyao_client_command(handle, 1));
     assert_eq!(result["value"]["commit"], "中");
-    let punctuation = read(msime_client_character(handle, b',', false));
+    let punctuation = read(lingyao_client_character(handle, b',', false));
     assert_eq!(punctuation["ok"], true);
     assert_eq!(punctuation["value"]["handled"], true);
     assert_eq!(punctuation["value"]["commit"], "，");
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
-    assert_eq!(read(msime_client_view(handle))["ok"], false);
-    assert_eq!(read(msime_client_destroy(handle))["ok"], false);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_view(handle))["ok"], false);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], false);
 }
 #[test]
 fn cloud_response_boundary_guards_identity_permission_and_buffers() {
@@ -5222,16 +5222,16 @@ fn cloud_response_boundary_guards_identity_permission_and_buffers() {
         ..chinese_preferences()
     };
     let handle = test_host_with_pinyin_fixture(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
-    assert!(read(msime_client_online_query(handle))["value"].is_null());
+    read(lingyao_client_focus(handle, true));
+    assert!(read(lingyao_client_online_query(handle))["value"].is_null());
     for byte in b"nihao" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let query = read(msime_client_online_query(handle))["value"].to_string();
+    let query = read(lingyao_client_online_query(handle))["value"].to_string();
     let body = r#"["SUCCESS", [["nihao", ["你好"]]]]"#.as_bytes();
     let apply = |target, query: &str, body: &[u8]| {
         read(unsafe {
-            msime_client_apply_cloud_response(
+            lingyao_client_apply_cloud_response(
                 target,
                 query.as_ptr(),
                 query.len(),
@@ -5240,11 +5240,11 @@ fn cloud_response_boundary_guards_identity_permission_and_buffers() {
             )
         })
     };
-    let before = read(msime_client_view(handle))["value"].clone();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     assert!(!before["candidates"].as_array().unwrap().is_empty());
     for candidate in ["", "bad\nvalue"] {
         let result = read(unsafe {
-            msime_client_apply_online_candidate(
+            lingyao_client_apply_online_candidate(
                 handle,
                 query.as_ptr(),
                 query.len(),
@@ -5260,26 +5260,26 @@ fn cloud_response_boundary_guards_identity_permission_and_buffers() {
     assert_eq!(malformed["value"]["applied"], false);
     assert_eq!(malformed["value"]["view"], before);
     assert_eq!(apply(handle, &query, body)["value"]["applied"], true);
-    let after_cloud = read(msime_client_view(handle))["value"].clone();
+    let after_cloud = read(lingyao_client_view(handle))["value"].clone();
     assert_ne!(after_cloud["generation"], before["generation"]);
     assert_eq!(after_cloud["editing_text"], before["editing_text"]);
     let other_dir = tempfile::tempdir().unwrap();
     let other = test_host_preferences(other_dir.path(), preferences.clone());
-    read(msime_client_focus(other, true));
+    read(lingyao_client_focus(other, true));
     for byte in b"nihao" {
-        read(msime_client_character(other, *byte, false));
+        read(lingyao_client_character(other, *byte, false));
     }
     assert_eq!(apply(other, &query, body)["value"]["applied"], false);
-    read(msime_client_character(handle, b'a', false));
+    read(lingyao_client_character(handle, b'a', false));
     assert_eq!(apply(handle, &query, body)["value"]["applied"], false);
-    let current = read(msime_client_online_query(handle))["value"].to_string();
+    let current = read(lingyao_client_online_query(handle))["value"].to_string();
     let disabled = Preferences {
         cloud_candidates: false,
         ..preferences
     };
     assert_eq!(update(handle, 1, &disabled)["value"]["deferred"], true);
     assert_eq!(
-        read(msime_client_online_query(handle))["value"]["cloud_candidates"],
+        read(lingyao_client_online_query(handle))["value"]["cloud_candidates"],
         false
     );
     assert_eq!(apply(handle, &current, body)["value"]["applied"], false);
@@ -5290,7 +5290,7 @@ fn cloud_response_boundary_guards_identity_permission_and_buffers() {
         (query.as_ptr(), query.len(), body.as_ptr(), 262145),
     ] {
         assert_eq!(
-            read(unsafe { msime_client_apply_cloud_response(handle, q, qlen, b, blen) })["ok"],
+            read(unsafe { lingyao_client_apply_cloud_response(handle, q, qlen, b, blen) })["ok"],
             false
         );
     }
@@ -5298,8 +5298,8 @@ fn cloud_response_boundary_guards_identity_permission_and_buffers() {
         apply(handle, "invalid", body)["error"],
         "invalid online query document"
     );
-    read(msime_client_destroy(other));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(other));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -5311,16 +5311,16 @@ fn cloud_candidate_requires_an_existing_local_candidate_page() {
         ..chinese_preferences()
     };
     let handle = test_host_preferences(dir.path(), preferences);
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"nihao" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let query = read(msime_client_online_query(handle))["value"].to_string();
-    let before = read(msime_client_view(handle))["value"].clone();
+    let query = read(lingyao_client_online_query(handle))["value"].to_string();
+    let before = read(lingyao_client_view(handle))["value"].clone();
     assert!(before["candidates"].as_array().unwrap().is_empty());
     let candidate = "你好";
     let result = read(unsafe {
-        msime_client_apply_online_candidate(
+        lingyao_client_apply_online_candidate(
             handle,
             query.as_ptr(),
             query.len(),
@@ -5331,7 +5331,7 @@ fn cloud_candidate_requires_an_existing_local_candidate_page() {
     });
     assert_eq!(result["value"]["applied"], false);
     assert_eq!(result["value"]["view"], before);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -5344,13 +5344,13 @@ fn direct_cloud_callbacks_follow_a_pending_disable() {
             ..chinese_preferences()
         };
         let handle = test_host_with_pinyin_fixture(dir.path(), preferences.clone());
-        read(msime_client_focus(handle, true));
+        read(lingyao_client_focus(handle, true));
         for byte in b"nihao" {
-            read(msime_client_character(handle, *byte, false));
+            read(lingyao_client_character(handle, *byte, false));
         }
-        let old_query = read(msime_client_online_query(handle))["value"].clone();
+        let old_query = read(lingyao_client_online_query(handle))["value"].clone();
         assert_eq!(old_query["cloud_candidates"], true);
-        let before = read(msime_client_view(handle))["value"].clone();
+        let before = read(lingyao_client_view(handle))["value"].clone();
         assert!(!before["candidates"].as_array().unwrap().is_empty());
 
         let disabled = Preferences {
@@ -5363,7 +5363,7 @@ fn direct_cloud_callbacks_follow_a_pending_disable() {
         let result = if batch {
             let candidates = serde_json::to_vec(&json!(["云候选"])).unwrap();
             read(unsafe {
-                msime_client_apply_online_candidates(
+                lingyao_client_apply_online_candidates(
                     handle,
                     query.as_ptr(),
                     query.len(),
@@ -5375,7 +5375,7 @@ fn direct_cloud_callbacks_follow_a_pending_disable() {
         } else {
             let candidate = "云候选";
             read(unsafe {
-                msime_client_apply_online_candidate(
+                lingyao_client_apply_online_candidate(
                     handle,
                     query.as_ptr(),
                     query.len(),
@@ -5387,7 +5387,7 @@ fn direct_cloud_callbacks_follow_a_pending_disable() {
         };
         assert_eq!(result["value"]["applied"], false, "batch={batch}: {result}");
         assert_eq!(result["value"]["view"], before, "batch={batch}: {result}");
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
     }
 }
 
@@ -5400,12 +5400,12 @@ fn direct_cloud_callbacks_follow_a_pending_enable() {
         ..chinese_preferences()
     };
     let handle = test_host_with_pinyin_fixture(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"nihao" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
     assert_eq!(
-        read(msime_client_online_query(handle))["value"]["cloud_candidates"],
+        read(lingyao_client_online_query(handle))["value"]["cloud_candidates"],
         false
     );
 
@@ -5415,12 +5415,12 @@ fn direct_cloud_callbacks_follow_a_pending_enable() {
         ..preferences
     };
     assert_eq!(update(handle, 1, &enabled)["value"]["deferred"], true);
-    let query = read(msime_client_online_query(handle))["value"].clone();
+    let query = read(lingyao_client_online_query(handle))["value"].clone();
     assert_eq!(query["cloud_candidates"], true);
     let query = query.to_string();
     let candidates = serde_json::to_vec(&json!(["云候选"])).unwrap();
     let result = read(unsafe {
-        msime_client_apply_online_candidates(
+        lingyao_client_apply_online_candidates(
             handle,
             query.as_ptr(),
             query.len(),
@@ -5435,7 +5435,7 @@ fn direct_cloud_callbacks_follow_a_pending_enable() {
         .unwrap()
         .iter()
         .any(|candidate| candidate["text"] == "云候选"));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -5450,16 +5450,16 @@ fn an_ai_credential_handed_over_in_memory_signs_requests_without_being_stored() 
     preferences.ai_assistant.model = "synthetic-model".into();
     preferences.ai_assistant.endpoint = "https://api.deepseek.com/chat/completions".into();
     let handle = test_host_preferences(dir.path(), preferences);
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"nihao" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let query = read(msime_client_online_query(handle))["value"].to_string();
+    let query = read(lingyao_client_online_query(handle))["value"].to_string();
     let request = |handle: u64| {
-        read(unsafe { msime_client_ai_request_for_query(handle, query.as_ptr(), query.len()) })
+        read(unsafe { lingyao_client_ai_request_for_query(handle, query.as_ptr(), query.len()) })
     };
     let set = |token: &str| {
-        read(unsafe { msime_client_set_ai_credential(handle, token.as_ptr(), token.len()) })
+        read(unsafe { lingyao_client_set_ai_credential(handle, token.as_ptr(), token.len()) })
     };
     assert_ne!(request(handle)["ok"], true, "no token anywhere");
     assert_eq!(set("synthetic-keychain")["ok"], true);
@@ -5469,16 +5469,16 @@ fn an_ai_credential_handed_over_in_memory_signs_requests_without_being_stored() 
         descriptor["value"]["headers"]["Authorization"],
         "Bearer synthetic-keychain"
     );
-    assert!(!read(msime_client_view(handle))
+    assert!(!read(lingyao_client_view(handle))
         .to_string()
         .contains("synthetic-keychain"));
-    assert!(!read(msime_client_online_query(handle))
+    assert!(!read(lingyao_client_online_query(handle))
         .to_string()
         .contains("synthetic-keychain"));
     assert_eq!(set("bad\ntoken")["ok"], false);
     assert_eq!(set("")["ok"], true);
     assert_ne!(request(handle)["ok"], true, "cleared");
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 #[test]
@@ -5495,16 +5495,16 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
     // a real one is always configured with the provider's URL.
     preferences.ai_assistant.endpoint = "https://api.deepseek.com/chat/completions".into();
     let handle = test_host_preferences(dir.path(), preferences.clone());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"nihaoshijie" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
     let apply = |query: &Value, batch: bool| {
         let query = query.to_string();
         if batch {
             let candidates = serde_json::to_vec(&json!(["合成候选"])).unwrap();
             read(unsafe {
-                msime_client_apply_online_candidates(
+                lingyao_client_apply_online_candidates(
                     handle,
                     query.as_ptr(),
                     query.len(),
@@ -5516,7 +5516,7 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
         } else {
             let candidate = "合成候选".as_bytes();
             read(unsafe {
-                msime_client_apply_online_candidate(
+                lingyao_client_apply_online_candidate(
                     handle,
                     query.as_ptr(),
                     query.len(),
@@ -5527,12 +5527,12 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
             })
         }
     };
-    let original = read(msime_client_online_query(handle))["value"].clone();
+    let original = read(lingyao_client_online_query(handle))["value"].clone();
     assert_eq!(original["ai_eligible"], true);
     assert!(!original.to_string().contains("synthetic-private"));
     let original_bytes = original.to_string();
     let descriptor = read(unsafe {
-        msime_client_ai_request_for_query(handle, original_bytes.as_ptr(), original_bytes.len())
+        lingyao_client_ai_request_for_query(handle, original_bytes.as_ptr(), original_bytes.len())
     });
     assert_eq!(descriptor["ok"], true);
     assert_eq!(descriptor["value"]["method"], "POST");
@@ -5541,7 +5541,7 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
         "application/json"
     );
     for revision in 1..=5 {
-        let old = read(msime_client_online_query(handle))["value"].clone();
+        let old = read(lingyao_client_online_query(handle))["value"].clone();
         match revision {
             1 => preferences.ai_assistant.enabled = false,
             2 => {
@@ -5559,7 +5559,7 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
             update(handle, revision, &preferences)["value"]["deferred"],
             true
         );
-        let current = read(msime_client_online_query(handle))["value"].clone();
+        let current = read(lingyao_client_online_query(handle))["value"].clone();
         assert_eq!(current["generation"], original["generation"]);
         assert_eq!(current["query_text"], original["query_text"]);
         assert_eq!(
@@ -5588,18 +5588,18 @@ fn ai_queries_and_delivery_follow_pending_preferences() {
             assert_eq!(apply(&old, batch)["value"]["applied"], false);
         }
     }
-    let current = read(msime_client_online_query(handle))["value"].clone();
-    let before_ai = read(msime_client_view(handle))["value"].clone();
+    let current = read(lingyao_client_online_query(handle))["value"].clone();
+    let before_ai = read(lingyao_client_view(handle))["value"].clone();
     assert_eq!(apply(&current, true)["value"]["applied"], true);
-    let after_ai = read(msime_client_view(handle))["value"].clone();
+    let after_ai = read(lingyao_client_view(handle))["value"].clone();
     assert_ne!(after_ai["generation"], before_ai["generation"]);
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 #[test]
 fn custom_translation_plan_preserves_direction_and_filters_visible_sources() {
     let plan = |request: Value| {
         let bytes = serde_json::to_vec(&request).unwrap();
-        read(unsafe { msime_client_custom_translation_plan(bytes.as_ptr(), bytes.len()) })
+        read(unsafe { lingyao_client_custom_translation_plan(bytes.as_ptr(), bytes.len()) })
     };
     let candidates = json!([
         {"text":"Hello","source":4},
@@ -5629,7 +5629,7 @@ fn custom_translation_plan_preserves_direction_and_filters_visible_sources() {
         assert_eq!(plan(request)["ok"], false);
     }
     assert_eq!(
-        read(unsafe { msime_client_custom_translation_plan(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_custom_translation_plan(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -5646,7 +5646,7 @@ fn mixed_script_chinese_candidates_are_planned_and_saved_like_the_windows_source
     }))
     .unwrap();
     assert_eq!(
-        read(unsafe { msime_client_custom_translation_plan(bytes.as_ptr(), bytes.len()) })["value"],
+        read(unsafe { lingyao_client_custom_translation_plan(bytes.as_ptr(), bytes.len()) })["value"],
         json!([
             {"text":"卡拉OK","key":"卡拉OK","source_language":"zh","target_language":"en"},
             {"text":"T恤","key":"T恤","source_language":"zh","target_language":"en"}
@@ -5660,7 +5660,7 @@ fn mixed_script_chinese_candidates_are_planned_and_saved_like_the_windows_source
     }))
     .unwrap();
     let saved = read(unsafe {
-        msime_client_translation_gloss_save(
+        lingyao_client_translation_gloss_save(
             request.as_ptr(),
             request.len(),
             user_path.as_ptr(),
@@ -5683,24 +5683,24 @@ fn mixed_script_chinese_candidates_are_planned_and_saved_like_the_windows_source
 #[test]
 fn learned_translation_buffers_are_bounded() {
     assert_eq!(
-        read(unsafe { msime_client_ai_http_request(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_ai_http_request(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_ai_http_request(b"x".as_ptr(), 65537) })["ok"],
+        read(unsafe { lingyao_client_ai_http_request(b"x".as_ptr(), 65537) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_parse_ai_response(b"x".as_ptr(), 1048577, 1) })["ok"],
+        read(unsafe { lingyao_client_parse_ai_response(b"x".as_ptr(), 1048577, 1) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_parse_ai_response(b"x".as_ptr(), 1, 11) })["ok"],
+        read(unsafe { lingyao_client_parse_ai_response(b"x".as_ptr(), 1, 11) })["ok"],
         false
     );
     for (pointer, length) in [(std::ptr::null(), 0), (b"x".as_ptr(), 65537)] {
         assert_eq!(
-            read(unsafe { msime_client_learned_translation_request(pointer, length) })["ok"],
+            read(unsafe { lingyao_client_learned_translation_request(pointer, length) })["ok"],
             false
         );
     }
@@ -5708,35 +5708,35 @@ fn learned_translation_buffers_are_bounded() {
 #[test]
 fn formats_host_translation_glosses_like_provider_replies() {
     let format = |text: &[u8]| {
-        read(unsafe { msime_client_format_translation_gloss(text.as_ptr(), text.len()) })
+        read(unsafe { lingyao_client_format_translation_gloss(text.as_ptr(), text.len()) })
     };
     assert_eq!(format(b"test\nfoo ")["value"], "test foo");
     assert_eq!(format(b" \n")["value"], Value::Null);
     assert_eq!(format(b"a\x07b")["value"], Value::Null);
     assert_eq!(format(b"\xff")["ok"], false);
     assert_eq!(
-        read(unsafe { msime_client_format_translation_gloss(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_format_translation_gloss(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_format_translation_gloss(b"x".as_ptr(), 65537) })["ok"],
+        read(unsafe { lingyao_client_format_translation_gloss(b"x".as_ptr(), 65537) })["ok"],
         false
     );
 }
 #[test]
 fn tencent_translation_buffers_are_bounded() {
     assert_eq!(
-        read(unsafe { msime_client_tencent_translation_http_request(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_tencent_translation_http_request(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_tencent_translation_http_request(b"x".as_ptr(), 65537) })["ok"],
+        read(unsafe { lingyao_client_tencent_translation_http_request(b"x".as_ptr(), 65537) })["ok"],
         false
     );
     for (length, expected) in [(1048577, 1), (1, 0), (1, 10)] {
         assert_eq!(
             read(unsafe {
-                msime_client_parse_tencent_translation_response(b"x".as_ptr(), length, expected)
+                lingyao_client_parse_tencent_translation_response(b"x".as_ptr(), length, expected)
             })["ok"],
             false
         );
@@ -5746,7 +5746,7 @@ fn tencent_translation_buffers_are_bounded() {
 fn custom_translation_http_bridge_is_bounded_and_pure() {
     let build = |request: Value| {
         let bytes = serde_json::to_vec(&request).unwrap();
-        read(unsafe { msime_client_custom_translation_http_request(bytes.as_ptr(), bytes.len()) })
+        read(unsafe { lingyao_client_custom_translation_http_request(bytes.as_ptr(), bytes.len()) })
     };
     let request = json!({"config":{"enabled":true,"endpoint":"https://translation.invalid/api","api_key":"synthetic"},
         "text":"hello","source_language":"en","target_language":"zh"});
@@ -5815,7 +5815,7 @@ fn custom_translation_http_bridge_is_bounded_and_pure() {
         );
     }
     let parse = |body: &[u8]| {
-        read(unsafe { msime_client_parse_custom_translation_response(body.as_ptr(), body.len()) })
+        read(unsafe { lingyao_client_parse_custom_translation_response(body.as_ptr(), body.len()) })
     };
     assert_eq!(parse(br#"{"data":"translated"}"#)["value"], "translated");
     assert_eq!(
@@ -5832,11 +5832,11 @@ fn custom_translation_http_bridge_is_bounded_and_pure() {
     }
     assert!(parse(json!({"data":"x".repeat(4097)}).to_string().as_bytes())["value"].is_null());
     assert_eq!(
-        read(unsafe { msime_client_custom_translation_http_request(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_custom_translation_http_request(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_parse_custom_translation_response(b"x".as_ptr(), 1048577) })
+        read(unsafe { lingyao_client_parse_custom_translation_response(b"x".as_ptr(), 1048577) })
             ["ok"],
         false
     );
@@ -5844,26 +5844,26 @@ fn custom_translation_http_bridge_is_bounded_and_pure() {
 
 #[test]
 fn niutrans_reply_failure_rejects_unbounded_lengths() {
-    assert!(unsafe { msime_client_niutrans_translation_reply_failed(b"x".as_ptr(), usize::MAX) });
+    assert!(unsafe { lingyao_client_niutrans_translation_reply_failed(b"x".as_ptr(), usize::MAX) });
 }
 
 #[test]
 fn invalid_buffers_and_commands_return_owned_errors() {
     assert_eq!(
-        read(unsafe { msime_client_prepare_host(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_prepare_host(std::ptr::null(), 0) })["ok"],
         false
     );
     let invalid = br#"{"resources":"relative","state_root":"relative"}"#;
     assert_eq!(
-        read(unsafe { msime_client_prepare_host(invalid.as_ptr(), invalid.len()) })["ok"],
+        read(unsafe { lingyao_client_prepare_host(invalid.as_ptr(), invalid.len()) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_create(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_create(std::ptr::null(), 0) })["ok"],
         false
     );
-    assert_eq!(read(msime_client_command(0, 999))["ok"], false);
-    unsafe { msime_client_string_free(std::ptr::null_mut()) };
+    assert_eq!(read(lingyao_client_command(0, 999))["ok"], false);
+    unsafe { lingyao_client_string_free(std::ptr::null_mut()) };
 }
 
 #[test]
@@ -5871,14 +5871,14 @@ fn incomplete_local_mode_input_shows_the_raw_text_as_a_fallback_space_commits() 
     // Windows' PrepareCandidateList shows the raw composition as a Fallback row whenever a special mode has nothing else, and Space commits it; a bare Y or R prefix included.
     let dir = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("resources")).unwrap();
-    std::fs::write(dir.path().join("resources/msime-english.db"), b"fixture").unwrap();
+    std::fs::write(dir.path().join("resources/lingyao-english.db"), b"fixture").unwrap();
     std::fs::write(
-        dir.path().join("resources/msime-japanese.dat"),
+        dir.path().join("resources/lingyao-japanese.dat"),
         b"synthetic",
     )
     .unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     let only_fallback = |transition: &Value, text: &str| {
         let view = &transition["value"]["view"];
         let candidates = view["candidates"].as_array().unwrap();
@@ -5889,7 +5889,7 @@ fn incomplete_local_mode_input_shows_the_raw_text_as_a_fallback_space_commits() 
     let typed = |text: &[u8]| {
         let mut last = Value::Null;
         for byte in text {
-            last = read(msime_client_character(
+            last = read(lingyao_client_character(
                 handle,
                 *byte,
                 byte.is_ascii_uppercase(),
@@ -5899,7 +5899,7 @@ fn incomplete_local_mode_input_shows_the_raw_text_as_a_fallback_space_commits() 
     };
 
     only_fallback(&typed(b"Y"), "Y");
-    let committed = read(msime_client_command(handle, 1));
+    let committed = read(lingyao_client_command(handle, 1));
     assert_eq!(committed["value"]["commit"], "Y");
     assert!(committed["value"]["view"]["candidates"]
         .as_array()
@@ -5907,58 +5907,58 @@ fn incomplete_local_mode_input_shows_the_raw_text_as_a_fallback_space_commits() 
         .is_empty());
 
     only_fallback(&typed(b"Kzzz"), "Kzzz");
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
 
     only_fallback(&typed(b"U+"), "U+");
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
 
     only_fallback(&typed(b"Txin"), "Txin");
     assert_eq!(
-        read(msime_client_command(handle, 1))["value"]["commit"],
+        read(lingyao_client_command(handle, 1))["value"]["commit"],
         "Txin"
     );
 
     only_fallback(&typed(b"R"), "R");
     assert_eq!(
-        read(msime_client_command(handle, 1))["value"]["commit"],
+        read(lingyao_client_command(handle, 1))["value"]["commit"],
         "R"
     );
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
 fn candidate_page_edge_commands_reach_runtime() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
+    read(lingyao_client_focus(handle, true));
     for byte in b"nihao" {
-        read(msime_client_character(handle, *byte, false));
+        read(lingyao_client_character(handle, *byte, false));
     }
-    let first = read(msime_client_command(handle, 104));
+    let first = read(lingyao_client_command(handle, 104));
     assert_eq!(first["value"]["handled"], false);
     assert!(first["value"]["view"]["candidates"]
         .as_array()
         .unwrap()
         .is_empty());
-    let last = read(msime_client_command(handle, 105));
+    let last = read(lingyao_client_command(handle, 105));
     assert_eq!(last["value"]["handled"], false);
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
 fn complete_candidate_abi_keeps_view_paged_and_selects_a_later_entry() {
     let dir = tempfile::tempdir().unwrap();
     let handle = test_host(dir.path());
-    read(msime_client_focus(handle, true));
-    read(msime_client_character(handle, b'T', true));
-    read(msime_client_character(handle, b'r', false));
-    let transition = read(msime_client_character(handle, b'q', false));
+    read(lingyao_client_focus(handle, true));
+    read(lingyao_client_character(handle, b'T', true));
+    read(lingyao_client_character(handle, b'r', false));
+    let transition = read(lingyao_client_character(handle, b'q', false));
     let view = &transition["value"]["view"];
     let generation = view["generation"].as_u64().unwrap();
     let visible_count = view["candidates"].as_array().unwrap().len();
     assert!(visible_count > 0);
 
-    let complete = read(msime_client_all_candidates(handle));
+    let complete = read(lingyao_client_all_candidates(handle));
     assert_eq!(complete["ok"], true);
     assert_eq!(complete["value"]["session"], handle);
     assert_eq!(complete["value"]["generation"], generation);
@@ -5970,11 +5970,11 @@ fn complete_candidate_abi_keeps_view_paged_and_selects_a_later_entry() {
         .unwrap() as usize;
 
     assert_eq!(
-        read(msime_client_select(handle, generation, later))["ok"],
+        read(lingyao_client_select(handle, generation, later))["ok"],
         false
     );
     assert_eq!(
-        read(msime_client_select_any_candidate(
+        read(lingyao_client_select_any_candidate(
             handle,
             generation + 1,
             later
@@ -5982,23 +5982,23 @@ fn complete_candidate_abi_keeps_view_paged_and_selects_a_later_entry() {
         false
     );
     assert_eq!(
-        read(msime_client_select_any_candidate(
+        read(lingyao_client_select_any_candidate(
             handle,
             generation,
             complete_count
         ))["ok"],
         false
     );
-    let selected = read(msime_client_select_any_candidate(handle, generation, later));
+    let selected = read(lingyao_client_select_any_candidate(handle, generation, later));
     assert_eq!(selected["ok"], true);
     assert_eq!(selected["value"]["handled"], true);
     assert!(selected["value"]["commit"]
         .as_str()
         .is_some_and(|value| !value.is_empty()));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
-/// 表情目录请求列出插件符号组：不需要 msime-others.db，没传插件目录时为空，相对路径被拒绝。
+/// 表情目录请求列出插件符号组：不需要 lingyao-others.db，没传插件目录时为空，相对路径被拒绝。
 #[test]
 #[cfg(unix)]
 fn emoji_catalog_lists_plugin_symbol_groups() {
@@ -6016,7 +6016,7 @@ fn emoji_catalog_lists_plugin_symbol_groups() {
     let call = |query: Value| {
         let query = query.to_string();
         read(unsafe {
-            super::ffi::msime_client_emoji_catalog_request(
+            super::ffi::lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6068,7 +6068,7 @@ fn emoji_catalog_pagination_preserves_legacy_defaults() {
 #[cfg(unix)]
 fn emoji_catalog_cursor_advances_over_invalid_rows_and_preserves_duplicates() {
     let directory = tempfile::tempdir().unwrap();
-    let db = rusqlite::Connection::open(directory.path().join("msime-others.db")).unwrap();
+    let db = rusqlite::Connection::open(directory.path().join("lingyao-others.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);
          CREATE TABLE kaomoji_catalog(kaomoji TEXT,keywords TEXT,sort_order INTEGER);
@@ -6107,7 +6107,7 @@ fn emoji_catalog_cursor_advances_over_invalid_rows_and_preserves_duplicates() {
         }))
         .unwrap();
         read(unsafe {
-            msime_client_emoji_catalog_request(
+            lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6147,7 +6147,7 @@ fn emoji_catalog_cursor_advances_over_invalid_rows_and_preserves_duplicates() {
 #[cfg(unix)]
 fn emoji_catalog_cursor_skips_invalid_groups_without_stalling() {
     let directory = tempfile::tempdir().unwrap();
-    let db = rusqlite::Connection::open(directory.path().join("msime-others.db")).unwrap();
+    let db = rusqlite::Connection::open(directory.path().join("lingyao-others.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);
          INSERT INTO emoji VALUES ('synthetic-invalid',NULL,'','',0);
@@ -6159,7 +6159,7 @@ fn emoji_catalog_cursor_skips_invalid_groups_without_stalling() {
     let request = |offset: usize| {
         let query = serde_json::to_vec(&json!({"cursor":true,"offset":offset,"limit":2})).unwrap();
         read(unsafe {
-            msime_client_emoji_catalog_request(
+            lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6180,7 +6180,7 @@ fn emoji_catalog_cursor_skips_invalid_groups_without_stalling() {
 #[cfg(unix)]
 fn emoji_catalog_ffi_reads_beyond_first_page() {
     let directory = tempfile::tempdir().unwrap();
-    let db = rusqlite::Connection::open(directory.path().join("msime-others.db")).unwrap();
+    let db = rusqlite::Connection::open(directory.path().join("lingyao-others.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);
          CREATE TABLE kaomoji_catalog(kaomoji TEXT,keywords TEXT,sort_order INTEGER);
@@ -6211,7 +6211,7 @@ fn emoji_catalog_ffi_reads_beyond_first_page() {
         )
         .unwrap();
         read(unsafe {
-            msime_client_emoji_catalog_request(
+            lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6260,7 +6260,7 @@ fn emoji_catalog_errors_are_not_empty_results() {
     let request = |category: &str| {
         let query = serde_json::to_vec(&json!({"category":category})).unwrap();
         read(unsafe {
-            msime_client_emoji_catalog_request(
+            lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6270,7 +6270,7 @@ fn emoji_catalog_errors_are_not_empty_results() {
     };
     let unavailable = json!({"ok":false,"error":"local emoji catalog unavailable"});
     assert_eq!(request(""), unavailable);
-    let path = directory.path().join("msime-others.db");
+    let path = directory.path().join("lingyao-others.db");
     assert!(!path.exists(), "read-only query must not create resources");
     std::fs::write(&path, b"synthetic invalid sqlite file").unwrap();
     for category in ["", "kaomoji", "symbols"] {
@@ -6299,7 +6299,7 @@ fn emoji_catalog_errors_are_not_empty_results() {
 #[cfg(unix)]
 fn emoji_groups_preserve_catalog_order_and_filter_before_paging() {
     let directory = tempfile::tempdir().unwrap();
-    let db = rusqlite::Connection::open(directory.path().join("msime-others.db")).unwrap();
+    let db = rusqlite::Connection::open(directory.path().join("lingyao-others.db")).unwrap();
     db.execute_batch("CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);
         INSERT INTO emoji VALUES ('one','Z','match','',1),('two','A','match','',2),('three','Z','match','',3),('four','Z','other','',4);
         CREATE TABLE symbol_catalog(symbol TEXT,category TEXT,parent_category TEXT,keywords TEXT,sort_order INTEGER);
@@ -6310,7 +6310,7 @@ fn emoji_groups_preserve_catalog_order_and_filter_before_paging() {
     let request = |query: Value| {
         let query = serde_json::to_vec(&query).unwrap();
         read(unsafe {
-            msime_client_emoji_catalog_request(
+            lingyao_client_emoji_catalog_request(
                 query.as_ptr(),
                 query.len(),
                 resources.as_ptr(),
@@ -6376,7 +6376,7 @@ fn translation_persistence_rejects_control_keys_before_writing() {
         }))
         .unwrap();
         read(unsafe {
-            msime_client_translation_gloss_save(
+            lingyao_client_translation_gloss_save(
                 request.as_ptr(),
                 request.len(),
                 user_path.as_ptr(),
@@ -6427,7 +6427,7 @@ fn translation_persistence_waits_behind_dictionary_maintenance() {
     .unwrap();
     let save = || {
         read(unsafe {
-            msime_client_translation_gloss_save(
+            lingyao_client_translation_gloss_save(
                 request.as_ptr(),
                 request.len(),
                 user_path.as_ptr(),
@@ -6459,7 +6459,7 @@ fn candidate_gloss_requests_reject_control_keys() {
         }))
         .unwrap();
         read(unsafe {
-            msime_client_candidate_gloss_request(
+            lingyao_client_candidate_gloss_request(
                 request.as_ptr(),
                 request.len(),
                 resources_path.as_ptr(),
@@ -6479,7 +6479,7 @@ fn candidate_gloss_requests_reject_control_keys() {
 #[test]
 fn candidate_gloss_request_uses_packaged_dictionary_and_bounds_input() {
     let directory = tempfile::tempdir().unwrap();
-    let db = rusqlite::Connection::open(directory.path().join("msime-english.db")).unwrap();
+    let db = rusqlite::Connection::open(directory.path().join("lingyao-english.db")).unwrap();
     db.execute_batch(
         "CREATE TABLE english_words(word TEXT COLLATE BINARY NOT NULL,display TEXT NOT NULL,weight INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(word,display)) WITHOUT ROWID;
          CREATE TABLE en_zh_glosses(english TEXT COLLATE BINARY PRIMARY KEY,chinese_gloss TEXT NOT NULL) WITHOUT ROWID;
@@ -6494,7 +6494,7 @@ fn candidate_gloss_request_uses_packaged_dictionary_and_bounds_input() {
     let call = |request: Value, resources: &[u8]| {
         let request = serde_json::to_vec(&request).unwrap();
         read(unsafe {
-            msime_client_candidate_gloss_request(
+            lingyao_client_candidate_gloss_request(
                 request.as_ptr(),
                 request.len(),
                 resources.as_ptr(),
@@ -6532,7 +6532,7 @@ fn candidate_gloss_request_uses_packaged_dictionary_and_bounds_input() {
             serde_json::to_vec(&json!({"target_language":target,"translations":translations}))
                 .unwrap();
         read(unsafe {
-            msime_client_translation_gloss_save(
+            lingyao_client_translation_gloss_save(
                 request.as_ptr(),
                 request.len(),
                 user_path.as_ptr(),
@@ -6612,13 +6612,13 @@ fn candidate_gloss_request_uses_packaged_dictionary_and_bounds_input() {
         ),
         json!({"ok":false,"error":"candidate gloss dictionary unavailable"})
     );
-    assert!(!missing.path().join("msime-english.db").exists());
+    assert!(!missing.path().join("lingyao-english.db").exists());
 }
 
 #[test]
 fn english_completion_request_queries_dictionary_and_rejects_invalid_input() {
     let directory = tempfile::tempdir().unwrap();
-    let database = rusqlite::Connection::open(directory.path().join("msime-english.db")).unwrap();
+    let database = rusqlite::Connection::open(directory.path().join("lingyao-english.db")).unwrap();
     database
         .execute_batch(
             "CREATE TABLE english_words(word TEXT COLLATE BINARY NOT NULL,display TEXT NOT NULL,weight INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(word,display)) WITHOUT ROWID;
@@ -6629,7 +6629,7 @@ fn english_completion_request_queries_dictionary_and_rejects_invalid_input() {
     let call = |request: Value, resources: &[u8]| {
         let request = serde_json::to_vec(&request).unwrap();
         read(unsafe {
-            msime_client_english_completions_request(
+            lingyao_client_english_completions_request(
                 request.as_ptr(),
                 request.len(),
                 resources.as_ptr(),
@@ -6660,7 +6660,7 @@ fn english_completion_request_queries_dictionary_and_rejects_invalid_input() {
         call(json!({"prefix":"he","limit":1}), b"relative")["error"],
         "resources path must be absolute"
     );
-    assert!(!directory.path().join("msime-english.db-journal").exists());
+    assert!(!directory.path().join("lingyao-english.db-journal").exists());
 }
 
 /// The settled model is found beside a resource bundle, and its absence is not an error.
@@ -6705,38 +6705,38 @@ fn language_dictionaries_beside_the_resources_are_discovered() {
 
     let beside = root.path().join("language-dictionaries");
     // A directory of the right name is not a dictionary.
-    std::fs::create_dir_all(beside.join("msime-zhuyin.db")).expect("decoy");
-    std::fs::write(beside.join("msime-cantonese.db"), b"sqlite").expect("cantonese");
+    std::fs::create_dir_all(beside.join("lingyao-zhuyin.db")).expect("decoy");
+    std::fs::write(beside.join("lingyao-cantonese.db"), b"sqlite").expect("cantonese");
     assert_eq!(
         super::language_dictionaries_beside(&resources),
         LanguageDictionaries {
-            cantonese: Some(beside.join("msime-cantonese.db")),
+            cantonese: Some(beside.join("lingyao-cantonese.db")),
             zhuyin: None,
             stroke: None,
         }
     );
 
-    std::fs::remove_dir(beside.join("msime-zhuyin.db")).expect("decoy");
-    std::fs::write(beside.join("msime-zhuyin.db"), b"sqlite").expect("zhuyin");
+    std::fs::remove_dir(beside.join("lingyao-zhuyin.db")).expect("decoy");
+    std::fs::write(beside.join("lingyao-zhuyin.db"), b"sqlite").expect("zhuyin");
     assert_eq!(
         super::language_dictionaries_beside(&resources),
         LanguageDictionaries {
-            cantonese: Some(beside.join("msime-cantonese.db")),
-            zhuyin: Some(beside.join("msime-zhuyin.db")),
+            cantonese: Some(beside.join("lingyao-cantonese.db")),
+            zhuyin: Some(beside.join("lingyao-zhuyin.db")),
             stroke: None,
         }
     );
 
-    // msime-stroke.db alone is enough for the directory to count as installed.
-    std::fs::remove_file(beside.join("msime-cantonese.db")).expect("cantonese");
-    std::fs::remove_file(beside.join("msime-zhuyin.db")).expect("zhuyin");
-    std::fs::write(beside.join("msime-stroke.db"), b"sqlite").expect("stroke");
+    // lingyao-stroke.db alone is enough for the directory to count as installed.
+    std::fs::remove_file(beside.join("lingyao-cantonese.db")).expect("cantonese");
+    std::fs::remove_file(beside.join("lingyao-zhuyin.db")).expect("zhuyin");
+    std::fs::write(beside.join("lingyao-stroke.db"), b"sqlite").expect("stroke");
     assert_eq!(
         super::language_dictionaries_beside(&resources),
         LanguageDictionaries {
             cantonese: None,
             zhuyin: None,
-            stroke: Some(beside.join("msime-stroke.db")),
+            stroke: Some(beside.join("lingyao-stroke.db")),
         }
     );
     assert_eq!(
@@ -6747,7 +6747,7 @@ fn language_dictionaries_beside_the_resources_are_discovered() {
 
 #[test]
 fn effective_scheme_falls_back_to_the_last_chinese_scheme_then_quanpin() {
-    use msime_client_core::preferences::ChineseScheme;
+    use lingyao_client_core::preferences::ChineseScheme;
     use InputScheme::*;
     let all = [
         Quanpin, Shuangpin, Wubi, Japanese, Korean, Cantonese, Zhuyin, Vietnamese, Tibetan, Stroke,
@@ -6755,19 +6755,19 @@ fn effective_scheme_falls_back_to_the_last_chinese_scheme_then_quanpin() {
     let base = &all[..5];
     let none = LanguageDictionaries::default();
     let cantonese_only = LanguageDictionaries {
-        cantonese: Some("/dictionaries/msime-cantonese.db".into()),
+        cantonese: Some("/dictionaries/lingyao-cantonese.db".into()),
         zhuyin: None,
         stroke: None,
     };
     let both = LanguageDictionaries {
-        cantonese: Some("/dictionaries/msime-cantonese.db".into()),
-        zhuyin: Some("/dictionaries/msime-zhuyin.db".into()),
+        cantonese: Some("/dictionaries/lingyao-cantonese.db".into()),
+        zhuyin: Some("/dictionaries/lingyao-zhuyin.db".into()),
         stroke: None,
     };
     let stroke_only = LanguageDictionaries {
         cantonese: None,
         zhuyin: None,
-        stroke: Some("/dictionaries/msime-stroke.db".into()),
+        stroke: Some("/dictionaries/lingyao-stroke.db".into()),
     };
     const OFFERED: Option<&str> = None;
     const NOT_OFFERED: Option<&str> = Some("this host does not offer it");
@@ -6863,7 +6863,7 @@ fn effective_scheme_falls_back_to_the_last_chinese_scheme_then_quanpin() {
             Quanpin,
             NO_DICTIONARY,
         ),
-        // Stroke runs only with msime-stroke.db, and is itself a Chinese scheme to return to.
+        // Stroke runs only with lingyao-stroke.db, and is itself a Chinese scheme to return to.
         (
             Stroke,
             Some(ChineseScheme::Wubi),
@@ -6933,11 +6933,11 @@ fn host_options_carry_vietnamese_settings_and_language_dictionaries_to_the_engin
     let root = tempfile::tempdir().expect("tempdir");
     let directory = root.path().join("language-dictionaries");
     std::fs::create_dir_all(&directory).expect("directory");
-    std::fs::write(directory.join("msime-cantonese.db"), b"sqlite").expect("cantonese");
-    std::fs::write(directory.join("msime-stroke.db"), b"sqlite").expect("stroke");
+    std::fs::write(directory.join("lingyao-cantonese.db"), b"sqlite").expect("cantonese");
+    std::fs::write(directory.join("lingyao-stroke.db"), b"sqlite").expect("stroke");
     let preferences = Preferences {
         scheme: InputScheme::Vietnamese,
-        last_chinese_scheme: Some(msime_client_core::preferences::ChineseScheme::Wubi),
+        last_chinese_scheme: Some(lingyao_client_core::preferences::ChineseScheme::Wubi),
         vietnamese: VietnamesePreferences {
             input_method: VietnameseInputMethod::Vni,
             tone_style: VietnameseToneStyle::Classic,
@@ -6952,12 +6952,12 @@ fn host_options_carry_vietnamese_settings_and_language_dictionaries_to_the_engin
     assert_eq!(options.vietnamese_tone_style, 1);
     assert_eq!(
         options.cantonese_dictionary,
-        directory.join("msime-cantonese.db").to_str().unwrap()
+        directory.join("lingyao-cantonese.db").to_str().unwrap()
     );
     assert_eq!(options.zhuyin_dictionary, "");
     assert_eq!(
         options.stroke_dictionary,
-        directory.join("msime-stroke.db").to_str().unwrap()
+        directory.join("lingyao-stroke.db").to_str().unwrap()
     );
     // Production passes `compiled_input_schemes()`, which offers the scheme or returns to the last Chinese one.
     let expected = if compiled_input_schemes().contains(&InputScheme::Vietnamese) {
@@ -7003,7 +7003,7 @@ fn installed_language_dictionaries_enable_their_schemes() {
     let engine_scheme = |scheme: InputScheme| {
         let preferences = Preferences {
             scheme,
-            last_chinese_scheme: Some(msime_client_core::preferences::ChineseScheme::Wubi),
+            last_chinese_scheme: Some(lingyao_client_core::preferences::ChineseScheme::Wubi),
             ..Preferences::default()
         };
         let document = json!({ "api_version": 1, "resources": resources, "user_data": "/u", "cache": "/c", "dictionaries": "/d", "preferences": preferences, "language_dictionaries": super::installed_language_dictionaries(&resources) });
@@ -7022,8 +7022,8 @@ fn installed_language_dictionaries_enable_their_schemes() {
 
     let beside = root.path().join("language-dictionaries");
     std::fs::create_dir_all(&beside).expect("beside");
-    std::fs::write(beside.join("msime-cantonese.db"), b"sqlite").expect("cantonese");
-    std::fs::write(beside.join("msime-zhuyin.db"), b"sqlite").expect("zhuyin");
+    std::fs::write(beside.join("lingyao-cantonese.db"), b"sqlite").expect("cantonese");
+    std::fs::write(beside.join("lingyao-zhuyin.db"), b"sqlite").expect("zhuyin");
     assert_eq!(
         super::installed_language_dictionaries(&resources).as_deref(),
         beside.to_str()
@@ -7034,7 +7034,7 @@ fn installed_language_dictionaries_enable_their_schemes() {
     assert_eq!(engine_scheme(InputScheme::Vietnamese), 7);
     assert_eq!(engine_scheme(InputScheme::Tibetan), 8);
 
-    std::fs::write(beside.join("msime-stroke.db"), b"sqlite").expect("stroke");
+    std::fs::write(beside.join("lingyao-stroke.db"), b"sqlite").expect("stroke");
     assert_eq!(engine_scheme(InputScheme::Stroke), 9);
 }
 
@@ -7053,7 +7053,7 @@ fn a_scheme_this_build_does_not_run_falls_back_and_says_why() {
 
     let zhuyin = Preferences {
         scheme: InputScheme::Zhuyin,
-        last_chinese_scheme: Some(msime_client_core::preferences::ChineseScheme::Wubi),
+        last_chinese_scheme: Some(lingyao_client_core::preferences::ChineseScheme::Wubi),
         ..chinese_preferences()
     };
     let updated = update(handle, 1, &zhuyin);
@@ -7068,7 +7068,7 @@ fn a_scheme_this_build_does_not_run_falls_back_and_says_why() {
     let quanpin = chinese_preferences();
     let updated = update(handle, 2, &quanpin);
     assert!(updated["value"].get("diagnostic").is_none());
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// 五笔版的 HostOptions 文档即使带着写着全拼的偏好（例如从 full 同步来的），会话跑的也是五笔，之后的偏好更新同样回退到五笔；full 拿到同一份偏好仍跑全拼。
@@ -7076,7 +7076,7 @@ fn a_scheme_this_build_does_not_run_falls_back_and_says_why() {
 fn the_wubi_edition_runs_wubi_whatever_scheme_the_preferences_name() {
     let quanpin = Preferences {
         scheme: InputScheme::Quanpin,
-        last_chinese_scheme: Some(msime_client_core::preferences::ChineseScheme::Quanpin),
+        last_chinese_scheme: Some(lingyao_client_core::preferences::ChineseScheme::Quanpin),
         ..chinese_preferences()
     };
     let document = |edition: Option<&str>| {
@@ -7111,14 +7111,14 @@ fn the_wubi_edition_runs_wubi_whatever_scheme_the_preferences_name() {
         path
     };
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": quanpin, "edition": "wubi" }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
     SESSIONS.with(|sessions| assert_eq!(sessions.borrow()[&handle].options.scheme, 2));
 
     let shuangpin = Preferences {
         scheme: InputScheme::Shuangpin,
-        last_chinese_scheme: Some(msime_client_core::preferences::ChineseScheme::Quanpin),
+        last_chinese_scheme: Some(lingyao_client_core::preferences::ChineseScheme::Quanpin),
         ..chinese_preferences()
     };
     let updated = update(handle, 1, &shuangpin);
@@ -7127,7 +7127,7 @@ fn the_wubi_edition_runs_wubi_whatever_scheme_the_preferences_name() {
     assert!(diagnostic.contains("does not offer"), "{diagnostic}");
     assert!(diagnostic.contains("Wubi"), "{diagnostic}");
     SESSIONS.with(|sessions| assert_eq!(sessions.borrow()[&handle].options.scheme, 2));
-    read(msime_client_destroy(handle));
+    read(lingyao_client_destroy(handle));
 }
 
 /// Engine 的 `enabled_schemes` 跟着文档记录的版本走：full（含缺省）是全部方案；五笔版只有五笔；拼音版是全拼、双拼，加上临时日文要切到的日文。
@@ -7146,7 +7146,7 @@ fn engine_schemes_follow_the_documents_edition() {
     assert_eq!(enabled(None), SchemeSet::ALL);
     assert_eq!(enabled(Some("full")), SchemeSet::ALL);
     assert_eq!(enabled(Some("wubi")), SchemeSet::of(&[SchemeType::Wubi]));
-    // 日文、越南文和藏文版只有各自的方案：不带临时日文，不读 msime-pinyin.db。
+    // 日文、越南文和藏文版只有各自的方案：不带临时日文，不读 lingyao-pinyin.db。
     for (id, scheme) in [
         ("japanese", SchemeType::JapaneseRomaji),
         ("vietnamese", SchemeType::Vietnamese),
@@ -7169,10 +7169,10 @@ fn engine_schemes_follow_the_documents_edition() {
 /// 回退到的方案在 full 是全拼，在别的版本是该版本的默认方案；能跑的上一次中文方案仍然优先。
 #[test]
 fn the_fallback_scheme_is_the_edition_default() {
-    use msime_client_core::preferences::ChineseScheme;
+    use lingyao_client_core::preferences::ChineseScheme;
     let none = LanguageDictionaries::default();
     let wubi = Edition::by_id("wubi").unwrap();
-    let offered = msime_client_core::host_surface::offered_input_schemes(wubi);
+    let offered = lingyao_client_core::host_surface::offered_input_schemes(wubi);
     for (scheme, last) in [
         (InputScheme::Quanpin, None),
         (InputScheme::Quanpin, Some(ChineseScheme::Quanpin)),
@@ -7283,7 +7283,7 @@ fn the_c_abi_repairs_and_reloads_a_non_full_state_root_to_its_own_defaults() {
 
     // 写到一半断电：修复后的文件是五笔版的默认偏好，混拼是开的。
     std::fs::write(&document, "{\"format_version\":1,").unwrap();
-    let repaired = read(unsafe { msime_client_recover_preferences(path.as_ptr(), path.len()) });
+    let repaired = read(unsafe { lingyao_client_recover_preferences(path.as_ptr(), path.len()) });
     assert_eq!(repaired["value"]["recovered"], true, "{repaired}");
     let restored: Preferences =
         serde_json::from_value(repaired["value"]["snapshot"]["preferences"].clone()).unwrap();
@@ -7292,7 +7292,7 @@ fn the_c_abi_repairs_and_reloads_a_non_full_state_root_to_its_own_defaults() {
 
     // 用户删掉了偏好文件：读到的同样是五笔版的默认值。
     std::fs::remove_file(&document).unwrap();
-    let loaded = read(unsafe { msime_client_load_preferences(path.as_ptr(), path.len()) });
+    let loaded = read(unsafe { lingyao_client_load_preferences(path.as_ptr(), path.len()) });
     assert_eq!(loaded["value"]["revision"], 0);
     assert_eq!(
         serde_json::from_value::<Preferences>(loaded["value"]["preferences"].clone()).unwrap(),
@@ -7300,7 +7300,7 @@ fn the_c_abi_repairs_and_reloads_a_non_full_state_root_to_its_own_defaults() {
     );
 }
 
-/// 按 `edition` 的资源锁合成一个资源目录：文件名取自真实的版本锁，内容是小 fixture，清单按实际内容计算长度与 SHA-256。`msime-pinyin.db` 带 `nihao` 的拼音行，`msime-wubi.db` 带 `wq` 的五笔行（与词库发布的拆分布局相同，准备代次时并回工作主词库），`msime-english.db` 带一个英文词，`msime-bigram.bin`、`msime-trigram.bin` 不是合法的表（Engine 会当作没有表），其余文件只要存在。
+/// 按 `edition` 的资源锁合成一个资源目录：文件名取自真实的版本锁，内容是小 fixture，清单按实际内容计算长度与 SHA-256。`lingyao-pinyin.db` 带 `nihao` 的拼音行，`lingyao-wubi.db` 带 `wq` 的五笔行（与词库发布的拆分布局相同，准备代次时并回工作主词库），`lingyao-english.db` 带一个英文词，`lingyao-bigram.bin`、`lingyao-trigram.bin` 不是合法的表（Engine 会当作没有表），其余文件只要存在。
 fn synthetic_edition_lock(edition: &Edition, resources: &Path) -> ResourceSet {
     std::fs::create_dir_all(resources).unwrap();
     let pinned = edition.resource_set().unwrap();
@@ -7310,7 +7310,7 @@ fn synthetic_edition_lock(edition: &Edition, resources: &Path) -> ResourceSet {
         .map(|artifact| {
             let path = resources.join(&artifact.name);
             match artifact.name.as_str() {
-                "msime-pinyin.db" => rusqlite::Connection::open(&path)
+                "lingyao-pinyin.db" => rusqlite::Connection::open(&path)
                     .unwrap()
                     .execute_batch(
                         "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);
@@ -7319,29 +7319,29 @@ fn synthetic_edition_lock(edition: &Edition, resources: &Path) -> ResourceSet {
                          CREATE INDEX idx_quick_parases_key_weight ON quick_parases(key,weight DESC);",
                     )
                     .unwrap(),
-                "msime-wubi.db" => rusqlite::Connection::open(&path)
+                "lingyao-wubi.db" => rusqlite::Connection::open(&path)
                     .unwrap()
                     .execute_batch(
                         "CREATE TABLE wubi86(key TEXT,value TEXT,weight INTEGER);
                          INSERT INTO wubi86 VALUES('wq','你',100),('wqvb','你好',90);",
                     )
                     .unwrap(),
-                "msime-english.db" => rusqlite::Connection::open(&path)
+                "lingyao-english.db" => rusqlite::Connection::open(&path)
                     .unwrap()
                     .execute_batch(
                         "CREATE TABLE english_words(word TEXT,display TEXT,weight INTEGER);
                          INSERT INTO english_words VALUES('hello','hello',900);",
                     )
                     .unwrap(),
-                "msime-others.db" => rusqlite::Connection::open(&path)
+                "lingyao-others.db" => rusqlite::Connection::open(&path)
                     .unwrap()
                     .execute_batch("CREATE TABLE fixture(value TEXT);")
                     .unwrap(),
-                "msime-dictionary-manifest.json" => std::fs::write(&path, b"{}").unwrap(),
+                "lingyao-dictionary-manifest.json" => std::fs::write(&path, b"{}").unwrap(),
                 other => std::fs::write(&path, other.as_bytes()).unwrap(),
             }
             let bytes = std::fs::read(&path).unwrap();
-            msime_client_core::resources::Artifact {
+            lingyao_client_core::resources::Artifact {
                 name: artifact.name.clone(),
                 url: format!("https://example.invalid/{}", artifact.name),
                 sha256: hex::encode(Sha256::digest(&bytes)),
@@ -7363,9 +7363,9 @@ fn the_wubi_lock_accepts_resources_without_japanese_and_gates_temporary_japanese
     let wubi = Edition::by_id("wubi").unwrap();
     let specification = synthetic_edition_lock(wubi, &resources);
     for absent in [
-        "msime-japanese.dat",
-        "msime-mozc_dictionary_oss_README.txt",
-        "msime-mozc_LICENSE.txt",
+        "lingyao-japanese.dat",
+        "lingyao-mozc_dictionary_oss_README.txt",
+        "lingyao-mozc_LICENSE.txt",
         "sentence-model.safetensors",
     ] {
         assert!(!resources.join(absent).exists(), "{absent}");
@@ -7415,7 +7415,7 @@ fn the_wubi_lock_accepts_resources_without_japanese_and_gates_temporary_japanese
     assert!(options.local_temporary_english);
 
     // 状态目录里有一份下载来的日文词典时，full 会打开临时日文，五笔版仍然不会。
-    let downloaded = root.path().join("msime-japanese.dat");
+    let downloaded = root.path().join("lingyao-japanese.dat");
     std::fs::write(&downloaded, b"japanese").unwrap();
     options.japanese_dictionary = downloaded.to_str().unwrap().to_owned();
     options.local_temporary_japanese = true;
@@ -7457,7 +7457,7 @@ fn wubi_resources_type_mixed_pinyin_and_wubi_codes() {
     prepared["preferences"]["default_ime_mode"] = json!("chinese");
     let document = prepared.to_string();
     let typed = |input: &[u8]| -> Value {
-        let created = read(unsafe { msime_client_create(document.as_ptr(), document.len()) });
+        let created = read(unsafe { lingyao_client_create(document.as_ptr(), document.len()) });
         assert_eq!(created["ok"], true, "{created}");
         let handle = created["value"]["session"].as_u64().unwrap();
         SESSIONS.with(|sessions| {
@@ -7466,12 +7466,12 @@ fn wubi_resources_type_mixed_pinyin_and_wubi_codes() {
             // 五笔版的 Engine 不构造双拼和日文 provider，拼音行仍由混拼用的全拼 provider 给出。
             assert_eq!(options.enabled_schemes, SchemeSet::of(&[SchemeType::Wubi]));
         });
-        assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+        assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
         let mut view = Value::Null;
         for byte in input {
-            view = read(msime_client_character(handle, *byte, false))["value"]["view"].clone();
+            view = read(lingyao_client_character(handle, *byte, false))["value"]["view"].clone();
         }
-        read(msime_client_destroy(handle));
+        read(lingyao_client_destroy(handle));
         view
     };
     let texts = |view: &Value| -> Vec<String> {
@@ -7493,7 +7493,7 @@ fn wubi_resources_type_mixed_pinyin_and_wubi_codes() {
     );
 }
 
-/// 日文、越南文和藏文版用各自的资源集准备宿主：资源目录只有核心资源（日文版另有日文词典），没有 msime-pinyin.db、n-gram 表和整句模型，按 full 的清单校验不过。准备出的代次里没有 msime-pinyin.db；第一次运行的偏好就是本版本唯一的方案；即使偏好写着全拼（例如从 full 同步来的），Engine 跑的仍是本版本的方案，也只构造这一个方案。
+/// 日文、越南文和藏文版用各自的资源集准备宿主：资源目录只有核心资源（日文版另有日文词典），没有 lingyao-pinyin.db、n-gram 表和整句模型，按 full 的清单校验不过。准备出的代次里没有 lingyao-pinyin.db；第一次运行的偏好就是本版本唯一的方案；即使偏好写着全拼（例如从 full 同步来的），Engine 跑的仍是本版本的方案，也只构造这一个方案。
 #[test]
 fn language_editions_prepare_and_type_with_only_their_own_resources() {
     let root = tempfile::tempdir().unwrap();
@@ -7506,15 +7506,15 @@ fn language_editions_prepare_and_type_with_only_their_own_resources() {
         let resources = root.path().join(id).join("resources");
         let specification = synthetic_edition_lock(edition, &resources);
         for absent in [
-            "msime-pinyin.db",
-            "msime-bigram.bin",
-            "msime-trigram.bin",
+            "lingyao-pinyin.db",
+            "lingyao-bigram.bin",
+            "lingyao-trigram.bin",
             "sentence-model.safetensors",
         ] {
             assert!(!resources.join(absent).exists(), "{id}: {absent}");
         }
         assert_eq!(
-            resources.join("msime-japanese.dat").exists(),
+            resources.join("lingyao-japanese.dat").exists(),
             id == "japanese",
             "{id}"
         );
@@ -7546,13 +7546,13 @@ fn language_editions_prepare_and_type_with_only_their_own_resources() {
             "{id}"
         );
         let dictionaries = PathBuf::from(prepared["dictionaries"].as_str().unwrap());
-        assert!(dictionaries.join("msime-english.db").is_file(), "{id}");
-        assert!(!dictionaries.join("msime-pinyin.db").exists(), "{id}");
+        assert!(dictionaries.join("lingyao-english.db").is_file(), "{id}");
+        assert!(!dictionaries.join("lingyao-pinyin.db").exists(), "{id}");
         assert_eq!(
             Edition::recorded_in(&state).map(|e| e.id.as_str()),
             Some(id)
         );
-        // 第二次准备（例如重启或升级后）遇到的是已经准备好的代次，同样不要求 msime-pinyin.db。
+        // 第二次准备（例如重启或升级后）遇到的是已经准备好的代次，同样不要求 lingyao-pinyin.db。
         assert_eq!(prepare()["dictionaries"], prepared["dictionaries"], "{id}");
 
         let options = HostOptions::from_document(prepared.clone())
@@ -7569,7 +7569,7 @@ fn language_editions_prepare_and_type_with_only_their_own_resources() {
         prepared["preferences"]["scheme"] = json!("quanpin");
         prepared["preferences"]["last_chinese_scheme"] = json!("quanpin");
         let document = prepared.to_string();
-        let created = read(unsafe { msime_client_create(document.as_ptr(), document.len()) });
+        let created = read(unsafe { lingyao_client_create(document.as_ptr(), document.len()) });
         assert_eq!(created["ok"], true, "{id}: {created}");
         let handle = created["value"]["session"].as_u64().unwrap();
         SESSIONS.with(|sessions| {
@@ -7577,10 +7577,10 @@ fn language_editions_prepare_and_type_with_only_their_own_resources() {
             assert_eq!(session.edition.id, id);
             assert_eq!(session.options.scheme, code, "{id}");
         });
-        assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+        assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
         let mut view = Value::Null;
         for byte in input {
-            let response = read(msime_client_character(handle, *byte, false));
+            let response = read(lingyao_client_character(handle, *byte, false));
             assert_eq!(response["ok"], true, "{id}: {response}");
             assert_eq!(response["value"]["handled"], true, "{id}: {response}");
             view = response["value"]["view"].clone();
@@ -7589,15 +7589,15 @@ fn language_editions_prepare_and_type_with_only_their_own_resources() {
         match id {
             "japanese" => {
                 assert_eq!(view["reading"], "か", "{view}");
-                let committed = read(msime_client_command(handle, 11));
+                let committed = read(lingyao_client_command(handle, 11));
                 assert_eq!(committed["value"]["commit"], "か", "{committed}");
             }
             "vietnamese" => assert_eq!(view["preedit"], "tiếng", "{view}"),
             _ => assert_eq!(view["preedit"], "བཀྲ", "{view}"),
         }
-        assert_eq!(read(msime_client_destroy(handle))["ok"], true);
-        // 打字之后代次里仍然没有 msime-pinyin.db。
-        assert!(!dictionaries.join("msime-pinyin.db").exists(), "{id}");
+        assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
+        // 打字之后代次里仍然没有 lingyao-pinyin.db。
+        assert!(!dictionaries.join("lingyao-pinyin.db").exists(), "{id}");
     }
 }
 
@@ -7739,11 +7739,11 @@ fn dictionary_tools_keep_only_english_words_without_the_chinese_dictionary() {
         "this edition does not offer that scheme"
     );
 
-    // 重新准备已有的代次会再回放一次日志：英文词还在，代次里仍然没有 msime-pinyin.db。
+    // 重新准备已有的代次会再回放一次日志：英文词还在，代次里仍然没有 lingyao-pinyin.db。
     let again = prepare();
     assert_eq!(again["dictionaries"], prepared["dictionaries"]);
     let dictionaries = PathBuf::from(again["dictionaries"].as_str().unwrap());
-    assert!(!dictionaries.join("msime-pinyin.db").exists());
+    assert!(!dictionaries.join("lingyao-pinyin.db").exists());
     let options = DictionaryOptions::from_host_document(again).unwrap();
     let words = listed(&options);
     assert_eq!(
@@ -7792,10 +7792,10 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
     let (full_state, full_document) = prepare("full", Edition::full());
     let (wubi_state, wubi_document) = prepare("wubi", wubi);
     let create = |document: &str| -> u64 {
-        let created = read(unsafe { msime_client_create(document.as_ptr(), document.len()) });
+        let created = read(unsafe { lingyao_client_create(document.as_ptr(), document.len()) });
         assert_eq!(created["ok"], true, "{created}");
         let handle = created["value"]["session"].as_u64().unwrap();
-        assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+        assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
         handle
     };
     let full = create(&full_document);
@@ -7816,7 +7816,7 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
     let typed = |handle: u64, input: &[u8]| -> Value {
         let mut view = Value::Null;
         for byte in input {
-            let response = read(msime_client_character(handle, *byte, false));
+            let response = read(lingyao_client_character(handle, *byte, false));
             assert_eq!(response["ok"], true, "{response}");
             view = response["value"]["view"].clone();
         }
@@ -7831,7 +7831,7 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
             .collect()
     };
     let escape = |handle: u64| {
-        assert_eq!(read(msime_client_command(handle, 3))["ok"], true);
+        assert_eq!(read(lingyao_client_command(handle, 3))["ok"], true);
     };
 
     // 交替输入：五笔版的 `wq` 出五笔码表的「你」，full 的同一串按全拼走，不出五笔码。
@@ -7865,7 +7865,7 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
             .position(|text| text == "拟好")
             .expect("拟好 is offered");
         let generation = view["generation"].as_u64().unwrap();
-        let selected = read(msime_client_select(full, generation, index));
+        let selected = read(lingyao_client_select(full, generation, index));
         assert_eq!(selected["value"]["commit"], "拟好", "{selected}");
     }
     assert!(learned, "full never learned 拟好");
@@ -7893,7 +7893,7 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
         assert_eq!(sessions[&wubi_handle].options.scheme, 2);
         assert!(sessions[&wubi_handle].options.wubi_mixed_pinyin);
     });
-    assert_eq!(read(msime_client_destroy(full))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(full))["ok"], true);
     // full 的会话关掉之后，五笔版照常输入。
     let after = typed(wubi_handle, b"wq");
     assert_eq!(
@@ -7901,7 +7901,7 @@ fn two_editions_with_their_own_state_roots_share_one_process() {
         Some("你"),
         "{after}"
     );
-    assert_eq!(read(msime_client_destroy(wubi_handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(wubi_handle))["ok"], true);
 }
 
 /// 刷新按文档记录的版本的锁比较代次：五笔版的文档停在五笔锁的代次上就是最新的，不会被当成过期重新准备；记成 full 的代次则要重新准备（这里资源目录是空的，所以准备失败）。
@@ -7968,7 +7968,7 @@ fn translation_queries_only_clear_chinese_candidates_for_the_network() {
         // Kaomoji mode stays disabled until the catalog it reads from exists.
         let resources = dir.path().join("resources");
         std::fs::create_dir_all(&resources).unwrap();
-        rusqlite::Connection::open(resources.join("msime-others.db"))
+        rusqlite::Connection::open(resources.join("lingyao-others.db"))
             .unwrap()
             .execute_batch(
                 "CREATE TABLE kaomoji(pinyin TEXT,jianpin TEXT,kaomoji TEXT,sort_order INTEGER);
@@ -7980,15 +7980,15 @@ fn translation_queries_only_clear_chinese_candidates_for_the_network() {
             ..Preferences::default()
         };
         let handle = test_host_preferences(dir.path(), preferences);
-        read(msime_client_focus(handle, true));
+        read(lingyao_client_focus(handle, true));
         for byte in input {
-            read(msime_client_character(
+            read(lingyao_client_character(
                 handle,
                 *byte,
                 byte.is_ascii_uppercase(),
             ));
         }
-        let query = read(msime_client_translation_query(handle));
+        let query = read(lingyao_client_translation_query(handle));
         assert_eq!(
             query["value"]["candidates"],
             json!([{ "text": text, "online_gloss": online }]),
@@ -7999,13 +7999,13 @@ fn translation_queries_only_clear_chinese_candidates_for_the_network() {
 
 /// Every entry point the C header promises is actually exported, and the other way round.
 ///
-/// Native hosts compile against `include/msime_client.h`; the Rust side is the implementation.
-/// Nothing was comparing the two, so `msime_client_rerank_settled` shipped as a Rust export with
+/// Native hosts compile against `include/lingyao_client.h`; the Rust side is the implementation.
+/// Nothing was comparing the two, so `lingyao_client_rerank_settled` shipped as a Rust export with
 /// no declaration — invisible here and a compile error in every native host that reached for it.
 /// A text comparison is enough to catch that, and catches the reverse omission too.
 #[test]
 fn the_c_header_and_the_rust_exports_agree() {
-    const HEADER: &str = include_str!("../include/msime_client.h");
+    const HEADER: &str = include_str!("../include/lingyao_client.h");
     // Walked rather than listed: a guard that needs a new entry every time a module is added is
     // a guard that silently stops covering things.
     fn read_all(directory: &std::path::Path, into: &mut String) {
@@ -8037,14 +8037,14 @@ fn the_c_header_and_the_rust_exports_agree() {
             .collect()
     };
 
-    let declared = names(HEADER, "msime_client_");
-    // Only what is actually exported: a bare text match also catches `msime_client_core::`, the
+    let declared = names(HEADER, "lingyao_client_");
+    // Only what is actually exported: a bare text match also catches `lingyao_client_core::`, the
     // crate this one depends on, whose paths are not entry points.
     let exported: std::collections::BTreeSet<String> = sources
         .split("#[no_mangle]")
         .skip(1)
         .filter_map(|block| {
-            let start = block.find("fn msime_client_")? + "fn ".len();
+            let start = block.find("fn lingyao_client_")? + "fn ".len();
             Some(
                 block[start..]
                     .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
@@ -8056,13 +8056,13 @@ fn the_c_header_and_the_rust_exports_agree() {
     assert!(!declared.is_empty() && !exported.is_empty());
 
     // One direction only. The header also declares types and callback typedefs under the same
-    // prefix — `msime_client_key_event`, `msime_client_focus_lease` — which are not functions and
+    // prefix — `lingyao_client_key_event`, `lingyao_client_focus_lease` — which are not functions and
     // have no Rust export to match. The direction that breaks a host build is the other one: an
     // export a native host cannot see because nothing declares it.
     let undeclared: Vec<_> = exported.difference(&declared).cloned().collect();
     assert!(
         undeclared.is_empty(),
-        "exported from Rust, absent from include/msime_client.h: {undeclared:?}"
+        "exported from Rust, absent from include/lingyao_client.h: {undeclared:?}"
     );
 }
 
@@ -8073,14 +8073,14 @@ fn published_defaults_complete_every_nested_preference_object() {
     // optional. This is the document it fills them from, so it has to carry every
     // member of every nested object - and what it produces has to be accepted back
     // by the same parser the host's session creation uses.
-    let document = read(msime_client_default_preferences());
+    let document = read(lingyao_client_default_preferences());
     assert!(document["ok"].as_bool() == Some(true));
     let defaults = &document["value"];
-    let parsed: msime_client_core::preferences::Preferences =
+    let parsed: lingyao_client_core::preferences::Preferences =
         serde_json::from_value(defaults.clone()).expect("published defaults parse as Preferences");
     assert_eq!(
         parsed,
-        msime_client_core::preferences::Preferences::default()
+        lingyao_client_core::preferences::Preferences::default()
     );
     assert_eq!(defaults["mixed_input"]["minimum_prefix"], 5);
 
@@ -8129,18 +8129,18 @@ fn personal_dictionary_sync_reads_the_same_options_as_create() {
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": root,
     })
     .to_string();
     let synced =
-        read(unsafe { msime_client_personal_dictionary_sync(options.as_ptr(), options.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_sync(options.as_ptr(), options.len()) });
     assert_eq!(synced["ok"], true, "{synced}");
     assert_eq!(synced["value"]["pending_count"], 0);
 
     let envelope = json!({ "options": serde_json::from_str::<serde_json::Value>(&options).unwrap(), "action": {"operation": "retry", "request_id": "x"} }).to_string();
     let refused =
-        read(unsafe { msime_client_personal_dictionary_sync(envelope.as_ptr(), envelope.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_sync(envelope.as_ptr(), envelope.len()) });
     assert_eq!(refused["error"], "invalid dictionary request");
 }
 
@@ -8155,11 +8155,11 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": root,
     });
     let file = json!({
-        "format": "msime-personal-dictionary",
+        "format": "lingyao-personal-dictionary",
         "version": 1,
         "entries": [
             {"kind": "pinyin", "key": "shui'shan", "value": "灵耀", "weight": 100},
@@ -8174,7 +8174,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     .to_string();
 
     let queued =
-        read(unsafe { msime_client_personal_dictionary_request(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(request.as_ptr(), request.len()) });
     assert_eq!(queued["ok"], true);
     assert_eq!(queued["value"]["queued"], true);
     // The count is what the card shows the user, so it has to be the queue's own answer rather
@@ -8183,7 +8183,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
 
     // The same request through the Engine route is refused, which is the whole reason the queued
     // one exists: that route needs the maintenance lock, and a keyboard holding a session owns it.
-    let engine = read(unsafe { msime_client_dictionary(request.as_ptr(), request.len()) });
+    let engine = read(unsafe { lingyao_client_dictionary(request.as_ptr(), request.len()) });
     assert_eq!(engine["ok"], false);
 
     // A second import adds to the queue rather than replacing it: two files imported before the
@@ -8193,7 +8193,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
         "action": {
             "operation": "import_personal",
             "text": json!({
-                "format": "msime-personal-dictionary",
+                "format": "lingyao-personal-dictionary",
                 "version": 1,
                 "entries": [{"kind": "english", "key": "ime", "value": "IME", "weight": 100}],
             })
@@ -8203,7 +8203,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     })
     .to_string();
     let again =
-        read(unsafe { msime_client_personal_dictionary_request(second.as_ptr(), second.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(second.as_ptr(), second.len()) });
     assert_eq!(again["value"]["pending_count"], 3);
 
     // A cloud word selected for local download uses the same durable queue, but is normalized by
@@ -8225,7 +8225,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     })
     .to_string();
     let downloaded =
-        read(unsafe { msime_client_personal_dictionary_request(cloud.as_ptr(), cloud.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(cloud.as_ptr(), cloud.len()) });
     assert_eq!(downloaded["value"]["pending_count"], 4);
     let state: serde_json::Value = serde_json::from_slice(
         &std::fs::read(directory.path().join("PersonalDictionary/sync.json")).unwrap(),
@@ -8250,7 +8250,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     .to_string();
     assert_eq!(
         read(unsafe {
-            msime_client_personal_dictionary_request(invalid_cloud.as_ptr(), invalid_cloud.len())
+            lingyao_client_personal_dictionary_request(invalid_cloud.as_ptr(), invalid_cloud.len())
         })["ok"],
         false
     );
@@ -8274,7 +8274,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     .to_string();
     assert_eq!(
         read(unsafe {
-            msime_client_personal_dictionary_request(malformed.as_ptr(), malformed.len())
+            lingyao_client_personal_dictionary_request(malformed.as_ptr(), malformed.len())
         })["ok"],
         false
     );
@@ -8292,12 +8292,12 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
     })
     .to_string();
     assert_eq!(
-        read(unsafe { msime_client_personal_dictionary_request(without.as_ptr(), without.len()) })
+        read(unsafe { lingyao_client_personal_dictionary_request(without.as_ptr(), without.len()) })
             ["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_personal_dictionary_request(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_personal_dictionary_request(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -8313,7 +8313,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": root,
     });
     // One row the Engine refuses and one repeated word: the queue alone would refuse the whole file for either.
@@ -8325,7 +8325,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     })
     .to_string();
     let queued =
-        read(unsafe { msime_client_personal_dictionary_request(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(request.as_ptr(), request.len()) });
     assert_eq!(queued["ok"], true, "{queued}");
     assert_eq!(queued["value"]["queued"], true);
     assert_eq!(queued["value"]["applied"], 2);
@@ -8351,7 +8351,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     })
     .to_string();
     let queued =
-        read(unsafe { msime_client_personal_dictionary_request(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(request.as_ptr(), request.len()) });
     assert_eq!(queued["value"]["applied"], 128, "{queued}");
     assert_eq!(queued["value"]["pending_count"], 128);
     assert_eq!(queued["value"]["truncated"], true);
@@ -8363,7 +8363,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     })
     .to_string();
     let refused =
-        read(unsafe { msime_client_personal_dictionary_request(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_personal_dictionary_request(request.as_ptr(), request.len()) });
     assert_eq!(refused["ok"], false);
 
     // The parse-only entry point answers the same words and report and writes nothing.
@@ -8371,7 +8371,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     let path = resources.path().to_str().unwrap();
     let parse = json!({"kind": "pinyin", "format": "standard", "text": text}).to_string();
     let parsed = read(unsafe {
-        msime_client_dictionary_import_entries(
+        lingyao_client_dictionary_import_entries(
             parse.as_ptr(),
             parse.len(),
             path.as_ptr(),
@@ -8389,7 +8389,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     let relative = "relative/resources";
     assert_eq!(
         read(unsafe {
-            msime_client_dictionary_import_entries(
+            lingyao_client_dictionary_import_entries(
                 parse.as_ptr(),
                 parse.len(),
                 relative.as_ptr(),
@@ -8400,7 +8400,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     );
     assert_eq!(
         read(unsafe {
-            msime_client_dictionary_import_entries(std::ptr::null(), 0, path.as_ptr(), path.len())
+            lingyao_client_dictionary_import_entries(std::ptr::null(), 0, path.as_ptr(), path.len())
         })["ok"],
         false
     );
@@ -8413,7 +8413,7 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
     let resources = directory.path();
     let read_manifest = || {
         let path = resources.to_str().unwrap();
-        read(unsafe { msime_client_dictionary_manifest(path.as_ptr(), path.len()) })
+        read(unsafe { lingyao_client_dictionary_manifest(path.as_ptr(), path.len()) })
     };
     let commit = "d0dc0c2b594b5540b5de99ad12085c786410626e";
 
@@ -8424,14 +8424,14 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
     // The real shape, with every field the packaged manifest carries. Only two come back — the
     // page is asking what is installed and where it came from, not for journal modes.
     std::fs::write(
-        resources.join("msime-dictionary-manifest.json"),
+        resources.join("lingyao-dictionary-manifest.json"),
         json!({
             "manifest_version": 1,
             "profile": "desktop",
             "format_version": 1,
             "engine_compatibility": {"dictionary_format": 1, "japanese_model_magic": "MSJPDT1"},
             "source": {
-                "repository": "metasequoiaime/msime-engine",
+                "repository": "metasequoiaime/lingyao-engine",
                 "path": "dictionary",
                 "commit": commit,
                 "dirty": false,
@@ -8458,24 +8458,24 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
         json!({"source": {"commit": commit}}),
     ] {
         std::fs::write(
-            resources.join("msime-dictionary-manifest.json"),
+            resources.join("lingyao-dictionary-manifest.json"),
             broken.to_string(),
         )
         .unwrap();
         assert_eq!(read_manifest()["ok"], false, "accepted {broken}");
     }
-    std::fs::write(resources.join("msime-dictionary-manifest.json"), "not json").unwrap();
+    std::fs::write(resources.join("lingyao-dictionary-manifest.json"), "not json").unwrap();
     assert_eq!(read_manifest()["ok"], false);
 
     // A relative directory is refused rather than resolved against whatever the process happens
     // to have as its working directory.
     let relative = "engine";
     assert_eq!(
-        read(unsafe { msime_client_dictionary_manifest(relative.as_ptr(), relative.len()) })["ok"],
+        read(unsafe { lingyao_client_dictionary_manifest(relative.as_ptr(), relative.len()) })["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_dictionary_manifest(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_dictionary_manifest(std::ptr::null(), 0) })["ok"],
         false
     );
 }
@@ -8485,12 +8485,12 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
 fn stale_dictionary_generation_is_prepared_and_other_keys_survive() {
     let document = json!({
         "api_version": 1,
-        "resources": "/usr/share/msime-client/resources",
-        "user_data": "/home/u/.config/msime-client/user",
-        "cache": "/home/u/.config/msime-client/cache",
-        "dictionaries": "/home/u/.config/msime-client/user/dictionaries/old",
-        "preferences_directory": "/home/u/.config/msime-client",
-        "online_provider_socket": "/run/user/1000/msime-online.sock",
+        "resources": "/usr/share/lingyao-client/resources",
+        "user_data": "/home/u/.config/lingyao-client/user",
+        "cache": "/home/u/.config/lingyao-client/cache",
+        "dictionaries": "/home/u/.config/lingyao-client/user/dictionaries/old",
+        "preferences_directory": "/home/u/.config/lingyao-client",
+        "online_provider_socket": "/run/user/1000/lingyao-online.sock",
     });
     let mut requested = None;
     let refreshed = super::refreshed_host_options(
@@ -8501,8 +8501,8 @@ fn stale_dictionary_generation_is_prepared_and_other_keys_survive() {
         |resources, state| {
             requested = Some((resources.to_owned(), state.to_owned()));
             Ok(json!({
-                "resources": "/usr/share/msime-client/resources",
-                "dictionaries": "/home/u/.config/msime-client/user/dictionaries/new",
+                "resources": "/usr/share/lingyao-client/resources",
+                "dictionaries": "/home/u/.config/lingyao-client/user/dictionaries/new",
                 "preferences": {},
             }))
         },
@@ -8512,12 +8512,12 @@ fn stale_dictionary_generation_is_prepared_and_other_keys_survive() {
     assert_eq!(
         requested,
         Some((
-            PathBuf::from("/usr/share/msime-client/resources"),
-            PathBuf::from("/home/u/.config/msime-client")
+            PathBuf::from("/usr/share/lingyao-client/resources"),
+            PathBuf::from("/home/u/.config/lingyao-client")
         ))
     );
     let mut expected = document.clone();
-    expected["dictionaries"] = json!("/home/u/.config/msime-client/user/dictionaries/new");
+    expected["dictionaries"] = json!("/home/u/.config/lingyao-client/user/dictionaries/new");
     assert_eq!(refreshed, expected);
 }
 
@@ -8568,7 +8568,7 @@ fn refresh_keeps_the_language_dictionaries_in_step_with_the_installed_package() 
     std::fs::create_dir_all(&beside).expect("beside");
     assert_eq!(refresh(&current), None);
 
-    std::fs::write(beside.join("msime-zhuyin.db"), b"sqlite").expect("zhuyin");
+    std::fs::write(beside.join("lingyao-zhuyin.db"), b"sqlite").expect("zhuyin");
     let mut installed = current.clone();
     installed["language_dictionaries"] = json!(beside);
     assert_eq!(refresh(&current), Some(installed.clone()));
@@ -8590,13 +8590,13 @@ fn refresh_keeps_the_language_dictionaries_in_step_with_the_installed_package() 
     moved["user_data"] = json!("/t/user");
     assert_eq!(refresh(&moved), None);
 
-    std::fs::remove_file(beside.join("msime-zhuyin.db")).expect("uninstall");
+    std::fs::remove_file(beside.join("lingyao-zhuyin.db")).expect("uninstall");
     assert_eq!(refresh(&installed), Some(current.clone()));
 
-    // msime-stroke.db alone records the directory as well.
-    std::fs::write(beside.join("msime-stroke.db"), b"sqlite").expect("stroke");
+    // lingyao-stroke.db alone records the directory as well.
+    std::fs::write(beside.join("lingyao-stroke.db"), b"sqlite").expect("stroke");
     assert_eq!(refresh(&current), Some(installed.clone()));
-    std::fs::remove_file(beside.join("msime-stroke.db")).expect("uninstall");
+    std::fs::remove_file(beside.join("lingyao-stroke.db")).expect("uninstall");
     assert_eq!(refresh(&installed), Some(current.clone()));
 }
 
@@ -8610,7 +8610,7 @@ fn a_prepared_generation_records_the_language_dictionaries_beside_its_new_resour
     std::fs::create_dir_all(&new).expect("new");
     let beside = root.path().join("new").join("language-dictionaries");
     std::fs::create_dir_all(&beside).expect("beside");
-    std::fs::write(beside.join("msime-cantonese.db"), b"sqlite").expect("cantonese");
+    std::fs::write(beside.join("lingyao-cantonese.db"), b"sqlite").expect("cantonese");
     let stale = json!({
         "resources": old,
         "user_data": "/s/user",
@@ -8641,7 +8641,7 @@ fn only_the_input_method_refresh_records_the_language_dictionaries() {
     std::fs::create_dir(&resources).unwrap();
     let beside = directory.path().join("language-dictionaries");
     std::fs::create_dir(&beside).unwrap();
-    std::fs::write(beside.join("msime-zhuyin.db"), b"sqlite").unwrap();
+    std::fs::write(beside.join("lingyao-zhuyin.db"), b"sqlite").unwrap();
     let state = directory.path().join("state");
     std::fs::create_dir(&state).unwrap();
     let generation = serde_json::from_str::<ResourceSet>(include_str!(
@@ -8681,11 +8681,11 @@ fn an_outdated_generation_still_records_the_installed_language_dictionaries() {
     // 与 Application Support 里手工暂存的布局相同：资源目录和语言词库都在状态目录里。
     let resources = state.join("EngineResources");
     std::fs::create_dir_all(&resources).unwrap();
-    std::fs::write(resources.join("msime-pinyin.db"), b"previous generation").unwrap();
+    std::fs::write(resources.join("lingyao-pinyin.db"), b"previous generation").unwrap();
     let beside = state.join("language-dictionaries");
     std::fs::create_dir(&beside).unwrap();
-    std::fs::write(beside.join("msime-cantonese.db"), b"sqlite").unwrap();
-    std::fs::write(beside.join("msime-zhuyin.db"), b"sqlite").unwrap();
+    std::fs::write(beside.join("lingyao-cantonese.db"), b"sqlite").unwrap();
+    std::fs::write(beside.join("lingyao-zhuyin.db"), b"sqlite").unwrap();
     let document = json!({
         "api_version": 1,
         "cache": state.join("cache"),
@@ -8719,9 +8719,9 @@ fn an_outdated_generation_still_records_the_installed_language_dictionaries() {
 /// 记录的资源目录与词库锁不符时，自带资源的宿主改用自己那份准备代次，此后 `resources` 指向它；别的失败、没有自带资源、或自带的就是记录的那份时，照旧报告失败。
 #[test]
 fn outdated_recorded_resources_are_prepared_from_the_bundled_copy() {
-    use msime_client_core::resources::ResourceError;
+    use lingyao_client_core::resources::ResourceError;
     let stale = json!({
-        "resources": "/Users/u/Library/Application Support/app.msime.macos/EngineResources",
+        "resources": "/Users/u/Library/Application Support/app.lingyao.macos/EngineResources",
         "user_data": "/s/user",
         "dictionaries": "/s/user/dictionaries/old",
         "preferences_directory": "/s",
@@ -8856,9 +8856,9 @@ fn refresh_accepts_full_sized_options_documents() {
     std::fs::create_dir(&state).unwrap();
     let mut preferences = Preferences::default();
     preferences.custom_theme.keyboard =
-        Some(msime_client_core::preferences::TouchKeyboardSkinDesign {
+        Some(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
             photo: Some(format!("iVBORw0KGgoA{}", "AAAA".repeat(10_000))),
-            ..msime_client_core::preferences::TouchKeyboardSkinDesign::default()
+            ..lingyao_client_core::preferences::TouchKeyboardSkinDesign::default()
         });
     preferences.validate().unwrap();
     let generation = serde_json::from_str::<ResourceSet>(include_str!(
@@ -8944,7 +8944,7 @@ fn refresh_leaves_a_symlinked_options_file_alone() {
 #[cfg(unix)]
 #[test]
 fn refresh_rejects_a_symlinked_options_parent() {
-    use msime_path_trust::untrusted_symlink as symlink;
+    use lingyao_path_trust::untrusted_symlink as symlink;
 
     let directory = tempfile::tempdir().unwrap();
     let target = tempfile::tempdir().unwrap();
@@ -8956,14 +8956,14 @@ fn refresh_rejects_a_symlinked_options_parent() {
     assert!(super::refresh_host_options(&options).is_err());
 }
 
-/// Downloaded dictionaries that an upgrade left behind the compiled lock are reported as `dictionary_outdated`, the one refresh failure hosts turn into a pointer at `msime-linux-setup --update --download`, and the options file keeps pointing at the working previous generation.
+/// Downloaded dictionaries that an upgrade left behind the compiled lock are reported as `dictionary_outdated`, the one refresh failure hosts turn into a pointer at `lingyao-linux-setup --update --download`, and the options file keeps pointing at the working previous generation.
 #[test]
 fn refresh_reports_outdated_resources_and_leaves_the_options_alone() {
     let directory = tempfile::tempdir().unwrap();
     let resources = directory.path().join("resources");
     std::fs::create_dir(&resources).unwrap();
     // A file the previous lock pinned; the compiled lock names none of it.
-    std::fs::write(resources.join("msime-pinyin.db"), b"previous generation").unwrap();
+    std::fs::write(resources.join("lingyao-pinyin.db"), b"previous generation").unwrap();
     let state = directory.path().join("state");
     std::fs::create_dir(&state).unwrap();
     let options = state.join("runtime-options.json");
@@ -8997,10 +8997,10 @@ fn refresh_reports_outdated_resources_and_leaves_the_options_alone() {
 
     // The same prefix reaches a host through the C ABI.
     let path = options.to_str().unwrap();
-    let raw = unsafe { super::msime_client_refresh_host(path.as_ptr(), path.len()) };
+    let raw = unsafe { super::lingyao_client_refresh_host(path.as_ptr(), path.len()) };
     let response: Value =
         serde_json::from_str(unsafe { std::ffi::CStr::from_ptr(raw) }.to_str().unwrap()).unwrap();
-    unsafe { super::msime_client_string_free(raw) };
+    unsafe { super::lingyao_client_string_free(raw) };
     assert_eq!(response["ok"], json!(false));
     assert!(response["error"]
         .as_str()
@@ -9012,7 +9012,7 @@ fn refresh_reports_outdated_resources_and_leaves_the_options_alone() {
 /// Anything other than a mismatch keeps its own error, so a host does not send the user to download dictionaries that are not the problem.
 #[test]
 fn only_a_resource_mismatch_counts_as_outdated() {
-    use msime_client_core::resources::ResourceError;
+    use lingyao_client_core::resources::ResourceError;
     let mismatch = super::outdated_resources(Box::new(ResourceError::Integrity));
     assert!(mismatch.is::<super::DictionaryOutdated>());
     let unexpected =
@@ -9055,7 +9055,7 @@ fn vocabulary_boundary_lists_wordbook_packs_from_the_plugins_directory() {
             request["plugins"] = plugins;
         }
         let request = serde_json::to_vec(&request).unwrap();
-        read(unsafe { msime_client_vocabulary_review(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_vocabulary_review(request.as_ptr(), request.len()) })
     };
     let listed = call(Some(json!(directory.path().join("plugins"))));
     assert_eq!(listed["ok"], true, "{listed}");
@@ -9081,7 +9081,7 @@ fn vocabulary_boundary_imports_reviews_and_reports_one_whole_status() {
             "action": action,
         }))
         .unwrap();
-        read(unsafe { msime_client_vocabulary_review(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_vocabulary_review(request.as_ptr(), request.len()) })
     };
 
     // A fresh directory has no books and therefore no queue, rather than an error.
@@ -9181,11 +9181,11 @@ fn vocabulary_boundary_rejects_a_bad_envelope_without_touching_the_store() {
     let directory = tempfile::tempdir().unwrap();
     let call = |value: Value| {
         let request = serde_json::to_vec(&value).unwrap();
-        read(unsafe { msime_client_vocabulary_review(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_vocabulary_review(request.as_ptr(), request.len()) })
     };
 
     assert_eq!(
-        read(unsafe { msime_client_vocabulary_review(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_vocabulary_review(std::ptr::null(), 0) })["ok"],
         false
     );
     assert_eq!(
@@ -9239,19 +9239,19 @@ fn vocabulary_boundary_rejects_a_bad_envelope_without_touching_the_store() {
 fn voice_hotword_correction_rewrites_homophones() {
     let request = json!({ "text": "我在名天科技上班", "hotwords": [{"text": "明天科技", "pinyin": "ming tian ke ji"}] }).to_string();
     let corrected =
-        read(unsafe { msime_client_voice_hotword_correct(request.as_ptr(), request.len()) });
+        read(unsafe { lingyao_client_voice_hotword_correct(request.as_ptr(), request.len()) });
     assert_eq!(
         corrected,
         json!({"ok": true, "value": {"text": "我在明天科技上班"}})
     );
     let malformed = b"{\"text\": 1}";
     assert_eq!(
-        read(unsafe { msime_client_voice_hotword_correct(malformed.as_ptr(), malformed.len()) })
+        read(unsafe { lingyao_client_voice_hotword_correct(malformed.as_ptr(), malformed.len()) })
             ["ok"],
         false
     );
     assert_eq!(
-        read(unsafe { msime_client_voice_hotword_correct(std::ptr::null(), 4) })["ok"],
+        read(unsafe { lingyao_client_voice_hotword_correct(std::ptr::null(), 4) })["ok"],
         false
     );
 }
@@ -9264,7 +9264,7 @@ fn voice_hotword_correction_rejects_unbounded_work() {
     let too_many_hotwords = json!({ "text": "名天", "hotwords": hotwords }).to_string();
     assert_eq!(
         read(unsafe {
-            msime_client_voice_hotword_correct(too_many_hotwords.as_ptr(), too_many_hotwords.len())
+            lingyao_client_voice_hotword_correct(too_many_hotwords.as_ptr(), too_many_hotwords.len())
         })["ok"],
         false,
         "the correction boundary must cap hotword count"
@@ -9273,7 +9273,7 @@ fn voice_hotword_correction_rejects_unbounded_work() {
     let too_long_text = json!({ "text": "中".repeat(65_537), "hotwords": [] }).to_string();
     assert_eq!(
         read(unsafe {
-            msime_client_voice_hotword_correct(too_long_text.as_ptr(), too_long_text.len())
+            lingyao_client_voice_hotword_correct(too_long_text.as_ptr(), too_long_text.len())
         })["ok"],
         false,
         "the correction boundary must cap transcript size"
@@ -9284,7 +9284,7 @@ fn voice_hotword_correction_rejects_unbounded_work() {
             .to_string();
     assert_eq!(
         read(unsafe {
-            msime_client_voice_hotword_correct(too_long_pinyin.as_ptr(), too_long_pinyin.len())
+            lingyao_client_voice_hotword_correct(too_long_pinyin.as_ptr(), too_long_pinyin.len())
         })["ok"],
         false,
         "the correction boundary must cap each hotword field"
@@ -9295,7 +9295,7 @@ fn voice_hotword_correction_rejects_unbounded_work() {
 fn voice_local_models_list_install_cancel_and_remove_validate_their_requests() {
     let root = tempfile::tempdir().unwrap();
     let request = json!({ "root": root.path() }).to_string();
-    let listed = read(unsafe { msime_client_voice_local_models(request.as_ptr(), request.len()) });
+    let listed = read(unsafe { lingyao_client_voice_local_models(request.as_ptr(), request.len()) });
     assert_eq!(listed["ok"], true, "{listed}");
     let models = listed["value"]["models"].as_array().unwrap();
     assert!(!models.is_empty());
@@ -9305,13 +9305,13 @@ fn voice_local_models_list_install_cancel_and_remove_validate_their_requests() {
 
     let relative = json!({ "root": "models" }).to_string();
     assert_eq!(
-        read(unsafe { msime_client_voice_local_models(relative.as_ptr(), relative.len()) })["ok"],
+        read(unsafe { lingyao_client_voice_local_models(relative.as_ptr(), relative.len()) })["ok"],
         false
     );
 
     let unknown = json!({ "root": root.path(), "id": "no-such-model" }).to_string();
     let install = read(unsafe {
-        msime_client_voice_local_model_install(
+        lingyao_client_voice_local_model_install(
             unknown.as_ptr(),
             unknown.len(),
             None,
@@ -9320,14 +9320,14 @@ fn voice_local_models_list_install_cancel_and_remove_validate_their_requests() {
     });
     assert_eq!(install["ok"], false, "{install}");
     let remove =
-        read(unsafe { msime_client_voice_local_model_remove(unknown.as_ptr(), unknown.len()) });
+        read(unsafe { lingyao_client_voice_local_model_remove(unknown.as_ptr(), unknown.len()) });
     assert_eq!(remove["ok"], false, "{remove}");
 
     let bad_mirror =
         json!({ "root": root.path(), "id": default, "mirror": "http://mirror.example" })
             .to_string();
     let install = read(unsafe {
-        msime_client_voice_local_model_install(
+        lingyao_client_voice_local_model_install(
             bad_mirror.as_ptr(),
             bad_mirror.len(),
             None,
@@ -9338,18 +9338,18 @@ fn voice_local_models_list_install_cancel_and_remove_validate_their_requests() {
 
     let removed = json!({ "root": root.path(), "id": default }).to_string();
     assert_eq!(
-        read(unsafe { msime_client_voice_local_model_remove(removed.as_ptr(), removed.len()) })
+        read(unsafe { lingyao_client_voice_local_model_remove(removed.as_ptr(), removed.len()) })
             ["ok"],
         true
     );
 
     let cancel = json!({ "id": default }).to_string();
     assert_eq!(
-        read(unsafe { msime_client_voice_local_model_cancel(cancel.as_ptr(), cancel.len()) }),
+        read(unsafe { lingyao_client_voice_local_model_cancel(cancel.as_ptr(), cancel.len()) }),
         json!({"ok": true, "value": false})
     );
     assert_eq!(
-        read(unsafe { msime_client_voice_local_model_cancel(std::ptr::null(), 0) })["ok"],
+        read(unsafe { lingyao_client_voice_local_model_cancel(std::ptr::null(), 0) })["ok"],
         true
     );
 }
@@ -9357,16 +9357,16 @@ fn voice_local_models_list_install_cancel_and_remove_validate_their_requests() {
 #[test]
 fn mcp_status_and_install_check_their_requests_before_touching_a_file() {
     let status =
-        |request: &[u8]| read(unsafe { msime_client_mcp_status(request.as_ptr(), request.len()) });
+        |request: &[u8]| read(unsafe { lingyao_client_mcp_status(request.as_ptr(), request.len()) });
     let install =
-        |request: &[u8]| read(unsafe { msime_client_mcp_install(request.as_ptr(), request.len()) });
+        |request: &[u8]| read(unsafe { lingyao_client_mcp_install(request.as_ptr(), request.len()) });
 
     // Before the input method is set up there is no entry to show, but the server path still is.
     let value = &status(br#"{"options":null}"#)["value"];
     assert!(value["command"]
         .as_str()
         .unwrap()
-        .ends_with(&format!("msime-mcp{}", std::env::consts::EXE_SUFFIX)));
+        .ends_with(&format!("lingyao-mcp{}", std::env::consts::EXE_SUFFIX)));
     assert!(value["config"].is_null());
     assert!(value["clients"]
         .as_array()
@@ -9381,9 +9381,9 @@ fn mcp_status_and_install_check_their_requests_before_touching_a_file() {
     };
     let value = &status(format!(r#"{{"options":"{options}"}}"#).as_bytes())["value"];
     let snippet: Value = serde_json::from_str(value["config"].as_str().unwrap()).unwrap();
-    assert_eq!(snippet["mcpServers"]["msime"]["command"], value["command"]);
+    assert_eq!(snippet["mcpServers"]["lingyao"]["command"], value["command"]);
     assert_eq!(
-        snippet["mcpServers"]["msime"]["args"],
+        snippet["mcpServers"]["lingyao"]["args"],
         json!(["--options", options.replace(r"\\", r"\")])
     );
 
@@ -9393,7 +9393,7 @@ fn mcp_status_and_install_check_their_requests_before_touching_a_file() {
     );
     assert_eq!(status(br#"{"unknown":1}"#)["error"], "invalid mcp request");
     assert_eq!(
-        read(unsafe { msime_client_mcp_status(std::ptr::null(), 4) })["error"],
+        read(unsafe { lingyao_client_mcp_status(std::ptr::null(), 4) })["error"],
         "invalid mcp request buffer"
     );
     assert_eq!(
@@ -9425,7 +9425,7 @@ fn plugin_host(root: &std::path::Path, preferences: Preferences) -> u64 {
     let sound_packs =
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/sound-packs");
     let options = json!({ "api_version": 1, "resources": path("resources"), "user_data": path("user"), "cache": path("cache"), "dictionaries": path("dictionaries"), "preferences": preferences, "preferences_directory": path("state"), "sound_packs": sound_packs }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     created["value"]["session"].as_u64().unwrap()
 }
@@ -9444,13 +9444,13 @@ fn save_mentions(root: &std::path::Path, entries: &[(&str, &str)]) {
     let entries: Vec<_> = entries
         .iter()
         .map(
-            |(text, key)| msime_client_core::plugins::mentions::MentionEntry {
+            |(text, key)| lingyao_client_core::plugins::mentions::MentionEntry {
                 text: (*text).into(),
                 key: (*key).into(),
             },
         )
         .collect();
-    msime_client_core::plugins::mentions::MentionStore::new(root.join("state/plugins"))
+    lingyao_client_core::plugins::mentions::MentionStore::new(root.join("state/plugins"))
         .save(&entries)
         .unwrap();
 }
@@ -9459,11 +9459,11 @@ fn save_mentions(root: &std::path::Path, entries: &[(&str, &str)]) {
 fn local_mode_candidates(handle: u64, keys: &[u8]) -> Vec<String> {
     let mut view = Value::Null;
     for key in keys {
-        let result = read(msime_client_character(handle, *key, false));
+        let result = read(lingyao_client_character(handle, *key, false));
         assert_eq!(result["ok"], true, "{result}");
         view = result["value"]["view"].clone();
     }
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
     view["candidates"]
         .as_array()
         .map(|candidates| {
@@ -9495,7 +9495,7 @@ fn command_tables_and_mentions_reach_the_engine_from_the_plugins_directory() {
     preferences.local_modes.mention = true;
     preferences.plugins.command_tables = vec!["work".into()];
     let handle = plugin_host(dir.path(), preferences);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert!(local_mode_candidates(handle, b"/sig").contains(&"张三敬上".to_owned()));
     assert!(!local_mode_candidates(handle, b"/zzz").contains(&"不会出现".to_owned()));
     assert!(local_mode_candidates(handle, b"@zs").contains(&"张三".to_owned()));
@@ -9507,14 +9507,14 @@ fn command_tables_and_mentions_reach_the_engine_from_the_plugins_directory() {
         "[[commands]]\ntrigger = \"sig\"\ntitle = \"签名\"\ntemplate = \"李四 敬上\"\n",
     );
     save_mentions(dir.path(), &[("李四", "li'si")]);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let commands = local_mode_candidates(handle, b"/sig");
     assert!(commands.contains(&"李四 敬上".to_owned()), "{commands:?}");
     assert!(!commands.contains(&"张三敬上".to_owned()));
     assert!(local_mode_candidates(handle, b"@ls").contains(&"李四".to_owned()));
     assert!(!local_mode_candidates(handle, b"@zs").contains(&"张三".to_owned()));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 fn install_phrase_table(root: &std::path::Path, id: &str, phrases: &[(&str, &str)]) {
@@ -9533,7 +9533,7 @@ fn install_phrase_table(root: &std::path::Path, id: &str, phrases: &[(&str, &str
 
 /// K 模式在一个空闲会话里输入 `keys` 后的候选文本，之后取消。
 fn quick_phrase_candidates(handle: u64, keys: &[u8]) -> Vec<String> {
-    let entered = read(msime_client_character(handle, b'K', true));
+    let entered = read(lingyao_client_character(handle, b'K', true));
     assert_eq!(entered["ok"], true, "{entered}");
     local_mode_candidates(handle, keys)
 }
@@ -9545,7 +9545,7 @@ fn phrase_tables_reach_the_quick_phrase_mode_from_the_plugins_directory() {
     for name in ["resources", "dictionaries"] {
         let directory = dir.path().join(name);
         std::fs::create_dir_all(&directory).unwrap();
-        rusqlite::Connection::open(directory.join("msime-pinyin.db"))
+        rusqlite::Connection::open(directory.join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(
                 "CREATE TABLE quick_parases(key TEXT,value TEXT,weight INTEGER);
@@ -9562,12 +9562,12 @@ fn phrase_tables_reach_the_quick_phrase_mode_from_the_plugins_directory() {
     let mut preferences = chinese_preferences();
     preferences.plugins.phrase_tables = vec!["office".into()];
     let handle = plugin_host(dir.path(), preferences.clone());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(quick_phrase_candidates(handle, b"dh"), ["电话", "电话号码"]);
 
     install_phrase_table(dir.path(), "office", &[("dh", "办公室电话")]);
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(
         quick_phrase_candidates(handle, b"dh"),
         ["电话", "办公室电话"]
@@ -9589,7 +9589,7 @@ fn phrase_tables_reach_the_quick_phrase_mode_from_the_plugins_directory() {
             .quick_phrase_table
             .is_empty());
     });
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 fn install_helpcode_pack(root: &std::path::Path, id: &str, table: &str) {
@@ -9620,34 +9620,34 @@ fn the_selected_helpcode_pack_replaces_the_scheme_table() {
     let dir = tempfile::tempdir().unwrap();
     install_helpcode_pack(dir.path(), "radicals", "你=ab\n");
     let mut preferences = chinese_preferences();
-    preferences.scheme = msime_client_core::preferences::InputScheme::Quanpin;
+    preferences.scheme = lingyao_client_core::preferences::InputScheme::Quanpin;
     preferences.plugins.helpcode_pack_quanpin = "radicals".into();
     let handle = plugin_host(dir.path(), preferences.clone());
     assert_eq!(session_helpcode(handle).as_deref(), Some("ab"));
 
     install_helpcode_pack(dir.path(), "radicals", "你=cd\n好=ef\n");
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(session_helpcode(handle).as_deref(), Some("cd"));
 
     // 包不见了：退回方案原来的表，会话照常可用。
     std::fs::remove_dir_all(dir.path().join("state/plugins/helpcode/radicals")).unwrap();
-    assert_eq!(read(msime_client_focus(handle, false))["ok"], true);
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, false))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert_eq!(session_helpcode(handle), None);
 
     // 双拼没有选包，用双拼方案自己的表；关掉全拼辅助码时不读包。
     install_helpcode_pack(dir.path(), "radicals", "你=gh\n");
-    preferences.scheme = msime_client_core::preferences::InputScheme::Shuangpin;
+    preferences.scheme = lingyao_client_core::preferences::InputScheme::Shuangpin;
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
     assert_eq!(session_helpcode(handle), None);
-    preferences.scheme = msime_client_core::preferences::InputScheme::Quanpin;
+    preferences.scheme = lingyao_client_core::preferences::InputScheme::Quanpin;
     preferences.quanpin_helpcode.enabled = false;
     assert_eq!(update(handle, 2, &preferences)["value"]["deferred"], false);
     assert_eq!(session_helpcode(handle), None);
     preferences.quanpin_helpcode.enabled = true;
     assert_eq!(update(handle, 3, &preferences)["value"]["deferred"], false);
     assert_eq!(session_helpcode(handle).as_deref(), Some("gh"));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// 包坏了、回退的自定义辅助码表也被删了：会话照常创建，聚焦和偏好更新都不失败，Engine 用空表；之后每次聚焦也不再重试。
@@ -9659,9 +9659,9 @@ fn a_broken_helpcode_pack_with_a_missing_fallback_never_fails_the_session() {
     std::fs::write(custom.join("mine.txt"), "你=zz\n").unwrap();
     install_helpcode_pack(dir.path(), "radicals", "你=ab\n");
     let mut preferences = chinese_preferences();
-    preferences.scheme = msime_client_core::preferences::InputScheme::Quanpin;
+    preferences.scheme = lingyao_client_core::preferences::InputScheme::Quanpin;
     preferences.quanpin_helpcode.schema =
-        msime_client_core::preferences::HelpcodeSchema::Custom("custom/mine".into());
+        lingyao_client_core::preferences::HelpcodeSchema::Custom("custom/mine".into());
     preferences.plugins.helpcode_pack_quanpin = "radicals".into();
     let handle = plugin_host(dir.path(), preferences.clone());
     assert_eq!(session_helpcode(handle).as_deref(), Some("ab"));
@@ -9674,7 +9674,7 @@ fn a_broken_helpcode_pack_with_a_missing_fallback_never_fails_the_session() {
     )
     .unwrap();
     for _ in 0..2 {
-        let focused = read(msime_client_focus(handle, true));
+        let focused = read(lingyao_client_focus(handle, true));
         assert_eq!(focused["ok"], true, "{focused}");
         assert_eq!(session_helpcode(handle).as_deref(), Some(""));
     }
@@ -9685,13 +9685,13 @@ fn a_broken_helpcode_pack_with_a_missing_fallback_never_fails_the_session() {
     let updated = update(handle, 1, &preferences);
     assert_eq!(updated["value"]["deferred"], false, "{updated}");
     assert_eq!(session_helpcode(handle).as_deref(), Some(""));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 
     // 一开始就是这样也能创建会话。
     let handle = plugin_host(dir.path(), preferences);
     assert_eq!(session_helpcode(handle).as_deref(), Some(""));
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// Switching the `/` mode on, or enabling another table, goes through the ordinary preference update and reads the tables then.
@@ -9710,7 +9710,7 @@ fn preference_updates_load_the_enabled_command_tables() {
     );
     let mut preferences = chinese_preferences();
     let handle = plugin_host(dir.path(), preferences.clone());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     preferences.local_modes.command = true;
     preferences.plugins.command_tables = vec!["work".into()];
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
@@ -9726,7 +9726,7 @@ fn preference_updates_load_the_enabled_command_tables() {
     );
     assert!(!signatures.contains(&"张三敬上".to_owned()));
     assert!(local_mode_candidates(handle, b"/addr").contains(&"某某路一号".to_owned()));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// The `@ 地名` switch reaches the Engine both when a session is created with it on and when a preference update turns it on or off, since every engine starts with the places off.
@@ -9737,7 +9737,7 @@ fn mention_places_preference_reaches_the_engine() {
     preferences.local_modes.mention = true;
     preferences.local_modes.mention_places = true;
     let handle = plugin_host(dir.path(), preferences.clone());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     assert!(local_mode_candidates(handle, b"@shenzhen").contains(&"深圳市".to_owned()));
     preferences.local_modes.mention_places = false;
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
@@ -9745,7 +9745,7 @@ fn mention_places_preference_reaches_the_engine() {
     preferences.local_modes.mention_places = true;
     assert_eq!(update(handle, 2, &preferences)["value"]["deferred"], false);
     assert!(local_mode_candidates(handle, b"@shenzhen").contains(&"深圳市".to_owned()));
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// `/fy` gets a query of its own: one English text, a sentence translated into Chinese by the selected service, asked whatever the gloss switches say and carrying nothing for an offline dictionary or the gloss cache. Its answer becomes the first row, and no service selected means no query.
@@ -9759,12 +9759,12 @@ fn command_translation_has_its_own_chinese_sentence_query() {
     preferences.tencent_tmt.enabled = false;
     preferences.niutrans.enabled = true;
     let handle = plugin_host(dir.path(), preferences.clone());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let mut view = Value::Null;
     for key in b"/fyhello" {
-        view = read(msime_client_character(handle, *key, false))["value"]["view"].clone();
+        view = read(lingyao_client_character(handle, *key, false))["value"]["view"].clone();
     }
-    let query = read(msime_client_translation_query(handle))["value"].clone();
+    let query = read(lingyao_client_translation_query(handle))["value"].clone();
     assert_eq!(query["sentence"], true, "{query}");
     assert_eq!(query["target_language"], "zh");
     assert_eq!(query["provider"], "niutrans");
@@ -9778,7 +9778,7 @@ fn command_translation_has_its_own_chinese_sentence_query() {
 
     let encoded = serde_json::to_vec(&json!([{"text": "hello", "translation": "你好"}])).unwrap();
     let applied = read(unsafe {
-        msime_client_apply_translations(
+        lingyao_client_apply_translations(
             handle,
             query["generation"].as_u64().unwrap(),
             encoded.as_ptr(),
@@ -9787,23 +9787,23 @@ fn command_translation_has_its_own_chinese_sentence_query() {
     });
     assert_eq!(applied["value"]["applied"], true, "{applied}");
     assert_eq!(applied["value"]["view"]["candidates"][0]["text"], "你好");
-    read(msime_client_command(handle, 3));
+    read(lingyao_client_command(handle, 3));
 
     // With no service selected `/fy` asks nothing, and the other local modes stay off the network while the gloss switches are off.
     preferences.niutrans.enabled = false;
     assert_eq!(update(handle, 1, &preferences)["value"]["deferred"], false);
     for key in b"/fyhello" {
-        read(msime_client_character(handle, *key, false));
+        read(lingyao_client_character(handle, *key, false));
     }
-    assert!(read(msime_client_translation_query(handle))["value"].is_null());
-    read(msime_client_command(handle, 3));
+    assert!(read(lingyao_client_translation_query(handle))["value"].is_null());
+    read(lingyao_client_command(handle, 3));
     preferences.niutrans.enabled = true;
     assert_eq!(update(handle, 2, &preferences)["value"]["deferred"], false);
     for key in b"/sig" {
-        read(msime_client_character(handle, *key, false));
+        read(lingyao_client_character(handle, *key, false));
     }
-    assert!(read(msime_client_translation_query(handle))["value"].is_null());
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert!(read(lingyao_client_translation_query(handle))["value"].is_null());
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// The sound calls sit on the key path: with every sound off (the default) they queue nothing and start nothing, and a bad handle or class is refused the same way.
@@ -9812,18 +9812,18 @@ fn sound_calls_queue_nothing_while_sounds_are_off() {
     let dir = tempfile::tempdir().unwrap();
     let handle = plugin_host(dir.path(), chinese_preferences());
     for class in 0..4 {
-        assert!(!msime_client_key_sound(handle, class));
+        assert!(!lingyao_client_key_sound(handle, class));
     }
-    assert!(!msime_client_key_sound(handle, 4));
-    assert!(!msime_client_commit_sound(handle));
-    assert!(!msime_client_music_set_active(handle, true));
-    assert!(!msime_client_key_sound(0, 0));
-    assert!(!msime_client_commit_sound(u64::MAX));
-    let other_thread = std::thread::spawn(move || msime_client_key_sound(handle, 0))
+    assert!(!lingyao_client_key_sound(handle, 4));
+    assert!(!lingyao_client_commit_sound(handle));
+    assert!(!lingyao_client_music_set_active(handle, true));
+    assert!(!lingyao_client_key_sound(0, 0));
+    assert!(!lingyao_client_commit_sound(u64::MAX));
+    let other_thread = std::thread::spawn(move || lingyao_client_key_sound(handle, 0))
         .join()
         .unwrap();
     assert!(!other_thread);
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// Sound settings are not Engine state, so a preference update reaches them at once, even while a composition keeps the Engine's own changes waiting.
@@ -9832,8 +9832,8 @@ fn sound_settings_follow_preference_updates_during_composition() {
     let dir = tempfile::tempdir().unwrap();
     let mut preferences = chinese_preferences();
     let handle = plugin_host(dir.path(), preferences.clone());
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
-    read(msime_client_character(handle, b'n', false));
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
+    read(lingyao_client_character(handle, b'n', false));
     preferences.plugins.key_sound.enabled = true;
     preferences.plugins.key_sound.volume = 70;
     preferences.local_modes.command = true;
@@ -9854,13 +9854,13 @@ fn sound_settings_follow_preference_updates_during_composition() {
             "the Engine switch waits for the composition"
         );
     });
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 #[test]
 fn key_sound_pack_boundary_resolves_validated_files() {
     let call = |request: &[u8]| {
-        read(unsafe { msime_client_key_sound_pack(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_key_sound_pack(request.as_ptr(), request.len()) })
     };
     let sound_packs =
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/sound-packs");
@@ -9889,7 +9889,7 @@ fn key_sound_pack_boundary_resolves_validated_files() {
         "invalid sound pack request"
     );
     assert_eq!(
-        read(unsafe { msime_client_key_sound_pack(std::ptr::null(), 4) })["error"],
+        read(unsafe { lingyao_client_key_sound_pack(std::ptr::null(), 4) })["error"],
         "invalid sound pack request"
     );
 }
@@ -9912,7 +9912,7 @@ fn installed_music_pack(state: &std::path::Path, id: &str) -> std::path::PathBuf
 #[test]
 fn music_pack_boundary_resolves_validated_tracks() {
     let call =
-        |request: &[u8]| read(unsafe { msime_client_music_pack(request.as_ptr(), request.len()) });
+        |request: &[u8]| read(unsafe { lingyao_client_music_pack(request.as_ptr(), request.len()) });
     let state = tempfile::tempdir().unwrap();
     let pack = installed_music_pack(state.path(), "rain");
     let request =
@@ -9951,7 +9951,7 @@ fn music_pack_boundary_resolves_validated_tracks() {
         "invalid music pack request"
     );
     assert_eq!(
-        read(unsafe { msime_client_music_pack(std::ptr::null(), 4) })["error"],
+        read(unsafe { lingyao_client_music_pack(std::ptr::null(), 4) })["error"],
         "invalid music pack request"
     );
 }
@@ -9967,7 +9967,7 @@ fn plugins_boundary_lists_imports_removes_and_keeps_the_name_list() {
             &json!({"state_root": state.path(), "sound_packs": sound_packs, "action": action}),
         )
         .unwrap();
-        read(unsafe { msime_client_plugins(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_plugins(request.as_ptr(), request.len()) })
     };
 
     let catalog = call(json!({"operation": "catalog"}));
@@ -9984,9 +9984,9 @@ fn plugins_boundary_lists_imports_removes_and_keeps_the_name_list() {
     };
     // Every built-in pack, sound and music alike, in the catalog's id order, with `extra` among them.
     let builtins = |extra: &[&str]| -> Vec<String> {
-        msime_client_core::plugins::BUILTIN_SOUND_PACKS
+        lingyao_client_core::plugins::BUILTIN_SOUND_PACKS
             .iter()
-            .chain(msime_client_core::plugins::BUILTIN_MUSIC_PACKS.iter())
+            .chain(lingyao_client_core::plugins::BUILTIN_MUSIC_PACKS.iter())
             .chain(extra)
             .map(|id| (*id).to_owned())
             .collect::<std::collections::BTreeSet<_>>()
@@ -10061,7 +10061,7 @@ fn plugins_boundary_lists_imports_removes_and_keeps_the_name_list() {
     // Requests the page could not have meant.
     assert_eq!(call(json!({"operation": "rename"}))["error"], "invalid");
     let raw =
-        |request: &[u8]| read(unsafe { msime_client_plugins(request.as_ptr(), request.len()) });
+        |request: &[u8]| read(unsafe { lingyao_client_plugins(request.as_ptr(), request.len()) });
     assert_eq!(
         raw(br#"{"state_root":"state","sound_packs":null,"action":{"operation":"catalog"}}"#)
             ["error"],
@@ -10072,7 +10072,7 @@ fn plugins_boundary_lists_imports_removes_and_keeps_the_name_list() {
         "invalid"
     );
     assert_eq!(
-        read(unsafe { msime_client_plugins(std::ptr::null(), 4) })["error"],
+        read(unsafe { lingyao_client_plugins(std::ptr::null(), 4) })["error"],
         "invalid"
     );
 }
@@ -10084,7 +10084,7 @@ fn statistics_record_reports_the_milestone_field() {
     let call = |action: Value| {
         let request =
             serde_json::to_vec(&json!({"directory": directory.path(), "action": action})).unwrap();
-        read(unsafe { msime_client_typing_statistics(request.as_ptr(), request.len()) })
+        read(unsafe { lingyao_client_typing_statistics(request.as_ptr(), request.len()) })
     };
     call(json!({"operation": "set_enabled", "enabled": true}));
     let recorded = call(
@@ -10122,26 +10122,26 @@ fn telemetry_abi_runs_a_session_through_a_crash_and_clears_when_turned_off() {
             "enabled": enabled,
         })
     };
-    let started = reporting_call(msime_client_telemetry_begin, request(true));
+    let started = reporting_call(lingyao_client_telemetry_begin, request(true));
     assert_eq!(started["ok"], true, "{started}");
     assert_eq!(started["value"]["enabled"], true);
     let record = std::path::PathBuf::from(started["value"]["crash_record_path"].as_str().unwrap());
     assert!(record.parent().unwrap().is_dir());
 
     let crash = reporting_call(
-        msime_client_telemetry_record_crash,
-        json!({"directory": directory, "message": "std::terminate: bad_alloc", "stack": "msime-server.exe+0x10"}),
+        lingyao_client_telemetry_record_crash,
+        json!({"directory": directory, "message": "std::terminate: bad_alloc", "stack": "lingyao-server.exe+0x10"}),
     );
     assert_eq!(crash["value"], true);
     assert!(record.is_file());
 
-    let next = reporting_call(msime_client_telemetry_begin, request(true));
+    let next = reporting_call(lingyao_client_telemetry_begin, request(true));
     assert_eq!(next["value"]["previous_session_crashed"], true);
     assert_eq!(next["value"]["crashes"], 1);
-    let ended = reporting_call(msime_client_telemetry_end, json!({"directory": directory}));
+    let ended = reporting_call(lingyao_client_telemetry_end, json!({"directory": directory}));
     assert_eq!(ended["value"], true);
 
-    let store = msime_client_core::telemetry::TelemetryStore::new(&directory);
+    let store = lingyao_client_core::telemetry::TelemetryStore::new(&directory);
     let kinds: Vec<_> = store
         .queued()
         .unwrap()
@@ -10164,17 +10164,17 @@ fn telemetry_abi_runs_a_session_through_a_crash_and_clears_when_turned_off() {
         .all(|event| event.platform == "windows"));
 
     // Turned off: flush sends nothing and clears the queue.
-    let flushed = reporting_call(msime_client_telemetry_flush, request(false));
+    let flushed = reporting_call(lingyao_client_telemetry_flush, request(false));
     assert_eq!(flushed["value"]["enabled"], false);
     assert!(store.queued().unwrap().is_empty());
 
     let invalid = reporting_call(
-        msime_client_telemetry_begin,
+        lingyao_client_telemetry_begin,
         json!({"directory": "relative", "platform": "linux", "version": "1", "enabled": true}),
     );
     assert_eq!(invalid["ok"], false);
     let unknown = reporting_call(
-        msime_client_telemetry_begin,
+        lingyao_client_telemetry_begin,
         json!({"directory": directory, "platform": "linux", "version": "1", "enabled": true, "extra": 1}),
     );
     assert_eq!(unknown["ok"], false);
@@ -10193,7 +10193,7 @@ fn telemetry_abi_reads_consent_from_the_shared_preferences() {
         "preferences_directory": preferences,
     });
     // No preferences saved yet: the default, which is on.
-    let started = reporting_call(msime_client_telemetry_begin, request.clone());
+    let started = reporting_call(lingyao_client_telemetry_begin, request.clone());
     assert_eq!(started["value"]["enabled"], true, "{started}");
 
     let store = PreferencesStore::new(&preferences);
@@ -10202,10 +10202,10 @@ fn telemetry_abi_reads_consent_from_the_shared_preferences() {
         ..Preferences::default()
     };
     store.save(0, off).unwrap();
-    let stopped = reporting_call(msime_client_telemetry_begin, request);
+    let stopped = reporting_call(lingyao_client_telemetry_begin, request);
     assert_eq!(stopped["value"]["enabled"], false);
     assert!(
-        msime_client_core::telemetry::TelemetryStore::new(&directory)
+        lingyao_client_core::telemetry::TelemetryStore::new(&directory)
             .queued()
             .unwrap()
             .is_empty()
@@ -10236,7 +10236,7 @@ fn notice_abi_serves_the_cached_feed_with_rendered_html_and_dismissals() {
     )
     .unwrap();
     let request = json!({"directory": root.path(), "platform": "ohos"});
-    let listed = reporting_call(msime_client_notices, request.clone());
+    let listed = reporting_call(lingyao_client_notices, request.clone());
     assert_eq!(listed["ok"], true, "{listed}");
     let items = listed["value"]["items"].as_array().unwrap();
     assert_eq!(items.len(), 2);
@@ -10245,26 +10245,26 @@ fn notice_abi_serves_the_cached_feed_with_rendered_html_and_dismissals() {
         "<p><strong>今晚</strong> &lt;b&gt;维护&lt;/b&gt;</p>\n"
     );
     let dismissed = reporting_call(
-        msime_client_notice_dismiss,
+        lingyao_client_notice_dismiss,
         json!({"directory": root.path(), "id": "2"}),
     );
     assert_eq!(dismissed["value"], true);
-    let after = reporting_call(msime_client_notices, request);
+    let after = reporting_call(lingyao_client_notices, request);
     let items = after["value"]["items"].as_array().unwrap();
     assert_eq!(items.len(), 1);
     assert_eq!(items[0]["id"], "1");
 
     let markdown = "[x](javascript:alert(1)) *y*";
     // SAFETY: the buffer outlives the call and its length is exact.
-    let html = read(unsafe { msime_client_markdown_to_html(markdown.as_ptr(), markdown.len()) });
+    let html = read(unsafe { lingyao_client_markdown_to_html(markdown.as_ptr(), markdown.len()) });
     assert_eq!(html["value"], "<p>x <em>y</em></p>\n");
 }
 
 #[test]
 fn community_moderation_abi_lists_reasons_builds_reports_and_words_refusals() {
-    use crate::ffi::moderation::msime_client_community_moderation;
+    use crate::ffi::moderation::lingyao_client_community_moderation;
     let reasons = reporting_call(
-        msime_client_community_moderation,
+        lingyao_client_community_moderation,
         json!({"operation": "reasons"}),
     );
     assert_eq!(
@@ -10280,7 +10280,7 @@ fn community_moderation_abi_lists_reasons_builds_reports_and_words_refusals() {
     );
 
     let report = reporting_call(
-        msime_client_community_moderation,
+        lingyao_client_community_moderation,
         json!({"operation": "report", "kind": "candidate-skins", "item_id": "10000000-0000-4000-8000-000000000001", "reason": "垃圾广告", "detail": "  spam link  "}),
     );
     assert_eq!(report["ok"], true, "{report}");
@@ -10294,13 +10294,13 @@ fn community_moderation_abi_lists_reasons_builds_reports_and_words_refusals() {
         json!({"operation": "report", "kind": "skins", "item_id": "not-a-uuid", "reason": "其他"}),
         json!({"operation": "report", "kind": "skins", "item_id": "10000000-0000-4000-8000-000000000001", "reason": "其他", "detail": "x".repeat(1001)}),
     ] {
-        let refused = reporting_call(msime_client_community_moderation, bad);
+        let refused = reporting_call(lingyao_client_community_moderation, bad);
         assert_eq!(refused["error"], "community_invalid", "{refused}");
     }
 
     let error = |status: u16, code: &str| {
         reporting_call(
-            msime_client_community_moderation,
+            lingyao_client_community_moderation,
             json!({"operation": "error", "status": status, "body": json!({"error": {"code": code, "message": code}}).to_string()}),
         )["value"]
             .clone()
@@ -10322,33 +10322,33 @@ fn community_moderation_abi_lists_reasons_builds_reports_and_words_refusals() {
     assert!(generic["message"].is_null());
 }
 
-/// 合成的桌面词库锁：`msime-pinyin.db` 与 `msime-english.db` 是可以复制进代次的 SQLite 小库，另有日文词典与两份 Mozc 许可文本这一组 macOS 按需下载的文件。文件写在 `resources` 里，清单按实际内容计算长度与 SHA-256。
+/// 合成的桌面词库锁：`lingyao-pinyin.db` 与 `lingyao-english.db` 是可以复制进代次的 SQLite 小库，另有日文词典与两份 Mozc 许可文本这一组 macOS 按需下载的文件。文件写在 `resources` 里，清单按实际内容计算长度与 SHA-256。
 pub(crate) fn synthetic_desktop_lock(resources: &Path) -> ResourceSet {
     std::fs::create_dir_all(resources).unwrap();
-    for name in ["msime-pinyin.db", "msime-english.db"] {
+    for name in ["lingyao-pinyin.db", "lingyao-english.db"] {
         rusqlite::Connection::open(resources.join(name))
             .unwrap()
             .execute_batch("CREATE TABLE fixture(value TEXT);")
             .unwrap();
     }
-    std::fs::write(resources.join("msime-japanese.dat"), b"japanese").unwrap();
+    std::fs::write(resources.join("lingyao-japanese.dat"), b"japanese").unwrap();
     std::fs::write(
-        resources.join("msime-mozc_dictionary_oss_README.txt"),
+        resources.join("lingyao-mozc_dictionary_oss_README.txt"),
         b"readme",
     )
     .unwrap();
-    std::fs::write(resources.join("msime-mozc_LICENSE.txt"), b"license").unwrap();
+    std::fs::write(resources.join("lingyao-mozc_LICENSE.txt"), b"license").unwrap();
     let artifacts = [
-        "msime-pinyin.db",
-        "msime-english.db",
-        "msime-japanese.dat",
-        "msime-mozc_dictionary_oss_README.txt",
-        "msime-mozc_LICENSE.txt",
+        "lingyao-pinyin.db",
+        "lingyao-english.db",
+        "lingyao-japanese.dat",
+        "lingyao-mozc_dictionary_oss_README.txt",
+        "lingyao-mozc_LICENSE.txt",
     ]
     .into_iter()
     .map(|name| {
         let bytes = std::fs::read(resources.join(name)).unwrap();
-        msime_client_core::resources::Artifact {
+        lingyao_client_core::resources::Artifact {
             name: name.into(),
             url: format!("https://example.invalid/{name}"),
             sha256: hex::encode(Sha256::digest(&bytes)),
@@ -10362,7 +10362,7 @@ pub(crate) fn synthetic_desktop_lock(resources: &Path) -> ResourceSet {
     }
 }
 
-/// 在 `state_root` 下发布一个资源包：文件平铺在 `resource-packs/<id>/`，带上标记安装完整的 `msime-model.json`。
+/// 在 `state_root` 下发布一个资源包：文件平铺在 `resource-packs/<id>/`，带上标记安装完整的 `lingyao-model.json`。
 fn publish_resource_pack(state_root: &Path, pack: ResourcePack, files: &[&str]) -> PathBuf {
     let directory = resource_packs::root(state_root).join(pack.id());
     std::fs::create_dir_all(&directory).unwrap();
@@ -10370,7 +10370,7 @@ fn publish_resource_pack(state_root: &Path, pack: ResourcePack, files: &[&str]) 
         std::fs::write(directory.join(name), b"downloaded").unwrap();
     }
     std::fs::write(
-        directory.join("msime-model.json"),
+        directory.join("lingyao-model.json"),
         serde_json::to_vec(&pack.manifest()).unwrap(),
     )
     .unwrap();
@@ -10386,10 +10386,10 @@ fn packaged_language_dictionaries_need_all_three_in_the_recorded_directory() {
     assert!(!super::packaged_language_dictionaries(&json!({})));
     assert!(!super::packaged_language_dictionaries(&document));
     std::fs::create_dir_all(&recorded).unwrap();
-    std::fs::write(recorded.join("msime-cantonese.db"), b"bundled").unwrap();
-    std::fs::write(recorded.join("msime-zhuyin.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-cantonese.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-zhuyin.db"), b"bundled").unwrap();
     assert!(!super::packaged_language_dictionaries(&document));
-    std::fs::write(recorded.join("msime-stroke.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-stroke.db"), b"bundled").unwrap();
     assert!(super::packaged_language_dictionaries(&document));
 }
 
@@ -10399,15 +10399,15 @@ fn downloaded_language_dictionaries_win_over_the_recorded_directory() {
     let state = root.path().join("state");
     let recorded = root.path().join("language-dictionaries");
     std::fs::create_dir_all(&recorded).unwrap();
-    std::fs::write(recorded.join("msime-cantonese.db"), b"bundled").unwrap();
-    std::fs::write(recorded.join("msime-zhuyin.db"), b"bundled").unwrap();
-    std::fs::write(recorded.join("msime-stroke.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-cantonese.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-zhuyin.db"), b"bundled").unwrap();
+    std::fs::write(recorded.join("lingyao-stroke.db"), b"bundled").unwrap();
 
     // 没有资源包：用记录的（随包内置的）那份。
     let bundled = LanguageDictionaries {
-        cantonese: Some(recorded.join("msime-cantonese.db")),
-        zhuyin: Some(recorded.join("msime-zhuyin.db")),
-        stroke: Some(recorded.join("msime-stroke.db")),
+        cantonese: Some(recorded.join("lingyao-cantonese.db")),
+        zhuyin: Some(recorded.join("lingyao-zhuyin.db")),
+        stroke: Some(recorded.join("lingyao-stroke.db")),
     };
     assert_eq!(
         LanguageDictionaries::resolve(Some(&state), Some(&recorded)),
@@ -10427,8 +10427,8 @@ fn downloaded_language_dictionaries_win_over_the_recorded_directory() {
         .join(".staging-language-dictionaries-abc")
         .join("model");
     std::fs::create_dir_all(&staging).unwrap();
-    std::fs::write(staging.join("msime-cantonese.db"), b"partial").unwrap();
-    std::fs::write(staging.join("msime-model.json"), b"{}").unwrap();
+    std::fs::write(staging.join("lingyao-cantonese.db"), b"partial").unwrap();
+    std::fs::write(staging.join("lingyao-model.json"), b"{}").unwrap();
     assert_eq!(
         LanguageDictionaries::resolve(Some(&state), Some(&recorded)),
         bundled
@@ -10438,20 +10438,20 @@ fn downloaded_language_dictionaries_win_over_the_recorded_directory() {
     let pack = publish_resource_pack(
         &state,
         ResourcePack::LanguageDictionaries,
-        &["msime-cantonese.db"],
+        &["lingyao-cantonese.db"],
     );
     assert_eq!(
         LanguageDictionaries::resolve(Some(&state), Some(&recorded)),
         LanguageDictionaries {
-            cantonese: Some(pack.join("msime-cantonese.db")),
-            zhuyin: Some(recorded.join("msime-zhuyin.db")),
-            stroke: Some(recorded.join("msime-stroke.db")),
+            cantonese: Some(pack.join("lingyao-cantonese.db")),
+            zhuyin: Some(recorded.join("lingyao-zhuyin.db")),
+            stroke: Some(recorded.join("lingyao-stroke.db")),
         }
     );
     assert_eq!(
         LanguageDictionaries::resolve(Some(&state), None),
         LanguageDictionaries {
-            cantonese: Some(pack.join("msime-cantonese.db")),
+            cantonese: Some(pack.join("lingyao-cantonese.db")),
             zhuyin: None,
             stroke: None,
         }
@@ -10468,15 +10468,15 @@ fn downloaded_language_dictionaries_win_over_the_recorded_directory() {
         .into_engine_options();
     assert_eq!(
         options.cantonese_dictionary,
-        pack.join("msime-cantonese.db").to_str().unwrap()
+        pack.join("lingyao-cantonese.db").to_str().unwrap()
     );
     assert_eq!(
         options.zhuyin_dictionary,
-        recorded.join("msime-zhuyin.db").to_str().unwrap()
+        recorded.join("lingyao-zhuyin.db").to_str().unwrap()
     );
     assert_eq!(
         options.stroke_dictionary,
-        recorded.join("msime-stroke.db").to_str().unwrap()
+        recorded.join("lingyao-stroke.db").to_str().unwrap()
     );
     assert_eq!(options.scheme, 5);
 }
@@ -10506,29 +10506,29 @@ fn a_downloaded_japanese_pack_keeps_temporary_japanese_available() {
         .join(".staging-japanese-abc")
         .join("model");
     std::fs::create_dir_all(&staging).unwrap();
-    std::fs::write(staging.join("msime-japanese.dat"), b"partial").unwrap();
-    std::fs::write(staging.join("msime-model.json"), b"{}").unwrap();
+    std::fs::write(staging.join("lingyao-japanese.dat"), b"partial").unwrap();
+    std::fs::write(staging.join("lingyao-model.json"), b"{}").unwrap();
     assert_eq!(options().japanese_dictionary, "");
 
     let pack = publish_resource_pack(
         &state,
         ResourcePack::Japanese,
         &[
-            "msime-japanese.dat",
-            "msime-mozc_dictionary_oss_README.txt",
-            "msime-mozc_LICENSE.txt",
+            "lingyao-japanese.dat",
+            "lingyao-mozc_dictionary_oss_README.txt",
+            "lingyao-mozc_LICENSE.txt",
         ],
     );
     let with = options();
     assert_eq!(
         with.japanese_dictionary,
-        pack.join("msime-japanese.dat").to_str().unwrap()
+        pack.join("lingyao-japanese.dat").to_str().unwrap()
     );
     assert!(with.local_temporary_japanese);
 
     // 资源目录内置的那份照旧可用，字段为空时 Engine 读它。
     std::fs::remove_dir_all(resource_packs::root(&state)).unwrap();
-    std::fs::write(resources.join("msime-japanese.dat"), b"bundled").unwrap();
+    std::fs::write(resources.join("lingyao-japanese.dat"), b"bundled").unwrap();
     let bundled = options();
     assert_eq!(bundled.japanese_dictionary, "");
     assert!(bundled.local_temporary_japanese);
@@ -10536,7 +10536,7 @@ fn a_downloaded_japanese_pack_keeps_temporary_japanese_available() {
 
 #[test]
 fn verification_accepts_resources_shipped_without_the_on_demand_pair() {
-    use msime_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS;
+    use lingyao_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS;
     let root = tempfile::tempdir().unwrap();
     let resources = root.path().join("resources");
     let specification = synthetic_desktop_lock(&resources);
@@ -10553,7 +10553,7 @@ fn verification_accepts_resources_shipped_without_the_on_demand_pair() {
     .unwrap();
 
     // 只缺 Mozc 许可：两种规则都拒绝。
-    std::fs::remove_file(resources.join("msime-mozc_LICENSE.txt")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-mozc_LICENSE.txt")).unwrap();
     assert!(verify_resources_once(
         &resources,
         &specification,
@@ -10563,7 +10563,7 @@ fn verification_accepts_resources_shipped_without_the_on_demand_pair() {
     .is_err());
 
     // 只剩词典：两种规则都拒绝。
-    std::fs::remove_file(resources.join("msime-mozc_dictionary_oss_README.txt")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-mozc_dictionary_oss_README.txt")).unwrap();
     assert!(verify_resources_once(
         &resources,
         &specification,
@@ -10573,7 +10573,7 @@ fn verification_accepts_resources_shipped_without_the_on_demand_pair() {
     .is_err());
 
     // 整组缺席：macOS 的发货规则通过，完整规则仍然拒绝。
-    std::fs::remove_file(resources.join("msime-japanese.dat")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-japanese.dat")).unwrap();
     assert!(verify_resources_once(&resources, &specification, &fresh_state("slim"), &[]).is_err());
     verify_resources_once(
         &resources,
@@ -10601,7 +10601,7 @@ fn verification_accepts_resources_shipped_without_the_on_demand_pair() {
         dictionaries.file_name().unwrap().to_str().unwrap(),
         specification.generation().unwrap()
     );
-    assert!(dictionaries.join("msime-pinyin.db").is_file());
+    assert!(dictionaries.join("lingyao-pinyin.db").is_file());
 }
 
 /// 平台默认的按需清单：macOS 接受不含日文词典的发布包，其余平台仍要求完整的锁文件。
@@ -10610,9 +10610,9 @@ fn the_platform_shipping_rule_decides_whether_a_slim_bundle_prepares() {
     let root = tempfile::tempdir().unwrap();
     let resources = root.path().join("resources");
     let specification = synthetic_desktop_lock(&resources);
-    std::fs::remove_file(resources.join("msime-japanese.dat")).unwrap();
-    std::fs::remove_file(resources.join("msime-mozc_dictionary_oss_README.txt")).unwrap();
-    std::fs::remove_file(resources.join("msime-mozc_LICENSE.txt")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-japanese.dat")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-mozc_dictionary_oss_README.txt")).unwrap();
+    std::fs::remove_file(resources.join("lingyao-mozc_LICENSE.txt")).unwrap();
     let prepared = prepare_shipped_host_configuration(
         &resources,
         &root.path().join("state"),
@@ -10629,8 +10629,8 @@ fn the_platform_shipping_rule_decides_whether_a_slim_bundle_prepares() {
         let error = prepared.unwrap_err();
         assert!(
             matches!(
-                error.downcast_ref::<msime_client_core::resources::ResourceError>(),
-                Some(msime_client_core::resources::ResourceError::ExistingGeneration(_))
+                error.downcast_ref::<lingyao_client_core::resources::ResourceError>(),
+                Some(lingyao_client_core::resources::ResourceError::ExistingGeneration(_))
             ),
             "{error}"
         );
@@ -10710,7 +10710,7 @@ fn a_settled_model_installed_after_the_session_opened_is_picked_up_on_focus() {
     };
     let state = path("state");
     let resources = path("resources");
-    rusqlite::Connection::open(resources.join("msime-pinyin.db"))
+    rusqlite::Connection::open(resources.join("lingyao-pinyin.db"))
         .unwrap()
         .execute_batch(
             "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);
@@ -10719,12 +10719,12 @@ fn a_settled_model_installed_after_the_session_opened_is_picked_up_on_focus() {
         .unwrap();
     let dictionaries = path("dictionaries");
     std::fs::copy(
-        resources.join("msime-pinyin.db"),
-        dictionaries.join("msime-pinyin.db"),
+        resources.join("lingyao-pinyin.db"),
+        dictionaries.join("lingyao-pinyin.db"),
     )
     .unwrap();
     let options = json!({ "api_version": 1, "resources": resources, "user_data": path("user"), "cache": path("cache"), "dictionaries": dictionaries, "preferences": chinese_preferences(), "preferences_directory": state }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
     let observed = || {
@@ -10738,7 +10738,7 @@ fn a_settled_model_installed_after_the_session_opened_is_picked_up_on_focus() {
             )
         })
     };
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let (model, pending, _) = observed();
     assert_eq!(model, None);
     assert!(!pending);
@@ -10774,7 +10774,7 @@ fn a_settled_model_installed_after_the_session_opened_is_picked_up_on_focus() {
     // 聚焦后某次输入空闲的 `apply_pending` 在加载完成时把模型换上并清掉待换项。
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
     loop {
-        assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+        assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
         let (model, pending, resources_pending) = observed();
         assert_eq!(model.as_ref(), Some(&installed));
         assert!(
@@ -10798,7 +10798,7 @@ fn a_settled_model_installed_after_the_session_opened_is_picked_up_on_focus() {
         session.refresh_resource_packs();
         assert!(session.settled_model_loading.is_none());
     });
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 /// 会话打开后才下载好的资源包，在下一次聚焦时被看见，Engine 在输入空闲时重建。
@@ -10812,7 +10812,7 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
     };
     let state = path("state");
     let resources = path("resources");
-    rusqlite::Connection::open(resources.join("msime-pinyin.db"))
+    rusqlite::Connection::open(resources.join("lingyao-pinyin.db"))
         .unwrap()
         .execute_batch(
             "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);
@@ -10821,12 +10821,12 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
         .unwrap();
     let dictionaries = path("dictionaries");
     std::fs::copy(
-        resources.join("msime-pinyin.db"),
-        dictionaries.join("msime-pinyin.db"),
+        resources.join("lingyao-pinyin.db"),
+        dictionaries.join("lingyao-pinyin.db"),
     )
     .unwrap();
     let options = json!({ "api_version": 1, "resources": resources, "user_data": path("user"), "cache": path("cache"), "dictionaries": dictionaries, "preferences": chinese_preferences(), "preferences_directory": state }).to_string();
-    let created = read(unsafe { msime_client_create(options.as_ptr(), options.len()) });
+    let created = read(unsafe { lingyao_client_create(options.as_ptr(), options.len()) });
     assert_eq!(created["ok"], true, "{created}");
     let handle = created["value"]["session"].as_u64().unwrap();
     let observed = || {
@@ -10840,7 +10840,7 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
             )
         })
     };
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let (before, japanese, pending) = observed();
     assert_eq!(before, LanguageDictionaries::default());
     assert_eq!(japanese, "");
@@ -10849,9 +10849,9 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
     let language = publish_resource_pack(
         &state,
         ResourcePack::LanguageDictionaries,
-        &["msime-cantonese.db"],
+        &["lingyao-cantonese.db"],
     );
-    let japanese = publish_resource_pack(&state, ResourcePack::Japanese, &["msime-japanese.dat"]);
+    let japanese = publish_resource_pack(&state, ResourcePack::Japanese, &["lingyao-japanese.dat"]);
     // 组字中途不重建：变化先记下，等输入空闲。
     SESSIONS.with(|sessions| {
         let mut sessions = sessions.borrow_mut();
@@ -10862,19 +10862,19 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
         session.options.cantonese_dictionary.clear();
         session.options.japanese_dictionary.clear();
     });
-    assert_eq!(read(msime_client_focus(handle, true))["ok"], true);
+    assert_eq!(read(lingyao_client_focus(handle, true))["ok"], true);
     let (after, japanese_path, pending) = observed();
     assert_eq!(
         after,
         LanguageDictionaries {
-            cantonese: Some(language.join("msime-cantonese.db")),
+            cantonese: Some(language.join("lingyao-cantonese.db")),
             zhuyin: None,
             stroke: None,
         }
     );
     assert_eq!(
         japanese_path,
-        japanese.join("msime-japanese.dat").to_str().unwrap()
+        japanese.join("lingyao-japanese.dat").to_str().unwrap()
     );
     assert!(!pending, "an idle session rebuilds at once");
 
@@ -10885,7 +10885,7 @@ fn a_resource_pack_installed_after_the_session_opened_is_picked_up_on_focus() {
         session.refresh_resource_packs();
         assert!(!session.resources_pending);
     });
-    assert_eq!(read(msime_client_destroy(handle))["ok"], true);
+    assert_eq!(read(lingyao_client_destroy(handle))["ok"], true);
 }
 
 fn call_android_data(
@@ -10901,7 +10901,7 @@ fn typing_statistics_summary_and_new_records_cross_the_boundary() {
     let directory = tempfile::tempdir().unwrap();
     let call = |action: Value| {
         call_android_data(
-            msime_client_typing_statistics,
+            lingyao_client_typing_statistics,
             json!({"directory": directory.path(), "action": action}),
         )
     };
@@ -10945,7 +10945,7 @@ fn dictionary_count_and_snapshot_export_answer_for_an_empty_store() {
     }
     let options = empty_host_options(directory.path());
     let count = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "count", "user_only": true}}),
     );
     assert_eq!(count["ok"], true, "{count}");
@@ -10953,18 +10953,18 @@ fn dictionary_count_and_snapshot_export_answer_for_an_empty_store() {
     assert_eq!(count["value"]["complete"], true);
     let destination = directory.path().join("snapshot.ndjson");
     let exported = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "export_snapshot", "destination": destination}}),
     );
     assert_eq!(exported["ok"], true, "{exported}");
     assert_eq!(exported["value"]["entries"], 0);
     let text = std::fs::read_to_string(&destination).unwrap();
     assert!(
-        text.starts_with("{\"format\":\"msime-dictionary-snapshot\""),
+        text.starts_with("{\"format\":\"lingyao-dictionary-snapshot\""),
         "{text}"
     );
     let relative = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "export_snapshot", "destination": "snapshot.ndjson"}}),
     );
     assert_eq!(relative["ok"], false);
@@ -10976,7 +10976,7 @@ fn host_options_with_main_dictionary(root: &Path) -> Value {
         std::fs::create_dir_all(root.join(name)).unwrap();
     }
     for name in ["resources", "dictionaries"] {
-        rusqlite::Connection::open(root.join(name).join("msime-pinyin.db"))
+        rusqlite::Connection::open(root.join(name).join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(
                 "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);
@@ -11001,14 +11001,14 @@ fn snapshot_export_leaves_out_a_multi_line_quick_phrase_and_counts_it() {
     .enumerate()
     {
         let edited = call_android_data(
-            msime_client_dictionary,
+            lingyao_client_dictionary,
             json!({"options": options, "action": {"operation": "edit", "previous": null, "replacement": entry, "request_id": format!("seed-{index}")}}),
         );
         assert_eq!(edited["ok"], true, "{edited}");
     }
     let destination = directory.path().join("snapshot.ndjson");
     let exported = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "export_snapshot", "destination": destination}}),
     );
     assert_eq!(exported["ok"], true, "{exported}");
@@ -11022,14 +11022,14 @@ fn snapshot_export_leaves_out_a_multi_line_quick_phrase_and_counts_it() {
 /// A dictionary collection adding a word the user already has must leave the user's row alone and say so, so that turning the collection off later does not delete it.
 #[test]
 fn a_collection_addition_of_an_existing_user_word_is_left_alone_and_reported() {
-    use msime_client_core::dictionary::personal::{
+    use lingyao_client_core::dictionary::personal::{
         PersonalDictionaryStore, PersonalWord, PersonalWordKind,
     };
     let directory = tempfile::tempdir().unwrap();
     let options = host_options_with_main_dictionary(directory.path());
     let own = json!({"kind": "pinyin", "key": "ni'hao", "value": "你好", "weight": 4321});
     let edited = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "edit", "previous": null, "replacement": own, "request_id": "seed-own"}}),
     );
     assert_eq!(edited["ok"], true, "{edited}");
@@ -11046,7 +11046,7 @@ fn a_collection_addition_of_an_existing_user_word_is_left_alone_and_reported() {
             "collections-test".into(),
         )
         .unwrap();
-    let synced = call_android_data(msime_client_personal_dictionary_sync, options.clone());
+    let synced = call_android_data(lingyao_client_personal_dictionary_sync, options.clone());
     assert_eq!(synced["ok"], true, "{synced}");
     assert_eq!(synced["value"]["pending_count"], 0);
     let state = store.read().unwrap();
@@ -11055,7 +11055,7 @@ fn a_collection_addition_of_an_existing_user_word_is_left_alone_and_reported() {
         vec![word("ni'hao", "你好").identity()]
     );
     let listed = call_android_data(
-        msime_client_dictionary,
+        lingyao_client_dictionary,
         json!({"options": options, "action": {"operation": "list", "offset": 0, "limit": 10}}),
     );
     let entries = listed["value"]["entries"].as_array().unwrap();
@@ -11073,31 +11073,31 @@ fn a_collection_addition_of_an_existing_user_word_is_left_alone_and_reported() {
 fn common_phrases_and_collections_forward_to_client_core() {
     let directory = tempfile::tempdir().unwrap();
     let added = call_android_data(
-        msime_client_common_phrases,
+        lingyao_client_common_phrases,
         json!({"directory": directory.path(), "action": {"operation": "add", "text": "稍后回复你\n谢谢"}}),
     );
     assert_eq!(added["ok"], true, "{added}");
     assert_eq!(added["value"]["phrases"][0]["text"], "稍后回复你\n谢谢");
     let duplicate = call_android_data(
-        msime_client_common_phrases,
+        lingyao_client_common_phrases,
         json!({"directory": directory.path(), "action": {"operation": "add", "text": "稍后回复你\n谢谢"}}),
     );
     assert_eq!(duplicate["error"], "common_phrases_duplicate");
     assert_eq!(
         call_android_data(
-            msime_client_common_phrases,
+            lingyao_client_common_phrases,
             json!({"directory": "relative", "action": {"operation": "load"}}),
         )["ok"],
         false
     );
 
     let loaded = call_android_data(
-        msime_client_dictionary_collections,
+        lingyao_client_dictionary_collections,
         json!({"options": empty_host_options(directory.path()), "action": {"operation": "load"}}),
     );
     assert_eq!(loaded["ok"], true, "{loaded}");
     let locked = call_android_data(
-        msime_client_dictionary_collections,
+        lingyao_client_dictionary_collections,
         json!({"options": empty_host_options(directory.path()), "action": {"operation": "delete", "id": "builtin:pinyin"}}),
     );
     assert_eq!(locked["error"], "builtin_locked");
@@ -11118,7 +11118,7 @@ fn diagnostic_bundle_drops_text_lines_and_redacts_credentials() {
     )
     .unwrap();
     let bundle = call_android_data(
-        msime_client_diagnostic_bundle,
+        lingyao_client_diagnostic_bundle,
         json!({
             "state_root": directory.path(),
             "include": {"input_events": true, "config_snapshot": true},
@@ -11145,7 +11145,7 @@ fn account_settings_export_and_apply_round_trip_without_credentials() {
         .save(0, preferences.clone())
         .unwrap();
     let exported = call_android_data(
-        msime_client_account_settings_export,
+        lingyao_client_account_settings_export,
         json!({
             "preferences_directory": directory.path(),
             "custom_keyboard_skins": "[]",
@@ -11184,7 +11184,7 @@ fn account_settings_export_and_apply_round_trip_without_credentials() {
 
     let other = tempfile::tempdir().unwrap();
     let applied = call_android_data(
-        msime_client_account_settings_apply,
+        lingyao_client_account_settings_apply,
         json!({
             "preferences_directory": other.path(),
             "cloud": {"revision": 4, "settings": settings},

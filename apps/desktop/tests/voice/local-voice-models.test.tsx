@@ -16,14 +16,14 @@ import {
   type LocalVoiceModelClient,
   type LocalVoiceModelProgress,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 
-const root = "/Users/someone/Library/Application Support/msime/voice-models";
+const root = "/Users/someone/Library/Application Support/lingyao/voice-models";
 
 function model(overrides: Partial<LocalVoiceModel>): LocalVoiceModel {
   const id = overrides.id ?? "x-asr-zh-en-streaming";

@@ -1,5 +1,5 @@
-import app.msime.android.CustomKeyboardSkin;
-import app.msime.android.CustomSkinLibrary;
+import app.lingyao.android.CustomKeyboardSkin;
+import app.lingyao.android.CustomSkinLibrary;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -12,17 +12,17 @@ import org.json.JSONObject;
 public final class CustomSkinDesignExchangeCheck {
     public static void main(String[] args) throws Exception {
         JSONObject design = new JSONObject().put("background", 0x151022).put("accent", 0xD4BBFF)
-            .put("cornerRadius", 12).put("keyShape", "pebble").put("soundPack", "msime-bubble")
+            .put("cornerRadius", 12).put("keyShape", "pebble").put("soundPack", "lingyao-bubble")
             .put("pressAnimation", "glow");
         CustomKeyboardSkin skin = CustomKeyboardSkin.from(design);
         CustomKeyboardSkin back = CustomKeyboardSkin.from(skin.toJson(true));
         check(back.key().equals(skin.key()), "toJson round-trips the design");
-        check("msime-bubble".equals(back.soundPack()) && "glow".equals(back.pressAnimation()),
+        check("lingyao-bubble".equals(back.soundPack()) && "glow".equals(back.pressAnimation()),
             "feedback fields round-trip");
         check("default".equals(CustomKeyboardSkin.from(new JSONObject()).soundPack()),
             "missing sound pack reads as default");
 
-        Path root = Files.createTempDirectory("msime-skin-exchange-");
+        Path root = Files.createTempDirectory("lingyao-skin-exchange-");
         Path preferences = root.resolve("preferences");
         check(CustomSkinLibrary.add(preferences, "a", "晨雾", design, 100), "add a");
         check(CustomSkinLibrary.add(preferences, "b", "夜航", design.put("accent", 0x00FF00), 200),

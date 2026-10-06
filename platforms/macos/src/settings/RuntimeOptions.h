@@ -7,16 +7,16 @@
 #include <unistd.h>
 
 // macOS 宿主与其它平台一样只读取有限大小的运行时配置，避免环境变量指向异常文件时无界分配。
-static constexpr NSUInteger MSIMERuntimeOptionsReadLimit = 2 * 1024 * 1024;
+static constexpr NSUInteger LINGYAORuntimeOptionsReadLimit = 2 * 1024 * 1024;
 
-static inline NSData *MSIMEReadRuntimeOptionsData(NSString *path) {
+static inline NSData *LINGYAOReadRuntimeOptionsData(NSString *path) {
     if (!path.length) return nil;
     const int descriptor = open(path.fileSystemRepresentation, O_RDONLY | O_NOFOLLOW);
     if (descriptor < 0) return nil;
     struct stat fileStat = {};
     if (fstat(descriptor, &fileStat) != 0 || !S_ISREG(fileStat.st_mode) ||
         fileStat.st_size < 0 ||
-        static_cast<uint64_t>(fileStat.st_size) > MSIMERuntimeOptionsReadLimit) {
+        static_cast<uint64_t>(fileStat.st_size) > LINGYAORuntimeOptionsReadLimit) {
         close(descriptor);
         return nil;
     }
@@ -30,7 +30,7 @@ static inline NSData *MSIMEReadRuntimeOptionsData(NSString *path) {
             close(descriptor);
             return nil;
         }
-        if (data.length > MSIMERuntimeOptionsReadLimit - static_cast<NSUInteger>(count)) {
+        if (data.length > LINGYAORuntimeOptionsReadLimit - static_cast<NSUInteger>(count)) {
             close(descriptor);
             return nil;
         }
@@ -40,31 +40,31 @@ static inline NSData *MSIMEReadRuntimeOptionsData(NSString *path) {
     return data;
 }
 
-// 设置应用的 bundle identifier，也是设置应用和本输入法共用的、Application Support 下默认状态目录的名字。它随版本而变（full 是 app.msime.macos），见 EditionIdentity.h。
-#define MSIMEClientApplicationIdentifier MSIMESettingsBundleIdentifier()
-static inline NSURL *MSIMEClientStateDirectory(NSFileManager *fileManager, NSString *identifier) {
+// 设置应用的 bundle identifier，也是设置应用和本输入法共用的、Application Support 下默认状态目录的名字。它随版本而变（full 是 app.lingyao.macos），见 EditionIdentity.h。
+#define LINGYAOClientApplicationIdentifier LINGYAOSettingsBundleIdentifier()
+static inline NSURL *LINGYAOClientStateDirectory(NSFileManager *fileManager, NSString *identifier) {
     NSURL *support = [[fileManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] firstObject];
     return [support URLByAppendingPathComponent:identifier isDirectory:YES];
 }
 
-static inline NSString *MSIMEDefaultRuntimeOptionsPath(NSFileManager *fileManager) {
-    return [[MSIMEClientStateDirectory(fileManager, MSIMEClientApplicationIdentifier) URLByAppendingPathComponent:@"runtime-options.json"] path];
+static inline NSString *LINGYAODefaultRuntimeOptionsPath(NSFileManager *fileManager) {
+    return [[LINGYAOClientStateDirectory(fileManager, LINGYAOClientApplicationIdentifier) URLByAppendingPathComponent:@"runtime-options.json"] path];
 }
 
 // Where default state lives: the settings app's state directory under Application Support.
-static inline NSURL *MSIMEDefaultClientStateDirectory(NSFileManager *fileManager) {
-    return MSIMEClientStateDirectory(fileManager, MSIMEClientApplicationIdentifier);
+static inline NSURL *LINGYAODefaultClientStateDirectory(NSFileManager *fileManager) {
+    return LINGYAOClientStateDirectory(fileManager, LINGYAOClientApplicationIdentifier);
 }
 
-static inline NSString *MSIMERuntimeOptionsPath(void) {
+static inline NSString *LINGYAORuntimeOptionsPath(void) {
     NSString *path = [NSBundle.mainBundle pathForResource:@"runtime-options" ofType:@"json"];
-    return path ?: MSIMEDefaultRuntimeOptionsPath(NSFileManager.defaultManager);
+    return path ?: LINGYAODefaultRuntimeOptionsPath(NSFileManager.defaultManager);
 }
 
-static inline NSDictionary *MSIMELoadRuntimeOptions(void) {
-    NSString *path = MSIMERuntimeOptionsPath();
+static inline NSDictionary *LINGYAOLoadRuntimeOptions(void) {
+    NSString *path = LINGYAORuntimeOptionsPath();
     if (!path) return nil;
-    NSData *data = MSIMEReadRuntimeOptionsData(path);
+    NSData *data = LINGYAOReadRuntimeOptionsData(path);
     id options = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
     return [options isKindOfClass:NSDictionary.class] ? options : nil;
 }

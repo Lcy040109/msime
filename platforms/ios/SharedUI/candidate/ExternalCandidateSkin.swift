@@ -1,17 +1,17 @@
 import Foundation
 
-@_silgen_name("msime_client_skin_catalog")
-private func msimeSkinCatalog(_ directory: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_skin_catalog")
+private func lingyaoSkinCatalog(_ directory: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_skin_import")
-private func msimeSkinImport(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_skin_import")
+private func lingyaoSkinImport(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_string_free")
-private func msimeSkinCatalogStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoSkinCatalogStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
-/// A candidate skin package the user imported into `<App Group>/MSIME/skins`, as the Rust catalog scan lists it, so a package the settings page reports as an issue is never offered.
+/// A candidate skin package the user imported into `<App Group>/LINGYAO/skins`, as the Rust catalog scan lists it, so a package the settings page reports as an issue is never offered.
 ///
-/// Drawing one is client-core's job: the custom theme names it (`custom_theme.candidate_skin`) and `msime_client_resolve_theme` reads it from this directory. Like the Windows candidate window, a package is drawn only for a layout and mode it declares; the strip is horizontal.
+/// Drawing one is client-core's job: the custom theme names it (`custom_theme.candidate_skin`) and `lingyao_client_resolve_theme` reads it from this directory. Like the Windows candidate window, a package is drawn only for a layout and mode it declares; the strip is horizontal.
 struct ExternalCandidateSkin: Equatable {
   var name = ""
   /// The global theme the package is drawn over (`base` in skin.toml), which becomes the custom theme's base when it is picked.
@@ -24,7 +24,7 @@ struct ExternalCandidateSkin: Equatable {
   /// The directory the settings app imports skins into; the keyboard extension shares it through the App Group.
   static var defaultRoot: URL? {
     FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: InputSchemePreference.appGroupIdentifier)?
-      .appendingPathComponent("MSIME", isDirectory: true)
+      .appendingPathComponent("LINGYAO", isDirectory: true)
       .appendingPathComponent("skins", isDirectory: true)
   }
 
@@ -32,9 +32,9 @@ struct ExternalCandidateSkin: Equatable {
   static func scan(_ root: URL) -> [(id: String, skin: ExternalCandidateSkin)]? {
     let path = Array(root.path.utf8)
     guard path.count <= 16384 else { return nil }
-    let raw = path.withUnsafeBufferPointer { msimeSkinCatalog($0.baseAddress, UInt($0.count)) }
+    let raw = path.withUnsafeBufferPointer { lingyaoSkinCatalog($0.baseAddress, UInt($0.count)) }
     guard let raw else { return nil }
-    defer { msimeSkinCatalogStringFree(raw) }
+    defer { lingyaoSkinCatalogStringFree(raw) }
     guard let reply = try? JSONSerialization.jsonObject(with: Data(String(cString: raw).utf8)) as? [String: Any],
           reply["ok"] as? Bool == true,
           let value = reply["value"] as? [String: Any],
@@ -66,10 +66,10 @@ struct ExternalCandidateSkin: Equatable {
     guard let request = try? JSONSerialization.data(withJSONObject: ["source": source.path, "directory": root.path])
     else { return .failure(.storage) }
     let raw = request.withUnsafeBytes { bytes in
-      msimeSkinImport(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(bytes.count))
+      lingyaoSkinImport(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(bytes.count))
     }
     guard let raw else { return .failure(.storage) }
-    defer { msimeSkinCatalogStringFree(raw) }
+    defer { lingyaoSkinCatalogStringFree(raw) }
     guard let reply = try? JSONSerialization.jsonObject(with: Data(String(cString: raw).utf8)) as? [String: Any]
     else { return .failure(.storage) }
     if reply["ok"] as? Bool == true, let id = (reply["value"] as? [String: Any])?["id"] as? String { return .success(id) }

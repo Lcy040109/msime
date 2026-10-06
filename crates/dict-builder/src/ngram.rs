@@ -1,4 +1,4 @@
-//! `msime-bigram.bin` and `msime-trigram.bin`: the lattice's context tables, counted over the pinned zhwiki dump.
+//! `lingyao-bigram.bin` and `lingyao-trigram.bin`: the lattice's context tables, counted over the pinned zhwiki dump.
 //!
 //! Text is segmented with the greedy longest match the decoder's vocabulary implies, and each entry holds an increment rather than a probability: `log(P(next | previous) / P(next))` for pairs, `log(P(next | before, previous) / P(next | previous))` for triples. An absent entry therefore contributes nothing, and the decoder can add both tables to its unigram score. Bonuses are shrunk toward zero by `count / (count + 5)` and clamped to ±3 so rare pairs adjust the ranking rather than replace it.
 //!
@@ -52,14 +52,14 @@ pub struct Vocabulary {
 
 impl Vocabulary {
     /// Every pinyin-table value of one to eight Han characters.
-    pub fn load(msime: &Connection) -> Result<Self> {
-        let tables: Vec<String> = msime
+    pub fn load(lingyao: &Connection) -> Result<Self> {
+        let tables: Vec<String> = lingyao
             .prepare("select name from sqlite_master where type='table' and name like 'tbl_%'")?
             .query_map([], |row| row.get(0))?
             .collect::<rusqlite::Result<_>>()?;
         let mut words = Vec::new();
         for table in tables {
-            let mut statement = msime.prepare(&format!("select value from {table}"))?;
+            let mut statement = lingyao.prepare(&format!("select value from {table}"))?;
             let mut rows = statement.query([])?;
             while let Some(row) = rows.next()? {
                 if let Some(value) = row.get::<_, Option<String>>(0)? {

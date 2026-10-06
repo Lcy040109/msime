@@ -5,7 +5,7 @@
 
 int main() {
     const auto root = std::filesystem::temp_directory_path() /
-        ("msime-prepared-options-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+        ("lingyao-prepared-options-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     if (!std::filesystem::create_directory(root)) return EXIT_FAILURE;
     const auto path = root / "runtime-options.json";
     const auto write = [&](const std::string &text) {
@@ -13,21 +13,21 @@ int main() {
         stream.write(text.data(), static_cast<std::streamsize>(text.size()));
         if (!stream) std::abort();
     };
-    bool ok = msime::tsf::read_prepared_host_options(path).empty();
+    bool ok = lingyao::tsf::read_prepared_host_options(path).empty();
     // Synthetic fixture: schema/Engine validation belongs to the C ABI.
     const std::string document = R"({"api_version":1,"preferences":{"scheme":"shuangpin","shuangpin_profile":"microsoft","candidate_page_size":7,"learning":false,"chinese_punctuation":false},"preferences_directory":"synthetic-state"})";
     write(document);
-    ok = ok && msime::tsf::read_prepared_host_options(path) == document;
+    ok = ok && lingyao::tsf::read_prepared_host_options(path) == document;
     // 五笔版本与双拼方案一样是 `preferences` 里的同级字段，读取时原样保留，交给 C ABI 校验。
     const std::string wubi_document = R"({"api_version":1,"preferences":{"scheme":"wubi","wubi_profile":"wubi98"},"preferences_directory":"synthetic-state"})";
     write(wubi_document);
-    ok = ok && msime::tsf::read_prepared_host_options(path) == wubi_document;
+    ok = ok && lingyao::tsf::read_prepared_host_options(path) == wubi_document;
     write("");
-    ok = ok && msime::tsf::read_prepared_host_options(path).empty();
+    ok = ok && lingyao::tsf::read_prepared_host_options(path).empty();
     write(std::string(16384, ' '));
-    ok = ok && msime::tsf::read_prepared_host_options(path).size() == 16384;
+    ok = ok && lingyao::tsf::read_prepared_host_options(path).size() == 16384;
     write(std::string(16385, ' '));
-    ok = ok && msime::tsf::read_prepared_host_options(path).empty();
+    ok = ok && lingyao::tsf::read_prepared_host_options(path).empty();
     std::filesystem::remove(path);
     std::filesystem::remove(root);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

@@ -25,10 +25,10 @@ static NSUInteger step;
 
 int main() {
     @autoreleasepool {
-        assert(MSIMEToolApplicationMatches(@"test.fixture", @"test.fixture"));
-        assert(!MSIMEToolApplicationMatches(@"test.fixture", @"test.other"));
-        assert(!MSIMEToolApplicationMatches(nil, nil));
-        assert(!MSIMEToolApplicationMatches(@"", @""));
+        assert(LINGYAOToolApplicationMatches(@"test.fixture", @"test.fixture"));
+        assert(!LINGYAOToolApplicationMatches(@"test.fixture", @"test.other"));
+        assert(!LINGYAOToolApplicationMatches(nil, nil));
+        assert(!LINGYAOToolApplicationMatches(@"", @""));
         ActivationHost *host = [ActivationHost new];
         ActivationTarget *target = [ActivationTarget new];
         NSObject *source = [NSObject new];
@@ -38,17 +38,17 @@ int main() {
         for (BOOL allowed : allowedValues) {
             target.allowed = allowed;
             step = 0;
-            assert(MSIMEActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target, NO) == allowed);
+            assert(LINGYAOActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target, NO) == allowed);
             assert(step == 3);
             if (@available(macOS 14.0, *)) {
                 step = 0;
-                assert(MSIMEActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target) == allowed);
+                assert(LINGYAOActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target) == allowed);
                 assert(step == 2);
             }
         }
         target.terminated = YES;
         step = 0;
-        assert(!MSIMEActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target));
+        assert(!LINGYAOActivateToolApplication((NSApplication *)host, (NSRunningApplication *)source, (NSRunningApplication *)target));
         assert(step == 0);
     }
 }

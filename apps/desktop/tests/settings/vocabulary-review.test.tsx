@@ -7,7 +7,7 @@ import {
   VocabularyReviewPanel,
   type VocabularyReviewClient,
   type VocabularyReviewStatus,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

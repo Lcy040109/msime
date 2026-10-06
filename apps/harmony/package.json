@@ -1,5 +1,5 @@
 {
-  "name": "@msime/harmony",
+  "name": "@lingyao/harmony",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@msime/ui": "workspace:*",
+    "@lingyao/ui": "workspace:*",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

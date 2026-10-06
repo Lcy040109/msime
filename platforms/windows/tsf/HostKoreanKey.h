@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <string_view>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 // What a key does while the Korean scheme is active and the keyboard is open.
 //
-// Korean is a syllable automaton (see the MsimeCommand comment in msime_client.h): letters compose, and every other key ends the open syllable and then does its ordinary work. The TIP inserts that syllable itself, so no key here depends on the Chinese punctuation table or on full-width conversion. Its only candidates are the Hanja of the composing syllable, listed after the Hanja key; while that list is open the keys in KoreanHanjaKey.h choose from it, and every other key keeps the meaning it has without a list.
+// Korean is a syllable automaton (see the LingyaoCommand comment in lingyao_client.h): letters compose, and every other key ends the open syllable and then does its ordinary work. The TIP inserts that syllable itself, so no key here depends on the Chinese punctuation table or on full-width conversion. Its only candidates are the Hanja of the composing syllable, listed after the Hanja key; while that list is open the keys in KoreanHanjaKey.h choose from it, and every other key keeps the meaning it has without a list.
 enum class KoreanKeyAction {
     // Not Korean-specific: the ordinary classification decides. Backspace and Escape while a syllable is open take this path, as do keys that produce no character.
     Default,
@@ -18,14 +18,14 @@ enum class KoreanKeyAction {
     CommitAndPass,
     // The application gets the key untouched: a printable non-letter, or the Hanja key, with nothing composing, so punctuation stays half-width ASCII.
     Pass,
-    // The Hanja key while a syllable is open: the TIP eats it and sends MSIME_CONVERT_HANJA, which lists the syllable's Hanja or closes an open list. A syllable with no Hanja (a lone jamo) keeps composing and the key is still eaten, so it never reaches the application in the middle of a syllable.
+    // The Hanja key while a syllable is open: the TIP eats it and sends LINGYAO_CONVERT_HANJA, which lists the syllable's Hanja or closes an open list. A syllable with no Hanja (a lone jamo) keeps composing and the key is still eaten, so it never reaches the application in the middle of a syllable.
     ConvertHanja,
     // A key the open Hanja list takes (KoreanHanjaKey.h): a digit, Space, Enter, an arrow, Page Up/Down, Home/End, Escape or Backspace. The TIP eats it and applies it to the list.
     HanjaList,
 };
 
 inline constexpr uint32_t kVirtualKeyHangul = 0x15;
-inline constexpr uint32_t kVirtualKeyHanja = msime::windows::kVirtualKeyHanja;
+inline constexpr uint32_t kVirtualKeyHanja = lingyao::windows::kVirtualKeyHanja;
 
 constexpr bool is_korean_letter_key(uint32_t vk, wchar_t wch) {
     return vk >= 'A' && vk <= 'Z' && ((wch >= L'a' && wch <= L'z') || (wch >= L'A' && wch <= L'Z'));
@@ -58,7 +58,7 @@ constexpr bool is_korean_caret_or_edit_key(uint32_t vk) {
 
 // A key the open Hanja list takes, other than the Hanja key itself.
 constexpr bool is_korean_hanja_list_key(uint32_t vk, wchar_t wch) {
-    return msime::windows::is_korean_hanja_list_key(vk, static_cast<uint32_t>(wch));
+    return lingyao::windows::is_korean_hanja_list_key(vk, static_cast<uint32_t>(wch));
 }
 
 // Modifier chords are resolved before this: Ctrl, Alt and Windows combinations belong to the application. `hanja_list_open` is whether the composing syllable's Hanja list is open; with it false every key behaves as it did before Hanja conversion existed.
@@ -90,16 +90,16 @@ struct KoreanHanjaProjection {
 
 // How a key queued as the list's opening key (the Hanja key, Zhuyin's Down on a closed list), or as a key of a projected open list, changes the projection. The Hanja key opens a closed list and closes an open one; Escape and Backspace close it and keep the composition; Space, Enter and a digit choose, which ends a Korean syllable and only fixes that reading of a Zhuyin conversion, which keeps composing; the arrows, paging and Home/End only move in it. Opening assumes the composition has candidates, which a lone jamo or a Zhuyin initial does not: the keys classified on that assumption are still decided against the host session when they run, and the Server decides them against its own session the same way, so the two stay in step and only the projection is off until the queue drains.
 constexpr KoreanHanjaProjection project_korean_hanja_key(int scheme, uint32_t vk, wchar_t wch, bool list_open) {
-    if (vk == kVirtualKeyHanja && scheme == msime::windows::scheme::Korean)
+    if (vk == kVirtualKeyHanja && scheme == lingyao::windows::scheme::Korean)
         return {!list_open, false};
-    if (msime::windows::opens_candidate_list(scheme, vk, list_open))
+    if (lingyao::windows::opens_candidate_list(scheme, vk, list_open))
         return {true, false};
-    const auto key = msime::windows::korean_hanja_key(vk, static_cast<uint32_t>(wch));
-    if (key.kind == msime::windows::KoreanHanjaKeyKind::Select ||
-        (key.kind == msime::windows::KoreanHanjaKeyKind::Command && key.value == MSIME_COMMIT_CANDIDATE))
-        return {false, scheme == msime::windows::scheme::Korean};
-    if (key.kind == msime::windows::KoreanHanjaKeyKind::Command &&
-        (key.value == MSIME_CANCEL || key.value == MSIME_BACKSPACE))
+    const auto key = lingyao::windows::korean_hanja_key(vk, static_cast<uint32_t>(wch));
+    if (key.kind == lingyao::windows::KoreanHanjaKeyKind::Select ||
+        (key.kind == lingyao::windows::KoreanHanjaKeyKind::Command && key.value == LINGYAO_COMMIT_CANDIDATE))
+        return {false, scheme == lingyao::windows::scheme::Korean};
+    if (key.kind == lingyao::windows::KoreanHanjaKeyKind::Command &&
+        (key.value == LINGYAO_CANCEL || key.value == LINGYAO_BACKSPACE))
         return {false, false};
     return {list_open, false};
 }
@@ -128,7 +128,7 @@ inline constexpr std::string_view kTibetanComposingSymbols = "'+-./";
 
 // 组字是否接收这个键，而不是被它结束：视图的 `spelling_symbols` 里列出的键（spelled_key），以及藏文组字时的空格。藏文的空格把转换出的藏文连同音节点 U+0F0B 一起上屏，所以它要送进宿主会话，而不是像越南文那样结束组字后原样插入空格。
 constexpr bool host_composition_takes_key(int scheme, std::string_view spelling_symbols, wchar_t wch, bool composing) {
-    if (scheme == msime::windows::scheme::Tibetan && composing && wch == L' ')
+    if (scheme == lingyao::windows::scheme::Tibetan && composing && wch == L' ')
         return true;
     return spelled_key(spelling_symbols, wch);
 }
@@ -142,11 +142,11 @@ constexpr bool host_composition_takes_key(int scheme, std::string_view spelling_
 // Zhuyin (Dachen) spells with lowercase letters and the keys `spelling_symbols` names, from idle too. A letter typed with Shift or Caps Lock is not phonetic: it ends the conversion and follows it, as libchewing writes it. Down on a closed list opens the list (opens_candidate_list), whose keys then follow KoreanHanjaKey.h; Enter commits the conversion and is spent; any other printable key ends the conversion through the Chinese punctuation table (CommitWithText). Nothing composing, every key that is not spelled keeps the Chinese rules (Default), so Shift punctuation is the Chinese mark as in the other Chinese schemes.
 constexpr KoreanKeyAction host_composed_key_action(int scheme, uint32_t vk, wchar_t wch, bool composing, bool list_open,
                                                    std::string_view spelling_symbols) {
-    if (scheme == msime::windows::scheme::Korean)
+    if (scheme == lingyao::windows::scheme::Korean)
         return korean_key_action(vk, wch, composing, list_open);
     const bool letter = is_korean_letter_key(vk, wch);
     const bool spelled = !letter && spelled_key(spelling_symbols, wch);
-    if (scheme == msime::windows::scheme::Tibetan) {
+    if (scheme == lingyao::windows::scheme::Tibetan) {
         if (letter || host_composition_takes_key(scheme, spelling_symbols, wch, composing))
             return KoreanKeyAction::Compose;
         if (!composing)
@@ -161,7 +161,7 @@ constexpr KoreanKeyAction host_composed_key_action(int scheme, uint32_t vk, wcha
             return KoreanKeyAction::CommitAndPass;
         return KoreanKeyAction::Default;
     }
-    if (scheme == msime::windows::scheme::Vietnamese) {
+    if (scheme == lingyao::windows::scheme::Vietnamese) {
         if (letter || (composing && spelled))
             return KoreanKeyAction::Compose;
         if (!composing)
@@ -174,7 +174,7 @@ constexpr KoreanKeyAction host_composed_key_action(int scheme, uint32_t vk, wcha
             return KoreanKeyAction::CommitAndPass;
         return KoreanKeyAction::Default;
     }
-    if (scheme != msime::windows::scheme::Zhuyin)
+    if (scheme != lingyao::windows::scheme::Zhuyin)
         return KoreanKeyAction::Default;
     if (composing && list_open && is_korean_hanja_list_key(vk, wch))
         return KoreanKeyAction::HanjaList;
@@ -187,7 +187,7 @@ constexpr KoreanKeyAction host_composed_key_action(int scheme, uint32_t vk, wcha
         return KoreanKeyAction::Compose;
     if (!composing)
         return KoreanKeyAction::Default;
-    if (msime::windows::opens_candidate_list(scheme, vk, list_open))
+    if (lingyao::windows::opens_candidate_list(scheme, vk, list_open))
         return KoreanKeyAction::ConvertHanja;
     if (vk == 0x0D)
         return KoreanKeyAction::CommitWithText;
@@ -199,4 +199,4 @@ constexpr KoreanKeyAction host_composed_key_action(int scheme, uint32_t vk, wcha
         return KoreanKeyAction::CommitAndPass;
     return KoreanKeyAction::Default;
 }
-} // namespace msime::tsf
+} // namespace lingyao::tsf

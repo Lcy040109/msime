@@ -1,8 +1,8 @@
-name: MSIMEClient
+name: LINGYAOClient
 options:
   deploymentTarget:
     iOS: "17.0"
-  bundleIdPrefix: app.msime.ios
+  bundleIdPrefix: app.lingyao.ios
   # false，否则 xcodegen 会为 platforms/ios 之上的路径（../../shared、../../target）建一层中间 group，
   # 并用仓库根目录的名字命名它。那个名字是谁最后跑的 xcodegen、他的 worktree 叫什么——于是每个人重新
   # 生成一次，工程就变一次，object ID 跟着大面积重排。改成 false 之后，在任意目录名下生成的工程逐字节
@@ -16,33 +16,33 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     PRODUCT_NAME: "$(TARGET_NAME)"
 schemes:
-  MSIMEClientTests:
+  LINGYAOClientTests:
     build:
       targets:
-        MSIMEKeyboardTests: all
-        MSIMEServiceTests: all
-        MSIMESharedTests: all
+        LINGYAOKeyboardTests: all
+        LINGYAOServiceTests: all
+        LINGYAOSharedTests: all
     test:
       targets:
-        - MSIMEKeyboardTests
-        - MSIMEServiceTests
-        - MSIMESharedTests
-  MSIMEDoubaoTransportTests:
+        - LINGYAOKeyboardTests
+        - LINGYAOServiceTests
+        - LINGYAOSharedTests
+  LINGYAODoubaoTransportTests:
     build:
       targets:
-        MSIMEDoubaoTransportTests: all
+        LINGYAODoubaoTransportTests: all
     test:
       targets:
-        - MSIMEDoubaoTransportTests
-  MSIMEClientUITests:
+        - LINGYAODoubaoTransportTests
+  LINGYAOClientUITests:
     build:
       targets:
-        MSIMEClientUITests: all
+        LINGYAOClientUITests: all
     test:
       targets:
-        - MSIMEClientUITests
+        - LINGYAOClientUITests
 targets:
-  MSIMEApp:
+  LINGYAOApp:
     type: application
     platform: iOS
     # 只为了一个 URL scheme。键盘扩展里没有 UIApplication,它要打开本应用只能走一个自己注册的 scheme;
@@ -51,9 +51,9 @@ targets:
       path: App/Resources/Info.plist
       properties:
         CFBundleURLTypes:
-          - CFBundleURLName: app.msime.ios
+          - CFBundleURLName: app.lingyao.ios
             CFBundleTypeRole: Editor
-            CFBundleURLSchemes: [msime]
+            CFBundleURLSchemes: [lingyao]
     sources:
       - path: App/Sources
       - path: App/Services
@@ -66,7 +66,7 @@ targets:
       - path: SharedUI
       - path: App/Resources/Assets.xcassets
       - path: App/Resources/LaunchScreen.storyboard
-      - path: ../../target/ios/EngineResources/msime-dictionary-manifest.json
+      - path: ../../target/ios/EngineResources/lingyao-dictionary-manifest.json
         buildPhase: resources
       - path: SharedResources/MLKit-NOTICES.txt
         buildPhase: resources
@@ -77,7 +77,7 @@ targets:
         buildPhase: resources
       - path: ../linux/data/licenses/onnxruntime-ThirdPartyNotices.txt
         buildPhase: resources
-      # The input engine in libmsime_host_api, linked into this app and into the keyboard extension it embeds, carries the Korean Hanja table from libhangul's data/hanja/hanja.txt, whose BSD-3-Clause licence requires the notice in binary distributions.
+      # The input engine in liblingyao_host_api, linked into this app and into the keyboard extension it embeds, carries the Korean Hanja table from libhangul's data/hanja/hanja.txt, whose BSD-3-Clause licence requires the notice in binary distributions.
       - path: ../../resources/licenses/libhangul-hanja-BSD-3-Clause.txt
         buildPhase: resources
       # The same engine's Cantonese and Zhuyin schemes take their syllables and words from data derived from rime-cantonese (CC BY 4.0) and libchewing-data (LGPL-2.1-or-later); their notices travel with every engine build even where those schemes are not offered.
@@ -97,15 +97,15 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios
-        PRODUCT_NAME: MSIMEApp
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios
+        PRODUCT_NAME: LINGYAOApp
         # 发布时由 upload-testflight.sh 在命令行传入描述文件名，配合 CODE_SIGN_STYLE=Manual 让 App 与键盘各用各的 App Store 描述文件；本地开发不传，值为空，仍是自动签名。
-        PROVISIONING_PROFILE_SPECIFIER: "$(MSIME_IOS_APP_PROFILE)"
+        PROVISIONING_PROFILE_SPECIFIER: "$(LINGYAO_IOS_APP_PROFILE)"
         # 出口合规：只用系统提供的 HTTPS 等豁免加密。写进 Info.plist 后上传的构建自带答案，不会停在 App Store Connect 的「缺少合规信息」而无法分发给 TestFlight 测试组（此前每个构建都在网页上手动答「否」）。
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
-        CODE_SIGN_ENTITLEMENTS: App/Resources/MSIMEApp.entitlements
+        CODE_SIGN_ENTITLEMENTS: App/Resources/LINGYAOApp.entitlements
         GENERATE_INFOPLIST_FILE: YES
-        # 主屏、设置和系统的应用列表都显示这个名字。没有它时 iOS 退回 CFBundleName,也就是 PRODUCT_NAME,装出来的图标底下写的是 MSIMEApp。
+        # 主屏、设置和系统的应用列表都显示这个名字。没有它时 iOS 退回 CFBundleName,也就是 PRODUCT_NAME,装出来的图标底下写的是 LINGYAOApp。
         INFOPLIST_KEY_CFBundleDisplayName: 灵耀输入法
         # LaunchScreen.storyboard 一直被编进 bundle,但没有这个键就没人指向它,启动屏等于白打包。
         INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
@@ -128,7 +128,7 @@ targets:
           - "@executable_path/Frameworks"
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
           - "-framework"
@@ -144,14 +144,14 @@ targets:
         Debug:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) DEBUG
     dependencies:
-      - target: MSIMEKeyboardExtension
+      - target: LINGYAOKeyboardExtension
       - sdk: Security.framework
       # 本地语音识别的 sherpa-onnx 运行时，只进主 App：键盘扩展的内存上限装不下任何一个模型。
       # 构建前由 scripts/fetch_voice_runtime.py --platform ios 下载校验到 target/，不入库。
       - framework: ../../target/voice-runtime/ios/SherpaOnnxC.xcframework
         embed: true
         codeSign: true
-  MSIMEKeyboardExtension:
+  LINGYAOKeyboardExtension:
     type: app-extension
     platform: iOS
     info:
@@ -203,24 +203,24 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.keyboard
-        PRODUCT_NAME: MSIMEKeyboardExtension
-        # 同 MSIMEApp，见那里的说明。
-        PROVISIONING_PROFILE_SPECIFIER: "$(MSIME_IOS_KEYBOARD_PROFILE)"
-        CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.keyboard
+        PRODUCT_NAME: LINGYAOKeyboardExtension
+        # 同 LINGYAOApp，见那里的说明。
+        PROVISIONING_PROFILE_SPECIFIER: "$(LINGYAO_IOS_KEYBOARD_PROFILE)"
+        CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements
         SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h"
         EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]: HandwritingInputViewFallback.swift
         EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]: HandwritingInputView.swift HandwritingDownloadSession.m
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
         LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: "$(SRCROOT)/../../target/ios/device"
         LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: "$(SRCROOT)/../../target/ios/simulator"
     dependencies:
       - sdk: Security.framework
-  MSIMEKeyboardTestHost:
+  LINGYAOKeyboardTestHost:
     type: application
     platform: iOS
     sources:
@@ -240,19 +240,19 @@ targets:
         optional: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.keyboard-test-host
-        PRODUCT_NAME: MSIMEKeyboardTestHost
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.keyboard-test-host
+        PRODUCT_NAME: LINGYAOKeyboardTestHost
         # The keyboard under test reads its preferences from the App Group container, so the host
         # that loads it needs the same entitlement the extension ships with -- as the Apple
         # client's test host does. Without it the container is refused and the host is killed
         # partway through the suite, leaving most of it unreported.
-        CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements
+        CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements
         ARCHS: arm64
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: ""
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-  MSIMEKeyboardTests:
+  LINGYAOKeyboardTests:
     type: bundle.unit-test
     platform: iOS
     sources:
@@ -283,24 +283,24 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.keyboard-tests
-        PRODUCT_NAME: MSIMEKeyboardTests
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.keyboard-tests
+        PRODUCT_NAME: LINGYAOKeyboardTests
         ARCHS: arm64
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: ""
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MSIMEKeyboardTestHost.app/MSIMEKeyboardTestHost"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/LINGYAOKeyboardTestHost.app/LINGYAOKeyboardTestHost"
         BUNDLE_LOADER: "$(TEST_HOST)"
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
         LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: "$(SRCROOT)/../../target/ios/device"
         LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: "$(SRCROOT)/../../target/ios/simulator"
     dependencies:
-      - target: MSIMEKeyboardTestHost
+      - target: LINGYAOKeyboardTestHost
       - sdk: Security.framework
-  MSIMEServiceTests:
+  LINGYAOServiceTests:
     type: bundle.unit-test
     platform: iOS
     sources:
@@ -328,22 +328,22 @@ targets:
           - .build/**
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.service-tests
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.service-tests
         CLANG_CXX_LANGUAGE_STANDARD: c++17
-        PRODUCT_NAME: MSIMEServiceTests
+        PRODUCT_NAME: LINGYAOServiceTests
         ARCHS: arm64
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: ""
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
         LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: "$(SRCROOT)/../../target/ios/device"
         LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: "$(SRCROOT)/../../target/ios/simulator"
     dependencies:
       - sdk: Security.framework
-  MSIMESharedTests:
+  LINGYAOSharedTests:
     type: bundle.unit-test
     platform: iOS
     sources:
@@ -373,39 +373,39 @@ targets:
       - path: SharedUI
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.shared-tests
-        PRODUCT_NAME: MSIMESharedTests
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.shared-tests
+        PRODUCT_NAME: LINGYAOSharedTests
         ARCHS: arm64
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: ""
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MSIMEKeyboardTestHost.app/MSIMEKeyboardTestHost"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/LINGYAOKeyboardTestHost.app/LINGYAOKeyboardTestHost"
         BUNDLE_LOADER: "$(TEST_HOST)"
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
         LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: "$(SRCROOT)/../../target/ios/device"
         LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: "$(SRCROOT)/../../target/ios/simulator"
     dependencies:
-      - target: MSIMEKeyboardTestHost
+      - target: LINGYAOKeyboardTestHost
       - sdk: Security.framework
-  MSIMEClientUITests:
+  LINGYAOClientUITests:
     type: bundle.ui-testing
     platform: iOS
     sources:
       - path: UITests
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.uitests
-        PRODUCT_NAME: MSIMEClientUITests
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.uitests
+        PRODUCT_NAME: LINGYAOClientUITests
         ARCHS: arm64
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: ""
-        TEST_TARGET_NAME: MSIMEApp
+        TEST_TARGET_NAME: LINGYAOApp
     dependencies:
-      - target: MSIMEApp
-  MSIMEDoubaoTransport:
+      - target: LINGYAOApp
+  LINGYAODoubaoTransport:
     type: framework
     platform: iOS
     sources:
@@ -414,17 +414,17 @@ targets:
       - path: App/Services/WAVPCMExtractor.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.transport
-        PRODUCT_NAME: MSIMEDoubaoTransport
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.transport
+        PRODUCT_NAME: LINGYAODoubaoTransport
         ENABLE_TESTABILITY: YES
-  MSIMEDoubaoTransportTests:
+  LINGYAODoubaoTransportTests:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: TransportTests
     dependencies:
-      - target: MSIMEDoubaoTransport
+      - target: LINGYAODoubaoTransport
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.transport.tests
-        PRODUCT_NAME: MSIMEDoubaoTransportTests
+        PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.transport.tests
+        PRODUCT_NAME: LINGYAODoubaoTransportTests

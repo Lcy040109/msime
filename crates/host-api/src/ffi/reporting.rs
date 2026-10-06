@@ -1,12 +1,12 @@
-//! Usage reporting and notices for native hosts: the telemetry queue, the notice feed and the Markdown renderer of `msime_client_core::telemetry` and `msime_client_core::notices`.
+//! Usage reporting and notices for native hosts: the telemetry queue, the notice feed and the Markdown renderer of `lingyao_client_core::telemetry` and `lingyao_client_core::notices`.
 //!
 //! Part of the C ABI; see the parent module for what these shims guarantee. Every request is a small JSON document so a host builds it with the JSON library it already has, and a field added later does not change a signature.
 
 use super::with_bounded_bytes;
 use crate::*;
-use msime_client_core::account::BackendAccountClient;
-use msime_client_core::notices::{fetch_notices, markdown_to_html, NoticeChannel, NoticeStore};
-use msime_client_core::telemetry::{TelemetryApp, TelemetryStore};
+use lingyao_client_core::account::BackendAccountClient;
+use lingyao_client_core::notices::{fetch_notices, markdown_to_html, NoticeChannel, NoticeStore};
+use lingyao_client_core::telemetry::{TelemetryApp, TelemetryStore};
 use std::time::SystemTime;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024;
@@ -91,7 +91,7 @@ struct DirectoryRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_telemetry_begin(
+pub unsafe extern "C" fn lingyao_client_telemetry_begin(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -121,7 +121,7 @@ pub unsafe extern "C" fn msime_client_telemetry_begin(
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_telemetry_end(
+pub unsafe extern "C" fn lingyao_client_telemetry_end(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -144,11 +144,11 @@ struct CrashRequest {
     stack: String,
 }
 
-/// Writes the running session's crash record (`{directory, message, stack}`) from a crash handler that may allocate, such as a C++ terminate handler. Takes no lock and does no network I/O; the record becomes a `crash` event on the next start. Value is false when no session is running or this session already has a record. Signal handlers write the record file returned by `msime_client_telemetry_begin` directly instead.
+/// Writes the running session's crash record (`{directory, message, stack}`) from a crash handler that may allocate, such as a C++ terminate handler. Takes no lock and does no network I/O; the record becomes a `crash` event on the next start. Value is false when no session is running or this session already has a record. Signal handlers write the record file returned by `lingyao_client_telemetry_begin` directly instead.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_telemetry_record_crash(
+pub unsafe extern "C" fn lingyao_client_telemetry_record_crash(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -162,11 +162,11 @@ pub unsafe extern "C" fn msime_client_telemetry_record_crash(
     })
 }
 
-/// Queues today's `active` and sends the queue to `https://api.msime.app/v1/telemetry/events` without credentials. Takes the same request as `msime_client_telemetry_begin`; with reporting off it clears instead and sends nothing. Value: `{enabled, sent, dropped, remaining, deferred}`. Blocks on the network: call from a background thread, at start and every few hours in a long-running host.
+/// Queues today's `active` and sends the queue to `https://api.msime.app/v1/telemetry/events` without credentials. Takes the same request as `lingyao_client_telemetry_begin`; with reporting off it clears instead and sends nothing. Value: `{enabled, sent, dropped, remaining, deferred}`. Blocks on the network: call from a background thread, at start and every few hours in a long-running host.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_telemetry_flush(
+pub unsafe extern "C" fn lingyao_client_telemetry_flush(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -197,7 +197,7 @@ pub unsafe extern "C" fn msime_client_telemetry_flush(
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_telemetry_clear(
+pub unsafe extern "C" fn lingyao_client_telemetry_clear(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -224,11 +224,11 @@ fn app_channel() -> NoticeChannel {
     NoticeChannel::App
 }
 
-/// The live notices for this host that the user has not dismissed, newest first: `{items:[{id,title,body,html,targets,channels,published_at}]}`, where `html` is the body rendered by `msime_client_markdown_to_html`. Request: `{directory, platform, channel?}` (`channel` defaults to `app`). Uses the copy cached under `directory` when the feed was requested less than a minute ago, and that copy when the request fails. Blocks on the network: call off the input thread, when the settings window or app home opens.
+/// The live notices for this host that the user has not dismissed, newest first: `{items:[{id,title,body,html,targets,channels,published_at}]}`, where `html` is the body rendered by `lingyao_client_markdown_to_html`. Request: `{directory, platform, channel?}` (`channel` defaults to `app`). Uses the copy cached under `directory` when the feed was requested less than a minute ago, and that copy when the request fails. Blocks on the network: call off the input thread, when the settings window or app home opens.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_notices(request: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_notices(request: *const u8, length: usize) -> *mut c_char {
     response(|| {
         // SAFETY: guaranteed by the documented caller contract.
         let request: NoticesRequest = unsafe { document(request, length, MAX_REQUEST_BYTES)? };
@@ -272,11 +272,11 @@ struct DismissRequest {
     id: String,
 }
 
-/// Remembers under `directory` that the user dismissed notice `id` (`{directory, id}`), so `msime_client_notices` no longer lists it.
+/// Remembers under `directory` that the user dismissed notice `id` (`{directory, id}`), so `lingyao_client_notices` no longer lists it.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_notice_dismiss(
+pub unsafe extern "C" fn lingyao_client_notice_dismiss(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -294,7 +294,7 @@ pub unsafe extern "C" fn msime_client_notice_dismiss(
 /// # Safety
 /// `text` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_markdown_to_html(
+pub unsafe extern "C" fn lingyao_client_markdown_to_html(
     text: *const u8,
     length: usize,
 ) -> *mut c_char {

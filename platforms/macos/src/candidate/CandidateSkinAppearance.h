@@ -9,7 +9,7 @@ FOUNDATION_EXPORT NSNotificationName const LingyaoCandidateSkinDidChangeNotifica
 NSColor *LingyaoColorFromRgba(lingyao::mac::Rgba color);
 BOOL LingyaoAppearanceIsDark(NSAppearance *appearance);
 NSURL *LingyaoCandidateSkinsDirectoryURL(void);
-/// The global theme id stored in the standard defaults under the key the settings window writes (`MSIMEClientGlobalTheme`). An id outside the catalog reads as `system`.
+/// The global theme id stored in the standard defaults under the key the settings window writes (`LINGYAOClientGlobalTheme`). An id outside the catalog reads as `system`.
 NSString *LingyaoStoredGlobalTheme(void);
 /// Stores a global theme id and posts LingyaoCandidateSkinDidChangeNotification. An id outside the catalog is ignored.
 void LingyaoSetStoredGlobalTheme(NSString *themeId);

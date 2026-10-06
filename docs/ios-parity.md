@@ -2,16 +2,16 @@
 
 macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先做存在性比对定位可疑区域，再按行为逐条下钻。本文记录用什么方法比过、发现了什么，便于以后复核而不是重新发明一套。
 
-**MSIME-Apple 的 iOS 功能已全部迁移。** 依据是下面九条机械比对轴，加上按来源「为什么这样做」的注释逐条回验行为——后者是唯一能看见「两边符号都在、行为却不同」那一类的方法，三个查实的真实缺口全部由它找到，没有一个是存在性比对抓到的。
+**LINGYAO-Apple 的 iOS 功能已全部迁移。** 依据是下面九条机械比对轴，加上按来源「为什么这样做」的注释逐条回验行为——后者是唯一能看见「两边符号都在、行为却不同」那一类的方法，三个查实的真实缺口全部由它找到，没有一个是存在性比对抓到的。
 
 ## 范围与基线
 
-迁移的目标是 MSIME-Apple 的 iOS 完整功能，而不是能编译的子集。公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态仍归 C++ Engine；平台特性按 iOS 自身的机制适配，不照搬来源的实现形态。
+迁移的目标是 LINGYAO-Apple 的 iOS 完整功能，而不是能编译的子集。公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态仍归 C++ Engine；平台特性按 iOS 自身的机制适配，不照搬来源的实现形态。
 
 比对在固定对象上进行，便于复核：
 
-- 来源：`metasequoiaime/MSIME-Apple` 的默认分支 `develop`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
-- 目标：`Lcy040109/msime` 的 `develop`。
+- 来源：`metasequoiaime/LINGYAO-Apple` 的默认分支 `develop`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
+- 目标：`Lcy040109/lingyao` 的 `develop`。
 
 来源入口是该检出的 `platforms/ios/`，以及 `shared/apple-bridge/` 与 `shared/backend/`。
 
@@ -21,7 +21,7 @@ macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先
 | --- | --- | --- | --- |
 | 源文件名 | 192 | 来源 `platforms/ios` 与 `shared` 下的 Swift/ObjC/C++ 文件按文件名在目标检索 | 集中在 `shared/apple-bridge/` 与 `shared/backend/`：前者是 ObjC 桥接层，由 `crates/host-api` 的 C ABI 取代；后者是 Swift 后端客户端，由 `crates/client-core` 取代 |
 | 中文文案 | 1666 | 抽取来源全部源文件的中文字面量，逐条精确检索 | 测试断言文案、措辞差异、Tauri 页以不同表述覆盖、落在注释里的引号 |
-| 符号 | 584 | ObjC 方法、C/C++ 函数与 Swift 函数名，按原名与 snake_case 改名两种形式检索 | 61 个在被 C ABI 取代的 ObjC 桥接层（`InputSessionAdapter`、`LingyaoInputSessionBridge`、`CandidateTranslation`、`MSIMEBackendClient`）；其余是改名或重构等价物 |
+| 符号 | 584 | ObjC 方法、C/C++ 函数与 Swift 函数名，按原名与 snake_case 改名两种形式检索 | 61 个在被 C ABI 取代的 ObjC 桥接层（`InputSessionAdapter`、`LingyaoInputSessionBridge`、`CandidateTranslation`、`LINGYAOBackendClient`）；其余是改名或重构等价物 |
 | 可达控件标识 | 254 | 抽取来源全部 `accessibilityIdentifier` 字面量逐个检索 | 2 个：`emojiCategory-` 在目标用连字符，自定义皮肤重置由 Tauri 页覆盖 |
 | 同名文件成员 | 116 对 | 逐对抽取 `func` / `var` / `let` 名做差集 | 16 个文件有差集，逐个核实全是重构等价物：候选注解并成 `KeyboardCandidateAnnotation`、「更多」面板从布尔开关换成显式页枚举、表情目录从内存表换成分页 ABI |
 | 测试断言 | 来源 232 | 来源 `test*` 函数名逐个检索，按名未命中的逐簇对到改名或拆分后的用例 | 目标 `KeyboardTests`/`ServiceTests`/`tests`/`TransportTests` 现有 312 个 `test*`，整体是来源的超集 |
@@ -48,7 +48,7 @@ macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先
 - **内容**：小鹤双拼的 `K` 同时承载 `ing` 与 `uai`，手写表只列了 `ing`，于是打 `guai`（`g`+`k`）的那个键上没有任何 `uai` 的提示。其余三个方案内容一致——但一致是运气，不是机制。
 - **格式**：来源的 `" / "` 表示「声母 / 韵母」的分界，同一侧的多个单位用空格分隔；手写表把 `" / "` 当成通用分隔符，于是 `V` 读作 `ui / zh / ü`（三个并列项），而来源读作 `zh / ui ü`（声母 `zh`，韵母 `ui` 和 `ü`）；手道方案的 `E` 甚至排成 `e / sh`，把韵母排到了声母前面。
 
-修法是按目标的分层把它接回引擎，而不是修那张表：`crates/engine/src/shuangpin/hints.rs` 的 `shuangpin_key_hints(profile)` 从引擎自己的双拼方案表展开（当初是已删除的 `crates/engine-bridge` 从 C++ Engine 的 `GetShuangpinProfile` 展开），`crates/host-api` 以 `msime_client_shuangpin_key_hints` 发布，iOS 键盘读这个 ABI。未知方案名返回空表而不回落到默认方案——给键盘贴上一套它没在跑的方案，比不贴更糟。这条路径同时对 Android 与 HarmonyOS 的触摸键面可用。
+修法是按目标的分层把它接回引擎，而不是修那张表：`crates/engine/src/shuangpin/hints.rs` 的 `shuangpin_key_hints(profile)` 从引擎自己的双拼方案表展开（当初是已删除的 `crates/engine-bridge` 从 C++ Engine 的 `GetShuangpinProfile` 展开），`crates/host-api` 以 `lingyao_client_shuangpin_key_hints` 发布，iOS 键盘读这个 ABI。未知方案名返回空表而不回落到默认方案——给键盘贴上一套它没在跑的方案，比不贴更糟。这条路径同时对 Android 与 HarmonyOS 的触摸键面可用。
 
 来源的 `uses_shuangpin` 门控在目标侧由 `View.scheme` 承担：引擎无论什么方案都带着一个 profile 被构建，所以 `View.shuangpin_profile` 任何时候都非空，只有 scheme 才说明键面是不是在跑它。
 
@@ -70,7 +70,7 @@ ML Kit Digital Ink 的 arm64 切片只给 device，所以模拟器这份 `Handwr
 
 - `testBrandOpensCompactToolsAndUpdatesFeedbackState` 仍在根页找「键盘设置」卡。那一层是有意删掉的——实现里的注释写明了理由（六张一样的入口卡，要再点一次才知道按键音开没开），而同一个用例后面又直接从根页读 `moreCard-按键振动`，自相矛盾。
 - `testSchemePickerUsesCurrentSkinPalette` 期望选中卡片的填充是 `accent` 的 0.10 透明度，实现是 0.12。0.12 来自来源，是有意对齐的，断言没跟上。
-- `testAdditionalEngineSchemesAndLocalProviders` 要求临时英文模式下 `hello` 给出多于一条候选。固定词库发布的 `msime-english.db` 里以 `hello` 开头的词正好只有一个，所以它断的是词库内容而不是产品行为，改成断言补全确实以输入开头。
+- `testAdditionalEngineSchemesAndLocalProviders` 要求临时英文模式下 `hello` 给出多于一条候选。固定词库发布的 `lingyao-english.db` 里以 `hello` 开头的词正好只有一个，所以它断的是词库内容而不是产品行为，改成断言补全确实以输入开头。
 
 第一条修掉表层之后，同一个用例往下跑露出被它挡住的第二层：「设置」分组的开关卡 `maxY` 到 332 / 386，而面板高度是 306，原断言要求每张卡都在折线以上。这一条没有按字面修，因为它和它所针对的设计相矛盾：面板是滚动视图，实现的注释写明这些开关是**有意**从「键盘设置」二级页搬到根页的，理由是那一层把状态藏了起来，而「面板本来就会滚动，分组标题也已经能区分两类」。
 
@@ -82,6 +82,6 @@ ML Kit Digital Ink 的 arm64 切片只给 device，所以模拟器这份 `Handwr
 
 `smart_punctuation_repeat` 与 `smart_punctuation_space_convert` 曾经在 iOS 上没有任何消费方：macOS 与 HarmonyOS 都实现了，共享设置页对 iOS 用户照样显示这两个开关，打开之后什么都不会发生。
 
-这**不是** MSIME-Apple 的迁移缺口——来源仓库里没有智能标点这个功能，它是本仓按 Windows 基线加的。修法按架构分两片走：策略下沉到 `crates/client-core`（和 `punctuation.rs` 的路由同处，两条规则从既有实现读出来而不是重新发明），再由 iOS 通过 `msime_client_smart_punctuation_arm` / `msime_client_smart_punctuation_decide` 消费。快照由宿主持有而不放进会话：它们属于宿主的编辑器，而 iOS 在键盘收起时会销毁重建会话，一个跨过那道缝还活着的手势是错的。
+这**不是** LINGYAO-Apple 的迁移缺口——来源仓库里没有智能标点这个功能，它是本仓按 Windows 基线加的。修法按架构分两片走：策略下沉到 `crates/client-core`（和 `punctuation.rs` 的路由同处，两条规则从既有实现读出来而不是重新发明），再由 iOS 通过 `lingyao_client_smart_punctuation_arm` / `lingyao_client_smart_punctuation_decide` 消费。快照由宿主持有而不放进会话：它们属于宿主的编辑器，而 iOS 在键盘收起时会销毁重建会话，一个跨过那道缝还活着的手势是错的。
 
 macOS 与 HarmonyOS 各自保留着自己那一份实现；让它们改用共享策略属于它们自己的改动。

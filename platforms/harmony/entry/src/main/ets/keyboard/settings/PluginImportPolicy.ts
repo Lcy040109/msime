@@ -1,5 +1,5 @@
 /**
- * How much of a picked pack the 扩展 page copies into its staging directory before `msime_client_plugins` checks it.
+ * How much of a picked pack the 扩展 page copies into its staging directory before `lingyao_client_plugins` checks it.
  *
  * The picker hands back a document URI the native library cannot open, so the pick is copied into the app's cache first. The desktop shell has no such copy: client-core's `plugins::import` reads the picked folder or archive itself and stops at its bounds while copying. A staging copy that copied whatever was picked would bypass those bounds, and a wrong pick such as Downloads would be copied whole, possibly filling the device, before client-core refused it. So the copy stops at the same bounds, taken from `crates/client-core/src/plugins/import.rs` and `plugins.rs`; every rule a pack must meet is still checked by client-core on the staged copy.
  */
@@ -13,7 +13,7 @@ const MAX_TOTAL_BYTES: number = 66 * 1024 * 1024;
 /** import.rs `MAX_ARCHIVE_BYTES`. */
 const MAX_ARCHIVE_BYTES: number = 80 * 1024 * 1024;
 
-/** A refusal in the reply shape `msime_client_plugins` uses, with client-core's code and the detail it gives for the same rule. */
+/** A refusal in the reply shape `lingyao_client_plugins` uses, with client-core's code and the detail it gives for the same rule. */
 export interface PluginImportRefusal {
   ok: boolean;
   error: string;

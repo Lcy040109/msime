@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 public final class KeyboardSkinSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

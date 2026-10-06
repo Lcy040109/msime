@@ -1,4 +1,4 @@
-package app.msime.android.core;
+package app.lingyao.android.core;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -31,7 +31,7 @@ public final class TelemetryHandlerSmoke {
         check(Telemetry.clipCodePoints("short", 1000).equals("short"), "short text is kept");
 
         StringBuilder frames = new StringBuilder();
-        for (int index = 0; index < 2000; index++) frames.append("at app.msime.Frame").append(index).append("(Frame.java:1)\n");
+        for (int index = 0; index < 2000; index++) frames.append("at app.lingyao.Frame").append(index).append("(Frame.java:1)\n");
         String stack = Telemetry.clipStack(frames.toString());
         check(stack.getBytes(StandardCharsets.UTF_8).length <= Telemetry.MAX_STACK_BYTES, "stack fits the byte cap");
         check(stack.endsWith("\n"), "stack is cut at a line boundary");
@@ -43,10 +43,10 @@ public final class TelemetryHandlerSmoke {
         String summary = record.substring(0, record.indexOf('\n'));
         check(summary.equals("java.lang.RuntimeException: first line"), "summary is the first line only: " + summary);
         check(record.contains("Caused by: java.lang.IllegalStateException: inner"), "causes are kept");
-        check(record.contains("at app.msime.android.core.TelemetryHandlerSmoke.main("), "frames are kept");
+        check(record.contains("at app.lingyao.android.core.TelemetryHandlerSmoke.main("), "frames are kept");
         check(Telemetry.firstLine("a\r\nb").equals("a"), "CRLF first line");
 
-        Path root = Files.createTempDirectory("msime-telemetry-");
+        Path root = Files.createTempDirectory("lingyao-telemetry-");
         try {
             Path outside = Files.createDirectory(root.resolve("outside"));
             Path linked = root.resolve("telemetry-crashes");

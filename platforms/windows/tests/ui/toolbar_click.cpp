@@ -1,6 +1,6 @@
 #include "../../src/candidate/ToolbarClick.h"
 #include <cassert>
-using namespace msime::windows;
+using namespace lingyao::windows;
 int main() {
   std::optional<size_t> pressed;
   assert(!toolbar_release(pressed, 0, true));

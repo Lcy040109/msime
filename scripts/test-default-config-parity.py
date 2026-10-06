@@ -32,7 +32,7 @@ assert windows_minimum_prefix == shared_minimum_prefix, (
 reference = show_file(ROOT, REFERENCE_CONFIG)
 if reference is None:
     print(
-        "skipped the mixed-input default reference comparison: no MSIME-Windows checkout at "
+        "skipped the mixed-input default reference comparison: no LINGYAO-Windows checkout at "
         f"{reference_root(ROOT)}"
     )
 else:

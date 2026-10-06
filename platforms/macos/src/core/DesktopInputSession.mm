@@ -29,27 +29,27 @@ struct Submission {
 };
 }
 
-@implementation MSIMEDesktopInputSession {
+@implementation LINGYAODesktopInputSession {
     dispatch_source_t _source;
     dispatch_queue_t _queue;
     NSString *_directory;
     NSString *_path;
     NSDictionary *_launchEnvironment;
-    MSIMEPanelTextHandler _handler;
+    LINGYAOPanelTextHandler _handler;
     pid_t _peer;
     BOOL (^_peerValid)(void);
     std::atomic<bool> _stopped;
     BOOL _clipboard;
 }
-- (instancetype)initWithTargetPID:(pid_t)pid launchTime:(double)launched handler:(MSIMEPanelTextHandler)handler {
+- (instancetype)initWithTargetPID:(pid_t)pid launchTime:(double)launched handler:(LINGYAOPanelTextHandler)handler {
     return [self initWithTargetPID:pid launchTime:launched clipboard:NO handler:handler];
 }
-- (instancetype)initWithTargetPID:(pid_t)pid launchTime:(double)launched clipboard:(BOOL)clipboard handler:(MSIMEPanelTextHandler)handler {
+- (instancetype)initWithTargetPID:(pid_t)pid launchTime:(double)launched clipboard:(BOOL)clipboard handler:(LINGYAOPanelTextHandler)handler {
     if (!(self = [super init])) return nil;
     _stopped.store(false);
     _clipboard = clipboard;
     if (pid <= 0 || !std::isfinite(launched) || launched <= 0 || !handler) return nil;
-    char directory[] = "/tmp/msime-panel-XXXXXX";
+    char directory[] = "/tmp/lingyao-panel-XXXXXX";
     if (!mkdtemp(directory)) return nil;
     _directory = [NSString stringWithUTF8String:directory];
     _path = [_directory stringByAppendingPathComponent:@"input.sock"];
@@ -72,16 +72,16 @@ struct Submission {
     } mutableCopy];
     if (clipboard) configuration[@"clipboard"] = @YES;
     NSData *data = [NSJSONSerialization dataWithJSONObject:configuration options:0 error:nil];
-    _launchEnvironment = @{@"MSIME_CLIENT_PANEL_SESSION":[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]};
-    _queue = dispatch_queue_create("app.msime.panel-input", DISPATCH_QUEUE_SERIAL);
+    _launchEnvironment = @{@"LINGYAO_CLIENT_PANEL_SESSION":[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]};
+    _queue = dispatch_queue_create("app.lingyao.panel-input", DISPATCH_QUEUE_SERIAL);
     _source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, listener, 0, _queue);
     NSString *path = _path, *root = _directory;
     dispatch_source_set_cancel_handler(_source, ^{
         close(listener); unlink(path.fileSystemRepresentation); rmdir(root.fileSystemRepresentation);
     });
-    __weak MSIMEDesktopInputSession *weakSelf = self;
+    __weak LINGYAODesktopInputSession *weakSelf = self;
     dispatch_source_set_event_handler(_source, ^{
-        MSIMEDesktopInputSession *session = weakSelf;
+        LINGYAODesktopInputSession *session = weakSelf;
         if (!session || session->_stopped.load()) return;
         const int fd = accept(listener, nullptr, nullptr);
         if (fd < 0) return;

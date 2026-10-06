@@ -21,7 +21,7 @@
 #include <string>
 #include <system_error>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value) {
   if (!value)
@@ -57,7 +57,7 @@ struct Pair {
   Pair() {
     static unsigned serial = 0;
     // Exercise the production listener with a unique test-only name.
-    auto name = L"\\\\.\\pipe\\MSIMEClientIoTest-" +
+    auto name = L"\\\\.\\pipe\\LINGYAOClientIoTest-" +
                 std::to_wstring(GetCurrentProcessId()) + L"-" +
                 std::to_wstring(++serial);
     DWORD error = ERROR_SUCCESS;
@@ -87,7 +87,7 @@ void listeners() {
   DWORD error = ERROR_SUCCESS;
   require(!PipeListener::create(L"\\\\remote\\pipe\\test", error));
   require(error == ERROR_INVALID_NAME);
-  const auto name = L"\\\\.\\pipe\\MSIMEClientListenerTest-" +
+  const auto name = L"\\\\.\\pipe\\LINGYAOClientListenerTest-" +
                     std::to_wstring(GetCurrentProcessId());
   auto listener = PipeListener::create(name, error);
   require(listener && error == ERROR_SUCCESS);
@@ -603,7 +603,7 @@ void services() {
   options.capabilities = FanyImeProtocol::RequiredCapabilities;
   options.handshake_timeout = 2000;
   for (size_t role = 0; role < 3; ++role)
-    options.names[role] = L"\\\\.\\pipe\\MSIMEClientServiceTest-" +
+    options.names[role] = L"\\\\.\\pipe\\LINGYAOClientServiceTest-" +
                           std::to_wstring(GetCurrentProcessId()) + L"-" +
                           std::to_wstring(role);
   const auto id = (static_cast<uint64_t>(GetCurrentProcessId()) << 32) | 55u;

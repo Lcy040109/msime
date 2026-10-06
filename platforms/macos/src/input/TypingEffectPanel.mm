@@ -67,26 +67,26 @@ NSScreen *ScreenContaining(NSPoint point) {
 }
 }
 
-MSIMETypingEffect MSIMETypingEffectDecode(uint32_t packed) {
-    MSIMETypingEffect effect;
+LINGYAOTypingEffect LINGYAOTypingEffectDecode(uint32_t packed) {
+    LINGYAOTypingEffect effect;
     effect.combo = packed & kComboMask;
-    effect.tierUp = (packed & MSIMETypingEffectTierUp) != 0;
+    effect.tierUp = (packed & LINGYAOTypingEffectTierUp) != 0;
     const uint32_t style = (packed >> kStyleShift) & kStyleMask;
-    effect.style = style <= MSIMETypingEffectStylePowerMode ? (MSIMETypingEffectStyle)style : MSIMETypingEffectStyleOff;
+    effect.style = style <= LINGYAOTypingEffectStylePowerMode ? (LINGYAOTypingEffectStyle)style : LINGYAOTypingEffectStyleOff;
     return effect;
 }
 
-MSIMETypingEffectStyle MSIMETypingEffectDrawnStyle(MSIMETypingEffectStyle style, BOOL reduceMotion, BOOL lowPower) {
-    if ((style == MSIMETypingEffectStyleSparks || style == MSIMETypingEffectStylePowerMode) && (reduceMotion || lowPower))
-        return MSIMETypingEffectStyleFlash;
+LINGYAOTypingEffectStyle LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStyle style, BOOL reduceMotion, BOOL lowPower) {
+    if ((style == LINGYAOTypingEffectStyleSparks || style == LINGYAOTypingEffectStylePowerMode) && (reduceMotion || lowPower))
+        return LINGYAOTypingEffectStyleFlash;
     return style;
 }
 
-NSString *MSIMETypingEffectComboText(NSUInteger combo) {
+NSString *LINGYAOTypingEffectComboText(NSUInteger combo) {
     return combo >= 2 ? [NSString stringWithFormat:@"连击 ×%lu", (unsigned long)combo] : nil;
 }
 
-NSColor *MSIMETypingEffectColor(id value) {
+NSColor *LINGYAOTypingEffectColor(id value) {
     if (![value isKindOfClass:NSString.class] || [value length] != 7 || ![value hasPrefix:@"#"]) return nil;
     unsigned rgb = 0;
     for (NSUInteger index = 1; index < 7; ++index) {
@@ -101,7 +101,7 @@ NSColor *MSIMETypingEffectColor(id value) {
     return [NSColor colorWithSRGBRed:((rgb >> 16) & 0xFF) / 255.0 green:((rgb >> 8) & 0xFF) / 255.0 blue:(rgb & 0xFF) / 255.0 alpha:1.0];
 }
 
-@implementation MSIMETypingEffectFlashView
+@implementation LINGYAOTypingEffectFlashView
 - (BOOL)isOpaque { return NO; }
 - (NSView *)hitTest:(NSPoint)point {
     (void)point;
@@ -110,7 +110,7 @@ NSColor *MSIMETypingEffectColor(id value) {
 - (BOOL)isAccessibilityElement { return NO; }
 @end
 
-@implementation MSIMETypingEffectPanel {
+@implementation LINGYAOTypingEffectPanel {
     NSString *_style;
     BOOL _comboCounter;
     BOOL _packSelected;
@@ -125,13 +125,13 @@ NSColor *MSIMETypingEffectColor(id value) {
     CATextLayer *_badgeText;
     NSTimer *_burstTimer;
     NSTimer *_settleTimer;
-    __weak MSIMETypingEffectFlashView *_cardFlash;
+    __weak LINGYAOTypingEffectFlashView *_cardFlash;
     BOOL _emitting;
-    MSIMETypingEffectStyle _drawnStyle;
+    LINGYAOTypingEffectStyle _drawnStyle;
 }
 
 + (instancetype)sharedPanel {
-    static MSIMETypingEffectPanel *panel;
+    static LINGYAOTypingEffectPanel *panel;
     static dispatch_once_t once;
     dispatch_once(&once, ^{ panel = [[self alloc] init]; });
     return panel;
@@ -236,7 +236,7 @@ NSColor *MSIMETypingEffectColor(id value) {
     id listed = settings[@"colors"];
     if ([listed isKindOfClass:NSArray.class])
         for (id value in listed)
-            if (NSColor *color = MSIMETypingEffectColor(value)) [colors addObject:color];
+            if (NSColor *color = LINGYAOTypingEffectColor(value)) [colors addObject:color];
     _effectColors = [colors copy];
     id duration = settings[@"duration_ms"];
     if ([duration isKindOfClass:NSNumber.class]) _effectDuration = Clamp([duration doubleValue], 60, 1500) / 1000.0;
@@ -250,7 +250,7 @@ NSColor *MSIMETypingEffectColor(id value) {
 - (NSTimeInterval)effectDuration { return _effectDuration; }
 - (NSInteger)effectParticles { return _effectParticles; }
 - (BOOL)emitting { return _emitting; }
-- (MSIMETypingEffectStyle)drawnStyle { return _drawnStyle; }
+- (LINGYAOTypingEffectStyle)drawnStyle { return _drawnStyle; }
 - (NSString *)displayedCombo { return self.isVisible && !_badge.hidden ? (NSString *)_badgeText.string : nil; }
 
 - (void)presentEffect:(uint32_t)packed
@@ -277,14 +277,14 @@ NSColor *MSIMETypingEffectColor(id value) {
          cornerRadius:(CGFloat)cornerRadius
          reduceMotion:(BOOL)reduceMotion
              lowPower:(BOOL)lowPower {
-    const MSIMETypingEffect effect = MSIMETypingEffectDecode(packed);
-    const MSIMETypingEffectStyle style = MSIMETypingEffectDrawnStyle(effect.style, reduceMotion, lowPower);
-    NSString *combo = MSIMETypingEffectComboText(effect.combo);
+    const LINGYAOTypingEffect effect = LINGYAOTypingEffectDecode(packed);
+    const LINGYAOTypingEffectStyle style = LINGYAOTypingEffectDrawnStyle(effect.style, reduceMotion, lowPower);
+    NSString *combo = LINGYAOTypingEffectComboText(effect.combo);
     _drawnStyle = style;
     NSWindow *candidateWindow = candidateView.window;
     const BOOL card = candidateWindow != nil && candidateWindow.isVisible && UsableRect(cardRect);
     const BOOL caret = UsableRect(caretRect);
-    if (style == MSIMETypingEffectStyleOff && combo == nil) {
+    if (style == LINGYAOTypingEffectStyleOff && combo == nil) {
         // A backspace or an idle pause ended the combo: take the badge down now rather than leave a stale count.
         if (!_badge.hidden) [self settle];
         return;
@@ -342,8 +342,8 @@ NSColor *MSIMETypingEffectColor(id value) {
     _emitter.frame = _root.bounds;
 
     // A pack that asks for no particles draws its sparks style without sparks.
-    const BOOL sparks = (style == MSIMETypingEffectStyleSparks || style == MSIMETypingEffectStylePowerMode) && _effectParticles != 0;
-    const BOOL power = style == MSIMETypingEffectStylePowerMode;
+    const BOOL sparks = (style == LINGYAOTypingEffectStyleSparks || style == LINGYAOTypingEffectStylePowerMode) && _effectParticles != 0;
+    const BOOL power = style == LINGYAOTypingEffectStylePowerMode;
     if (sparks) {
         const CGFloat burst = (power ? 2.0 : 1.0) * (commit ? 2.0 : 1.0);
         // A pack's particle count is the sparks of one key's burst, so the birth rate spreads them over the burst.
@@ -380,7 +380,7 @@ NSColor *MSIMETypingEffectColor(id value) {
         [_badge addAnimation:bounce forKey:@"bounce"];
     }
 
-    const BOOL flash = style == MSIMETypingEffectStyleFlash || power;
+    const BOOL flash = style == LINGYAOTypingEffectStyleFlash || power;
     const NSTimeInterval flashDuration = _effectDuration > 0 ? _effectDuration : (commit ? kCommitFlash : kKeyFlash);
     const float peak = (float)((commit ? 0.32 : 0.2) * strength);
     if (flash && card) {
@@ -403,7 +403,7 @@ NSColor *MSIMETypingEffectColor(id value) {
     }
 
     if (sparks || combo != nil || (flash && !card)) [self orderFrontRegardless];
-    __weak MSIMETypingEffectPanel *weakSelf = self;
+    __weak LINGYAOTypingEffectPanel *weakSelf = self;
     if (sparks) {
         _burstTimer = [NSTimer scheduledTimerWithTimeInterval:commit ? kCommitBurst : kKeyBurst repeats:NO block:^(NSTimer *timer) {
             (void)timer;
@@ -419,14 +419,14 @@ NSColor *MSIMETypingEffectColor(id value) {
 }
 
 - (void)flashCard:(NSView *)candidateView rect:(NSRect)cardRect cornerRadius:(CGFloat)cornerRadius color:(CGColorRef)color peak:(float)peak duration:(NSTimeInterval)duration {
-    MSIMETypingEffectFlashView *flash = _cardFlash;
+    LINGYAOTypingEffectFlashView *flash = _cardFlash;
     if (flash.superview != candidateView) {
         // The candidate window rebuilds its content on a full render, so the overlay is found again rather than kept.
         flash = nil;
         for (NSView *subview in candidateView.subviews)
-            if ([subview isKindOfClass:MSIMETypingEffectFlashView.class]) flash = (MSIMETypingEffectFlashView *)subview;
+            if ([subview isKindOfClass:LINGYAOTypingEffectFlashView.class]) flash = (LINGYAOTypingEffectFlashView *)subview;
         if (flash == nil) {
-            flash = [[MSIMETypingEffectFlashView alloc] initWithFrame:cardRect];
+            flash = [[LINGYAOTypingEffectFlashView alloc] initWithFrame:cardRect];
             flash.identifier = kFlashIdentifier;
             flash.wantsLayer = YES;
         }
@@ -479,7 +479,7 @@ NSColor *MSIMETypingEffectColor(id value) {
     [_caretFlash removeAllAnimations];
     _caretFlash.opacity = 0;
     [CATransaction commit];
-    MSIMETypingEffectFlashView *flash = _cardFlash;
+    LINGYAOTypingEffectFlashView *flash = _cardFlash;
     [flash removeFromSuperview];
     _cardFlash = nil;
     [self orderOut:nil];

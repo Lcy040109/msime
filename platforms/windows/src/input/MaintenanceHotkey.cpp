@@ -1,6 +1,6 @@
 #include "MaintenanceHotkey.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 MaintenanceHotkeyController *MaintenanceHotkeyController::instance_ = nullptr;
 
 MaintenanceHotkeyController::MaintenanceHotkeyController(Handler handler,
@@ -86,4 +86,4 @@ LRESULT CALLBACK MaintenanceHotkeyController::keyboard_proc(int code,
     return 1;
   return CallNextHookEx(nullptr, code, wparam, lparam);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

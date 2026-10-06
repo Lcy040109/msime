@@ -1,4 +1,4 @@
-import app.msime.android.WubiCodeHintPolicy;
+import app.lingyao.android.WubiCodeHintPolicy;
 
 public final class WubiCodeHintPolicySmoke {
     private static void check(boolean condition, String message) {

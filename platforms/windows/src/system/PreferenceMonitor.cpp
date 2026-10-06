@@ -1,7 +1,7 @@
 #include "PreferenceMonitor.h"
 #include <filesystem>
 
-namespace msime::windows {
+namespace lingyao::windows {
 PreferenceMonitor::PreferenceMonitor(InputQueue &input, std::string directory,
                                      std::chrono::milliseconds interval,
                                      Published published)
@@ -99,4 +99,4 @@ void PreferenceMonitor::run() {
   }
   status_ = PreferenceMonitorStatus::Stopped;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -1,6 +1,6 @@
 //! Local message-pipe adapter. One worker owns its handles and drains cancelled
 //! overlapped I/O before releasing buffers; no recognition text is logged.
-use msime_client_core::voice::controller::{self as protocol, Error, Transport, Update};
+use lingyao_client_core::voice::controller::{self as protocol, Error, Transport, Update};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use windows_sys::Win32::Foundation::*;
@@ -16,7 +16,7 @@ const PIPE_BASE_NAME: &str = "FanyImeVoiceControlNamedPipe";
 
 /// 本安装包所属版本的 Server 的语音控制管道（full 是 `\\.\pipe\FanyImeVoiceControlNamedPipe`，其他版本带 `.<id>` 后缀）。安装包的版本声明坏了时为 `None`：不能去连 full 的 Server。
 pub fn pipe_name() -> Option<String> {
-    msime_client_core::edition::Edition::windows_package_identity()
+    lingyao_client_core::edition::Edition::windows_package_identity()
         .ok()
         .map(|identity| identity.pipe_name(PIPE_BASE_NAME))
 }

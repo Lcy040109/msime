@@ -129,7 +129,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testTouchSchemeWritesCanonicalEngineAndPresentationMapping() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-touch-scheme-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-touch-scheme-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
@@ -147,7 +147,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testKeyboardThemeWritesCanonicalPreference() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-touch-skin-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-touch-skin-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
@@ -168,7 +168,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testTraditionalOutputWritesCanonicalPreference() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-traditional-output-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-traditional-output-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
@@ -179,7 +179,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testFuzzyPreferencesWaitForIdleAndSurviveSchemeRebuild() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-fuzzy-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-fuzzy-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setFuzzyPinyinRules(1))
@@ -641,7 +641,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testTouchGeometryWritesAndResetsCanonicalPreferences() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-touch-geometry-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-touch-geometry-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
@@ -1371,7 +1371,7 @@ final class NineKeyKeyboardTests: XCTestCase {
       for scheme in ChineseInputScheme.allCases
       where scheme != .handwriting && scheme != .japaneseNineKey {
         InputSchemePreference.scheme = scheme
-        // 笔画和注音只在测试宿主带了 msime-stroke.db、msime-zhuyin.db 时才能选上（CI 不带）；没带时上面的赋值落到别的方案，那个方案已经单独测过。
+        // 笔画和注音只在测试宿主带了 lingyao-stroke.db、lingyao-zhuyin.db 时才能选上（CI 不带）；没带时上面的赋值落到别的方案，那个方案已经单独测过。
         if [.stroke, .zhuyin].contains(scheme) && InputSchemePreference.scheme != scheme { continue }
         // 韩语方案在候选栏里常留一行训音（2758a0ebc，#2615），键盘为这一行长高而不是从按键里扣，所以视图要按方案自己要的高度给，按键才保持九键高度。
         let keyboardHeight = 260 + KeyboardViewController.stripExtraHeight(
@@ -1610,7 +1610,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   func testSuspendReleasesDictionaryAccessAndResumeStillConverts() throws {
     // 用自己的状态目录。默认目录是模拟器里各用例共用的偏好文档，前面的用例经由键盘选过的方案（比如五笔）会留在里面，这里的全拼输入就得不到「你好」。
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-suspend-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-suspend-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     var snapshot = bridge.cancel()
@@ -1674,7 +1674,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   // session on 26 keys no matter what the user had picked, and only the live session knew better.
   func testTouchSchemeReachesTheDocumentTheNextSessionIsCreatedFrom() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-scheme-persist-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-scheme-persist-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     var first: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(try XCTUnwrap(first).setTouchKeyboardScheme(
@@ -1694,7 +1694,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   // over the choice the user had just made, and a new session never saw the choice at all.
   func testKeyboardSideSelectionsReachTheSharedDocument() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-selection-persist-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-selection-persist-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     var first: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(stateRoot: state)
     let bridge = try XCTUnwrap(first)
@@ -1722,7 +1722,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   // the two values this host sets for itself along with them.
   func testSharedPreferenceReloadKeepsTheHostSessionContract() async throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-reload-overrides-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-reload-overrides-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setTouchKeyboardScheme(.nineKey, enabledSchemes: [.quanpin, .nineKey]))
@@ -1808,7 +1808,7 @@ final class NineKeyKeyboardTests: XCTestCase {
 
   func testAdditionalEngineSchemesAndLocalProviders() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-schemes-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-schemes-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToWubi()
@@ -1836,7 +1836,7 @@ final class NineKeyKeyboardTests: XCTestCase {
       XCTAssertFalse(snapshot.candidates.isEmpty, "Provider \(trigger)")
       // Temporary English completes what was typed. This used to ask for more than one answer,
       // which counted rows in the pinned dictionary rather than describing the product: the
-      // release `msime-english.db` now holds exactly one word beginning with "hello", so the count
+      // release `lingyao-english.db` now holds exactly one word beginning with "hello", so the count
       // moved while the behaviour did not.
       if trigger == "Y" {
         XCTAssertTrue(snapshot.candidates.contains { $0.lowercased().hasPrefix(input) },

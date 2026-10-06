@@ -26,7 +26,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 MACOS = ROOT / "platforms/macos"
 TEMPLATE = MACOS / "Info.plist.in"
 LOCALES = ["zh-Hans", "en"]
-CASK = MACOS / "homebrew/msime.rb.in"
+CASK = MACOS / "homebrew/lingyao.rb.in"
 MODE_HEADER = MACOS / "src/input/InputModeIdentifiers.h"
 NAMES_CHECK = MACOS / "tests/settings/info_plist_names.py"
 # 默认方案是这些语言方案的版本，在系统里登记在这个语言下。
@@ -93,23 +93,23 @@ def check_edition(errors: list[str], generator, table: dict, entry: dict, others
         expected.update({
             "CFBundleDisplayName": entry["display_name"]["zh-Hans"],
             "CFBundleName": entry["display_name"]["en"],
-            "MSIMEEdition": edition_id,
-            "MSIMEInputSchemes": entry["input_schemes"],
-            "MSIMEDefaultScheme": entry["default_scheme"],
-            "MSIMESettingsBundleIdentifier": macos["settings_bundle_id"],
-            "MSIMEKeychainService": macos["keychain_service"],
+            "LINGYAOEdition": edition_id,
+            "LINGYAOInputSchemes": entry["input_schemes"],
+            "LINGYAODefaultScheme": entry["default_scheme"],
+            "LINGYAOSettingsBundleIdentifier": macos["settings_bundle_id"],
+            "LINGYAOKeychainService": macos["keychain_service"],
         })
         mixed = entry["preference_defaults"].get("wubi_mixed_pinyin")
         if mixed is not None:
-            expected["MSIMEWubiMixedPinyinDefault"] = mixed
+            expected["LINGYAOWubiMixedPinyinDefault"] = mixed
         if not entry["features"]["handwriting"]:
-            expected["MSIMEHandwriting"] = False
-        elif "MSIMEHandwriting" in plist:
-            errors.append(f"{where}: an edition with handwriting must not declare MSIMEHandwriting")
+            expected["LINGYAOHandwriting"] = False
+        elif "LINGYAOHandwriting" in plist:
+            errors.append(f"{where}: an edition with handwriting must not declare LINGYAOHandwriting")
     for key, value in expected.items():
         if plist.get(key) != value:
             errors.append(f"{where}: {key} is {plist.get(key)!r}, expected {value!r}")
-    if edition_id == "full" and any(key.startswith("MSIME") for key in plist):
+    if edition_id == "full" and any(key.startswith("LINGYAO") for key in plist):
         errors.append(f"{where}: the full Info.plist must not declare an edition")
 
     plan = generator.mode_plan(entry)
@@ -174,8 +174,8 @@ def check_edition(errors: list[str], generator, table: dict, entry: dict, others
         cask = generator.cask(CASK.read_text(encoding="utf-8"), edition_id, "1.2.3", "0" * 64)
         if f'cask "{macos["cask"]}"' not in cask or f"/{macos['dmg_prefix']}-#{{version}}-universal.dmg" not in cask:
             errors.append(f"{where}: the cask does not name {macos['cask']} and {macos['dmg_prefix']}")
-        if "msime-mcp" in cask:
-            errors.append(f"{where}: only the full cask puts msime-mcp on PATH")
+        if "lingyao-mcp" in cask:
+            errors.append(f"{where}: only the full cask puts lingyao-mcp on PATH")
         for other in others:
             if other != bundle and other in cask:
                 errors.append(f"{where}: the cask mentions {other}, another edition's bundle id")
@@ -184,7 +184,7 @@ def check_edition(errors: list[str], generator, table: dict, entry: dict, others
 def check_mode_suffixes(errors: list[str], generator) -> None:
     header = MODE_HEADER.read_text(encoding="utf-8")
     for suffix in set(generator.SCHEME_MODES.values()) | {generator.ENGLISH}:
-        if f'MSIMEInputModeIdentifier(@"{suffix}")' not in header:
+        if f'LINGYAOInputModeIdentifier(@"{suffix}")' not in header:
             errors.append(f"{MODE_HEADER.relative_to(ROOT)} has no mode for the suffix {suffix} the generator uses")
 
 

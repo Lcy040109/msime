@@ -4,10 +4,10 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 
-// Omarchy starts fcitx5 with --disable notificationitem, so the tray that would show MSIME's 中/英 label and menu never appears. This widget reads the status the addon publishes (src/core/InputStatus.h) and stands in for both.
+// Omarchy starts fcitx5 with --disable notificationitem, so the tray that would show LINGYAO's 中/英 label and menu never appears. This widget reads the status the addon publishes (src/core/InputStatus.h) and stands in for both.
 BarWidget {
   id: root
-  moduleName: "lingyao.msime"
+  moduleName: "lingyao.lingyao"
 
   readonly property var schemeNames: ({ quanpin: "全拼", shuangpin: "双拼", wubi: "五笔", cantonese: "粤拼", zhuyin: "注音", japanese: "日文", korean: "韩文", vietnamese: "越南文", tibetan: "藏文", stroke: "笔画" })
   property bool active: false
@@ -40,7 +40,7 @@ BarWidget {
 
   FileView {
     id: statusFile
-    path: Quickshell.env("XDG_RUNTIME_DIR") + "/msime-client/input-status.json"
+    path: Quickshell.env("XDG_RUNTIME_DIR") + "/lingyao-client/input-status.json"
     printErrors: false
     onLoaded: root.apply(text())
     onLoadFailed: root.apply("")
@@ -70,8 +70,8 @@ BarWidget {
     horizontalMargin: 6
     tooltipText: "灵耀输入法" + (root.scheme ? " · " + (root.schemeNames[root.scheme] || root.scheme) : "")
     onPressed: function(pressed) {
-      if (pressed === Qt.MiddleButton) root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings"))
-      else root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_DATADIR@/msime-client/omarchy/menu"))
+      if (pressed === Qt.MiddleButton) root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_BINDIR@/lingyao-linux-settings"))
+      else root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_DATADIR@/lingyao-client/omarchy/menu"))
     }
   }
 }

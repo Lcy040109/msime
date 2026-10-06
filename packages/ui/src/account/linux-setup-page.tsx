@@ -46,7 +46,7 @@ export function LinuxSetupPage({
   const [lines, setLines] = useState<LinuxSetupLine[]>([]);
   const log = useRef<HTMLPreElement>(null);
   const { busy, run } = useAsyncActionRunner(setError, undefined, client);
-  const directory = status.stateDirectory ?? "~/.config/msime-client";
+  const directory = status.stateDirectory ?? "~/.config/lingyao-client";
   const blocked = !status.setupAvailable
     ? linuxSetupFailureMessage({ code: "setup_unavailable" })
     : status.directoryOccupied
@@ -82,7 +82,7 @@ export function LinuxSetupPage({
       data-platform="linux"
     >
       <header className={onboarding.header}>
-        <img src={new URL("./assets/msime.svg", import.meta.url).href} alt="" />
+        <img src={new URL("./assets/lingyao.svg", import.meta.url).href} alt="" />
         <h1>灵耀输入法</h1>
       </header>
       <div className={onboarding.body}>
@@ -132,7 +132,7 @@ export function LinuxSetupPage({
             </pre>
           )}
           <p className={onboarding.note}>
-            也可以在终端运行 msime-linux-setup
+            也可以在终端运行 lingyao-linux-setup
             完成同样的配置；配置文件、凭据和学习数据只保存在本机。
           </p>
         </section>

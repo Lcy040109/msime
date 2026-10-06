@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Translate the stored preferences into PreviewConfig's appearance block.
 //
 // Every field is optional on purpose. PreviewConfig validates hard - a font size outside 8..48 or an unprintable font name throws - and that validation runs on the production launch path, so copying a bad stored value straight through would turn a cosmetic preference into a Server that refuses to start. A value that would not survive validation is left out instead, and the built-in default stands in for it.
@@ -114,4 +114,4 @@ inline std::string tsf_preedit_style(const nlohmann::json &preferences) {
   const auto style = preferences.at("tsf_preedit_style").get<std::string>();
   return style == "pinyin" || style == "empty" ? style : "local";
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

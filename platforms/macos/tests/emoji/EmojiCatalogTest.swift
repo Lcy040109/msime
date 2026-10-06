@@ -1,6 +1,6 @@
 import Foundation
 
-@objc(MSIMEClientSession) final class StubEmojiSession: NSObject {
+@objc(LINGYAOClientSession) final class StubEmojiSession: NSObject {
   static var lastRequest: NSDictionary = [:]
   static var groups: Any = ["Z", "A"]
   static var symbolGroups: Any = [["parent": "P1", "title": "Shared"], ["parent": "P2", "title": "Shared"], ["parent": "P1", "title": "Other"]]
@@ -40,7 +40,7 @@ import Foundation
     defer { try? FileManager.default.removeItem(at: directory) }
     do { _ = try MacEmojiCatalog.load(resources: directory.path, search: ""); assertionFailure("accepted missing resource") }
     catch {}
-    try Data().write(to: directory.appendingPathComponent("msime-others.db"))
+    try Data().write(to: directory.appendingPathComponent("lingyao-others.db"))
     for category in ["", "kaomoji", "symbols"] {
       let loaded = try MacEmojiCatalog.load(resources: directory.path, search: "synthetic-keyword", category: category)
       assert(loaded.count == 1)
@@ -80,7 +80,7 @@ import Foundation
 
 extension EmojiCatalogTest {
   static func pluginChecks() throws {
-    // 插件组不依赖 msime-others.db：这个目录里没有 msime-others.db。
+    // 插件组不依赖 lingyao-others.db：这个目录里没有 lingyao-others.db。
     let resources = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).path
     let plugins = "/synthetic/preferences/plugins"
     let groups = try MacEmojiCatalog.loadPluginSymbolGroups(resources: resources, plugins: plugins)

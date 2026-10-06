@@ -9,7 +9,7 @@ import {
   settingsCapabilities,
   type HostPlatform,
   type Preferences,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import {
   candidateFontPresetAvailable,
   candidateFontPresetPatch,
@@ -294,8 +294,8 @@ test("the window style values are bounded like the core's validation", () => {
 
 test("the preview style carries the scale, the opacity and a set radius only", () => {
   expect(candidateWindowStyle({})).toEqual({
-    "--msime-candidate-scale": "1",
-    "--msime-candidate-opacity": "100%",
+    "--lingyao-candidate-scale": "1",
+    "--lingyao-candidate-opacity": "100%",
   });
   expect(
     candidateWindowStyle({
@@ -304,10 +304,10 @@ test("the preview style carries the scale, the opacity and a set radius only", (
       candidate_corner_radius: 0,
     }),
   ).toEqual({
-    "--msime-candidate-scale": "1.25",
-    "--msime-candidate-opacity": "70%",
-    "--msime-skin-radius": "0px",
-    "--msime-candidate-user-radius": "0px",
+    "--lingyao-candidate-scale": "1.25",
+    "--lingyao-candidate-opacity": "70%",
+    "--lingyao-skin-radius": "0px",
+    "--lingyao-candidate-user-radius": "0px",
   });
 });
 

@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { runAsyncAction } from "@msime/ui";
+import { runAsyncAction } from "@lingyao/ui";
 
 test("runs a current action and clears its optional notice", async () => {
   const setBusy = vi.fn();

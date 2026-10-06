@@ -11,8 +11,8 @@
 //!
 //! usage: local_modes <verified-dictionary-directory>
 
-use msime_engine::host::{prepare_options, Session};
-use msime_input_runtime::{Action, Runtime};
+use lingyao_engine::host::{prepare_options, Session};
+use lingyao_input_runtime::{Action, Runtime};
 
 fn shift(runtime: &mut Runtime<Session>, value: u8) -> Result<(), Box<dyn std::error::Error>> {
     runtime.dispatch(Action::Character { value, shift: true })?;
@@ -43,7 +43,7 @@ fn candidates(runtime: &Runtime<Session>) -> Vec<String> {
 
 /// Enter a mode, type its example, and hand back what the panel offers.
 fn offer(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     mode: u8,
     input: &str,
 ) -> Result<(String, Vec<String>), Box<dyn std::error::Error>> {

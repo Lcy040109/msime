@@ -1,4 +1,4 @@
-import app.msime.android.SymbolPanelModel;
+import app.lingyao.android.SymbolPanelModel;
 
 public final class SymbolPanelModelSmoke {
     public static void main(String[] args) {

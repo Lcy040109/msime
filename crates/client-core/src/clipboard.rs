@@ -397,10 +397,10 @@ mod tests {
     // Invoked by separate test processes below; no real clipboard data involved.
     #[test]
     fn process_writer() {
-        let Some(path) = std::env::var_os("MSIME_TEST_CLIPBOARD_TRANSACTION_PATH") else {
+        let Some(path) = std::env::var_os("LINGYAO_TEST_CLIPBOARD_TRANSACTION_PATH") else {
             return;
         };
-        let id = std::env::var("MSIME_TEST_CLIPBOARD_TRANSACTION_ID").unwrap();
+        let id = std::env::var("LINGYAO_TEST_CLIPBOARD_TRANSACTION_ID").unwrap();
         let mut store = ClipboardHistoryStore::open(path);
         for index in 0..8 {
             store.push(format!("synthetic-{id}-{index}")).unwrap();
@@ -416,8 +416,8 @@ mod tests {
             .map(|id| {
                 std::process::Command::new(&executable)
                     .args(["--exact", "clipboard::tests::process_writer"])
-                    .env("MSIME_TEST_CLIPBOARD_TRANSACTION_PATH", &path)
-                    .env("MSIME_TEST_CLIPBOARD_TRANSACTION_ID", id.to_string())
+                    .env("LINGYAO_TEST_CLIPBOARD_TRANSACTION_PATH", &path)
+                    .env("LINGYAO_TEST_CLIPBOARD_TRANSACTION_ID", id.to_string())
                     .stdout(std::process::Stdio::null())
                     .stderr(std::process::Stdio::null())
                     .spawn()

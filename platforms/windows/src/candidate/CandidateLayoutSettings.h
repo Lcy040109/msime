@@ -3,7 +3,7 @@
 #include <optional>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct CandidateLayoutSettings {
   bool horizontal = false;
   bool show_preedit = true;
@@ -39,4 +39,4 @@ candidate_layout_settings(const nlohmann::json &preferences) {
     return std::nullopt;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

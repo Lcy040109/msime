@@ -1,4 +1,4 @@
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #include <cassert>
 
 int main() {
@@ -11,7 +11,7 @@ int main() {
             options[name] = path;
         }
         NSError *error = nil;
-        MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+        LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
         assert(session && !error);
         uint64_t first = [[session startVoiceWithError:&error][@"generation"] unsignedLongLongValue];
         assert(first > 0 && !error);

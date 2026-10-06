@@ -197,8 +197,8 @@ fn local_recognition_stores_an_absolute_model_path_and_refuses_anything_else() {
     // A Windows path is absolute too: the Windows host saves one, and the same document is validated wherever it is read.
     for accepted in [
         "",
-        "/Users/someone/Library/Application Support/msime/voice-models/x-asr-zh-en-streaming",
-        r"C:\Users\someone\AppData\Roaming\msime\voice-models\sense-voice-small",
+        "/Users/someone/Library/Application Support/lingyao/voice-models/x-asr-zh-en-streaming",
+        r"C:\Users\someone\AppData\Roaming\lingyao\voice-models\sense-voice-small",
         "D:/models/sense-voice-small",
         r"\\?\C:\models\x-asr-zh-en-streaming",
         r"\\fileserver\share\models\fun-asr-nano",

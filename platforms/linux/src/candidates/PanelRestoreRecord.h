@@ -15,11 +15,11 @@
 #include "AtomicWrite.h"
 #include "../core/LinuxEdition.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// Windows draws its candidate window itself, so nothing MSIME styles there belongs to anyone else, and its uninstaller removes every trace of MSIME. Neither Linux host draws the list: the panel font, theme and wheel paging they write (Fcitx5's classicui options Theme, DarkTheme, Font and WheelForPaging, the IBus panel's custom-font and use-custom-font) are desktop settings every input method shares. So before a host first changes one, it records the value it replaces and the value it wrote, and msime-linux-setup --unregister puts the replaced value back while the setting still holds MSIME's. The record is $XDG_STATE_HOME/msime-client/panel-restore.json, shaped {"<host>": {"<key>": {"prior": <value>, "written": <value>}}}; a null prior is a setting the user never set, which uninstall resets rather than sets.
+// Windows draws its candidate window itself, so nothing LINGYAO styles there belongs to anyone else, and its uninstaller removes every trace of LINGYAO. Neither Linux host draws the list: the panel font, theme and wheel paging they write (Fcitx5's classicui options Theme, DarkTheme, Font and WheelForPaging, the IBus panel's custom-font and use-custom-font) are desktop settings every input method shares. So before a host first changes one, it records the value it replaces and the value it wrote, and lingyao-linux-setup --unregister puts the replaced value back while the setting still holds LINGYAO's. The record is $XDG_STATE_HOME/lingyao-client/panel-restore.json, shaped {"<host>": {"<key>": {"prior": <value>, "written": <value>}}}; a null prior is a setting the user never set, which uninstall resets rather than sets.
 // 记录按版本分开（$XDG_STATE_HOME/<client_directory>）：每个版本的卸载只放回它自己接管之前的值。
-inline constexpr std::string_view kPanelRestoreFile = MSIME_EDITION_CLIENT_DIRECTORY "/panel-restore.json";
+inline constexpr std::string_view kPanelRestoreFile = LINGYAO_EDITION_CLIENT_DIRECTORY "/panel-restore.json";
 inline constexpr std::size_t kPanelRestoreMaxBytes = 64 * 1024;
 
 inline std::optional<nlohmann::json> read_panel_restore(const std::filesystem::path &file) {
@@ -38,7 +38,7 @@ inline std::optional<nlohmann::json> read_panel_restore(const std::filesystem::p
   return parsed.is_object() ? std::optional<nlohmann::json>(std::move(parsed)) : std::nullopt;
 }
 
-// A relative XDG value is ignored, as the specification requires; msime-linux-setup resolves the same path.
+// A relative XDG value is ignored, as the specification requires; lingyao-linux-setup resolves the same path.
 inline std::optional<std::filesystem::path> panel_restore_file(const char *xdg_state_home, const char *home) {
   if (xdg_state_home && std::filesystem::path(xdg_state_home).is_absolute())
     return std::filesystem::path(xdg_state_home) / kPanelRestoreFile;
@@ -47,7 +47,7 @@ inline std::optional<std::filesystem::path> panel_restore_file(const char *xdg_s
   return std::nullopt;
 }
 
-// The entry after `key` changes from `current` to `written`. The first change keeps `restore` as the value to put back: `current` itself, unless the setting already holds MSIME's own value (written by a build that kept no record, or after the record was lost), in which case the host passes the value MSIME's stands in for, since uninstall removes what MSIME's names. A later change keeps the recorded one while the setting still holds what MSIME last wrote; when it holds something else the user changed it in between, and their value is the one to go back to.
+// The entry after `key` changes from `current` to `written`. The first change keeps `restore` as the value to put back: `current` itself, unless the setting already holds LINGYAO's own value (written by a build that kept no record, or after the record was lost), in which case the host passes the value LINGYAO's stands in for, since uninstall removes what LINGYAO's names. A later change keeps the recorded one while the setting still holds what LINGYAO last wrote; when it holds something else the user changed it in between, and their value is the one to go back to.
 inline nlohmann::json panel_takeover_entry(const nlohmann::json &recorded, const nlohmann::json &current,
                                            const nlohmann::json &written, const nlohmann::json &restore) {
   const bool kept = recorded.is_object() && recorded.contains("prior") && recorded.contains("written") &&
@@ -59,7 +59,7 @@ inline nlohmann::json panel_takeover_entry(const nlohmann::json &recorded, const
   return panel_takeover_entry(recorded, current, written, current);
 }
 
-// Records the change of `key` under `host` before the host makes it. The IBus and Fcitx5 hosts may both run, so the read-modify-write holds a lock beside the record and replaces the file atomically. msime-linux-setup --unregister takes the same lock and never removes its file, so every writer locks one inode. Returns whether the record now describes the change.
+// Records the change of `key` under `host` before the host makes it. The IBus and Fcitx5 hosts may both run, so the read-modify-write holds a lock beside the record and replaces the file atomically. lingyao-linux-setup --unregister takes the same lock and never removes its file, so every writer locks one inode. Returns whether the record now describes the change.
 inline bool record_panel_takeover(const std::filesystem::path &file, std::string_view host, std::string_view key,
                                   const nlohmann::json &current, const nlohmann::json &written,
                                   const nlohmann::json &restore) {
@@ -93,4 +93,4 @@ inline bool record_panel_takeover(const std::filesystem::path &file, std::string
   return record_panel_takeover(file, host, key, current, written, current);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

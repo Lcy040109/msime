@@ -74,7 +74,7 @@ def download(artifact: dict, destination: Path) -> None:
             temporary_path = Path(temporary.name)
             request = urllib.request.Request(
                 url,
-                headers={"User-Agent": "MSIME neural model fetch"},
+                headers={"User-Agent": "LINGYAO neural model fetch"},
             )
             with download_retry.urlopen(request, timeout=300) as response:
                 advertised = response.headers.get("Content-Length")

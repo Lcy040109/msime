@@ -10,11 +10,11 @@
 #include <cmath>
 #include <dwmapi.h>
 #include <windowsx.h>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
 namespace
 {
-constexpr wchar_t kClassName[] = L"MviWaveOverlayWindow" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t kClassName[] = L"MviWaveOverlayWindow" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr UINT_PTR kTimerId = 1;
 constexpr UINT kTimerMs = 16;
 constexpr UINT kTranscriptChangedMessage = WM_APP + 186;
@@ -121,7 +121,7 @@ bool WaveOverlay::init(HINSTANCE instance, std::function<void(Action)> action_ha
     // all - a DPI-unaware window never receives it.
     HWND created = nullptr;
     {
-        const msime::windows::WaveOverlayDpiScope dpi_scope;
+        const lingyao::windows::WaveOverlayDpiScope dpi_scope;
         created = CreateWindowExW(                                               //
             WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE, //
             kClassName,                                                          //
@@ -191,9 +191,9 @@ void WaveOverlay::set_input_level(float level)
     input_level_.store(clamped);
 }
 
-void WaveOverlay::set_palette(const msime::windows::CandidatePalette &palette)
+void WaveOverlay::set_palette(const lingyao::windows::CandidatePalette &palette)
 {
-    const auto colors = msime::windows::voice_overlay_colors(palette);
+    const auto colors = lingyao::windows::voice_overlay_colors(palette);
     if (colors == colors_)
         return;
     colors_ = colors;
@@ -321,7 +321,7 @@ LRESULT WaveOverlay::handle_message(HWND hwnd, UINT message, WPARAM wParam, LPAR
         Action action{};
         if (hit_test_action(static_cast<float>(point.x) / scale_x_, static_cast<float>(point.y) / scale_y_, action))
         {
-            SetCursor(LoadCursorW(nullptr, msime::windows::wide_cursor(IDC_HAND)));
+            SetCursor(LoadCursorW(nullptr, lingyao::windows::wide_cursor(IDC_HAND)));
             return TRUE;
         }
         break;
@@ -416,7 +416,7 @@ bool WaveOverlay::ensure_render_target()
     update_dpi_scale();
     render_target_->SetDpi(static_cast<FLOAT>(dpi_), static_cast<FLOAT>(dpi_));
 
-    auto color = [](const msime::windows::CandidateColor &value, float opacity = 1.0f) {
+    auto color = [](const lingyao::windows::CandidateColor &value, float opacity = 1.0f) {
         return D2D1::ColorF(value.r, value.g, value.b, value.a * opacity);
     };
     // The panel keeps its own translucency over whatever surface the theme gives it.
@@ -525,8 +525,8 @@ bool WaveOverlay::ensure_text_layout(const std::wstring &transcript, float width
 
 void WaveOverlay::apply_dpi(UINT dpi)
 {
-    dpi_ = msime::windows::wave_overlay_dpi(dpi, 0);
-    scale_x_ = msime::windows::wave_overlay_scale(dpi_);
+    dpi_ = lingyao::windows::wave_overlay_dpi(dpi, 0);
+    scale_x_ = lingyao::windows::wave_overlay_scale(dpi_);
     scale_y_ = scale_x_;
 
     // The render target's DPI is what turns the logical coordinates draw() works
@@ -550,8 +550,8 @@ void WaveOverlay::update_dpi_scale()
     // GetDpiForWindow answers for wherever the window currently sits, which is
     // the previous monitor until the move has happened, and can still report a
     // stale value across a resolution switch.
-    msime::windows::WaveOverlayMonitorMetrics metrics;
-    if (!msime::windows::wave_overlay_monitor_metrics(&metrics))
+    lingyao::windows::WaveOverlayMonitorMetrics metrics;
+    if (!lingyao::windows::wave_overlay_monitor_metrics(&metrics))
     {
         return;
     }
@@ -565,9 +565,9 @@ void WaveOverlay::update_window_bounds()
     // One snapshot of one monitor for both the scale and the rectangle: a
     // second lookup could resolve a different monitor and size the bar for one
     // screen while placing it on another.
-    const msime::windows::WaveOverlayDpiScope dpi_scope;
-    msime::windows::WaveOverlayMonitorMetrics metrics;
-    if (!msime::windows::wave_overlay_monitor_metrics(&metrics))
+    const lingyao::windows::WaveOverlayDpiScope dpi_scope;
+    lingyao::windows::WaveOverlayMonitorMetrics metrics;
+    if (!lingyao::windows::wave_overlay_monitor_metrics(&metrics))
         return;
     apply_dpi(metrics.dpi);
     bool has_transcript = false;

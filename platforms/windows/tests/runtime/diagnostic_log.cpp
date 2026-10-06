@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value, const char *what) {
   if (!value)
@@ -22,7 +22,7 @@ int main() {
   wchar_t temp[MAX_PATH]{};
   require(GetTempPathW(MAX_PATH, temp) != 0, "temp path");
   const auto root = std::filesystem::path(temp) /
-                    (L"msime-diagnostic-log-" + std::to_wstring(GetCurrentProcessId()));
+                    (L"lingyao-diagnostic-log-" + std::to_wstring(GetCurrentProcessId()));
   std::filesystem::remove_all(root);
   const auto file = root / L"logs" / L"server.log";
   DiagnosticLog log(file);
@@ -65,7 +65,7 @@ int main() {
 
   std::filesystem::remove_all(root);
   const auto linked_root = std::filesystem::path(temp) /
-                           (L"msime-diagnostic-log-linked-" +
+                           (L"lingyao-diagnostic-log-linked-" +
                             std::to_wstring(GetCurrentProcessId()));
   const auto outside = linked_root / L"outside";
   std::filesystem::remove_all(linked_root);

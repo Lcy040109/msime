@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 /// Answers every request from a fixed table and records what was sent; the status, headers and body come from `reply`.
 private final class ModerationProtocol: URLProtocol {

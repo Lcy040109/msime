@@ -3,8 +3,8 @@ import XCTest
 final class KeyboardSkinTrialTests: XCTestCase {
   func testTrialRejectsASymlinkedSharedDirectoryBeforeWritingExternalFile() throws {
     #if canImport(Darwin)
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-trial-link-\(UUID().uuidString)")
-    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("msime-trial-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-trial-link-\(UUID().uuidString)")
+    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-trial-target-\(UUID().uuidString)")
     let suite = "trial-link-tests-\(UUID())"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer {

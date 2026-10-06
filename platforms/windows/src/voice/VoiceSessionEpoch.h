@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <mutex>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Serializes generation changes with externally visible completion effects.
 // Callbacks must not re-enter this gate or wait for capture/network workers.
 class VoiceSessionEpoch final {
@@ -26,4 +26,4 @@ private:
   std::atomic<uint64_t> value_{0};
   std::mutex mutex_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

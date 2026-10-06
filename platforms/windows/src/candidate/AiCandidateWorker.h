@@ -12,11 +12,11 @@
 #include <unordered_map>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Requests AI 联想 candidates away from the input queue.
 //
-// Everything below this worker already existed - msime_client_ai_http_request,
-// msime_client_parse_ai_response and msime_client_apply_online_candidates are
+// Everything below this worker already existed - lingyao_client_ai_http_request,
+// lingyao_client_parse_ai_response and lingyao_client_apply_online_candidates are
 // exported, and the online query already carries the resolved ai_assistant
 // config and an ai_eligible flag - but nothing on Windows ever called them, so
 // turning AI 辅助 on in settings changed nothing and no AI candidate appeared.
@@ -76,4 +76,4 @@ private:
   std::unordered_map<std::string, std::vector<std::string>> candidate_cache_;
   std::thread worker_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -8,7 +8,7 @@
 #include <windows.h>
 #endif
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 constexpr size_t max_store_bytes = 1024 * 1024;
 
@@ -279,4 +279,4 @@ bool ClipboardHistory::clear() {
   StoreLock lock(store_); if (!lock) return false;
   std::error_code error; return std::filesystem::remove(store_, error) || !std::filesystem::exists(store_);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

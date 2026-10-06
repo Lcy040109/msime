@@ -24,7 +24,7 @@ final class TouchToolbarPreferenceTests: XCTestCase {
 
   func testTheNativePageWritesTheWholeObjectTheSharedValidatorAccepts() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-toolbar-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-toolbar-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(TouchToolbarPreference.load(stateRoot: state), TouchToolbarPreference())

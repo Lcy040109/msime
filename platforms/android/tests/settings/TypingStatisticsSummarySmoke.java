@@ -1,7 +1,7 @@
-import app.msime.android.TypingStatisticsSummary;
-import app.msime.android.TypingStatisticsSummary.Achievement;
-import app.msime.android.TypingStatisticsSummary.PeakWindow;
-import app.msime.android.TypingStatisticsSummary.Share;
+import app.lingyao.android.TypingStatisticsSummary;
+import app.lingyao.android.TypingStatisticsSummary.Achievement;
+import app.lingyao.android.TypingStatisticsSummary.PeakWindow;
+import app.lingyao.android.TypingStatisticsSummary.Share;
 import java.util.List;
 import java.util.Map;
 

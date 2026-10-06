@@ -8,7 +8,7 @@ final class DiagnosticLogTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-diagnostic-log-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-diagnostic-log-\(UUID().uuidString)", isDirectory: true)
     try? FileManager.default.createDirectory(at: state, withIntermediateDirectories: true)
   }
 

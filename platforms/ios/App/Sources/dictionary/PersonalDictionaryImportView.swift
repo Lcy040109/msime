@@ -166,7 +166,7 @@ struct PersonalDictionaryImportView: View {
         } catch { self.error = error.localizedDescription }
       })
       .fileExporter(isPresented: $exporting, document: document, contentType: .json,
-                    defaultFilename: "msime-personal-dictionary-example") { result in
+                    defaultFilename: "lingyao-personal-dictionary-example") { result in
         if case .failure(let error) = result { self.error = error.localizedDescription }
       }
       .alert("导入个人词库", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {

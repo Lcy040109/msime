@@ -5,7 +5,7 @@
 #include <memory>
 #include <mutex>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // One object per capture. Workers retain that object, never a mutable pointer
 // to the next session. Polling copies a bounded snapshot; no callbacks run
 // here.
@@ -95,4 +95,4 @@ void deliver_voice_result(const std::shared_ptr<VoiceReviewResult> &review,
   else
     native_commit();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

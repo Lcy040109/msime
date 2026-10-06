@@ -7,7 +7,7 @@
 //!
 //! None of it is observable without real dictionaries: the emoji and kaomoji tables are what supply
 //! the candidates being ordered.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 const KEYS: &str = "haha";
 const ENGLISH: u8 = 4;

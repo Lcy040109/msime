@@ -10,7 +10,7 @@ BOOL TrashIfPresent(NSURL *url, NSString *what, NSError **error) {
     if ([[NSFileManager defaultManager] trashItemAtURL:url resultingItemURL:nil error:&failure]) return YES;
     if (error) {
         NSString *reason = failure.localizedDescription.length ? failure.localizedDescription : @"未知错误";
-        *error = [NSError errorWithDomain:@"MSIMEUninstall" code:1 userInfo:@{
+        *error = [NSError errorWithDomain:@"LINGYAOUninstall" code:1 userInfo:@{
             NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%@未能移到废纸篓：%@", what, reason]
         }];
     }
@@ -29,7 +29,7 @@ NSURL *PreferencesPlist(NSString *domain) {
 }
 }
 
-extern "C" bool msime_macos_uninstall_input_source(const char *bundle_path,
+extern "C" bool lingyao_macos_uninstall_input_source(const char *bundle_path,
                                                      const char *user_data_path,
                                                      const char *preferences_domain,
                                                      bool remove_user_data) {

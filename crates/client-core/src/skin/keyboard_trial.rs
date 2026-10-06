@@ -1,5 +1,5 @@
 //! Crash-recoverable touch-keyboard skin trials independent of any UI host.
-//! Source: MSIME-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
+//! Source: LINGYAO-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
 //! (`KeyboardSkinTrial.swift`, `KeyboardSkinTrialTests.swift`).
 
 use crate::file_lock;

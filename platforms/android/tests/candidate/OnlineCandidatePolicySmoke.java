@@ -1,4 +1,4 @@
-import app.msime.android.OnlineCandidatePolicy;
+import app.lingyao.android.OnlineCandidatePolicy;
 import java.util.Arrays;
 import java.util.List;
 import java.net.URL;

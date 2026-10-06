@@ -546,7 +546,7 @@ fn candidate_panel_limit_reads_only_what_the_host_reported() {
     assert_eq!(
         CandidatePanelLimit::status_file(Some(std::ffi::OsStr::new("/run/user/1000"))),
         Some(std::path::PathBuf::from(
-            "/run/user/1000/msime-client/candidate-panel.json"
+            "/run/user/1000/lingyao-client/candidate-panel.json"
         ))
     );
     assert_eq!(

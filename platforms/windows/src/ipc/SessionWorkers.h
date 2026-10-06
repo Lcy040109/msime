@@ -1,7 +1,7 @@
 #pragma once
 #include "SessionPump.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct SessionWorkerStats {
   size_t active = 0;
   size_t pending = 0;
@@ -50,4 +50,4 @@ private:
   std::vector<std::thread> workers_;
   SessionWorkerStats stats_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

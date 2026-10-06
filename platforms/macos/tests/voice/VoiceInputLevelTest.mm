@@ -4,7 +4,7 @@
 #include <vector>
 
 int main() {
-    using msime::voice::input_level;
+    using lingyao::voice::input_level;
     @autoreleasepool {
         float silence[] = {0, 0, 0, 0};
         float noise[] = {0.003f, -0.003f, 0.004f, -0.004f};
@@ -35,10 +35,10 @@ int main() {
                     }
                 }
                 const float reference[] = {0.03125f};
-                assert(std::fabs(MSIMEVoiceInputLevel(buffer) - input_level(reference, 1)) < 1e-6f);
-                buffer.frameLength = 0; assert(MSIMEVoiceInputLevel(buffer) == 0);
+                assert(std::fabs(LINGYAOVoiceInputLevel(buffer) - input_level(reference, 1)) < 1e-6f);
+                buffer.frameLength = 0; assert(LINGYAOVoiceInputLevel(buffer) == 0);
             }
         }
-        assert(MSIMEVoiceInputLevel(nil) == 0);
+        assert(LINGYAOVoiceInputLevel(nil) == 0);
     }
 }

@@ -1,6 +1,6 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
-import app.msime.android.KeyboardGeometry;
+import app.lingyao.android.KeyboardGeometry;
 import java.math.BigDecimal;
 import org.json.JSONObject;
 

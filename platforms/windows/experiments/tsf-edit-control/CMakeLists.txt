@@ -4,7 +4,7 @@ if(NOT WIN32)
   return()
 endif()
 
-project(MsimeTsfEditControl LANGUAGES CXX)
+project(LingyaoTsfEditControl LANGUAGES CXX)
 
 set(TSF_EDIT_CONTROL_SOURCES
     src/DisplayAttribute.cpp
@@ -17,25 +17,25 @@ set(TSF_EDIT_CONTROL_SOURCES
     src/TsfD2DTextBox.cpp
     src/TsfTextServices.cpp)
 
-add_library(msime-tsf-edit-control STATIC ${TSF_EDIT_CONTROL_SOURCES})
-target_include_directories(msime-tsf-edit-control
+add_library(lingyao-tsf-edit-control STATIC ${TSF_EDIT_CONTROL_SOURCES})
+target_include_directories(lingyao-tsf-edit-control
                            PUBLIC include
                            PRIVATE src ../../tsf/Header)
-target_compile_features(msime-tsf-edit-control PUBLIC cxx_std_17)
-target_compile_definitions(msime-tsf-edit-control PRIVATE UNICODE _UNICODE)
-target_compile_options(msime-tsf-edit-control PRIVATE
+target_compile_features(lingyao-tsf-edit-control PUBLIC cxx_std_17)
+target_compile_definitions(lingyao-tsf-edit-control PRIVATE UNICODE _UNICODE)
+target_compile_options(lingyao-tsf-edit-control PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX;/utf-8>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall;-Wextra>)
-target_link_libraries(msime-tsf-edit-control PUBLIC
+target_link_libraries(lingyao-tsf-edit-control PUBLIC
   d2d1 dwrite imm32 ole32 oleaut32 user32 gdi32)
 
-add_executable(msime-tsf-edit-control-demo WIN32 demo/TsfD2DTextBoxDemo.cpp)
-target_compile_features(msime-tsf-edit-control-demo PRIVATE cxx_std_17)
-target_compile_definitions(msime-tsf-edit-control-demo PRIVATE UNICODE _UNICODE)
-target_compile_options(msime-tsf-edit-control-demo PRIVATE
+add_executable(lingyao-tsf-edit-control-demo WIN32 demo/TsfD2DTextBoxDemo.cpp)
+target_compile_features(lingyao-tsf-edit-control-demo PRIVATE cxx_std_17)
+target_compile_definitions(lingyao-tsf-edit-control-demo PRIVATE UNICODE _UNICODE)
+target_compile_options(lingyao-tsf-edit-control-demo PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX;/utf-8>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall;-Wextra>)
 if(NOT MSVC)
-  target_link_options(msime-tsf-edit-control-demo PRIVATE -municode)
+  target_link_options(lingyao-tsf-edit-control-demo PRIVATE -municode)
 endif()
-target_link_libraries(msime-tsf-edit-control-demo PRIVATE msime-tsf-edit-control)
+target_link_libraries(lingyao-tsf-edit-control-demo PRIVATE lingyao-tsf-edit-control)

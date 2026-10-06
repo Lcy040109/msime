@@ -12,12 +12,12 @@ struct Request {
 }
 
 /// Build sensitive Doubao authentication headers, without making a request.
-/// Free the JSON response with `msime_client_string_free`; never log it.
+/// Free the JSON response with `lingyao_client_string_free`; never log it.
 ///
 /// # Safety
 /// `request` must point to `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_doubao_auth_headers(
+pub unsafe extern "C" fn lingyao_client_doubao_auth_headers(
     request: *const u8,
     length: usize,
 ) -> *mut std::ffi::c_char {
@@ -28,7 +28,7 @@ pub unsafe extern "C" fn msime_client_doubao_auth_headers(
         let request: Request =
             serde_json::from_slice(unsafe { std::slice::from_raw_parts(request, length) })
                 .map_err(|_| "invalid Doubao authentication request")?;
-        let headers = msime_client_core::credential::doubao_auth::headers(
+        let headers = lingyao_client_core::credential::doubao_auth::headers(
             &request.auth_mode,
             &request.app_id,
             &request.token,
@@ -50,7 +50,7 @@ mod tests {
         for mode in ["api_key", "legacy", ""] {
             let request = json!({"auth_mode":mode,"app_id":"synthetic-app", "token":"synthetic-token","resource_id":"fixture-resource"}).to_string();
             let result = unsafe {
-                read(msime_client_doubao_auth_headers(
+                read(lingyao_client_doubao_auth_headers(
                     request.as_ptr(),
                     request.len(),
                 ))
@@ -72,7 +72,7 @@ mod tests {
             br#"{"auth_mode":"invalid","token":"synthetic-token","resource_id":"resource"}"#,
         ] {
             let result = unsafe {
-                read(msime_client_doubao_auth_headers(
+                read(lingyao_client_doubao_auth_headers(
                     request.as_ptr(),
                     request.len(),
                 ))
@@ -81,11 +81,11 @@ mod tests {
             assert!(!result.to_string().contains("synthetic-token"));
         }
         assert_eq!(
-            unsafe { read(msime_client_doubao_auth_headers(std::ptr::null(), 0)) }["ok"],
+            unsafe { read(lingyao_client_doubao_auth_headers(std::ptr::null(), 0)) }["ok"],
             false
         );
         assert_eq!(
-            unsafe { read(msime_client_doubao_auth_headers(b"x".as_ptr(), 32769)) }["ok"],
+            unsafe { read(lingyao_client_doubao_auth_headers(b"x".as_ptr(), 32769)) }["ok"],
             false
         );
     }

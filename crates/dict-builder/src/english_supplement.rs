@@ -1,4 +1,4 @@
-//! `english-supplement`: generates msime-dictionary's `sources/english/scowl-words.txt`, the English words the rime-ice word lists lack, from SCOWL's official Aspell dictionary.
+//! `english-supplement`: generates lingyao-dictionary's `sources/english/scowl-words.txt`, the English words the rime-ice word lists lack, from SCOWL's official Aspell dictionary.
 //!
 //! The input is the Aspell English package en-wl/wordlist publishes with a dictionary release (`ARCHIVE` in the sources lock). Its word lists are SCOWL up to size 60, already expanded to every inflected form and stored in Aspell's prezip format; the generator reads them from the tar.bz2 directly, so it needs no SCOWL database build and no affix expansion. `LISTS` are the American dictionary (`en-common.cwl` plus `en_US-wo_accents-only.cwl`) and the British -ise spellings (`en_GB-ise-wo_accents-only.cwl`): many users learnt British spelling at school (colour, centre, organise), Google counts both spellings, so the counts already rank the American form first where both share a prefix. The Canadian and Australian lists and the variant lists are left out: Canadian adds little beyond the two, the Australian data carries its own terms, and SCOWL's variant lists are the uncommon spellings its default dictionaries leave out on purpose.
 //!
@@ -8,9 +8,9 @@
 //! - `COMPARED` already has its lowercase form in any casing, either as an entry or as an entry rime-ice commented out (`# huang huang`, `# ads ads`): the comments are rime-ice's own curation (romanised Chinese syllables and names that collide with pinyin, abbreviations, misspellings), and SCOWL must not bring those words back;
 //! - it is in `OFFENSIVE`, ethnic, racial and sexual-orientation slurs whose dictionary sense is mainly the slur: completion would offer them on ordinary prefixes and the Chinese-to-English glosses could pick them;
 //! - SCOWL lists it only capitalised and its lowercase form is the full pinyin of a word in `PINYIN` (Guangzhou, Zhejiang, Wang, Mandela): mixed input offers the first English completion of five or more typed letters in the second slot, so such names would take that slot whenever their pinyin is typed. Lowercase words of the same shape (dieting, shaman, bayou) stay, as rime-ice keeps its own (bang, change, tuna);
-//! - `COUNTS` has no count for it: such a word ranks after every counted word of its prefix, so it is reached only when nearly all of it has been typed, and the 20,000-odd of them (rare inflections such as retrenches, chanciness) would cost about a quarter of the supplement's size in `msime-english.db`, which ships inside the size-budgeted core dictionary.
+//! - `COUNTS` has no count for it: such a word ranks after every counted word of its prefix, so it is reached only when nearly all of it has been typed, and the 20,000-odd of them (rare inflections such as retrenches, chanciness) would cost about a quarter of the supplement's size in `lingyao-english.db`, which ships inside the size-budgeted core dictionary.
 //!
-//! SCOWL's terms ask for its copyright notice in every copy of a list made from it and in the supporting documentation, so the output header repeats the notice, the package's `Copyright` file has to match the committed `resources/licenses/scowl-aspell6-en-Copyright.txt` byte for byte, and the English stage stores that file in `msime-english.db`.
+//! SCOWL's terms ask for its copyright notice in every copy of a list made from it and in the supporting documentation, so the output header repeats the notice, the package's `Copyright` file has to match the committed `resources/licenses/scowl-aspell6-en-Copyright.txt` byte for byte, and the English stage stores that file in `lingyao-english.db`.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt::Write as _;
@@ -105,13 +105,13 @@ pub const OFFENSIVE: [&str; 55] = [
     "yid",
     "yids",
 ];
-/// The package's `Copyright` file, which also ships in msime as the licence text of these words.
+/// The package's `Copyright` file, which also ships in lingyao as the licence text of these words.
 pub const COPYRIGHT: &str =
     include_str!("../../../resources/licenses/scowl-aspell6-en-Copyright.txt");
-/// The `source` key the English stage stores `COPYRIGHT` under in `msime-english.db`.
+/// The `source` key the English stage stores `COPYRIGHT` under in `lingyao-english.db`.
 pub const NOTICE_SOURCE: &str = "SCOWL";
-/// The release file the English stage writes `COPYRIGHT` to, so SCOWL's notice travels in the supporting documentation beside `msime-english.db`.
-pub const NOTICE_NAME: &str = "msime-scowl_Copyright.txt";
+/// The release file the English stage writes `COPYRIGHT` to, so SCOWL's notice travels in the supporting documentation beside `lingyao-english.db`.
+pub const NOTICE_NAME: &str = "lingyao-scowl_Copyright.txt";
 
 /// The members of an uncompressed POSIX tar archive: regular files only, by path.
 fn tar_members(data: &[u8]) -> Result<BTreeMap<String, &[u8]>> {
@@ -455,7 +455,7 @@ pub struct Provenance<'a> {
     pub pinyin: &'a [(&'a str, &'a str)],
     /// The SHA-256 of `COUNTS`.
     pub counts_sha256: &'a str,
-    /// 运行生成器的 msime 提交；构建器有未提交改动时带 `-dirty` 后缀。
+    /// 运行生成器的 lingyao 提交；构建器有未提交改动时带 `-dirty` 后缀。
     pub generator_commit: &'a str,
 }
 
@@ -491,7 +491,7 @@ pub fn render(supplement: &Supplement, provenance: &Provenance) -> Result<String
     let counts_sha256 = provenance.counts_sha256;
     let offensive = OFFENSIVE.join("、");
     let mut out = String::new();
-    let _ = writeln!(out, "# SCOWL 英文词补充表，由 msime 仓库提交 {} 的 crates/dict-builder/src/english_supplement.rs 以 `msime-dict-build english-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out sources/english/scowl-words.txt` 生成；不要手工编辑。", provenance.generator_commit);
+    let _ = writeln!(out, "# SCOWL 英文词补充表，由 lingyao 仓库提交 {} 的 crates/dict-builder/src/english_supplement.rs 以 `lingyao-dict-build english-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out sources/english/scowl-words.txt` 生成；不要手工编辑。", provenance.generator_commit);
     let _ = writeln!(out, "# 上游：https://github.com/en-wl/wordlist 提交 {} 发布的 Aspell 英文词典 {}（SHA-256 {}），即 SCOWL 60 级的官方拼写检查词典；取其中 {}，也就是美式拼写词典加英式 -ise 拼写，不含加拿大、澳大利亚拼写和异体词表。", provenance.upstream_commit, provenance.archive_url, provenance.archive_sha256, LISTS.join("、"));
     for line in copyright_notice()? {
         let _ = writeln!(out, "# {line}");
@@ -716,7 +716,7 @@ mod tests {
         .unwrap();
         let first = rendered.lines().next().unwrap();
         assert!(
-            first.contains("msime 仓库提交 0123456789abcdef0123456789abcdef01234567"),
+            first.contains("lingyao 仓库提交 0123456789abcdef0123456789abcdef01234567"),
             "{first}"
         );
         assert!(!first.contains("dictionary-sources.lock.json"));

@@ -1,9 +1,9 @@
-package app.msime.android;
+package app.lingyao.android;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class AccountSessionRoutingSmoke {
-    private static final String PACKAGE = "app.msime.android";
+    private static final String PACKAGE = "app.lingyao.android";
     private static final String TOKEN = "e".repeat(64);
 
     public static void main(String[] args) throws Exception {

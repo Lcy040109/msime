@@ -6,7 +6,7 @@
 
 #include "ModeBadgeSurface.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // X11 会话下的徽章：一个 override-redirect 窗口，用 cairo-xlib 画，输入形状为空所以点击
 // 穿透。画法与 Wayland 后端共用 ModeBadgePainter.h。
@@ -35,4 +35,4 @@ class ModeBadgeX11Surface final : public ModeBadgeSurface {
   bool visible_ = false;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

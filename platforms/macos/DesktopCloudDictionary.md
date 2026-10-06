@@ -1,6 +1,6 @@
 # Native-account shared dictionary RPC
 
-The native cloud dictionary route launches the shared Tauri dictionary panel with `MSIME_CLIENT_CLOUD_DICTIONARY_SESSION`. The existing Swift account actor remains the only credential/refresh owner. The provider pins the account ID at launch and checks it before and after I/O. Credentials never cross IPC. Signed-out or failed launches return to the native account window, where the existing native tools remain.
+The native cloud dictionary route launches the shared Tauri dictionary panel with `LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION`. The existing Swift account actor remains the only credential/refresh owner. The provider pins the account ID at launch and checks it before and after I/O. Credentials never cross IPC. Signed-out or failed launches return to the native account window, where the existing native tools remain.
 
 ## Supported shared panel operations
 
@@ -22,6 +22,6 @@ The authenticated RPC implementation is shared with cloud clipboard transport, b
 
 `desktop-dictionary-provider-test` injects a synthetic API/account and checks paging, validation, revisions/conflicts, import formats, exports larger than 2 MiB, cleanup and account changes. `desktop-cloud-dictionary-interop` runs the Rust `cloud_dictionary_probe` example against a real native socket and private file. `desktop-account-cancellation` checks cancellation when peer authorization is lost. Rust tests additionally reject symlinks/incorrect metadata and prove that exported paths are consumed before forming the webview response.
 
-Configure CMake with `MSIME_CLOUD_DICTIONARY_PROBE` pointing to the Cargo example, build `desktop-cloud-dictionary-interop-test`, `desktop-dictionary-provider-test-build` and `desktop-account-cancellation-test`, then run the matching CTest entries. Full dictionary snapshot restore is a separate path with its own contract; see `LOCAL_SNAPSHOT_INTEGRATION.md`.
+Configure CMake with `LINGYAO_CLOUD_DICTIONARY_PROBE` pointing to the Cargo example, build `desktop-cloud-dictionary-interop-test`, `desktop-dictionary-provider-test-build` and `desktop-account-cancellation-test`, then run the matching CTest entries. Full dictionary snapshot restore is a separate path with its own contract; see `LOCAL_SNAPSHOT_INTEGRATION.md`.
 
-Reference baseline: MSIME-Windows default branch `develop` at `cb534a97fd19bc9656645a7baa4ee019487279a8`. The input engine is `crates/engine` in this repository.
+Reference baseline: LINGYAO-Windows default branch `develop` at `cb534a97fd19bc9656645a7baa4ee019487279a8`. The input engine is `crates/engine` in this repository.

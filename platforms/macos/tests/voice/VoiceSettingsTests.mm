@@ -61,7 +61,7 @@ int main()
         settings.polishEnabled = NO;
         settings.provider = @"local";
         settings.token = @"";
-        settings.modelPath = @"/nonexistent/msime-voice-model";
+        settings.modelPath = @"/nonexistent/lingyao-voice-model";
         Require(![settings validate:nil], "missing local model accepted");
         settings.modelPath = NSTemporaryDirectory();
         Require(![settings validate:nil], "directory without a model manifest accepted as model");
@@ -73,7 +73,7 @@ int main()
         [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
         Require([[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:NO attributes:nil error:nil],
                 "model directory fixture creation failed");
-        Require([@"{}" writeToFile:[path stringByAppendingPathComponent:@"msime-model.json"] atomically:YES
+        Require([@"{}" writeToFile:[path stringByAppendingPathComponent:@"lingyao-model.json"] atomically:YES
                           encoding:NSUTF8StringEncoding error:nil], "model manifest fixture creation failed");
         settings.modelPath = path;
         Require([settings validate:nil], "local mode requires unused cloud credentials");
@@ -81,7 +81,7 @@ int main()
         NSString *external = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
         Require([[NSFileManager defaultManager] createDirectoryAtPath:external withIntermediateDirectories:NO attributes:nil error:nil],
                 "external model directory creation failed");
-        Require([@"{}" writeToFile:[external stringByAppendingPathComponent:@"msime-model.json"] atomically:YES
+        Require([@"{}" writeToFile:[external stringByAppendingPathComponent:@"lingyao-model.json"] atomically:YES
                           encoding:NSUTF8StringEncoding error:nil], "external manifest creation failed");
         NSString *linked = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
         Require([[NSFileManager defaultManager] createSymbolicLinkAtPath:linked withDestinationPath:external error:nil],
@@ -91,8 +91,8 @@ int main()
         [[NSFileManager defaultManager] removeItemAtPath:linked error:nil];
         Require([[NSFileManager defaultManager] createDirectoryAtPath:linked withIntermediateDirectories:NO attributes:nil error:nil],
                 "model directory creation failed");
-        Require([[NSFileManager defaultManager] createSymbolicLinkAtPath:[linked stringByAppendingPathComponent:@"msime-model.json"]
-                                                       withDestinationPath:[external stringByAppendingPathComponent:@"msime-model.json"] error:nil],
+        Require([[NSFileManager defaultManager] createSymbolicLinkAtPath:[linked stringByAppendingPathComponent:@"lingyao-model.json"]
+                                                       withDestinationPath:[external stringByAppendingPathComponent:@"lingyao-model.json"] error:nil],
                 "linked manifest creation failed");
         settings.modelPath = linked;
         Require(![settings validate:nil], "symlinked model manifest accepted");

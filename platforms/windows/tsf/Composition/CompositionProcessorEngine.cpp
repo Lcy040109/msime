@@ -117,7 +117,7 @@ CCompositionProcessorEngine::CCompositionProcessorEngine(_In_ CLingyaoIME *pText
     _pOwnerThreadMgr = nullptr;
     _ownerMsgWndHandle = nullptr;
     _pTextService = pTextService;
-    _hostEngineAdapter = std::make_unique<msime::tsf::EngineSessionAdapter>();
+    _hostEngineAdapter = std::make_unique<lingyao::tsf::EngineSessionAdapter>();
     _keyboardOpen = FALSE;
     _keyboardOpenKnown = FALSE;
     _suppressKeyboardCloseCommit = FALSE;
@@ -206,7 +206,7 @@ bool CCompositionProcessorEngine::InitializeHostSession(const std::string &optio
                                                          std::string *error)
 {
     if (!_hostEngineAdapter)
-        _hostEngineAdapter = std::make_unique<msime::tsf::EngineSessionAdapter>();
+        _hostEngineAdapter = std::make_unique<lingyao::tsf::EngineSessionAdapter>();
     return _hostEngineAdapter->create(options, error);
 }
 
@@ -258,13 +258,13 @@ BOOL CCompositionProcessorEngine::SetupLanguageProfile(LANGID langid, REFGUID gu
     SetupKeystroke();
     SetupConfiguration();
     if (_hostEngineAdapter && !_hostEngineAdapter->valid()) {
-        const std::string options = msime::tsf::default_host_options_json();
+        const std::string options = lingyao::tsf::default_host_options_json();
         std::string error;
         if (!options.empty())
             (void)InitializeHostSession(options, &error);
     } else if (_hostEngineAdapter && _hostEngineAdapter->valid()) {
         std::string error, ignored;
-        (void)_hostEngineAdapter->reload_preferences(msime::tsf::default_state_directory(), &ignored, &error);
+        (void)_hostEngineAdapter->reload_preferences(lingyao::tsf::default_state_directory(), &ignored, &error);
     }
     if (Global::msgWndHandle)
         SetTimer(Global::msgWndHandle, TIMER_REFRESH_HOST_PREFERENCES, 500, nullptr);
@@ -327,7 +327,7 @@ BOOL CCompositionProcessorEngine::AddVirtualKey(WCHAR wch)
     }
     const bool opensUrlMode = Global::OpensUrlMode(
         _keystrokeBuffer.Get(), srgKeystrokeBufLen, _caretPosition, wch,
-        msime::windows::scheme::DetectsUrls(Global::InputModeScheme.load(std::memory_order_relaxed)),
+        lingyao::windows::scheme::DetectsUrls(Global::InputModeScheme.load(std::memory_order_relaxed)),
         Global::DedicatedEnglish.active(GetTickCount64()));
 
     memcpy(pwch, _keystrokeBuffer.Get(), _caretPosition * sizeof(WCHAR));
@@ -430,7 +430,7 @@ DWORD_PTR CCompositionProcessorEngine::GetRenderedCaretPosition() const
 
 DWORD_PTR CCompositionProcessorEngine::GetRenderedCaretPosition(const std::wstring &editingText, size_t caret) const
 {
-    return msime::tsf::MapPreeditCaret(editingText, caret, _renderedPreedit, _renderedPreeditPrefixLength);
+    return lingyao::tsf::MapPreeditCaret(editingText, caret, _renderedPreedit, _renderedPreeditPrefixLength);
 }
 
 //+---------------------------------------------------------------------------
@@ -525,9 +525,9 @@ void CCompositionProcessorEngine::GetCandidateList(_Inout_ CLingyaoImeArray<CCan
     if (_hostEngineAdapter && _hostEngineAdapter->valid())
     {
         std::string raw, error;
-        msime::tsf::EngineResult result;
+        lingyao::tsf::EngineResult result;
         if (_hostEngineAdapter->view(&raw, &error) &&
-            msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
+            lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
         {
             for (size_t index = 0; index < result.view.candidates.size(); ++index)
             {
@@ -614,7 +614,7 @@ namespace
 bool IsJapaneseLongVowelKey(UINT uCode, WCHAR wch)
 {
     return uCode == VK_OEM_MINUS && wch == L'-' &&
-           Global::InputModeScheme.load(std::memory_order_relaxed) == msime::windows::scheme::Japanese;
+           Global::InputModeScheme.load(std::memory_order_relaxed) == lingyao::windows::scheme::Japanese;
 }
 
 // In Japanese mode '=' and non-long-vowel '-' are punctuation rather than
@@ -627,7 +627,7 @@ bool IsJapaneseMinusEqualPunctuationKey(UINT uCode, WCHAR wch, BOOL fComposing, 
     {
         return false;
     }
-    if (keystrokeLength == 0 || Global::InputModeScheme.load(std::memory_order_relaxed) != msime::windows::scheme::Japanese)
+    if (keystrokeLength == 0 || Global::InputModeScheme.load(std::memory_order_relaxed) != lingyao::windows::scheme::Japanese)
     {
         return false;
     }
@@ -666,7 +666,7 @@ bool IsManualPinyinSeparatorInComposition(WCHAR wch, BOOL fComposing, CANDIDATE_
         return false;
     }
     // Under Stroke the apostrophe separates nothing: it takes the punctuation route below, which commits the highlighted row followed by the mark.
-    if (msime::windows::scheme::ApostropheIsPunctuationWhileComposing(
+    if (lingyao::windows::scheme::ApostropheIsPunctuationWhileComposing(
             Global::InputModeScheme.load(std::memory_order_relaxed)))
     {
         return false;
@@ -1485,7 +1485,7 @@ void CCompositionProcessorEngine::InitializeLingyaoIMECompartment(_In_ ITfThread
     // Default CN/EN on IME activate / switch-in (input.default_ime_mode).
     const BOOL openChinese = FanyUtils::ReadConfiguredDefaultImeModeChinese();
     Global::InputModeScheme.store(
-        msime::windows::scheme::mode_scheme(msime::windows::scheme::input_mode(FanyUtils::ReadConfiguredRunningScheme())),
+        lingyao::windows::scheme::mode_scheme(lingyao::windows::scheme::input_mode(FanyUtils::ReadConfiguredRunningScheme())),
         std::memory_order_relaxed);
     // Use the suppressing writer so the OPENCLOSE sink does not treat this as
     // a user choice and drop the defense we are about to arm.
@@ -2177,7 +2177,7 @@ BOOL CCompositionProcessorEngine::IsVirtualKeyNeed( //
     }
     // 网址模式：触发词后的 `.`、`:` 打开它，之后网址的数字和符号都是输入，排在 '-'、'='、','、'.'、'[' 和 ']' 的翻页、标点和数字选词之前；打出其他字符的数字键选词。
     const bool detectsUrls =
-        msime::windows::scheme::DetectsUrls(Global::InputModeScheme.load(std::memory_order_relaxed));
+        lingyao::windows::scheme::DetectsUrls(Global::InputModeScheme.load(std::memory_order_relaxed));
     if (_urlMode)
     {
         switch (Global::ClassifyModeKey(Global::UrlSpellingSymbols, uCode, pwch ? *pwch : 0))
@@ -2238,7 +2238,7 @@ BOOL CCompositionProcessorEngine::IsVirtualKeyNeed( //
     const bool isCommaPeriodPagingKey = uCode == VK_OEM_COMMA || uCode == VK_OEM_PERIOD;
     const bool isBracketPagingKey = uCode == VK_OEM_4 || uCode == VK_OEM_6;
     const bool isMinusEqualPagingKey = (uCode == VK_OEM_MINUS || uCode == VK_OEM_PLUS) &&
-                                       Global::InputModeScheme.load(std::memory_order_relaxed) != msime::windows::scheme::Japanese;
+                                       Global::InputModeScheme.load(std::memory_order_relaxed) != lingyao::windows::scheme::Japanese;
     if (candidateMode != CANDIDATE_NONE &&
         (isMinusEqualPagingKey || isCommaPeriodPagingKey || isBracketPagingKey || uCode == VK_TAB ||
          uCode == VK_PRIOR || uCode == VK_NEXT || uCode == VK_UP || uCode == VK_DOWN))

@@ -1,10 +1,10 @@
 //! 插件 page commands for the macOS, Windows and Linux shells: the plugin packs installed under the state directory, the built-in sound packs the bundle ships, and the @ mode's name list.
 //!
-//! Every rule lives in `msime_client_core::plugins`; these are shims that resolve the roots host-side and hand them over. The page never names a path: it asks for the catalog, asks the host to show its own picker for an import, and names a pack to remove by kind and id. The input processes read the same `<state>/plugins` directory (`preferences_directory/plugins` in host-api), so an import or a name-list save reaches them without any notification of its own: sound and music settings travel through the preferences document, and the command tables and the name list are reread when a field gains focus after their files changed.
+//! Every rule lives in `lingyao_client_core::plugins`; these are shims that resolve the roots host-side and hand them over. The page never names a path: it asks for the catalog, asks the host to show its own picker for an import, and names a pack to remove by kind and id. The input processes read the same `<state>/plugins` directory (`preferences_directory/plugins` in host-api), so an import or a name-list save reaches them without any notification of its own: sound and music settings travel through the preferences document, and the command tables and the name list are reread when a field gains focus after their files changed.
 
 use crate::DictionaryHostOptions;
-use msime_client_core::plugins::mentions::{MentionEntry, MentionStore};
-use msime_client_core::plugins::{self, PluginCatalog, PluginFailure, PluginSummary};
+use lingyao_client_core::plugins::mentions::{MentionEntry, MentionStore};
+use lingyao_client_core::plugins::{self, PluginCatalog, PluginFailure, PluginSummary};
 use std::path::{Path, PathBuf};
 use tauri::State;
 use tauri_plugin_dialog::DialogExt;
@@ -33,7 +33,7 @@ pub enum PluginImportSource {
 
 /// The directory holding the built-in sound packs this installation ships, when it is there.
 ///
-/// Each platform stages them beside its resources rather than inside, because the resource directory has to hold exactly what the dictionary lock pins: the macOS input method bundle's `Contents/Resources/sound-packs` (this app carries that bundle among its resources), the Windows data directory's `sound-packs`, and on Linux `share/msime-client/sound-packs` of the prefix this executable is installed in (`<prefix>/bin`), falling back to the one next to the `resources` the host options name. The installed prefix comes first because the host options name the user's own data directory once a newer dictionary has been downloaded, and no packs sit beside that one. A development run without them lists the installed packs only.
+/// Each platform stages them beside its resources rather than inside, because the resource directory has to hold exactly what the dictionary lock pins: the macOS input method bundle's `Contents/Resources/sound-packs` (this app carries that bundle among its resources), the Windows data directory's `sound-packs`, and on Linux `share/lingyao-client/sound-packs` of the prefix this executable is installed in (`<prefix>/bin`), falling back to the one next to the `resources` the host options name. The installed prefix comes first because the host options name the user's own data directory once a newer dictionary has been downloaded, and no packs sit beside that one. A development run without them lists the installed packs only.
 fn builtin_sound_packs(
     #[cfg_attr(not(target_os = "macos"), allow(unused_variables))] app: &tauri::AppHandle,
     #[cfg_attr(not(target_os = "linux"), allow(unused_variables))] options: &DictionaryHostOptions,
@@ -49,7 +49,7 @@ fn builtin_sound_packs(
     };
     #[cfg(target_os = "windows")]
     let directory =
-        msime_host_windows::server_state_directory().map(|directory| directory.join("sound-packs"));
+        lingyao_host_windows::server_state_directory().map(|directory| directory.join("sound-packs"));
     #[cfg(target_os = "linux")]
     let directory = std::env::current_exe()
         .ok()
@@ -67,7 +67,7 @@ fn builtin_sound_packs(
     directory.filter(|directory| directory.is_dir())
 }
 
-/// `<prefix>/share/msime-client/sound-packs` for an executable installed as `<prefix>/bin/<name>`, where the Linux package installs the built-in packs. 目录名随本安装包所属的版本（full 是 `msime-client`）。
+/// `<prefix>/share/lingyao-client/sound-packs` for an executable installed as `<prefix>/bin/<name>`, where the Linux package installs the built-in packs. 目录名随本安装包所属的版本（full 是 `lingyao-client`）。
 #[cfg(any(target_os = "linux", test))]
 fn linux_installed_sound_packs(executable: &Path) -> Option<PathBuf> {
     Some(
@@ -76,7 +76,7 @@ fn linux_installed_sound_packs(executable: &Path) -> Option<PathBuf> {
             .parent()?
             .join("share")
             .join(
-                &msime_client_core::edition::Edition::linux_package_identity_or_full()
+                &lingyao_client_core::edition::Edition::linux_package_identity_or_full()
                     .client_directory,
             )
             .join("sound-packs"),
@@ -186,7 +186,7 @@ pub async fn save_plugin_mentions(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::plugins::PluginKind;
+    use lingyao_client_core::plugins::PluginKind;
     use std::fs;
 
     fn write_command_table(directory: &Path, id: &str) {
@@ -243,8 +243,8 @@ mod tests {
     #[test]
     fn linux_built_in_packs_sit_beside_the_resource_directory() {
         assert_eq!(
-            linux_builtin_sound_packs("/usr/share/msime-client/resources"),
-            Some(PathBuf::from("/usr/share/msime-client/sound-packs"))
+            linux_builtin_sound_packs("/usr/share/lingyao-client/resources"),
+            Some(PathBuf::from("/usr/share/lingyao-client/sound-packs"))
         );
         assert_eq!(linux_builtin_sound_packs("resources"), None);
         assert_eq!(linux_builtin_sound_packs(""), None);
@@ -253,12 +253,12 @@ mod tests {
     #[test]
     fn linux_built_in_packs_follow_the_installed_prefix() {
         assert_eq!(
-            linux_installed_sound_packs(Path::new("/usr/bin/msime-linux-desktop")),
-            Some(PathBuf::from("/usr/share/msime-client/sound-packs"))
+            linux_installed_sound_packs(Path::new("/usr/bin/lingyao-linux-desktop")),
+            Some(PathBuf::from("/usr/share/lingyao-client/sound-packs"))
         );
         assert_eq!(
-            linux_installed_sound_packs(Path::new("/opt/msime/bin/msime-linux-desktop")),
-            Some(PathBuf::from("/opt/msime/share/msime-client/sound-packs"))
+            linux_installed_sound_packs(Path::new("/opt/lingyao/bin/lingyao-linux-desktop")),
+            Some(PathBuf::from("/opt/lingyao/share/lingyao-client/sound-packs"))
         );
         assert_eq!(linux_installed_sound_packs(Path::new("/")), None);
     }

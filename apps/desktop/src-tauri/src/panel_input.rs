@@ -634,7 +634,7 @@ fn with_panel_focus_released<T>(
 
 // ---- Input method route ----
 //
-// The MSIME IBus engine and Fcitx5 addon listen on a user-private socket and type into the context they have focused (platforms/linux/src/system/PanelInputChannel.h). That reaches the editor on every session type, including GNOME and KDE on Wayland where no tool can, so it is tried before xdotool, wtype and ydotool, which remain for sessions where another input method is active.
+// The LINGYAO IBus engine and Fcitx5 addon listen on a user-private socket and type into the context they have focused (platforms/linux/src/system/PanelInputChannel.h). That reaches the editor on every session type, including GNOME and KDE on Wayland where no tool can, so it is tried before xdotool, wtype and ydotool, which remain for sessions where another input method is active.
 
 #[cfg(target_os = "linux")]
 fn panel_input_socket() -> Option<std::path::PathBuf> {
@@ -1032,7 +1032,7 @@ async fn deliver_panel_text(
 fn validate_panel_text(text: &str) -> Result<(), HostActionError> {
     if text.is_empty()
         || text.len() > 4096
-        || msime_client_core::has_disallowed_control_with_options(text, true)
+        || lingyao_client_core::has_disallowed_control_with_options(text, true)
     {
         return Err(HostActionError {
             code: "invalid_text",
@@ -1097,7 +1097,7 @@ pub(crate) fn send_panel_voice_text(
     target: &PanelInputTarget,
     text: &str,
 ) -> Result<(), HostActionError> {
-    // An independent Tauri panel has no input context of its own, so the text goes to the remembered editor target the way every other panel's text does: through the active MSIME host, or the typing fallbacks when another input method is active. Linux offers no voice commit strategy (see HostCapabilities::voice_commit_mode), so the stored mode is not read here; `tsf` names the default mode only so the shared length and control-character checks run.
+    // An independent Tauri panel has no input context of its own, so the text goes to the remembered editor target the way every other panel's text does: through the active LINGYAO host, or the typing fallbacks when another input method is active. Linux offers no voice commit strategy (see HostCapabilities::voice_commit_mode), so the stored mode is not read here; `tsf` names the default mode only so the shared length and control-character checks run.
     voice_output::submit(text, "tsf", |_, text| {
         send_panel_text_to_target(app, target, text).is_ok()
     })
@@ -1120,7 +1120,7 @@ pub(crate) fn remember_panel_input_target(
 ) -> Result<(), HostActionError> {
     // Editable panels invoke this again after mounting. Do not replace the
     // original editor with our own newly focused webview.
-    if !msime_host_windows::foreground_is_external() {
+    if !lingyao_host_windows::foreground_is_external() {
         return state
             .0
             .lock()
@@ -1133,7 +1133,7 @@ pub(crate) fn remember_panel_input_target(
                 code: "unavailable",
             });
     }
-    let target = msime_host_windows::foreground_window().ok_or(HostActionError {
+    let target = lingyao_host_windows::foreground_window().ok_or(HostActionError {
         code: "unavailable",
     })?;
     *state.0.lock().map_err(|_| HostActionError {
@@ -1158,7 +1158,7 @@ fn focused_panel_target(state: &tauri::State<'_, PanelInputState>) -> Result<(),
 
 #[cfg(target_os = "windows")]
 fn focus_panel_target(target: PanelInputTarget) -> Result<(), HostActionError> {
-    msime_host_windows::focus(target.0)
+    lingyao_host_windows::focus(target.0)
         .then_some(())
         .ok_or(HostActionError {
             code: "unavailable",
@@ -1180,19 +1180,19 @@ pub(crate) fn send_panel_key_windows(
     // re-focusing the handle captured when the panel opened sent every key to
     // a window the user may have left several clicks ago. Other panels keep
     // their original destination, which is what being edited implies.
-    if !keyboard_panel || !msime_host_windows::foreground_is_external() {
+    if !keyboard_panel || !lingyao_host_windows::foreground_is_external() {
         focused_panel_target(state)?;
     }
     // Sticky modifiers only travel with keys the panel marked as inheriting
     // them; shift always applies to the key being sent.
     let sticky = request.include_sticky_modifiers;
-    let modifiers = msime_host_windows::Modifiers {
+    let modifiers = lingyao_host_windows::Modifiers {
         shift: request.shift,
         ctrl: sticky && request.modifiers.ctrl,
         alt: sticky && request.modifiers.alt,
         win: sticky && request.modifiers.win,
     };
-    msime_host_windows::send_key(request.virtual_key, modifiers)
+    lingyao_host_windows::send_key(request.virtual_key, modifiers)
         .then_some(())
         .ok_or(HostActionError {
             code: "unavailable",
@@ -1206,13 +1206,13 @@ pub(crate) fn send_panel_text_windows(
 ) -> Result<(), HostActionError> {
     // Validate before restoring focus. An invalid panel value must not move
     // the user's active editor or otherwise change observable state.
-    if !msime_host_windows::valid_text(text) {
+    if !lingyao_host_windows::valid_text(text) {
         return Err(HostActionError {
             code: "invalid_text",
         });
     }
     focused_panel_target(state)?;
-    msime_host_windows::send_text(text)
+    lingyao_host_windows::send_text(text)
         .then_some(())
         .ok_or(HostActionError {
             code: "invalid_text",
@@ -1225,7 +1225,7 @@ pub(crate) fn send_cloud_clipboard_text_windows(
     app: &tauri::AppHandle,
     text: &str,
 ) -> Result<(), HostActionError> {
-    if !msime_host_windows::valid_text(text) {
+    if !lingyao_host_windows::valid_text(text) {
         return Err(HostActionError {
             code: "invalid_text",
         });
@@ -1234,7 +1234,7 @@ pub(crate) fn send_cloud_clipboard_text_windows(
         code: "unavailable",
     })?;
     focus_panel_target(target)?;
-    msime_host_windows::send_text(text)
+    lingyao_host_windows::send_text(text)
         .then_some(())
         .ok_or(HostActionError {
             code: "invalid_text",
@@ -1246,10 +1246,10 @@ pub(crate) fn send_cloud_clipboard_text_windows(
 pub(crate) fn windows_panel_position(
     width: f64,
     height: f64,
-    placement: msime_client_core::host_surface::PanelPlacement,
+    placement: lingyao_client_core::host_surface::PanelPlacement,
 ) -> Option<tauri::Position> {
-    use msime_client_core::host_surface::PanelPlacement;
-    msime_host_windows::work_area().map(|area| {
+    use lingyao_client_core::host_surface::PanelPlacement;
+    lingyao_host_windows::work_area().map(|area| {
         let (x, y) = match placement {
             PanelPlacement::BottomCenter => area.bottom_center(width, height),
             PanelPlacement::Center => area.center(width, height),
@@ -1369,8 +1369,8 @@ pub(crate) fn remember_opening_panel_target(
         return;
     };
     let open = slot.begin_open();
-    let target = msime_host_windows::foreground_is_external()
-        .then(msime_host_windows::foreground_window)
+    let target = lingyao_host_windows::foreground_is_external()
+        .then(lingyao_host_windows::foreground_window)
         .flatten()
         .map(PanelInputTarget);
     slot.record(open, target);

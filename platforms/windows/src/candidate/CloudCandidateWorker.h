@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 
-namespace msime::windows
+namespace lingyao::windows
 {
 // Performs the optional cloud-candidate request away from the input queue.
 // The query is copied from the shared host and the completion carries only a
@@ -69,4 +69,4 @@ class CloudCandidateWorker final
     std::mutex join_mutex_;
     std::thread worker_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

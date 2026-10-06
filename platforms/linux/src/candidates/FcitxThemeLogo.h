@@ -11,7 +11,7 @@
 #include "CandidateFcitxTheme.h"
 #include "../core/LinuxEdition.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The brand mark is the application icon the package installs into the hicolor theme (data/icons), the picture the launcher and the input method list show. The PNGs are decoded with cairo, the library the classic UI itself reads theme images with, so it is on every system that draws this theme.
 inline std::optional<FcitxPixels> read_fcitx_logo_pixels(const std::filesystem::path &file, int side) {
@@ -41,13 +41,13 @@ inline std::optional<FcitxPixels> read_fcitx_logo_pixels(const std::filesystem::
   return pixels;
 }
 
-// The mark at 1x and 2x from <icons>/<size>x<size>/apps/msime-linux.png, `icons` being the hicolor directory. Without either size the theme is drawn without the mark, as it was before there was one.
-// 图标名按版本取（LinuxEdition.h 的 MSIME_EDITION_ICON）：各版本的图标内容相同，文件名不同，几个版本的包才能同时装。
+// The mark at 1x and 2x from <icons>/<size>x<size>/apps/lingyao-linux.png, `icons` being the hicolor directory. Without either size the theme is drawn without the mark, as it was before there was one.
+// 图标名按版本取（LinuxEdition.h 的 LINGYAO_EDITION_ICON）：各版本的图标内容相同，文件名不同，几个版本的包才能同时装。
 inline std::optional<FcitxThemeLogo> load_fcitx_theme_logo(const std::filesystem::path &icons) {
   constexpr int side = FcitxPanelGeometry::logo_side;
   const auto file = [&](int size) {
     const auto name = std::to_string(size) + "x" + std::to_string(size);
-    return icons / name / "apps" / (MSIME_EDITION_ICON ".png");
+    return icons / name / "apps" / (LINGYAO_EDITION_ICON ".png");
   };
   auto one = read_fcitx_logo_pixels(file(side), side);
   auto two = read_fcitx_logo_pixels(file(2 * side), 2 * side);
@@ -55,4 +55,4 @@ inline std::optional<FcitxThemeLogo> load_fcitx_theme_logo(const std::filesystem
   return FcitxThemeLogo{std::move(*one), std::move(*two)};
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

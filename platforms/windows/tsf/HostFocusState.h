@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 class HostFocusState {
 public:
     template<class Send>

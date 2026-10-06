@@ -1,7 +1,7 @@
 #include "RegistrationInbox.h"
 #include <future>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Registration inbox test failed");

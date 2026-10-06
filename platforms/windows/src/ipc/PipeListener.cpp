@@ -1,7 +1,7 @@
 #include "PipeListener.h"
 #include <sddl.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 struct Handle {
   HANDLE value = nullptr;
@@ -163,4 +163,4 @@ PipeConnection::~PipeConnection() {
   if (handle_ != INVALID_HANDLE_VALUE)
     CloseHandle(handle_);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

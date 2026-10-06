@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-    MSIMEPreferenceSaveState state;
+    LINGYAOPreferenceSaveState state;
     assert(state.request());
     for (int change = 0; change < 20; ++change) assert(!state.request());
     assert(state.finish());

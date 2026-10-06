@@ -2,7 +2,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-namespace msime {
+namespace lingyao {
 template<class Host> bool RestoreLaunchFocus(Host &host, pid_t target, double launched) {
     if (!host.mainThread() || target <= 0 || target == host.ownProcess() || launched <= 0) return false;
     if (host.foreground() != host.ownProcess() || host.launchTime(target) != launched) return false;

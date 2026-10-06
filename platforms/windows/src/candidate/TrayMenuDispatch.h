@@ -4,7 +4,7 @@
 #include <mutex>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The Aux listener runs on its own thread; the tray window belongs to the UI
 // thread that created it. Only this value crosses between them, and only the
 // latest request is kept: a flood of messages can never queue up work.
@@ -85,4 +85,4 @@ inline bool tray_menu_dismissal(bool visible, uint64_t now, uint64_t shown_at,
     return true;
   return false;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

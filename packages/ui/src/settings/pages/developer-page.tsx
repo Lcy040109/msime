@@ -8,7 +8,7 @@ import { createAboutSettingsActions } from "../about-settings-actions";
 import { SettingsPageFieldset } from "../settings-page-fieldset";
 
 /**
- * 维护与诊断页：依次是重启或重新注册输入法服务、诊断日志、数据目录、本地 `msime-mcp` 服务，最后是 macOS 的卸载。设计稿里的「显示调试信息」「日志级别」「导出诊断包」在任何宿主上都没有对应能力，所以不画；它的「重置所有设置」就是表单自己的「恢复默认设置」。
+ * 维护与诊断页：依次是重启或重新注册输入法服务、诊断日志、数据目录、本地 `lingyao-mcp` 服务，最后是 macOS 的卸载。设计稿里的「显示调试信息」「日志级别」「导出诊断包」在任何宿主上都没有对应能力，所以不画；它的「重置所有设置」就是表单自己的「恢复默认设置」。
  */
 export function DeveloperSettingsPage() {
   const {

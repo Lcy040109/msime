@@ -1,5 +1,5 @@
 #import "DictionaryWindowController.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #import "../core/ClientDictionaryRuntime.h"
 #import "../core/BoundedFileReader.h"
 #import "../core/EditionIdentity.h"
@@ -7,39 +7,39 @@
 #include "../../../common/DictionaryQuiesceLease.h"
 
 // The same budget the settings window gives the input hosts (crates/client-core/src/dictionary/quiesce.rs).
-static const NSTimeInterval MSIMEDictionaryQuiesceBudget = 2.5;
-static const useconds_t MSIMEDictionaryQuiesceRetryMicroseconds = 50000;
+static const NSTimeInterval LINGYAODictionaryQuiesceBudget = 2.5;
+static const useconds_t LINGYAODictionaryQuiesceRetryMicroseconds = 50000;
 
 // A mutation from this window runs inside the input method, whose own controllers hold the dictionary lock through their sessions. Only the lock failure is retried, so a completed write is never replayed: the lease goes up beside the lock, the controllers are told on the main thread and release before this continues, and the request is retried until it gets through or the budget runs out. Removing the lease is the resume; the next key reopens a session. Called off the main thread.
-static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSError **error) {
+static NSDictionary *LINGYAOQuiescedDictionaryRequest(NSDictionary *request, NSError **error) {
     NSError *failure = nil;
-    NSDictionary *result = [MSIMEClientSession dictionaryRequest:request error:&failure];
+    NSDictionary *result = [LINGYAOClientSession dictionaryRequest:request error:&failure];
     NSString *userData = [request[@"options"] isKindOfClass:NSDictionary.class] ? request[@"options"][@"user_data"] : nil;
     if (!result && [failure.localizedDescription isEqualToString:@"dictionary maintenance busy"] &&
         [userData isKindOfClass:NSString.class] && userData.isAbsolutePath) {
         const std::string root(userData.fileSystemRepresentation);
         std::string lease;
-        if (msime::dictionary_lease::raise_dictionary_quiesce_lease(root, lease)) {
+        if (lingyao::dictionary_lease::raise_dictionary_quiesce_lease(root, lease)) {
             void (^announce)(void) = ^{
-                [NSNotificationCenter.defaultCenter postNotificationName:MSIMEEditionNotificationName(@"MSIMEDictionaryMaintenanceWillBeginNotification") object:nil];
+                [NSNotificationCenter.defaultCenter postNotificationName:LINGYAOEditionNotificationName(@"LINGYAODictionaryMaintenanceWillBeginNotification") object:nil];
             };
             if (NSThread.isMainThread) announce();
             else dispatch_sync(dispatch_get_main_queue(), announce);
-            const NSTimeInterval deadline = NSProcessInfo.processInfo.systemUptime + MSIMEDictionaryQuiesceBudget;
+            const NSTimeInterval deadline = NSProcessInfo.processInfo.systemUptime + LINGYAODictionaryQuiesceBudget;
             while (!result && [failure.localizedDescription isEqualToString:@"dictionary maintenance busy"] &&
                    NSProcessInfo.processInfo.systemUptime < deadline) {
-                usleep(MSIMEDictionaryQuiesceRetryMicroseconds);
+                usleep(LINGYAODictionaryQuiesceRetryMicroseconds);
                 failure = nil;
-                result = [MSIMEClientSession dictionaryRequest:request error:&failure];
+                result = [LINGYAOClientSession dictionaryRequest:request error:&failure];
             }
-            msime::dictionary_lease::lower_dictionary_quiesce_lease(root, lease);
+            lingyao::dictionary_lease::lower_dictionary_quiesce_lease(root, lease);
         }
     }
     if (error) *error = failure;
     return result;
 }
 
-@interface MSIMEDictionaryWindowController () <NSTableViewDataSource, NSTableViewDelegate>
+@interface LINGYAODictionaryWindowController () <NSTableViewDataSource, NSTableViewDelegate>
 @property(nonatomic, copy) NSDictionary *options;
 @property(nonatomic, strong) NSTableView *table;
 @property(nonatomic, copy) NSArray<NSDictionary *> *entries;
@@ -58,14 +58,14 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
 @property(nonatomic, copy) NSString *runtimeError;
 @property(nonatomic) NSUInteger refreshGeneration;
 @end
-@implementation MSIMEDictionaryWindowController
+@implementation LINGYAODictionaryWindowController
 - (instancetype)initWithOptions:(NSDictionary *)options {
     NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 620, 500) styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable backing:NSBackingStoreBuffered defer:NO];
     self = [super initWithWindow:window];
     if (self) {
         _options = [options copy];
         NSError *error = nil;
-        if (![[MSIMEDictionaryRuntime alloc] initWithHostOptions:_options error:&error]) _runtimeError = error.localizedDescription ?: @"词典运行目录配置无效";
+        if (![[LINGYAODictionaryRuntime alloc] initWithHostOptions:_options error:&error]) _runtimeError = error.localizedDescription ?: @"词典运行目录配置无效";
         window.title = @"个人词典"; window.releasedWhenClosed = NO; [self loadWindow];
     }
     return self;
@@ -163,17 +163,17 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
     NSString *kind = [[self selectedKind] copy];
     if (self.runtimeError) { [self showMessage:self.runtimeError]; self.entries = @[]; [self.table reloadData]; self.previous.enabled = NO; self.next.enabled = NO; return; }
     NSDictionary *request = @{ @"options": self.options, @"action": @{ @"operation": @"list", @"offset": @(offset), @"limit": @100, @"kind": kind } };
-    __weak MSIMEDictionaryWindowController *weakSelf = self;
+    __weak LINGYAODictionaryWindowController *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSError *error = nil;
-        NSDictionary *result = [MSIMEClientSession dictionaryRequest:request error:&error];
+        NSDictionary *result = [LINGYAOClientSession dictionaryRequest:request error:&error];
         NSArray *entries = [result[@"entries"] isKindOfClass:NSArray.class] ? result[@"entries"] : @[];
         NSString *message = nil;
         BOOL hasMore = [result[@"has_more"] boolValue];
         if (!result) message = error.localizedDescription ?: @"词典读取失败";
         else message = entries.count ? [NSString stringWithFormat:@"第 %lu 页，共显示 %lu 条%@", (unsigned long)(offset / 100 + 1), (unsigned long)entries.count, hasMore ? @"，还有更多" : @""] : @"暂无个人词条";
         dispatch_async(dispatch_get_main_queue(), ^{
-            MSIMEDictionaryWindowController *controller = weakSelf;
+            LINGYAODictionaryWindowController *controller = weakSelf;
             if (controller && controller.refreshGeneration == generation && controller.offset == offset &&
                 [[controller selectedKind] isEqualToString:kind]) {
                 controller.entries = entries;
@@ -199,10 +199,10 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
     grid.rowSpacing = 8.0; grid.columnSpacing = 10.0; [grid layoutSubtreeIfNeeded]; grid.frame = NSMakeRect(0, 0, grid.fittingSize.width, grid.fittingSize.height);
     NSAlert *alert = [NSAlert new]; alert.messageText = existing ? @"编辑词条" : @"新增词条"; alert.informativeText = @"编码和词条格式由输入法引擎校验。"; alert.accessoryView = grid;
     [alert addButtonWithTitle:existing ? @"保存" : @"添加"]; [alert addButtonWithTitle:@"取消"];
-    __weak MSIMEDictionaryWindowController *weakSelf = self;
+    __weak LINGYAODictionaryWindowController *weakSelf = self;
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         if (response != NSAlertFirstButtonReturn) return;
-        MSIMEDictionaryWindowController *controller = weakSelf; if (!controller) return;
+        LINGYAODictionaryWindowController *controller = weakSelf; if (!controller) return;
         NSUInteger mutationGeneration = controller.refreshGeneration;
         NSUInteger mutationOffset = controller.offset;
         NSString *mutationKind = [[controller selectedKind] copy];
@@ -212,9 +212,9 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
         NSMutableDictionary *mutableAction = [action mutableCopy];
         if (!existing) mutableAction[@"previous"] = [NSNull null];
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            NSError *error = nil; NSDictionary *result = MSIMEQuiescedDictionaryRequest(@{ @"options": options, @"action": mutableAction }, &error);
+            NSError *error = nil; NSDictionary *result = LINGYAOQuiescedDictionaryRequest(@{ @"options": options, @"action": mutableAction }, &error);
             dispatch_async(dispatch_get_main_queue(), ^{
-                MSIMEDictionaryWindowController *current = weakSelf;
+                LINGYAODictionaryWindowController *current = weakSelf;
                 if (!current || ![current isCurrentDictionaryMutation:mutationGeneration kind:mutationKind offset:mutationOffset]) return;
                 if (!result) [current showMessage:error.localizedDescription ?: (existing ? @"词条保存失败。" : @"词条添加失败。")];
                 else { current.offset = existing ? mutationOffset : 0; [current refresh:nil]; }
@@ -233,19 +233,19 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
     NSDictionary *entry = self.entries[(NSUInteger)row]; NSAlert *alert = [NSAlert new]; alert.alertStyle = NSAlertStyleWarning;
     alert.messageText = [NSString stringWithFormat:@"删除「%@」？", entry[@"value"] ?: @""]; alert.informativeText = @"此操作无法撤销。";
     [alert addButtonWithTitle:@"取消"]; [alert addButtonWithTitle:@"删除"]; alert.buttons[1].hasDestructiveAction = YES;
-    __weak MSIMEDictionaryWindowController *weakSelf = self;
+    __weak LINGYAODictionaryWindowController *weakSelf = self;
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         if (response != NSAlertSecondButtonReturn) return;
-        MSIMEDictionaryWindowController *controller = weakSelf; if (!controller) return;
+        LINGYAODictionaryWindowController *controller = weakSelf; if (!controller) return;
         NSUInteger mutationGeneration = controller.refreshGeneration;
         NSUInteger mutationOffset = controller.offset;
         NSString *mutationKind = [[controller selectedKind] copy];
         NSDictionary *options = [controller.options copy];
         NSDictionary *action = @{ @"operation": @"edit", @"previous": entry, @"replacement": [NSNull null], @"request_id": NSUUID.UUID.UUIDString };
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            NSError *error = nil; NSDictionary *result = MSIMEQuiescedDictionaryRequest(@{ @"options": options, @"action": action }, &error);
+            NSError *error = nil; NSDictionary *result = LINGYAOQuiescedDictionaryRequest(@{ @"options": options, @"action": action }, &error);
             dispatch_async(dispatch_get_main_queue(), ^{
-                MSIMEDictionaryWindowController *current = weakSelf;
+                LINGYAODictionaryWindowController *current = weakSelf;
                 if (!current || ![current isCurrentDictionaryMutation:mutationGeneration kind:mutationKind offset:mutationOffset]) return;
                 if (!result) [current showMessage:error.localizedDescription ?: @"词条删除失败。"];
                 else { current.offset = current.entries.count == 1 && mutationOffset >= 100 ? mutationOffset - 100 : mutationOffset; [current refresh:nil]; }
@@ -264,14 +264,14 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
     panel.allowsMultipleSelection = NO;
     panel.canChooseDirectories = NO;
     panel.allowedContentTypes = @[UTTypePlainText, UTTypeTabSeparatedText, UTTypeYAML];
-    __weak MSIMEDictionaryWindowController *weakSelf = self;
+    __weak LINGYAODictionaryWindowController *weakSelf = self;
     [panel beginWithCompletionHandler:^(NSModalResponse response) {
         if (response != NSModalResponseOK || !panel.URL) return;
-        MSIMEDictionaryWindowController *controller = weakSelf;
+        LINGYAODictionaryWindowController *controller = weakSelf;
         if (!controller) return;
         NSURL *sourceURL = [panel.URL copy];
         NSError *error = nil;
-        NSData *data = MSIMEReadFileUpTo(sourceURL, 65536, &error);
+        NSData *data = LINGYAOReadFileUpTo(sourceURL, 65536, &error);
         if (!data || data.length == 0 || data.length > 65536) {
             [controller showMessage:@"文件需为不超过 64 KiB 的 UTF-8 文本。"];
             return;
@@ -288,7 +288,7 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
         NSDictionary *request = @{ @"options": options, @"action": @{ @"operation": @"import", @"kind": mutationKind, @"format": [controller selectedFormat], @"text": text, @"request_id": NSUUID.UUID.UUIDString } };
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             NSError *requestError = nil;
-            NSDictionary *result = MSIMEQuiescedDictionaryRequest(request, &requestError);
+            NSDictionary *result = LINGYAOQuiescedDictionaryRequest(request, &requestError);
             NSString *message = nil;
             if (!result) message = requestError.localizedDescription ?: @"词典导入失败";
             else {
@@ -300,7 +300,7 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
                     : [NSString stringWithFormat:@"已导入 %lu 个词条。", (unsigned long)applied];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                MSIMEDictionaryWindowController *current = weakSelf;
+                LINGYAODictionaryWindowController *current = weakSelf;
                 if (!current || ![current isCurrentDictionaryMutation:mutationGeneration kind:mutationKind offset:mutationOffset]) return;
                 [current showMessage:message]; current.offset = 0; [current refresh:nil];
             });
@@ -317,11 +317,11 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
     }
     NSSavePanel *panel = [NSSavePanel savePanel];
     panel.allowedContentTypes = @[UTTypeTabSeparatedText];
-    panel.nameFieldStringValue = [NSString stringWithFormat:@"msime-%@.tsv", [self selectedKind]];
-    __weak MSIMEDictionaryWindowController *weakSelf = self;
+    panel.nameFieldStringValue = [NSString stringWithFormat:@"lingyao-%@.tsv", [self selectedKind]];
+    __weak LINGYAODictionaryWindowController *weakSelf = self;
     [panel beginWithCompletionHandler:^(NSModalResponse response) {
         if (response != NSModalResponseOK || !panel.URL) return;
-        MSIMEDictionaryWindowController *controller = weakSelf;
+        LINGYAODictionaryWindowController *controller = weakSelf;
         if (!controller) return;
         NSURL *destinationURL = [panel.URL copy];
         NSUInteger mutationGeneration = controller.refreshGeneration;
@@ -337,7 +337,7 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
             while (hasMore && offset <= 1000000) {
                 NSDictionary *request = @{ @"options": options, @"action": @{ @"operation": @"export", @"kind": kind, @"format": format, @"offset": @(offset), @"limit": @1000 } };
                 NSError *error = nil;
-                NSDictionary *result = [MSIMEClientSession dictionaryRequest:request error:&error];
+                NSDictionary *result = [LINGYAOClientSession dictionaryRequest:request error:&error];
                 if (!result) { message = error.localizedDescription ?: @"词典导出失败"; break; }
                 NSString *chunk = [result[@"text"] isKindOfClass:NSString.class] ? result[@"text"] : @"";
                 [text appendString:chunk];
@@ -355,7 +355,7 @@ static NSDictionary *MSIMEQuiescedDictionaryRequest(NSDictionary *request, NSErr
                 else message = [NSString stringWithFormat:@"已导出至 %@。", destinationURL.lastPathComponent];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                MSIMEDictionaryWindowController *current = weakSelf;
+                LINGYAODictionaryWindowController *current = weakSelf;
                 if (!current || ![current isCurrentDictionaryMutation:mutationGeneration kind:mutationKind offset:mutationOffset]) return;
                 [current showMessage:message];
             });

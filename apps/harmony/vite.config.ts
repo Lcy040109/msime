@@ -16,7 +16,7 @@ import { join } from "node:path";
  */
 function singleFile(): Plugin {
   return {
-    name: "msime-single-file",
+    name: "lingyao-single-file",
     enforce: "post",
     closeBundle() {
       const directory = join(

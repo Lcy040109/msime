@@ -16,11 +16,11 @@
 // windows.h first: its DrawText macro has to reach the Direct2D declarations,
 // which is how the rest of this UI stack spells DrawTextW.
 #include <windows.h>
-#include <msimeui/DeviceResources.h>
+#include <lingyaoui/DeviceResources.h>
 // IDWriteFontFallback and IDWriteTextFormat1 live here, not in dwrite.h.
 #include <dwrite_2.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Forward declared: the flyout pulls in its own window headers, and only the
 // implementation needs them.
 class CandidateFlyoutWindow;
@@ -142,7 +142,7 @@ private:
     bool owned = false;
   } apartment_;
   // Direct2D through the shared UI stack; no second renderer in this tree.
-  msimeui::DeviceResources device_;
+  lingyaoui::DeviceResources device_;
   HICON logo_ = nullptr;
   int logo_pixels_ = 0;
   CandidatePalette palette_;
@@ -193,4 +193,4 @@ private:
   uint64_t effect_started_ = 0;
   bool effect_flashing_ = false;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

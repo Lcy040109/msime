@@ -7,7 +7,7 @@ import CoreFoundation
 @MainActor
 final class OnlineCandidateProvider {
   static let quietInterval: TimeInterval = 0.35
-  /// `MSIME_CLOUD_CONNECT_TIMEOUT_MS` and `MSIME_CLOUD_REQUEST_TIMEOUT_MS`: a reply arriving after a private deadline is one the reference would have shown.
+  /// `LINGYAO_CLOUD_CONNECT_TIMEOUT_MS` and `LINGYAO_CLOUD_REQUEST_TIMEOUT_MS`: a reply arriving after a private deadline is one the reference would have shown.
   static let cloudTimeout: TimeInterval = 2
   static let maxCloudResponseBytes = 256 * 1024
   static let maxAIResponseBytes = 1024 * 1024

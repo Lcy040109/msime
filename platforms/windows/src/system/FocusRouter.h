@@ -5,7 +5,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct FocusRoute {
   bool accepted = false;
   std::optional<FocusChange> activation;
@@ -196,4 +196,4 @@ private:
   std::unordered_map<uint64_t, Client> clients_;
   std::optional<FocusLease> current_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

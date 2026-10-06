@@ -734,7 +734,7 @@ function AccountDetailsPage({
   }, [mobile]);
   useMobilePopState(mobile, (event) => {
     setMobileProfilePage(
-      event.state?.msimeSettings === true && event.state.accountSubpage === "profile",
+      event.state?.lingyaoSettings === true && event.state.accountSubpage === "profile",
     );
   });
 

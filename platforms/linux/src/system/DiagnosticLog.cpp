@@ -24,7 +24,7 @@ bool directory_is_safe(const std::filesystem::path &directory) noexcept {
   if (!directory.is_absolute())
     return false;
   try {
-    return msime::linux_host::storage_directory_path_is_safe(directory);
+    return lingyao::linux_host::storage_directory_path_is_safe(directory);
   } catch (...) {
     return false;
   }
@@ -119,11 +119,11 @@ Log &log() {
 }
 } // namespace
 
-void msime_linux_diagnostic_configure(const std::string &directory,
+void lingyao_linux_diagnostic_configure(const std::string &directory,
                                       bool enabled) {
   log().configure(directory, enabled);
 }
 
-void msime_linux_diagnostic_write(std::string_view event) {
+void lingyao_linux_diagnostic_write(std::string_view event) {
   log().write(event);
 }

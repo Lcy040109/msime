@@ -3,23 +3,23 @@ import Foundation
 private typealias LocalSpeechByte = UInt8
 private typealias LocalSpeechProgress = @convention(c) (UnsafePointer<LocalSpeechByte>?, UInt, UnsafeMutableRawPointer?) -> Void
 
-@_silgen_name("msime_client_voice_local_models")
-private func msimeClientVoiceLocalModels(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_voice_local_model_install")
-private func msimeClientVoiceLocalModelInstall(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt,
+@_silgen_name("lingyao_client_voice_local_models")
+private func lingyaoClientVoiceLocalModels(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_voice_local_model_install")
+private func lingyaoClientVoiceLocalModelInstall(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt,
                                                _ progress: LocalSpeechProgress?, _ context: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_voice_local_model_cancel")
-private func msimeClientVoiceLocalModelCancel(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_voice_local_model_remove")
-private func msimeClientVoiceLocalModelRemove(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_voice_hotwords")
-private func msimeClientVoiceHotwords(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_voice_hotword_correct")
-private func msimeClientVoiceHotwordCorrect(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_prepare_host")
-private func msimeClientVoicePrepareHost(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientVoiceStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_voice_local_model_cancel")
+private func lingyaoClientVoiceLocalModelCancel(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_voice_local_model_remove")
+private func lingyaoClientVoiceLocalModelRemove(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_voice_hotwords")
+private func lingyaoClientVoiceHotwords(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_voice_hotword_correct")
+private func lingyaoClientVoiceHotwordCorrect(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_prepare_host")
+private func lingyaoClientVoicePrepareHost(_ request: UnsafePointer<LocalSpeechByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientVoiceStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 /// A word from the user's dictionary, as the shared hotword matcher takes it back.
 struct LocalSpeechHotword: Codable, Equatable, Sendable {
@@ -50,7 +50,7 @@ enum LocalSpeechModelStore {
   }
 
   static func catalog(root: URL) throws -> Catalog {
-    let value = try call(msimeClientVoiceLocalModels, ["root": root.path])
+    let value = try call(lingyaoClientVoiceLocalModels, ["root": root.path])
     let data = try JSONSerialization.data(withJSONObject: value)
     return try JSONDecoder().decode(Catalog.self, from: data)
   }
@@ -68,7 +68,7 @@ enum LocalSpeechModelStore {
       Unmanaged<ProgressBox>.fromOpaque(context).takeUnretainedValue().report(update)
     }
     let pointer = request.withUnsafeBytes { bytes in
-      msimeClientVoiceLocalModelInstall(bytes.bindMemory(to: LocalSpeechByte.self).baseAddress, UInt(request.count),
+      lingyaoClientVoiceLocalModelInstall(bytes.bindMemory(to: LocalSpeechByte.self).baseAddress, UInt(request.count),
                                         callback, box.toOpaque())
     }
     let value = try decode(pointer)
@@ -78,17 +78,17 @@ enum LocalSpeechModelStore {
 
   /// Stops a running install of `id`, which then fails with `local_model_cancelled`.
   static func cancel(id: String) {
-    _ = try? call(msimeClientVoiceLocalModelCancel, ["id": id])
+    _ = try? call(lingyaoClientVoiceLocalModelCancel, ["id": id])
   }
 
   static func remove(root: URL, id: String) throws {
-    _ = try call(msimeClientVoiceLocalModelRemove, ["root": root.path, "id": id])
+    _ = try call(lingyaoClientVoiceLocalModelRemove, ["root": root.path, "id": id])
   }
 
   /// The heaviest words of the user's own pinyin dictionary, highest weight first. `resources` is the packaged engine resources and `stateRoot` the shared App Group state the keyboard writes. A dictionary the keyboard is busy maintaining gives no words rather than an error: recognition works without them.
   static func hotwords(resources: URL, stateRoot: URL, limit: Int = 200) -> [LocalSpeechHotword] {
-    guard let options = try? call(msimeClientVoicePrepareHost, ["resources": resources.path, "state_root": stateRoot.path]),
-          let value = try? call(msimeClientVoiceHotwords, ["options": options, "limit": limit]) as? [String: Any],
+    guard let options = try? call(lingyaoClientVoicePrepareHost, ["resources": resources.path, "state_root": stateRoot.path]),
+          let value = try? call(lingyaoClientVoiceHotwords, ["options": options, "limit": limit]) as? [String: Any],
           let rows = value["hotwords"] as? [[String: Any]]
     else { return [] }
     return rows.compactMap { row in
@@ -101,7 +101,7 @@ enum LocalSpeechModelStore {
   static func correct(_ text: String, hotwords: [LocalSpeechHotword]) -> String {
     guard !hotwords.isEmpty, !text.isEmpty else { return text }
     let rows = hotwords.map { ["text": $0.text, "pinyin": $0.pinyin] }
-    guard let value = try? call(msimeClientVoiceHotwordCorrect, ["text": text, "hotwords": rows]) as? [String: Any],
+    guard let value = try? call(lingyaoClientVoiceHotwordCorrect, ["text": text, "hotwords": rows]) as? [String: Any],
           let corrected = value["text"] as? String
     else { return text }
     return corrected
@@ -147,7 +147,7 @@ enum LocalSpeechModelStore {
   private static func decode(_ pointer: UnsafeMutablePointer<CChar>?) throws -> Any {
     guard let pointer else { throw failure("local_model_unknown") }
     let data = Data(bytes: pointer, count: strlen(pointer))
-    msimeClientVoiceStringFree(pointer)
+    lingyaoClientVoiceStringFree(pointer)
     guard let envelope = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) as? [String: Any]
     else { throw failure("local_model_unknown") }
     guard envelope["ok"] as? Bool == true else { throw failure(envelope["error"] as? String ?? "local_model_unknown") }

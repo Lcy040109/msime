@@ -1,4 +1,4 @@
-//! Read-only checks of a word submission against the shipped dictionaries: whether an entry is already there, and the weight a new entry of a given length should get. The msime-dictionary `check-words` gate (`crates/dict-builder/src/check_words.rs`) runs the same exact-match queries on the same files, so a submission the server accepts is one that gate accepts too.
+//! Read-only checks of a word submission against the shipped dictionaries: whether an entry is already there, and the weight a new entry of a given length should get. The lingyao-dictionary `check-words` gate (`crates/dict-builder/src/check_words.rs`) runs the same exact-match queries on the same files, so a submission the server accepts is one that gate accepts too.
 
 use std::collections::BTreeMap;
 use std::path::Path;

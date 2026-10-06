@@ -1,12 +1,12 @@
-use msime_client_core::host_surface::{PanelSurface, SurfaceRoute};
-use msime_host_macos::cloud_clipboard::{CloudClipboardError, CloudClipboardSession};
+use lingyao_client_core::host_surface::{PanelSurface, SurfaceRoute};
+use lingyao_host_macos::cloud_clipboard::{CloudClipboardError, CloudClipboardSession};
 use serde_json::Value;
 
 pub(crate) struct DictionaryState(Option<CloudClipboardSession>);
 impl DictionaryState {
     pub(crate) fn from_environment() -> Result<Self, &'static str> {
         super::native_cloud_session_from_environment(
-            "MSIME_CLIENT_CLOUD_DICTIONARY_SESSION",
+            "LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION",
             "Invalid native dictionary session",
         )
         .map(Self)
@@ -33,7 +33,7 @@ impl DictionaryState {
                 let bytes = result["export_file"]["bytes"].as_u64().ok_or_else(|| {
                     super::cloud_clipboard_error(CloudClipboardError::Unavailable)
                 })?;
-                let text = msime_host_macos::cloud_dictionary::read_export(
+                let text = lingyao_host_macos::cloud_dictionary::read_export(
                     std::path::Path::new(path),
                     &name,
                     bytes,
@@ -67,7 +67,7 @@ mod tests {
         let temporary = tempfile::tempdir().unwrap();
         let root = temporary
             .path()
-            .join("msime-export-00000000-0000-0000-0000-000000000000");
+            .join("lingyao-export-00000000-0000-0000-0000-000000000000");
         std::fs::create_dir(&root).unwrap();
         std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700)).unwrap();
         let file = root.join("dictionary-pinyin.tsv");

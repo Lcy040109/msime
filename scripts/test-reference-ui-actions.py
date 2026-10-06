@@ -176,7 +176,7 @@ def implemented(token: str) -> bool:
 def main() -> int:
     resolved = contract_actions()
     if resolved is None:
-        print("skipped: no MSIME-Windows checkout beside this repository to compare against")
+        print("skipped: no LINGYAO-Windows checkout beside this repository to compare against")
         print(f"  expected a git checkout at {REFERENCE} carrying {CONTRACT}")
         return 0
     actions, ref, sha = resolved

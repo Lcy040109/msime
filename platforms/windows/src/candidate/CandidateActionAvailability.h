@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Which candidates the right-click actions - 置顶, 固定排位, 取消固定, 删除 -
 // may be offered for.
 //
@@ -43,4 +43,4 @@ inline bool candidate_actions_available(unsigned scheme, unsigned source) {
          source == candidate_source_user_database ||
          source == candidate_source_english_dictionary;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

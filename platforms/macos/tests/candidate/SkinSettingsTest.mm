@@ -39,12 +39,12 @@ static void WriteSingleModePackage(const std::filesystem::path &root, const std:
 int main(int argc, const char **argv) {
     @autoreleasepool {
         [NSApplication sharedApplication];
-        char temporary[] = "/tmp/msime-skin-cards-test-XXXXXX";
+        char temporary[] = "/tmp/lingyao-skin-cards-test-XXXXXX";
         assert(mkdtemp(temporary));
         const std::filesystem::path root = std::filesystem::path(temporary) / "skins";
-        NSString *suite = [@"app.msime.test.skin-cards." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"app.lingyao.test.skin-cards." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
+        LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
         LingyaoSkinSettingsView *cards = [[LingyaoSkinSettingsView alloc] initWithFrame:NSMakeRect(0, 0, 700, 700) preferences:preferences];
         NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 700, 700) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
         [window.contentView addSubview:cards];
@@ -55,7 +55,7 @@ int main(int argc, const char **argv) {
             [cards.bottomAnchor constraintEqualToAnchor:window.contentView.bottomAnchor]
         ]];
         NSArray<NSSwitch *> *switches = [cards valueForKey:@"switches"];
-        NSArray<MSIMECandidatePreviewView *> *previews = [cards valueForKey:@"previews"];
+        NSArray<LINGYAOCandidatePreviewView *> *previews = [cards valueForKey:@"previews"];
         NSArray<NSButton *> *themes = [cards valueForKey:@"themeButtons"];
         NSTextField *diagnostics = [cards valueForKey:@"diagnosticsLabel"];
         NSTextField *empty = [cards valueForKey:@"emptyLabel"];
@@ -69,11 +69,11 @@ int main(int argc, const char **argv) {
         [window.contentView layoutSubtreeIfNeeded];
         assert(!cards.hasAmbiguousLayout && ![[cards valueForKey:@"externalCards"] hasAmbiguousLayout]);
         __block NSUInteger changes = 0;
-        id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
+        id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++changes; }];
         for (NSUInteger index = 0; index < 7; ++index) {
             [NSApp sendAction:switches[index].action to:switches[index].target from:switches[index]];
             assert([preferences.globalTheme isEqual:switches[index].identifier]);
-            assert([[[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot] globalTheme] isEqual:preferences.globalTheme]);
+            assert([[[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot] globalTheme] isEqual:preferences.globalTheme]);
             assert([preferences resolvedSkinForDark:NO].id == preferences.globalTheme.UTF8String);
             for (NSUInteger other = 0; other < 7; ++other) assert(switches[other].state == (other == index ? NSControlStateValueOn : NSControlStateValueOff));
             [switches[index] performClick:nil];
@@ -202,7 +202,7 @@ int main(int argc, const char **argv) {
             [cards cacheDisplayInRect:cards.bounds toBitmapImageRep:bitmap];
             assert([[bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}] writeToFile:@(argv[1]) atomically:YES]);
         }
-        NSButton *browse = (id)MSIMEFindPreferenceControl(preferences.window.contentView,
+        NSButton *browse = (id)LINGYAOFindPreferenceControl(preferences.window.contentView,
                                                           NSSelectorFromString(@"showSkinCatalog:"));
         // The remaining entry is a trip to the shared settings application, not the control that
         // picks a skin: the browser is the 皮肤 page itself.
@@ -220,7 +220,7 @@ int main(int argc, const char **argv) {
             assert([titles.firstObject.stringValue containsString:[theme isEqual:NSAppearanceNameDarkAqua] ? @"Dark" : @"Light"]);
         }
         [NSNotificationCenter.defaultCenter removeObserver:observer];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
         std::filesystem::remove_all(std::filesystem::path(temporary));
     }
 }

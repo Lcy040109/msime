@@ -6,7 +6,7 @@ import { KeyboardLog } from '../keyboard/KeyboardLog';
 import { BusinessErrorPolicy } from '../keyboard/BusinessErrorPolicy';
 import { describeError } from '../keyboard/KeyboardLog';
 import { HarmonyTelemetry } from '../telemetry/Telemetry';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 
 /**
  * The application the keyboard belongs to.
@@ -24,7 +24,7 @@ export default class EntryAbility extends UIAbility {
     KeyboardLog.info('app created');
     // Sends what usage reporting has queued (and today's active) when the switch is on; the keyboard owns the sessions.
     HarmonyTelemetry.applicationStarted(`${this.context.filesDir}/state`);
-    // The device's anonymous MSIME account is registered on first launch rather than on the first feature that needs it; once its session is saved this only reads a file. A failure is retried on the next launch or keyboard start.
+    // The device's anonymous LINGYAO account is registered on first launch rather than on the first feature that needs it; once its session is saved this only reads a file. A failure is retried on the next launch or keyboard start.
     client.ensureAnonymousAccount(`${this.context.filesDir}/state`).catch((error: Error): void => {
       KeyboardLog.error(`anonymous account: ${describeError(error)}`);
     });

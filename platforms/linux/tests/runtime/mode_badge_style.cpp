@@ -5,7 +5,7 @@
 
 int main() {
   using Json = nlohmann::json;
-  namespace host = msime::linux_host;
+  namespace host = lingyao::linux_host;
 
   // The shared floating toolbar keys, accepted only at the values macOS accepts; anything else keeps 24 px at 100 %.
   const auto defaults = host::mode_badge_metrics(Json::object());

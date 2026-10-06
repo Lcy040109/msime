@@ -1,5 +1,5 @@
 //! Verify independent local-mode entry gates with isolated production resources.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resources = std::fs::canonicalize(

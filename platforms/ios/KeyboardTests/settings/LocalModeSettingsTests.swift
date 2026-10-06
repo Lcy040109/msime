@@ -8,7 +8,7 @@ final class LocalModeSettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-local-modes-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-local-modes-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

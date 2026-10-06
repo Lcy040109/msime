@@ -79,7 +79,7 @@ HRESULT CLingyaoIME::_HandleCandidateFinalize(TfEditCookie ec, _In_ ITfContext *
             }
             // A Hanja clicked in the candidate window was chosen by the Server's session. The host session still holds the syllable with its list open, and would otherwise build the next letter on it. The Server refuses a click on a Zhuyin row, which would commit nothing, so only a commit made this way reaches here.
             if (hostOwnsComposition &&
-                msime::windows::scheme::AlwaysInlinePreedit(Global::InputModeScheme.load(std::memory_order_relaxed)))
+                lingyao::windows::scheme::AlwaysInlinePreedit(Global::InputModeScheme.load(std::memory_order_relaxed)))
             {
                 (void)_CancelHostComposition();
             }
@@ -319,18 +319,18 @@ HRESULT CLingyaoIME::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pC
     if (auto *host = _pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
     {
         std::string viewRaw, error;
-        msime::tsf::EngineResult view;
+        lingyao::tsf::EngineResult view;
         CCandidateListItem displayed;
         if (_pCandidateListUIPresenter->_GetSelectedEngineCandidate(&displayed) &&
             host->view(&viewRaw, &error) &&
-            msime::tsf::EngineSessionAdapter::parse_result(viewRaw, &view, &error) &&
+            lingyao::tsf::EngineSessionAdapter::parse_result(viewRaw, &view, &error) &&
             displayed.MatchesEngineView(view.view.session, view.view.generation))
         {
             std::string raw;
             if (host->select(displayed._EngineGeneration, displayed._EngineIndex, &raw, &error))
             {
-                msime::tsf::EngineResult selected;
-                if (msime::tsf::EngineSessionAdapter::parse_result(raw, &selected, &error) &&
+                lingyao::tsf::EngineResult selected;
+                if (lingyao::tsf::EngineSessionAdapter::parse_result(raw, &selected, &error) &&
                     selected.has_commit && !selected.commit.empty())
                 {
                     const int n = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, selected.commit.data(),
@@ -385,12 +385,12 @@ HRESULT CLingyaoIME::_HandleCandidateArrowKey( //
         uint32_t command = UINT32_MAX;
         switch (keyFunction)
         {
-        case FUNCTION_MOVE_PAGE_UP: command = MSIME_PREVIOUS_PAGE; break;
-        case FUNCTION_MOVE_PAGE_DOWN: command = MSIME_NEXT_PAGE; break;
-        case FUNCTION_MOVE_PAGE_TOP: command = MSIME_FIRST_CANDIDATE; break;
-        case FUNCTION_MOVE_PAGE_BOTTOM: command = MSIME_LAST_CANDIDATE; break;
-        case FUNCTION_MOVE_UP: command = MSIME_PREVIOUS_CANDIDATE; break;
-        case FUNCTION_MOVE_DOWN: command = MSIME_NEXT_CANDIDATE; break;
+        case FUNCTION_MOVE_PAGE_UP: command = LINGYAO_PREVIOUS_PAGE; break;
+        case FUNCTION_MOVE_PAGE_DOWN: command = LINGYAO_NEXT_PAGE; break;
+        case FUNCTION_MOVE_PAGE_TOP: command = LINGYAO_FIRST_CANDIDATE; break;
+        case FUNCTION_MOVE_PAGE_BOTTOM: command = LINGYAO_LAST_CANDIDATE; break;
+        case FUNCTION_MOVE_UP: command = LINGYAO_PREVIOUS_CANDIDATE; break;
+        case FUNCTION_MOVE_DOWN: command = LINGYAO_NEXT_CANDIDATE; break;
         default: break;
         }
         if (command != UINT32_MAX)
@@ -398,8 +398,8 @@ HRESULT CLingyaoIME::_HandleCandidateArrowKey( //
             std::string raw, error;
             if (host->command(command, &raw, &error))
             {
-                msime::tsf::EngineResult result;
-                if (msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
+                lingyao::tsf::EngineResult result;
+                if (lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
                 {
                     // Rebuild the presenter from the authoritative Engine view;
                     // the legacy presenter does not know the Engine page or

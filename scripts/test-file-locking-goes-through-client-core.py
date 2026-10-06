@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""File locking must go through `msime_client_core::file_lock`, never `std::fs::File` directly.
+"""File locking must go through `lingyao_client_core::file_lock`, never `std::fs::File` directly.
 
 std has no implementation of `File::lock` on Android: it fails outright rather than blocking, so
 anything that locks a file with it works on every desktop and simulator and then refuses on a
@@ -83,7 +83,7 @@ if findings:
         print(f"{path}:{number}: file lock taken outside client-core: {text}")
     sys.exit(
         "std::fs::File locking is unsupported on Android; call "
-        "msime_client_core::file_lock instead"
+        "lingyao_client_core::file_lock instead"
     )
 
 # The helper has to still be the thing everyone calls, or this guard is watching an empty room.

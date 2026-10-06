@@ -1,7 +1,7 @@
 #include "FocusedSession.h"
 #include <limits>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value) {
   if (!value)

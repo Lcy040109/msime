@@ -3,8 +3,8 @@ import Foundation
 /// Synchronous account state used by native settings surfaces that only need to
 /// decide whether to offer sign-in. The access token itself never crosses this
 /// bridge.
-@_cdecl("MSIMEBackendAccountSignedIn")
-public func msimeBackendAccountSignedIn() -> Bool {
+@_cdecl("LINGYAOBackendAccountSignedIn")
+public func lingyaoBackendAccountSignedIn() -> Bool {
   if ((try? BackendDesktopSessionFile().load()) ?? nil) != nil { return true }
   return ((try? BackendAnonymousAccount.sessionStorage().load()) ?? nil) != nil
 }
@@ -27,7 +27,7 @@ private actor AnonymousAccountBootstrap {
   }
 }
 
-@_cdecl("MSIMEEnsureAnonymousAccount")
-public func msimeEnsureAnonymousAccount() {
+@_cdecl("LINGYAOEnsureAnonymousAccount")
+public func lingyaoEnsureAnonymousAccount() {
   Task { await AnonymousAccountBootstrap.shared.runOnce() }
 }

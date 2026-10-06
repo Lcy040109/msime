@@ -287,11 +287,11 @@ mod tests {
             .collect()
     }
 
-    /// Parity with the C++ zinnia on the shipped model. `testdata/strokes.tsv` holds the reference test's 中 (and its moved copy) plus deterministic, densely sampled, slightly wobbling trajectories that exercise the vertex splitting; `testdata/zinnia-12best.tsv` is the reference's raw 12-best with scores for each line, from `handwriting.cpp`'s normalisation over the vendored zinnia sources built with clang `-O2 -ffp-contract=off`. Needs the model in `MSIME_HANDWRITING_MODEL` and is skipped, with the reason printed, without it.
+    /// Parity with the C++ zinnia on the shipped model. `testdata/strokes.tsv` holds the reference test's 中 (and its moved copy) plus deterministic, densely sampled, slightly wobbling trajectories that exercise the vertex splitting; `testdata/zinnia-12best.tsv` is the reference's raw 12-best with scores for each line, from `handwriting.cpp`'s normalisation over the vendored zinnia sources built with clang `-O2 -ffp-contract=off`. Needs the model in `LINGYAO_HANDWRITING_MODEL` and is skipped, with the reason printed, without it.
     #[test]
     fn matches_zinnia_on_the_shipped_model() {
-        let Some(path) = std::env::var_os("MSIME_HANDWRITING_MODEL") else {
-            eprintln!("skipped: set MSIME_HANDWRITING_MODEL to handwriting-zh_CN.model");
+        let Some(path) = std::env::var_os("LINGYAO_HANDWRITING_MODEL") else {
+            eprintln!("skipped: set LINGYAO_HANDWRITING_MODEL to handwriting-zh_CN.model");
             return;
         };
         let model = load(Path::new(&path)).unwrap();

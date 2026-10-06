@@ -4,8 +4,8 @@
 
 use crate::*;
 use key_sound::{KeyClass, PluginRoots, SessionSound};
-use msime_client_core::plugins::mentions::{MentionEntry, MentionStore};
-use msime_client_core::plugins::{self, PluginFailure};
+use lingyao_client_core::plugins::mentions::{MentionEntry, MentionStore};
+use lingyao_client_core::plugins::{self, PluginFailure};
 
 /// Run `action` on the session's sound settings. False for an unknown handle, a wrong thread or a reentrant call, and after a panic, which must not cross the C boundary.
 fn with_sound(handle: u64, action: impl FnOnce(&SessionSound) -> bool) -> bool {
@@ -24,16 +24,16 @@ fn with_sound(handle: u64, action: impl FnOnce(&SessionSound) -> bool) -> bool {
 
 /// Queue the sound of one key press. `key_class` is 0 for any other key, 1 space, 2 enter, 3 backspace; anything else queues nothing.
 #[no_mangle]
-pub extern "C" fn msime_client_key_sound(handle: u64, key_class: u32) -> bool {
+pub extern "C" fn lingyao_client_key_sound(handle: u64, key_class: u32) -> bool {
     let Some(class) = KeyClass::from_code(key_class) else {
         return false;
     };
     with_sound(handle, |sound| key_sound::key(sound, class))
 }
 
-/// The typing effect of one key or commit, packed into one integer; `include/msime_client.h` documents the event codes and the bits. 0 for an unknown handle, a wrong thread or a reentrant call, and after a panic, which must not cross the C boundary.
+/// The typing effect of one key or commit, packed into one integer; `include/lingyao_client.h` documents the event codes and the bits. 0 for an unknown handle, a wrong thread or a reentrant call, and after a panic, which must not cross the C boundary.
 #[no_mangle]
-pub extern "C" fn msime_client_typing_effect(handle: u64, event: u32) -> u32 {
+pub extern "C" fn lingyao_client_typing_effect(handle: u64, event: u32) -> u32 {
     catch_unwind(AssertUnwindSafe(|| {
         SESSIONS.with(|sessions| {
             let Ok(sessions) = sessions.try_borrow() else {
@@ -47,10 +47,10 @@ pub extern "C" fn msime_client_typing_effect(handle: u64, event: u32) -> u32 {
     .unwrap_or(0)
 }
 
-/// The session's resolved typing effect: the selected effect pack, or the preferences' style and intensity without one, as `{pack, issue, style, intensity, colors, duration_ms, particles, combo_counter}`. Read it when the preferences change or a field gains focus, not per key: `msime_client_typing_effect` stays the key-path call.
-/// The returned response must be released with `msime_client_string_free`.
+/// The session's resolved typing effect: the selected effect pack, or the preferences' style and intensity without one, as `{pack, issue, style, intensity, colors, duration_ms, particles, combo_counter}`. Read it when the preferences change or a field gains focus, not per key: `lingyao_client_typing_effect` stays the key-path call.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub extern "C" fn msime_client_typing_effect_settings(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_typing_effect_settings(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             Ok(key_sound::effect_settings(&session.sound))
@@ -60,13 +60,13 @@ pub extern "C" fn msime_client_typing_effect_settings(handle: u64) -> *mut c_cha
 
 /// Queue the sound of a commit: the key pack's commit sample, the melody's next note when it advances on commits, or both.
 #[no_mangle]
-pub extern "C" fn msime_client_commit_sound(handle: u64) -> bool {
+pub extern "C" fn lingyao_client_commit_sound(handle: u64) -> bool {
     with_sound(handle, key_sound::commit)
 }
 
 /// Whether background music may play now: true while the input method is active in a field that is not a secure one, false otherwise.
 #[no_mangle]
-pub extern "C" fn msime_client_music_set_active(handle: u64, active: bool) -> bool {
+pub extern "C" fn lingyao_client_music_set_active(handle: u64, active: bool) -> bool {
     with_sound(handle, |sound| key_sound::music_active(sound, active))
 }
 
@@ -109,9 +109,9 @@ unsafe fn pack_request(
 /// The validated files of one sound pack, for a host that plays packs itself.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_key_sound_pack(
+pub unsafe extern "C" fn lingyao_client_key_sound_pack(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -132,9 +132,9 @@ pub unsafe extern "C" fn msime_client_key_sound_pack(
 /// The validated tracks of one music pack, for a host that streams music itself.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_music_pack(request: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_music_pack(request: *const u8, length: usize) -> *mut c_char {
     response(|| {
         // SAFETY: forwarded from this function's own contract.
         let (roots, pack) = unsafe {
@@ -149,15 +149,15 @@ pub unsafe extern "C" fn msime_client_music_pack(request: *const u8, length: usi
     })
 }
 
-/// Largest `msime_client_plugins` request: a full name list at its document bound, with room for JSON escaping and the two paths.
+/// Largest `lingyao_client_plugins` request: a full name list at its document bound, with room for JSON escaping and the two paths.
 const MAX_PLUGINS_REQUEST_BYTES: usize = 2 * 1024 * 1024;
 
 /// The 插件 page's pack store and @ name list, for a settings host other than the desktop shell. Every rule and every failure code is client-core's, the same ones the desktop shell answers its page with.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_plugins(request: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_plugins(request: *const u8, length: usize) -> *mut c_char {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
     struct Request {

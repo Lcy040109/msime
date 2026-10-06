@@ -5,7 +5,7 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   using namespace FanyImeVoiceController;
   const std::string mode = argc == 2 ? argv[1] : "ok";
   auto channel = std::make_shared<VoiceControllerChannel>();

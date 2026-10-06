@@ -6,7 +6,7 @@
 #include <string_view>
 #include "windows_ipc.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 enum class VoiceControlCommand : uint32_t {
   Start = FanyImeVoiceControl::Start,
@@ -29,4 +29,4 @@ inline constexpr size_t kVoiceControlMessageChars = FanyImeVoiceControl::MaxMess
 std::optional<std::wstring> encode_voice_control(const VoiceControlMessage &message);
 std::optional<VoiceControlMessage> decode_voice_control(std::wstring_view text);
 
-} // namespace msime::windows
+} // namespace lingyao::windows

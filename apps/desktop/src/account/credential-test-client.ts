@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ApiCredentialTestResult, ApiCredentialTestService } from "@msime/ui";
+import type { ApiCredentialTestResult, ApiCredentialTestService } from "@lingyao/ui";
 
 /** Route credential probes through the platform-bounded Tauri command. */
 export function testDesktopApiCredential(

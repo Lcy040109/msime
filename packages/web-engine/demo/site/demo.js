@@ -1,5 +1,5 @@
 // 演示页。输入区的文字、光标和行内拼音都由这里自己画；按键由一个看不见的密码框接收：浏览器在密码框里强制停用系统输入法（macOS 进入安全输入，Windows 解除输入法关联），按键原样到达页面，交给灵耀的引擎处理。普通的可编辑或可聚焦元素都挡不住系统输入法。右侧的选项改动立刻作用到引擎，下方的接入代码按同样的选项生成。
-import { KeyKind, SKINS, createCandidateBar, createMsimeEngine, createShiftTap, keyFromEvent, osImeIntercepting, packKey, resolveSkin, version } from "./msime/index.js";
+import { KeyKind, SKINS, createCandidateBar, createLingyaoEngine, createShiftTap, keyFromEvent, osImeIntercepting, packKey, resolveSkin, version } from "./lingyao/index.js";
 
 const PINYIN = new Set(["quanpin", "xiaohe", "ziranma"]);
 const NAMES = { quanpin: "全拼", xiaohe: "小鹤双拼", ziranma: "自然码双拼", wubi86: "五笔 86" };
@@ -61,7 +61,7 @@ const options = { ...DEFAULTS };
 
 const $ = (id) => document.getElementById(id);
 
-// 嵌入模式（?embed）：msime.app 用 iframe 嵌入这个页面时只显示演练场，加载时不抢焦点（否则打开官网时键盘焦点会被拉进 iframe），并把内容高度告诉外层页面，让它把 iframe 调到正好的高度。深浅色跟外层页面走：?theme=light|dark 给初始值，外层切换主题时发 msime-demo:theme 消息；页面、候选栏和皮肤缩略图一起换。两边的 color-scheme 不一致时浏览器会给 iframe 画上不透明的底色，所以这里必须跟外层一致。
+// 嵌入模式（?embed）：msime.app 用 iframe 嵌入这个页面时只显示演练场，加载时不抢焦点（否则打开官网时键盘焦点会被拉进 iframe），并把内容高度告诉外层页面，让它把 iframe 调到正好的高度。深浅色跟外层页面走：?theme=light|dark 给初始值，外层切换主题时发 lingyao-demo:theme 消息；页面、候选栏和皮肤缩略图一起换。两边的 color-scheme 不一致时浏览器会给 iframe 画上不透明的底色，所以这里必须跟外层一致。
 const PARAMS = new URLSearchParams(location.search);
 const EMBED = PARAMS.has("embed");
 
@@ -75,14 +75,14 @@ if (EMBED) {
   document.documentElement.dataset.embed = "";
   applyTheme(PARAMS.get("theme"));
   window.addEventListener("message", (e) => {
-    if (e.source !== window.parent || e.data?.type !== "msime-demo:theme") return;
+    if (e.source !== window.parent || e.data?.type !== "lingyao-demo:theme") return;
     applyTheme(e.data.theme);
     applySkin();
   });
   if (window.parent !== window) {
     // 报内容实际的底部，不用 scrollHeight：它不会小于 iframe 当前的高度，iframe 一旦比内容高就再也缩不回来。
     const main = document.querySelector("main");
-    const report = () => window.parent.postMessage({ type: "msime-demo:height", height: Math.ceil(main.getBoundingClientRect().bottom + window.scrollY) }, "*");
+    const report = () => window.parent.postMessage({ type: "lingyao-demo:height", height: Math.ceil(main.getBoundingClientRect().bottom + window.scrollY) }, "*");
     new ResizeObserver(report).observe(document.body);
   }
 }
@@ -180,7 +180,7 @@ function send(run) {
   pending += 1;
   run()
     .then((next) => apply(gen, next, performance.now() - t0))
-    .catch((error) => console.error("msime:", error))
+    .catch((error) => console.error("lingyao:", error))
     .finally(() => {
       pending -= 1;
     });
@@ -298,7 +298,7 @@ $("copy").addEventListener("click", (e) => copyText(e.currentTarget, text));
 // ---- 引擎面板 ----
 
 function showFacts(timings, memoryBytes) {
-  $("fact-version").textContent = `@msime/web-engine ${version}`;
+  $("fact-version").textContent = `@lingyao/web-engine ${version}`;
   $("fact-scheme").textContent = NAMES[options.scheme] + (PINYIN.has(options.scheme) && built.model ? " + 整句模型" : "");
   if (timings) {
     $("fact-download").textContent = ms(timings.fetch);
@@ -342,7 +342,7 @@ function engineOptions() {
 
 const call = (extra = []) => {
   const parts = [...engineOptions(), ...extra];
-  return parts.length ? `createMsimeEngine({ ${parts.join(", ")} })` : "createMsimeEngine()";
+  return parts.length ? `createLingyaoEngine({ ${parts.join(", ")} })` : "createLingyaoEngine()";
 };
 
 // 皮肤对象在代码里展开写出，两张 SVG 的 data: 地址太长，省略成 "…"。
@@ -378,14 +378,14 @@ function copyFlags() {
 const CODE = {
   textarea: () => ({
     note: "最省事的接法：组字时按键交给引擎，空闲时的回车、退格、方向键仍由浏览器处理。访客开着系统中文输入法时，文本框的按键会先被系统输入法接走，需要切换到英文输入。",
-    code: `import { createMsimeEngine, attachInput } from "@msime/web-engine";
+    code: `import { createLingyaoEngine, attachInput } from "@lingyao/web-engine";
 
 const engine = await ${call()};${modelLine()}
 attachInput(document.querySelector("textarea"), engine${barOptions() ? `, ${barOptions()}` : ""});`,
   }),
   custom: () => ({
     note: "这个页面的做法：按键由一个看不见的密码框接收，浏览器在密码框里停用系统输入法，访客不用切换到英文；按键交给 engine.keys()，按返回的帧更新自己画的文字，候选栏用 SDK 的 createCandidateBar 画在光标下方。",
-    code: `import { createMsimeEngine, createCandidateBar, keyFromEvent } from "@msime/web-engine";
+    code: `import { createLingyaoEngine, createCandidateBar, keyFromEvent } from "@lingyao/web-engine";
 
 const engine = await ${call()};${modelLine()}
 // 看不见的密码框接收按键：浏览器在密码框里停用系统输入法。name="captcha" 让 Bitwarden 不弹菜单，autocomplete 别写 new-password
@@ -412,7 +412,7 @@ function render(frame) {
   }),
   palette: () => ({
     note: "页面有自己的设计、想自己画候选栏时，只取灵耀皮肤解析好的配色和圆角：结果与桌面端 theme::resolve 一致，值都校验过，可以直接设到 CSS 变量上。",
-    code: `import { resolveSkin } from "@msime/web-engine";
+    code: `import { resolveSkin } from "@lingyao/web-engine";
 
 const { palette, geometry, variables } = resolveSkin(${options.skin === "custom" ? "mySkin" : `"${options.skin}"`}, { dark: ${effectiveDark()}, layout: "${options.layout}" });
 
@@ -423,20 +423,20 @@ for (const [name, value] of Object.entries(variables)) myBar.style.setProperty(n
   deploy: () => ({
     note: "三种部署方式任选其一。copy 的参数按当前方案只复制用得到的资源。",
     code: `# 1. 静态站点（GitHub Pages、Vercel、Cloudflare Pages / Workers）
-npx @msime/web-engine copy public/msime ${copyFlags()}
+npx @lingyao/web-engine copy public/lingyao ${copyFlags()}
 
 <script type="module">
-  import { createMsimeEngine, attachInput } from "/msime/index.js";
+  import { createLingyaoEngine, attachInput } from "/lingyao/index.js";
   const engine = await ${call()};
   attachInput(document.querySelector("textarea"), engine);
 </script>
 
 # 2. 打包器（Vite、webpack）：资源仍按第 1 步复制，再告诉 SDK 位置
-npm install @msime/web-engine
-const engine = await ${call(['assetBase: "/msime/assets/"'])};
+npm install @lingyao/web-engine
+const engine = await ${call(['assetBase: "/lingyao/assets/"'])};
 
 # 3. CDN，什么都不用部署
-import { createMsimeEngine, attachInput } from "https://cdn.jsdelivr.net/npm/@msime/web-engine@${version}/index.js";`,
+import { createLingyaoEngine, attachInput } from "https://cdn.jsdelivr.net/npm/@msime/web-engine@${version}/index.js";`,
   }),
 };
 
@@ -544,7 +544,7 @@ async function play(example, button) {
     }
     await sleep(500);
   } catch (error) {
-    console.error("msime:", error);
+    console.error("lingyao:", error);
   } finally {
     $("hint").replaceChildren(...hintBackup);
     delete button.dataset.playing;
@@ -746,7 +746,7 @@ async function applyOptions() {
       $("progress").firstElementChild.style.width = "0";
       setStatus("loading", `正在加载${NAMES[options.scheme]}…`);
       const t0 = performance.now();
-      engine = await createMsimeEngine({
+      engine = await createLingyaoEngine({
         scheme: options.scheme,
         pageSize: options.pageSize,
         model: options.model,
@@ -772,7 +772,7 @@ async function applyOptions() {
       setStatus("ready", `就绪 · ${NAMES[options.scheme]}`);
       showFacts(null, engine.memoryBytes);
     }
-    $("build").textContent = `@msime/web-engine ${version}`;
+    $("build").textContent = `@lingyao/web-engine ${version}`;
   } catch (error) {
     const reason = error.code === "unsupported" ? "这个浏览器不支持 WebAssembly 或 DecompressionStream，请换用新版 Chrome、Edge、Firefox 或 Safari。" : error.message;
     setStatus("error", `加载失败：${reason}`);

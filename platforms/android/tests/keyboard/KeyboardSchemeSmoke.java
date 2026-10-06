@@ -1,5 +1,5 @@
-import app.msime.android.AppEdition;
-import app.msime.android.KeyboardScheme;
+import app.lingyao.android.AppEdition;
+import app.lingyao.android.KeyboardScheme;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -157,11 +157,11 @@ public final class KeyboardSchemeSmoke {
         check(languages.equals(List.of(KeyboardScheme.QUANPIN, KeyboardScheme.CANTONESE,
             KeyboardScheme.ZHUYIN, KeyboardScheme.VIETNAMESE, KeyboardScheme.TIBETAN)));
         // A scheme is offered only when its dictionary is in the recorded directory; Vietnamese needs none.
-        check(KeyboardScheme.CANTONESE.languageDictionary().equals("msime-cantonese.db"));
-        check(KeyboardScheme.ZHUYIN.languageDictionary().equals("msime-zhuyin.db"));
-        check(KeyboardScheme.ZHUYIN_NINE_KEY.languageDictionary().equals("msime-zhuyin.db"));
+        check(KeyboardScheme.CANTONESE.languageDictionary().equals("lingyao-cantonese.db"));
+        check(KeyboardScheme.ZHUYIN.languageDictionary().equals("lingyao-zhuyin.db"));
+        check(KeyboardScheme.ZHUYIN_NINE_KEY.languageDictionary().equals("lingyao-zhuyin.db"));
         check(!KeyboardScheme.ZHUYIN_NINE_KEY.installed("") && !KeyboardScheme.ZHUYIN_NINE_KEY.installed(null));
-        check(KeyboardScheme.STROKE.languageDictionary().equals("msime-stroke.db"));
+        check(KeyboardScheme.STROKE.languageDictionary().equals("lingyao-stroke.db"));
         check(!KeyboardScheme.STROKE.installed("") && !KeyboardScheme.STROKE.installed(null));
         check(KeyboardScheme.installedOf(List.of(KeyboardScheme.STROKE), "", FULL).equals(List.of(KeyboardScheme.QUANPIN)));
         check(KeyboardScheme.VIETNAMESE.languageDictionary() == null && KeyboardScheme.QUANPIN.languageDictionary() == null);
@@ -172,9 +172,9 @@ public final class KeyboardSchemeSmoke {
         check(KeyboardScheme.installedOf(languages, "", FULL).equals(List.of(
             KeyboardScheme.QUANPIN, KeyboardScheme.VIETNAMESE, KeyboardScheme.TIBETAN)));
         check(KeyboardScheme.installedOf(List.of(KeyboardScheme.ZHUYIN), "", FULL).equals(List.of(KeyboardScheme.QUANPIN)));
-        Path directory = Files.createTempDirectory("msime-language-dictionaries");
+        Path directory = Files.createTempDirectory("lingyao-language-dictionaries");
         try {
-            Files.write(directory.resolve("msime-zhuyin.db"), new byte[] {1});
+            Files.write(directory.resolve("lingyao-zhuyin.db"), new byte[] {1});
             String recorded = directory.toAbsolutePath().toString();
             check(KeyboardScheme.ZHUYIN.installed(recorded) && KeyboardScheme.ZHUYIN_NINE_KEY.installed(recorded)
                 && !KeyboardScheme.CANTONESE.installed(recorded)
@@ -184,8 +184,8 @@ public final class KeyboardSchemeSmoke {
                 KeyboardScheme.QUANPIN, KeyboardScheme.ZHUYIN, KeyboardScheme.VIETNAMESE, KeyboardScheme.TIBETAN)));
             check(KeyboardScheme.resolveEnabledSelection(KeyboardScheme.QUANPIN, "cantonese",
                 KeyboardScheme.installedOf(languages, recorded, FULL), FULL) == KeyboardScheme.QUANPIN);
-            // msime-stroke.db alone makes Stroke available and nothing else.
-            Files.write(directory.resolve("msime-stroke.db"), new byte[] {1});
+            // lingyao-stroke.db alone makes Stroke available and nothing else.
+            Files.write(directory.resolve("lingyao-stroke.db"), new byte[] {1});
             check(KeyboardScheme.STROKE.installed(recorded) && !KeyboardScheme.STROKE.installed("relative/stroke"));
             List<KeyboardScheme> withStroke = KeyboardScheme.enabledFromPreferenceIds(List.of(
                 "stroke", "cantonese", "quanpin"), FULL);
@@ -194,8 +194,8 @@ public final class KeyboardSchemeSmoke {
             check(KeyboardScheme.resolveEnabledSelection(KeyboardScheme.QUANPIN, "stroke",
                 KeyboardScheme.installedOf(withStroke, recorded, FULL), FULL) == KeyboardScheme.STROKE);
         } finally {
-            Files.deleteIfExists(directory.resolve("msime-stroke.db"));
-            Files.deleteIfExists(directory.resolve("msime-zhuyin.db"));
+            Files.deleteIfExists(directory.resolve("lingyao-stroke.db"));
+            Files.deleteIfExists(directory.resolve("lingyao-zhuyin.db"));
             Files.deleteIfExists(directory);
         }
         editions();

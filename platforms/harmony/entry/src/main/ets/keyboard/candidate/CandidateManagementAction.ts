@@ -2,7 +2,7 @@ import { SchemeTraits } from "../SchemeTraits";
 
 /**
  * Candidate-management menu order and host operation metadata, ported from
- * platforms/android/java/app/msime/android/CandidateManagementAction.java.
+ * platforms/android/java/app/lingyao/android/CandidateManagementAction.java.
  *
  * The menu item ids are derived from the declaration order, so the order is part of the contract with
  * whatever renders the menu.

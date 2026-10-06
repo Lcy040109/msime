@@ -2,11 +2,11 @@
 
 #import <AppKit/AppKit.h>
 
-@class MSIMEAppearancePreferences;
+@class LINGYAOAppearancePreferences;
 @interface LingyaoSkinSettingsView : NSView
-@property(nonatomic, weak, readonly) MSIMEAppearancePreferences *preferences;
+@property(nonatomic, weak, readonly) LINGYAOAppearancePreferences *preferences;
 @property(nonatomic, copy) BOOL (^directoryOpener)(NSURL *url);
-- (instancetype)initWithFrame:(NSRect)frameRect preferences:(MSIMEAppearancePreferences *)preferences;
+- (instancetype)initWithFrame:(NSRect)frameRect preferences:(LINGYAOAppearancePreferences *)preferences;
 - (void)reload;
 - (void)refreshSelection;
 @end

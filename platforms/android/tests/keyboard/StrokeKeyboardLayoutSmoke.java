@@ -1,6 +1,6 @@
-import app.msime.android.KeyboardActionRow;
-import app.msime.android.KeyboardLayout;
-import app.msime.android.StrokeKeyboardLayout;
+import app.lingyao.android.KeyboardActionRow;
+import app.lingyao.android.KeyboardLayout;
+import app.lingyao.android.StrokeKeyboardLayout;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,7 +1,7 @@
 #include "ClipboardPresentation.h"
 #include <cassert>
 int main() {
-  msime::windows::ClipboardMailbox mailbox;
+  lingyao::windows::ClipboardMailbox mailbox;
   assert(!mailbox.snapshot());
   mailbox.publish(true, {"alpha", "beta"});
   auto first = mailbox.snapshot();

@@ -12,7 +12,7 @@ TOOL = str(Path(sys.argv.pop(1)).resolve())
 
 class ClipboardTool(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix="msime-history-")
+        directory = tempfile.TemporaryDirectory(prefix="lingyao-history-")
         self.addCleanup(directory.cleanup)
         self.path = Path(directory.name) / "history.json"
 

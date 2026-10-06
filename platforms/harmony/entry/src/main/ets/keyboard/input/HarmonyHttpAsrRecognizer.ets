@@ -190,7 +190,7 @@ export class HarmonyHttpAsrRecognizer {
     const endpoint: string = HttpAsrConfigurationPolicy.endpoint(config);
     const model: string = HttpAsrConfigurationPolicy.model(config);
     const credential: string = HttpAsrConfigurationPolicy.token(config);
-    const boundary: string = `----msime-${util.generateRandomUUID(false).replace(/-/g, '')}`;
+    const boundary: string = `----lingyao-${util.generateRandomUUID(false).replace(/-/g, '')}`;
     const body: ArrayBuffer = this.multipart(boundary, model, config.asr_provider, config.language, wav);
     const request: http.HttpRequest = http.createHttp();
     installNoRedirectGuard(request);

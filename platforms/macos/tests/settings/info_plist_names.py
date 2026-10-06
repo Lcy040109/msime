@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The input menu names an input source by looking its identifier up in InfoPlist.strings.
 
-Nothing fails when the key is missing. TISRegisterInputSource still returns noErr, the mode still appears, the menu icon still draws - and where the name belongs the menu prints the identifier itself, so the picker reads `app.msime.inputmethod.LingyaoIME.Hans` in a list beside 日文 and ABC.
+Nothing fails when the key is missing. TISRegisterInputSource still returns noErr, the mode still appears, the menu icon still draws - and where the name belongs the menu prints the identifier itself, so the picker reads `app.lingyao.inputmethod.LingyaoIME.Hans` in a list beside 日文 and ABC.
 
 A rename is what produces that. The identifiers live in Info.plist.in and the names live in one .strings per language, with nothing connecting the two files, so changing the identifiers in the plist leaves the old keys behind as valid syntax attached to an input source that no longer exists.
 
@@ -25,8 +25,8 @@ from pathlib import Path
 CONSUMER_ROOTS = ("crates", "apps/desktop/src-tauri/src", "platforms/macos/src", "platforms/macos/tests")
 CONSUMER_SUFFIXES = {".rs", ".m", ".mm", ".h", ".cpp", ".swift"}
 # Identifier-shaped literals belonging to this input method. Narrow enough to leave test defaults
-# domains alone; the settings bundle and its runtime state now share app.msime.macos.
-IDENTIFIER = re.compile(r"app\.msime\.[A-Za-z0-9._-]*inputmethod[A-Za-z0-9._-]*")
+# domains alone; the settings bundle and its runtime state now share app.lingyao.macos.
+IDENTIFIER = re.compile(r"app\.lingyao\.[A-Za-z0-9._-]*inputmethod[A-Za-z0-9._-]*")
 
 
 def localized(path: Path) -> dict[str, str]:

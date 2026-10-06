@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The unscaled baseline every Win32 DPI API is expressed against.
 inline constexpr unsigned int kWaveOverlayBaselineDpi = 96;
 
@@ -29,4 +29,4 @@ inline float wave_overlay_scale(unsigned int dpi) {
   return static_cast<float>(wave_overlay_dpi(dpi, 0)) /
          static_cast<float>(kWaveOverlayBaselineDpi);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

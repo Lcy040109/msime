@@ -4,11 +4,11 @@ The native IMK emoji, handwriting and cloud clipboard routes launch their shared
 
 ## Packaged handwriting
 
-The macOS release package no longer carries the handwriting model. The settings app downloads the pinned model (`resources/handwriting-model.lock.json`) the first time the handwriting panel opens, into `resource-packs/handwriting` under its data directory (`~/Library/Application Support/app.msime.macos` by default), with the Tegaki model license beside it; the Zinnia license still ships under `Contents/Resources/handwriting`. Lookup prefers the downloaded copy and falls back to a model under `Contents/Resources/handwriting` (a development bundle, or a package built before the model was dropped), which is found relative to the running executable so moving the application does not break recognition. Explicit host options and provider/model overrides retain precedence.
+The macOS release package no longer carries the handwriting model. The settings app downloads the pinned model (`resources/handwriting-model.lock.json`) the first time the handwriting panel opens, into `resource-packs/handwriting` under its data directory (`~/Library/Application Support/app.lingyao.macos` by default), with the Tegaki model license beside it; the Zinnia license still ships under `Contents/Resources/handwriting`. Lookup prefers the downloaded copy and falls back to a model under `Contents/Resources/handwriting` (a development bundle, or a package built before the model was dropped), which is found relative to the running executable so moving the application does not break recognition. Explicit host options and provider/model overrides retain precedence.
 
 The engine's zinnia port (`crates/engine/src/handwriting`) performs single-character ordered-stroke recognition; host-api splits a written line into character cells first. This is not sentence segmentation or image OCR. An exploratory Apple Vision adapter executed successfully but returned no candidates for the tested isolated glyphs; it was removed rather than treating a successful API call as handwriting parity. The shared panel uses the packaged engine implementation without needing a separate recognizer service. Recognition and composition algorithms remain out of the platform host and UI.
 
-`pnpm --filter @msime/desktop tauri build --debug --bundles app --no-sign` produces an unsigned local bundle for development. Release signing and installation are described in `README.md`.
+`pnpm --filter @lingyao/desktop tauri build --debug --bundles app --no-sign` produces an unsigned local bundle for development. Release signing and installation are described in `README.md`.
 
 ## Transport
 
@@ -20,13 +20,13 @@ On selection, Tauri checks the target application's launch identity and refuses 
 
 ## Local verification
 
-- `cargo test -p msime-host-macos` covers real Unix transport framing, wrong-peer rejection, lost acknowledgements, input bounds, and invalid configuration.
-- `cargo test -p msime-desktop --lib` covers shared tool startup routing, route isolation, mutually exclusive close/submit, and real Engine recognition of synthetic Chinese strokes from a relocated bundle-shaped resource directory.
+- `cargo test -p lingyao-host-macos` covers real Unix transport framing, wrong-peer rejection, lost acknowledgements, input bounds, and invalid configuration.
+- `cargo test -p lingyao-desktop --lib` covers shared tool startup routing, route isolation, mutually exclusive close/submit, and real Engine recognition of synthetic Chinese strokes from a relocated bundle-shaped resource directory.
 - `desktop-input-session-test` covers native framing, cancellation, refusal, malformed requests, duplicate completion, permissions, and cleanup.
-- Build `cargo build -p msime-host-macos --example panel_session_probe`, configure CMake with `MSIME_PANEL_SESSION_PROBE` pointing to that binary, and run `desktop-input-interop` for a real Rust child process/native listener exchange.
+- Build `cargo build -p lingyao-host-macos --example panel_session_probe`, configure CMake with `LINGYAO_PANEL_SESSION_PROBE` pointing to that binary, and run `desktop-input-interop` for a real Rust child process/native listener exchange.
 - `desktop-settings-launcher-test` checks route/environment propagation and the main-thread launch authorization callback. `tool-text-return-test` checks exact-client, generation, and expiration guards.
-- Build `MSIMEClientInputMethod` to compile the Objective-C IMK integration.
+- Build `LINGYAOClientInputMethod` to compile the Objective-C IMK integration.
 
 These tests use synthetic input and do not activate editors. The cloud interop test combines native account RPC and one-shot input sockets in the same Rust child process, then takes the full multiline text through the captured-client generation guard.
 
-Reference baseline for the clipboard contract: MSIME-Windows default branch `develop` at `cb534a97fd19bc9656645a7baa4ee019487279a8`.
+Reference baseline for the clipboard contract: LINGYAO-Windows default branch `develop` at `cb534a97fd19bc9656645a7baa4ee019487279a8`.

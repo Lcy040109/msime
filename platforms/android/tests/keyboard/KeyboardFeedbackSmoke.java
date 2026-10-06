@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardFeedbackPreferences;
-import app.msime.android.KeyboardFeedbackPreferences.HapticStrength;
+import app.lingyao.android.KeyboardFeedbackPreferences;
+import app.lingyao.android.KeyboardFeedbackPreferences.HapticStrength;
 
 public final class KeyboardFeedbackSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

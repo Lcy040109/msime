@@ -1,15 +1,15 @@
 use crate::platform::mobile::mobile_account_preferences::{
     frequency_account_preferences, insert_bool, insert_string, valid_mobile_haptic_strength,
 };
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     validate_account_preferences, AccountError, AccountPreferenceValue, AccountPreferences,
 };
-use msime_client_core::preferences::{
+use lingyao_client_core::preferences::{
     ChineseScheme, FrequencyMode, InputScheme, Preferences, ShuangpinProfile, TouchKeyboardLayout,
     TouchKeyboardScheme, TouchKeyboardSkinDesign, WubiProfile,
 };
-use msime_client_core::skin::theme::GlobalTheme;
-use msime_tauri_mobile_platform::IosKeyboardPreferences;
+use lingyao_client_core::skin::theme::GlobalTheme;
+use lingyao_tauri_mobile_platform::IosKeyboardPreferences;
 use std::collections::BTreeMap;
 
 fn decoded_custom_skin(
@@ -506,13 +506,13 @@ fn select_touch_scheme(preferences: &mut Preferences, requested: TouchKeyboardSc
 #[cfg(test)]
 mod tests {
     use super::{local_account_preferences, IosPreferencePlan};
-    use msime_client_core::account::{AccountError, AccountPreferenceValue, AccountPreferences};
-    use msime_client_core::preferences::{
+    use lingyao_client_core::account::{AccountError, AccountPreferenceValue, AccountPreferences};
+    use lingyao_client_core::preferences::{
         InputScheme, Preferences, ShuangpinProfile, TouchKeyboardLayout, TouchKeyboardScheme,
         WubiProfile,
     };
-    use msime_client_core::skin::theme::GlobalTheme;
-    use msime_tauri_mobile_platform::IosKeyboardPreferences;
+    use lingyao_client_core::skin::theme::GlobalTheme;
+    use lingyao_tauri_mobile_platform::IosKeyboardPreferences;
     use std::collections::BTreeMap;
 
     fn native() -> IosKeyboardPreferences {
@@ -535,7 +535,7 @@ mod tests {
 
     #[test]
     fn cantonese_zhuyin_and_stroke_are_remembered_and_vietnamese_keeps_the_last_chinese_scheme() {
-        use msime_client_core::preferences::ChineseScheme;
+        use lingyao_client_core::preferences::ChineseScheme;
         for (scheme, remembered) in [
             (InputScheme::Cantonese, Some(ChineseScheme::Cantonese)),
             (InputScheme::Zhuyin, Some(ChineseScheme::Zhuyin)),
@@ -573,7 +573,7 @@ mod tests {
 
     #[test]
     fn the_cantonese_zhuyin_vietnamese_and_stroke_touch_schemes_select_their_input_schemes() {
-        use msime_client_core::preferences::ChineseScheme;
+        use lingyao_client_core::preferences::ChineseScheme;
         for (native, touch, scheme, remembered) in [
             (
                 "cantonese",
@@ -692,7 +692,7 @@ mod tests {
         }
         // No design anywhere: the key is left out rather than uploading a design nobody made.
         assert!(!settings.contains_key("platform.ios.custom_keyboard_skin"));
-        let design = msime_client_core::preferences::TouchKeyboardSkinDesign::default();
+        let design = lingyao_client_core::preferences::TouchKeyboardSkinDesign::default();
         let settings =
             local_account_preferences(&native(), &Preferences::default(), Some(&design)).unwrap();
         assert_eq!(

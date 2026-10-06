@@ -1,7 +1,7 @@
 /**
  * What the 2in1 background music plays and when, decided without a device.
  *
- * The desktop hosts stream music through host-api's player (`crates/host-api/src/key_sound/player.rs`, `tick_music`), which HarmonyOS does not link; this host streams the same packs through AVPlayer instead. The rules are that player's: music plays only while switched on with a pack chosen and while the host says the input method is active in a field that is not a secure one; tracks play in the pack's order and start over after the last; a track whose length is not within the pack bound is skipped; a pack with no playable track plays nothing until the settings change. Validating a pack is not ported: `msime_client_music_pack` answers with the tracks client-core's validation accepted.
+ * The desktop hosts stream music through host-api's player (`crates/host-api/src/key_sound/player.rs`, `tick_music`), which HarmonyOS does not link; this host streams the same packs through AVPlayer instead. The rules are that player's: music plays only while switched on with a pack chosen and while the host says the input method is active in a field that is not a secure one; tracks play in the pack's order and start over after the last; a track whose length is not within the pack bound is skipped; a pack with no playable track plays nothing until the settings change. Validating a pack is not ported: `lingyao_client_music_pack` answers with the tracks client-core's validation accepted.
  */
 import { MusicPreferenceDocument, PluginPreferenceDocument } from "./KeySoundPolicy";
 
@@ -14,7 +14,7 @@ export interface MusicSettings {
   readonly volume: number;
 }
 
-/** The value `msime_client_music_pack` answers with. */
+/** The value `lingyao_client_music_pack` answers with. */
 export interface MusicPackTracks {
   id: string;
   name: string;
@@ -91,7 +91,7 @@ export class MusicPolicy {
   }
 
   /**
-   * Whether music may play now: an editor has focus and its attributes are known, it is not a secure field, and nothing is being recorded. The desktop hosts tell their player the same with `msime_client_music_set_active`.
+   * Whether music may play now: an editor has focus and its attributes are known, it is not a secure field, and nothing is being recorded. The desktop hosts tell their player the same with `lingyao_client_music_set_active`.
    */
   static active(editorReady: boolean, password: boolean, recording: boolean): boolean {
     return editorReady && !password && !recording;

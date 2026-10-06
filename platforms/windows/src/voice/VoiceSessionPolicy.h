@@ -1,5 +1,5 @@
 #pragma once
-// Decisions VoiceInputSession makes that need no Win32: how much of a capture callback a batch recording keeps, and which sentence the person dictating is shown when a recording cannot start or does not produce text. The wording is MSIME-Windows voice_input_service.cpp's, which shows each of these in a message box; this host shows them on the voice overlay instead.
+// Decisions VoiceInputSession makes that need no Win32: how much of a capture callback a batch recording keeps, and which sentence the person dictating is shown when a recording cannot start or does not produce text. The wording is LINGYAO-Windows voice_input_service.cpp's, which shows each of these in a message box; this host shows them on the voice overlay instead.
 
 #include "../../../../shared/voice/VoiceProviders.h"
 
@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // What a batch recording keeps of one capture callback. `keep` frames are appended; `full` means the buffer has reached `limit` and the recording should finish now and submit what it holds, the way the macOS host does, rather than keep listening to audio it would drop.
 struct VoiceBatchCapture {
   std::size_t keep = 0;
@@ -26,7 +26,7 @@ constexpr VoiceBatchCapture voice_batch_capture(std::size_t captured,
   return {frames, false};
 }
 
-// The batch buffer is bounded by what one upload can carry, not by a fixed minute count: MSIME-Windows only rejects a recording at its 20 MiB upload check.
+// The batch buffer is bounded by what one upload can carry, not by a fixed minute count: LINGYAO-Windows only rejects a recording at its 20 MiB upload check.
 inline constexpr std::size_t voice_batch_sample_limit = batch_capture_sample_limit;
 
 inline constexpr std::string_view voice_missing_token_message =
@@ -34,7 +34,7 @@ inline constexpr std::string_view voice_missing_token_message =
 inline constexpr std::string_view voice_missing_endpoint_message =
     "ASR Token 或接口地址为空。";
 inline constexpr std::string_view voice_missing_model_message = "ASR 模型名为空。";
-// MSIME-Windows ends this sentence with "请检查 config.toml。"; here the same fields are edited in the settings page.
+// LINGYAO-Windows ends this sentence with "请检查 config.toml。"; here the same fields are edited in the settings page.
 inline constexpr std::string_view voice_doubao_start_message =
     "无法启动豆包流式语音识别。请检查“语音输入”设置中的接口地址、凭据和资源 ID。";
 inline constexpr std::string_view voice_microphone_start_message = "无法启动麦克风。";
@@ -67,7 +67,7 @@ enum class VoiceStartCheck { Ready, Disabled, Rejected };
 
 struct VoiceStartVerdict {
   VoiceStartCheck check = VoiceStartCheck::Ready;
-  // Empty unless `check` is Rejected. A disabled voice input stays silent, as it does in MSIME-Windows.
+  // Empty unless `check` is Rejected. A disabled voice input stays silent, as it does in LINGYAO-Windows.
   std::string_view message;
 };
 
@@ -80,7 +80,7 @@ constexpr VoiceStartVerdict voice_start_verdict(const VoiceStartConfig &config) 
                : VoiceStartVerdict{};
   if (config.token.empty())
     return {VoiceStartCheck::Rejected, voice_missing_token_message};
-  // MSIME-Windows hands an incomplete Doubao configuration to the streaming client, whose Start() refuses it; a batch provider's gaps surface in Recognize().
+  // LINGYAO-Windows hands an incomplete Doubao configuration to the streaming client, whose Start() refuses it; a batch provider's gaps surface in Recognize().
   if (config.doubao && (config.endpoint.empty() || config.resource_id.empty()))
     return {VoiceStartCheck::Rejected, voice_doubao_start_message};
   if (!secure_voice_endpoint(config.endpoint, config.doubao))
@@ -108,8 +108,8 @@ constexpr std::string_view voice_local_failure(bool runtime_available,
   return voice_recognition_failed_message;
 }
 
-// The ✓ and ✗ buttons appear once a native recording is locked, as in MSIME-Windows ControlLoop: the key that started it is up, so the overlay is the only place left to end it besides the shortcut and Escape. A review capture has no overlay.
+// The ✓ and ✗ buttons appear once a native recording is locked, as in LINGYAO-Windows ControlLoop: the key that started it is up, so the overlay is the only place left to end it besides the shortcut and Escape. A review capture has no overlay.
 constexpr bool voice_lock_shows_actions(bool recording, bool review) {
   return recording && !review;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

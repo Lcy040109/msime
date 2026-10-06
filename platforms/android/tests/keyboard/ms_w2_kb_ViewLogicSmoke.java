@@ -1,15 +1,15 @@
-import app.msime.android.CandidateChevronButton;
-import app.msime.android.FunctionPanelView;
-import app.msime.android.InlineHeightBar;
-import app.msime.android.KeyPressAnimator;
-import app.msime.android.KeyboardIconKey;
-import app.msime.android.KeyboardIconPaths;
-import app.msime.android.KeyboardKeyPreview;
-import app.msime.android.KeyboardPagerDots;
-import app.msime.android.OneHandGutterView;
-import app.msime.android.PagedTileGrid;
-import app.msime.android.SpaceKeyFace;
-import app.msime.android.VoiceListeningView;
+import app.lingyao.android.CandidateChevronButton;
+import app.lingyao.android.FunctionPanelView;
+import app.lingyao.android.InlineHeightBar;
+import app.lingyao.android.KeyPressAnimator;
+import app.lingyao.android.KeyboardIconKey;
+import app.lingyao.android.KeyboardIconPaths;
+import app.lingyao.android.KeyboardKeyPreview;
+import app.lingyao.android.KeyboardPagerDots;
+import app.lingyao.android.OneHandGutterView;
+import app.lingyao.android.PagedTileGrid;
+import app.lingyao.android.SpaceKeyFace;
+import app.lingyao.android.VoiceListeningView;
 
 public final class ms_w2_kb_ViewLogicSmoke {
     private static void check(boolean condition, String message) {

@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// 已安装符号集插件的一组符号，字段与 `msime_client_emoji_catalog_request` 的 `plugin_symbol_groups` 一一对应。
+// 已安装符号集插件的一组符号，字段与 `lingyao_client_emoji_catalog_request` 的 `plugin_symbol_groups` 一一对应。
 struct PluginSymbolGroup {
   std::string pack;
   std::string pack_name;
@@ -171,4 +171,4 @@ inline EmojiGroupChoice emoji_group_choice(const std::vector<std::string> &built
   return {std::string{}, PluginGroupKey{group.pack, group.tab, group.title}, plugin_group_label(group)};
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

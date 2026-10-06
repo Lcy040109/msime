@@ -1,5 +1,5 @@
-import app.msime.android.CandidateAppearance;
-import app.msime.android.KeyboardSkin;
+import app.lingyao.android.CandidateAppearance;
+import app.lingyao.android.KeyboardSkin;
 import java.util.List;
 
 public final class CandidateAppearanceSmoke {

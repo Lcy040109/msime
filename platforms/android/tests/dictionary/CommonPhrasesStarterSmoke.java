@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -28,7 +28,7 @@ public final class CommonPhrasesStarterSmoke {
             "the marker round-trips");
         check(CommonPhrasesStore.decodeStarters(new byte[0]).isEmpty(), "an empty marker from an older build records nothing");
 
-        File directory = Files.createTempDirectory("msime-starters").toFile();
+        File directory = Files.createTempDirectory("lingyao-starters").toFile();
         File marker = new File(directory, CommonPhrasesStore.STARTER_MARKER);
         try {
             check(CommonPhrasesStore.editStarters(marker, false, current -> Set.of("x")).isEmpty(),

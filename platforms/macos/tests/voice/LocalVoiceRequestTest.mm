@@ -5,7 +5,7 @@
 #include <cstring>
 #include <vector>
 
-// Drives MSIMELocalVoiceRequest against the msime-voice-local protocol. By default the helper is tests/voice/local_voice_helper_fixture.py (MSIME_VOICE_LOCAL_HELPER, set by CMake); `--model <dir> --wav <file>` instead streams a real recording through whichever helper that variable names, for the opt-in end-to-end check against an installed model.
+// Drives LINGYAOLocalVoiceRequest against the lingyao-voice-local protocol. By default the helper is tests/voice/local_voice_helper_fixture.py (LINGYAO_VOICE_LOCAL_HELPER, set by CMake); `--model <dir> --wav <file>` instead streams a real recording through whichever helper that variable names, for the opt-in end-to-end check against an installed model.
 
 namespace {
 BOOL Spin(BOOL (^done)(void), NSTimeInterval seconds) {
@@ -19,7 +19,7 @@ NSString *ModelDirectory(NSString *hotwords) {
     NSString *directory = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     assert([NSFileManager.defaultManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:nil]);
     NSData *manifest = [NSJSONSerialization dataWithJSONObject:@{@"id" : @"fixture", @"hotwords" : hotwords} options:0 error:nil];
-    assert([manifest writeToFile:[directory stringByAppendingPathComponent:@"msime-model.json"] atomically:YES]);
+    assert([manifest writeToFile:[directory stringByAppendingPathComponent:@"lingyao-model.json"] atomically:YES]);
     return directory;
 }
 
@@ -36,7 +36,7 @@ struct Outcome {
     NSUInteger calls = 0;
 };
 
-MSIMEDoubaoResult Recorder(Outcome *outcome) {
+LINGYAODoubaoResult Recorder(Outcome *outcome) {
     return ^(NSString *text, BOOL final, NSError *error) {
         ++outcome->calls;
         assert([NSThread isMainThread]);
@@ -60,7 +60,7 @@ int RunModel(NSString *model, NSString *wav) {
     assert(file.length > 44 && std::memcmp(file.bytes, "RIFF", 4) == 0);
     const int16_t *pcm = reinterpret_cast<const int16_t *>(static_cast<const uint8_t *>(file.bytes) + 44);
     const NSUInteger count = (file.length - 44) / 2;
-    MSIMELocalVoiceRequest *request = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : model, @"language" : @"zh-cn"} hostOptions:nil error:nil];
+    LINGYAOLocalVoiceRequest *request = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : model, @"language" : @"zh-cn"} hostOptions:nil error:nil];
     assert(request);
     Outcome outcome;
     Outcome *outcomeState = &outcome;
@@ -85,8 +85,8 @@ int main(int argc, char **argv) {
     @autoreleasepool {
         if (argc == 5 && std::strcmp(argv[1], "--model") == 0 && std::strcmp(argv[3], "--wav") == 0)
             return RunModel(@(argv[2]), @(argv[4]));
-        NSString *log = NSProcessInfo.processInfo.environment[@"MSIME_LOCAL_VOICE_FIXTURE_LOG"];
-        assert(log.length && MSIMELocalVoiceHelperPath());
+        NSString *log = NSProcessInfo.processInfo.environment[@"LINGYAO_LOCAL_VOICE_FIXTURE_LOG"];
+        assert(log.length && LINGYAOLocalVoiceHelperPath());
         [NSFileManager.defaultManager removeItemAtPath:log error:nil];
 
         // Only an installed model directory is accepted: not a file, not a directory the installer never finished, not a relative path.
@@ -94,23 +94,23 @@ int main(int argc, char **argv) {
         NSString *external = ModelDirectory(@"native");
         NSString *linked = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
         assert([NSFileManager.defaultManager createSymbolicLinkAtPath:linked withDestinationPath:external error:nil]);
-        assert(!MSIMELocalVoiceModelDirectory(linked));
+        assert(!LINGYAOLocalVoiceModelDirectory(linked));
         NSError *linkedError = nil;
-        assert(![[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : linked} hostOptions:nil error:&linkedError] && linkedError);
+        assert(![[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : linked} hostOptions:nil error:&linkedError] && linkedError);
         NSString *linkedManifestModel = ModelDirectory(@"native");
-        NSString *linkedManifestPath = [linkedManifestModel stringByAppendingPathComponent:@"msime-model.json"];
+        NSString *linkedManifestPath = [linkedManifestModel stringByAppendingPathComponent:@"lingyao-model.json"];
         assert([NSFileManager.defaultManager removeItemAtPath:linkedManifestPath error:nil]);
-        assert([NSFileManager.defaultManager createSymbolicLinkAtPath:linkedManifestPath withDestinationPath:[external stringByAppendingPathComponent:@"msime-model.json"] error:nil]);
-        assert(!MSIMELocalVoiceModelDirectory(linkedManifestModel));
+        assert([NSFileManager.defaultManager createSymbolicLinkAtPath:linkedManifestPath withDestinationPath:[external stringByAppendingPathComponent:@"lingyao-model.json"] error:nil]);
+        assert(!LINGYAOLocalVoiceModelDirectory(linkedManifestModel));
         NSString *unfinished = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
         assert([NSFileManager.defaultManager createDirectoryAtPath:unfinished withIntermediateDirectories:YES attributes:nil error:nil]);
-        NSString *file = [native stringByAppendingPathComponent:@"msime-model.json"];
+        NSString *file = [native stringByAppendingPathComponent:@"lingyao-model.json"];
         for (id rejected in @[@"", @"relative", unfinished, file, @42]) {
             NSError *error = nil;
-            assert(![[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : rejected} hostOptions:nil error:&error] && error);
-            assert(!MSIMELocalVoiceModelDirectory([rejected isKindOfClass:NSString.class] ? rejected : nil));
+            assert(![[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : rejected} hostOptions:nil error:&error] && error);
+            assert(!LINGYAOLocalVoiceModelDirectory([rejected isKindOfClass:NSString.class] ? rejected : nil));
         }
-        assert(MSIMELocalVoiceModelDirectory(native));
+        assert(LINGYAOLocalVoiceModelDirectory(native));
 
         NSString *oversized = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
         assert([NSFileManager.defaultManager createDirectoryAtPath:oversized withIntermediateDirectories:YES attributes:nil error:nil]);
@@ -121,12 +121,12 @@ int main(int argc, char **argv) {
         };
         NSData *oversizedData = [NSJSONSerialization dataWithJSONObject:oversizedManifest options:0 error:nil];
         assert(oversizedData.length > 64 * 1024);
-        assert([oversizedData writeToFile:[oversized stringByAppendingPathComponent:@"msime-model.json"] atomically:YES]);
-        assert(!MSIMELocalVoiceModelDirectory(oversized));
+        assert([oversizedData writeToFile:[oversized stringByAppendingPathComponent:@"lingyao-model.json"] atomically:YES]);
+        assert(!LINGYAOLocalVoiceModelDirectory(oversized));
 
         // Streaming: partial text as audio arrives, then one final; the start carries the model and language and, with no dictionary to read, no hotwords.
         {
-            MSIMELocalVoiceRequest *request = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
+            LINGYAOLocalVoiceRequest *request = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
             assert(request);
             Outcome outcome;
             Outcome *outcomeState = &outcome;
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
 
         // Cancelling mid-session tells the helper and delivers nothing more; the next request reuses the same helper. The first partial is what says the session reached the helper: a cancel that beats the queued start leaves nothing to cancel.
         {
-            MSIMELocalVoiceRequest *request = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
+            LINGYAOLocalVoiceRequest *request = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
             Outcome outcome;
             Outcome *outcomeState = &outcome;
             assert([request startWithResult:Recorder(&outcome) error:nil]);
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 
         // A model the helper cannot load fails the request with the helper's own message as the detail.
         {
-            MSIMELocalVoiceRequest *request = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"error"} hostOptions:nil error:nil];
+            LINGYAOLocalVoiceRequest *request = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"error"} hostOptions:nil error:nil];
             Outcome outcome;
             Outcome *outcomeState = &outcome;
             assert([request startWithResult:Recorder(&outcome) error:nil]);
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 
         // A helper that dies mid-session fails that session once, and the next session starts a fresh helper.
         {
-            MSIMELocalVoiceRequest *request = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"exit"} hostOptions:nil error:nil];
+            LINGYAOLocalVoiceRequest *request = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"exit"} hostOptions:nil error:nil];
             Outcome outcome;
             Outcome *outcomeState = &outcome;
             assert([request startWithResult:Recorder(&outcome) error:nil]);
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
             Spin(^{ return NO; }, 0.3);
             assert(outcome.calls == 1 && !outcome.final);
 
-            MSIMELocalVoiceRequest *next = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
+            LINGYAOLocalVoiceRequest *next = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
             Outcome recovered;
             Outcome *recoveredState = &recovered;
             assert([next startWithResult:Recorder(&recovered) error:nil]);
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
         {
             __block NSUInteger partials = 0;
             @autoreleasepool {
-                MSIMELocalVoiceRequest *dropped = [[MSIMELocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
+                LINGYAOLocalVoiceRequest *dropped = [[LINGYAOLocalVoiceRequest alloc] initWithOptions:@{@"asr_model_path" : native, @"language" : @"zh-cn"} hostOptions:nil error:nil];
                 assert([dropped startWithResult:^(NSString *, BOOL final, NSError *error) {
                     assert(!final && !error);
                     ++partials;

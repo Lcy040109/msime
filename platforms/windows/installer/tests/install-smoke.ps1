@@ -21,7 +21,7 @@ $pf64 = Join-Path $env:ProgramFiles $identity.install_dir
 $pf32 = Join-Path ${env:ProgramFiles(x86)} $identity.install_dir
 # 数据目录所有权标记的文件名接版本的名字后缀（platforms/windows/scripts/edition_windows.py 的 data_dir_marker），full 是 .lingyaoime-data。
 $markerName = '.lingyaoime-data' + $identity.name_suffix
-$logs = Join-Path $env:RUNNER_TEMP "msime-install-smoke-$Edition"
+$logs = Join-Path $env:RUNNER_TEMP "lingyao-install-smoke-$Edition"
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $failures = [Collections.Generic.List[string]]::new()
 function Check([bool]$Condition, [string]$What) {
@@ -34,7 +34,7 @@ function InprocServer([string]$ClassesRoot) {
 function TaskExists { $null -ne (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) }
 
 # A custom data directory, not the default: the uninstaller used to re-read DataDir after its registry value was already gone and so only ever removed the default location.
-$dataDir = Join-Path $env:RUNNER_TEMP "msime-smoke-data-$Edition"
+$dataDir = Join-Path $env:RUNNER_TEMP "lingyao-smoke-data-$Edition"
 if (Test-Path -LiteralPath $dataDir) { Remove-Item -LiteralPath $dataDir -Recurse -Force }
 
 # ---- install ----
@@ -58,13 +58,13 @@ if ($Edition -eq 'full') {
     Check ($declared -eq $Edition) "server\edition.json declares $Edition"
 }
 # The three voice runtime libraries are what the Server loads for on-device speech recognition; Build-Client.ps1 stages them for every release package.
-foreach ($name in 'LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'msime-client-settings.exe', 'MSIME.exe', 'msime-mcp.exe',
+foreach ($name in 'LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'lingyao-client-settings.exe', 'LINGYAO.exe', 'lingyao-mcp.exe',
     'sherpa-onnx-c-api.dll', 'onnxruntime.dll', 'onnxruntime_providers_shared.dll') {
     Check (Test-Path -LiteralPath (Join-Path $pf64 "server\$name") -PathType Leaf) "server\$name installed"
 }
 # The MCP server an AI assistant starts from the install directory must run there, not only be copied; --version touches no state and prints to stderr.
-$mcpVersion = (& (Join-Path $pf64 'server\msime-mcp.exe') --version 2>&1 | Out-String).Trim()
-Check ($LASTEXITCODE -eq 0 -and $mcpVersion -like 'msime-mcp *') "installed msime-mcp.exe runs ($mcpVersion)"
+$mcpVersion = (& (Join-Path $pf64 'server\lingyao-mcp.exe') --version 2>&1 | Out-String).Trim()
+Check ($LASTEXITCODE -eq 0 -and $mcpVersion -like 'lingyao-mcp *') "installed lingyao-mcp.exe runs ($mcpVersion)"
 $tip64 = Join-Path $pf64 "$versionDir\LingyaoImeTsf.dll"
 $tip32 = Join-Path $pf32 "$versionDir\LingyaoImeTsf.dll"
 Check (Test-Path -LiteralPath (Join-Path $pf64 "$versionDir\$($identity.host_dll)") -PathType Leaf) "64-bit $($identity.host_dll) installed beside the TSF DLL"
@@ -80,7 +80,7 @@ $installedSymbols = @(Get-ChildItem -LiteralPath $pf64, $pf32 -Recurse -File -In
 Check ($installedSymbols.Count -eq 0) "no PDB or .ilk installed ($($installedSymbols -join ', '))"
 Check (Test-Path -LiteralPath $tip64 -PathType Leaf) '64-bit TSF DLL installed'
 Check (Test-Path -LiteralPath $tip32 -PathType Leaf) '32-bit TSF DLL installed'
-# Windows on Arm installs the Arm64X TIP in place of the x64 one, with the ARM64 host its native half imports beside it (msime_setup.iss).
+# Windows on Arm installs the Arm64X TIP in place of the x64 one, with the ARM64 host its native half imports beside it (lingyao_setup.iss).
 $onArm = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [Runtime.InteropServices.Architecture]::Arm64
 $arm64Host = Join-Path $pf64 "$versionDir\$([IO.Path]::GetFileNameWithoutExtension($identity.host_dll))_arm64.dll"
 function ImageIs([string]$Path, [string]$Architecture) {
@@ -121,8 +121,8 @@ Check ($label.Contains('Mandatory Label\Medium Mandatory Level')) 'DataDir carri
 # The notices must carry the supplemental Rust and npm sections that the release collects, not only the vcpkg prefixes and the repository notices.
 $notices = Join-Path $pf64 'THIRD_PARTY_NOTICES.txt'
 $text = if (Test-Path -LiteralPath $notices) { Get-Content -LiteralPath $notices -Raw -Encoding utf8 } else { '' }
-Check ($text.Contains('Rust crates statically linked into the MSIME host library and binaries')) 'installed notices contain the Rust crate section'
-Check ($text.Contains('npm packages bundled into the MSIME desktop settings frontend')) 'installed notices contain the npm package section'
+Check ($text.Contains('Rust crates statically linked into the LINGYAO host library and binaries')) 'installed notices contain the Rust crate section'
+Check ($text.Contains('npm packages bundled into the LINGYAO desktop settings frontend')) 'installed notices contain the npm package section'
 Check (Test-Path -LiteralPath (Join-Path $pf64 'LICENSE.txt') -PathType Leaf) 'LICENSE.txt installed'
 
 # ---- upgrade in place, then move the data directory ----

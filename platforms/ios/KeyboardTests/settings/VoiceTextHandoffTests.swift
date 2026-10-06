@@ -2,8 +2,8 @@ import XCTest
 
 final class VoiceTextHandoffTests: XCTestCase {
   func testHandoffDirectorySymlinkFailsClosedBeforeWritingExternalResult() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-directory-link-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-directory-link-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-directory-link-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-directory-link-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)

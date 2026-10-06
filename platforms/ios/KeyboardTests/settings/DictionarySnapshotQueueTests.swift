@@ -5,8 +5,8 @@ import Darwin
 
 final class DictionarySnapshotQueueTests: XCTestCase {
   func testSnapshotDirectorySymlinkFailsClosedBeforeCreatingExternalState() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-directory-link-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-directory-link-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-directory-link-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-directory-link-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -29,8 +29,8 @@ final class DictionarySnapshotQueueTests: XCTestCase {
   }
 
   func testStateLockSymlinkFailsClosedBeforeLockingExternalTarget() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-state-lock-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-state-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-state-lock-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-state-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -59,8 +59,8 @@ final class DictionarySnapshotQueueTests: XCTestCase {
   }
 
   func testWorkerLockSymlinkFailsClosedBeforeLockingExternalTarget() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-worker-lock-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-worker-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-worker-lock-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-worker-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -89,8 +89,8 @@ final class DictionarySnapshotQueueTests: XCTestCase {
   }
 
   func testStateFileSymlinkFailsClosedBeforeReadingExternalState() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-state-file-link-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-state-file-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-state-file-link-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-state-file-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)

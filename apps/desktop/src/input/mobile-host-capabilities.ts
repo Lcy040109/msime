@@ -1,4 +1,4 @@
-import type { HostPlatform } from "@msime/ui";
+import type { HostPlatform } from "@lingyao/ui";
 
 export function isMobileHost(platform: HostPlatform | undefined): boolean {
   return platform === "android" || platform === "ios";

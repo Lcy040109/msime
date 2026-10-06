@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.content.Intent;
 import android.os.ParcelFileDescriptor;
@@ -17,7 +17,7 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
         stage = "emoji composition";
         tap(key("n"));
         tap(key("i"));
-        await(field("msime-test-plain").and(node -> equalsText("ni", node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText("ni", node.getText())));
 
         // 组词时候选条占着顶部一行，工具栏的「表情」要等组词结束才出现；先上屏，后面的前缀从输入框里读。
         stage = "composition committed before emoji";
@@ -51,7 +51,7 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
         stage = "emoji panel return";
         tap(description("返回键盘"));
         await(description("表情").and(AccessibilityNodeInfo::isClickable));
-        AccessibilityNodeInfo editor = await(field("msime-test-plain").and(node ->
+        AccessibilityNodeInfo editor = await(field("lingyao-test-plain").and(node ->
             node.getText() != null && node.getText().toString().endsWith("😀")
                 && node.getText().length() > "😀".length()));
         String committedWithEmoji = editor.getText().toString();
@@ -64,13 +64,13 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
         stage = "emoji deletion";
         tap(description("删除"));
         tap(description("返回键盘"));
-        await(field("msime-test-plain").and(node -> equalsText(finishedPrefix, node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText(finishedPrefix, node.getText())));
         stage = "emoji recent insertion";
         tap(description("表情"));
         await(description("表情分类 最近").and(AccessibilityNodeInfo::isSelected));
         tap(description("按键 表情 😀"));
         tap(description("返回键盘"));
-        await(field("msime-test-plain").and(node -> equalsText(committedWithEmoji, node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText(committedWithEmoji, node.getText())));
 
         stage = "emoji recents survive restart";
         rebindInputMethod();
@@ -87,7 +87,7 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
         android.graphics.Rect panel = new android.graphics.Rect();
         android.graphics.Rect editor = new android.graphics.Rect();
         await(description("表情面板")).getBoundsInScreen(panel);
-        await(field("msime-test-plain")).getBoundsInScreen(editor);
+        await(field("lingyao-test-plain")).getBoundsInScreen(editor);
         if (panel.top < editor.bottom)
             throw new AssertionError("Emoji panel covered the editor: panel " + panel + ", editor " + editor);
     }
@@ -96,19 +96,19 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
         Intent intent = new Intent(getTargetContext(), EditorActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivitySync(intent);
-        tap(field("msime-test-plain"));
+        tap(field("lingyao-test-plain"));
         await(key("n").and(AccessibilityNodeInfo::isClickable));
     }
 
     private void rebindInputMethod() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
     private Predicate<AccessibilityNodeInfo> description(String value) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText(value, node.getContentDescription());
     }
 
@@ -123,7 +123,7 @@ public final class EmojiPickerDeviceSmoke extends DeviceSmoke {
     private Predicate<AccessibilityNodeInfo> emojiCount(
             java.util.function.IntPredicate accepted) {
         return node -> {
-            if (!equalsText("app.msime.android", node.getPackageName())
+            if (!equalsText("app.lingyao.android", node.getPackageName())
                     || node.getStateDescription() == null) return false;
             String text = node.getStateDescription().toString();
             // 网格的状态描述形如「笑脸 · 116 个表情」，数量是「 个表情」前的最后一个词。

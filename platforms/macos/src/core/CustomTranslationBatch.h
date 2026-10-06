@@ -2,7 +2,7 @@
 
 /// A single sequential batch for the visible candidate page (at most nine items).
 /// All methods and completion run on the main thread. Retain until completion.
-@interface MSIMECustomTranslationBatch : NSObject
+@interface LINGYAOCustomTranslationBatch : NSObject
 /// NiuTrans plan items use the shared direction plan. Sign immediately before each request.
 - (instancetype)initWithNiuTransItems:(NSArray<NSDictionary *> *)items config:(NSDictionary *)config
                         configuration:(NSURLSessionConfiguration *)configuration

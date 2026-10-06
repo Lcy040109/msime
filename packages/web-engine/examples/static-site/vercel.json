@@ -4,7 +4,7 @@
   "outputDirectory": "site",
   "headers": [
     {
-      "source": "/msime/(.*)",
+      "source": "/lingyao/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
   ]

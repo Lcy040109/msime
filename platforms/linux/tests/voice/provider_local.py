@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""The real voice service with on-device recognition: no private file, a fake recorder and either the fake helper or the built msime-voice-local without its runtime.
+"""The real voice service with on-device recognition: no private file, a fake recorder and either the fake helper or the built lingyao-voice-local without its runtime.
 
 A `local` request must record, forward partials and the final transcript, and hand the model path, language and dictionary hotwords to the helper; an unusable model path fails the request; a helper whose sherpa-onnx runtime is missing answers voice_dependency_missing with detail local_asr and leaves the service running. Linux only: the provider authenticates peers with SO_PEERCRED.
 
-Usage: provider_local.py <built msime-voice-local>
+Usage: provider_local.py <built lingyao-voice-local>
 """
 import json
 import os
@@ -18,7 +18,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PROVIDER = ROOT / "scripts" / "msime-linux-voice-provider"
+PROVIDER = ROOT / "scripts" / "lingyao-linux-voice-provider"
 FAKE_HELPER = Path(__file__).resolve().parent / "local_fake_helper.py"
 BUILT_HELPER = None
 # Endless silence; the recording limit ends it after two seconds.
@@ -39,12 +39,12 @@ class LocalProvider(unittest.TestCase):
         recorder.write_text(FAKE_RECORDER)
         recorder.chmod(0o755)
         self.log = self.root / "helper.log"
-        self.fake = self.root / "msime-voice-local"
+        self.fake = self.root / "lingyao-voice-local"
         self.fake.write_text('#!/bin/sh\nexec "%s" "%s" "$@"\n' % (sys.executable, FAKE_HELPER))
         self.fake.chmod(0o755)
         self.model = self.root / "x-asr-zh-en-streaming"
         self.model.mkdir()
-        (self.model / "msime-model.json").write_text(json.dumps({"id": "x-asr-zh-en-streaming", "hotwords": "native"}))
+        (self.model / "lingyao-model.json").write_text(json.dumps({"id": "x-asr-zh-en-streaming", "hotwords": "native"}))
         self.process = None
 
     def tearDown(self):
@@ -61,7 +61,7 @@ class LocalProvider(unittest.TestCase):
 
     def start(self, helper):
         # No --config file exists: on-device recognition must not need one. PATH holds only the fake recorder; cue players are optional.
-        environment = {"PATH": str(self.bin), "LC_ALL": "C.UTF-8", "MSIME_VOICE_LOCAL_HELPER": str(helper),
+        environment = {"PATH": str(self.bin), "LC_ALL": "C.UTF-8", "LINGYAO_VOICE_LOCAL_HELPER": str(helper),
                        "FAKE_HELPER_LOG": str(self.log)}
         self.process = subprocess.Popen(
             [sys.executable, "-S", str(PROVIDER), str(self.socket), "--config", str(self.root / "voice-provider.json"),
@@ -154,7 +154,7 @@ class LocalProvider(unittest.TestCase):
 
     def test_the_built_helper_without_its_runtime_is_a_missing_dependency(self):
         if BUILT_HELPER is None:
-            self.skipTest("no built msime-voice-local given")
+            self.skipTest("no built lingyao-voice-local given")
         self.start(BUILT_HELPER)
         client, lines = self.voice(4, self.options())
         with client, lines:

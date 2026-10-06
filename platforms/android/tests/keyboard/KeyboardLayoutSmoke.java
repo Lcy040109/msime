@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardLayout;
-import app.msime.android.LetterKeyFacePolicy;
+import app.lingyao.android.KeyboardLayout;
+import app.lingyao.android.LetterKeyFacePolicy;
 import java.util.List;
 
 public final class KeyboardLayoutSmoke {

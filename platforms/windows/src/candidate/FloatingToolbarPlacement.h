@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Where the floating toolbar goes. Physical pixels throughout.
 //
 // The corner is a starting position, not a rule. Recomputing it on every state
@@ -39,4 +39,4 @@ floating_toolbar_placement(const FloatingToolbarPlacementInput &input) {
   y = (std::clamp)(y, input.work_top, max_y);
   return {x, y};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

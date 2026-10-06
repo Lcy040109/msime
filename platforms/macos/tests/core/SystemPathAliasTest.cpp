@@ -7,9 +7,9 @@
 #include <string>
 #include <unistd.h>
 
-using msime::mac::IsTrustedSystemAlias;
-using msime::mac::IsTrustedSystemAliasTarget;
-using msime::mac::StoragePathIsSafe;
+using lingyao::mac::IsTrustedSystemAlias;
+using lingyao::mac::IsTrustedSystemAliasTarget;
+using lingyao::mac::StoragePathIsSafe;
 
 int main() {
   // 只有 `/tmp`、`/var` 指向各自的 `/private` 目录时才受信任，相对目标按链接所在目录解析，名字对上而目标不对的不算。
@@ -32,7 +32,7 @@ int main() {
   assert(!IsTrustedSystemAlias("/private/tmp"));
   assert(!IsTrustedSystemAlias("/etc"));
 
-  char pattern[] = "/tmp/msime-system-path-alias-XXXXXX";
+  char pattern[] = "/tmp/lingyao-system-path-alias-XXXXXX";
   assert(mkdtemp(pattern) != nullptr);
   const std::filesystem::path root(pattern);
   const std::filesystem::path real = root / "real";

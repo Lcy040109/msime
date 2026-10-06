@@ -1,5 +1,5 @@
 # Build after the base test Dockerfile; optional local modern-IBus coverage.
-ARG BASE_IMAGE=msime-linux-linux-test:local
+ARG BASE_IMAGE=lingyao-linux-linux-test:local
 FROM ${BASE_IMAGE}
 RUN apt-get update && apt-get install -y --no-install-recommends autoconf automake autopoint gettext libtool intltool gtk-doc-tools valac gobject-introspection libgirepository1.0-dev libgtk-3-dev libdbus-1-dev libxtst-dev iso-codes && rm -rf /var/lib/apt/lists/*
 # IBus 1.5.32 tag, fixed commit and archive digest. The source version is
@@ -15,4 +15,4 @@ RUN curl -fsSL https://codeload.github.com/ibus/ibus/tar.gz/0fd4e408a52d3d15179c
       --disable-tests --disable-gtk-doc --disable-python-library --disable-systemd-services && \
     make -j4 && make install && ldconfig && \
     rm -rf /tmp/ibus-source /tmp/ibus.tar.gz
-ENV MSIME_TEST_INITIAL_FOCUS=1
+ENV LINGYAO_TEST_INITIAL_FOCUS=1

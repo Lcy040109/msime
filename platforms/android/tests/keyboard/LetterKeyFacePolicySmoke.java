@@ -1,4 +1,4 @@
-import app.msime.android.LetterKeyFacePolicy;
+import app.lingyao.android.LetterKeyFacePolicy;
 
 public final class LetterKeyFacePolicySmoke {
     public static void main(String[] args) {

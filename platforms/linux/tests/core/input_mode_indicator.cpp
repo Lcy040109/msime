@@ -3,8 +3,8 @@
 #include <cassert>
 
 int main() {
-  using msime::linux_host::input_mode_indicator;
-  using Indicator = msime::linux_host::InputModeIndicator;
+  using lingyao::linux_host::input_mode_indicator;
+  using Indicator = lingyao::linux_host::InputModeIndicator;
 
   assert(input_mode_indicator(true, "quanpin", false) == Indicator::Chinese);
   assert(input_mode_indicator(true, "shuangpin", false) == Indicator::Chinese);

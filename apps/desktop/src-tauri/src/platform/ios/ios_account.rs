@@ -33,16 +33,16 @@ mod account_preferences;
 #[cfg(target_os = "ios")]
 use crate::platform::mobile::mobile_community::MobileCommunityState;
 #[cfg(target_os = "ios")]
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     merge_account_preferences, AccountChatMessage, AccountError, AccountPreferences,
     AccountSessionStorage, BackendAccountClient, BackendAccountSession, SavedAccountSession,
 };
 #[cfg(target_os = "ios")]
-use msime_client_core::cloud::dictionary::DictionaryKind;
+use lingyao_client_core::cloud::dictionary::DictionaryKind;
 #[cfg(target_os = "ios")]
-use msime_client_core::preferences::PreferencesStore;
+use lingyao_client_core::preferences::PreferencesStore;
 #[cfg(target_os = "ios")]
-use msime_tauri_mobile_platform::{IosKeyboardPreferences, MobilePlatform};
+use lingyao_tauri_mobile_platform::{IosKeyboardPreferences, MobilePlatform};
 #[cfg(target_os = "ios")]
 use std::sync::Arc;
 #[cfg(target_os = "ios")]
@@ -111,7 +111,7 @@ pub fn setup(app: &AppHandle<Wry>) -> Result<(), AccountError> {
     ));
     let community = MobileCommunityState::new(client, &session)?;
     let snapshot_directory =
-        std::env::temp_dir().join(format!("msime-ios-tauri-snapshots-{}", std::process::id()));
+        std::env::temp_dir().join(format!("lingyao-ios-tauri-snapshots-{}", std::process::id()));
     prepare_snapshot_directory(&snapshot_directory).map_err(|_| AccountError::Storage)?;
     cleanup_stale_snapshot_previews(&snapshot_directory).map_err(|_| AccountError::Storage)?;
     app.manage(AccountState {
@@ -316,7 +316,7 @@ fn snapshot_bridge(action: Value) -> Result<Value, crate::CommandError> {
         });
     }
     let response =
-        msime_ios_native_ffi::dictionary_snapshot_request(&bytes).ok_or(crate::CommandError {
+        lingyao_ios_native_ffi::dictionary_snapshot_request(&bytes).ok_or(crate::CommandError {
             code: "snapshot_unavailable",
         })?;
     let envelope: Value = serde_json::from_slice(&response).map_err(|_| crate::CommandError {
@@ -450,7 +450,7 @@ async fn dictionary_snapshot_export(
             let text = fs::read_to_string(&path).map_err(|_| snapshot_command_error())?;
             Ok(serde_json::json!({
                 "text": text,
-                "filename": "msime-dictionary-snapshot.ndjson",
+                "filename": "lingyao-dictionary-snapshot.ndjson",
                 "snapshot": metadata,
             }))
         })();
@@ -575,9 +575,9 @@ async fn dictionary_snapshot_cancel(
 #[cfg(target_os = "ios")]
 pub async fn cloud_dictionary_request(
     state: State<'_, AccountState>,
-    request: msime_host_api::cloud_dictionary::CloudDictionaryRequest,
+    request: lingyao_host_api::cloud_dictionary::CloudDictionaryRequest,
 ) -> Result<Value, crate::CommandError> {
-    use msime_host_api::cloud_dictionary::CloudDictionaryRequest;
+    use lingyao_host_api::cloud_dictionary::CloudDictionaryRequest;
     if let Some(result) = cloud_dictionary_account_request(&state, &request).await {
         return result;
     }
@@ -648,7 +648,7 @@ pub async fn account_preferences_upload(
             local.preferences.custom_theme.keyboard.as_ref(),
         )?;
         // 单方案版本不上传方案，多方案版本只上传本版本提供的方案。
-        msime_client_core::edition::filter_uploaded_account_settings(edition, &mut values);
+        lingyao_client_core::edition::filter_uploaded_account_settings(edition, &mut values);
         let values = values
             .into_iter()
             .filter(|(key, _)| schema.fields.contains_key(key))
@@ -679,7 +679,7 @@ pub async fn account_preferences_apply(
     let platform = state.platform.clone();
     let store = store.inner().clone();
     // 单方案版本不应用账号里的方案，多方案版本把本版本没有的方案当作缺失。
-    msime_client_core::edition::filter_downloaded_account_settings(
+    lingyao_client_core::edition::filter_downloaded_account_settings(
         crate::host_edition(&app),
         &mut preferences.settings,
     );
@@ -856,7 +856,7 @@ pub async fn mobile_keyboard_feedback_preview(
 #[cfg(test)]
 mod tests {
     use super::{ChatModelsResponse, ChatResponse, PreferenceSchemaResponse};
-    use msime_client_core::account::{
+    use lingyao_client_core::account::{
         AccountChatModel, AccountChatModels, AccountPreferenceField, AccountPreferenceSchema,
     };
     use serde_json::json;

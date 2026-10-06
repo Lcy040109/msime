@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include "../providers/provider_socket_cli.h"
 
 #include <array>
@@ -19,15 +19,15 @@ void print_stream_update(const uint8_t *text, size_t length, bool final,
 
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "--help") {
-    std::cout << "Usage: msime-linux-voice [--stream] [provider-socket]\n"
-                 "Defaults to MSIME_VOICE_PROVIDER_SOCKET, then "
-                 "$XDG_RUNTIME_DIR/" MSIME_EDITION_CLIENT_DIRECTORY "/voice.sock.\n";
+    std::cout << "Usage: lingyao-linux-voice [--stream] [provider-socket]\n"
+                 "Defaults to LINGYAO_VOICE_PROVIDER_SOCKET, then "
+                 "$XDG_RUNTIME_DIR/" LINGYAO_EDITION_CLIENT_DIRECTORY "/voice.sock.\n";
     return 0;
   }
   const bool stream = argc >= 2 && std::string(argv[1]) == "--stream";
-  const auto socket_path = msime_cli_provider_socket(
+  const auto socket_path = lingyao_cli_provider_socket(
       argc - (stream ? 1 : 0), argv + (stream ? 1 : 0),
-      "MSIME_VOICE_PROVIDER_SOCKET", "voice.sock");
+      "LINGYAO_VOICE_PROVIDER_SOCKET", "voice.sock");
   if (socket_path.empty())
     return 2;
   std::array<char, 16385> buffer;
@@ -36,12 +36,12 @@ int main(int argc, char **argv) {
   if (std::cin.bad() || length == 0 || length > 16384)
     return 2;
   if (stream) {
-    std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-        msime_client_voice_provider_stream(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+        lingyao_client_voice_provider_stream(
             reinterpret_cast<const uint8_t *>(buffer.data()), length,
             reinterpret_cast<const uint8_t *>(socket_path.data()),
             socket_path.size(), print_stream_update, nullptr),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!result)
       return 1;
     try {
@@ -51,12 +51,12 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-  std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-      msime_client_voice_provider_request(
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+      lingyao_client_voice_provider_request(
           reinterpret_cast<const uint8_t *>(buffer.data()), length,
           reinterpret_cast<const uint8_t *>(socket_path.data()),
           socket_path.size()),
-      msime_client_string_free);
+      lingyao_client_string_free);
   if (!result)
     return 1;
   try {

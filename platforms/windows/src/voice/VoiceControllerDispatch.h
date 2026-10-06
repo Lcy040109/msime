@@ -5,7 +5,7 @@
 #include <functional>
 #include <limits>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Created only after VoiceControllerConnection authenticated Hello. Object
 // identity is connection identity; a reconnect never inherits a session.
 struct VoiceControllerChannel {
@@ -135,4 +135,4 @@ private:
   uint64_t next_session_ = 0;
   std::optional<Session> current_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -1,7 +1,7 @@
 /**
  * The decisions behind anonymous usage reporting on this host, kept apart from the ArkTS that performs them so they run under node.
  *
- * The queue, the install id, the daily `active` and the session bookkeeping are all client-core's (`msime_client_telemetry_*`); this host only decides when to call it and turns the system's crash reports into crash records. A crash is reported by HarmonyOS itself: HiAppEvent hands the previous run's `APP_CRASH` (JavaScript or native) to a watcher on the next start. Nothing here installs a handler of its own, so a crash still ends the process exactly as it did before reporting existed.
+ * The queue, the install id, the daily `active` and the session bookkeeping are all client-core's (`lingyao_client_telemetry_*`); this host only decides when to call it and turns the system's crash reports into crash records. A crash is reported by HarmonyOS itself: HiAppEvent hands the previous run's `APP_CRASH` (JavaScript or native) to a watcher on the next start. Nothing here installs a handler of its own, so a crash still ends the process exactly as it did before reporting existed.
  */
 
 /** One crash HiAppEvent reported, reduced to what a crash record holds. */
@@ -50,7 +50,7 @@ function firstLine(value: string): string {
   return line.trim();
 }
 
-/** One native frame as `libmsimeclient.so+0x1a2b symbol`: the file name only, so no sandbox directory leaves the device. */
+/** One native frame as `liblingyaoclient.so+0x1a2b symbol`: the file name only, so no sandbox directory leaves the device. */
 function nativeFrame(value: unknown): string | null {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
   const frame = value as Record<string, unknown>;

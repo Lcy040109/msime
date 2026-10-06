@@ -10,8 +10,8 @@
 mod metrics;
 
 use metrics::{Bucket, Observation, Report};
-use msime_engine::host::{Command, Session};
-use msime_input_runtime::{Action, Reranker, Runtime, SentenceModel};
+use lingyao_engine::host::{Command, Session};
+use lingyao_input_runtime::{Action, Reranker, Runtime, SentenceModel};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -164,7 +164,7 @@ fn run(
     let generation = generation["source_commit"]
         .as_str()
         .ok_or("lock has no source_commit")?;
-    let mut options = msime_engine::host::prepare_options(
+    let mut options = lingyao_engine::host::prepare_options(
         resources.to_str().ok_or("non-UTF-8 resource path")?,
         state.join("user").to_str().ok_or("non-UTF-8 state path")?,
         state.join("cache").to_str().ok_or("non-UTF-8 cache path")?,

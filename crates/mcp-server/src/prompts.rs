@@ -1,6 +1,6 @@
 //! Prompts: canned requests an assistant offers its user, such as slash commands in Claude Code. Each is a set of instructions to the assistant that walks it through one task with this server's tools.
 
-use crate::server::MsimeServer;
+use crate::server::LingyaoServer;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{PromptMessage, Role};
 use rmcp::schemars::JsonSchema;
@@ -37,7 +37,7 @@ pub fn make_skin_text(style: Option<String>) -> String {
         None => "Ask the user in one short question what they want: colours or a mood, light, dark or both, and whether they want a background or decoration image. Choose everything else yourself.".to_owned(),
     };
     format!(
-        "Make a candidate-window skin for 灵耀输入法 (MSIME) and install it with create_candidate_skin. Talk to the user in their own language.
+        "Make a candidate-window skin for 灵耀输入法 (LINGYAO) and install it with create_candidate_skin. Talk to the user in their own language.
 
 {request}
 
@@ -45,7 +45,7 @@ pub fn make_skin_text(style: Option<String>) -> String {
 2. Write skin.toml as create_candidate_skin's description lays out. Give [candidate.light] and [candidate.dark] colours for each mode listed in [supports] themes, and keep text and number readable against surface and selected (a contrast of at least 4.5:1).
 3. Make every image by running code; never write base64 by hand. A short Python script using only the standard library (zlib and struct are enough to write a PNG) runs without installing anything; use Pillow only if it is already installed. Always make the preview, a small picture of the skin in its own colours, around 480x160 and under 256 KiB. Keep background and decoration images to a few hundred pixels; at most 3 images and 2 MiB together. Have the script print each image's base64 and pass it in images, keyed by the path the manifest uses. If you cannot run code, tell the user that making a skin needs an assistant that can, such as Claude Code or Codex, and stop.
 4. If create_candidate_skin refuses the skin, read the reason, fix the manifest or the images, and try again.
-5. Once it is installed, tell the user how to use it: in the MSIME settings, open 主题 and pick the skin under 我的皮肤. If they are signed in, the desktop app also saves it to their cloud library as a private skin, and they can publish it from its card there."
+5. Once it is installed, tell the user how to use it: in the LINGYAO settings, open 主题 and pick the skin under 我的皮肤. If they are signed in, the desktop app also saves it to their cloud library as a private skin, and they can publish it from its card there."
     )
 }
 
@@ -55,7 +55,7 @@ pub fn diagnose_text(problem: Option<String>) -> String {
         None => "Ask the user in one short question what goes wrong and when.".to_owned(),
     };
     format!(
-        "Help the user with a problem in 灵耀输入法 (MSIME). Talk to them in their own language and in plain words; they may not be technical, so do every step yourself instead of asking them to open files, settings or a terminal.
+        "Help the user with a problem in 灵耀输入法 (LINGYAO). Talk to them in their own language and in plain words; they may not be technical, so do every step yourself instead of asking them to open files, settings or a terminal.
 
 {request}
 
@@ -66,7 +66,7 @@ pub fn diagnose_text(problem: Option<String>) -> String {
 }
 
 #[prompt_router(vis = "pub(crate)")]
-impl MsimeServer {
+impl LingyaoServer {
     #[prompt(
         name = "make_skin",
         description = "Design a candidate-window skin with the user and install it."

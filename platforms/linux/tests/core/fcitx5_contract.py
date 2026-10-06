@@ -7,23 +7,23 @@ import sys
 
 root = Path(__file__).resolve().parents[2]
 addon = configparser.ConfigParser()
-addon.read(root / "fcitx5/msime.conf")
-assert addon["Addon"]["Name"] == "MSIME"
+addon.read(root / "fcitx5/lingyao.conf")
+assert addon["Addon"]["Name"] == "LINGYAO"
 assert addon["Addon"]["Type"] == "SharedLibrary"
-assert addon["Addon"]["Library"] == "libmsime-fcitx5"
+assert addon["Addon"]["Library"] == "liblingyao-fcitx5"
 entry = configparser.ConfigParser()
-entry.read(root / "fcitx5/msime-inputmethod.conf")
-assert entry["InputMethod"]["Addon"] == "msime"
+entry.read(root / "fcitx5/lingyao-inputmethod.conf")
+assert entry["InputMethod"]["Addon"] == "lingyao"
 assert entry["InputMethod"]["LangCode"] == "zh_CN"
 cmake = (root / "CMakeLists.txt").read_text()
-assert "MSIME_ENABLE_FCITX5" in cmake
+assert "LINGYAO_ENABLE_FCITX5" in cmake
 # 默认值跟着环境走而不是跟着打包开关：装了 Fcitx5 开发包的机器就构建这个并列入口，
-# 打包路径仍然无条件包含它。此前默认取自 MSIME_ENABLE_PACKAGING，也就是默认关闭。
+# 打包路径仍然无条件包含它。此前默认取自 LINGYAO_ENABLE_PACKAGING，也就是默认关闭。
 assert "find_package(Fcitx5Core" in cmake
-assert "MSIME_ENABLE_PACKAGING OR Fcitx5Core_FOUND" in cmake
-assert cmake.index('option(MSIME_ENABLE_FCITX5') < cmake.index('include(cmake/packaging.cmake)')
+assert "LINGYAO_ENABLE_PACKAGING OR Fcitx5Core_FOUND" in cmake
+assert cmake.index('option(LINGYAO_ENABLE_FCITX5') < cmake.index('include(cmake/packaging.cmake)')
 packaging = (root / "cmake/packaging.cmake").read_text()
-assert "if(MSIME_ENABLE_FCITX5)" in packaging
+assert "if(LINGYAO_ENABLE_FCITX5)" in packaging
 assert "fcitx5 (>= 5.0.20)" in packaging
 
 cmake_fcitx5 = (root / "fcitx5/CMakeLists.txt").read_text()
@@ -36,9 +36,9 @@ assert "xdg-shell.xml" in cmake_fcitx5
 assert "wlr-layer-shell-unstable-v1.xml" in cmake_fcitx5
 
 source = (root / "fcitx5/FcitxEngine.cpp").read_text()
-# 动作名写成 MSIME_EDITION_FCITX5_ADDON "-<名字>"，按版本带上插件名（src/core/LinuxEdition.h）；下面按 full 展开后的名字（msime-<名字>）检查。
-assert 'registerAction("msime-' not in source
-source = source.replace('MSIME_EDITION_FCITX5_ADDON "-', '"msime-')
+# 动作名写成 LINGYAO_EDITION_FCITX5_ADDON "-<名字>"，按版本带上插件名（src/core/LinuxEdition.h）；下面按 full 展开后的名字（lingyao-<名字>）检查。
+assert 'registerAction("lingyao-' not in source
+source = source.replace('LINGYAO_EDITION_FCITX5_ADDON "-', '"lingyao-')
 ibus_source = (root / "src/core/ClientEngine.cpp").read_text()
 # Commit statistics also run on detached workers. They must be included in the same
 # pending-write barrier as key-count batches, or an addon unload can execute this
@@ -68,33 +68,33 @@ assert 'tsf_preedit_style' in source
 assert 'candidate_preedit_style' in source
 assert 'FcitxSchemeBooleanAction' in source
 assert '英文输入模式' in source
-assert 'msime-shuangpin-preedit' in source
-assert 'msime-wubi-code-hint' in source
-assert 'msime-shuangpin-profile' in source
+assert 'lingyao-shuangpin-preedit' in source
+assert 'lingyao-wubi-code-hint' in source
+assert 'lingyao-shuangpin-profile' in source
 assert 'cycleShuangpinProfile' in source
 # 五笔在输入方案菜单和状态文字里都按共享偏好 `wubi_profile` 标出 86 或 98。
 assert source.count('wubi_scheme_label(') >= 2
 assert source.count('value("wubi_profile", std::string("wubi86"))') >= 2
 assert '"输入方案：五笔"' not in source
 assert 'cycleFrequencyMode' in source
-assert 'msime-frequency' in source
-assert 'msime-frequency-trigger' in source
-assert 'msime-frequency-step' in source
-assert 'msime-candidate-theme' in source
+assert 'lingyao-frequency' in source
+assert 'lingyao-frequency-trigger' in source
+assert 'lingyao-frequency-step' in source
+assert 'lingyao-candidate-theme' in source
 assert 'cycleCandidateTheme' in source
-assert 'msime-global-theme' in source
+assert 'lingyao-global-theme' in source
 assert 'setThemeChoice' in source
-assert 'msime_client_resolve_theme' in source
+assert 'lingyao_client_resolve_theme' in source
 # The classic UI draws the ‹ › page buttons only when the theme names both images; a theme without them drops the buttons the stock theme has.
 candidate_theme = (root / "src/candidates/CandidateFcitxTheme.h").read_text()
 assert '"[InputPanel/PrevPage]\\n"' in candidate_theme
 assert '"[InputPanel/NextPage]\\n"' in candidate_theme
-assert 'msime_client_builtin_skins' not in source
+assert 'lingyao_client_builtin_skins' not in source
 assert 'candidate_skin_catalog' in source
-assert 'msime_client_load_preferences' in source
+assert 'lingyao_client_load_preferences' in source
 assert 'applyContextOverrides' in source
 assert 'effectiveContextSnapshot' in source
-assert 'msime_client_update_preferences' in source
+assert 'lingyao_client_update_preferences' in source
 assert 'applyPreferenceSnapshot' in source
 assert 'saveStringPreference("character_width"' in source
 assert 'snapshot["preferences"]["character_width"]' in source
@@ -119,64 +119,64 @@ for name in emitted:
         assert f'{{"{name}", "' in labels, name
 # Plugin input modes and sounds are wired the same way in both hosts. A key the local mode or the scheme spells with (View.spelling_symbols) is sent to the Engine before any host binding, digits gate on the listed symbols rather than on a mode name, generated commits stay out of typing statistics, and sounds only post requests to the Host API.
 for host_source in (source, ibus_source):
-    assert 'msime::linux_host::engine_spelling(' in host_source
-    assert 'msime::linux_host::spelling_space(' in host_source
-    assert 'msime::linux_host::spelling_digits(' in host_source
+    assert 'lingyao::linux_host::engine_spelling(' in host_source
+    assert 'lingyao::linux_host::spelling_space(' in host_source
+    assert 'lingyao::linux_host::spelling_digits(' in host_source
     assert 'context.value("typing_statistics", true)' in host_source
-    assert 'msime_client_key_sound(' in host_source
-    assert 'msime_client_commit_sound(' in host_source
-    assert 'msime_client_music_set_active' in host_source
+    assert 'lingyao_client_key_sound(' in host_source
+    assert 'lingyao_client_commit_sound(' in host_source
+    assert 'lingyao_client_music_set_active' in host_source
     assert 'local_mode_enabled_by_default(' in host_source
     for mode in ('"expression"', '"command"', '"mention"'):
         assert mode in host_source, mode
 assert 'const bool unicodeMode' not in source
 assert 'unicode_digit' not in ibus_source
 # The key sound is asked for from the key event, after ensure(): never for a restricted or private context, and the session must be released (music told to stop) before it is destroyed.
-assert source.index('music_.release(session_') < source.index('msime_client_destroy(session_)')
+assert source.index('music_.release(session_') < source.index('lingyao_client_destroy(session_)')
 assert 'state->playKeySound(event);' in source
 assert 'play_key_sound(engine, key, flags);' in ibus_source
 # The typing effect is asked for at the same two points as the sounds, and Linux shows only its combo count: IBus at the end of the candidate aux line, Fcitx5 in the aux line below the page, never in setAuxUp, which the voice, emoji search and configuration notices own.
 for host in (source, ibus_source):
-    assert host.count('msime_client_typing_effect(') == 2
+    assert host.count('lingyao_client_typing_effect(') == 2
     assert 'kTypingEffectCommit' in host and 'kTypingEffectRepeat' in host
     assert 'typing_combo_label(' in host
-assert ibus_source.index('msime_client_key_sound(s.session, key_class)') < ibus_source.index('kTypingEffectRepeat')
-assert source.index('msime_client_key_sound(session_, keyClass)') < source.index('kTypingEffectRepeat')
+assert ibus_source.index('lingyao_client_key_sound(s.session, key_class)') < ibus_source.index('kTypingEffectRepeat')
+assert source.index('lingyao_client_key_sound(session_, keyClass)') < source.index('kTypingEffectRepeat')
 assert 'setAuxDown(fcitx::Text(candidateAux()))' in source
 assert 'setAuxUp(fcitx::Text(candidateAux()))' not in source
 # /fy's translation goes to the selected service whatever the gloss switches say, and never to an offline gloss.
 for host in (source, ibus_source):
     assert 'command_translation_query(' in host
-assert ibus_source.index('music.release(session') < ibus_source.index('msime_client_destroy(session)')
+assert ibus_source.index('music.release(session') < ibus_source.index('lingyao_client_destroy(session)')
 # Both hosts name the installed built-in sound packs, which the parent project installs.
-assert 'MSIME_SOUND_PACKS="${CMAKE_INSTALL_FULL_DATADIR}/${MSIME_CLIENT_DIRECTORY}/sound-packs"' in cmake_fcitx5
+assert 'LINGYAO_SOUND_PACKS="${CMAKE_INSTALL_FULL_DATADIR}/${LINGYAO_CLIENT_DIRECTORY}/sound-packs"' in cmake_fcitx5
 assert 'installed_sound_pack_directory(' in ibus_source
-assert 'DESTINATION "${CMAKE_INSTALL_DATADIR}/${MSIME_CLIENT_DIRECTORY}/sound-packs")' in cmake
+assert 'DESTINATION "${CMAKE_INSTALL_DATADIR}/${LINGYAO_CLIENT_DIRECTORY}/sound-packs")' in cmake
 # The IBus candidate property menu uses the shared Windows wording (置顶, 固定到第 N 位, 取消固定) and takes the slot from the CandidateFixN action name.
-assert 'msime::linux_host::candidate_pin_label' in ibus_source
+assert 'lingyao::linux_host::candidate_pin_label' in ibus_source
 assert 'candidate_fix_label(fix[12] - \'0\')' in ibus_source
 assert 'ibus_text_new_from_static_string("取消固定")' in ibus_source
 assert '"固定候选"' not in ibus_source
 assert '"固定到 1"' not in ibus_source
 assert 'std::string("取消固定 ")' not in ibus_source
 # Only main-lexicon candidates of the user dictionary sources carry candidate actions; the shared policy decides it for both hosts.
-assert 'candidate_dictionary_actions_available(msime::linux_host::strict_json_value(state_.view_, "scheme", 0u), item->source())' in source
+assert 'candidate_dictionary_actions_available(lingyao::linux_host::strict_json_value(state_.view_, "scheme", 0u), item->source())' in source
 assert 'candidate_dictionary_actions_available(scheme, item->source())' in source
-assert 'source_(msime::linux_host::strict_json_value(candidate, "source", uint64_t{}))' in source
+assert 'source_(lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{}))' in source
 assert 'text_(candidate.at("text").get<std::string>())' in source
-assert 'fixed_position_(msime::linux_host::strict_json_value(candidate, "fixed_position", uint8_t{}))' in source
+assert 'fixed_position_(lingyao::linux_host::strict_json_value(candidate, "fixed_position", uint8_t{}))' in source
 assert 'item->text()))' in source
 assert 'item->fixedPosition()' in source
 assert 'state_.session_ != item->session()' in source
 assert '!state_.ic_.hasFocus() || !state_.input_enabled_' in source
 assert 'state_.privateInput() || state_.session_ != item->session()' in source
 assert 'voice_cancelled_' in source
-assert 'msime_voice_stream_inline_enabled(' in source
+assert 'lingyao_voice_stream_inline_enabled(' in source
 assert 'voice_preedit_' in source and 'voice_transcript_' in source
-assert 'msime_voice_result_or_transcript(' in source
+assert 'lingyao_voice_result_or_transcript(' in source
 assert 'clipboard_generation_' in source
 assert 'result.value("_path", std::string{}) == clipboard_path_' in source
-assert 'msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == clipboard_generation_' in source
+assert 'lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == clipboard_generation_' in source
 assert 'const auto generation = clipboard_generation_' in source
 assert 'cloud_clipboard_generation_' in source
 assert 'cloud_clipboard_enabled_' in source
@@ -208,27 +208,27 @@ assert 'fcitx_global_input_mode' in source
 assert 'ic_.program()' in source
 assert 'restoreInputMode' in source
 assert 'result.value("_socket", std::string{}) == cloud_clipboard_socket_' in source
-assert 'msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == cloud_clipboard_generation_' in source
+assert 'lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == cloud_clipboard_generation_' in source
 assert 'cloud_clipboard_enabled_ = result.value("enabled", true)' in source
 # The provider relays the account API page as is, so the list is `items` ([{id,text,updated_at}]) like the shared panel reads it; `entries` is the cloud dictionary's shape.
 assert 'result.value("items", Json::array())' in source
 assert 'result.value("entries", Json::array())' not in source[source.index('void refreshCloudClipboard()'):source.index('bool pasteCloudClipboard(')]
 assert 'if (!cloud_clipboard_enabled_) return false;' in source
 assert 'emoji_generation_' in source
-assert 'msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_' in source
+assert 'lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_' in source
 assert 'result["_generation"] = generation' in source
-assert 'msime::linux_host::strict_json_value(item, "source", uint64_t{255}) == source' in source
+assert 'lingyao::linux_host::strict_json_value(item, "source", uint64_t{255}) == source' in source
 assert 'Json candidates = Json::array();' in source
 assert 'std::string panelPreview(const std::string &text)' in source
 assert 'fcitx::utf8::nextNChar(text.begin(), 40)' in source
 assert 'text.substr(0, 40)' not in source
 assert 'if (voice_job_.valid()) {' in source
 assert 'voice cancellation does not wait for the provider future' in (root / 'fcitx5/tests/native.cpp').read_text()
-assert 'msime-helpcode-schema' in source
+assert 'lingyao-helpcode-schema' in source
 assert 'cycleHelpcodeSchema' in source
 assert 'toggleLocalMode' in source
-assert 'msime-local-unicode' in source
-assert 'msime-local-temporary-japanese' in source
+assert 'lingyao-local-unicode' in source
+assert 'lingyao-local-temporary-japanese' in source
 # 五个可配置模式快捷键及各自的宿主状态都要保留，避免设置能保存却不生效。
 for name in ("mode_shift_enabled_", "mode_ctrl_enabled_", "mode_ctrl_space_enabled_",
              "mode_ctrl_alt_space_enabled_", "character_set_shortcut_enabled_"):
@@ -287,14 +287,14 @@ assert 'std::filesystem::path(nextClipboard).parent_path().string()' in source
 # fence requests started against an old endpoint.
 assert 'cloudClipboardSocket' in source
 assert 'cloud-clipboard.sock' in source
-assert 'MSIME_CLOUD_CLIPBOARD_PROVIDER_SOCKET' in source
+assert 'LINGYAO_CLOUD_CLIPBOARD_PROVIDER_SOCKET' in source
 assert 'nextCloudClipboard' in source
 assert '++cloud_clipboard_generation_' in source
 assert 'cloud_clipboard_enabled_ = true;' in source
 assert 'result.value("_socket", std::string{}) == translation_socket_' in source
 assert '{"_socket", socket}' in source
 assert 'FcitxSentenceTranslationAction' in source
-assert 'msime-translate-sentence' in source
+assert 'lingyao-translate-sentence' in source
 assert 'void translateSentence()' in source
 assert 'translation_manual_sentence_' in source
 assert '"TranslateSentence"' in ibus_source
@@ -303,12 +303,12 @@ assert 'void translate_sentence(IBusEngine *engine)' in ibus_source
 # Voice provider discovery must match IBus and the standalone Linux provider
 # contract, including the runtime socket fallback during hot reload.
 assert 'providerSocket(options, "voice_provider_socket"' in source
-assert '"MSIME_VOICE_PROVIDER_SOCKET", "voice.sock"' in source
+assert '"LINGYAO_VOICE_PROVIDER_SOCKET", "voice.sock"' in source
 assert 'preferences_.value("clipboard_history", false)' in source
 assert 'if (!preferences_.value("clipboard_history", false))' in source
 assert 'translationSocket' in source
-assert '"MSIME_TRANSLATION_PROVIDER_SOCKET", "translation.sock"' in source
-assert '"MSIME_TRANSLATION_PROVIDER_SOCKET"' in ibus_source
+assert '"LINGYAO_TRANSLATION_PROVIDER_SOCKET", "translation.sock"' in source
+assert '"LINGYAO_TRANSLATION_PROVIDER_SOCKET"' in ibus_source
 assert '"translation.sock"' in ibus_source
 
 # Moving preferences_directory while focused must invalidate the old async
@@ -333,7 +333,7 @@ assert '重试保存设置' in source
 # explicit fallback for headless or unsupported desktops.
 for marker in ("WaveOverlayModel", "WaveOverlaySurface", "WaveOverlayX11Surface",
                "WaveOverlayWaylandSurface", "create_fcitx_wave_overlay_surface",
-               "MSIME_WAVE_OVERLAY_BACKEND", "updateVoiceOverlay", "hideVoiceOverlay",
+               "LINGYAO_WAVE_OVERLAY_BACKEND", "updateVoiceOverlay", "hideVoiceOverlay",
                "wave_overlay_.set_input_level", "wave_overlay_.actions_visible = true"):
     assert marker in source, marker
 assert "WaveOverlayX11Surface.cpp" in (root / "fcitx5/CMakeLists.txt").read_text()
@@ -342,7 +342,7 @@ assert "WaveOverlayWaylandSurface.cpp" in (root / "fcitx5/CMakeLists.txt").read_
 # The floating toolbar's eight component switches decide what the "工具栏" submenu
 # contains. They decided nothing here before, while the settings page showed all of
 # them for this platform, so each switch is pinned to the entry it governs.
-assert "msime-toolbar" in source
+assert "lingyao-toolbar" in source
 assert "rebuildToolbarMenu" in source and "refreshToolbar" in source
 for key, default in (("english_mode", "true"), ("fullwidth", "true"),
                      ("punctuation", "true"), ("character_set", "true"),
@@ -371,42 +371,42 @@ keyEvent = keyEvent[:keyEvent.index("\n  }\n")]
 assert "notConfigured(*state, false)" in keyEvent and "notConfigured(*state, true)" not in keyEvent
 assert "kFirstRunHint" in source and "kFirstRunGuideProgram" in source
 assert 'fcitx::startProcess({guide, "--host", "fcitx5"})' in source
-assert 'MSIME_BINDIR="${CMAKE_INSTALL_FULL_BINDIR}"' in cmake_fcitx5
-assert "msime-linux-first-run-guide" in cmake[cmake.index("foreach(MSIME_EDITION_SCRIPT"):cmake.index("endforeach()", cmake.index("foreach(MSIME_EDITION_SCRIPT"))]
+assert 'LINGYAO_BINDIR="${CMAKE_INSTALL_FULL_BINDIR}"' in cmake_fcitx5
+assert "lingyao-linux-first-run-guide" in cmake[cmake.index("foreach(LINGYAO_EDITION_SCRIPT"):cmake.index("endforeach()", cmake.index("foreach(LINGYAO_EDITION_SCRIPT"))]
 
 # The Korean Hanja keys (Hangul_Hanja and a bare F9), which also open the Zhuyin list, and the open lists are read through the shared core/KoreanHanja.h and core/InputSchemes.h in both hosts. The keys are decided before the rules that would finish the composition and hand the key to the application, so a trigger the Engine leaves unhandled (a lone jamo) never writes the syllable out and then leaks the key. Down is the second key that opens the Zhuyin list, so each host sends the command twice.
-fcitx_convert = 'command(MSIME_OPEN_CANDIDATE_LIST)'
-ibus_convert = 'msime_client_command(s.session, MSIME_OPEN_CANDIDATE_LIST)'
+fcitx_convert = 'command(LINGYAO_OPEN_CANDIDATE_LIST)'
+ibus_convert = 'lingyao_client_command(s.session, LINGYAO_OPEN_CANDIDATE_LIST)'
 assert source.count(fcitx_convert) == 2 and ibus_source.count(ibus_convert) == 2
 for host in (source, ibus_source):
-    assert 'msime::linux_host::korean_hanja_key(' in host
-    assert 'msime::linux_host::candidate_list_composition(' in host
-    assert 'msime::linux_host::zhuyin_list_down_key(' in host
-    assert 'msime::linux_host::korean_hanja_list_open(' in host
-    assert 'msime::linux_host::opened_candidate_list(' in host
-assert 'msime::linux_host::korean_hanja_punctuation_key(' in ibus_source
+    assert 'lingyao::linux_host::korean_hanja_key(' in host
+    assert 'lingyao::linux_host::candidate_list_composition(' in host
+    assert 'lingyao::linux_host::zhuyin_list_down_key(' in host
+    assert 'lingyao::linux_host::korean_hanja_list_open(' in host
+    assert 'lingyao::linux_host::opened_candidate_list(' in host
+assert 'lingyao::linux_host::korean_hanja_punctuation_key(' in ibus_source
 fcitx_key = source[source.index("bool FcitxState::key(fcitx::KeyEvent &event) {"):]
 fcitx_key = fcitx_key[:fcitx_key.index("\n}\n")]
 assert fcitx_key.index(fcitx_convert) < fcitx_key.index("if (composing && commitsOnBlur() && !openedList)")
-assert fcitx_key.index(fcitx_convert) < fcitx_key.rindex("if (composing) command(MSIME_FINISH_COMPOSITION);")
+assert fcitx_key.index(fcitx_convert) < fcitx_key.rindex("if (composing) command(LINGYAO_FINISH_COMPOSITION);")
 ibus_key = ibus_source[ibus_source.index("gboolean process_key(IBusEngine *engine, guint key, guint keycode, guint flags) {"):]
 ibus_key = ibus_key[:ibus_key.index("\n}\n")]
 assert ibus_key.index(ibus_convert) < ibus_key.index("commits_on_blur && has_composition)")
 # With a list open Return chooses the highlighted Hanja or Zhuyin candidate in both hosts rather than writing the composition out and breaking the line.
-assert "command(openedList ? MSIME_COMMIT_CANDIDATE : MSIME_COMMIT_RAW)" in fcitx_key
+assert "command(openedList ? LINGYAO_COMMIT_CANDIDATE : LINGYAO_COMMIT_RAW)" in fcitx_key
 ibus_return = ibus_key[ibus_key.index("case IBUS_Return:"):]
-assert ibus_return.index("if (opened_list) {") < ibus_return.index("command = MSIME_COMMIT_RAW;")
-# 两个宿主都提供藏文（Engine 方案 8），面板符号为「藏」。藏文和越南文一样离开组字时写出组字内容：IBus 的导航键必须发 MSIME_FINISH_COMPOSITION，若发 MSIME_COMMIT_CANDIDATE，Engine 会把它当作空格，多上屏一个音节点。
-assert '{&scheme_tibetan_action_, "msime-scheme-tibetan"}' in source
+assert ibus_return.index("if (opened_list) {") < ibus_return.index("command = LINGYAO_COMMIT_RAW;")
+# 两个宿主都提供藏文（Engine 方案 8），面板符号为「藏」。藏文和越南文一样离开组字时写出组字内容：IBus 的导航键必须发 LINGYAO_FINISH_COMPOSITION，若发 LINGYAO_COMMIT_CANDIDATE，Engine 会把它当作空格，多上屏一个音节点。
+assert '{&scheme_tibetan_action_, "lingyao-scheme-tibetan"}' in source
 assert 'FcitxSchemeItemAction scheme_tibetan_action_{&factory_, 8, "藏文"};' in source
 assert 'case 8: return "输入方案：藏文";' in source
-assert 'case msime::linux_host::InputModeIndicator::Tibetan: return "藏";' in source
+assert 'case lingyao::linux_host::InputModeIndicator::Tibetan: return "藏";' in source
 assert '"Scheme/Tibetan"' in ibus_source
-assert 'case msime::linux_host::InputModeIndicator::Tibetan: symbol = "藏"; break;' in ibus_source
+assert 'case lingyao::linux_host::InputModeIndicator::Tibetan: symbol = "藏"; break;' in ibus_source
 assert "korean_hanja_list || zhuyin_scheme || vietnamese_scheme || tibetan_scheme" in ibus_key
 
-# 两个宿主的菜单都只在有 msime-stroke.db 时提供笔画（Engine 方案 9）：Fcitx5 注册它的动作，单独出现 msime-stroke.db 时也重建菜单；IBus 列出 Scheme/Stroke，让 PropertyActivate 放行它并映射到 "stroke" id。IBus 缺任何一半，选笔画都会悄无声息地什么也不做。状态区的方案动作也要标出「输入方案：笔画」，否则会落到默认的全拼。
-assert '{&scheme_stroke_action_, "msime-scheme-stroke"}' in source
+# 两个宿主的菜单都只在有 lingyao-stroke.db 时提供笔画（Engine 方案 9）：Fcitx5 注册它的动作，单独出现 lingyao-stroke.db 时也重建菜单；IBus 列出 Scheme/Stroke，让 PropertyActivate 放行它并映射到 "stroke" id。IBus 缺任何一半，选笔画都会悄无声息地什么也不做。状态区的方案动作也要标出「输入方案：笔画」，否则会落到默认的全拼。
+assert '{&scheme_stroke_action_, "lingyao-scheme-stroke"}' in source
 assert 'FcitxSchemeItemAction scheme_stroke_action_{&factory_, 9, "笔画"};' in source
 assert 'case 9: return "输入方案：笔画";' in source
 assert 'schemeAvailable("stroke")' in source

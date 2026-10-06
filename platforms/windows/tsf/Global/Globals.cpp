@@ -9,7 +9,7 @@
 #include <string>
 #include <ctime>
 #include "FanyUtils.h"
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
 namespace Global
 {
@@ -20,24 +20,24 @@ LONG dllRefCount = -1;
 CRITICAL_SECTION CS;
 
 //---------------------------------------------------------------------
-// 本版本的 CLSID、profile 和 TSF 内部 GUID，取自 shared/contracts/msime_edition.h（版本表 platforms.windows）。full 是引入版本之前的那组值；其他版本各有一组，两个版本的 TIP 被同一个应用同时加载时，保留键、compartment、语言栏按钮和显示属性不会互相覆盖。
+// 本版本的 CLSID、profile 和 TSF 内部 GUID，取自 shared/contracts/lingyao_edition.h（版本表 platforms.windows）。full 是引入版本之前的那组值；其他版本各有一组，两个版本的 TIP 被同一个应用同时加载时，保留键、compartment、语言栏按钮和显示属性不会互相覆盖。
 //---------------------------------------------------------------------
-extern const CLSID LingyaoIMECLSID = MSIME_EDITION_CLSID;
-extern const GUID LingyaoIMEGuidProfile = MSIME_EDITION_PROFILE_GUID;
-extern const GUID LingyaoIMEGuidImeModePreserveKey = MSIME_EDITION_GUID_PRESERVE_KEY_IME_MODE;
-extern const GUID LingyaoIMEGuidImeModePreserveKey02 = MSIME_EDITION_GUID_PRESERVE_KEY_IME_MODE_02;
-extern const GUID LingyaoIMEGuidImeModePreserveKey03 = MSIME_EDITION_GUID_PRESERVE_KEY_IME_MODE_03;
-extern const GUID LingyaoIMEGuidEnglishInputModePreserveKey = MSIME_EDITION_GUID_PRESERVE_KEY_ENGLISH_INPUT_MODE;
-extern const GUID LingyaoIMEGuidDoubleSingleBytePreserveKey = MSIME_EDITION_GUID_PRESERVE_KEY_DOUBLE_SINGLE_BYTE;
-extern const GUID LingyaoIMEGuidPunctuationPreserveKey = MSIME_EDITION_GUID_PRESERVE_KEY_PUNCTUATION;
-extern const GUID LingyaoIMEGuidCompartmentDoubleSingleByte = MSIME_EDITION_GUID_COMPARTMENT_DOUBLE_SINGLE_BYTE;
-extern const GUID LingyaoIMEGuidCompartmentPunctuation = MSIME_EDITION_GUID_COMPARTMENT_PUNCTUATION;
-extern const GUID LingyaoIMEGuidLangBarIMEMode = MSIME_EDITION_GUID_LANGBAR_IME_MODE;
-extern const GUID LingyaoIMEGuidLangBarDoubleSingleByte = MSIME_EDITION_GUID_LANGBAR_DOUBLE_SINGLE_BYTE;
-extern const GUID LingyaoIMEGuidLangBarPunctuation = MSIME_EDITION_GUID_LANGBAR_PUNCTUATION;
-extern const GUID LingyaoIMEGuidDisplayAttributeInput = MSIME_EDITION_GUID_DISPLAY_ATTRIBUTE_INPUT;
-extern const GUID LingyaoIMEGuidDisplayAttributeConverted = MSIME_EDITION_GUID_DISPLAY_ATTRIBUTE_CONVERTED;
-extern const GUID LingyaoIMEGuidCandUIElement = MSIME_EDITION_GUID_CANDIDATE_UI_ELEMENT;
+extern const CLSID LingyaoIMECLSID = LINGYAO_EDITION_CLSID;
+extern const GUID LingyaoIMEGuidProfile = LINGYAO_EDITION_PROFILE_GUID;
+extern const GUID LingyaoIMEGuidImeModePreserveKey = LINGYAO_EDITION_GUID_PRESERVE_KEY_IME_MODE;
+extern const GUID LingyaoIMEGuidImeModePreserveKey02 = LINGYAO_EDITION_GUID_PRESERVE_KEY_IME_MODE_02;
+extern const GUID LingyaoIMEGuidImeModePreserveKey03 = LINGYAO_EDITION_GUID_PRESERVE_KEY_IME_MODE_03;
+extern const GUID LingyaoIMEGuidEnglishInputModePreserveKey = LINGYAO_EDITION_GUID_PRESERVE_KEY_ENGLISH_INPUT_MODE;
+extern const GUID LingyaoIMEGuidDoubleSingleBytePreserveKey = LINGYAO_EDITION_GUID_PRESERVE_KEY_DOUBLE_SINGLE_BYTE;
+extern const GUID LingyaoIMEGuidPunctuationPreserveKey = LINGYAO_EDITION_GUID_PRESERVE_KEY_PUNCTUATION;
+extern const GUID LingyaoIMEGuidCompartmentDoubleSingleByte = LINGYAO_EDITION_GUID_COMPARTMENT_DOUBLE_SINGLE_BYTE;
+extern const GUID LingyaoIMEGuidCompartmentPunctuation = LINGYAO_EDITION_GUID_COMPARTMENT_PUNCTUATION;
+extern const GUID LingyaoIMEGuidLangBarIMEMode = LINGYAO_EDITION_GUID_LANGBAR_IME_MODE;
+extern const GUID LingyaoIMEGuidLangBarDoubleSingleByte = LINGYAO_EDITION_GUID_LANGBAR_DOUBLE_SINGLE_BYTE;
+extern const GUID LingyaoIMEGuidLangBarPunctuation = LINGYAO_EDITION_GUID_LANGBAR_PUNCTUATION;
+extern const GUID LingyaoIMEGuidDisplayAttributeInput = LINGYAO_EDITION_GUID_DISPLAY_ATTRIBUTE_INPUT;
+extern const GUID LingyaoIMEGuidDisplayAttributeConverted = LINGYAO_EDITION_GUID_DISPLAY_ATTRIBUTE_CONVERTED;
+extern const GUID LingyaoIMEGuidCandUIElement = LINGYAO_EDITION_GUID_CANDIDATE_UI_ELEMENT;
 
 //---------------------------------------------------------------------
 // Unicode byte order mark

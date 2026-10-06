@@ -1,7 +1,7 @@
 #include "../../src/candidate/FloatingToolbarSettings.h"
 #include <cassert>
 #include <thread>
-using namespace msime::windows;
+using namespace lingyao::windows;
 int main() {
   const auto defaults = floating_toolbar_settings(nlohmann::json::object());
   assert(defaults && defaults->scale_percent == 100 && defaults->font_size == 24);

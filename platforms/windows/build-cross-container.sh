@@ -14,7 +14,7 @@
 set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 arch=${1:-x86}
-image=msime-cross:local
+image=lingyao-cross:local
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "skipped: docker is not installed"; exit 0
@@ -33,5 +33,5 @@ docker build --platform linux/amd64 -t "$image" "$root/platforms/windows/cross" 
 mkdir -p "$root/target/tooling-linux" "$root/target/windows-native-deps-linux"
 docker run --rm --platform linux/amd64 \
   -v "$root":/repo -v "$root/target/tooling-linux":/repo/target/tooling -w /repo \
-  -e MSIME_WINDOWS_DEPS_ROOT=/repo/target/windows-native-deps-linux \
+  -e LINGYAO_WINDOWS_DEPS_ROOT=/repo/target/windows-native-deps-linux \
   "$image" bash platforms/windows/build-cross.sh "$arch"

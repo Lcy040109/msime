@@ -3,7 +3,7 @@
 #include "PipeService.h"
 #include "SessionController.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct WindowsServerOptions {
   PipeServiceOptions pipes; // Explicit names/capabilities, no product defaults.
   size_t registration_capacity = 64;
@@ -97,4 +97,4 @@ private:
   std::unique_ptr<PipeMainTransport> transport_;
   std::unique_ptr<SessionController> controller_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

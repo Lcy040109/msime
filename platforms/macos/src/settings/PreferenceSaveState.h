@@ -1,7 +1,7 @@
 #pragma once
 
 // Main-thread scheduling only. A burst during one save requires one fresh save.
-struct MSIMEPreferenceSaveState {
+struct LINGYAOPreferenceSaveState {
     bool saving = false;
     bool pending = false;
     bool request() {

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace msime::windows {
+namespace lingyao::windows {
 PipeIntake::PipeIntake(PipeRegistry &registry, size_t workers, size_t capacity,
                        uint32_t capabilities, DWORD timeout,
                        Completion completion)
@@ -122,4 +122,4 @@ void PipeIntake::stop() {
     if (worker.joinable())
       worker.join();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -25,7 +25,7 @@ const MAX_STAGED_WEIGHT: i64 = 100_000_000;
 const MAX_STAGED_SELECTION_COUNT: i64 = 10;
 
 /// The domain separator every revision starts with; Apple's `DictionaryStateRevision` uses the same bytes.
-const REVISION_DOMAIN: &str = "msime-local-dictionary-state-v1";
+const REVISION_DOMAIN: &str = "lingyao-local-dictionary-state-v1";
 
 /// The host's record shape (engine-bridge `DictionaryStateRecord`); positions and counts are range-checked on import.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -144,7 +144,7 @@ fn read_state(file: &Path, emit: &mut dyn FnMut(&DictionaryStateRecord) -> bool)
     Ok(())
 }
 
-/// SHA-256 hex over `text("msime-local-dictionary-state-v1")` and every streamed record, where `text(s)` is `integer(len)` then the bytes and `integer` is a big-endian u64 (dictionary_revision.rs). Apple computes the same digest; keep the framing byte for byte.
+/// SHA-256 hex over `text("lingyao-local-dictionary-state-v1")` and every streamed record, where `text(s)` is `integer(len)` then the bytes and `integer` is a big-endian u64 (dictionary_revision.rs). Apple computes the same digest; keep the framing byte for byte.
 pub fn dictionary_state_revision(paths: &RuntimePaths) -> Result<String> {
     let mut revision = Revision::new();
     stream_dictionary_state(paths, &mut |record| {
@@ -246,7 +246,7 @@ pub fn stage_dictionary_state(
     )
 }
 
-/// [`stage_dictionary_state`]，词库按 `schemes` 准备（`prepare_runtime_paths_for`）：不读 `msime-pinyin.db` 的集合只复制 `msime-english.db`，记录照收，回放时只有英文行写进词库。
+/// [`stage_dictionary_state`]，词库按 `schemes` 准备（`prepare_runtime_paths_for`）：不读 `lingyao-pinyin.db` 的集合只复制 `lingyao-english.db`，记录照收，回放时只有英文行写进词库。
 pub fn stage_dictionary_state_for(
     resources: &Path,
     generation: &Path,
@@ -426,7 +426,7 @@ mod tests {
         actual.text("synthetic");
         actual.integer(258);
         let mut expected = Sha256::new();
-        let domain = b"msime-local-dictionary-state-v1";
+        let domain = b"lingyao-local-dictionary-state-v1";
         expected.update((domain.len() as u64).to_be_bytes());
         expected.update(domain);
         expected.update(9_u64.to_be_bytes());

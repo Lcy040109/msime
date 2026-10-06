@@ -1,4 +1,4 @@
-import app.msime.android.LocalInputMode;
+import app.lingyao.android.LocalInputMode;
 
 public final class LocalInputModeSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

@@ -1,7 +1,7 @@
-// 冒烟测试：用 Node 加载 scripts/build-web-engine.sh 产出的 dist/msime_engine.js 和 msime_engine_bg.wasm，导入词库，打 `nihao` + 空格，断言上屏了非空文字。它验证的是发布出去的那两个文件本身能在 JS 里跑通（wasm-bindgen 加载代码、启动函数、内存 VFS、WebEngine 的边界），不验证候选质量，候选质量由 routing.rs 和 parity.rs 管。
+// 冒烟测试：用 Node 加载 scripts/build-web-engine.sh 产出的 dist/lingyao_engine.js 和 lingyao_engine_bg.wasm，导入词库，打 `nihao` + 空格，断言上屏了非空文字。它验证的是发布出去的那两个文件本身能在 JS 里跑通（wasm-bindgen 加载代码、启动函数、内存 VFS、WebEngine 的边界），不验证候选质量，候选质量由 routing.rs 和 parity.rs 管。
 //
 // 用法：node crates/engine-wasm/tests/smoke.mjs <词库路径> [--dist <dist 目录>]
-// 词库通常是 `cargo run -p msime-engine-wasm --example make_fixture -- target/web-engine/fixture/msime.db` 写出的最小夹具；dist 默认是 target/web-engine/dist。只用 Node 22+ 自带的模块。
+// 词库通常是 `cargo run -p lingyao-engine-wasm --example make_fixture -- target/web-engine/fixture/lingyao.db` 写出的最小夹具；dist 默认是 target/web-engine/dist。只用 Node 22+ 自带的模块。
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -21,7 +21,7 @@ function parseArgs(argv) {
     }
   }
   if (db === null) {
-    throw new Error("usage: node crates/engine-wasm/tests/smoke.mjs <msime.db> [--dist <dir>]");
+    throw new Error("usage: node crates/engine-wasm/tests/smoke.mjs <lingyao.db> [--dist <dir>]");
   }
   return { db, dist };
 }
@@ -37,15 +37,15 @@ function fail(message) {
 }
 
 const { db, dist } = parseArgs(process.argv.slice(2));
-const glue = await import(pathToFileURL(resolve(dist, "msime_engine.js")).href);
+const glue = await import(pathToFileURL(resolve(dist, "lingyao_engine.js")).href);
 // 加载代码用 --omit-default-module-path 生成，没有默认的 wasm 路径，必须显式传入。
-glue.initSync({ module: readFileSync(resolve(dist, "msime_engine_bg.wasm")) });
+glue.initSync({ module: readFileSync(resolve(dist, "lingyao_engine_bg.wasm")) });
 
 const info = glue.build_info();
-if (!info.startsWith("msime-engine-wasm ")) {
+if (!info.startsWith("lingyao-engine-wasm ")) {
   fail(`unexpected build_info: ${info}`);
 }
-glue.import_database("/res/msime-pinyin.db", new Uint8Array(readFileSync(db)));
+glue.import_database("/res/lingyao-pinyin.db", new Uint8Array(readFileSync(db)));
 
 const engine = new glue.WebEngine("quanpin", 9);
 try {
@@ -70,5 +70,5 @@ try {
 } finally {
   engine.free();
 }
-glue.delete_database("/res/msime-pinyin.db");
+glue.delete_database("/res/lingyao-pinyin.db");
 console.log("smoke: ok");

@@ -1,13 +1,13 @@
-//! Typing effects: each session's combo, and the one integer `msime_client_typing_effect` answers a host with.
+//! Typing effects: each session's combo, and the one integer `lingyao_client_typing_effect` answers a host with.
 //!
 //! The host draws; this only counts. Everything here is integer arithmetic on the session's own `Cell`, so the call costs the key path no lock, no allocation and no disk. The only thing it may queue is the tier-up sound, through the same bounded `try_send` the key sounds use.
 
 use super::{tier_up, KeyClass, SessionSound, SoundSettings};
-use msime_client_core::plugins::{EffectStyle, COMBO_IDLE_RESET_MILLIS, COMBO_MILESTONES};
+use lingyao_client_core::plugins::{EffectStyle, COMBO_IDLE_RESET_MILLIS, COMBO_MILESTONES};
 use std::cell::Cell;
 use std::time::{Duration, Instant};
 
-/// Event codes, in the low byte of the call's `event`. 0-3 are `KeyClass` codes, as `msime_client_key_sound` takes them.
+/// Event codes, in the low byte of the call's `event`. 0-3 are `KeyClass` codes, as `lingyao_client_key_sound` takes them.
 pub(crate) const EVENT_COMMIT: u32 = 4;
 pub(crate) const EVENT_BACKSPACE: u32 = 5;
 /// The low byte of `event` that holds the code.
@@ -106,7 +106,7 @@ fn advance(settings: &SoundSettings, combo: &Cell<Combo>, event: u32, now: Insta
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::plugins::effect_pack::TypingEffect;
+    use lingyao_client_core::plugins::effect_pack::TypingEffect;
 
     /// Settings and a combo, standing in for a session: a real `SessionSound` publishes process-wide settings and a due tier-up sound would start the process's player under the other tests.
     struct Session {

@@ -4,12 +4,12 @@ import SQLite3
 @main enum EmojiSwiftHostTest {
   static func main() throws {
     // No stub class: dynamic selector lookup must resolve the real linked host.
-    guard NSClassFromString("MSIMEClientSession") != nil else { fatalError("Native host not linked") }
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-swift-host-" + UUID().uuidString)
+    guard NSClassFromString("LINGYAOClientSession") != nil else { fatalError("Native host not linked") }
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-swift-host-" + UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
     defer { try? FileManager.default.removeItem(at: directory) }
     var db: OpaquePointer?
-    assert(sqlite3_open(directory.appendingPathComponent("msime-others.db").path, &db) == SQLITE_OK)
+    assert(sqlite3_open(directory.appendingPathComponent("lingyao-others.db").path, &db) == SQLITE_OK)
     let sql = """
       CREATE TABLE emoji(emoji TEXT,category TEXT,keywords TEXT,pinyin TEXT,sort_order INTEGER);
       CREATE TABLE kaomoji_catalog(kaomoji TEXT,keywords TEXT,sort_order INTEGER);
@@ -39,7 +39,7 @@ import SQLite3
     assert(symbols.count == 1)
     let otherParent = try MacEmojiCatalog.loadAll(resources: directory.path, search: "", category: "symbols", group: "fixture", parent: "missing")
     assert(otherParent.isEmpty)
-    // 符号集插件经真实宿主读取：资源目录里没有 msime-others.db 也能列出，没有插件时是空列表。
+    // 符号集插件经真实宿主读取：资源目录里没有 lingyao-others.db 也能列出，没有插件时是空列表。
     let bare = directory.appendingPathComponent("bare-resources")
     let plugins = directory.appendingPathComponent("plugins")
     try FileManager.default.createDirectory(at: bare, withIntermediateDirectories: false)

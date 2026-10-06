@@ -15,7 +15,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_LINGYAOIME          ICON                    "assets/msime.ico"
+IDIS_LINGYAOIME          ICON                    "assets/lingyao.ico"
 IDI_IME_MODE_ON         ICON                    "assets/cn-light.ico"
 IDI_IME_MODE_OFF        ICON                    "assets/en-light.ico"
 IDI_IME_MODE_ON_DARK    ICON                    "assets/cn-dark.ico"

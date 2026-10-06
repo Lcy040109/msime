@@ -20,7 +20,7 @@ struct wl_surface;
 struct zwlr_layer_shell_v1;
 struct zwlr_layer_surface_v1;
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Native wlroots layer-shell surface. It is deliberately output-independent
 // and never requests keyboard focus; unsupported compositors use the factory's
@@ -99,4 +99,4 @@ class WaveOverlayWaylandSurface final : public WaveOverlaySurface {
   int pointer_y_ = 0;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { WelcomeFlowPage, type OnboardingActions } from "@msime/ui";
+import { WelcomeFlowPage, type OnboardingActions } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

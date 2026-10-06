@@ -1,10 +1,10 @@
 //! On-device speech models for the `local` provider: the settings page lists, downloads, cancels and removes them here, and a starting voice session reads the user's dictionary words from here to pass along as hotwords.
 //!
-//! Models live in `<app data dir>/voice-models/<id>`, the directory `voice_input.asr_model_path` is set to when the user picks one. Installing is `msime_client_core::voice::local_models`, which downloads into a staging directory, verifies every checksum and renames the finished model into place; this module only runs it off the command thread, forwards its progress as the `voice-local-model-progress` event and keeps the cancellation flag of each running install.
+//! Models live in `<app data dir>/voice-models/<id>`, the directory `voice_input.asr_model_path` is set to when the user picks one. Installing is `lingyao_client_core::voice::local_models`, which downloads into a staging directory, verifies every checksum and renames the finished model into place; this module only runs it off the command thread, forwards its progress as the `voice-local-model-progress` event and keeps the cancellation flag of each running install.
 
 use crate::*;
-use msime_client_core::voice::hotwords::Hotword;
-use msime_client_core::voice::local_models::{self, LocalModelError, LocalModelStatus};
+use lingyao_client_core::voice::hotwords::Hotword;
+use lingyao_client_core::voice::local_models::{self, LocalModelError, LocalModelStatus};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -114,7 +114,7 @@ fn app_model_root<R: tauri::Runtime>(
 }
 
 fn valid_model_id(id: &str) -> Result<(), HostActionError> {
-    if !msime_client_core::is_bounded_ascii_identifier(id, MAX_MODEL_ID_BYTES) {
+    if !lingyao_client_core::is_bounded_ascii_identifier(id, MAX_MODEL_ID_BYTES) {
         return Err(HostActionError {
             code: "local_model_unknown",
         });
@@ -239,7 +239,7 @@ pub(crate) async fn voice_local_model_install<R: tauri::Runtime>(
         move |progress, cancel| local_models::install(&root, &worker_id, &mirror, progress, cancel),
     )
     .await?;
-    // On Linux the recording runs in the user's voice service, which on-device recognition needs even when no cloud credential was ever saved, the one other step that enables its socket. `msime-linux-setup` enables it too; this covers a socket an earlier version disabled. Without a user service manager the model is installed all the same.
+    // On Linux the recording runs in the user's voice service, which on-device recognition needs even when no cloud credential was ever saved, the one other step that enables its socket. `lingyao-linux-setup` enables it too; this covers a socket an earlier version disabled. Without a user service manager the model is installed all the same.
     #[cfg(target_os = "linux")]
     let _ = tauri::async_runtime::spawn_blocking(
         crate::platform::linux::linux_provider_credentials::enable_voice_service,
@@ -290,13 +290,13 @@ pub(crate) async fn voice_local_model_remove<R: tauri::Runtime>(
 /// Rows read per dictionary page, the most one list request accepts.
 #[cfg(unix)]
 const HOTWORD_PAGE: usize = 1_000;
-/// Enough rows that the heaviest words can be picked even from a large dictionary, without reading the whole store for every voice session. Same bound as `msime_client_voice_hotwords`.
+/// Enough rows that the heaviest words can be picked even from a large dictionary, without reading the whole store for every voice session. Same bound as `lingyao_client_voice_hotwords`.
 #[cfg(unix)]
 const HOTWORD_MAX_ROWS: usize = 5_000;
 
 /// Hotwords for an on-device session from the user's own pinyin dictionary words, heaviest first, at most `limit`.
 ///
-/// The same selection `msime_client_voice_hotwords` makes, read through the list route this host's dictionary page uses. A dictionary that cannot be read right now (maintenance holds it, the store is missing) gives the words read so far, possibly none: recognition without hotwords is still recognition.
+/// The same selection `lingyao_client_voice_hotwords` makes, read through the list route this host's dictionary page uses. A dictionary that cannot be read right now (maintenance holds it, the store is missing) gives the words read so far, possibly none: recognition without hotwords is still recognition.
 #[cfg(unix)]
 pub(crate) fn dictionary_hotwords(options: &Value, limit: usize) -> Vec<Hotword> {
     dictionary_hotwords_with(limit, |action| list_dictionary_page(options, action))
@@ -307,7 +307,7 @@ pub(crate) fn dictionary_hotwords_with(
     limit: usize,
     mut list: impl FnMut(&Value) -> Option<Value>,
 ) -> Vec<Hotword> {
-    msime_client_core::voice::hotwords::hotwords_from_dictionary_pages(
+    lingyao_client_core::voice::hotwords::hotwords_from_dictionary_pages(
         limit,
         HOTWORD_PAGE,
         HOTWORD_MAX_ROWS,
@@ -332,7 +332,7 @@ pub(crate) fn dictionary_hotwords_with(
                         entry["weight"].as_i64().unwrap_or(0),
                     ))
                 }));
-                msime_client_core::voice::hotwords::DictionaryHotwordPage {
+                lingyao_client_core::voice::hotwords::DictionaryHotwordPage {
                     entries,
                     has_more: page["has_more"].as_bool() == Some(true),
                 }
@@ -353,12 +353,12 @@ fn list_dictionary_page(options: &Value, action: &Value) -> Option<Value> {
     #[cfg(target_os = "android")]
     {
         let bytes = serde_json::to_vec(&request).ok()?;
-        msime_host_api::personal_dictionary_request_json(&bytes).ok()
+        lingyao_host_api::personal_dictionary_request_json(&bytes).ok()
     }
     #[cfg(not(any(target_os = "ios", target_os = "android")))]
     {
         let bytes = serde_json::to_vec(&request).ok()?;
-        msime_host_api::dictionary_request_json(&bytes).ok()
+        lingyao_host_api::dictionary_request_json(&bytes).ok()
     }
 }
 
@@ -368,7 +368,7 @@ pub(crate) fn session_hotwords(dictionary: &DictionaryHostOptions) -> Vec<Hotwor
     match dictionary.snapshot() {
         Ok(options) => dictionary_hotwords(
             &options,
-            msime_client_core::voice::hotwords::DEFAULT_HOTWORD_LIMIT,
+            lingyao_client_core::voice::hotwords::DEFAULT_HOTWORD_LIMIT,
         ),
         Err(_) => Vec::new(),
     }

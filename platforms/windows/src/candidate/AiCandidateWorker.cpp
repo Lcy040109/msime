@@ -1,7 +1,7 @@
 #include "AiCandidateWorker.h"
 #include "CandidateHttpPolicy.h"
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
@@ -12,7 +12,7 @@
 #include <mutex>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // The reference debounces AI requests harder than cloud ones: each is a paid
 // model call, and a user mid-word would otherwise spend several.
@@ -74,11 +74,11 @@ std::optional<nlohmann::json> ai_descriptor(const std::string &query,
     const auto serialized = request.dump();
     if (serialized.size() > 65536)
       return std::nullopt;
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        msime_client_ai_http_request(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        lingyao_client_ai_http_request(
             reinterpret_cast<const uint8_t *>(serialized.data()),
             serialized.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!raw)
       return std::nullopt;
     const auto response = nlohmann::json::parse(raw.get(), nullptr, false);
@@ -166,7 +166,7 @@ std::optional<std::string> https_post(const nlohmann::json &descriptor,
     // answers that were still on their way.
     curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, 8000L);
     curl_easy_setopt(curl.get(), CURLOPT_NOSIGNAL, 1L);
-    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "MSIME-Client/1.0");
+    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "LINGYAO-Client/1.0");
     curl_easy_setopt(curl.get(), CURLOPT_HTTPHEADER, request_headers.get());
     curl_easy_setopt(curl.get(), CURLOPT_POST, 1L);
     curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, write_response);
@@ -265,10 +265,10 @@ AiCandidateWorker::fetch(const std::string &query,
   const auto body = https_post(*descriptor, is_cancelled);
   if (!body || body->empty() || (is_cancelled && is_cancelled()))
     return {};
-  std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-      msime_client_parse_ai_response(
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+      lingyao_client_parse_ai_response(
           reinterpret_cast<const uint8_t *>(body->data()), body->size(), limit),
-      msime_client_string_free);
+      lingyao_client_string_free);
   if (!raw)
     return {};
   try {
@@ -364,4 +364,4 @@ void AiCandidateWorker::run() {
     }
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

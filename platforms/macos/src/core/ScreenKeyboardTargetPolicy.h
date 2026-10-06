@@ -2,7 +2,7 @@
 
 #include <sys/types.h>
 
-namespace msime::mac {
+namespace lingyao::mac {
 
 /// Keep an external foreground process as the screen-keyboard target.
 /// The input method itself and invalid PIDs are never valid destinations.
@@ -18,4 +18,4 @@ inline pid_t LiveScreenKeyboardTarget(pid_t foreground, pid_t ownProcess) {
     return CapturedScreenKeyboardTarget(foreground, ownProcess);
 }
 
-} // namespace msime::mac
+} // namespace lingyao::mac

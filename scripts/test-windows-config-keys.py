@@ -46,13 +46,13 @@ ANSWERED_ELSEWHERE: dict[str, str] = {
     ),
     "appearance.cand_text_color": (
         "candidate text colours come from the shared preferences global_theme / custom_theme "
-        "(custom_theme.candidate_colors), resolved through msime_client_resolve_theme and chosen "
+        "(custom_theme.candidate_colors), resolved through lingyao_client_resolve_theme and chosen "
         "in 设置 → 主题"
     ),
     "appearance.candidate_skin": (
         "the candidate window, toolbar, menu and screen keyboard skin comes from the shared "
         "preferences global_theme / custom_theme (custom_theme.candidate_skin), resolved through "
-        "msime_client_resolve_theme and chosen in 设置 → 主题"
+        "lingyao_client_resolve_theme and chosen in 设置 → 主题"
     ),
     "appearance.ui_backend": (
         "the Windows host has one supported candidate renderer here (Direct2D), so there is no "
@@ -94,7 +94,7 @@ def reference_config() -> tuple[str, str, str] | None:
 def main() -> int:
     resolved = reference_config()
     if resolved is None:
-        print("skipped: no MSIME-Windows checkout beside this repository to compare against")
+        print("skipped: no LINGYAO-Windows checkout beside this repository to compare against")
         print(f"  expected a git checkout at {REFERENCE}")
         return 0
     text, ref, sha = resolved

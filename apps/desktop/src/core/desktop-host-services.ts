@@ -10,7 +10,7 @@ import type {
   CommunityPluginPage,
   PluginPackage,
   SkinCatalog,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 type Invoke = <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
 

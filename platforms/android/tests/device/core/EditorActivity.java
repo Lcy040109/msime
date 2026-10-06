@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.app.Activity;
 import android.os.Build;
@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.inputmethod.InputMethodManager;
 import android.view.WindowManager;
-import app.msime.android.WindowLayout;
+import app.lingyao.android.WindowLayout;
 
 /** Separate synthetic editor app: tests the system InputConnection, not a mock. */
 public final class EditorActivity extends Activity {
@@ -25,17 +25,17 @@ public final class EditorActivity extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
         WindowLayout.fitSystemBars(layout);
         TextView title = new TextView(this);
-        title.setText("MSIME synthetic editor fixture");
+        title.setText("LINGYAO synthetic editor fixture");
         layout.addView(title);
         EditText plain = new EditText(this);
         plain.setInputType(InputType.TYPE_CLASS_TEXT);
-        plain.setContentDescription("msime-test-plain");
+        plain.setContentDescription("lingyao-test-plain");
         plain.setHint("Plain editor");
         showImeOnFocus(plain);
         layout.addView(plain);
         EditText password = new EditText(this);
         password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        password.setContentDescription("msime-test-password");
+        password.setContentDescription("lingyao-test-password");
         password.setHint("Password editor");
         showImeOnFocus(password);
         layout.addView(password);

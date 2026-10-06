@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import { useUpdateCheck } from "@msime/ui";
+import { useUpdateCheck } from "@lingyao/ui";
 
 afterEach(() => {
   vi.unstubAllGlobals();

@@ -1,4 +1,4 @@
-import app.msime.android.ChineseOutputPolicy;
+import app.lingyao.android.ChineseOutputPolicy;
 
 public final class ChineseOutputPolicySmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

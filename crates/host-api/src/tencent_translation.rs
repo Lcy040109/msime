@@ -1,5 +1,5 @@
 //! Pure descriptors for a native, host-owned Tencent TMT transport.
-use msime_client_core::translation;
+use lingyao_client_core::translation;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -34,9 +34,9 @@ pub fn descriptor(bytes: &[u8]) -> Result<Value, &'static str> {
     let valid_token = translation::is_valid_credential;
     if !valid_token(&id)
         || !valid_token(&key)
-        || !msime_client_core::is_bounded_ascii_identifier(&id, 4096)
+        || !lingyao_client_core::is_bounded_ascii_identifier(&id, 4096)
         || region.len() > 64
-        || !msime_client_core::is_ascii_alphanumeric_dash(&region)
+        || !lingyao_client_core::is_ascii_alphanumeric_dash(&region)
         || !translation::is_supported_translation_pair(
             &request.source_language,
             &request.target_language,

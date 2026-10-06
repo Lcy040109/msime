@@ -1,11 +1,11 @@
 #pragma once
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <ibus.h>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 struct WordCharacterBinding {
   bool enabled = true;
   bool minus_equal = false;
@@ -24,10 +24,10 @@ struct WordCharacterBinding {
     if (!enabled || shift)
       return std::nullopt;
     if (key == (minus_equal ? IBUS_minus : IBUS_bracketleft))
-      return MSIME_FIRST_HAN;
+      return LINGYAO_FIRST_HAN;
     if (key == (minus_equal ? IBUS_equal : IBUS_bracketright))
-      return MSIME_LAST_HAN;
+      return LINGYAO_LAST_HAN;
     return std::nullopt;
   }
 };
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

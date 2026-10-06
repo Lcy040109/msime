@@ -1,29 +1,29 @@
 import Foundation
 
-private typealias MSIMEVoiceByte = UInt8
+private typealias LINGYAOVoiceByte = UInt8
 
-@_silgen_name("msime_client_doubao_decode_frame")
-private func msimeClientDoubaoDecodeFrame(
-  _ frame: UnsafePointer<MSIMEVoiceByte>?, _ length: UInt
+@_silgen_name("lingyao_client_doubao_decode_frame")
+private func lingyaoClientDoubaoDecodeFrame(
+  _ frame: UnsafePointer<LINGYAOVoiceByte>?, _ length: UInt
 ) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_doubao_start_frame")
-private func msimeClientDoubaoStartFrame(
+@_silgen_name("lingyao_client_doubao_start_frame")
+private func lingyaoClientDoubaoStartFrame(
   _ enableITN: Bool, _ enablePunctuation: Bool, _ enableDDC: Bool,
-  _ boostingTable: UnsafePointer<MSIMEVoiceByte>?, _ boostingTableLength: UInt,
-  _ output: UnsafeMutablePointer<MSIMEVoiceByte>?, _ outputCapacity: UInt,
+  _ boostingTable: UnsafePointer<LINGYAOVoiceByte>?, _ boostingTableLength: UInt,
+  _ output: UnsafeMutablePointer<LINGYAOVoiceByte>?, _ outputCapacity: UInt,
   _ outputLength: UnsafeMutablePointer<UInt>?
 ) -> Bool
 
-@_silgen_name("msime_client_doubao_audio_frame")
-private func msimeClientDoubaoAudioFrame(
-  _ sequence: Int32, _ pcm: UnsafePointer<MSIMEVoiceByte>?, _ pcmLength: UInt,
-  _ finalChunk: Bool, _ output: UnsafeMutablePointer<MSIMEVoiceByte>?,
+@_silgen_name("lingyao_client_doubao_audio_frame")
+private func lingyaoClientDoubaoAudioFrame(
+  _ sequence: Int32, _ pcm: UnsafePointer<LINGYAOVoiceByte>?, _ pcmLength: UInt,
+  _ finalChunk: Bool, _ output: UnsafeMutablePointer<LINGYAOVoiceByte>?,
   _ outputCapacity: UInt, _ outputLength: UnsafeMutablePointer<UInt>?
 ) -> Bool
 
-@_silgen_name("msime_client_string_free")
-private func msimeClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 private enum IOSVoiceDoubaoFrame {
   case update(final: Bool, text: String?)
@@ -274,10 +274,10 @@ final class IOSVoiceDoubaoTransport: NSObject, URLSessionWebSocketDelegate,
     var written: UInt = 0
     let ok = output.withUnsafeMutableBytes { outputBytes in
       table.withUnsafeBytes { tableBytes in
-        msimeClientDoubaoStartFrame(
+        lingyaoClientDoubaoStartFrame(
           enableITN, punctuation, DDC,
-          tableBytes.bindMemory(to: MSIMEVoiceByte.self).baseAddress, UInt(table.count),
-          outputBytes.bindMemory(to: MSIMEVoiceByte.self).baseAddress, UInt(capacity), &written)
+          tableBytes.bindMemory(to: LINGYAOVoiceByte.self).baseAddress, UInt(table.count),
+          outputBytes.bindMemory(to: LINGYAOVoiceByte.self).baseAddress, UInt(capacity), &written)
       }
     }
     guard ok, written > 0, written <= UInt(output.count) else { return nil }
@@ -291,9 +291,9 @@ final class IOSVoiceDoubaoTransport: NSObject, URLSessionWebSocketDelegate,
     var written: UInt = 0
     let ok = output.withUnsafeMutableBytes { outputBytes in
       pcm.withUnsafeBytes { pcmBytes in
-        msimeClientDoubaoAudioFrame(
-          sequence, pcmBytes.bindMemory(to: MSIMEVoiceByte.self).baseAddress, UInt(pcm.count),
-          final, outputBytes.bindMemory(to: MSIMEVoiceByte.self).baseAddress,
+        lingyaoClientDoubaoAudioFrame(
+          sequence, pcmBytes.bindMemory(to: LINGYAOVoiceByte.self).baseAddress, UInt(pcm.count),
+          final, outputBytes.bindMemory(to: LINGYAOVoiceByte.self).baseAddress,
           UInt(capacity), &written)
       }
     }
@@ -305,11 +305,11 @@ final class IOSVoiceDoubaoTransport: NSObject, URLSessionWebSocketDelegate,
 
   private static func decode(_ frame: Data) -> IOSVoiceDoubaoFrame? {
     let raw: UnsafeMutablePointer<CChar>? = frame.withUnsafeBytes { bytes in
-      msimeClientDoubaoDecodeFrame(
-        bytes.bindMemory(to: MSIMEVoiceByte.self).baseAddress, UInt(frame.count))
+      lingyaoClientDoubaoDecodeFrame(
+        bytes.bindMemory(to: LINGYAOVoiceByte.self).baseAddress, UInt(frame.count))
     }
     guard let raw else { return nil }
-    defer { msimeClientStringFree(raw) }
+    defer { lingyaoClientStringFree(raw) }
     guard let data = String(cString: raw).data(using: .utf8),
           let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
           envelope["ok"] as? Bool == true,

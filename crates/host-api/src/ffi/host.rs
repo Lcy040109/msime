@@ -3,7 +3,7 @@
 //! Part of the C ABI; see the parent module for what these shims guarantee.
 
 use crate::*;
-use msime_client_core::is_bounded_text;
+use lingyao_client_core::is_bounded_text;
 
 /// Candidate and commit text normally stays far below this bound. Keep the direct conversion ABI
 /// bounded as well so a malformed native length cannot make it scan an unbounded buffer or allocate
@@ -11,7 +11,7 @@ use msime_client_core::is_bounded_text;
 const MAX_TRADITIONAL_CONVERSION_BYTES: usize = 1 << 20;
 
 #[no_mangle]
-pub extern "C" fn msime_client_abi_version() -> u32 {
+pub extern "C" fn lingyao_client_abi_version() -> u32 {
     3
 }
 
@@ -19,9 +19,9 @@ pub extern "C" fn msime_client_abi_version() -> u32 {
 ///
 /// Returns the converted text itself rather than the standard JSON response: hosts call this for every candidate on a page and every commit, and wrapping each string in a document only to parse it back out would put a JSON round trip on the typing path. Returns null for a null pointer, invalid UTF-8 or an interior NUL, so the caller keeps its own text.
 /// # Safety
-/// `text` points to `length` readable bytes. The returned string must be released with `msime_client_string_free`.
+/// `text` points to `length` readable bytes. The returned string must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_simplified_to_traditional(
+pub unsafe extern "C" fn lingyao_client_simplified_to_traditional(
     text: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -33,16 +33,16 @@ pub unsafe extern "C" fn msime_client_simplified_to_traditional(
     let Ok(text) = std::str::from_utf8(bytes) else {
         return std::ptr::null_mut();
     };
-    let converted = msime_client_core::chinese_conversion::simplified_to_traditional(text);
+    let converted = lingyao_client_core::chinese_conversion::simplified_to_traditional(text);
     CString::new(converted).map_or(std::ptr::null_mut(), CString::into_raw)
 }
 
 /// Resolve display font families using the same adapter as the shared preview.
 /// # Safety
 /// `value` points to `length` readable bytes containing a JSON string array.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_resolve_font_families(
+pub unsafe extern "C" fn lingyao_client_resolve_font_families(
     value: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -64,7 +64,7 @@ pub unsafe extern "C" fn msime_client_resolve_font_families(
 /// # Safety
 /// `value` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_parse_surface_route(
+pub unsafe extern "C" fn lingyao_client_parse_surface_route(
     value: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -95,7 +95,7 @@ pub unsafe extern "C" fn msime_client_parse_surface_route(
 /// # Safety
 /// `platform` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_host_capabilities(
+pub unsafe extern "C" fn lingyao_client_host_capabilities(
     platform: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -116,7 +116,7 @@ pub unsafe extern "C" fn msime_client_host_capabilities(
 /// # Safety
 /// `options` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_prepare_host(
+pub unsafe extern "C" fn lingyao_client_prepare_host(
     options: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -143,8 +143,8 @@ pub unsafe extern "C" fn msime_client_prepare_host(
             return Err("bootstrap paths must be absolute".into());
         }
         let edition = match options.edition.as_deref() {
-            None => msime_client_core::edition::Edition::full(),
-            Some(id) => msime_client_core::edition::Edition::by_id(id).ok_or("unknown edition")?,
+            None => lingyao_client_core::edition::Edition::full(),
+            Some(id) => lingyao_client_core::edition::Edition::by_id(id).ok_or("unknown edition")?,
         };
         let document = prepare_host_configuration_for_edition(resources, state, edition)
             .map_err(|e| e.to_string())?;
@@ -156,7 +156,7 @@ pub unsafe extern "C" fn msime_client_prepare_host(
 /// # Safety
 /// `path` points to `length` readable UTF-8 bytes naming an absolute file. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_refresh_host(path: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_refresh_host(path: *const u8, length: usize) -> *mut c_char {
     response(|| {
         if path.is_null() || length > 4096 {
             return Err("invalid options path buffer".into());
@@ -175,11 +175,11 @@ pub unsafe extern "C" fn msime_client_refresh_host(path: *const u8, length: usiz
     })
 }
 
-/// Register the device's anonymous MSIME account under `directory` (`anonymous-account.json` and `anonymous-session.json`) unless a session is already there. Blocks on the network for up to about a minute: call from a background thread. Value is true once a session exists.
+/// Register the device's anonymous LINGYAO account under `directory` (`anonymous-account.json` and `anonymous-session.json`) unless a session is already there. Blocks on the network for up to about a minute: call from a background thread. Value is true once a session exists.
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes naming an absolute directory. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_ensure_anonymous_account(
+pub unsafe extern "C" fn lingyao_client_ensure_anonymous_account(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn msime_client_ensure_anonymous_account(
         if !directory.is_absolute() {
             return Err("account directory must be absolute".into());
         }
-        msime_client_core::account::ensure_anonymous_account(directory)
+        lingyao_client_core::account::ensure_anonymous_account(directory)
             .map(|()| Value::Bool(true))
             .map_err(|e| e.to_string())
     })
@@ -209,9 +209,9 @@ pub unsafe extern "C" fn msime_client_ensure_anonymous_account(
 /// would put a second copy of this contract in another language, so they are
 /// published here instead.
 #[no_mangle]
-pub extern "C" fn msime_client_default_preferences() -> *mut c_char {
+pub extern "C" fn lingyao_client_default_preferences() -> *mut c_char {
     response(|| {
-        serde_json::to_value(msime_client_core::preferences::Preferences::default())
+        serde_json::to_value(lingyao_client_core::preferences::Preferences::default())
             .map_err(|e| e.to_string())
     })
 }
@@ -220,11 +220,11 @@ pub extern "C" fn msime_client_default_preferences() -> *mut c_char {
 ///
 /// The Android keyboard has its own voice entry and never goes through the desktop shell, so the
 /// resolution it needs is here rather than in that shell. Contains credentials: never log the
-/// response; release with `msime_client_string_free`.
+/// response; release with `lingyao_client_string_free`.
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes naming an absolute path. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_mobile_voice_configuration(
+pub unsafe extern "C" fn lingyao_client_mobile_voice_configuration(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -238,9 +238,9 @@ pub unsafe extern "C" fn msime_client_mobile_voice_configuration(
         if !std::path::Path::new(directory).is_absolute() {
             return Err("invalid preferences directory".into());
         }
-        let store = msime_client_core::preferences::PreferencesStore::new(directory);
+        let store = lingyao_client_core::preferences::PreferencesStore::new(directory);
         let snapshot = store.load().map_err(|_| "preferences unavailable")?;
-        let provider = msime_client_core::voice::provider::mobile_voice_provider_configuration(
+        let provider = lingyao_client_core::voice::provider::mobile_voice_provider_configuration(
             &snapshot.preferences,
         )
         .map(|value| {
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn msime_client_mobile_voice_configuration(
                 "modelPath": value.model_path,
             })
         });
-        let polish = msime_client_core::voice::provider::mobile_voice_polish_configuration(
+        let polish = lingyao_client_core::voice::provider::mobile_voice_polish_configuration(
             &snapshot.preferences,
         )
         .map(|value| {
@@ -283,11 +283,11 @@ pub unsafe extern "C" fn msime_client_mobile_voice_configuration(
 ///
 /// `system` and `custom` carry no palettes here: `system` is the host's native tokens, and `custom` is only known once resolved against the user's `custom_theme`. Hosts draw the picker from this and keep no copy of the ids, titles or colours.
 #[no_mangle]
-pub extern "C" fn msime_client_theme_catalog() -> *mut c_char {
+pub extern "C" fn lingyao_client_theme_catalog() -> *mut c_char {
     response(|| {
         Ok(serde_json::json!({
-            "themes": msime_client_core::skin::theme::catalog(),
-            "default": msime_client_core::skin::theme::GlobalTheme::default(),
+            "themes": lingyao_client_core::skin::theme::catalog(),
+            "default": lingyao_client_core::skin::theme::GlobalTheme::default(),
         }))
     })
 }
@@ -298,11 +298,11 @@ const MAX_THEME_REQUEST_BYTES: usize = 1 << 20;
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ResolveThemeRequest {
-    global_theme: msime_client_core::skin::theme::GlobalTheme,
+    global_theme: lingyao_client_core::skin::theme::GlobalTheme,
     #[serde(default)]
-    custom_theme: msime_client_core::preferences::CustomTheme,
+    custom_theme: lingyao_client_core::preferences::CustomTheme,
     dark: bool,
-    layout: msime_client_core::preferences::CandidateLayout,
+    layout: lingyao_client_core::preferences::CandidateLayout,
     skins_directory: Option<String>,
     package: Option<serde_json::Value>,
 }
@@ -311,22 +311,22 @@ struct ResolveThemeRequest {
 fn requested_season(
     month: Option<u8>,
     invalid: &str,
-) -> Result<msime_client_core::skin::season::Season, String> {
+) -> Result<lingyao_client_core::skin::season::Season, String> {
     match month {
-        Some(month) => msime_client_core::skin::season::season_for_month(month)
+        Some(month) => lingyao_client_core::skin::season::season_for_month(month)
             .ok_or_else(|| invalid.to_owned()),
-        None => Ok(msime_client_core::skin::season::current_utc_season()),
+        None => Ok(lingyao_client_core::skin::season::current_utc_season()),
     }
 }
 
 /// Resolve the colours a host draws for a global theme.
 ///
-/// The request carries the two preference fields as the host read them, so this takes no preferences directory and does no preference I/O: `global_theme` (one of the seven ids; any other id, a retired skin id included, fails the request as `invalid theme request`) and `custom_theme` (optional, validated as strictly as the preference itself). `dark` is the host's effective mode for the surface being drawn, and `layout` (`horizontal` or `vertical`) its candidate layout: a package is drawn only in a layout and a mode its manifest declares, so no host keeps a gate of its own. For `custom` with a `custom_theme.candidate_skin`, the host names where that package comes from with at most one of `skins_directory` (an absolute skin root; the package is loaded and validated as `msime_client_skin_package` does; every host that scans the root, which is every host but Linux) or `package` (one entry of the published `candidate_skin_catalog`, which only the Linux hosts read). A `package` that is not such an entry, a `SkinSummary` from `msime_client_skin_catalog` included, fails the call: that is a host bug, and reading it anyway would drop its declared modes and selection bar without a word. A package that is missing from the root, invalid on disk or not the one `candidate_skin` names is left out rather than failing the call: the theme still resolves, over its base.
+/// The request carries the two preference fields as the host read them, so this takes no preferences directory and does no preference I/O: `global_theme` (one of the seven ids; any other id, a retired skin id included, fails the request as `invalid theme request`) and `custom_theme` (optional, validated as strictly as the preference itself). `dark` is the host's effective mode for the surface being drawn, and `layout` (`horizontal` or `vertical`) its candidate layout: a package is drawn only in a layout and a mode its manifest declares, so no host keeps a gate of its own. For `custom` with a `custom_theme.candidate_skin`, the host names where that package comes from with at most one of `skins_directory` (an absolute skin root; the package is loaded and validated as `lingyao_client_skin_package` does; every host that scans the root, which is every host but Linux) or `package` (one entry of the published `candidate_skin_catalog`, which only the Linux hosts read). A `package` that is not such an entry, a `SkinSummary` from `lingyao_client_skin_catalog` included, fails the call: that is a host bug, and reading it anyway would drop its declared modes and selection bar without a word. A package that is missing from the root, invalid on disk or not the one `candidate_skin` names is left out rather than failing the call: the theme still resolves, over its base.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_resolve_theme(
+pub unsafe extern "C" fn lingyao_client_resolve_theme(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -357,21 +357,21 @@ pub unsafe extern "C" fn msime_client_resolve_theme(
             .custom_theme
             .candidate_skin
             .as_deref()
-            .filter(|_| theme == msime_client_core::skin::theme::GlobalTheme::Custom);
+            .filter(|_| theme == lingyao_client_core::skin::theme::GlobalTheme::Custom);
         let entry = request
             .package
-            .map(msime_client_core::skin::theme::ThemePackage::from_host_catalog_entry)
+            .map(lingyao_client_core::skin::theme::ThemePackage::from_host_catalog_entry)
             .transpose()?;
         let package = match (wanted, request.skins_directory, entry) {
             (Some(id), Some(directory), _) => {
-                msime_client_core::skin::catalog::load_package(&directory, id)
+                lingyao_client_core::skin::catalog::load_package(&directory, id)
                     .ok()
-                    .map(|summary| msime_client_core::skin::theme::ThemePackage::from(&summary))
+                    .map(|summary| lingyao_client_core::skin::theme::ThemePackage::from(&summary))
             }
             (Some(_), None, entry) => entry,
             _ => None,
         };
-        let resolved = msime_client_core::skin::theme::resolve(
+        let resolved = lingyao_client_core::skin::theme::resolve(
             theme,
             &request.custom_theme,
             request.dark,
@@ -384,13 +384,13 @@ pub unsafe extern "C" fn msime_client_resolve_theme(
 
 /// 应用主题的选择器：每个应用主题的 ID、标题、固定的季节和浅色、深色的颜色，以及默认 ID。
 ///
-/// `siji` 的 `season` 为 `null`、`seasonal` 为真，它的颜色固定画秋杉，所以这份目录不随时钟变化；宿主画当季颜色时调 `msime_client_resolve_app_theme`。宿主不保存 ID、标题或色值的副本。
+/// `siji` 的 `season` 为 `null`、`seasonal` 为真，它的颜色固定画秋杉，所以这份目录不随时钟变化；宿主画当季颜色时调 `lingyao_client_resolve_app_theme`。宿主不保存 ID、标题或色值的副本。
 #[no_mangle]
-pub extern "C" fn msime_client_app_theme_catalog() -> *mut c_char {
+pub extern "C" fn lingyao_client_app_theme_catalog() -> *mut c_char {
     response(|| {
         Ok(json!({
-            "app_themes": msime_client_core::skin::app_theme::catalog(),
-            "default": msime_client_core::skin::app_theme::AppTheme::default(),
+            "app_themes": lingyao_client_core::skin::app_theme::catalog(),
+            "default": lingyao_client_core::skin::app_theme::AppTheme::default(),
         }))
     })
 }
@@ -401,7 +401,7 @@ const MAX_APP_THEME_REQUEST_BYTES: usize = 4096;
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ResolveAppThemeRequest {
-    app_theme: msime_client_core::skin::app_theme::AppTheme,
+    app_theme: lingyao_client_core::skin::app_theme::AppTheme,
     #[serde(default)]
     month: Option<u8>,
     dark: bool,
@@ -410,9 +410,9 @@ struct ResolveAppThemeRequest {
 /// 应用主题在宿主当前月份和明暗模式下的颜色：`{id, season, accent, accent_soft, on_accent, background, card, hair}`。纯计算，不读写文件。
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_resolve_app_theme(
+pub unsafe extern "C" fn lingyao_client_resolve_app_theme(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -425,7 +425,7 @@ pub unsafe extern "C" fn msime_client_resolve_app_theme(
         let request: ResolveAppThemeRequest =
             serde_json::from_slice(bytes).map_err(|_| "invalid app theme request")?;
         let season = requested_season(request.month, "invalid app theme request")?;
-        let resolved = msime_client_core::skin::app_theme::resolve_app_theme(
+        let resolved = lingyao_client_core::skin::app_theme::resolve_app_theme(
             request.app_theme,
             season,
             request.dark,
@@ -437,9 +437,9 @@ pub unsafe extern "C" fn msime_client_resolve_app_theme(
 /// 「重置所有设置」：在偏好锁里读出当前文档，换成本存储所属版本的默认偏好（服务凭据和 `fuzzy_pinyin.seeded` 保留，见 `Preferences::restored_to_defaults_for`），再按 `expected_revision` 比较并交换写回，返回新的快照。修订号不符时以 `preferences changed; reload before saving` 失败，什么也不写。词库、统计和剪贴板历史不受影响；默认关闭剪贴板历史时与保存偏好一样清空已存的历史。
 /// # Safety
 /// `directory` must point to `length` readable bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_restore_default_preferences(
+pub unsafe extern "C" fn lingyao_client_restore_default_preferences(
     directory: *const u8,
     length: usize,
     expected_revision: u64,
@@ -479,9 +479,9 @@ pub unsafe extern "C" fn msime_client_restore_default_preferences(
 /// running is worse than labelling nothing.
 /// # Safety
 /// `profile` points to `length` readable UTF-8 bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_shuangpin_key_hints(
+pub unsafe extern "C" fn lingyao_client_shuangpin_key_hints(
     profile: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -492,7 +492,7 @@ pub unsafe extern "C" fn msime_client_shuangpin_key_hints(
         // SAFETY: guaranteed by the documented caller contract; size checked above.
         let bytes = unsafe { std::slice::from_raw_parts(profile, length) };
         let name = std::str::from_utf8(bytes).map_err(|_| "invalid shuangpin profile encoding")?;
-        let entries = msime_engine::host::shuangpin_key_hints(name);
+        let entries = lingyao_engine::host::shuangpin_key_hints(name);
         let mut hints = serde_json::Map::with_capacity(entries.len());
         hints.extend(
             entries
@@ -508,9 +508,9 @@ pub unsafe extern "C" fn msime_client_shuangpin_key_hints(
 /// A keymap panel shows these next to the key face, and like the key hints they depend only on the profile, so this takes no handle. An unknown name yields an empty object.
 /// # Safety
 /// `profile` points to `length` readable UTF-8 bytes. Null is rejected.
-/// The returned response must be released with `msime_client_string_free`.
+/// The returned response must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_shuangpin_zero_initials(
+pub unsafe extern "C" fn lingyao_client_shuangpin_zero_initials(
     profile: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -521,7 +521,7 @@ pub unsafe extern "C" fn msime_client_shuangpin_zero_initials(
         // SAFETY: guaranteed by the documented caller contract; size checked above.
         let bytes = unsafe { std::slice::from_raw_parts(profile, length) };
         let name = std::str::from_utf8(bytes).map_err(|_| "invalid shuangpin profile encoding")?;
-        let entries = msime_engine::host::shuangpin_zero_initials(name);
+        let entries = lingyao_engine::host::shuangpin_zero_initials(name);
         let mut codes = serde_json::Map::with_capacity(entries.len());
         codes.extend(entries.into_iter().map(|(syllable, code)| {
             (
@@ -537,7 +537,7 @@ pub unsafe extern "C" fn msime_client_shuangpin_zero_initials(
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_load_preferences(
+pub unsafe extern "C" fn lingyao_client_load_preferences(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -563,7 +563,7 @@ pub unsafe extern "C" fn msime_client_load_preferences(
 /// # Safety
 /// `request` points to `length` readable JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_typing_statistics(
+pub unsafe extern "C" fn lingyao_client_typing_statistics(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -655,7 +655,7 @@ pub unsafe extern "C" fn msime_client_typing_statistics(
                     .record(&text, source, &day, hour)
                     .map_err(|error| error.to_string())?;
                 let milestone = before.and_then(|before| {
-                    msime_client_core::plugins::achievement_milestone(
+                    lingyao_client_core::plugins::achievement_milestone(
                         before,
                         before.saturating_add(recorded),
                     )
@@ -675,7 +675,7 @@ pub unsafe extern "C" fn msime_client_typing_statistics(
                 store
                     .summary(
                         &day,
-                        &msime_client_core::typing_statistics::SummaryInputs { user_words },
+                        &lingyao_client_core::typing_statistics::SummaryInputs { user_words },
                     )
                     .map_err(|error| error.to_string())?,
             )
@@ -699,7 +699,7 @@ pub unsafe extern "C" fn msime_client_typing_statistics(
             StatisticsAction::SetRetention { retention, day } => serde_json::to_value(
                 store
                     .set_retention(
-                        msime_client_core::typing_statistics::StatisticsRetention::parse(
+                        lingyao_client_core::typing_statistics::StatisticsRetention::parse(
                             &retention,
                         ),
                         &day,
@@ -722,7 +722,7 @@ pub unsafe extern "C" fn msime_client_typing_statistics(
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_typing_statistics_enabled(
+pub unsafe extern "C" fn lingyao_client_typing_statistics_enabled(
     directory: *const u8,
     length: usize,
 ) -> i32 {
@@ -749,7 +749,7 @@ pub unsafe extern "C" fn msime_client_typing_statistics_enabled(
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_skin_catalog(
+pub unsafe extern "C" fn lingyao_client_skin_catalog(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -764,7 +764,7 @@ pub unsafe extern "C" fn msime_client_skin_catalog(
         if !std::path::Path::new(directory).is_absolute() {
             return Err("skin directory must be absolute".into());
         }
-        serde_json::to_value(msime_client_core::skin::catalog::scan(directory))
+        serde_json::to_value(lingyao_client_core::skin::catalog::scan(directory))
             .map_err(|e| e.to_string())
     })
 }
@@ -775,9 +775,9 @@ pub unsafe extern "C" fn msime_client_skin_catalog(
 /// catalog rather than an error.
 /// # Safety
 /// `resources` points to `length` readable UTF-8 bytes naming an absolute resource directory.
-/// Null is rejected. The returned JSON must be released with `msime_client_string_free`.
+/// Null is rejected. The returned JSON must be released with `lingyao_client_string_free`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_helpcode_schemas(
+pub unsafe extern "C" fn lingyao_client_helpcode_schemas(
     resources: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -800,11 +800,11 @@ struct SkinPackageRequest {
     id: String,
 }
 
-/// Validate one installed skin package with the loader the settings page uses, so a native presenter resolving the selected skin accepts exactly the manifests the catalog lists (full TOML 1.0, the Windows toml++ baseline). The value is one camelCase entry of `msime_client_skin_catalog`'s `packages`; a package that fails validation answers `{ok:false,error}` with the loader's reason.
+/// Validate one installed skin package with the loader the settings page uses, so a native presenter resolving the selected skin accepts exactly the manifests the catalog lists (full TOML 1.0, the Windows toml++ baseline). The value is one camelCase entry of `lingyao_client_skin_catalog`'s `packages`; a package that fails validation answers `{ok:false,error}` with the loader's reason.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_skin_package(
+pub unsafe extern "C" fn lingyao_client_skin_package(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -820,7 +820,7 @@ pub unsafe extern "C" fn msime_client_skin_package(
             return Err("skin directory must be absolute".into());
         }
         let package =
-            msime_client_core::skin::catalog::load_package(&request.directory, &request.id)?;
+            lingyao_client_core::skin::catalog::load_package(&request.directory, &request.id)?;
         serde_json::to_value(package).map_err(|e| e.to_string())
     })
 }
@@ -857,7 +857,7 @@ struct SkinResourceResponse {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_skin_resource(
+pub unsafe extern "C" fn lingyao_client_skin_resource(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -875,7 +875,7 @@ pub unsafe extern "C" fn msime_client_skin_resource(
         if !Path::new(&request.directory).is_absolute() {
             return Err("skin directory must be absolute".into());
         }
-        let resource = msime_client_core::skin::catalog::read_resource(
+        let resource = lingyao_client_core::skin::catalog::read_resource(
             &request.directory,
             &request.id,
             &request.relative,
@@ -901,7 +901,7 @@ pub unsafe extern "C" fn msime_client_skin_resource(
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_skin_toolbar_stylesheet(
+pub unsafe extern "C" fn lingyao_client_skin_toolbar_stylesheet(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -916,7 +916,7 @@ pub unsafe extern "C" fn msime_client_skin_toolbar_stylesheet(
         if !Path::new(&request.directory).is_absolute() {
             return Err("skin directory must be absolute".into());
         }
-        let stylesheet = msime_client_core::skin::catalog::read_toolbar_stylesheet(
+        let stylesheet = lingyao_client_core::skin::catalog::read_toolbar_stylesheet(
             &request.directory,
             &request.id,
         )
@@ -935,7 +935,7 @@ struct SkinImportRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_skin_import(
+pub unsafe extern "C" fn lingyao_client_skin_import(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -951,7 +951,7 @@ pub unsafe extern "C" fn msime_client_skin_import(
         {
             return Err("skin paths must be absolute".into());
         }
-        let id = msime_client_core::skin::folder_import::import(
+        let id = lingyao_client_core::skin::folder_import::import(
             Path::new(&request.source),
             Path::new(&request.directory),
         )
@@ -963,7 +963,7 @@ pub unsafe extern "C" fn msime_client_skin_import(
 #[derive(Debug, Deserialize)]
 struct CustomSkinLibraryRequest {
     directory: String,
-    action: Option<msime_client_core::skin::custom_library::CustomSkinLibraryAction>,
+    action: Option<lingyao_client_core::skin::custom_library::CustomSkinLibraryAction>,
 }
 
 /// Read or change the named custom touch-keyboard designs.
@@ -982,7 +982,7 @@ struct CustomSkinLibraryRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_custom_skin_library(
+pub unsafe extern "C" fn lingyao_client_custom_skin_library(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -999,7 +999,7 @@ pub unsafe extern "C" fn msime_client_custom_skin_library(
         if !Path::new(&request.directory).is_absolute() {
             return Err("community_storage".into());
         }
-        let store = msime_client_core::skin::custom_library::CustomSkinLibraryStore::new(
+        let store = lingyao_client_core::skin::custom_library::CustomSkinLibraryStore::new(
             &request.directory,
         );
         let items = match request.action {
@@ -1015,9 +1015,9 @@ pub unsafe extern "C" fn msime_client_custom_skin_library(
 /// forwarded the `Display` text instead would put an English sentence written
 /// for a log into a Chinese dialog.
 fn custom_skin_library_code(
-    error: msime_client_core::skin::custom_library::CustomSkinLibraryError,
+    error: lingyao_client_core::skin::custom_library::CustomSkinLibraryError,
 ) -> String {
-    use msime_client_core::skin::custom_library::CustomSkinLibraryError as Failure;
+    use lingyao_client_core::skin::custom_library::CustomSkinLibraryError as Failure;
     match error {
         Failure::Full => "community_skin_library_full",
         Failure::InvalidName => "community_skin_invalid_name",
@@ -1034,13 +1034,13 @@ struct CommunitySkinInstallRequest {
     directory: String,
     id: String,
     name: String,
-    design: msime_client_core::preferences::TouchKeyboardSkinDesign,
+    design: lingyao_client_core::preferences::TouchKeyboardSkinDesign,
 }
 
 #[derive(Debug, Serialize)]
 struct CommunitySkinInstallResponse {
-    skin: msime_client_core::skin::custom_library::SavedTouchKeyboardSkin,
-    trial: msime_client_core::skin::keyboard_trial::KeyboardSkinTrial,
+    skin: lingyao_client_core::skin::custom_library::SavedTouchKeyboardSkin,
+    trial: lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrial,
 }
 
 /// Put a downloaded community design on the keyboard and into the library.
@@ -1059,7 +1059,7 @@ struct CommunitySkinInstallResponse {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_community_skin_install(
+pub unsafe extern "C" fn lingyao_client_community_skin_install(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1074,14 +1074,14 @@ pub unsafe extern "C" fn msime_client_community_skin_install(
         if !Path::new(&request.directory).is_absolute() {
             return Err("community_storage".into());
         }
-        let id = msime_client_core::uuid::Uuid::parse_str(&request.id)
+        let id = lingyao_client_core::uuid::Uuid::parse_str(&request.id)
             .map_err(|_| "community_invalid")?;
-        let library = msime_client_core::skin::custom_library::CustomSkinLibraryStore::new(
+        let library = lingyao_client_core::skin::custom_library::CustomSkinLibraryStore::new(
             &request.directory,
         );
-        let trials = msime_client_core::skin::keyboard_trial::KeyboardSkinTrialStore::new(
+        let trials = lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrialStore::new(
             &request.directory,
-            std::sync::Arc::new(msime_client_core::preferences::PreferencesStore::new(
+            std::sync::Arc::new(lingyao_client_core::preferences::PreferencesStore::new(
                 &request.directory,
             )),
         );
@@ -1123,7 +1123,7 @@ struct KeyboardSkinTrialRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_keyboard_skin_trial(
+pub unsafe extern "C" fn lingyao_client_keyboard_skin_trial(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1138,15 +1138,15 @@ pub unsafe extern "C" fn msime_client_keyboard_skin_trial(
         if !Path::new(&request.directory).is_absolute() {
             return Err("community_storage".into());
         }
-        let trials = msime_client_core::skin::keyboard_trial::KeyboardSkinTrialStore::new(
+        let trials = lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrialStore::new(
             &request.directory,
-            std::sync::Arc::new(msime_client_core::preferences::PreferencesStore::new(
+            std::sync::Arc::new(lingyao_client_core::preferences::PreferencesStore::new(
                 &request.directory,
             )),
         );
         let snapshot = match request.action {
             KeyboardSkinTrialAction::Finish { id, keep } => {
-                let id = msime_client_core::uuid::Uuid::parse_str(&id)
+                let id = lingyao_client_core::uuid::Uuid::parse_str(&id)
                     .map_err(|_| "community_invalid")?;
                 trials.finish(id, keep)
             }
@@ -1160,9 +1160,9 @@ pub unsafe extern "C" fn msime_client_keyboard_skin_trial(
 }
 
 fn keyboard_skin_trial_code(
-    error: msime_client_core::skin::keyboard_trial::KeyboardSkinTrialError,
+    error: lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrialError,
 ) -> String {
-    use msime_client_core::skin::keyboard_trial::KeyboardSkinTrialError as Failure;
+    use lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrialError as Failure;
     match error {
         Failure::Io(_) | Failure::Preferences(_) => "community_storage",
         Failure::Json(_) | Failure::Invalid => "community_trial_format",
@@ -1175,7 +1175,7 @@ fn keyboard_skin_trial_code(
 enum CommunityResourceLibraryAction {
     Load,
     SaveReply {
-        item: Box<msime_client_core::community::resource::CommunityResource>,
+        item: Box<lingyao_client_core::community::resource::CommunityResource>,
     },
     Remove {
         id: String,
@@ -1203,7 +1203,7 @@ struct CommunityResourceLibraryRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_community_resource_library(
+pub unsafe extern "C" fn lingyao_client_community_resource_library(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1219,7 +1219,7 @@ pub unsafe extern "C" fn msime_client_community_resource_library(
             return Err("community_storage".into());
         }
         let store =
-            msime_client_core::community::resource_library::CommunityResourceLibraryStore::new(
+            lingyao_client_core::community::resource_library::CommunityResourceLibraryStore::new(
                 &request.file,
             );
         match request.action {
@@ -1228,7 +1228,7 @@ pub unsafe extern "C" fn msime_client_community_resource_library(
                 store.save_reply(*item).map_err(resource_library_code)?;
             }
             CommunityResourceLibraryAction::Remove { id } => {
-                let id = msime_client_core::uuid::Uuid::parse_str(&id)
+                let id = lingyao_client_core::uuid::Uuid::parse_str(&id)
                     .map_err(|_| "community_invalid")?;
                 store.remove(id).map_err(resource_library_code)?;
             }
@@ -1239,9 +1239,9 @@ pub unsafe extern "C" fn msime_client_community_resource_library(
 }
 
 fn resource_library_code(
-    error: msime_client_core::community::resource_library::CommunityResourceLibraryError,
+    error: lingyao_client_core::community::resource_library::CommunityResourceLibraryError,
 ) -> String {
-    use msime_client_core::community::resource_library::CommunityResourceLibraryError as Failure;
+    use lingyao_client_core::community::resource_library::CommunityResourceLibraryError as Failure;
     match error {
         Failure::Io(_) => "community_storage",
         Failure::Json(_) | Failure::Invalid => "community_resource_library_format",
@@ -1260,7 +1260,7 @@ enum AiSkinPlanRequest {
         text: String,
     },
     Artwork {
-        artwork: msime_client_core::skin::ai::AiSkinArtwork,
+        artwork: lingyao_client_core::skin::ai::AiSkinArtwork,
     },
 }
 
@@ -1274,15 +1274,15 @@ enum AiSkinPlanRequest {
 /// answer is three usable designs, and whether a returned image is one this
 /// client will show.
 ///
-/// The split is the same one `msime_client_ai_request_for_query` and
-/// `msime_client_parse_ai_response` already make for candidates. What must not
+/// The split is the same one `lingyao_client_ai_request_for_query` and
+/// `lingyao_client_parse_ai_response` already make for candidates. What must not
 /// be split is the instruction from the parser: the system prompt names the
 /// exact document `plan_ai_skins` refuses anything else for, so `compose`
 /// returns it rather than letting a host write its own.
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_ai_skin_plan(
+pub unsafe extern "C" fn lingyao_client_ai_skin_plan(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1301,7 +1301,7 @@ pub unsafe extern "C" fn msime_client_ai_skin_plan(
                 // refuses is one the service would refuse after four requests.
                 if prompt.is_empty()
                     || prompt.chars().count() > 500
-                    || msime_client_core::has_disallowed_control_with_options(&prompt, false)
+                    || lingyao_client_core::has_disallowed_control_with_options(&prompt, false)
                     || model.is_empty()
                     || !is_bounded_text(&model, 200)
                 {
@@ -1313,7 +1313,7 @@ pub unsafe extern "C" fn msime_client_ai_skin_plan(
                         "messages": [
                             {
                                 "role": "system",
-                                "content": msime_client_core::skin::ai::AI_SKIN_SYSTEM_PROMPT,
+                                "content": lingyao_client_core::skin::ai::AI_SKIN_SYSTEM_PROMPT,
                             },
                             {"role": "user", "content": prompt},
                         ],
@@ -1324,12 +1324,12 @@ pub unsafe extern "C" fn msime_client_ai_skin_plan(
                 }))
             }
             AiSkinPlanRequest::Parse { text } => {
-                let plans = msime_client_core::skin::ai::plan_ai_skins(&text)
+                let plans = lingyao_client_core::skin::ai::plan_ai_skins(&text)
                     .map_err(|_| "ai_skin_response")?;
                 serde_json::to_value(plans).map_err(|_| "ai_skin_response".into())
             }
             AiSkinPlanRequest::Artwork { artwork } => {
-                msime_client_core::skin::ai::validate_ai_skin_artwork(&artwork)
+                lingyao_client_core::skin::ai::validate_ai_skin_artwork(&artwork)
                     .map_err(|_| "ai_skin_response")?;
                 Ok(json!({"valid": true}))
             }
@@ -1354,7 +1354,7 @@ pub unsafe extern "C" fn msime_client_ai_skin_plan(
 /// # Safety
 /// `resources` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary_manifest(
+pub unsafe extern "C" fn lingyao_client_dictionary_manifest(
     resources: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1381,7 +1381,7 @@ pub unsafe extern "C" fn msime_client_dictionary_manifest(
         }
         // Bounded before parsing: this is a packaged file, and one that has grown to megabytes is
         // not a manifest whatever it parses as.
-        let file = path.join("msime-dictionary-manifest.json");
+        let file = path.join("lingyao-dictionary-manifest.json");
         let bytes = crate::bounded_file::read(
             std::fs::File::open(&file).map_err(|_| "dictionary_manifest_unavailable")?,
             1024 * 1024,
@@ -1392,7 +1392,7 @@ pub unsafe extern "C" fn msime_client_dictionary_manifest(
             serde_json::from_str(text).map_err(|_| "dictionary_manifest_unavailable")?;
         if manifest.profile.is_empty()
             || !is_bounded_text(&manifest.profile, 64)
-            || !msime_client_core::is_ascii_hex(&manifest.source.commit, 40)
+            || !lingyao_client_core::is_ascii_hex(&manifest.source.commit, 40)
         {
             return Err("dictionary_manifest_unavailable".into());
         }
@@ -1404,7 +1404,7 @@ pub unsafe extern "C" fn msime_client_dictionary_manifest(
 /// # Safety
 /// `directory` points to `length` readable UTF-8 bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_load_clipboard_history(
+pub unsafe extern "C" fn lingyao_client_load_clipboard_history(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1428,7 +1428,7 @@ pub unsafe extern "C" fn msime_client_load_clipboard_history(
         if !enabled {
             return Ok(serde_json::json!({"enabled": false, "entries": []}));
         }
-        let mut history = msime_client_core::clipboard::ClipboardHistoryStore::open(
+        let mut history = lingyao_client_core::clipboard::ClipboardHistoryStore::open(
             path.join("clipboard_history.json"),
         );
         history
@@ -1459,11 +1459,11 @@ enum MobileClipboardAction {
     Clear,
 }
 
-/// Structured mobile clipboard history operations. The directory is the trusted App Group root; shared data lives below MSIME. This intentionally does not read or change the desktop automatic-capture preference: mobile access is host-permission gated.
+/// Structured mobile clipboard history operations. The directory is the trusted App Group root; shared data lives below LINGYAO. This intentionally does not read or change the desktop automatic-capture preference: mobile access is host-permission gated.
 /// # Safety
 /// `request` points to `length` readable JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
+pub unsafe extern "C" fn lingyao_client_mobile_clipboard_history(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1479,8 +1479,8 @@ pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
         if !root.is_absolute() || request.directory.len() > 16384 {
             return Err("invalid mobile clipboard directory".into());
         }
-        let path = root.join("MSIME").join("clipboard_history.json");
-        let mut history = msime_client_core::clipboard::ClipboardHistoryStore::open(path);
+        let path = root.join("LINGYAO").join("clipboard_history.json");
+        let mut history = lingyao_client_core::clipboard::ClipboardHistoryStore::open(path);
         match request.action {
             MobileClipboardAction::Load => {
                 history
@@ -1489,7 +1489,7 @@ pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
                 Ok(json!({"entries": history.entries()}))
             }
             MobileClipboardAction::Capture { text } => {
-                if !msime_client_core::clipboard::mobile_text_is_valid(&text) {
+                if !lingyao_client_core::clipboard::mobile_text_is_valid(&text) {
                     return Ok(json!({"captured": false, "reason": "invalid"}));
                 }
                 let captured = history
@@ -1503,7 +1503,7 @@ pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
             }
             MobileClipboardAction::SetPinned { text, pinned } => {
                 if text.is_empty()
-                    || text.len() > msime_client_core::clipboard::MAX_MOBILE_TEXT_BYTES
+                    || text.len() > lingyao_client_core::clipboard::MAX_MOBILE_TEXT_BYTES
                 {
                     return Err("invalid mobile clipboard entry".into());
                 }
@@ -1517,7 +1517,7 @@ pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
             }
             MobileClipboardAction::Remove { text } => {
                 if text.is_empty()
-                    || text.len() > msime_client_core::clipboard::MAX_MOBILE_TEXT_BYTES
+                    || text.len() > lingyao_client_core::clipboard::MAX_MOBILE_TEXT_BYTES
                 {
                     return Err("invalid mobile clipboard entry".into());
                 }
@@ -1543,7 +1543,7 @@ pub unsafe extern "C" fn msime_client_mobile_clipboard_history(
 /// # Safety
 /// `request` points to `length` readable JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_capture_clipboard_history(
+pub unsafe extern "C" fn lingyao_client_capture_clipboard_history(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1563,7 +1563,7 @@ pub unsafe extern "C" fn msime_client_capture_clipboard_history(
             serde_json::from_slice(bytes).map_err(|_| "invalid history capture document")?;
         if !std::path::Path::new(&capture.directory).is_absolute()
             || capture.directory.len() > 16384
-            || capture.text.len() > msime_client_core::clipboard::MAX_TEXT_BYTES
+            || capture.text.len() > lingyao_client_core::clipboard::MAX_TEXT_BYTES
         {
             return Err("invalid history capture parameters".into());
         }
@@ -1578,7 +1578,7 @@ pub unsafe extern "C" fn msime_client_capture_clipboard_history(
 /// # Safety
 /// `request` points to `length` readable JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_remove_clipboard_history(
+pub unsafe extern "C" fn lingyao_client_remove_clipboard_history(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1601,7 +1601,7 @@ pub unsafe extern "C" fn msime_client_remove_clipboard_history(
             return Err("invalid history directory".into());
         }
         if removal.text.is_empty()
-            || removal.text.len() > msime_client_core::clipboard::MAX_TEXT_BYTES
+            || removal.text.len() > lingyao_client_core::clipboard::MAX_TEXT_BYTES
         {
             return Err("invalid history entry".into());
         }
@@ -1613,7 +1613,7 @@ pub unsafe extern "C" fn msime_client_remove_clipboard_history(
         {
             return Err("clipboard history disabled".into());
         }
-        let mut history = msime_client_core::clipboard::ClipboardHistoryStore::open(
+        let mut history = lingyao_client_core::clipboard::ClipboardHistoryStore::open(
             path.join("clipboard_history.json"),
         );
         let removed = history
@@ -1627,7 +1627,7 @@ pub unsafe extern "C" fn msime_client_remove_clipboard_history(
 /// # Safety
 /// `directory` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_try_load_preferences(
+pub unsafe extern "C" fn lingyao_client_try_load_preferences(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1654,7 +1654,7 @@ pub unsafe extern "C" fn msime_client_try_load_preferences(
 /// # Safety
 /// `directory` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_recover_preferences(
+pub unsafe extern "C" fn lingyao_client_recover_preferences(
     directory: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1673,11 +1673,11 @@ pub unsafe extern "C" fn msime_client_recover_preferences(
             .recover_malformed()
             .map_err(|e| e.to_string())?;
         Ok(match outcome {
-            msime_client_core::preferences::RecoveryOutcome::NotNeeded(snapshot) => json!({
+            lingyao_client_core::preferences::RecoveryOutcome::NotNeeded(snapshot) => json!({
                 "recovered": false,
                 "snapshot": snapshot,
             }),
-            msime_client_core::preferences::RecoveryOutcome::Recovered {
+            lingyao_client_core::preferences::RecoveryOutcome::Recovered {
                 snapshot,
                 backup_path,
                 salvaged,
@@ -1703,7 +1703,7 @@ pub unsafe extern "C" fn msime_client_recover_preferences(
 /// The caller must provide non-null pointers to readable UTF-8 buffers whose
 /// lengths match the supplied lengths and remain valid for the duration of the call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_save_preferences(
+pub unsafe extern "C" fn lingyao_client_save_preferences(
     directory: *const u8,
     directory_length: usize,
     expected_revision: u64,
@@ -1747,16 +1747,16 @@ pub unsafe extern "C" fn msime_client_save_preferences(
 ///
 /// A shim: the request is parsed into the shared action type and the answer is the shared status,
 /// serialised. Every rule — what an action does, how the queue is built, what counts as today —
-/// belongs to `msime_client_core::vocabulary::session`, so this host and the Tauri command layer
+/// belongs to `lingyao_client_core::vocabulary::session`, so this host and the Tauri command layer
 /// cannot drift from each other.
 /// # Safety
 /// `request` points to `length` readable JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_vocabulary_review(
+pub unsafe extern "C" fn lingyao_client_vocabulary_review(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
-    use msime_client_core::vocabulary::session;
+    use lingyao_client_core::vocabulary::session;
 
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]

@@ -5,5 +5,5 @@ WORKDIR /source
 # Paths are relative to the build context, which is platforms/linux/tests. Both
 # files used to sit beside this Dockerfile; the move that split tests into
 # per-responsibility directories left them in tools/ and runtime/.
-COPY tools/virtual-keyboard-unstable-v1.xml runtime/wayland_keyboard.c /tmp/msime-wayland-driver/
-RUN cd /tmp/msime-wayland-driver && wayland-scanner client-header virtual-keyboard-unstable-v1.xml virtual-keyboard-client.h && wayland-scanner private-code virtual-keyboard-unstable-v1.xml virtual-keyboard-protocol.c && cc -Wall -Wextra -Werror wayland_keyboard.c virtual-keyboard-protocol.c $(pkg-config --cflags --libs wayland-client) -o /usr/local/bin/msime-test-wayland-keyboard && rm -rf /tmp/msime-wayland-driver
+COPY tools/virtual-keyboard-unstable-v1.xml runtime/wayland_keyboard.c /tmp/lingyao-wayland-driver/
+RUN cd /tmp/lingyao-wayland-driver && wayland-scanner client-header virtual-keyboard-unstable-v1.xml virtual-keyboard-client.h && wayland-scanner private-code virtual-keyboard-unstable-v1.xml virtual-keyboard-protocol.c && cc -Wall -Wextra -Werror wayland_keyboard.c virtual-keyboard-protocol.c $(pkg-config --cflags --libs wayland-client) -o /usr/local/bin/lingyao-test-wayland-keyboard && rm -rf /tmp/lingyao-wayland-driver

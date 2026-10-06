@@ -1,7 +1,7 @@
 #include "ClipboardPresentation.h"
 #include <algorithm>
 
-namespace msime::windows {
+namespace lingyao::windows {
 void ClipboardMailbox::publish(bool enabled, std::vector<std::string> items) {
   if (items.size() > 50) items.resize(50);
   std::lock_guard lock(mutex_);
@@ -16,4 +16,4 @@ void ClipboardMailbox::clear() {
   std::lock_guard lock(mutex_);
   latest_.reset();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

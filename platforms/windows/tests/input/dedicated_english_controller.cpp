@@ -2,7 +2,7 @@
 #include "../../src/system/DedicatedEnglishMailbox.h"
 #include "../core/TestHostOptions.h"
 #include <cassert>
-using namespace msime::windows;
+using namespace lingyao::windows;
 class ModeTransport final : public MainTransport {
 public:
   const PipeTicket ticket{42, {1, 2, 3}};
@@ -44,7 +44,7 @@ private:
 };
 int main() {
   const auto root = std::filesystem::temp_directory_path() /
-      ("msime-english-controller-" + std::to_string(
+      ("lingyao-english-controller-" + std::to_string(
           std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {

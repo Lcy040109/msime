@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Tray menu contents and geometry. This header decides what the menu offers and where each row sits; drawing and window placement stay with the renderer, so the rules are testable without a desktop.
 //
 // The card follows the shared design: a header with the logo and the product name, the input language, the mode switches, the scheme as a radio group, the host tools, and the pages of the settings app. Rows carry a check mark column rather than leading icons; only the tool strip is drawn as glyphs.
@@ -50,14 +50,14 @@ struct TrayMenuCapabilities {
   bool keyboard_panel = false;
   bool voice_input = false;
   bool settings = false;
-  // The Cantonese, Zhuyin and Stroke dictionaries installed beside the resources (language-dictionaries/msime-cantonese.db, msime-zhuyin.db and msime-stroke.db). Without one the Engine answers that scheme with quanpin, so its row is disabled rather than selecting a scheme that would type pinyin.
+  // The Cantonese, Zhuyin and Stroke dictionaries installed beside the resources (language-dictionaries/lingyao-cantonese.db, lingyao-zhuyin.db and lingyao-stroke.db). Without one the Engine answers that scheme with quanpin, so its row is disabled rather than selecting a scheme that would type pinyin.
   bool cantonese = false;
   bool zhuyin = false;
   bool stroke = false;
   // 本版本提供的方案。不在其中的方案行不出现，而不是显示为不可用：那个方案在这个版本里根本不存在。full 提供全部方案。
   scheme::OfferedSchemes schemes = scheme::edition_schemes();
   // 卡片标题和「关于」行里的产品名（UTF-8），按版本取；full 是「灵耀输入法」。
-  std::string product_name = MSIME_EDITION_DISPLAY_NAME_UTF8;
+  std::string product_name = LINGYAO_EDITION_DISPLAY_NAME_UTF8;
 };
 // What the menu shows, sampled by the Server each time the card opens or redraws after a switch.
 struct TrayMenuState {
@@ -436,4 +436,4 @@ inline TrayMenuBounds tray_menu_bounds(int icon_center_x, int icon_top,
           (std::clamp)(desired_y, top, bottom - placed_height), placed_width,
           placed_height};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

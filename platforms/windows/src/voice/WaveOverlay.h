@@ -38,7 +38,7 @@ class WaveOverlay
     void set_listening(bool listening);
     void set_input_level(float level);
     // The theme palette in the overlay's own light/dark mode; see voice_overlay_colors.
-    void set_palette(const msime::windows::CandidatePalette &palette);
+    void set_palette(const lingyao::windows::CandidatePalette &palette);
     void set_transcript(const std::wstring &text);
     // When false, the overlay stays compact and never paints live ASR text.
     void set_show_transcript(bool show);
@@ -86,8 +86,8 @@ class WaveOverlay
     float amplitudes_[kLevelCount] = {};
     float phases_[kLevelCount] = {};
     float freqs_[kLevelCount] = {};
-    msime::windows::VoiceOverlayColors colors_ =
-        msime::windows::voice_overlay_colors(msime::windows::candidate_native_palette(true));
+    lingyao::windows::VoiceOverlayColors colors_ =
+        lingyao::windows::voice_overlay_colors(lingyao::windows::candidate_native_palette(true));
 
     struct ID2D1Factory *factory_ = nullptr;
     struct ID2D1HwndRenderTarget *render_target_ = nullptr;

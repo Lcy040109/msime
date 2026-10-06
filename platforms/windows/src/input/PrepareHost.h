@@ -12,13 +12,13 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 #include <limits>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 inline bool write_new_file(const std::filesystem::path &path,
                            std::string_view contents) {
 #ifdef _WIN32
@@ -84,8 +84,8 @@ inline std::filesystem::path prepare_host_state_in_directory(
       {"resources", std::filesystem::canonical(resources).u8string()},
       {"state_root", state.u8string()}};
   // 不是 full 的版本带上版本 id，宿主库按它选资源锁、收窄方案并在状态根里记下版本；full 的请求与引入版本之前相同。
-  if constexpr (!MSIME_EDITION_IS_FULL)
-    request_document["edition"] = MSIME_EDITION_ID;
+  if constexpr (!LINGYAO_EDITION_IS_FULL)
+    request_document["edition"] = LINGYAO_EDITION_ID;
   const auto request = request_document.dump();
   if (request.size() > 16384)
     throw std::runtime_error("Preparation request oversized");
@@ -122,4 +122,4 @@ inline std::filesystem::path prepare_host_state(
     throw std::runtime_error("A fresh state directory is required");
   return prepare_host_state_in_directory(resources, state, prepare);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

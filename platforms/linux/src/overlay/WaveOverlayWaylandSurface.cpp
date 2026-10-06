@@ -6,7 +6,7 @@
 
 #include <wayland-client.h>
 
-#ifdef MSIME_LINUX_WAYLAND_TEXT
+#ifdef LINGYAO_LINUX_WAYLAND_TEXT
 #include <cairo/cairo.h>
 #include <pango/pangocairo.h>
 #endif
@@ -25,7 +25,7 @@
 #include <poll.h>
 #include <unistd.h>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 namespace {
 
 constexpr int kWidth = 420;
@@ -39,12 +39,12 @@ constexpr int kActionRadius = 14;
 int create_shm_file() {
 #ifdef SYS_memfd_create
   const auto memfd = static_cast<int>(syscall(SYS_memfd_create,
-                                              "msime-wave-overlay", MFD_CLOEXEC));
+                                              "lingyao-wave-overlay", MFD_CLOEXEC));
   if (memfd >= 0)
     return memfd;
 #endif
   char name[64];
-  std::snprintf(name, sizeof(name), "/msime-wave-%ld", static_cast<long>(getpid()));
+  std::snprintf(name, sizeof(name), "/lingyao-wave-%ld", static_cast<long>(getpid()));
   const auto fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
   if (fd >= 0)
     shm_unlink(name);
@@ -228,7 +228,7 @@ bool WaveOverlayWaylandSurface::ensure_surface() {
     surface_ = wl_compositor_create_surface(compositor_);
     layer_surface_ = zwlr_layer_shell_v1_get_layer_surface(
         layer_shell_, surface_, nullptr, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
-        "msime-linux-wave-overlay");
+        "lingyao-linux-wave-overlay");
     static const zwlr_layer_surface_v1_listener layer_listener = {
         layer_configure, layer_closed};
     zwlr_layer_surface_v1_add_listener(layer_surface_, &layer_listener, this);
@@ -417,7 +417,7 @@ void WaveOverlayWaylandSurface::draw(const WaveOverlayModel &model) {
   const auto transcript_marker = std::min<std::size_t>(kWidth - 48, model.transcript.size());
   for (std::size_t x = 0; x < transcript_marker; ++x)
     pixels[112 * kWidth + 24 + x] = 0xFF9AA4B2u;
-#ifdef MSIME_LINUX_WAYLAND_TEXT
+#ifdef LINGYAO_LINUX_WAYLAND_TEXT
   auto *image = cairo_image_surface_create_for_data(
       reinterpret_cast<unsigned char *>(pixels), CAIRO_FORMAT_ARGB32,
       kWidth, kHeight, kStride);
@@ -596,4 +596,4 @@ void WaveOverlayWaylandSurface::destroy_surface() {
   closed_ = false;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

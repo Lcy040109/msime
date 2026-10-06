@@ -37,7 +37,7 @@ export function platformCopy({
   const quickStart = android
     ? "在系统设置的“语言和输入法”或“屏幕键盘”中启用并选择灵耀输入法，也可以从首次启动页打开这些入口。默认是全拼输入法。"
     : linux
-      ? "首次配置（首次配置页或 msime-linux-setup）完成后会把灵耀输入法自动加入正在运行的 Fcitx5 或 IBus 的输入法列表，之后用输入法切换快捷键切换即可。未能自动加入时手动添加：使用 Fcitx5 时，用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组；使用 IBus 时，执行 ibus restart 后在系统设置的输入源中添加「Lingyao 灵耀输入法」。默认是全拼输入法。"
+      ? "首次配置（首次配置页或 lingyao-linux-setup）完成后会把灵耀输入法自动加入正在运行的 Fcitx5 或 IBus 的输入法列表，之后用输入法切换快捷键切换即可。未能自动加入时手动添加：使用 Fcitx5 时，用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「LINGYAO」）加入当前输入法组；使用 IBus 时，执行 ibus restart 后在系统设置的输入源中添加「Lingyao 灵耀输入法」。默认是全拼输入法。"
       : macos
         ? "设置应用每次启动时会自动安装或更新随附的灵耀输入法，并在系统设置的键盘输入法中启用它；首次安装后如提示需要重新登录，注销并重新登录一次即可。之后使用系统配置的输入法切换快捷键。默认是全拼输入法。"
         : harmony
@@ -50,7 +50,7 @@ export function platformCopy({
   const networkDescription = android
     ? "语音输入会调用设备上的系统语音识别服务，识别结果回到键盘后需确认才会插入；AI 功能按需配置。日常拼音输入无需联网。"
     : linux
-      ? "日常拼音输入无需联网。云候选默认关闭（首次配置时可以启用，之后也可在设置里改），开启时会把正在输入的拼写发给 Google input-tools 换回一条候选；候选词翻译默认不联网，在翻译服务里选择自己的服务，或选择灵耀账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求；语音识别和 AI 功能只在启用并配置好对应服务后联网。这些请求由用户级的 msime-linux-online-provider 和 msime-linux-voice-provider 服务发出，输入法本身不联网。Linux 安装后的用户初始化会自动注册本机匿名灵耀账号，网络失败时稍后重试。在 AI、腾讯翻译和语音页面填写的凭据只写入用户配置目录（通常是 ~/.config/msime-client）下仅本人可读的 ai-provider.json、tencent-provider.json 和 voice-provider.json，不进入共享设置；小牛翻译和自定义翻译服务的密钥则保存在共享设置中。普通账号功能只在登录后联网。"
+      ? "日常拼音输入无需联网。云候选默认关闭（首次配置时可以启用，之后也可在设置里改），开启时会把正在输入的拼写发给 Google input-tools 换回一条候选；候选词翻译默认不联网，在翻译服务里选择自己的服务，或选择灵耀账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求；语音识别和 AI 功能只在启用并配置好对应服务后联网。这些请求由用户级的 lingyao-linux-online-provider 和 lingyao-linux-voice-provider 服务发出，输入法本身不联网。Linux 安装后的用户初始化会自动注册本机匿名灵耀账号，网络失败时稍后重试。在 AI、腾讯翻译和语音页面填写的凭据只写入用户配置目录（通常是 ~/.config/lingyao-client）下仅本人可读的 ai-provider.json、tencent-provider.json 和 voice-provider.json，不进入共享设置；小牛翻译和自定义翻译服务的密钥则保存在共享设置中。普通账号功能只在登录后联网。"
       : macos
         ? "候选词翻译默认不联网，在翻译服务里选择自己的服务，或选择灵耀账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求；语音识别和 AI 功能仅在用户配置并启用对应服务时联网；日常拼音输入无需联网。"
         : harmony

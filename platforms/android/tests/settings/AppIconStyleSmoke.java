@@ -1,10 +1,10 @@
-import app.msime.android.AppIconStyle;
+import app.lingyao.android.AppIconStyle;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class AppIconStyleSmoke {
-    // The namespace the manifest's relative names resolve against. It used to differ from the application id, and every component bug this file guards against came from composing a name out of the application id; both are app.msime.android now, but AppIconStyle still takes the namespace from its own package so the two can differ again without breaking.
-    private static final String NAMESPACE = "app.msime.android";
+    // The namespace the manifest's relative names resolve against. It used to differ from the application id, and every component bug this file guards against came from composing a name out of the application id; both are app.lingyao.android now, but AppIconStyle still takes the namespace from its own package so the two can differ again without breaking.
+    private static final String NAMESPACE = "app.lingyao.android";
     private static final String LAUNCHER = NAMESPACE + ".home.HomeActivity";
 
     public static void main(String[] args) {
@@ -33,7 +33,7 @@ public final class AppIconStyleSmoke {
         check(AppIconStyle.CLASSIC.alias().isEmpty(), "classic has no alias of its own");
 
         // Classic is whatever launcher activity the caller names, never something composed from the
-        // application id. Composing them produced `app.msime.android.home.HomeActivity`, a component
+        // application id. Composing them produced `app.lingyao.android.home.HomeActivity`, a component
         // the package manager has never heard of; disabling it threw, and since every switch
         // disables the styles it is not selecting, every switch failed. The earlier version of this
         // check asserted the composed string, so it agreed with the bug instead of catching it.

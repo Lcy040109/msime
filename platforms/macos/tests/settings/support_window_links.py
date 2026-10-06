@@ -14,6 +14,6 @@ expected = {
 for name, url in expected.items():
     assert source.count(f'@"{url}"') == 1, f"native support {name} URL is not pinned"
 
-assert "MSIME-Windows" not in source, "native macOS support must not open Windows project pages"
+assert "LINGYAO-Windows" not in source, "native macOS support must not open Windows project pages"
 
 print("native macOS support links use the shared client destinations")

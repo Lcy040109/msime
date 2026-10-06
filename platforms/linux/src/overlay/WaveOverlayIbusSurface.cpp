@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 std::string wave_overlay_feedback_text(const WaveOverlayModel &model) {
   std::string feedback = model.status;
   if (feedback.empty()) {
@@ -69,4 +69,4 @@ void WaveOverlayIbusSurface::hide() {
   visible_ = false;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

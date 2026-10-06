@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsSaveAction } from "@msime/ui";
+import { createSettingsSaveAction } from "@lingyao/ui";
 
 test("prevents form navigation and saves settings", () => {
   const preventDefault = vi.fn();

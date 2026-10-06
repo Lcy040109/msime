@@ -12,7 +12,7 @@ enum BackendAnonymousAccount {
       _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
       return String(bytes.map { alphabet[Int($0) % alphabet.count] })
     }
-    return Credentials(subject: "msime-" + random(16), secret: random(48))
+    return Credentials(subject: "lingyao-" + random(16), secret: random(48))
   }
   static func stored() -> Credentials? {
     guard let data = BackendLocalStore.read(fileName) else { return nil }

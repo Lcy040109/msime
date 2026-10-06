@@ -9,7 +9,7 @@ final class CandidateFontSizeTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-candidate-font-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-candidate-font-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

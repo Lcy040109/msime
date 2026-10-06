@@ -1,16 +1,16 @@
-//! `msime-pack`: checks extension packs by exactly the rules the input method imports them by.
+//! `lingyao-pack`: checks extension packs by exactly the rules the input method imports them by.
 //!
 //! ```text
-//! msime-pack validate <pack folder or .zip>...
+//! lingyao-pack validate <pack folder or .zip>...
 //! ```
 //!
-//! Every rule lives in `msime_client_core::plugins`: `validate` stages each pack the way `import` does and runs the same checks, so a pack this tool accepts is one the 插件 page installs, and the other way round. Nothing is installed and no plugins directory is touched. One line per pack, in the order given: `ok <id> <kind> <version>`, or `error <path>: <reason>` where the reason starts with the same failure code the settings page decodes (`plugin_invalid`, `plugin_archive`, ...) followed by the broken rule in Chinese. The exit status is 0 when every pack is valid, 1 when any is not, and 2 for a usage error.
+//! Every rule lives in `lingyao_client_core::plugins`: `validate` stages each pack the way `import` does and runs the same checks, so a pack this tool accepts is one the 插件 page installs, and the other way round. Nothing is installed and no plugins directory is touched. One line per pack, in the order given: `ok <id> <kind> <version>`, or `error <path>: <reason>` where the reason starts with the same failure code the settings page decodes (`plugin_invalid`, `plugin_archive`, ...) followed by the broken rule in Chinese. The exit status is 0 when every pack is valid, 1 when any is not, and 2 for a usage error.
 
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::Path;
 
-use msime_client_core::plugins::{self, PluginError};
+use lingyao_client_core::plugins::{self, PluginError};
 
 /// Every pack given is valid.
 pub const EXIT_OK: i32 = 0;
@@ -19,7 +19,7 @@ pub const EXIT_INVALID: i32 = 1;
 /// The command line was not understood.
 pub const EXIT_USAGE: i32 = 2;
 
-const USAGE: &str = "usage: msime-pack validate <pack folder or .zip>...";
+const USAGE: &str = "usage: lingyao-pack validate <pack folder or .zip>...";
 
 /// Run the command line `args` (without the program name), writing the report to `out` and usage errors to `err`, and return the exit status.
 pub fn run(args: &[OsString], out: &mut impl Write, err: &mut impl Write) -> i32 {

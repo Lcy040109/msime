@@ -1,5 +1,5 @@
 #include "../src/system/TypingStatistics.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -14,22 +14,22 @@
 #include <string_view>
 #include <thread>
 
-using msime::linux_host::evdev_key_id;
-using msime::linux_host::KeyPressCounter;
-using msime::linux_host::local_day;
-using msime::linux_host::PassthroughModifiers;
-using msime::linux_host::resolve_typing_source;
-using msime::linux_host::should_count_passthrough_character;
-using msime::linux_host::typing_source_id;
-using msime::linux_host::TypingSource;
-using msime::linux_host::TypingStatisticsSwitch;
+using lingyao::linux_host::evdev_key_id;
+using lingyao::linux_host::KeyPressCounter;
+using lingyao::linux_host::local_day;
+using lingyao::linux_host::PassthroughModifiers;
+using lingyao::linux_host::resolve_typing_source;
+using lingyao::linux_host::should_count_passthrough_character;
+using lingyao::linux_host::typing_source_id;
+using lingyao::linux_host::TypingSource;
+using lingyao::linux_host::TypingStatisticsSwitch;
 
 namespace {
 
 int queries = 0;
 int32_t counted_query(const uint8_t *directory, std::size_t length) {
   ++queries;
-  return msime_client_typing_statistics_enabled(directory, length);
+  return lingyao_client_typing_statistics_enabled(directory, length);
 }
 int failed_queries = 0;
 int32_t failing_query(const uint8_t *, std::size_t) {
@@ -39,10 +39,10 @@ int32_t failing_query(const uint8_t *, std::size_t) {
 
 std::string call(const std::string &directory, const std::string &action) {
   const auto request = "{\"directory\":\"" + directory + "\",\"action\":" + action + "}";
-  char *raw = msime_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size());
+  char *raw = lingyao_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size());
   assert(raw);
   std::string result(raw);
-  msime_client_string_free(raw);
+  lingyao_client_string_free(raw);
   return result;
 }
 
@@ -71,7 +71,7 @@ FileIdentity identity(const std::string &path) {
 
 void switch_follows_the_store() {
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-linux-typing-statistics-" + std::to_string(::getpid()));
+                    ("lingyao-linux-typing-statistics-" + std::to_string(::getpid()));
   std::filesystem::remove_all(root);
   std::filesystem::create_directories(root);
   const auto directory = root.string();
@@ -181,7 +181,7 @@ void key_ids_match_the_store() {
   assert(all.size() == 110);
 
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-linux-key-ids-" + std::to_string(::getpid()));
+                    ("lingyao-linux-key-ids-" + std::to_string(::getpid()));
   std::filesystem::remove_all(root);
   std::filesystem::create_directories(root);
   const auto directory = root.string();
@@ -300,7 +300,7 @@ void counter_ignores_synthetic_repeat_pairs() {
 }
 
 void pending_writes_wait_for_running_writes() {
-  msime::linux_host::PendingWrites writes;
+  lingyao::linux_host::PendingWrites writes;
   assert(writes.wait_idle(std::chrono::milliseconds(0)));
   writes.begin();
   writes.begin();

@@ -1,6 +1,6 @@
-import app.msime.android.CommunityRequest;
-import app.msime.android.CommunityRequest.Category;
-import app.msime.android.CommunityRequest.Kind;
+import app.lingyao.android.CommunityRequest;
+import app.lingyao.android.CommunityRequest.Category;
+import app.lingyao.android.CommunityRequest.Kind;
 import java.util.List;
 
 public final class CommunityRequestSmoke {

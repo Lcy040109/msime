@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cmath>
 
-@interface FloatingToolbarTestDelegate : NSObject <MSIMEFloatingToolbarDelegate>
+@interface FloatingToolbarTestDelegate : NSObject <LINGYAOFloatingToolbarDelegate>
 @property(nonatomic) NSUInteger inputModeToggles;
 @property(nonatomic) NSUInteger punctuationToggles;
 @property(nonatomic) NSUInteger fullWidthToggles;
@@ -22,20 +22,20 @@
 @end
 
 @implementation FloatingToolbarTestDelegate
-- (void)floatingToolbarDidRequestToggleInputMode:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_inputModeToggles; }
-- (void)floatingToolbarDidRequestTogglePunctuation:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_punctuationToggles; }
-- (void)floatingToolbarDidRequestToggleFullWidth:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_fullWidthToggles; }
-- (void)floatingToolbarDidRequestToggleTraditionalOutput:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_traditionalToggles; }
-- (void)floatingToolbarDidRequestOpenCharacterPalette:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_characterPaletteRequests; }
-- (void)floatingToolbarDidRequestOpenEmoji:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_emojiRequests; }
-- (void)floatingToolbarDidRequestOpenHandwriting:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_handwritingRequests; }
-- (void)floatingToolbarDidRequestOpenScreenKeyboard:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_keyboardRequests; }
-- (void)floatingToolbarDidRequestToggleVoice:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_voiceToggles; }
-- (void)floatingToolbarDidRequestOpenSettings:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_settingsRequests; }
-- (void)floatingToolbarDidRequestCheckForUpdates:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_updateRequests; }
-- (void)floatingToolbarDidRequestOpenWebsite:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_websiteRequests; }
-- (void)floatingToolbarDidRequestHide:(MSIMEFloatingToolbarPanel *)toolbar { (void)toolbar; ++_hideRequests; }
-- (NSMenu *)floatingToolbarInputSchemeMenu:(MSIMEFloatingToolbarPanel *)toolbar {
+- (void)floatingToolbarDidRequestToggleInputMode:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_inputModeToggles; }
+- (void)floatingToolbarDidRequestTogglePunctuation:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_punctuationToggles; }
+- (void)floatingToolbarDidRequestToggleFullWidth:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_fullWidthToggles; }
+- (void)floatingToolbarDidRequestToggleTraditionalOutput:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_traditionalToggles; }
+- (void)floatingToolbarDidRequestOpenCharacterPalette:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_characterPaletteRequests; }
+- (void)floatingToolbarDidRequestOpenEmoji:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_emojiRequests; }
+- (void)floatingToolbarDidRequestOpenHandwriting:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_handwritingRequests; }
+- (void)floatingToolbarDidRequestOpenScreenKeyboard:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_keyboardRequests; }
+- (void)floatingToolbarDidRequestToggleVoice:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_voiceToggles; }
+- (void)floatingToolbarDidRequestOpenSettings:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_settingsRequests; }
+- (void)floatingToolbarDidRequestCheckForUpdates:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_updateRequests; }
+- (void)floatingToolbarDidRequestOpenWebsite:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_websiteRequests; }
+- (void)floatingToolbarDidRequestHide:(LINGYAOFloatingToolbarPanel *)toolbar { (void)toolbar; ++_hideRequests; }
+- (NSMenu *)floatingToolbarInputSchemeMenu:(LINGYAOFloatingToolbarPanel *)toolbar {
     (void)toolbar;
     ++_inputSchemeMenuRequests;
     return [[NSMenu alloc] initWithTitle:@"输入方案"];
@@ -78,12 +78,12 @@ int main() {
         [NSApplication sharedApplication];
 
         NSRect visible = NSMakeRect(-1200.0, -800.0, 1920.0, 1080.0);
-        NSRect defaultFrame = MSIMEFloatingToolbarFrame(NSMakeRect(0.0, 0.0, 1.0, 1.0), visible, NO);
+        NSRect defaultFrame = LINGYAOFloatingToolbarFrame(NSMakeRect(0.0, 0.0, 1.0, 1.0), visible, NO);
         // 六个按钮：表情、手写、语音和屏幕键盘需要手动打开，切换输入方案默认开启。
         assert(defaultFrame.size.width == 255.0 && defaultFrame.size.height == 44.0);
         assert(defaultFrame.size.width == ExpectedWidth(6, 24, 1));
         assert(defaultFrame.origin.x == NSMaxX(visible) - 275.0 && defaultFrame.origin.y == NSMinY(visible) + 20.0);
-        NSRect restored = MSIMEFloatingToolbarFrame(NSMakeRect(-4000.0, 4000.0, 1.0, 1.0), visible, YES);
+        NSRect restored = LINGYAOFloatingToolbarFrame(NSMakeRect(-4000.0, 4000.0, 1.0, 1.0), visible, YES);
         assert(restored.origin.x == NSMinX(visible) + 12.0 && restored.origin.y == NSMaxY(visible) - 56.0);
         assert(LingyaoFloatingToolbarShouldShow(YES, YES, NO));
         assert(!LingyaoFloatingToolbarShouldShow(NO, YES, NO));
@@ -96,7 +96,7 @@ int main() {
         assert(!LingyaoWindowCoversDisplay(CGRectMake(-720.0, 0.0, 1440.0, 900.0), display));
         assert(!LingyaoWindowCoversDisplay(CGRectZero, display));
 
-        MSIMEFloatingToolbarPanel *panel = [[MSIMEFloatingToolbarPanel alloc] init];
+        LINGYAOFloatingToolbarPanel *panel = [[LINGYAOFloatingToolbarPanel alloc] init];
         assert(panel != nil && !panel.canBecomeKeyWindow && !panel.canBecomeMainWindow);
         assert((panel.collectionBehavior & NSWindowCollectionBehaviorCanJoinAllSpaces) != 0);
         assert((panel.collectionBehavior & NSWindowCollectionBehaviorFullScreenAuxiliary) != 0);
@@ -129,7 +129,7 @@ int main() {
             [panel applySizingPreferences:@{@"floating_toolbar": @{@"scale_percent": @100, @"font_size": @24}}];
         }
         [panel setFrameAutosaveName:@""]; // Geometry tests must not persist window placement.
-        msime::mac::SkinTokens light{}, dark{};
+        lingyao::mac::SkinTokens light{}, dark{};
         light.surface = {0.8, 0.7, 0.6, 1};
         light.border = {0.4, 0.3, 0.2, 1};
         light.text = {0.1, 0.2, 0.3, 1};
@@ -156,8 +156,8 @@ int main() {
         // Candidate card colors and toolbar colors are separate host inputs.
         // A toolbar theme change must continue using the toolbar palette after
         // the candidate palette has been supplied.
-        msime::mac::SkinTokens toolbarLight = light;
-        msime::mac::SkinTokens toolbarDark = dark;
+        lingyao::mac::SkinTokens toolbarLight = light;
+        lingyao::mac::SkinTokens toolbarDark = dark;
         toolbarLight.surface = {0.2, 0.4, 0.6, 1};
         toolbarDark.surface = {0.6, 0.2, 0.4, 1};
         toolbarLight.hover = {0.0, 0.0, 0.0, 0.06};
@@ -238,11 +238,11 @@ int main() {
         // The toolbar palette's radius drives the chrome at the current scale, and a package divider colour replaces the outline on the divider only.
         assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 10.0);
         {
-            msime::mac::SkinTokens roundedLight = toolbarLight;
-            msime::mac::SkinTokens roundedDark = toolbarDark;
+            lingyao::mac::SkinTokens roundedLight = toolbarLight;
+            lingyao::mac::SkinTokens roundedDark = toolbarDark;
             roundedLight.radius = 4.0f;
             roundedDark.radius = 16.0f;
-            roundedDark.divider = msime::mac::Rgba{0.9f, 0.1f, 0.1f, 1.0f};
+            roundedDark.divider = lingyao::mac::Rgba{0.9f, 0.1f, 0.1f, 1.0f};
             [panel applyLightToolbarSkin:roundedLight darkSkin:roundedDark];
             [panel applyThemePreferences:@{@"toolbar_theme": @"dark"}];
             assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 16.0);
@@ -256,9 +256,9 @@ int main() {
             [panel applySizingPreferences:@{@"floating_toolbar": @{@"scale_percent": @100, @"font_size": @24}}];
             [panel applyLightToolbarSkin:toolbarLight darkSkin:toolbarDark];
             // Candidate tokens alone never set the toolbar radius: a card radius stays on the card.
-            MSIMEFloatingToolbarPanel *candidateOnly = [[MSIMEFloatingToolbarPanel alloc] init];
+            LINGYAOFloatingToolbarPanel *candidateOnly = [[LINGYAOFloatingToolbarPanel alloc] init];
             [candidateOnly setFrameAutosaveName:@""];
-            msime::mac::SkinTokens card = light;
+            lingyao::mac::SkinTokens card = light;
             card.radius = 28.0f;
             [candidateOnly applyLightSkin:card darkSkin:card];
             [candidateOnly applyThemePreferences:@{@"toolbar_theme": @"light"}];
@@ -513,7 +513,7 @@ int main() {
                delegate.characterPaletteRequests == 1 && delegate.settingsRequests == 2 &&
                delegate.updateRequests == 1 && delegate.websiteRequests == 1 && delegate.hideRequests == 1);
 
-        NSMenu *menu = CreateMSIMEFloatingToolbarUtilityMenu(panel);
+        NSMenu *menu = CreateLINGYAOFloatingToolbarUtilityMenu(panel);
         [menu update];
         assert(menu.numberOfItems == 10);
         assert([menu itemAtIndex:0].action == @selector(openCharacterPalette:) &&
@@ -579,7 +579,7 @@ int main() {
         SendButton(keyboard);
         assert(residentOwner.keyboardRequests == 0);
 
-        // The next activation, which is the user selecting MSIME again, shows it as before.
+        // The next activation, which is the user selecting LINGYAO again, shows it as before.
         FloatingToolbarTestDelegate *returningOwner = [FloatingToolbarTestDelegate new];
         [panel activateForDelegate:returningOwner visible:YES];
         assert(panel.toolbarDelegate == returningOwner && panel.visible == shownWhenActive);

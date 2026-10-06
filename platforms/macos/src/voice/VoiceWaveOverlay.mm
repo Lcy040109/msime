@@ -3,7 +3,7 @@
 #include <cmath>
 
 namespace {
-// Geometry, colors and timing follow MSIME-Windows server/src/voice-input/wave_overlay.cpp; Windows logical pixels map to AppKit points.
+// Geometry, colors and timing follow LINGYAO-Windows server/src/voice-input/wave_overlay.cpp; Windows logical pixels map to AppKit points.
 constexpr CGFloat kCompactWidth = 78, kCompactHeight = 32;
 constexpr CGFloat kProcessingWidth = 112, kProcessingHeight = 40;
 constexpr CGFloat kActionWidth = 142, kActionHeight = 40;
@@ -20,7 +20,7 @@ constexpr NSTimeInterval kFrameInterval = 0.016;
 constexpr NSUInteger kTranscriptSearchWindow = 2048;
 }
 
-NSPoint MSIMEVoiceWaveOverlayOriginForFrames(NSRect fullFrame, NSRect visibleFrame, NSSize panelSize) {
+NSPoint LINGYAOVoiceWaveOverlayOriginForFrames(NSRect fullFrame, NSRect visibleFrame, NSSize panelSize) {
     const CGFloat width = MAX(0.0, panelSize.width);
     const CGFloat height = MAX(0.0, panelSize.height);
     // Match the Windows host: horizontal placement is centered in the full monitor, so a left/right Dock does not move the voice bar's center.
@@ -38,25 +38,25 @@ NSPoint MSIMEVoiceWaveOverlayOriginForFrames(NSRect fullFrame, NSRect visibleFra
     return NSMakePoint(x, y);
 }
 
-MSIMEVoiceWaveOverlayLayout MSIMEVoiceWaveOverlayLayoutFor(BOOL actionsVisible, BOOL hasStatusLabel, BOOL hasTranscript) {
-    if (actionsVisible) return MSIMEVoiceWaveOverlayLayoutAction;
-    if (hasStatusLabel) return MSIMEVoiceWaveOverlayLayoutProcessing;
-    return hasTranscript ? MSIMEVoiceWaveOverlayLayoutTranscript : MSIMEVoiceWaveOverlayLayoutCompact;
+LINGYAOVoiceWaveOverlayLayout LINGYAOVoiceWaveOverlayLayoutFor(BOOL actionsVisible, BOOL hasStatusLabel, BOOL hasTranscript) {
+    if (actionsVisible) return LINGYAOVoiceWaveOverlayLayoutAction;
+    if (hasStatusLabel) return LINGYAOVoiceWaveOverlayLayoutProcessing;
+    return hasTranscript ? LINGYAOVoiceWaveOverlayLayoutTranscript : LINGYAOVoiceWaveOverlayLayoutCompact;
 }
 
-NSSize MSIMEVoiceWaveOverlaySizeForLayout(MSIMEVoiceWaveOverlayLayout layout) {
+NSSize LINGYAOVoiceWaveOverlaySizeForLayout(LINGYAOVoiceWaveOverlayLayout layout) {
     switch (layout) {
-        case MSIMEVoiceWaveOverlayLayoutProcessing: return NSMakeSize(kProcessingWidth, kProcessingHeight);
-        case MSIMEVoiceWaveOverlayLayoutAction: return NSMakeSize(kActionWidth, kActionHeight);
-        case MSIMEVoiceWaveOverlayLayoutTranscript: return NSMakeSize(kTranscriptWidth, kTranscriptHeight);
+        case LINGYAOVoiceWaveOverlayLayoutProcessing: return NSMakeSize(kProcessingWidth, kProcessingHeight);
+        case LINGYAOVoiceWaveOverlayLayoutAction: return NSMakeSize(kActionWidth, kActionHeight);
+        case LINGYAOVoiceWaveOverlayLayoutTranscript: return NSMakeSize(kTranscriptWidth, kTranscriptHeight);
         default: return NSMakeSize(kCompactWidth, kCompactHeight);
     }
 }
 
-void MSIMEVoiceWaveAdvanceLevels(float levels[MSIMEVoiceWaveBarCount], float inputLevel, BOOL listening, double seconds) {
+void LINGYAOVoiceWaveAdvanceLevels(float levels[LINGYAOVoiceWaveBarCount], float inputLevel, BOOL listening, double seconds) {
     const float level = listening && inputLevel > 0.0f ? std::min(1.0f, inputLevel) : 0.0f;
-    const float center = 0.5f * static_cast<float>(MSIMEVoiceWaveBarCount - 1);
-    for (int i = 0; i < MSIMEVoiceWaveBarCount; ++i) {
+    const float center = 0.5f * static_cast<float>(LINGYAOVoiceWaveBarCount - 1);
+    for (int i = 0; i < LINGYAOVoiceWaveBarCount; ++i) {
         // Deterministic-but-irregular profile per bar: each bar has its own amplitude, frequency and phase so the movement looks natural.
         const float fi = static_cast<float>(i);
         const float amplitude = 0.55f + 0.45f * std::fabs(std::sin(0.73f * fi + 0.19f));
@@ -79,7 +79,7 @@ void MSIMEVoiceWaveAdvanceLevels(float levels[MSIMEVoiceWaveBarCount], float inp
     }
 }
 
-NSUInteger MSIMEVoiceTranscriptLineCount(NSString *text, NSFont *font, CGFloat width) {
+NSUInteger LINGYAOVoiceTranscriptLineCount(NSString *text, NSFont *font, CGFloat width) {
     if (!text.length || !font || width <= 0) return 0;
     NSTextStorage *storage = [[NSTextStorage alloc] initWithString:text attributes:@{NSFontAttributeName: font}];
     NSLayoutManager *layoutManager = [NSLayoutManager new];
@@ -98,7 +98,7 @@ NSUInteger MSIMEVoiceTranscriptLineCount(NSString *text, NSFont *font, CGFloat w
     return lines;
 }
 
-NSString *MSIMEVoiceTranscriptVisibleText(NSString *transcript, NSUInteger maxLines, NSUInteger (^lineCount)(NSString *candidate)) {
+NSString *LINGYAOVoiceTranscriptVisibleText(NSString *transcript, NSUInteger maxLines, NSUInteger (^lineCount)(NSString *candidate)) {
     if (![transcript isKindOfClass:NSString.class] || !transcript.length) return @"";
     if (!lineCount || lineCount(transcript) <= maxLines) return transcript;
     const NSUInteger length = transcript.length;
@@ -128,7 +128,7 @@ static BOOL VoiceAppearanceIsDark(NSAppearance *appearance)
 }
 static NSFont *VoiceTranscriptFont() { return [NSFont systemFontOfSize:kTranscriptFontSize]; }
 static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSize]; }
-@interface MSIMEVoiceWaveView : NSView
+@interface LINGYAOVoiceWaveView : NSView
 @property(nonatomic) float level;
 @property(nonatomic) BOOL listening;
 @property(nonatomic) BOOL lightTheme;
@@ -142,15 +142,15 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
 - (void)advanceWave;
 - (void)resetWave;
 @end
-@implementation MSIMEVoiceWaveView {
-    float _levels[MSIMEVoiceWaveBarCount];
+@implementation LINGYAOVoiceWaveView {
+    float _levels[LINGYAOVoiceWaveBarCount];
 }
 - (BOOL)isFlipped { return YES; }
 - (void)advanceWave {
-    MSIMEVoiceWaveAdvanceLevels(_levels, self.level, self.listening, NSProcessInfo.processInfo.systemUptime);
+    LINGYAOVoiceWaveAdvanceLevels(_levels, self.level, self.listening, NSProcessInfo.processInfo.systemUptime);
     [self setNeedsDisplay:YES];
 }
-- (void)resetWave { std::fill(_levels, _levels + MSIMEVoiceWaveBarCount, 0.0f); }
+- (void)resetWave { std::fill(_levels, _levels + LINGYAOVoiceWaveBarCount, 0.0f); }
 - (void)drawRect:(NSRect)r {
     (void)r;
     const BOOL light = self.followsSystemAppearance ? !VoiceAppearanceIsDark(self.effectiveAppearance) : self.lightTheme;
@@ -191,12 +191,12 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
         const CGFloat waveLeft = actions ? contentLeft + (contentWidth - waveWidth) * 0.5 : (transcript ? (w - waveWidth) * 0.5 : 0.0);
         const CGFloat sideMargin = kDotRadius + 0.25;
         const CGFloat trackWidth = MAX(1.0, waveWidth - 2.0 * sideMargin);
-        const CGFloat baseStep = trackWidth / static_cast<CGFloat>(MSIMEVoiceWaveBarCount - 1);
+        const CGFloat baseStep = trackWidth / static_cast<CGFloat>(LINGYAOVoiceWaveBarCount - 1);
         // A slightly tighter spacing keeps the wave compact.
         const CGFloat step = baseStep * 0.75;
-        const CGFloat startX = waveLeft + (waveWidth - step * static_cast<CGFloat>(MSIMEVoiceWaveBarCount - 1)) * 0.5;
+        const CGFloat startX = waveLeft + (waveWidth - step * static_cast<CGFloat>(LINGYAOVoiceWaveBarCount - 1)) * 0.5;
         const CGFloat barWidth = MAX(kDotRadius * 2.0, baseStep * 0.26);
-        for (int i = 0; i < MSIMEVoiceWaveBarCount; ++i) {
+        for (int i = 0; i < LINGYAOVoiceWaveBarCount; ++i) {
             const CGFloat x = startX + i * step;
             const CGFloat displayLevel = transcript ? MIN(1.0, _levels[i] * 1.35) : _levels[i];
             if (displayLevel < 0.06) {
@@ -245,8 +245,8 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
     if (self.followsSystemAppearance) [self setNeedsDisplay:YES];
 }
 @end
-@implementation MSIMEVoiceWaveOverlay {
-    MSIMEVoiceWaveView *_view;
+@implementation LINGYAOVoiceWaveOverlay {
+    LINGYAOVoiceWaveView *_view;
     NSString *_transcript;
     NSString *_visibleTranscriptSource;
     CGFloat _visibleTranscriptWidth;
@@ -269,7 +269,7 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
         self.opaque = NO; self.backgroundColor = NSColor.clearColor;
         self.level = NSFloatingWindowLevel; self.ignoresMouseEvents = YES;
         self.floatingPanel = YES; self.hidesOnDeactivate = NO;
-        _view = [MSIMEVoiceWaveView new]; _view.status = @""; self.contentView = _view;
+        _view = [LINGYAOVoiceWaveView new]; _view.status = @""; self.contentView = _view;
         _transcript = @"";
         _cancelButton = [NSButton buttonWithTitle:@"取消" target:self action:@selector(cancelVoice:)];
         _confirmButton = [NSButton buttonWithTitle:@"确认" target:self action:@selector(confirmVoice:)];
@@ -280,14 +280,14 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
             button.accessibilityLabel = button.title;
             [_view addSubview:button];
         }
-        __weak MSIMEVoiceWaveOverlay *weakSelf = self;
+        __weak LINGYAOVoiceWaveOverlay *weakSelf = self;
         _screenObserver = [NSNotificationCenter.defaultCenter
             addObserverForName:NSApplicationDidChangeScreenParametersNotification
                         object:nil
                          queue:NSOperationQueue.mainQueue
                     usingBlock:^(NSNotification *notification) {
                         (void)notification;
-                        MSIMEVoiceWaveOverlay *overlay = weakSelf;
+                        LINGYAOVoiceWaveOverlay *overlay = weakSelf;
                         if (overlay && overlay.visible) [overlay repositionOnPreferredScreen];
                     }];
     }
@@ -309,7 +309,7 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
 - (void)repositionOnPreferredScreen {
     NSScreen *screen = [self resolvedPreferredScreen];
     if (!screen) return;
-    [self setFrameOrigin:MSIMEVoiceWaveOverlayOriginForFrames(screen.frame, screen.visibleFrame, self.frame.size)];
+    [self setFrameOrigin:LINGYAOVoiceWaveOverlayOriginForFrames(screen.frame, screen.visibleFrame, self.frame.size)];
 }
 - (BOOL)isLightTheme { return _view.lightTheme; }
 - (void)applyThemePreferences:(NSDictionary *)preferences {
@@ -362,8 +362,8 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
     if (!_transcript.length) return nil;
     if (_visibleTranscript && _visibleTranscriptWidth == width && [_visibleTranscriptSource isEqualToString:_transcript]) return _visibleTranscript;
     NSFont *font = VoiceTranscriptFont();
-    _visibleTranscript = MSIMEVoiceTranscriptVisibleText(_transcript, kMaxTranscriptLines, ^NSUInteger(NSString *candidate) {
-        return MSIMEVoiceTranscriptLineCount(candidate, font, width);
+    _visibleTranscript = LINGYAOVoiceTranscriptVisibleText(_transcript, kMaxTranscriptLines, ^NSUInteger(NSString *candidate) {
+        return LINGYAOVoiceTranscriptLineCount(candidate, font, width);
     });
     _visibleTranscriptSource = _transcript;
     _visibleTranscriptWidth = width;
@@ -380,15 +380,15 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
                                   : NSMakeSize(MAX(kProcessingWidth, labelWidth), kProcessingHeight);
         if (_transcript.length) visible = [self visibleTranscriptForWidth:size.width - 2.0 * kTranscriptHorizontalPadding];
     } else {
-        const MSIMEVoiceWaveOverlayLayout layout = MSIMEVoiceWaveOverlayLayoutFor(actions, _processing, _transcript.length > 0);
-        size = MSIMEVoiceWaveOverlaySizeForLayout(layout);
-        if (layout == MSIMEVoiceWaveOverlayLayoutTranscript) visible = [self visibleTranscriptForWidth:size.width - 2.0 * kTranscriptHorizontalPadding];
+        const LINGYAOVoiceWaveOverlayLayout layout = LINGYAOVoiceWaveOverlayLayoutFor(actions, _processing, _transcript.length > 0);
+        size = LINGYAOVoiceWaveOverlaySizeForLayout(layout);
+        if (layout == LINGYAOVoiceWaveOverlayLayoutTranscript) visible = [self visibleTranscriptForWidth:size.width - 2.0 * kTranscriptHorizontalPadding];
     }
     _view.showsLabel = _showingFailure || _processing;
     _view.showsActions = actions;
     _view.visibleTranscript = visible;
     NSScreen *screen = [self resolvedPreferredScreen];
-    const NSPoint origin = screen ? MSIMEVoiceWaveOverlayOriginForFrames(screen.frame, screen.visibleFrame, size) : self.frame.origin;
+    const NSPoint origin = screen ? LINGYAOVoiceWaveOverlayOriginForFrames(screen.frame, screen.visibleFrame, size) : self.frame.origin;
     [self setFrame:NSMakeRect(origin.x, origin.y, size.width, size.height) display:NO];
     _cancelButton.hidden = _confirmButton.hidden = !actions;
     // The view is flipped, so these centers match the source's top-left coordinates.
@@ -403,9 +403,9 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
 - (void)updateWaveAnimation {
     const BOOL animate = self.visible && !_view.showsLabel;
     if (animate && !_waveTimer) {
-        __weak MSIMEVoiceWaveOverlay *weakSelf = self;
+        __weak LINGYAOVoiceWaveOverlay *weakSelf = self;
         _waveTimer = [NSTimer timerWithTimeInterval:kFrameInterval repeats:YES block:^(NSTimer *timer) {
-            MSIMEVoiceWaveOverlay *overlay = weakSelf;
+            LINGYAOVoiceWaveOverlay *overlay = weakSelf;
             if (!overlay) { [timer invalidate]; return; }
             [overlay->_view advanceWave];
         }];
@@ -449,8 +449,8 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
     [self showStatus:polishing ? @"处理中..." : @"识别中..." listening:NO failure:NO];
 }
 - (NSTimeInterval)failureDisplayDuration { return 6; }
-- (void)showFailure:(MSIMEVoiceFailure)failure { [self showFailure:failure detail:nil]; }
-- (void)showFailure:(MSIMEVoiceFailure)failure detail:(NSString *)detail {
+- (void)showFailure:(LINGYAOVoiceFailure)failure { [self showFailure:failure detail:nil]; }
+- (void)showFailure:(LINGYAOVoiceFailure)failure detail:(NSString *)detail {
     self.actionHandler = nil;
     _dismissed = NO;
     _processing = NO; _recordingLocked = NO;
@@ -458,21 +458,21 @@ static NSFont *VoiceStatusFont() { return [NSFont systemFontOfSize:kStatusFontSi
     _transcript = [detail isKindOfClass:NSString.class] && detail.length <= 65536 ? [detail copy] : @"";
     NSString *message;
     switch (failure) {
-        case MSIMEVoiceFailureMicrophonePermission: message = @"请在系统设置允许麦克风访问"; break;
-        case MSIMEVoiceFailureSpeechPermission: message = @"请在系统设置允许语音识别"; break;
-        case MSIMEVoiceFailureCapture: message = @"录音失败，请检查麦克风设置"; break;
-        case MSIMEVoiceFailureProvider: message = @"识别失败，请检查语音服务设置"; break;
-        case MSIMEVoiceFailureNoSpeech: message = @"未识别到语音，请重试"; break;
-        case MSIMEVoiceFailureTimeout: message = @"语音处理超时，请重试"; break;
-        case MSIMEVoiceFailureMissingToken: message = @"请先在设置的“语音输入”分区填写当前 ASR 提供商的 API Token。"; break;
-        case MSIMEVoiceFailureMissingLocalModel: message = @"请先在设置的“语音输入”分区下载或选择本地语音模型。"; break;
+        case LINGYAOVoiceFailureMicrophonePermission: message = @"请在系统设置允许麦克风访问"; break;
+        case LINGYAOVoiceFailureSpeechPermission: message = @"请在系统设置允许语音识别"; break;
+        case LINGYAOVoiceFailureCapture: message = @"录音失败，请检查麦克风设置"; break;
+        case LINGYAOVoiceFailureProvider: message = @"识别失败，请检查语音服务设置"; break;
+        case LINGYAOVoiceFailureNoSpeech: message = @"未识别到语音，请重试"; break;
+        case LINGYAOVoiceFailureTimeout: message = @"语音处理超时，请重试"; break;
+        case LINGYAOVoiceFailureMissingToken: message = @"请先在设置的“语音输入”分区填写当前 ASR 提供商的 API Token。"; break;
+        case LINGYAOVoiceFailureMissingLocalModel: message = @"请先在设置的“语音输入”分区下载或选择本地语音模型。"; break;
         default: message = @"语音输入未能启动，请重试"; break;
     }
     [self showStatus:message listening:NO failure:YES];
     const NSUInteger generation = _presentationGeneration;
-    __weak MSIMEVoiceWaveOverlay *weakSelf = self;
+    __weak LINGYAOVoiceWaveOverlay *weakSelf = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([self failureDisplayDuration] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        MSIMEVoiceWaveOverlay *panel = weakSelf;
+        LINGYAOVoiceWaveOverlay *panel = weakSelf;
         if (panel && panel->_presentationGeneration == generation) [panel dismissFailure];
     });
 }

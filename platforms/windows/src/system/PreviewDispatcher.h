@@ -3,7 +3,7 @@
 #include "PreviewConfig.h"
 #include "SessionPump.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Explicit launch bindings override the latest shared input-thread publication.
 // The launch preedit style is required and always explicit: the preview host
 // declares how it renders composition, so a shared preference published later
@@ -22,4 +22,4 @@ preview_key_handler(const PreviewConfig &config) {
                                     explicit_keys ? word : state.word_character_binding());
       };
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

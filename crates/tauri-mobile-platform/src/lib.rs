@@ -1,4 +1,4 @@
-use msime_client_core::is_bounded_text;
+use lingyao_client_core::is_bounded_text;
 use serde::{Deserialize, Serialize};
 #[cfg(any(target_os = "ios", test))]
 use serde_json::json;
@@ -12,7 +12,7 @@ use tauri::plugin::PluginHandle;
 use tauri::Manager;
 
 #[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_msime_mobile_platform);
+tauri::ios_plugin_binding!(init_plugin_lingyao_mobile_platform);
 
 #[cfg(target_os = "android")]
 #[derive(Clone)]
@@ -57,8 +57,8 @@ pub struct AndroidVoicePolishRequest {
 #[cfg(any(target_os = "android", test))]
 impl AndroidVoicePolishRequest {
     pub fn is_valid(&self) -> bool {
-        msime_client_core::voice::provider::valid_mobile_voice_endpoint(&self.endpoint, false)
-            && msime_client_core::voice::provider::bounded_voice_fields(
+        lingyao_client_core::voice::provider::valid_mobile_voice_endpoint(&self.endpoint, false)
+            && lingyao_client_core::voice::provider::bounded_voice_fields(
                 &self.endpoint,
                 &self.model,
                 &self.token,
@@ -84,7 +84,7 @@ struct AndroidVoiceResponse {
 
 #[cfg(any(target_os = "android", test))]
 fn valid_android_voice_request(request_id: &str, language: &str) -> bool {
-    msime_client_core::voice::is_valid_request_id(request_id)
+    lingyao_client_core::voice::is_valid_request_id(request_id)
         && !language.is_empty()
         && is_bounded_text(language, 64)
 }
@@ -92,7 +92,7 @@ fn valid_android_voice_request(request_id: &str, language: &str) -> bool {
 #[cfg(any(target_os = "android", target_os = "ios"))]
 fn valid_mobile_voice_text(text: &str) -> bool {
     !text.trim().is_empty()
-        && msime_client_core::is_bounded_chars_without_nul(text, MAX_MOBILE_VOICE_TEXT_CHARS)
+        && lingyao_client_core::is_bounded_chars_without_nul(text, MAX_MOBILE_VOICE_TEXT_CHARS)
 }
 
 #[cfg(target_os = "android")]
@@ -125,7 +125,7 @@ impl<R: Runtime> AndroidVoicePlatform<R> {
             )
             .await
             .map_err(|_| ())?;
-        if !msime_client_core::is_bounded_chars_without_nul(&response.text, 10_000) {
+        if !lingyao_client_core::is_bounded_chars_without_nul(&response.text, 10_000) {
             return Err(());
         }
         Ok(response.text)
@@ -177,7 +177,7 @@ const MAX_MOBILE_VOICE_TEXT_CHARS: usize = 10_000;
 const MAX_MOBILE_VOICE_HEADER_BYTES: usize = 8_192;
 const MAX_MOBILE_VOICE_BOOSTING_TABLE_BYTES: usize = 4_096;
 const MAX_MOBILE_VOICE_MODEL_PATH_BYTES: usize = 4_096;
-/// Same ceiling `msime_client_voice_hotwords` applies to its `limit`.
+/// Same ceiling `lingyao_client_voice_hotwords` applies to its `limit`.
 const MAX_MOBILE_VOICE_HOTWORDS: usize = 1_000;
 const MAX_MOBILE_VOICE_HOTWORD_TEXT_BYTES: usize = 256;
 const MAX_MOBILE_VOICE_HOTWORD_PINYIN_BYTES: usize = 1_024;
@@ -261,12 +261,12 @@ pub struct MobileVoiceTranscriptionRequest {
     /// Provider `local` only: the absolute path of the installed model directory to run on the device.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub model_path: String,
-    /// Provider `local` only: the user's own dictionary words, passed to a recognizer with native hotword support or applied after the final text by `msime_client_voice_hotword_correct` when the model's manifest says `"hotwords": "pinyin"`.
+    /// Provider `local` only: the user's own dictionary words, passed to a recognizer with native hotword support or applied after the final text by `lingyao_client_voice_hotword_correct` when the model's manifest says `"hotwords": "pinyin"`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub hotwords: Vec<MobileVoiceHotword>,
 }
 
-/// One user-dictionary word for on-device recognition, shaped like `msime_client_core::voice::hotwords::Hotword`.
+/// One user-dictionary word for on-device recognition, shaped like `lingyao_client_core::voice::hotwords::Hotword`.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct MobileVoiceHotword {
@@ -286,8 +286,8 @@ fn valid_mobile_voice_hotwords(hotwords: &[MobileVoiceHotword]) -> bool {
 
 impl MobileVoiceTranscriptionRequest {
     pub fn is_valid(&self) -> bool {
-        let common = msime_client_core::voice::is_valid_request_id(&self.request_id)
-            && msime_client_core::voice::provider::bounded_voice_fields(
+        let common = lingyao_client_core::voice::is_valid_request_id(&self.request_id)
+            && lingyao_client_core::voice::provider::bounded_voice_fields(
                 &self.endpoint,
                 &self.model,
                 &self.token,
@@ -319,7 +319,7 @@ impl MobileVoiceTranscriptionRequest {
             self.provider.as_str(),
             "openai" | "siliconflow" | "groq" | "everyapi" | "mistral"
         ) {
-            return msime_client_core::voice::provider::valid_mobile_voice_endpoint(
+            return lingyao_client_core::voice::provider::valid_mobile_voice_endpoint(
                 &self.endpoint,
                 false,
             ) && !self.model.trim().is_empty()
@@ -327,7 +327,7 @@ impl MobileVoiceTranscriptionRequest {
                 && self.boosting_table_id.is_empty();
         }
         self.provider == "doubao"
-            && msime_client_core::voice::provider::valid_mobile_voice_endpoint(&self.endpoint, true)
+            && lingyao_client_core::voice::provider::valid_mobile_voice_endpoint(&self.endpoint, true)
             && self.model.is_empty()
             && self.token.is_empty()
             && valid_doubao_headers(&self.headers)
@@ -370,7 +370,7 @@ pub struct MobileVoiceTranscriptionResponse {
 #[cfg(any(target_os = "ios", test))]
 impl MobileVoiceTranscriptionResponse {
     fn is_valid(&self) -> bool {
-        msime_client_core::is_bounded_chars_without_nul(&self.text, MAX_MOBILE_VOICE_TEXT_CHARS)
+        lingyao_client_core::is_bounded_chars_without_nul(&self.text, MAX_MOBILE_VOICE_TEXT_CHARS)
     }
 }
 
@@ -395,7 +395,7 @@ impl IosKeyboardPreferences {
                 | "tibetan"
                 | "stroke"
         ) && matches!(self.haptic_strength.as_str(), "light" | "medium" | "strong")
-            // The ids of msime_client_core::skin::theme::GlobalTheme, which this crate does not depend on; the desktop crate's iOS account tests hold the two lists together.
+            // The ids of lingyao_client_core::skin::theme::GlobalTheme, which this crate does not depend on; the desktop crate's iOS account tests hold the two lists together.
             && matches!(
                 self.global_theme.as_str(),
                 "system" | "lingyao" | "light" | "paper" | "night" | "ink" | "custom"
@@ -429,7 +429,7 @@ fn installed_font_families(families: Vec<String>) -> Option<Vec<String>> {
 #[cfg(any(target_os = "ios", test))]
 fn is_valid_ios_clipboard_text(value: &str) -> bool {
     !value.is_empty()
-        && msime_client_core::is_bounded_utf16(value, MAX_IOS_CLIPBOARD_TEXT_UTF16_UNITS)
+        && lingyao_client_core::is_bounded_utf16(value, MAX_IOS_CLIPBOARD_TEXT_UTF16_UNITS)
         && !value.contains('\0')
 }
 
@@ -632,10 +632,10 @@ impl<R: Runtime> MobilePlatform<R> {
     pub async fn sign_in_with_apple(&self, challenge_id: &str, nonce: &str) -> Result<String, ()> {
         if challenge_id.is_empty()
             || challenge_id.len() > 256
-            || msime_client_core::has_disallowed_control_with_options(challenge_id, false)
+            || lingyao_client_core::has_disallowed_control_with_options(challenge_id, false)
             || nonce.is_empty()
             || nonce.len() > 4096
-            || msime_client_core::has_disallowed_control_with_options(nonce, false)
+            || lingyao_client_core::has_disallowed_control_with_options(nonce, false)
         {
             return Err(());
         }
@@ -652,7 +652,7 @@ impl<R: Runtime> MobilePlatform<R> {
             .map_err(|_| ())?;
         (!response.credential.is_empty()
             && response.credential.len() <= 16 * 1024
-            && !msime_client_core::has_disallowed_control_with_options(&response.credential, false))
+            && !lingyao_client_core::has_disallowed_control_with_options(&response.credential, false))
         .then_some(response.credential)
         .ok_or(())
     }
@@ -720,7 +720,7 @@ impl<R: Runtime> MobilePlatform<R> {
     }
 
     pub fn stop_voice(&self, request_id: &str) -> Result<(), ()> {
-        if !msime_client_core::voice::is_valid_request_id(request_id) {
+        if !lingyao_client_core::voice::is_valid_request_id(request_id) {
             return Err(());
         }
         self.0
@@ -734,7 +734,7 @@ impl<R: Runtime> MobilePlatform<R> {
     }
 
     pub fn cancel_voice(&self, request_id: Option<&str>) -> Result<(), ()> {
-        if request_id.is_some_and(|value| !msime_client_core::voice::is_valid_request_id(value)) {
+        if request_id.is_some_and(|value| !lingyao_client_core::voice::is_valid_request_id(value)) {
             return Err(());
         }
         self.0
@@ -784,16 +784,16 @@ impl<R: Runtime> MobilePlatform<R> {
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("msime-mobile-platform")
+    Builder::new("lingyao-mobile-platform")
         .setup(|app, api| {
             #[cfg(target_os = "ios")]
             {
-                let handle = api.register_ios_plugin(init_plugin_msime_mobile_platform)?;
+                let handle = api.register_ios_plugin(init_plugin_lingyao_mobile_platform)?;
                 app.manage(MobilePlatform(handle));
             }
             #[cfg(target_os = "android")]
             {
-                let handle = api.register_android_plugin("app.msime.android", "VoicePlugin")?;
+                let handle = api.register_android_plugin("app.lingyao.android", "VoicePlugin")?;
                 app.manage(AndroidVoicePlatform(handle));
             }
             #[cfg(not(any(target_os = "ios", target_os = "android")))]

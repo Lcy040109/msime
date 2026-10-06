@@ -1,7 +1,7 @@
 #include "FocusRouter.h"
 #include <future>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 using namespace FanyImePipeEventType;
 void require(bool value) {
   if (!value)

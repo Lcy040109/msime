@@ -6,7 +6,7 @@ final class AppNavigation: ObservableObject {
   @Published var tab: Tab = .settings
   @Published var communityCategory = 0
   @Published var communityRoot = UUID()
-  /// The keyboard's voice panel sends msime://voice: the keyboard cannot record, so the app opens straight onto the recording screen.
+  /// The keyboard's voice panel sends lingyao://voice: the keyboard cannot record, so the app opens straight onto the recording screen.
   @Published var recordsVoice = false
 
   func discoverSkins() {

@@ -6,7 +6,7 @@ import {
   CommunityResourcesPage,
   type CommunityResource,
   type CommunityResourceClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -278,7 +278,7 @@ test("a publish response from a replaced resource client cannot close the editor
 });
 
 test("mobile resource details join the WebView history stack and system back restores the list", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "community" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "community" }, "");
   const item = base("dictionary", "10000000-0000-4000-8000-000000000061");
   render(
     <CommunityResourcesPage
@@ -293,7 +293,7 @@ test("mobile resource details join the WebView history stack and system back res
   fireEvent.click(await screen.findByRole("button", { name: "查看词库 开发词包" }));
   expect(window.history.state.communityDetail).toEqual({ kind: "dictionary", id: item.id });
   expect(await screen.findByRole("button", { name: "← 社区" })).not.toBeNull();
-  const state = { msimeSettings: true, page: "community" };
+  const state = { lingyaoSettings: true, page: "community" };
   window.history.replaceState(state, "");
   window.dispatchEvent(new PopStateEvent("popstate", { state }));
   expect(await screen.findByRole("button", { name: "查看词库 开发词包" })).not.toBeNull();

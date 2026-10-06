@@ -57,7 +57,7 @@ extension BackendAccountClient: DesktopSnapshotAPI {}
   func choose(saving: Bool) async throws -> URL? {
     let panel: NSSavePanel = saving ? NSSavePanel() : NSOpenPanel()
     if let open = panel as? NSOpenPanel { open.allowsMultipleSelection = false; open.canChooseDirectories = false }
-    panel.nameFieldStringValue = "msime-dictionary-snapshot.ndjson"
+    panel.nameFieldStringValue = "lingyao-dictionary-snapshot.ndjson"
     return try await withTaskCancellationHandler(operation: {
       try Task.checkCancellation()
       let result: URL? = await withCheckedContinuation { continuation in

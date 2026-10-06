@@ -9,7 +9,7 @@
 #include <future>
 #include <memory>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Owned exclusively by InputQueue's worker, including construction/destruction.
 // References to this object or its sessions must never escape a task.
 class InputState final {
@@ -206,4 +206,4 @@ private:
   std::chrono::milliseconds active_task_wait_{0};
   std::thread worker_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

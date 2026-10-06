@@ -1,4 +1,4 @@
-// Adapted from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Adapted from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 #include "CandidateSkin.h"
 
 #include <algorithm>
@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace msime::mac
+namespace lingyao::mac
 {
 namespace
 {
@@ -538,12 +538,12 @@ std::filesystem::path DefaultSkinsRoot()
     {
         return {};
     }
-    // 与 RuntimeOptions.h 的 MSIMEDefaultClientStateDirectory 是同一个目录。这里是 full 的目录名；其他版本的输入法启动时经 SetDefaultSkinsRoot 换成自己的状态目录（input_method_main.mm 的 MSIMEConfigureMovableState）。
-    return std::filesystem::path(home) / "Library" / "Application Support" / "app.msime.macos" / "skins";
+    // 与 RuntimeOptions.h 的 LINGYAODefaultClientStateDirectory 是同一个目录。这里是 full 的目录名；其他版本的输入法启动时经 SetDefaultSkinsRoot 换成自己的状态目录（input_method_main.mm 的 LINGYAOConfigureMovableState）。
+    return std::filesystem::path(home) / "Library" / "Application Support" / "app.lingyao.macos" / "skins";
 }
 
 void SetDefaultSkinsRoot(std::filesystem::path root)
 {
     ConfiguredSkinsRoot = std::move(root);
 }
-} // namespace msime::mac
+} // namespace lingyao::mac

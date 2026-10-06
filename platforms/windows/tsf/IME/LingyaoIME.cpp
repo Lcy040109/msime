@@ -39,11 +39,11 @@ constexpr UINT CONNECT_NAMEDPIPE_RETRY_INTERVAL_MS = 50;
 constexpr UINT CONNECT_NAMEDPIPE_MAX_RETRY_INTERVAL_MS = 2000;
 constexpr UINT IPC_FAILURES_BEFORE_SERVER_LAUNCH = 6;
 constexpr UINT SERVER_LAUNCH_RECONNECT_DELAY_MS = 500;
-// 互斥量带版本后缀、注册表键按版本取（shared/contracts/msime_edition.h）：TIP 只认、只拉起自己版本的 Server。full 的名字与引入版本之前相同。
-constexpr wchar_t SERVER_MUTEX_NAME[] = L"Local\\LingyaoImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX;
-constexpr wchar_t SERVER_LAUNCH_MUTEX_NAME[] = L"Local\\LingyaoImeServer.Launch" MSIME_EDITION_NAME_SUFFIX;
-constexpr wchar_t INSTALL_REGISTRY_KEY[] = MSIME_EDITION_REGISTRY_KEY;
-constexpr wchar_t WORKER_WINDOW_CLASS[] = L"LingyaoIMEWorkerWnd" MSIME_EDITION_NAME_SUFFIX;
+// 互斥量带版本后缀、注册表键按版本取（shared/contracts/lingyao_edition.h）：TIP 只认、只拉起自己版本的 Server。full 的名字与引入版本之前相同。
+constexpr wchar_t SERVER_MUTEX_NAME[] = L"Local\\LingyaoImeServer_SingleInstance" LINGYAO_EDITION_NAME_SUFFIX;
+constexpr wchar_t SERVER_LAUNCH_MUTEX_NAME[] = L"Local\\LingyaoImeServer.Launch" LINGYAO_EDITION_NAME_SUFFIX;
+constexpr wchar_t INSTALL_REGISTRY_KEY[] = LINGYAO_EDITION_REGISTRY_KEY;
+constexpr wchar_t WORKER_WINDOW_CLASS[] = L"LingyaoIMEWorkerWnd" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr wchar_t SERVER_PATH_REGISTRY_VALUE[] = L"ServerPath";
 std::atomic<UINT> nextWindowMessageToken{0};
 std::atomic<bool> serverLaunchInFlight{false};
@@ -99,7 +99,7 @@ bool LaunchServerIfNeeded()
     {
         if (Global::TsfDiagnosticLogEnabled.load(std::memory_order_relaxed))
         {
-            QueueTsfDiagnosticLog(L"[msime]: Server path is unavailable; cannot revive Server.");
+            QueueTsfDiagnosticLog(L"[lingyao]: Server path is unavailable; cannot revive Server.");
         }
         ReleaseMutex(launchMutex);
         CloseHandle(launchMutex);
@@ -1157,7 +1157,7 @@ void CLingyaoIME::_RequestLocalSessionReset(_In_opt_ ITfContext *preferredContex
         keyState.Category = CATEGORY_COMPOSING;
         // 韩文音节、注音转换、越南文词和藏文音节串是用户已经写下的文字（scheme::CommitsOnBlur），所以离开上下文时上屏它们，其他组字则被丢弃。
         keyState.Function =
-            msime::windows::scheme::CommitsOnBlur(Global::InputModeScheme.load(std::memory_order_relaxed))
+            lingyao::windows::scheme::CommitsOnBlur(Global::InputModeScheme.load(std::memory_order_relaxed))
                 ? FUNCTION_COMMIT_SYLLABLE
                 : FUNCTION_CANCEL;
         _localResetEditSessionQueued = true;
@@ -1839,7 +1839,7 @@ void CLingyaoIME::IpcWorkerThread(CLingyaoIME *pIME)
         // The mode code is not a boolean: Korean and the schemes after it send '2' and up, which the boolean check above would drop and leave the previous mode keyed.
         if (validFrame && buf.msg_type == Global::DataToTsfWorkerThreadMsgType::InputModeChanged)
         {
-            validFrame = msime::windows::scheme::is_input_mode_payload(buf.data, std::size(buf.data));
+            validFrame = lingyao::windows::scheme::is_input_mode_payload(buf.data, std::size(buf.data));
         }
         if (validFrame && buf.msg_type == Global::DataToTsfWorkerThreadMsgType::PunctuationLockChanged)
         {
@@ -2023,7 +2023,7 @@ void CLingyaoIME::IpcWorkerThread(CLingyaoIME *pIME)
         else if (buf.msg_type == Global::DataToTsfWorkerThreadMsgType::InputModeChanged)
         {
             Global::InputModeScheme.store(
-                msime::windows::scheme::mode_scheme(msime::windows::scheme::input_mode_from_code(buf.data[0])),
+                lingyao::windows::scheme::mode_scheme(lingyao::windows::scheme::input_mode_from_code(buf.data[0])),
                 std::memory_order_relaxed);
             const HWND ownerWindow = pIME->_msgWndHandle;
             if (ownerWindow && IsWindow(ownerWindow))
@@ -2448,17 +2448,17 @@ LRESULT CALLBACK CLingyaoIME_WindowProc(HWND hWnd, UINT message, WPARAM wParam, 
                 auto *host = engine->GetHostEngineAdapter();
                 const auto hostScheme = [host]() -> int {
                     std::string raw, viewError;
-                    msime::tsf::EngineResult result;
+                    lingyao::tsf::EngineResult result;
                     return host->view(&raw, &viewError) &&
-                                   msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &viewError)
+                                   lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &viewError)
                                ? static_cast<int>(result.view.scheme)
                                : -1;
                 };
                 // 切换方案会丢弃引擎的组字，但韩文音节、注音转换、越南文词和藏文音节串已经作为文字显示在屏幕上（scheme::CommitsOnBlur）。切换完成后上屏组字显示的内容，否则下一个键会替换掉它。
                 const int composingScheme = pIME->_IsComposing() && pIME->_pContext ? hostScheme() : -1;
                 std::string ignored, error;
-                (void)host->reload_preferences(msime::tsf::default_state_directory(), &ignored, &error);
-                if (msime::windows::scheme::CommitsOnBlur(composingScheme) && hostScheme() != composingScheme &&
+                (void)host->reload_preferences(lingyao::tsf::default_state_directory(), &ignored, &error);
+                if (lingyao::windows::scheme::CommitsOnBlur(composingScheme) && hostScheme() != composingScheme &&
                     pIME->_IsComposing() && pIME->_pContext)
                 {
                     _KEYSTROKE_STATE keyState = {};

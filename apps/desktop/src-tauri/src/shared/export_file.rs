@@ -23,7 +23,7 @@ pub(crate) fn sanitize_name(name: &str) -> Result<&str, &'static str> {
         || name
             .chars()
             .any(|character| matches!(character, '/' | '\\' | ':'))
-        || msime_client_core::has_disallowed_control_with_options(name, false)
+        || lingyao_client_core::has_disallowed_control_with_options(name, false)
     {
         return Err("export_name");
     }

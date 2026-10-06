@@ -1,4 +1,4 @@
-import app.msime.android.InputSchemeTraits;
+import app.lingyao.android.InputSchemeTraits;
 import java.util.Set;
 import java.util.function.IntPredicate;
 

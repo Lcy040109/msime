@@ -1,20 +1,20 @@
-//! `msime-dict-build`：构建 msime 发布的词库产物（见 `resources/desktop-dictionary.lock.json`），输入是 `resources/dictionary-sources.lock.json` 固定的第三方文件、`--dictionary` 给出的 msime-dictionary checkout，以及 `resources/dictionary-sources/` 里人工维护的文件。
+//! `lingyao-dict-build`：构建 lingyao 发布的词库产物（见 `resources/desktop-dictionary.lock.json`），输入是 `resources/dictionary-sources.lock.json` 固定的第三方文件、`--dictionary` 给出的 lingyao-dictionary checkout，以及 `resources/dictionary-sources/` 里人工维护的文件。
 //!
 //! ```text
-//! msime-dict-build --cache <dir> --out <dir> --dictionary <msime-dictionary checkout>               全部阶段，然后写 manifest
-//! msime-dict-build --cache <dir> --out <dir> --dictionary <msime-dictionary checkout> --skip ngram  跳过语料统计的快速本地构建
-//! msime-dict-build --cache <dir> --out <dir> --only emoji                                           只跑不读 msime-dictionary 数据的阶段，不写 manifest 并删掉旧的
-//! msime-dict-build --list
-//! msime-dict-build places --cache <dir> [--out <places.tsv>] [--offline]
-//! msime-dict-build places-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out <places.txt> [--offline]
-//! msime-dict-build english-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out <scowl-words.txt> [--offline]
-//! msime-dict-build wubi86-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out <wubi86-supplement.txt> [--offline]
-//! msime-dict-build wubi98-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out <wubi98-supplement.txt> [--offline]
-//! msime-dict-build hanja --dictionary <msime-dictionary checkout> --cache <dir> [--out <hanja.tsv>] [--offline]
-//! msime-dict-build hkcancor-counts --cache <dir> --out <hkcancor-word-counts.txt> [--offline]
-//! msime-dict-build languages --dictionary <msime-dictionary checkout> --cache <dir> [--out <dir>] [--offline]
-//! msime-dict-build web --pinyin <msime-pinyin.db> --wubi <msime-wubi.db> --out-dir <dir> [--keep-multi 200000]
-//! msime-dict-build check-words [--base <words.txt> --head <words.txt>] [--translations-base <translations.txt> --translations-head <translations.txt>] [--english-base <english.txt> --english-head <english.txt>] [--msime-db <msime-pinyin.db>] [--english-db <msime-english.db>] [--json <report.json>] [--markdown <summary.md>]
+//! lingyao-dict-build --cache <dir> --out <dir> --dictionary <lingyao-dictionary checkout>               全部阶段，然后写 manifest
+//! lingyao-dict-build --cache <dir> --out <dir> --dictionary <lingyao-dictionary checkout> --skip ngram  跳过语料统计的快速本地构建
+//! lingyao-dict-build --cache <dir> --out <dir> --only emoji                                           只跑不读 lingyao-dictionary 数据的阶段，不写 manifest 并删掉旧的
+//! lingyao-dict-build --list
+//! lingyao-dict-build places --cache <dir> [--out <places.tsv>] [--offline]
+//! lingyao-dict-build places-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out <places.txt> [--offline]
+//! lingyao-dict-build english-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out <scowl-words.txt> [--offline]
+//! lingyao-dict-build wubi86-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out <wubi86-supplement.txt> [--offline]
+//! lingyao-dict-build wubi98-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out <wubi98-supplement.txt> [--offline]
+//! lingyao-dict-build hanja --dictionary <lingyao-dictionary checkout> --cache <dir> [--out <hanja.tsv>] [--offline]
+//! lingyao-dict-build hkcancor-counts --cache <dir> --out <hkcancor-word-counts.txt> [--offline]
+//! lingyao-dict-build languages --dictionary <lingyao-dictionary checkout> --cache <dir> [--out <dir>] [--offline]
+//! lingyao-dict-build web --pinyin <lingyao-pinyin.db> --wubi <lingyao-wubi.db> --out-dir <dir> [--keep-multi 200000]
+//! lingyao-dict-build check-words [--base <words.txt> --head <words.txt>] [--translations-base <translations.txt> --translations-head <translations.txt>] [--english-base <english.txt> --english-head <english.txt>] [--lingyao-db <lingyao-pinyin.db>] [--english-db <lingyao-english.db>] [--json <report.json>] [--markdown <summary.md>]
 //! ```
 
 mod cantonese;
@@ -26,7 +26,7 @@ mod hkcancor;
 mod japanese;
 mod languages;
 mod licensing;
-mod msime;
+mod lingyao;
 mod ngram;
 mod others;
 mod pinyin;
@@ -53,7 +53,7 @@ use crate::sources::{sha256_file, Dictionary, Lock, Sources};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum Stage {
-    /// Quanpin tables in msime-pinyin.db (tbl_{1..7,others}_{initial})
+    /// Quanpin tables in lingyao-pinyin.db (tbl_{1..7,others}_{initial})
     Quanpin,
     /// 从 --dictionary checkout 读取的 sources/pinyin/places.txt 并入全拼表，只升不降
     PlacesSupplement,
@@ -61,27 +61,27 @@ enum Stage {
     CustomWords,
     /// Wrong readings listed in resources/dictionary-sources/pinyin-reading-corrections.txt removed from the quanpin tables
     ReadingCorrections,
-    /// msime-pinyin.db 里的 86 五笔表，先后取自 sources/wubi/wubi86-jidian.txt 和 sources/wubi/wubi86-supplement.txt（都从 --dictionary checkout 读取）
+    /// lingyao-pinyin.db 里的 86 五笔表，先后取自 sources/wubi/wubi86-jidian.txt 和 sources/wubi/wubi86-supplement.txt（都从 --dictionary checkout 读取）
     Wubi,
-    /// msime-pinyin.db 里的 98 五笔表，先后取自 sources/wubi/wubi98.txt、sources/wubi/wubi98-fcitx.txt 和 sources/wubi/wubi98-supplement.txt（都从 --dictionary checkout 读取）
+    /// lingyao-pinyin.db 里的 98 五笔表，先后取自 sources/wubi/wubi98.txt、sources/wubi/wubi98-fcitx.txt 和 sources/wubi/wubi98-supplement.txt（都从 --dictionary checkout 读取）
     Wubi98,
-    /// Quick phrase table in msime-pinyin.db, then msime-pinyin.db's planner statistics
+    /// Quick phrase table in lingyao-pinyin.db, then lingyao-pinyin.db's planner statistics
     QuickPhrases,
-    /// msime-english.db 的 english_words 表，来自 rime-ice 英文词表和 sources/english/scowl-words.txt，再加 custom/english.txt（都从 --dictionary checkout 读取）
+    /// lingyao-english.db 的 english_words 表，来自 rime-ice 英文词表和 sources/english/scowl-words.txt，再加 custom/english.txt（都从 --dictionary checkout 读取）
     English,
-    /// Bidirectional gloss tables in msime-english.db, derived from ECDICT (reads msime-pinyin.db)
+    /// Bidirectional gloss tables in lingyao-english.db, derived from ECDICT (reads lingyao-pinyin.db)
     EnglishGlosses,
     /// 从 --dictionary checkout 读取的 custom/translations.txt 覆盖释义表
     CustomTranslations,
-    /// emoji tables in msime-others.db
+    /// emoji tables in lingyao-others.db
     Emoji,
-    /// kaomoji tables in msime-others.db
+    /// kaomoji tables in lingyao-others.db
     Kaomoji,
-    /// symbol_catalog table in msime-others.db
+    /// symbol_catalog table in lingyao-others.db
     Symbols,
-    /// msime-japanese.dat from Mozc OSS data, plus its notice
+    /// lingyao-japanese.dat from Mozc OSS data, plus its notice
     JapaneseModel,
-    /// msime-bigram.bin and msime-trigram.bin over the pinned zhwiki dump (reads msime-pinyin.db)
+    /// lingyao-bigram.bin and lingyao-trigram.bin over the pinned zhwiki dump (reads lingyao-pinyin.db)
     Ngram,
 }
 
@@ -110,8 +110,8 @@ fn repository_root() -> PathBuf {
 
 #[derive(Parser)]
 #[command(
-    name = "msime-dict-build",
-    about = "Build msime's dictionary artifacts from pinned sources",
+    name = "lingyao-dict-build",
+    about = "Build lingyao's dictionary artifacts from pinned sources",
     subcommand_negates_reqs = true
 )]
 struct Arguments {
@@ -138,10 +138,10 @@ struct Arguments {
     /// Print the stages and exit.
     #[arg(long)]
     list: bool,
-    /// The msime checkout the manifest's provenance is read from.
+    /// The lingyao checkout the manifest's provenance is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// msime-dictionary checkout，`sources/` 和 `custom/` 下的每个路径都从这里读（msime 的锁文件不固定其中任何文件）。它的 Git 提交固定内容，manifest 会记下这个提交；msime 认定为上游数据的文件必须与 checkout 的 `upstream.lock.json` 一致，记录里的提交必须等于锁文件的 references。不传时，读 msime-dictionary 数据的阶段会失败，也不写 manifest，`--out` 里旧的 manifest 和校验和文件会被删掉。
+    /// lingyao-dictionary checkout，`sources/` 和 `custom/` 下的每个路径都从这里读（lingyao 的锁文件不固定其中任何文件）。它的 Git 提交固定内容，manifest 会记下这个提交；lingyao 认定为上游数据的文件必须与 checkout 的 `upstream.lock.json` 一致，记录里的提交必须等于锁文件的 references。不传时，读 lingyao-dictionary 数据的阶段会失败，也不写 manifest，`--out` 里旧的 manifest 和校验和文件会被删掉。
     #[arg(long, value_name = "PATH")]
     dictionary: Option<PathBuf>,
 }
@@ -152,36 +152,36 @@ enum Command {
     CheckWords(CheckWords),
     /// Write the `@` mode place table (crates/engine/src/local/places.tsv) from the administrative divisions pinned under places/ in the sources lock.
     Places(Places),
-    /// 写出 msime-dictionary 的 sources/pinyin/places.txt：msime-dictionary 的拼音词库没有、或排名低于所在层级下限的行政区划地名（全称和简称），区划数据取自锁文件在 places/ 下固定的文件。
+    /// 写出 lingyao-dictionary 的 sources/pinyin/places.txt：lingyao-dictionary 的拼音词库没有、或排名低于所在层级下限的行政区划地名（全称和简称），区划数据取自锁文件在 places/ 下固定的文件。
     PlacesSupplement(PlacesSupplement),
-    /// 写出 msime-dictionary 的 sources/english/scowl-words.txt：SCOWL 60 级 Aspell 词典（美式拼写加英式 -ise 拼写，固定在 scowl/ 下）里 msime-dictionary 的 rime-ice 英文词表（含被注释掉的条目）和 custom/english.txt 都没有的词，去掉蔑称、只有大写形式且拼出某个全拼的名字，以及没有 Google 词频的词（见 english_supplement.rs）。
+    /// 写出 lingyao-dictionary 的 sources/english/scowl-words.txt：SCOWL 60 级 Aspell 词典（美式拼写加英式 -ise 拼写，固定在 scowl/ 下）里 lingyao-dictionary 的 rime-ice 英文词表（含被注释掉的条目）和 custom/english.txt 都没有的词，去掉蔑称、只有大写形式且拼出某个全拼的名字，以及没有 Google 词频的词（见 english_supplement.rs）。
     EnglishSupplement(EnglishSupplement),
-    /// 写出 msime-dictionary 的 sources/wubi/wubi86-supplement.txt：msime-dictionary 的 86 码表（sources/wubi/wubi86-jidian.txt）缺少、而 98 码表列有或 sources/pinyin/rime-ice.txt 里权重不低于 5000 的二字词，限两个及以上汉字；编码按 86 版词组规则由 86 码表的单字编码推出，权重低于 86 码表同一编码下的行（见 wubi86_supplement.rs）。
+    /// 写出 lingyao-dictionary 的 sources/wubi/wubi86-supplement.txt：lingyao-dictionary 的 86 码表（sources/wubi/wubi86-jidian.txt）缺少、而 98 码表列有或 sources/pinyin/rime-ice.txt 里权重不低于 5000 的二字词，限两个及以上汉字；编码按 86 版词组规则由 86 码表的单字编码推出，权重低于 86 码表同一编码下的行（见 wubi86_supplement.rs）。
     Wubi86Supplement(Wubi86Supplement),
-    /// 写出 msime-dictionary 的 sources/wubi/wubi98-supplement.txt：两张 98 码表（sources/wubi/wubi98.txt、sources/wubi/wubi98-fcitx.txt）缺少、而 86 码表列有或 sources/pinyin/rime-ice.txt 里权重不低于 5000 的二字词，限两个及以上基本区汉字；编码按词组规则由 98 码表的单字编码推出，权重低于 98 码表同一编码下的行（见 wubi98_supplement.rs）。
+    /// 写出 lingyao-dictionary 的 sources/wubi/wubi98-supplement.txt：两张 98 码表（sources/wubi/wubi98.txt、sources/wubi/wubi98-fcitx.txt）缺少、而 86 码表列有或 sources/pinyin/rime-ice.txt 里权重不低于 5000 的二字词，限两个及以上基本区汉字；编码按词组规则由 98 码表的单字编码推出，权重低于 98 码表同一编码下的行（见 wubi98_supplement.rs）。
     Wubi98Supplement(Wubi98Supplement),
     /// 从 --dictionary checkout 的 libhangul `sources/korean/hanja.txt` 生成韩文 Hanja 表（crates/engine/src/korean/hanja.tsv）。
     Hanja(Hanja),
-    /// Write msime-dictionary's sources/cantonese/hkcancor-word-counts.txt: how often each word of two or more Han characters occurs in the HKCanCor transcriptions pinned under hkcancor/ in the sources lock.
+    /// Write lingyao-dictionary's sources/cantonese/hkcancor-word-counts.txt: how often each word of two or more Han characters occurs in the HKCanCor transcriptions pinned under hkcancor/ in the sources lock.
     HkcancorCounts(HkcancorCounts),
-    /// 写出随资源集一起发布的词库（msime-cantonese.db、msime-zhuyin.db、msime-stroke.db）及其许可证文本和校验和，数据来自 --dictionary checkout 的 sources/cantonese/、sources/zhuyin/、sources/stroke/stroke.dict.yaml 和 sources/pinyin/single-chars.txt。
+    /// 写出随资源集一起发布的词库（lingyao-cantonese.db、lingyao-zhuyin.db、lingyao-stroke.db）及其许可证文本和校验和，数据来自 --dictionary checkout 的 sources/cantonese/、sources/zhuyin/、sources/stroke/stroke.dict.yaml 和 sources/pinyin/single-chars.txt。
     Languages(Languages),
-    /// 从词库 release 的 msime-pinyin.db 和 msime-wubi.db 裁出网页内置输入法用的 msime-pinyin.db（全部单字加按权重排名前 N 的多字词，不含五笔）和 msime-wubi86.db（只含 86 五笔），两者逐字节可复现。
+    /// 从词库 release 的 lingyao-pinyin.db 和 lingyao-wubi.db 裁出网页内置输入法用的 lingyao-pinyin.db（全部单字加按权重排名前 N 的多字词，不含五笔）和 lingyao-wubi86.db（只含 86 五笔），两者逐字节可复现。
     Web(WebArgs),
 }
 
 #[derive(Args)]
 struct WebArgs {
-    /// 词库 release 的 msime-pinyin.db（全拼表与快捷短语），只读打开。
+    /// 词库 release 的 lingyao-pinyin.db（全拼表与快捷短语），只读打开。
     #[arg(long)]
     pinyin: PathBuf,
-    /// 词库 release 的 msime-wubi.db（wubi86 与 wubi98），只读打开。
+    /// 词库 release 的 lingyao-wubi.db（wubi86 与 wubi98），只读打开。
     #[arg(long)]
     wubi: PathBuf,
-    /// 写出 msime-pinyin.db 和 msime-wubi86.db 的目录，不存在时创建；同名文件会被覆盖。
+    /// 写出 lingyao-pinyin.db 和 lingyao-wubi86.db 的目录，不存在时创建；同名文件会被覆盖。
     #[arg(long)]
     out_dir: PathBuf,
-    /// msime-pinyin.db 在全部多字表里保留的行数（单字表总是全部保留）。
+    /// lingyao-pinyin.db 在全部多字表里保留的行数（单字表总是全部保留）。
     #[arg(long, default_value_t = web::DEFAULT_KEEP_MULTI)]
     keep_multi: usize,
 }
@@ -208,7 +208,7 @@ struct Places {
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
 }
@@ -242,16 +242,16 @@ struct PlacesSupplement {
     /// Where pinned sources are downloaded and reused from.
     #[arg(long)]
     cache: PathBuf,
-    /// The supplement to write (msime-dictionary's sources/pinyin/places.txt).
+    /// The supplement to write (lingyao-dictionary's sources/pinyin/places.txt).
     #[arg(long)]
     out: PathBuf,
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// 读取 `sources/` 和 `custom/` 文件的 msime-dictionary checkout（按其 `upstream.lock.json` 校验）。
+    /// 读取 `sources/` 和 `custom/` 文件的 lingyao-dictionary checkout（按其 `upstream.lock.json` 校验）。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -350,16 +350,16 @@ struct EnglishSupplement {
     /// Where pinned sources are downloaded and reused from.
     #[arg(long)]
     cache: PathBuf,
-    /// The supplement to write (msime-dictionary's sources/english/scowl-words.txt).
+    /// The supplement to write (lingyao-dictionary's sources/english/scowl-words.txt).
     #[arg(long)]
     out: PathBuf,
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// 读取 `sources/` 和 `custom/` 文件的 msime-dictionary checkout（按其 `upstream.lock.json` 校验）。
+    /// 读取 `sources/` 和 `custom/` 文件的 lingyao-dictionary checkout（按其 `upstream.lock.json` 校验）。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -463,16 +463,16 @@ struct Wubi86Supplement {
     /// Where pinned sources are downloaded and reused from.
     #[arg(long)]
     cache: PathBuf,
-    /// The supplement to write (msime-dictionary's sources/wubi/wubi86-supplement.txt).
+    /// The supplement to write (lingyao-dictionary's sources/wubi/wubi86-supplement.txt).
     #[arg(long)]
     out: PathBuf,
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// 读取 `sources/` 和 `custom/` 文件的 msime-dictionary checkout（按其 `upstream.lock.json` 校验）。
+    /// 读取 `sources/` 和 `custom/` 文件的 lingyao-dictionary checkout（按其 `upstream.lock.json` 校验）。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -490,7 +490,7 @@ fn build_wubi86_supplement(arguments: &Wubi86Supplement) -> Result<()> {
     };
     let read = |path: &str| -> Result<String> { text::read(&sources.pinned(path)?) };
     let wubi98_path = sources.pinned(wubi86_supplement::WUBI98)?;
-    let wubi98 = msime::decode_utf16le(&std::fs::read(&wubi98_path)?)
+    let wubi98 = lingyao::decode_utf16le(&std::fs::read(&wubi98_path)?)
         .with_context(|| format!("decoding {}", wubi98_path.display()))?;
     let (jidian, wubi98_fcitx, base) = (
         read(wubi86_supplement::JIDIAN)?,
@@ -543,16 +543,16 @@ struct Wubi98Supplement {
     /// Where pinned sources are downloaded and reused from.
     #[arg(long)]
     cache: PathBuf,
-    /// The supplement to write (msime-dictionary's sources/wubi/wubi98-supplement.txt).
+    /// The supplement to write (lingyao-dictionary's sources/wubi/wubi98-supplement.txt).
     #[arg(long)]
     out: PathBuf,
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// 读取 `sources/` 和 `custom/` 文件的 msime-dictionary checkout（按其 `upstream.lock.json` 校验）。
+    /// 读取 `sources/` 和 `custom/` 文件的 lingyao-dictionary checkout（按其 `upstream.lock.json` 校验）。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -570,7 +570,7 @@ fn build_wubi98_supplement(arguments: &Wubi98Supplement) -> Result<()> {
     };
     let read = |path: &str| -> Result<String> { text::read(&sources.pinned(path)?) };
     let wubi98_path = sources.pinned(wubi98_supplement::WUBI98)?;
-    let wubi98 = msime::decode_utf16le(&std::fs::read(&wubi98_path)?)
+    let wubi98 = lingyao::decode_utf16le(&std::fs::read(&wubi98_path)?)
         .with_context(|| format!("decoding {}", wubi98_path.display()))?;
     let (wubi98_fcitx, jidian, base) = (
         read(wubi98_supplement::WUBI98_FCITX)?,
@@ -629,10 +629,10 @@ struct Hanja {
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// 读取 `sources/` 和 `custom/` 文件的 msime-dictionary checkout（按其 `upstream.lock.json` 校验）。
+    /// 读取 `sources/` 和 `custom/` 文件的 lingyao-dictionary checkout（按其 `upstream.lock.json` 校验）。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -668,13 +668,13 @@ struct HkcancorCounts {
     /// Where pinned sources are downloaded and reused from.
     #[arg(long)]
     cache: PathBuf,
-    /// The table to write (msime-dictionary's sources/cantonese/hkcancor-word-counts.txt).
+    /// The table to write (lingyao-dictionary's sources/cantonese/hkcancor-word-counts.txt).
     #[arg(long)]
     out: PathBuf,
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock is read from.
+    /// The lingyao checkout the sources lock is read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
 }
@@ -747,10 +747,10 @@ struct Languages {
     /// Fail instead of downloading a source that is not cached.
     #[arg(long)]
     offline: bool,
-    /// The msime checkout the sources lock and licence texts are read from.
+    /// The lingyao checkout the sources lock and licence texts are read from.
     #[arg(long, default_value_os_t = repository_root())]
     repository: PathBuf,
-    /// msime-dictionary checkout，`sources/` 和 `custom/` 下的每个路径都从这里读（msime 的锁文件不固定其中任何文件）。它的 Git 提交固定内容；msime 认定为上游数据的文件必须与 checkout 的 `upstream.lock.json` 一致，记录里的提交必须等于锁文件的 references。
+    /// lingyao-dictionary checkout，`sources/` 和 `custom/` 下的每个路径都从这里读（lingyao 的锁文件不固定其中任何文件）。它的 Git 提交固定内容；lingyao 认定为上游数据的文件必须与 checkout 的 `upstream.lock.json` 一致，记录里的提交必须等于锁文件的 references。
     #[arg(long, value_name = "PATH")]
     dictionary: PathBuf,
 }
@@ -803,10 +803,10 @@ struct CheckWords {
     /// custom/english.txt after the change.
     #[arg(long, requires = "english_base")]
     english_head: Option<PathBuf>,
-    /// A shipped msime-pinyin.db; appended words already in its quanpin tables are rejected.
+    /// A shipped lingyao-pinyin.db; appended words already in its quanpin tables are rejected.
     #[arg(long)]
-    msime_db: Option<PathBuf>,
-    /// A shipped msime-english.db; appended English words whose word and display are already in its english_words are rejected.
+    lingyao_db: Option<PathBuf>,
+    /// A shipped lingyao-english.db; appended English words whose word and display are already in its english_words are rejected.
     #[arg(long)]
     english_db: Option<PathBuf>,
     /// Where the JSON report is written.
@@ -827,7 +827,7 @@ fn open_read_only(path: Option<&Path>) -> Result<Option<rusqlite::Connection>> {
 
 /// Runs `check-words` and writes its reports; `Ok(false)` when a line was rejected.
 fn check_words(arguments: &CheckWords) -> Result<bool> {
-    let msime = open_read_only(arguments.msime_db.as_deref())?;
+    let lingyao = open_read_only(arguments.lingyao_db.as_deref())?;
     let english = open_read_only(arguments.english_db.as_deref())?;
     let mut contents = Vec::new();
     for (kind, base, head) in [
@@ -856,7 +856,7 @@ fn check_words(arguments: &CheckWords) -> Result<bool> {
         })
         .collect();
     let shipped = check_words::Shipped {
-        msime: msime.as_ref(),
+        lingyao: lingyao.as_ref(),
         english: english.as_ref(),
     };
     let report = check_words::check(&inputs, shipped)?;
@@ -908,11 +908,11 @@ impl Build {
             Stage::Quanpin => {
                 let single_chars = self.sources.pinned("sources/pinyin/single-chars.txt")?;
                 let (phrases, whitelist) = if self.complete {
-                    let mut whitelist = msime::parse_whitelist(&text::read(
+                    let mut whitelist = lingyao::parse_whitelist(&text::read(
                         &self.sources.pinned(licensing::SINGLE_CHAR_WHITELIST)?,
                     )?);
-                    whitelist.extend(msime::parse_whitelist(&text::read(
-                        &self.sources.repository(msime::WHITELIST_ADDITIONS)?,
+                    whitelist.extend(lingyao::parse_whitelist(&text::read(
+                        &self.sources.repository(lingyao::WHITELIST_ADDITIONS)?,
                     )?));
                     (
                         vec![
@@ -933,21 +933,21 @@ impl Build {
                     .pinned("sources/pinyin/rime-ice-supplement.txt")?;
                 let mut phrases = phrases;
                 phrases.push(supplement);
-                let inputs = msime::QuanpinInputs {
+                let inputs = lingyao::QuanpinInputs {
                     single_chars: &single_chars,
                     whitelist,
                     phrases: phrases.iter().map(PathBuf::as_path).collect(),
                 };
-                let rows = msime::build_quanpin(&mut self.database("msime-pinyin.db")?, &inputs)?;
+                let rows = lingyao::build_quanpin(&mut self.database("lingyao-pinyin.db")?, &inputs)?;
                 Ok(format!("{rows} rows"))
             }
             Stage::PlacesSupplement => {
-                let words = msime::parse_word_list(
+                let words = lingyao::parse_word_list(
                     &text::read(&self.sources.pinned(places_supplement::OUTPUT)?)?,
                     places_supplement::OUTPUT,
                 )?;
                 let counts =
-                    msime::apply_custom_words(&mut self.database("msime-pinyin.db")?, &words)?;
+                    lingyao::apply_custom_words(&mut self.database("lingyao-pinyin.db")?, &words)?;
                 Ok(format!(
                     "{} entries: {} inserted, {} promoted, {} already at or above their weight",
                     words.len(),
@@ -957,11 +957,11 @@ impl Build {
                 ))
             }
             Stage::CustomWords => {
-                let words = msime::parse_custom_words(&text::read(
+                let words = lingyao::parse_custom_words(&text::read(
                     &self.sources.pinned("custom/words.txt")?,
                 )?)?;
                 let counts =
-                    msime::apply_custom_words(&mut self.database("msime-pinyin.db")?, &words)?;
+                    lingyao::apply_custom_words(&mut self.database("lingyao-pinyin.db")?, &words)?;
                 Ok(format!(
                     "{} entries: {} inserted, {} promoted, {} already at or above their weight",
                     words.len(),
@@ -971,11 +971,11 @@ impl Build {
                 ))
             }
             Stage::ReadingCorrections => {
-                let entries = msime::parse_reading_corrections(&text::read(
-                    &self.sources.repository(msime::READING_CORRECTIONS)?,
+                let entries = lingyao::parse_reading_corrections(&text::read(
+                    &self.sources.repository(lingyao::READING_CORRECTIONS)?,
                 )?)?;
-                let removed = msime::apply_reading_corrections(
-                    &mut self.database("msime-pinyin.db")?,
+                let removed = lingyao::apply_reading_corrections(
+                    &mut self.database("lingyao-pinyin.db")?,
                     &entries,
                 )?;
                 Ok(format!("{} entries: {removed} rows removed", entries.len()))
@@ -983,8 +983,8 @@ impl Build {
             Stage::Wubi => {
                 let jidian = self.sources.pinned(wubi86_supplement::JIDIAN)?;
                 let supplement = self.sources.pinned(wubi86_supplement::OUTPUT)?;
-                let (imported, skipped, outside) = msime::build_wubi(
-                    &mut self.database("msime-pinyin.db")?,
+                let (imported, skipped, outside) = lingyao::build_wubi(
+                    &mut self.database("lingyao-pinyin.db")?,
                     &[jidian.as_path(), supplement.as_path()],
                 )?;
                 Ok(format!(
@@ -994,8 +994,8 @@ impl Build {
             Stage::Wubi98 => {
                 let supplement = self.sources.pinned(wubi98_supplement::WUBI98_FCITX)?;
                 let generated = self.sources.pinned(wubi98_supplement::OUTPUT)?;
-                let (imported, skipped) = msime::build_wubi98_sources(
-                    &mut self.database("msime-pinyin.db")?,
+                let (imported, skipped) = lingyao::build_wubi98_sources(
+                    &mut self.database("lingyao-pinyin.db")?,
                     &self.sources.pinned(wubi98_supplement::WUBI98)?,
                     &[supplement.as_path()],
                     &[generated.as_path()],
@@ -1005,7 +1005,7 @@ impl Build {
             Stage::QuickPhrases => {
                 let path = self.sources.repository("mix/quick_phrases.txt")?;
                 let (imported, skipped) =
-                    msime::build_quick_phrases(&mut self.database("msime-pinyin.db")?, &path)?;
+                    lingyao::build_quick_phrases(&mut self.database("lingyao-pinyin.db")?, &path)?;
                 Ok(format!(
                     "{imported} rows imported, {skipped} blank, comment or invalid lines"
                 ))
@@ -1034,7 +1034,7 @@ impl Build {
                 let custom = english::parse_custom_english(&text::read(
                     &self.sources.pinned(english::CUSTOM_ENGLISH)?,
                 )?)?;
-                let mut database = self.database("msime-english.db")?;
+                let mut database = self.database("lingyao-english.db")?;
                 let rows = english::build_english_words(
                     &mut database,
                     &oaldpe,
@@ -1066,9 +1066,9 @@ impl Build {
                 ))
             }
             Stage::EnglishGlosses => {
-                let msime_path = self.out.join("msime-pinyin.db");
-                if !msime_path.is_file() {
-                    bail!("english-glosses weights Chinese terms by msime-pinyin.db; build quanpin first");
+                let lingyao_path = self.out.join("lingyao-pinyin.db");
+                if !lingyao_path.is_file() {
+                    bail!("english-glosses weights Chinese terms by lingyao-pinyin.db; build quanpin first");
                 }
                 // The words only SCOWL brings (scowl-words.txt lacks every rime-ice and custom word; OALDPE headwords were candidates before SCOWL too) stay out of the Chinese-to-English index.
                 let oaldpe = self.oaldpe_words()?;
@@ -1077,11 +1077,11 @@ impl Build {
                     .into_keys()
                     .filter(|word| !oaldpe.contains(word))
                     .collect();
-                let mut english_db = self.database("msime-english.db")?;
+                let mut english_db = self.database("lingyao-english.db")?;
                 let glosses = english::derive_glosses(
                     &self.sources.pinned("ecdict/ecdict.csv")?,
                     &english_db,
-                    &sqlite::open(&msime_path)?,
+                    &sqlite::open(&lingyao_path)?,
                     &reverse_excluded,
                 )?;
                 english::write_glosses(&mut english_db, &glosses)?;
@@ -1096,7 +1096,7 @@ impl Build {
                     &self.sources.pinned(english::CUSTOM_TRANSLATIONS)?,
                 )?)?;
                 english::apply_custom_translations(
-                    &mut self.database("msime-english.db")?,
+                    &mut self.database("lingyao-english.db")?,
                     &entries,
                 )?;
                 Ok(format!("{} overrides", entries.len()))
@@ -1113,7 +1113,7 @@ impl Build {
                 )?)?;
                 let (rows, keys) = others::emoji_rows(&self.pinyin()?, &catalog, &zh, &en);
                 let pinyin_rows =
-                    others::build_emoji(&mut self.database("msime-others.db")?, &rows, &keys)?;
+                    others::build_emoji(&mut self.database("lingyao-others.db")?, &rows, &keys)?;
                 Ok(format!("{} emoji, {pinyin_rows} search keys", rows.len()))
             }
             Stage::Kaomoji => {
@@ -1121,7 +1121,7 @@ impl Build {
                     &self.sources.repository("kaomoji/kaomoji.txt")?,
                 )?)?;
                 let (rows, entries) = others::build_kaomoji(
-                    &mut self.database("msime-others.db")?,
+                    &mut self.database("lingyao-others.db")?,
                     &self.pinyin()?,
                     &mapping,
                 )?;
@@ -1132,7 +1132,7 @@ impl Build {
                     &self.sources.repository("symbols/piliapp_symbols.txt")?,
                 )?);
                 let rows = others::symbol_rows(&self.pinyin()?, &categories)?;
-                others::build_symbols(&mut self.database("msime-others.db")?, &rows)?;
+                others::build_symbols(&mut self.database("lingyao-others.db")?, &rows)?;
                 Ok(format!("{} symbols", rows.len()))
             }
             Stage::JapaneseModel => {
@@ -1164,7 +1164,7 @@ impl Build {
                     &text::read(&self.sources.pinned(japanese::CONNECTION)?)?,
                 )?;
                 japanese::write_model(
-                    &self.out.join("msime-japanese.dat"),
+                    &self.out.join("lingyao-japanese.dat"),
                     &japanese::pack(&tokens, size, &costs)?,
                 )?;
                 std::fs::copy(
@@ -1181,11 +1181,11 @@ impl Build {
                 ))
             }
             Stage::Ngram => {
-                let msime_path = self.out.join("msime-pinyin.db");
-                if !msime_path.is_file() {
-                    bail!("ngram segments with msime-pinyin.db's vocabulary; build quanpin first");
+                let lingyao_path = self.out.join("lingyao-pinyin.db");
+                if !lingyao_path.is_file() {
+                    bail!("ngram segments with lingyao-pinyin.db's vocabulary; build quanpin first");
                 }
-                let vocabulary = ngram::Vocabulary::load(&sqlite::open(&msime_path)?)?;
+                let vocabulary = ngram::Vocabulary::load(&sqlite::open(&lingyao_path)?)?;
                 let corpus_file = self
                     .sources
                     .lock
@@ -1196,11 +1196,11 @@ impl Build {
                 let corpus = self.sources.pinned(&corpus_file.path)?;
                 let counts = ngram::count_corpus(&vocabulary, &corpus)?;
                 std::fs::write(
-                    self.out.join("msime-trigram.bin"),
+                    self.out.join("lingyao-trigram.bin"),
                     ngram::pack(&vocabulary, &counts, 3)?,
                 )?;
                 std::fs::write(
-                    self.out.join("msime-bigram.bin"),
+                    self.out.join("lingyao-bigram.bin"),
                     ngram::pack(&vocabulary, &counts, 2)?,
                 )?;
                 Ok(format!(
@@ -1354,7 +1354,7 @@ fn main() -> Result<()> {
     }
     let Some(dictionary) = build.sources.dictionary.as_ref() else {
         eprintln!(
-            "[product] not writing {}: it records the msime-dictionary commit the build read; pass --dictionary{}",
+            "[product] not writing {}: it records the lingyao-dictionary commit the build read; pass --dictionary{}",
             product::MANIFEST,
             removed_note(&product::remove_stale_manifest(&build.out)?)
         );
@@ -1389,12 +1389,12 @@ fn removed_note(removed: &[&str]) -> String {
 mod tests {
     use super::*;
 
-    /// 五个生成器和 `languages` 必须传 `--dictionary`，不能退回到静默跳过笔画词库之类的路径；`hkcancor-counts` 不读 msime-dictionary，不需要它。
+    /// 五个生成器和 `languages` 必须传 `--dictionary`，不能退回到静默跳过笔画词库之类的路径；`hkcancor-counts` 不读 lingyao-dictionary，不需要它。
     #[test]
     fn generators_and_languages_require_a_dictionary_checkout() {
         let parses = |arguments: &[&str]| {
             Arguments::try_parse_from(
-                std::iter::once("msime-dict-build").chain(arguments.iter().copied()),
+                std::iter::once("lingyao-dict-build").chain(arguments.iter().copied()),
             )
             .is_ok()
         };

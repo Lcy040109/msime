@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 enum KeyboardAIService {
-  static let group = MSIMEAppEdition.appGroupIdentifier
+  static let group = LINGYAOAppEdition.appGroupIdentifier
   private static let preference = "keyboard.ai.configuration"
   private static var defaults: UserDefaults? { UserDefaults(suiteName: group) }
 
@@ -10,7 +10,7 @@ enum KeyboardAIService {
     var result: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccessGroup as String: group,
-      kSecAttrService as String: "app.msime.ios.keyboard-ai"
+      kSecAttrService as String: "app.lingyao.ios.keyboard-ai"
     ]
     if let url {
       result[kSecAttrAccount as String] = "https://\(url.host?.lowercased() ?? ""):\(url.port ?? 443)"

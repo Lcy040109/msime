@@ -70,7 +70,7 @@ fn read_colors(table: &toml::map::Map<String, Value>) -> Result<CandidateColors,
     Ok(colors)
 }
 
-/// `[candidate.dark]` / `[candidate.light]` 里的颜色键：前八个各平台都画，其余是 msime-windows 的细分配色，别的平台只校验不画。
+/// `[candidate.dark]` / `[candidate.light]` 里的颜色键：前八个各平台都画，其余是 lingyao-windows 的细分配色，别的平台只校验不画。
 const CANDIDATE_COLOR_KEYS: [&str; 17] = [
     "accent",
     "selected",
@@ -91,10 +91,10 @@ const CANDIDATE_COLOR_KEYS: [&str; 17] = [
     "preedit_divider",
 ];
 
-/// `[candidate.<明暗>.menu]` 的颜色键，即 msime-windows 候选框右键菜单的配色。
+/// `[candidate.<明暗>.menu]` 的颜色键，即 lingyao-windows 候选框右键菜单的配色。
 const MENU_COLOR_KEYS: [&str; 4] = ["background", "border", "text", "hover"];
 
-/// 清单里的颜色值会被 msime-windows 拼进 WebView2 页面的 CSS 声明，所以每个平台都只放行颜色写法用得到的字符，挡住 `;`、`{}` 之类能跳出声明的写法；这样同一个包在每个平台上要么都能加载，要么都被拒绝。字符合法但读不懂的颜色仍然只是不画。
+/// 清单里的颜色值会被 lingyao-windows 拼进 WebView2 页面的 CSS 声明，所以每个平台都只放行颜色写法用得到的字符，挡住 `;`、`{}` 之类能跳出声明的写法；这样同一个包在每个平台上要么都能加载，要么都被拒绝。字符合法但读不懂的颜色仍然只是不画。
 pub(crate) fn css_color_text(value: &str) -> bool {
     value
         .bytes()
@@ -233,14 +233,14 @@ pub struct SkinCatalog {
     pub issues: Vec<SkinIssue>,
 }
 
-/// `id` 是否已被占用：全局主题、msime-windows 的内置外观，以及 Windows 放内置外观设置的 `default` 目录。外部皮肤不能用这些 ID，主题、内置外观和皮肤文件夹因此不会混淆，同一个包在每个平台上也都能用同一个文件夹名加载。
+/// `id` 是否已被占用：全局主题、lingyao-windows 的内置外观，以及 Windows 放内置外观设置的 `default` 目录。外部皮肤不能用这些 ID，主题、内置外观和皮肤文件夹因此不会混淆，同一个包在每个平台上也都能用同一个文件夹名加载。
 pub fn is_reserved(id: &str) -> bool {
     super::theme::GlobalTheme::from_id(id).is_some()
         || WINDOWS_LOOK_IDS.contains(&id)
         || id == WINDOWS_DEFAULTS_FOLDER
 }
 
-/// 偏好里保存的皮肤选择（`custom_theme.candidate_skin`）要满足的规则：文件夹名的形状，且不是全局主题 ID。它比 [`is_external_id`] 宽：被 msime-windows 内置外观或 `default` 占用的名字以前可以当皮肤文件夹，旧设置和其他设备同步来的设置可能还写着它们；它们仍是合法的设置值，只是目录里不会有这个包，自定义主题照常画它的 base。若按 `is_external_id` 校验，这样的设置会让整份偏好被拒绝。
+/// 偏好里保存的皮肤选择（`custom_theme.candidate_skin`）要满足的规则：文件夹名的形状，且不是全局主题 ID。它比 [`is_external_id`] 宽：被 lingyao-windows 内置外观或 `default` 占用的名字以前可以当皮肤文件夹，旧设置和其他设备同步来的设置可能还写着它们；它们仍是合法的设置值，只是目录里不会有这个包，自定义主题照常画它的 base。若按 `is_external_id` 校验，这样的设置会让整份偏好被拒绝。
 pub fn is_selectable_id(id: &str) -> bool {
     safe_id(id) && super::theme::GlobalTheme::from_id(id).is_none()
 }
@@ -382,7 +382,7 @@ fn load(root: &Path, folder: &str) -> Result<SkinSummary, String> {
     let base = required_string(table, "base", 32)?;
     let author = optional_string(table, "author", 120)?;
     let description = optional_string(table, "description", 500)?;
-    // `base` 也可以是 msime-windows 的内置外观，Windows 上写的包用的就是它们。外观画在 `system` 之上，包没写的颜色稍后按外观补齐（见 `windows_looks`）；`fluent` 就是 Windows 的原生配色，与 `system` 相同。只有清单这样读；其他地方 `fluent` 是已停用的 ID，一律拒绝。
+    // `base` 也可以是 lingyao-windows 的内置外观，Windows 上写的包用的就是它们。外观画在 `system` 之上，包没写的颜色稍后按外观补齐（见 `windows_looks`）；`fluent` 就是 Windows 的原生配色，与 `system` 相同。只有清单这样读；其他地方 `fluent` 是已停用的 ID，一律拒绝。
     let windows_look = is_windows_look(&base).then(|| base.clone());
     let base = if windows_look.is_some() {
         "system"
@@ -518,7 +518,7 @@ fn load(root: &Path, folder: &str) -> Result<SkinSummary, String> {
     })
 }
 
-/// `[candidate_window]` 里只有 msime-windows 会画的键：外框线宽、高亮圆角、阴影、字体和翻页箭头。别的平台不画它们，但按 Windows 的规则校验，同一个包在每个平台上才会有同样的加载结果。
+/// `[candidate_window]` 里只有 lingyao-windows 会画的键：外框线宽、高亮圆角、阴影、字体和翻页箭头。别的平台不画它们，但按 Windows 的规则校验，同一个包在每个平台上才会有同样的加载结果。
 fn check_windows_window_keys(window: &toml::map::Map<String, Value>) -> Result<(), String> {
     for (key, max) in [("border_width_dip", 4.0), ("item_corner_radius_dip", 16.0)] {
         if let Some(value) = window.get(key) {
@@ -836,7 +836,7 @@ pub fn scan(root: impl AsRef<Path>) -> SkinCatalog {
 /// Most installed skins published to hosts that draw the candidate panel from `candidate_skin_catalog` (the Linux IBus and Fcitx5 hosts). Beyond this a skin menu is no longer usable, and every entry costs the document those hosts read whole.
 pub const HOST_CATALOG_MAX_PACKAGES: usize = 32;
 
-/// The installed skins in the shape a native candidate host reads (`candidate_skin_catalog` in the Linux runtime options): the id, the manifest name as `title`, the `base` global theme id, the declared `layouts`, per declared theme (an empty object when it sets no colour) every candidate colour `theme::resolve` reads (surface, border, text, number, accent, selected, hover, translation, each normalized by `theme::normalized_color`) and `show_selected_bar`, the card's `corner_radius_dip` when the manifest sets one, and for a package that declares a decoration its size and the absolute path of the image drawn there (`decoration_top_dip`, `decoration_width_dip`, `decoration_image`), plus `decoration_align` when it is not the default `right`. `root` is the directory `catalog` was scanned from. Passing an entry to `msime_client_resolve_theme` as `package` therefore resolves exactly as reading the same package from the skin root does.
+/// The installed skins in the shape a native candidate host reads (`candidate_skin_catalog` in the Linux runtime options): the id, the manifest name as `title`, the `base` global theme id, the declared `layouts`, per declared theme (an empty object when it sets no colour) every candidate colour `theme::resolve` reads (surface, border, text, number, accent, selected, hover, translation, each normalized by `theme::normalized_color`) and `show_selected_bar`, the card's `corner_radius_dip` when the manifest sets one, and for a package that declares a decoration its size and the absolute path of the image drawn there (`decoration_top_dip`, `decoration_width_dip`, `decoration_image`), plus `decoration_align` when it is not the default `right`. `root` is the directory `catalog` was scanned from. Passing an entry to `lingyao_client_resolve_theme` as `package` therefore resolves exactly as reading the same package from the skin root does.
 ///
 /// Everything else in a package - the background image, the toolbar, other paths and stylesheets - stays out: the Linux hosts cannot draw them and every byte counts against the size limit of the document it reads, which is also why an undecorated package carries no decoration keys at all. A colour `normalized_color` cannot read is left out, as `resolve` ignores it. A palette is kept only for a theme the package declares, since every host drops an external skin for a layout or theme it does not support rather than drawing its colours there, and `resolve` does the same with the published `layouts` and themes. Ids and names are already bounded by `scan`; the hosts re-check both, and the decoration's bounds.
 ///

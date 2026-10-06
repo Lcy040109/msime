@@ -2,9 +2,9 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-/// 在存储操作跟随已有的符号链接之前先拒绝它。每个应用的存储都会经过的系统链接，以 `msime-path-trust` 列出的为准。
+/// 在存储操作跟随已有的符号链接之前先拒绝它。每个应用的存储都会经过的系统链接，以 `lingyao-path-trust` 列出的为准。
 pub(crate) fn reject_symlink(path: &Path) -> io::Result<()> {
-    msime_path_trust::reject_symlinked_components(path)
+    lingyao_path_trust::reject_symlinked_components(path)
 }
 
 /// Create a directory and report whether the path itself is a real directory.
@@ -21,7 +21,7 @@ pub(crate) fn create_directory_and_check(path: &Path) -> io::Result<bool> {
     loop {
         match fs::symlink_metadata(current) {
             Ok(metadata) if metadata.file_type().is_symlink() => {
-                if msime_path_trust::is_trusted_system_alias(current) {
+                if lingyao_path_trust::is_trusted_system_alias(current) {
                     break;
                 }
                 return Err(io::Error::new(
@@ -53,7 +53,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn rejects_existing_and_missing_paths_below_a_symlinked_ancestor() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let outside = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();
@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn allows_missing_paths_below_macos_system_aliases() {
         let path = std::path::Path::new("/tmp")
-            .join(format!("msime-storage-alias-{}", uuid::Uuid::new_v4()));
+            .join(format!("lingyao-storage-alias-{}", uuid::Uuid::new_v4()));
         let _ = std::fs::remove_dir_all(&path);
         assert!(create_directory_and_check(&path).unwrap());
         assert!(std::fs::symlink_metadata(&path).unwrap().is_dir());

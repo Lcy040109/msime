@@ -10,9 +10,9 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
-#include <msimeui/DeviceResources.h>
+#include <lingyaoui/DeviceResources.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // What the user chose from a candidate's right-click menu.
 struct CandidateMenuChoice {
   CandidateMenuCommand command;
@@ -57,7 +57,7 @@ private:
   // windows of the same class, so the geometry and drawing are written once.
   struct Panel {
     HWND window = nullptr;
-    msimeui::DeviceResources device;
+    lingyaoui::DeviceResources device;
     std::vector<CandidateMenuItem> items;
     size_t hovered = static_cast<size_t>(-1);
     unsigned dpi = 0;
@@ -91,4 +91,4 @@ private:
   bool actions_available_ = true;
   int fixed_position_ = 0;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

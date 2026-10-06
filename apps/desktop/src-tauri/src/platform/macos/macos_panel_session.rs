@@ -1,6 +1,6 @@
 use crate::HostActionError;
-use msime_client_core::host_surface::{PanelSurface, SurfaceRoute};
-use msime_host_macos::panel_session::{PanelSession, SessionError};
+use lingyao_client_core::host_surface::{PanelSurface, SurfaceRoute};
+use lingyao_host_macos::panel_session::{PanelSession, SessionError};
 use std::sync::{
     atomic::{AtomicU8, Ordering},
     Arc,
@@ -15,7 +15,7 @@ pub(crate) struct PanelState {
 
 impl PanelState {
     pub(crate) fn from_environment() -> Result<Self, &'static str> {
-        let value = std::env::var("MSIME_CLIENT_PANEL_SESSION");
+        let value = std::env::var("LINGYAO_CLIENT_PANEL_SESSION");
         let session = match value {
             Ok(value) => Some(Arc::new(
                 PanelSession::parse(&value).map_err(|_| "Invalid native panel session")?,
@@ -234,9 +234,9 @@ fn validate_submission(
         return Err(SessionError::Rejected);
     }
     if clipboard {
-        msime_host_macos::panel_session::validate_clipboard_text(text)
+        lingyao_host_macos::panel_session::validate_clipboard_text(text)
     } else {
-        msime_client_core::panels::validate_candidate(text).map_err(|_| SessionError::Invalid)
+        lingyao_client_core::panels::validate_candidate(text).map_err(|_| SessionError::Invalid)
     }
 }
 

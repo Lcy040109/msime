@@ -1,6 +1,6 @@
 import inputMethodEngine from '@ohos.inputMethodEngine';
 import fs from '@ohos.file.fs';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import { utf8Length } from './Utf8';
 import { TextPolicy } from './TextPolicy';
 import { KeyboardLog, describeError } from './KeyboardLog';
@@ -301,7 +301,7 @@ export interface ClipboardHistoryMutation {
   readonly failure: ClipboardFailure | null;
 }
 
-// The local emoji catalog lives in msime-others.db beside the dictionaries, so the query carries the
+// The local emoji catalog lives in lingyao-others.db beside the dictionaries, so the query carries the
 // resource directory rather than going through a session.
 /** `{prefix,limit}` as the shared ABI reads it; the prefix is ASCII letters and the limit 1..32. */
 interface EnglishCompletionRequest {
@@ -943,7 +943,7 @@ interface PersonalDictionarySyncResponse {
 }
 
 /**
- * The shared command table from msime_client_command. Spelling the numbers out here keeps the call
+ * The shared command table from lingyao_client_command. Spelling the numbers out here keeps the call
  * sites readable and keeps the table in one place instead of scattered behind comments.
  */
 enum InputCommand {
@@ -3294,7 +3294,7 @@ export class KeyboardSession implements HardwareKeyTarget {
   }
 
   /**
-   * Throw the whole composition away, for a gesture that means to clear it rather than step back. In a scheme whose first MSIME_CANCEL keeps the composition (`cancel_keeps_composition`: it closes a Korean Hanja or Zhuyin list, or takes a Vietnamese word back to its keys; msime_client.h) a second drops it too; anywhere else this is cancel.
+   * Throw the whole composition away, for a gesture that means to clear it rather than step back. In a scheme whose first LINGYAO_CANCEL keeps the composition (`cancel_keeps_composition`: it closes a Korean Hanja or Zhuyin list, or takes a Vietnamese word back to its keys; lingyao_client.h) a second drops it too; anywhere else this is cancel.
    */
   discardComposition(): void {
     const keeps: boolean = this.translationPage === null
@@ -3306,7 +3306,7 @@ export class KeyboardSession implements HardwareKeyTarget {
   }
 
   /**
-   * MSIME_CONVERT_HANJA: list the Hanja of the composing Korean syllable, or close the open list and keep the syllable composing; in Zhuyin the same command opens or closes the list over the conversion. False when the Engine declined, which it does for a lone jamo and with nothing composing.
+   * LINGYAO_CONVERT_HANJA: list the Hanja of the composing Korean syllable, or close the open list and keep the syllable composing; in Zhuyin the same command opens or closes the list over the conversion. False when the Engine declined, which it does for a lone jamo and with nothing composing.
    */
   convertHanja(): boolean {
     return this.command(InputCommand.CONVERT_HANJA);
@@ -3693,7 +3693,7 @@ export class KeyboardSession implements HardwareKeyTarget {
       }
     }
     const reading: string = KeyboardSession.drawnReading(view);
-    // Korean's only candidates are the Hanja of the composing syllable, and their annotation is the 훈음 (msime_client.h).
+    // Korean's only candidates are the Hanja of the composing syllable, and their annotation is the 훈음 (lingyao_client.h).
     const hanja: boolean = KoreanCompositionPolicy.active(view.scheme, view.dedicated_english, view.local_mode);
     const entries: CandidateEntry[] = [];
     for (const candidate of view.candidates) {
@@ -4533,7 +4533,7 @@ export class KeyboardSession implements HardwareKeyTarget {
     }
   }
 
-  /** `stateRoot` is `<files>/state`; the shared mobile store owns `<files>/MSIME`. */
+  /** `stateRoot` is `<files>/state`; the shared mobile store owns `<files>/LINGYAO`. */
   private clipboardRoot(): string {
     const separator: number = this.stateDirectory.lastIndexOf('/');
     return separator > 0 ? this.stateDirectory.substring(0, separator) : '';
@@ -4968,7 +4968,7 @@ export class KeyboardSession implements HardwareKeyTarget {
    *
    * The shared settings page owns which schemes are offered. Turn off the one the keyboard is on
    * and it vanishes from the picker while the keyboard goes on using it — there is then no way to
-   * see or leave it short of choosing something else. MSIME-Apple normalizes the stored scheme the
+   * see or leave it short of choosing something else. LINGYAO-Apple normalizes the stored scheme the
    * moment the enabled list is written (DisabledSchemesAreHiddenAndCurrentSchemeFallsBack); this
    * host reads the list at attach instead, because the page and the keyboard are separate processes
    * and the write the page makes is to the document, not to a running keyboard.
@@ -5094,7 +5094,7 @@ export class KeyboardSession implements HardwareKeyTarget {
   /**
    * One page of the local emoji catalog.
    *
-   * Reads msime-others.db directly rather than through the session: the catalog is a property of the
+   * Reads lingyao-others.db directly rather than through the session: the catalog is a property of the
    * installed dictionary, not of what is being typed, and nothing about it changes with focus.
    */
   emojiPage(group: string, offset: number, limit: number): EmojiPage | null {
@@ -5188,7 +5188,7 @@ export class KeyboardSession implements HardwareKeyTarget {
   /**
    * 已安装符号集插件的组，读自 `<stateDirectory>/plugins`，与设置页交给插件管理的是同一个目录。
    *
-   * 不依赖 `msime-others.db`；读不出来时返回空表，表情面板照旧只显示内置内容。
+   * 不依赖 `lingyao-others.db`；读不出来时返回空表，表情面板照旧只显示内置内容。
    */
   pluginSymbolGroups(): PluginSymbolGroup[] {
     if (this.stateDirectory.length === 0 || this.resourceDirectory.length === 0) {
@@ -5443,7 +5443,7 @@ export class KeyboardSession implements HardwareKeyTarget {
     this.musicPlayer.use(context);
   }
 
-  /** Background music plays on a 2in1 while an editor whose attributes are known has focus, is not a password field, and nothing is being recorded; the desktop hosts tell their player the same with `msime_client_music_set_active`. */
+  /** Background music plays on a 2in1 while an editor whose attributes are known has focus, is not a password field, and nothing is being recorded; the desktop hosts tell their player the same with `lingyao_client_music_set_active`. */
   private updateMusic(): void {
     this.musicPlayer.setActive(
       MusicPolicy.active(this.editorAttributesKnown, this.traits.password, this.voiceRecording));
@@ -5472,7 +5472,7 @@ export class KeyboardSession implements HardwareKeyTarget {
   /**
    * Hand one key or commit to the session's typing effect, alongside its sound, while a style is drawn or the combo is counted. host-api links no audio stack here, so a tier-up sound it reports due is played by this host; the view draws the rest.
    *
-   * @param event a `msime_client_typing_effect` event: a key sound class, or `TYPING_EFFECT_COMMIT`
+   * @param event a `lingyao_client_typing_effect` event: a key sound class, or `TYPING_EFFECT_COMMIT`
    */
   private typingEffect(event: number): void {
     if (this.handle === 0 || !TypingEffectPolicy.active(this.typingEffects)) {

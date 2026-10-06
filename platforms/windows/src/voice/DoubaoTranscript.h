@@ -3,8 +3,8 @@
 
 #include <string>
 
-namespace msime::windows {
-// The transcript in one Doubao response body. bigmodel_async returns "result" as an object; bigmodel_nostream documents it as a list of segments, whose texts are joined in order. MSIME-Windows doubao_asr_client.cpp ExtractTranscript accepts either shape so one parser covers both endpoints.
+namespace lingyao::windows {
+// The transcript in one Doubao response body. bigmodel_async returns "result" as an object; bigmodel_nostream documents it as a list of segments, whose texts are joined in order. LINGYAO-Windows doubao_asr_client.cpp ExtractTranscript accepts either shape so one parser covers both endpoints.
 inline std::string doubao_body_transcript(const nlohmann::json &body) {
   if (!body.is_object() || !body.contains("result"))
     return {};
@@ -34,4 +34,4 @@ inline std::string doubao_transcript(const nlohmann::json &message) {
     text = doubao_body_transcript(message["payload_msg"]);
   return text;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

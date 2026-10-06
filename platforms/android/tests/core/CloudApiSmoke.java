@@ -1,4 +1,4 @@
-import app.msime.android.CloudApi;
+import app.lingyao.android.CloudApi;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public final class CloudApiSmoke {
             "a boundary with a space is refused");
         rejects(() -> CloudApi.encodeMultipart("b0und", List.of()), "an empty multipart body is refused");
         CloudApi.Body random = CloudApi.Body.multipart(List.of(CloudApi.Part.text("a", "x")));
-        check(random.contentType().startsWith("multipart/form-data; boundary=msime-"), "random boundary prefix");
+        check(random.contentType().startsWith("multipart/form-data; boundary=lingyao-"), "random boundary prefix");
 
         // 503 + provider_disabled / service_disabled 是功能未开，不是暂时故障。
         check(CloudApi.featureUnavailable(503, "provider_disabled"), "provider_disabled is unavailable");
@@ -39,7 +39,7 @@ public final class CloudApiSmoke {
         check(CloudApi.retryAfterSeconds("Wed, 21 Oct 2015 07:28:00 GMT") == 0, "Retry-After date ignored");
         check(CloudApi.retryAfterSeconds(null) == 0, "missing Retry-After");
 
-        // 401 时换一枚新令牌只重试一次；User-Agent 固定为 MSIME/Android。
+        // 401 时换一枚新令牌只重试一次；User-Agent 固定为 LINGYAO/Android。
         String stale = "a".repeat(64);
         String fresh = "b".repeat(64);
         List<Map<String, String>> seen = new ArrayList<>();
@@ -50,7 +50,7 @@ public final class CloudApiSmoke {
         }, rejected -> rejected == null ? stale : fresh, rejected -> "");
         CloudApi.Response response = api.send("GET", "/v1/users/me", null, CloudApi.Auth.ACCOUNT);
         check(response.status() == 204 && seen.size() == 2, "a rejected token is refreshed and retried once");
-        check("MSIME/Android".equals(seen.get(0).get("User-Agent")), "plain User-Agent on every request");
+        check("LINGYAO/Android".equals(seen.get(0).get("User-Agent")), "plain User-Agent on every request");
 
         CloudApi denied = new CloudApi((method, path, headers, body) ->
             new CloudApi.Exchange(401, null, null, new byte[0]), rejected -> stale, rejected -> "");

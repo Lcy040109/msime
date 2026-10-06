@@ -4,11 +4,11 @@
 
 use super::with_bounded_bytes;
 use crate::*;
-use msime_client_core::account::AccountError;
-use msime_client_core::community::report::{
+use lingyao_client_core::account::AccountError;
+use lingyao_client_core::community::report::{
     CommunityReport, CommunityReportKind, CommunityReportReason,
 };
-use msime_client_core::uuid::Uuid;
+use lingyao_client_core::uuid::Uuid;
 
 const MAX_REQUEST_BYTES: usize = 64 * 1024;
 
@@ -37,7 +37,7 @@ enum ModerationRequest {
 /// # Safety
 /// `request` points to `length` readable UTF-8 JSON bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_community_moderation(
+pub unsafe extern "C" fn lingyao_client_community_moderation(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {

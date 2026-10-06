@@ -1,4 +1,4 @@
-//! Paged browsing: the emoji, kaomoji and symbol catalogs under `/v1/catalog/{kind}`, and a dictionary's entries for one code, which the account service merges with a user's own words. The queries and the response shapes are the ones the C++ bridge used (`native/catalog.h`, `native/dictionary_catalog.h` in msime-cloud), so paging and search behave as before.
+//! Paged browsing: the emoji, kaomoji and symbol catalogs under `/v1/catalog/{kind}`, and a dictionary's entries for one code, which the account service merges with a user's own words. The queries and the response shapes are the ones the C++ bridge used (`native/catalog.h`, `native/dictionary_catalog.h` in lingyao-cloud), so paging and search behave as before.
 
 use rusqlite::types::ToSql;
 use serde_json::{json, Value};

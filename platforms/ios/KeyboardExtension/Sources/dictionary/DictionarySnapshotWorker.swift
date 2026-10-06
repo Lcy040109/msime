@@ -9,11 +9,11 @@ final class DictionarySnapshotWorker {
     let options: Data
   }
   private final class Prepared: @unchecked Sendable {
-    let value: MSIMEPreparedDictionarySnapshot
+    let value: LINGYAOPreparedDictionarySnapshot
     let user: URL
     let request: DictionarySnapshotRequest
     private let lease: DictionarySnapshotQueue.WorkerLease
-    init(_ value: MSIMEPreparedDictionarySnapshot, user: URL, request: DictionarySnapshotRequest, lease: DictionarySnapshotQueue.WorkerLease) {
+    init(_ value: LINGYAOPreparedDictionarySnapshot, user: URL, request: DictionarySnapshotRequest, lease: DictionarySnapshotQueue.WorkerLease) {
       self.value = value; self.user = user; self.request = request; self.lease = lease
     }
     deinit { try? DictionarySnapshotBridge.discardInactive(identifier: request.id.uuidString, user: user) }

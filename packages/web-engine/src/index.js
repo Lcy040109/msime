@@ -12,10 +12,10 @@ export { version };
 export const SCHEMES = Object.freeze(["quanpin", "xiaohe", "ziranma", "wubi86"]);
 const PINYIN = new Set(["quanpin", "xiaohe", "ziranma"]);
 
-export class MsimeError extends Error {
+export class LingyaoError extends Error {
   constructor(code, message, phase = "runtime") {
     super(message);
-    this.name = "MsimeError";
+    this.name = "LingyaoError";
     this.code = code;
     this.phase = phase;
   }
@@ -35,7 +35,7 @@ function resolveAssets(scheme, options) {
   const base = baseUrl(options.assetBase);
   const db = scheme === "wubi86" ? files.wubi86 : files.pinyin;
   if (!files.wasm || !db) {
-    throw new MsimeError("unsupported", `this build of @msime/web-engine ships no ${scheme === "wubi86" ? "wubi86" : "pinyin"} dictionary; pass options.assets`, "fetch");
+    throw new LingyaoError("unsupported", `this build of @lingyao/web-engine ships no ${scheme === "wubi86" ? "wubi86" : "pinyin"} dictionary; pass options.assets`, "fetch");
   }
   const wantModel = scheme !== "wubi86" && options.model !== false && files.model;
   return { wasm: ref(files.wasm), db: ref(db), model: wantModel ? ref(files.model) : null };
@@ -53,11 +53,11 @@ function defaultWorker() {
 }
 
 /**
- * 创建一个引擎，下载并初始化完成后 resolve。失败时 reject 一个 MsimeError，code 见 index.d.ts。
+ * 创建一个引擎，下载并初始化完成后 resolve。失败时 reject 一个 LingyaoError，code 见 index.d.ts。
  */
-export function createMsimeEngine(options = {}) {
+export function createLingyaoEngine(options = {}) {
   let scheme = options.scheme ?? "quanpin";
-  if (!SCHEMES.includes(scheme)) return Promise.reject(new MsimeError("engine", `unknown scheme: ${scheme}`, "fetch"));
+  if (!SCHEMES.includes(scheme)) return Promise.reject(new LingyaoError("engine", `unknown scheme: ${scheme}`, "fetch"));
   let assets;
   try {
     assets = resolveAssets(scheme, options);
@@ -106,14 +106,14 @@ export function createMsimeEngine(options = {}) {
         return;
       }
       case "error":
-        fail(new MsimeError(msg.code, msg.message, msg.phase));
+        fail(new LingyaoError(msg.code, msg.message, msg.phase));
         return;
     }
   });
   // Worker 脚本本身没加载起来（404、CSP 的 worker-src、语法错误）只会触发 error 事件，没有消息。
   worker.addEventListener("error", (e) => {
     e.preventDefault?.();
-    fail(new MsimeError("engine", `msime worker failed to start: ${e.message || "see the browser console"}`, "fetch"));
+    fail(new LingyaoError("engine", `lingyao worker failed to start: ${e.message || "see the browser console"}`, "fetch"));
   });
 
   const waitReady = () =>
@@ -155,11 +155,11 @@ export function createMsimeEngine(options = {}) {
     },
     async setScheme(next) {
       if (failure) throw failure;
-      if (!SCHEMES.includes(next)) throw new MsimeError("engine", `unknown scheme: ${next}`);
+      if (!SCHEMES.includes(next)) throw new LingyaoError("engine", `unknown scheme: ${next}`);
       if (next === scheme) return;
       // 五笔和拼音用不同的词库，换词库要重新下载，建一个新引擎更简单也更省内存（wasm 内存不会缩小）。
       if (PINYIN.has(next) !== PINYIN.has(scheme)) {
-        throw new MsimeError("unsupported", `switching between ${scheme} and ${next} needs a new engine: dispose() this one and call createMsimeEngine({ scheme: "${next}" })`);
+        throw new LingyaoError("unsupported", `switching between ${scheme} and ${next} needs a new engine: dispose() this one and call createLingyaoEngine({ scheme: "${next}" })`);
       }
       const ready = waitReady();
       worker.postMessage({ type: "scheme", seq: ++seq, scheme: next });
@@ -177,7 +177,7 @@ export function createMsimeEngine(options = {}) {
       return () => errorListeners.delete(fn);
     },
     dispose() {
-      fail(new MsimeError("disposed", "the engine was disposed"));
+      fail(new LingyaoError("disposed", "the engine was disposed"));
     },
   };
 

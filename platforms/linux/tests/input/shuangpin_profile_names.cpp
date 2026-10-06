@@ -4,7 +4,7 @@
 #include <string_view>
 
 int main() {
-  constexpr auto &profiles = msime::linux_host::kShuangpinProfileNames;
+  constexpr auto &profiles = lingyao::linux_host::kShuangpinProfileNames;
   static_assert(profiles.size() == 4);
   assert(std::string_view(profiles[0].value) == "xiaohe");
   assert(std::string_view(profiles[0].label) == "小鹤");

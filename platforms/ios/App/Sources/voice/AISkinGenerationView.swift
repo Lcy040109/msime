@@ -58,7 +58,7 @@ struct AISkinGenerationView: View {
     HStack(spacing: 12) {
       ForEach(0..<3) { index in
         VStack(spacing: 12) {
-          Text("MSIME").font(.caption2.weight(.semibold)).tracking(2)
+          Text("LINGYAO").font(.caption2.weight(.semibold)).tracking(2)
           Spacer(minLength: 0)
           Image(systemName: ["leaf.fill", "moon.stars.fill", "sparkles"][index])
             .font(.system(size: 30, weight: .light))

@@ -7,7 +7,7 @@
 
 // Saved capture_device values are WASAPI endpoint ids in the encoding crates/host-api/src/voice_capture.rs lists for the settings page. A change on either side silently stops opening the microphone a person picked.
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   ma_device_info devices[2]{};
   devices[0].id.wasapi[0] = 'a';
   devices[1].id.wasapi[0] = 'b';

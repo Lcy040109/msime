@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The user's candidate window style: candidate_scale_percent, candidate_opacity_percent and candidate_corner_radius. Kept free of JSON so the settings window, which has no JSON library, draws its preview through the same rules the card is drawn with.
 struct CandidateWindowStyle {
   unsigned scale_percent = 100;
@@ -47,4 +47,4 @@ inline CandidateColor candidate_faded(CandidateColor color,
   color.a *= style.opacity();
   return color;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

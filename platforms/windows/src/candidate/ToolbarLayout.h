@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The margin the drop shadow needs around the bar. A shadow drawn inside the
 // window is clipped by it, so the window is grown by these and the bar is
 // inset, exactly as upstream does with its frame padding.
@@ -155,4 +155,4 @@ inline bool toolbar_is_drag_strip(double x, const ToolbarMetrics &metrics) {
   return x >= metrics.shadow.left &&
          x < metrics.shadow.left + metrics.logo + metrics.handle;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

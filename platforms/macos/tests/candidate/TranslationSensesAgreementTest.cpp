@@ -45,17 +45,17 @@ int main()
 
     for (const auto &[gloss, expected] : fixtures)
     {
-        const auto shared = msime::input::gloss_senses(gloss);
+        const auto shared = lingyao::input::gloss_senses(gloss);
         assert(shared == expected);
-        assert(msime::mac::candidate_gloss_senses(gloss) == expected);
-        assert(msime::windows::translation_senses(gloss) == expected);
-        assert(msime::linux_host::split_translation_gloss(gloss) == expected);
+        assert(lingyao::mac::candidate_gloss_senses(gloss) == expected);
+        assert(lingyao::windows::translation_senses(gloss) == expected);
+        assert(lingyao::linux_host::split_translation_gloss(gloss) == expected);
     }
 
-    const auto reserved = msime::input::gloss_senses("a;b;c;d;e");
+    const auto reserved = lingyao::input::gloss_senses("a;b;c;d;e");
     assert(reserved.capacity() == 5);
 
-    assert(msime::windows::first_translation_sense("hello; hi") == "hello");
-    assert(msime::windows::first_translation_sense(" ; ").empty());
+    assert(lingyao::windows::first_translation_sense("hello; hi") == "hello");
+    assert(lingyao::windows::first_translation_sense(" ; ").empty());
     return 0;
 }

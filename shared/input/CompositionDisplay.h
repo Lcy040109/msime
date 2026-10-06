@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string_view>
 
-namespace msime::input {
+namespace lingyao::input {
 
 // Whether the composition on screen should be the kana rather than the letters that produced it.
 //
@@ -22,4 +22,4 @@ inline bool composition_shows_reading(std::string_view reading, std::size_t care
     return !reading.empty() && caret >= editing_length;
 }
 
-} // namespace msime::input
+} // namespace lingyao::input

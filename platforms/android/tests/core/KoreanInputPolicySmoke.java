@@ -1,6 +1,6 @@
 import android.view.KeyEvent;
-import app.msime.android.EditorBridge;
-import app.msime.android.KoreanInputPolicy;
+import app.lingyao.android.EditorBridge;
+import app.lingyao.android.KoreanInputPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +55,8 @@ public final class KoreanInputPolicySmoke {
                 "begin", "commit:안", "compose:ㄴ", "end",
                 "begin", "commit:녕", "end")),
             "writes are ordered commit first, then the new mark: " + writes);
-        // Hanja: command 16 is MSIME_CONVERT_HANJA, and the list is open exactly while the Korean view carries candidates.
-        check(KoreanInputPolicy.CONVERT_HANJA_COMMAND == 16, "the shared MSIME_CONVERT_HANJA is 16");
+        // Hanja: command 16 is LINGYAO_CONVERT_HANJA, and the list is open exactly while the Korean view carries candidates.
+        check(KoreanInputPolicy.CONVERT_HANJA_COMMAND == 16, "the shared LINGYAO_CONVERT_HANJA is 16");
         check(KoreanInputPolicy.hanjaListOpen(true, "none", 9), "Korean candidates are the Hanja list");
         check(!KoreanInputPolicy.hanjaListOpen(true, "none", 0), "no candidates, no list");
         check(!KoreanInputPolicy.hanjaListOpen(false, "none", 9),

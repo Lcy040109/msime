@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useProviderCredentials, type ProviderCredentialStatus } from "@msime/ui";
+import { useProviderCredentials, type ProviderCredentialStatus } from "@lingyao/ui";
 
 const savedStatus: ProviderCredentialStatus = {
   ai: [],

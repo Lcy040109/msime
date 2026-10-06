@@ -41,13 +41,13 @@ static NSDictionary *Pickers(NSDictionary *colors) {
     return @{@"candidate_colors": colors};
 }
 
-static bool TokenIs(msime::mac::Rgba color, NSString *hex, CGFloat alpha = 1) {
+static bool TokenIs(lingyao::mac::Rgba color, NSString *hex, CGFloat alpha = 1) {
     NSColor *expected = TestCandidateColor(hex);
     return std::abs(color.r - expected.redComponent) < .002 && std::abs(color.g - expected.greenComponent) < .002 &&
            std::abs(color.b - expected.blueComponent) < .002 && std::abs(color.a - alpha) < .002;
 }
 
-static void TestFallbackFonts(MSIMEAppearancePreferences *preferences, NSUserDefaults *defaults) {
+static void TestFallbackFonts(LINGYAOAppearancePreferences *preferences, NSUserDefaults *defaults) {
     // The list has no editor on the page: the 字体预设 popup writes it, and the shared document carries it between hosts.
     assert(FindControl(preferences.window.contentView, @"候选字体卡片"));
     assert(!FindControl(preferences.window.contentView, @"添加补充字体") && !FindControl(preferences.window.contentView, @"补充字体顺序"));
@@ -55,7 +55,7 @@ static void TestFallbackFonts(MSIMEAppearancePreferences *preferences, NSUserDef
     NSString *serif = [NSFont fontWithName:@"STSongti-SC-Regular" size:18].familyName;
     assert(sans && serif);
     __block NSUInteger notifications = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
     [preferences applySharedCandidatePreferences:@{@"candidate_font_family": @"Menlo", @"candidate_english_font": @"Helvetica", @"candidate_fallback_fonts": @[sans, serif]}];
     assert(notifications == 0 && ([preferences.fallbackFonts isEqual:@[sans, serif]]));
     assert([preferences.candidateEnglishFont isEqual:@"Helvetica"]);
@@ -69,7 +69,7 @@ static void TestFallbackFonts(MSIMEAppearancePreferences *preferences, NSUserDef
     preferences.fallbackFonts = @[serif, sans];
     assert([RenderedFamily([preferences candidateFontOfSize:18]) isEqual:serif]);
     preferences.fallbackFonts = @[sans, serif];
-    MSIMEAppearancePreferences *reloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+    LINGYAOAppearancePreferences *reloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
     assert([reloaded.fallbackFonts isEqual:preferences.fallbackFonts]);
     NSArray *saved = preferences.fallbackFonts;
     for (id invalid in @[@"bad", NSNull.null, @[@""], @[@YES], @[[ @"字" stringByPaddingToLength:43 withString:@"字" startingAtIndex:0]]]) {
@@ -93,8 +93,8 @@ static void TestFallbackFonts(MSIMEAppearancePreferences *preferences, NSUserDef
     [mutableFamily appendString:@" synthetic mutation"];
     [mutableFonts removeAllObjects];
     assert(([preferences.fallbackFonts isEqual:@[sans]]));
-    preferences.fontFamily = @"MSIME Synthetic Unavailable Primary";
-    preferences.fallbackFonts = @[@"MSIME Synthetic Unavailable Supplement", serif];
+    preferences.fontFamily = @"LINGYAO Synthetic Unavailable Primary";
+    preferences.fallbackFonts = @[@"LINGYAO Synthetic Unavailable Supplement", serif];
     assert([[preferences candidateFontOfSize:18].familyName isEqual:serif]);
     preferences.fallbackFonts = @[];
     assert([[preferences sharedPreferencesByMerging:@{@"candidate_fallback_fonts": @[sans]}][@"candidate_fallback_fonts"] isEqual:@[]]);
@@ -103,8 +103,8 @@ static void TestFallbackFonts(MSIMEAppearancePreferences *preferences, NSUserDef
     [NSNotificationCenter.defaultCenter removeObserver:observer];
 }
 
-static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUserDefaults *defaults) {
-    NSDictionary *original = MSIMECloudAppearanceSnapshot(defaults);
+static void TestCloudImportCache(LINGYAOAppearancePreferences *preferences, NSUserDefaults *defaults) {
+    NSDictionary *original = LINGYAOCloudAppearanceSnapshot(defaults);
     [preferences applySharedCandidatePreferences:@{@"candidate_font_size": @12, @"candidate_page_size": @1,
         @"candidate_layout": @"vertical", @"candidate_font_family": @"Menlo", @"candidate_preedit_font_size": @28}];
     [preferences applySharedCandidatePreferences:@{
@@ -113,24 +113,24 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
         @"candidate_preedit_font_size": [NSDecimalNumber decimalNumberWithString:@"27.0000000000000001"]}];
     assert(preferences.fontSize == 12 && preferences.pageSize == 1 && preferences.preeditFontSize == 28);
     [preferences applySharedInputPreferences:@{@"scheme": @"wubi", @"shuangpin_profile": @"microsoft", @"shuangpin_preedit_uses_raw": @NO, @"chinese_punctuation": @NO}];
-    assert(preferences.inlinePreeditStyle == MSIMEInlinePreeditStyleRaw);
+    assert(preferences.inlinePreeditStyle == LINGYAOInlinePreeditStyleRaw);
     [preferences applySharedInputPreferences:@{@"tsf_preedit_style": @"raw"}];
-    assert(preferences.inlinePreeditStyle == MSIMEInlinePreeditStyleRaw);
+    assert(preferences.inlinePreeditStyle == LINGYAOInlinePreeditStyleRaw);
     [preferences applySharedInputPreferences:@{@"tsf_preedit_style": @"pinyin"}];
-    assert(preferences.inlinePreeditStyle == MSIMEInlinePreeditStylePinyin);
+    assert(preferences.inlinePreeditStyle == LINGYAOInlinePreeditStylePinyin);
     [preferences applySharedInputPreferences:@{@"tsf_preedit_style": @"empty"}];
-    assert(preferences.inlinePreeditStyle == MSIMEInlinePreeditStyleEmpty);
+    assert(preferences.inlinePreeditStyle == LINGYAOInlinePreeditStyleEmpty);
     [preferences applySharedInputPreferences:@{@"tsf_preedit_style": @"invalid"}];
-    assert(preferences.inlinePreeditStyle == MSIMEInlinePreeditStyleEmpty);
+    assert(preferences.inlinePreeditStyle == LINGYAOInlinePreeditStyleEmpty);
     [preferences applySharedAssistancePreferences:@{@"quanpin": @{@"autocorrect_neighbor": @NO}}];
     [preferences applySharedToolbarVisibility:NO];
     assert(!preferences.chinesePunctuation && !preferences.shuangpinPreeditUsesRaw && !preferences.floatingToolbarEnabled);
     NSDictionary *effective = [preferences cloudSettingsSnapshot];
-    assert(MSIMEValidateCloudAppearance(effective));
+    assert(LINGYAOValidateCloudAppearance(effective));
     // The theme is exported as the host draws it, which the shared document supplied and defaults never saw.
     [preferences applySharedCandidatePreferences:@{@"global_theme": @"night", @"custom_theme": @{@"base": @"ink", @"candidate_skin": @"wide-card"}}];
     effective = [preferences cloudSettingsSnapshot];
-    assert(MSIMEValidateCloudAppearance(effective));
+    assert(LINGYAOValidateCloudAppearance(effective));
     assert([effective[@"platform.macos.global_theme"] isEqual:@"night"] && [effective[@"platform.macos.custom_theme_base"] isEqual:@"ink"]);
     assert([effective[@"platform.macos.custom_candidate_skin"] isEqual:@"wide-card"]);
     assert(![original[@"platform.macos.global_theme"] isEqual:@"night"] && ![original[@"platform.macos.custom_candidate_skin"] isEqual:@"wide-card"]);
@@ -142,7 +142,7 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
     assert([effective[@"platform.macos.input_scheme"] isEqual:@2]);
     for (NSString *key in @[@"chinese_punctuation", @"shuangpin_preedit_uses_raw", @"floating_toolbar"])
         assert([effective[[@"platform.macos." stringByAppendingString:key]] isEqual:@NO]);
-    assert([MSIMECloudAppearanceSnapshot(defaults) isEqual:original]);
+    assert([LINGYAOCloudAppearanceSnapshot(defaults) isEqual:original]);
     NSMutableDictionary *imported = [original mutableCopy];
     imported[@"platform.macos.global_theme"] = @"lingyao";
     imported[@"platform.macos.candidate_font_size"] = @32;
@@ -154,7 +154,7 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
     imported[@"platform.macos.chinese_punctuation"] = @YES;
     imported[@"platform.macos.floating_toolbar"] = @YES;
     __block NSUInteger notifications = 0;
-    id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) {
+    id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) {
         (void)note; ++notifications;
         assert(preferences.fontSize == 32 && preferences.pageSize == 9 && !preferences.vertical);
         assert([preferences resolvedSkinForDark:NO].id == "lingyao");
@@ -163,7 +163,7 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
     invalid[@"platform.macos.candidate_font_size"] = @33;
     assert(![preferences applyCloudSettingsSnapshot:invalid]);
     assert(notifications == 0 && preferences.fontSize == 12);
-    assert([MSIMECloudAppearanceSnapshot(defaults) isEqual:original]);
+    assert([LINGYAOCloudAppearanceSnapshot(defaults) isEqual:original]);
     assert([preferences applyCloudSettingsSnapshot:imported]);
     assert(notifications == 1);
     assert([[preferences cloudSettingsSnapshot] isEqual:imported]);
@@ -175,14 +175,14 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
     assert([preferences.shuangpinProfile isEqual:@"microsoft"] && !preferences.autocorrectNeighbor);
     NSDictionary *merged = [preferences sharedPreferencesByMerging:@{}];
     assert([merged[@"candidate_font_size"] isEqual:@32] && [merged[@"candidate_page_size"] isEqual:@9]);
-    assert([MSIMECloudAppearanceSnapshot(defaults) isEqual:imported]);
+    assert([LINGYAOCloudAppearanceSnapshot(defaults) isEqual:imported]);
     [NSNotificationCenter.defaultCenter removeObserver:observer];
     assert([preferences applyCloudSettingsSnapshot:original]);
     preferences.fontFamily = @"Segoe UI";
     preferences.preeditFontSize = 16;
 }
 
-static NSBitmapImageRep *Draw(MSIMECandidatePreviewView *preview) {
+static NSBitmapImageRep *Draw(LINGYAOCandidatePreviewView *preview) {
     [preview.superview layoutSubtreeIfNeeded];
     NSBitmapImageRep *bitmap = [preview bitmapImageRepForCachingDisplayInRect:preview.bounds];
     assert(bitmap && bitmap.pixelsWide > 0 && bitmap.pixelsHigh > 0);
@@ -195,9 +195,9 @@ static NSBitmapImageRep *Draw(MSIMECandidatePreviewView *preview) {
 }
 
 // 整体大小, 不透明度 and 圆角大小 travel through the shared document like the font settings beside them, the sliders write them, and the preview draws them; 字体预设 writes the family and the front of the fallback list in one change.
-static void TestCandidateWindowStyle(MSIMEAppearancePreferences *preferences, NSUserDefaults *defaults) {
+static void TestCandidateWindowStyle(LINGYAOAppearancePreferences *preferences, NSUserDefaults *defaults) {
     NSView *root = preferences.window.contentView;
-    MSIMECandidatePreviewView *preview = (id)MSIMEFindPreferenceViewOfClass(root, MSIMECandidatePreviewView.class);
+    LINGYAOCandidatePreviewView *preview = (id)LINGYAOFindPreferenceViewOfClass(root, LINGYAOCandidatePreviewView.class);
     NSSlider *scale = (id)FindControl(root, @"整体大小");
     NSSlider *opacity = (id)FindControl(root, @"不透明度");
     NSSlider *radius = (id)FindControl(root, @"圆角大小");
@@ -258,19 +258,19 @@ static void TestCandidateWindowStyle(MSIMEAppearancePreferences *preferences, NS
     radius.integerValue = 12;
     [NSApp sendAction:radius.action to:radius.target from:radius];
     assert(preferences.candidateScalePercent == 125 && preferences.candidateOpacityPercent == 80 && [preferences.candidateCornerRadius isEqual:@12]);
-    MSIMEAppearancePreferences *reloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+    LINGYAOAppearancePreferences *reloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
     assert(reloaded.candidateScalePercent == 125 && reloaded.candidateOpacityPercent == 80 && [reloaded.candidateCornerRadius isEqual:@12]);
     // A fresh process whose first document has these at their defaults (reset on another surface) draws the defaults rather than the stale stored values, and publishes them as such.
     [reloaded applySharedCandidatePreferences:@{}];
     assert(reloaded.candidateScalePercent == 100 && reloaded.candidateOpacityPercent == 100 && reloaded.candidateCornerRadius == nil);
     NSDictionary *fresh = [reloaded sharedPreferencesByMerging:@{}];
     assert([fresh[@"candidate_scale_percent"] isEqual:@100] && fresh[@"candidate_corner_radius"] == NSNull.null);
-    NSDictionary *document = MSIMEMergePreferenceSnapshot(@{@"candidate_corner_radius": @3, @"unrelated": @7}, [preferences sharedPreferencesByMerging:@{}]);
+    NSDictionary *document = LINGYAOMergePreferenceSnapshot(@{@"candidate_corner_radius": @3, @"unrelated": @7}, [preferences sharedPreferencesByMerging:@{}]);
     assert([document[@"candidate_scale_percent"] isEqual:@125] && [document[@"candidate_opacity_percent"] isEqual:@80]);
     assert([document[@"candidate_corner_radius"] isEqual:@12] && [document[@"unrelated"] isEqual:@7]);
     [NSApp sendAction:followSkin.action to:followSkin.target from:followSkin];
     assert(preferences.candidateCornerRadius == nil);
-    document = MSIMEMergePreferenceSnapshot(document, [preferences sharedPreferencesByMerging:@{}]);
+    document = LINGYAOMergePreferenceSnapshot(document, [preferences sharedPreferencesByMerging:@{}]);
     assert(document[@"candidate_corner_radius"] == NSNull.null);
     [preferences applySharedCandidatePreferences:document];
     assert(preferences.candidateCornerRadius == nil && preferences.candidateScalePercent == 125);
@@ -312,7 +312,7 @@ static void TestCandidateWindowStyle(MSIMEAppearancePreferences *preferences, NS
     assert(std::abs(preview.previewContentHeight - baseHeight) < .01);
 }
 
-static void TestCandidateSurfaceTheme(MSIMEAppearancePreferences *preferences) {
+static void TestCandidateSurfaceTheme(LINGYAOAppearancePreferences *preferences) {
     NSArray *names = @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua];
     [preferences applySharedCandidatePreferences:@{@"theme": @"light", @"candidate_theme": @"dark"}];
     NSString *match = [preferences.candidateAppearanceOverride bestMatchFromAppearancesWithNames:names];
@@ -337,11 +337,11 @@ static void TestCandidateSurfaceTheme(MSIMEAppearancePreferences *preferences) {
 }
 
 // The toolbar preview paints the divider in the candidate outline, as the panel does, so a theme change reaches it. The logo beside it is the brand mark and keeps its own colours.
-static void TestToolbarPreviewChrome(MSIMEAppearancePreferences *preferences) {
+static void TestToolbarPreviewChrome(LINGYAOAppearancePreferences *preferences) {
     NSString *globalTheme = preferences.globalTheme;
     for (NSString *skin in @[@"lingyao", @"paper"]) {
         preferences.globalTheme = skin;
-        MSIMEToolbarPreviewView *toolbar = [[MSIMEToolbarPreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 100)];
+        LINGYAOToolbarPreviewView *toolbar = [[LINGYAOToolbarPreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 100)];
         toolbar.preferences = preferences;
         toolbar.frame = NSMakeRect(0, 0, 580, toolbar.fittingSize.height);
         assert(NSHeight(toolbar.frame) > 48.0);
@@ -349,7 +349,7 @@ static void TestToolbarPreviewChrome(MSIMEAppearancePreferences *preferences) {
         [toolbar cacheDisplayInRect:toolbar.bounds toBitmapImageRep:bitmap];
         const CGFloat pixels = bitmap.pixelsWide / NSWidth(toolbar.bounds);
         const CGFloat scale = preferences.floatingToolbarScalePercent / 100.0;
-        const msime::mac::SkinTokens tokens = [preferences toolbarSkinForDark:toolbar.previewUsesDark];
+        const lingyao::mac::SkinTokens tokens = [preferences toolbarSkinForDark:toolbar.previewUsesDark];
         assert(tokens.border.a > .01f);
         // The divider is a 1.2pt bar 41pt into the toolbar, which sits at the canvas's 14pt inset and is centred vertically between 34pt down and 14pt above the bottom. Sampled mid-bar, it is the outline laid over the toolbar surface just left of it.
         const CGFloat y = (34.0 + NSHeight(toolbar.bounds) - 14.0) / 2.0;
@@ -363,16 +363,16 @@ static void TestToolbarPreviewChrome(MSIMEAppearancePreferences *preferences) {
     preferences.globalTheme = globalTheme;
 }
 
-// InputController saves by merging -sharedPreferencesByMerging:@{} over the document on disk with MSIMEMergePreferenceSnapshot and then reloads that document, so a clear has to survive the merge: a key the overrides leave out keeps the old value, and the reload then brings it back over the native setting.
+// InputController saves by merging -sharedPreferencesByMerging:@{} over the document on disk with LINGYAOMergePreferenceSnapshot and then reloads that document, so a clear has to survive the merge: a key the overrides leave out keeps the old value, and the reload then brings it back over the native setting.
 static void TestCustomThemeClearsSurviveSave() {
-    NSString *suite = [@"app.msime.test.preview.clears." stringByAppendingString:NSUUID.UUID.UUIDString];
+    NSString *suite = [@"app.lingyao.test.preview.clears." stringByAppendingString:NSUUID.UUID.UUIDString];
     NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-    MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+    LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
     __block NSDictionary *document = @{@"global_theme": @"custom", @"unrelated": @7,
         @"custom_theme": @{@"base": @"night", @"candidate_skin": @"wide-card", @"keyboard": @{@"background": @1},
                            @"candidate_colors": @{@"text": @"#112233", @"accent": @"#445566"}}};
     void (^save)(void) = ^{
-        document = MSIMEMergePreferenceSnapshot(document, [preferences sharedPreferencesByMerging:@{}]);
+        document = LINGYAOMergePreferenceSnapshot(document, [preferences sharedPreferencesByMerging:@{}]);
         assert(document && [NSJSONSerialization isValidJSONObject:document]);
         [preferences applySharedCandidatePreferences:document];
     };
@@ -400,18 +400,18 @@ static void TestCustomThemeClearsSurviveSave() {
     [preferences selectExternalSkin:@"wide-card" base:@"system"];
     save();
     assert([preferences.customThemeBase isEqual:@"system"] && [preferences.customCandidateSkin isEqual:@"wide-card"]);
-    MSIMERemoveTestPreferenceSuite(defaults, suite);
+    LINGYAORemoveTestPreferenceSuite(defaults, suite);
 }
 
 int main(int argc, const char **argv) {
     @autoreleasepool {
         [NSApplication sharedApplication];
-        NSString *suite = [@"app.msime.test.preview." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"app.lingyao.test.preview." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        char temporary[] = "/tmp/msime-preview-test-XXXXXX";
+        char temporary[] = "/tmp/lingyao-preview-test-XXXXXX";
         assert(mkdtemp(temporary));
         const std::filesystem::path root(temporary);
-        MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
+        LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
         TestCandidateSurfaceTheme(preferences);
         TestToolbarPreviewChrome(preferences);
         TestCustomThemeClearsSurviveSave();
@@ -430,14 +430,14 @@ int main(int argc, const char **argv) {
         NSDictionary *merged = [preferences sharedPreferencesByMerging:input];
         assert([merged[@"shuangpin_preedit_uses_raw"] isEqual:@NO]);
         assert([merged[@"synthetic_unowned"] isEqual:@42]);
-        assert(![[[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot] shuangpinPreeditUsesRaw]);
+        assert(![[[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot] shuangpinPreeditUsesRaw]);
         preferences.shuangpinPreeditUsesRaw = YES;
         NSWindow *window = preferences.window;
-        MSIMECandidatePreviewView *preview =
-            (id)MSIMEFindPreferenceViewOfClass(window.contentView, MSIMECandidatePreviewView.class);
-        NSButton *theme = (id)MSIMEFindPreferenceControl(window.contentView, NSSelectorFromString(@"togglePreviewTheme:"));
-        NSButton *showcase = (id)MSIMEFindPreferenceControl(window.contentView, NSSelectorFromString(@"togglePreviewShowcase:"));
-        assert([preview isKindOfClass:MSIMECandidatePreviewView.class] && theme && showcase);
+        LINGYAOCandidatePreviewView *preview =
+            (id)LINGYAOFindPreferenceViewOfClass(window.contentView, LINGYAOCandidatePreviewView.class);
+        NSButton *theme = (id)LINGYAOFindPreferenceControl(window.contentView, NSSelectorFromString(@"togglePreviewTheme:"));
+        NSButton *showcase = (id)LINGYAOFindPreferenceControl(window.contentView, NSSelectorFromString(@"togglePreviewShowcase:"));
+        assert([preview isKindOfClass:LINGYAOCandidatePreviewView.class] && theme && showcase);
         // The preview sits on the appearance page, which scrolls because this host carries more
         // settings than fit the window.
         NSScrollView *appearanceScroll = preview.enclosingScrollView;
@@ -446,7 +446,7 @@ int main(int argc, const char **argv) {
         assert(!appearanceScroll.hasAmbiguousLayout && !preview.hasAmbiguousLayout && !appearancePage.hasAmbiguousLayout);
         assert(preview.frame.size.width > 500);
         assert(appearancePage.frame.size.height > appearanceScroll.contentView.bounds.size.height);
-        NSPopUpButton *preedit = (id)MSIMEFindPreferenceControl(window.contentView, NSSelectorFromString(@"preeditChanged:"));
+        NSPopUpButton *preedit = (id)LINGYAOFindPreferenceControl(window.contentView, NSSelectorFromString(@"preeditChanged:"));
         assert(preedit);
         assert(preedit.indexOfSelectedItem == 1);
         [preedit selectItemAtIndex:0];
@@ -458,7 +458,7 @@ int main(int argc, const char **argv) {
         assert(preferences.shuangpinPreeditUsesRaw);
         assert([preview.accessibilityLabel isEqual:@"候选窗口预览"]);
         __block NSUInteger notifications = 0;
-        id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
+        id observer = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
         for (NSString *skin in @[@"system", @"lingyao", @"light", @"paper", @"night", @"ink", @"custom"]) {
             preferences.globalTheme = skin;
             // The five built-in themes fix their mode; only 跟随系统 and 自定义 have another one to preview.
@@ -500,21 +500,21 @@ int main(int argc, const char **argv) {
         NSComboBox *familyControl = (id)FindControl(window.contentView, @"候选字体");
         assert(familyControl && familyControl.numberOfItems > 0);
         NSUInteger familyNotifications = notifications;
-        [preferences applySharedCandidatePreferences:@{@"candidate_font_family": @"MSIME Synthetic Unavailable Family"}];
+        [preferences applySharedCandidatePreferences:@{@"candidate_font_family": @"LINGYAO Synthetic Unavailable Family"}];
         assert(notifications == familyNotifications);
-        assert([familyControl.stringValue isEqual:@"MSIME Synthetic Unavailable Family"]);
+        assert([familyControl.stringValue isEqual:@"LINGYAO Synthetic Unavailable Family"]);
         assert([[preferences candidateFontOfSize:18].fontName isEqual:[NSFont systemFontOfSize:18].fontName]);
         assert([[preferences sharedPreferencesByMerging:@{}][@"candidate_font_family"] isEqual:familyControl.stringValue]);
         for (id invalid in @[@"", @YES, NSNull.null, [@"字" stringByPaddingToLength:43 withString:@"字" startingAtIndex:0]]) {
             [preferences applySharedCandidatePreferences:@{@"candidate_font_family": invalid}];
-            assert([preferences.fontFamily isEqual:@"MSIME Synthetic Unavailable Family"]);
+            assert([preferences.fontFamily isEqual:@"LINGYAO Synthetic Unavailable Family"]);
         }
         NSString *installedFamily = [NSFont fontWithName:@"Menlo" size:18].familyName;
         assert(installedFamily);
         familyControl.stringValue = installedFamily;
         [NSApp sendAction:familyControl.action to:familyControl.target from:familyControl];
         assert([[preferences candidateFontOfSize:18].familyName isEqual:installedFamily]);
-        MSIMEAppearancePreferences *familyReloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        LINGYAOAppearancePreferences *familyReloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert([familyReloaded.fontFamily isEqual:installedFamily]);
         NSDictionary *familyMerge = [preferences sharedPreferencesByMerging:@{@"candidate_fallback_fonts": @[@"Synthetic Supplementary"], @"synthetic_unowned": @42}];
         assert([familyMerge[@"candidate_font_family"] isEqual:installedFamily]);
@@ -549,12 +549,12 @@ int main(int argc, const char **argv) {
         NSDictionary *capturedNavigation = @{@"navigation": navigation};
         NSDictionary *latestNavigation = @{@"navigation": @{@"minus_equal": @NO, @"brackets": @YES,
             @"page_up_down": @NO, @"comma_period": @NO, @"tab": @NO, @"arrows": @NO}};
-        NSDictionary *retryNavigation = MSIMEMergePreferenceSnapshot(latestNavigation, capturedNavigation)[@"navigation"];
+        NSDictionary *retryNavigation = LINGYAOMergePreferenceSnapshot(latestNavigation, capturedNavigation)[@"navigation"];
         assert(retryNavigation.count == 6 && [retryNavigation[@"tab"] isEqual:@YES]);
         assert([retryNavigation[@"comma_period"] isEqual:@NO] && [retryNavigation[@"arrows"] isEqual:@NO]);
         assert([latestNavigation[@"navigation"][@"tab"] isEqual:@NO]);
         [preferences setNavigation:@"tab" enabled:NO];
-        MSIMEAppearancePreferences *navigationReloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        LINGYAOAppearancePreferences *navigationReloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert(![navigationReloaded navigationEnabled:@"tab"]);
         [preferences setNavigation:@"tab" enabled:YES];
         [preferences applySharedCandidatePreferences:@{@"word_character": @{@"enabled": @YES, @"keys": @"brackets"}, @"navigation": @{@"brackets": @NO}}];
@@ -567,7 +567,7 @@ int main(int argc, const char **argv) {
         wordControl.state = NSControlStateValueOn;
         [NSApp sendAction:wordControl.action to:wordControl.target from:wordControl];
         assert([[preferences wordCharacterOptions][@"enabled"] boolValue]);
-        MSIMEAppearancePreferences *wordReloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        LINGYAOAppearancePreferences *wordReloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert([[wordReloaded wordCharacterOptions][@"enabled"] boolValue]);
         [wordReloaded setNavigation:@"brackets" enabled:YES];
         assert(![wordReloaded navigationEnabled:@"brackets"]);
@@ -590,7 +590,7 @@ int main(int argc, const char **argv) {
         colorWell.color = [NSColor colorWithSRGBRed:1 green:0 blue:0 alpha:1];
         [NSApp sendAction:colorWell.action to:colorWell.target from:colorWell];
         assert([preferences.candidateTextColor isEqual:@"#FF0000"]);
-        MSIMEAppearancePreferences *colorReloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        LINGYAOAppearancePreferences *colorReloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert([colorReloaded.candidateTextColor isEqual:@"#FF0000"]);
         colorField.stringValue = @"#112233";
         [NSApp sendAction:colorField.action to:colorField.target from:colorField];
@@ -609,8 +609,8 @@ int main(int argc, const char **argv) {
         NSArray *expectedColors = @[@"#102030", @"#203040", @"#304050", @"#405060", @"#506070", @"#607080", @"#708090"];
         assert([pickedColors isEqual:expectedColors]);
         {
-            const msime::mac::SkinTokens tokens = [preferences resolvedSkinForDark:NO].tokens;
-            const msime::mac::Rgba drawn[] = {tokens.text, tokens.number, tokens.accent, tokens.selected, tokens.hover, tokens.surface, tokens.border};
+            const lingyao::mac::SkinTokens tokens = [preferences resolvedSkinForDark:NO].tokens;
+            const lingyao::mac::Rgba drawn[] = {tokens.text, tokens.number, tokens.accent, tokens.selected, tokens.hover, tokens.surface, tokens.border};
             for (NSUInteger index = 0; index < expectedColors.count; ++index) assert(TokenIs(drawn[index], expectedColors[index]));
         }
         for (id invalid in @[@YES, @"red", @"#123", @"#12345678", @"#GG0000"])
@@ -624,7 +624,7 @@ int main(int argc, const char **argv) {
         preferences.candidateTextColor = @"#112233";
         [NSApp sendAction:NSSelectorFromString(@"resetTextColor:") to:preferences from:nil];
         assert([preferences sharedPreferencesByMerging:@{}][@"custom_theme"][@"candidate_colors"][@"text"] == NSNull.null);
-        colorReloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        colorReloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert(colorReloaded.candidateTextColor == nil);
         preferences.fontFamily = @"Helvetica";
         preferences.fontSize = 32;
@@ -663,7 +663,7 @@ int main(int argc, const char **argv) {
         NSDictionary *preeditMerged = [preferences sharedPreferencesByMerging:@{@"synthetic_unowned": @42}];
         assert([preeditMerged[@"candidate_preedit_font_size"] isEqual:@12]);
         assert([preeditMerged[@"candidate_preedit_style"] isEqual:@"pinyin"] && [preeditMerged[@"synthetic_unowned"] isEqual:@42]);
-        MSIMEAppearancePreferences *reloaded = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
+        LINGYAOAppearancePreferences *reloaded = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:preferences.skinsRoot];
         assert(reloaded.preeditFontSize == 12 && reloaded.showsCandidatePreedit);
         // Showcase uses compact fonts; compare the layouts at the standard size.
         preferences.fontSize = 18;
@@ -682,7 +682,7 @@ int main(int argc, const char **argv) {
         Draw(preview);
         assert([[defaults persistentDomainForName:suite] isEqual:before] && notifications == count);
         // A fresh preview follows effective appearance until its local theme is overridden.
-        MSIMECandidatePreviewView *automatic = [[MSIMECandidatePreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 190)];
+        LINGYAOCandidatePreviewView *automatic = [[LINGYAOCandidatePreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 190)];
         automatic.preferences = preferences;
         automatic.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
         assert(automatic.previewUsesDark);
@@ -745,7 +745,7 @@ surface = "#123456"
         assert(red.alphaComponent > .99 && red.redComponent > .8 &&
                red.redComponent - red.greenComponent > .5 && red.redComponent - red.blueComponent > .5);
         {
-            // The msime-skins keys: decoration.image over the preview, left alignment, the card radius, and a background drawn under the rows and clipped to the card; the toolbar keeps its own radius and colours.
+            // The lingyao-skins keys: decoration.image over the preview, left alignment, the card radius, and a background drawn under the rows and clipped to the card; the toolbar keeps its own radius and colours.
             std::ofstream manifest(root / "synthetic" / "skin.toml");
             manifest << R"toml(schema_version = 1
 id = "synthetic"
@@ -793,7 +793,7 @@ background = "#FF00FF"
         const auto styledSkin = preview.previewSkin;
         assert(styledSkin.candidateSkin == "synthetic" && styledSkin.tokens.radius == 24.0f &&
                styledSkin.decorationPath.find("mascot.png") != std::string::npos &&
-               styledSkin.decorationAlign == msime::mac::DecorationAlign::left && !styledSkin.backgroundPath.empty());
+               styledSkin.decorationAlign == lingyao::mac::DecorationAlign::left && !styledSkin.backgroundPath.empty());
         NSBitmapImageRep *styledBitmap = Draw(preview);
         const CGFloat styledScale = styledBitmap.pixelsWide / preview.bounds.size.width;
         // The 横排候选 panel starts 30pt down at the 14pt inset: the transparent decoration band, then the card at 210. The left-aligned mascot is 6pt in from the card's edge and spans y 96-216, over the card's top edge.
@@ -814,7 +814,7 @@ background = "#FF00FF"
         assert(!(clipped.blueComponent - clipped.redComponent > .5));
         const auto previewToolbar = [preferences toolbarSkinForDark:preview.previewUsesDark];
         assert(previewToolbar.radius == 6.0f && std::abs(previewToolbar.surface.r - 1.0f) < .002f && std::abs(previewToolbar.surface.g) < .002f);
-        MSIMEToolbarPreviewView *styledToolbar = [[MSIMEToolbarPreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 100)];
+        LINGYAOToolbarPreviewView *styledToolbar = [[LINGYAOToolbarPreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 100)];
         styledToolbar.preferences = preferences;
         styledToolbar.frame = NSMakeRect(0, 0, 580, styledToolbar.fittingSize.height);
         NSBitmapImageRep *toolbarBitmap = [styledToolbar bitmapImageRepForCachingDisplayInRect:styledToolbar.bounds];
@@ -835,7 +835,7 @@ background = "#FF00FF"
             assert([[Draw(preview) representationUsingType:NSBitmapImageFileTypePNG properties:@{}] writeToFile:@(argv[1]) atomically:YES]);
         }
         [NSNotificationCenter.defaultCenter removeObserver:observer];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
         std::filesystem::remove_all(root);
     }
 }

@@ -1,18 +1,18 @@
 #import "HandwritingDownloadSession.h"
 #import <objc/runtime.h>
 
-static NSString *MSIMEBackgroundContainer;
+static NSString *LINGYAOBackgroundContainer;
 
-@interface NSURLSessionConfiguration (MSIMEHandwriting)
-+ (NSURLSessionConfiguration *)msime_handwritingBackgroundWithIdentifier:(NSString *)identifier;
+@interface NSURLSessionConfiguration (LINGYAOHandwriting)
++ (NSURLSessionConfiguration *)lingyao_handwritingBackgroundWithIdentifier:(NSString *)identifier;
 @end
 
-@implementation NSURLSessionConfiguration (MSIMEHandwriting)
-+ (NSURLSessionConfiguration *)msime_handwritingBackgroundWithIdentifier:(NSString *)identifier {
+@implementation NSURLSessionConfiguration (LINGYAOHandwriting)
++ (NSURLSessionConfiguration *)lingyao_handwritingBackgroundWithIdentifier:(NSString *)identifier {
   NSURLSessionConfiguration *configuration =
-      [self msime_handwritingBackgroundWithIdentifier:identifier];
+      [self lingyao_handwritingBackgroundWithIdentifier:identifier];
   if (configuration.sharedContainerIdentifier == nil) {
-    configuration.sharedContainerIdentifier = MSIMEBackgroundContainer;
+    configuration.sharedContainerIdentifier = LINGYAOBackgroundContainer;
   }
   return configuration;
 }
@@ -31,9 +31,9 @@ static NSString *MSIMEBackgroundContainer;
         @selector(backgroundSessionConfigurationWithIdentifier:));
     Method replacement = class_getClassMethod(
         NSURLSessionConfiguration.class,
-        @selector(msime_handwritingBackgroundWithIdentifier:));
+        @selector(lingyao_handwritingBackgroundWithIdentifier:));
     if (original != NULL && replacement != NULL) {
-      MSIMEBackgroundContainer = identifier.copy;
+      LINGYAOBackgroundContainer = identifier.copy;
       method_exchangeImplementations(original, replacement);
       installed = YES;
     }

@@ -18,7 +18,7 @@ import {
   type CommunityCandidateSkin,
   type SkinCatalog,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import { useSkinCatalog } from "../../../../packages/ui/src/skin/external-skins";
 import { notifySkinCatalogChanged } from "../../../../packages/ui/src/skin/skin-catalog-changes";
 import { themeCatalog } from "../../../../packages/ui/src/theme/global-theme";

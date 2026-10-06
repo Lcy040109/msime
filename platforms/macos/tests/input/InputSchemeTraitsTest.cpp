@@ -3,11 +3,11 @@
 #include <cassert>
 #include <initializer_list>
 
-using namespace msime::mac::scheme;
+using namespace lingyao::mac::scheme;
 
 namespace
 {
-// 每个方案序号一行：视图不发布、从 crates/engine/src/types.rs 镜像过来的引擎谓词，以及宿主自己的特性。下标 10 是没有任何引擎认识的序号。第 0-4 行是有这些特性之前本宿主用的规则：智能标点手势在日文和韩文下关闭（japaneseSchemeActive、koreanSchemeActive），释义在日文下关闭、在韩文汉字行上打开（释义开关），所有只给韩文的分支（MSIMEKoreanComposition）只认方案 4。第 5-9 行按 `SchemeType` 谓词填写；藏文（8）的引擎谓词与越南文完全相同，威利转写区分大小写，所以大写锁定下的大写字母也交给引擎组字；笔画（9）照抄粤拼，与引擎的 `SchemeType` 谓词一致。
+// 每个方案序号一行：视图不发布、从 crates/engine/src/types.rs 镜像过来的引擎谓词，以及宿主自己的特性。下标 10 是没有任何引擎认识的序号。第 0-4 行是有这些特性之前本宿主用的规则：智能标点手势在日文和韩文下关闭（japaneseSchemeActive、koreanSchemeActive），释义在日文下关闭、在韩文汉字行上打开（释义开关），所有只给韩文的分支（LINGYAOKoreanComposition）只认方案 4。第 5-9 行按 `SchemeType` 谓词填写；藏文（8）的引擎谓词与越南文完全相同，威利转写区分大小写，所以大写锁定下的大写字母也交给引擎组字；笔画（9）照抄粤拼，与引擎的 `SchemeType` 谓词一致。
 struct Row
 {
     bool commitsOnBlur, locksCaret, usesChinesePunctuation, hostSmartPunctuation, widensFullWidth, showsGlosses;

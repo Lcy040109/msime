@@ -10,7 +10,7 @@ import {
   type CommunitySkinDownload,
   type CommunitySkinPage,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -190,7 +190,7 @@ test("opening a card refreshes detail without mutating preferences or the local 
 });
 
 test("mobile skin details join the WebView history stack and system back restores the list", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "community" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "community" }, "");
   const original = skin("10000000-0000-4000-8000-000000000060", "历史皮肤");
   render(
     <CommunitySkinsPage
@@ -205,7 +205,7 @@ test("mobile skin details join the WebView history stack and system back restore
   fireEvent.click(await screen.findByRole("button", { name: `查看皮肤 ${original.name}` }));
   expect(window.history.state.communityDetail).toEqual({ kind: "skin", id: original.id });
   expect(await screen.findByRole("button", { name: "返回社区" })).not.toBeNull();
-  const state = { msimeSettings: true, page: "community" };
+  const state = { lingyaoSettings: true, page: "community" };
   window.history.replaceState(state, "");
   window.dispatchEvent(new PopStateEvent("popstate", { state }));
   expect(await screen.findByRole("button", { name: `查看皮肤 ${original.name}` })).not.toBeNull();
@@ -507,7 +507,7 @@ test("a download refused for want of a sign-in offers the way there", async () =
 });
 
 test("a publish refused for want of a sign-in offers the way there", async () => {
-  // MSIME-Apple's SavedSkinPublishFlow puts the sign-in form in front of the user rather than
+  // LINGYAO-Apple's SavedSkinPublishFlow puts the sign-in form in front of the user rather than
   // telling them to go and find it. The shared dialog cannot show a form, but it can be the one tap.
   const local = { id: "30000000-0000-4000-8000-000000000003", name: "待发布", design };
   const publish = vi.fn().mockRejectedValue({ code: "community_unauthorized" });

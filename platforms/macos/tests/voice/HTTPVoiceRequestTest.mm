@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
             @"polish_endpoint": [base stringByAppendingString:@"/polish"], @"polish_model": @"fixture-model",
             @"polish_token": @"fixture-token", @"polish_prompt_id": @"custom_2",
             @"polish_prompt_custom_2": @"synthetic prompt"} mutableCopy];
-        MSIMEHTTPVoiceRequest *request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil];
+        LINGYAOHTTPVoiceRequest *request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil];
         assert(request);
         [model setString:@"changed-after-snapshot"];
         options[@"asr_token"] = @"changed-after-snapshot";
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
         assert(![request recognizePCM:pcm completion:^(NSString *, NSError *) {} error:nil]);
         options[@"asr_model"] = @"fixture-model"; options[@"asr_token"] = @"fixture-token";
         options[@"polish_endpoint"] = [base stringByAppendingString:@"/polish-failure"];
-        request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil];
+        request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil];
         done = NO;
         NSData *valid = [NSData dataWithBytes:samples length:sizeof(samples)];
         assert([request recognizePCM:valid completion:^(NSString *text, NSError *error) {
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         // is sending the transcript to the provider and binning the reply, which is what a budget the
         // service cannot meet amounts to. The reference host makes the same trade.
         options[@"polish_endpoint"] = [base stringByAppendingString:@"/polish-timeout"];
-        request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil];
+        request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil];
         done = NO;
         const NSTimeInterval started = NSProcessInfo.processInfo.systemUptime;
         assert([request recognizePCM:valid completion:^(NSString *text, NSError *error) {
@@ -60,21 +60,21 @@ int main(int argc, char **argv) {
         Wait(^BOOL { return done; });
         const NSTimeInterval elapsed = NSProcessInfo.processInfo.systemUptime - started;
         assert(elapsed >= 5.5);
-        // A recording past the old 60 s cut is uploaded, and one past the batch budget is sent up to it rather than refused: MSIME-Windows caps a batch upload at 20 MiB of 16-bit WAV, not at a duration.
+        // A recording past the old 60 s cut is uploaded, and one past the batch budget is sent up to it rather than refused: LINGYAO-Windows caps a batch upload at 20 MiB of 16-bit WAV, not at a duration.
         NSMutableDictionary *longOptions = [options mutableCopy];
         longOptions[@"asr_endpoint"] = [base stringByAppendingString:@"/asr-long"];
         longOptions[@"polish_enabled"] = @NO;
-        request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:longOptions error:nil];
-        assert(request.sampleLimit == msime::voice::batch_capture_sample_limit); // The host ends the recording here.
-        NSMutableData *longPCM = [NSMutableData dataWithLength:(msime::voice::batch_capture_sample_limit + 16000) * sizeof(float)];
+        request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:longOptions error:nil];
+        assert(request.sampleLimit == lingyao::voice::batch_capture_sample_limit); // The host ends the recording here.
+        NSMutableData *longPCM = [NSMutableData dataWithLength:(lingyao::voice::batch_capture_sample_limit + 16000) * sizeof(float)];
         __block NSString *longText = nil;
         assert([request recognizePCM:longPCM completion:^(NSString *text, NSError *error) {
             assert(!error); longText = text;
         } error:nil]);
         Wait(^BOOL { return longText != nil; });
-        NSString *longExpected = [NSString stringWithFormat:@"synthetic long %zu", msime::voice::batch_capture_sample_limit];
+        NSString *longExpected = [NSString stringWithFormat:@"synthetic long %zu", lingyao::voice::batch_capture_sample_limit];
         assert([longText isEqual:longExpected]);
-        // A rejected request shows the provider's own message, as MSIME-Windows does, and a SiliconFlow 5xx its trace id; the generic description stays for anything that reads only that.
+        // A rejected request shows the provider's own message, as LINGYAO-Windows does, and a SiliconFlow 5xx its trace id; the generic description stays for anything that reads only that.
         NSMutableDictionary *deniedOptions = [longOptions mutableCopy];
         deniedOptions[@"asr_endpoint"] = [base stringByAppendingString:@"/asr-denied"];
         NSMutableDictionary *traceOptions = [longOptions mutableCopy];
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
         for (NSArray *expectation in @[
             @[deniedOptions, @"语音识别失败：Incorrect synthetic key"],
             @[traceOptions, @"语音识别失败：HTTP 500。这是硅基流动服务端内部错误，模型名 fixture-model 本身是官方支持的。 追踪 ID：synthetic-trace。"]]) {
-            request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:expectation[0] error:nil];
+            request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:expectation[0] error:nil];
             __block NSError *rejection = nil;
             assert([request recognizePCM:valid completion:^(NSString *text, NSError *error) {
                 assert(!text && error); rejection = error;
@@ -93,16 +93,16 @@ int main(int argc, char **argv) {
             assert([rejection.localizedDescription isEqual:@"语音请求失败，请检查识别服务设置"]);
             assert(![rejection.userInfo.description containsString:@"fixture-token"]);
         }
-        request = [[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil];
+        request = [[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil];
         [request cancel];
         assert(![request recognizePCM:valid completion:^(NSString *, NSError *) { assert(false); } error:nil]);
         options[@"asr_endpoint"] = @"http://example.invalid/asr";
-        assert(![[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
+        assert(![[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
         options[@"asr_endpoint"] = [base stringByAppendingString:@"/asr"];
         options[@"asr_token"] = @"invalid\nheader";
-        assert(![[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
+        assert(![[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
         options[@"asr_token"] = @"fixture-token"; options[@"asr_provider"] = @"doubao";
-        assert(![[MSIMEHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
+        assert(![[LINGYAOHTTPVoiceRequest alloc] initWithOptions:options error:nil]);
 
         // The on-device provider is never a batch request: an installed model streams through the helper, and a stale Whisper model file from before the model catalog must be refused here rather than recognised somewhere else.
         NSMutableDictionary *local = [@{@"asr_provider": @"local", @"language": @"zh-cn"} mutableCopy];
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         for (NSString *rejected in @[@"", @"ggml-model.bin", directory, file,
                                      [directory stringByAppendingPathComponent:@"absent.bin"]]) {
             local[@"asr_model_path"] = rejected;
-            assert(![[MSIMEHTTPVoiceRequest alloc] initWithOptions:local error:nil]);
+            assert(![[LINGYAOHTTPVoiceRequest alloc] initWithOptions:local error:nil]);
         }
         assert([NSFileManager.defaultManager removeItemAtPath:directory error:nil]);
     }

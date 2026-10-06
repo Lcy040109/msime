@@ -2,7 +2,7 @@
 #include "InputSchemeTraits.h"
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // A toolbar button's icon, as the shipped presenter defines it.
 //
 // Every icon carries a text fallback on purpose. "Segoe Fluent Icons" ships
@@ -114,4 +114,4 @@ inline ToolbarIcon toolbar_icon(int button, std::optional<bool> state,
     return unknown;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

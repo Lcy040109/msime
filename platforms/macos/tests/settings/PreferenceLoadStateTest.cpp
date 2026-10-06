@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-    MSIMEPreferenceLoadState state;
+    LINGYAOPreferenceLoadState state;
     state.reset();
     const auto first = state.generation;
     assert(state.begin());
@@ -23,7 +23,7 @@ int main() {
     // Which reads are worth applying at all. The controller polls the preferences document once a
     // second, so most reads find exactly what was applied a second ago; applying that again walks
     // every preference and goes back into the Engine for nothing.
-    MSIMEPreferenceLoadState revisions;
+    LINGYAOPreferenceLoadState revisions;
     // Nothing applied yet: every revision is new.
     assert(revisions.needsApply(7));
     revisions.applied(7);

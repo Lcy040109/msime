@@ -116,7 +116,7 @@ static NSString *const LingyaoReleasePageURL = @"https://github.com/Lcy040109/ms
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
       NSBundle *host = NSBundle.mainBundle;
-      LingyaoUpdateRoute route = MSIMEUpdateRouteForHost(
+      LingyaoUpdateRoute route = LINGYAOUpdateRouteForHost(
           host.bundleIdentifier, host.bundlePath, [host objectForInfoDictionaryKey:@"SUFeedURL"]);
       id<LingyaoUpdateDriver> driver = nil;
       if (route == LingyaoUpdateRouteSparkle)
@@ -144,7 +144,7 @@ static NSString *const LingyaoReleasePageURL = @"https://github.com/Lcy040109/ms
                           NSAlert *alert = [NSAlert new];
                           alert.alertStyle = NSAlertStyleCritical;
                           alert.messageText = @"无法打开发布页";
-                          alert.informativeText = @"请稍后重试，或在浏览器中访问 github.com/Lcy040109/msime/releases。";
+                          alert.informativeText = @"请稍后重试，或在浏览器中访问 github.com/Lcy040109/lingyao/releases。";
                           [alert runModal];
                         }];
       }

@@ -22,10 +22,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>app.msime.ios</string>
+			<string>app.lingyao.ios</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>msime</string>
+				<string>lingyao</string>
 			</array>
 		</dict>
 	</array>

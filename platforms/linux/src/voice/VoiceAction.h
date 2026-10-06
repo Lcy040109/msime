@@ -4,7 +4,7 @@
 #include <string_view>
 #include <utility>
 
-inline bool msime_voice_overlay_light_theme(std::string_view surface_theme,
+inline bool lingyao_voice_overlay_light_theme(std::string_view surface_theme,
                                             std::string_view global_theme,
                                             bool system_dark) {
   if (surface_theme == "light")
@@ -19,14 +19,14 @@ inline bool msime_voice_overlay_light_theme(std::string_view surface_theme,
 }
 
 // The streaming providers, whose partial transcripts can stand in the composition while the user speaks: Doubao in the cloud and on-device recognition, whose helper reports the transcript so far as it decodes.
-inline bool msime_voice_stream_inline_enabled(bool configured,
+inline bool lingyao_voice_stream_inline_enabled(bool configured,
                                               std::string_view provider,
                                               std::string_view commit_mode = "tsf") {
   return configured && (provider == "doubao" || provider == "local") &&
          (commit_mode.empty() || commit_mode == "tsf");
 }
 
-inline std::string msime_voice_bound_result(std::string value,
+inline std::string lingyao_voice_bound_result(std::string value,
                                             std::size_t limit = 4096) {
   if (value.size() <= limit)
     return value;
@@ -51,18 +51,18 @@ inline std::string msime_voice_bound_result(std::string value,
 // A streaming provider may have shown useful text before its final response
 // is lost. Keep that text available for the host's final commit path; the
 // final response always wins, while inline-preedit text is the last resort.
-inline std::string msime_voice_result_or_transcript(std::string result,
+inline std::string lingyao_voice_result_or_transcript(std::string result,
                                                     std::string transcript,
                                                     std::string preedit) {
   if (!result.empty())
-    return msime_voice_bound_result(std::move(result));
+    return lingyao_voice_bound_result(std::move(result));
   if (!transcript.empty())
-    return msime_voice_bound_result(std::move(transcript));
-  return msime_voice_bound_result(std::move(preedit));
+    return lingyao_voice_bound_result(std::move(transcript));
+  return lingyao_voice_bound_result(std::move(preedit));
 }
 
 // The notice a host shows when the voice provider ended a recording without text. `error` is the stream call's envelope error (empty when the provider just gave no result): a named missing dependency gets a fixed notice saying what to install, since recording again cannot succeed without it; anything else gets the generic provider notice. Provider text never reaches the user.
-inline const char *msime_voice_provider_failure_notice(std::string_view error) {
+inline const char *lingyao_voice_provider_failure_notice(std::string_view error) {
   if (error == "voice_dependency_missing:websockets")
     return "豆包语音需要 websockets 15 或更高版本，请安装 python3-websockets";
   if (error == "voice_dependency_missing:recorder")
@@ -74,9 +74,9 @@ inline const char *msime_voice_provider_failure_notice(std::string_view error) {
 
 // Platform adapter contract: implementations run capture/provider work off
 // the IBus thread and deliver only bounded UTF-8 results back to the host.
-struct MsimeVoiceAction {
+struct LingyaoVoiceAction {
   using Submit = std::function<void(std::string)>;
-  virtual ~MsimeVoiceAction() = default;
+  virtual ~LingyaoVoiceAction() = default;
   virtual bool start(Submit result) = 0;
   virtual void cancel() = 0;
 };

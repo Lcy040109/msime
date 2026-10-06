@@ -5,7 +5,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "platforms/android/java/app/msime/android/core/MSIMEInputService.java"
+SOURCE = ROOT / "platforms/android/java/app/lingyao/android/core/LINGYAOInputService.java"
 
 
 def main() -> int:

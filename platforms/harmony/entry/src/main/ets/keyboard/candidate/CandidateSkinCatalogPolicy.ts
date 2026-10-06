@@ -22,7 +22,7 @@ export interface CandidateSkinBackgroundEntry {
   readonly opacity: number;
 }
 
-/** The fields of a `msime_client_skin_catalog` entry this host still reads. The colours are read through the resolved theme instead. */
+/** The fields of a `lingyao_client_skin_catalog` entry this host still reads. The colours are read through the resolved theme instead. */
 export interface CandidateSkinPackage {
   readonly id: string;
   readonly base: string;

@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The X11 queries behind WaveOverlayPlacement.h, shared by every override-redirect overlay (the voice bar and the mode badge) so they land on the same monitor, work area and scale.
 namespace x11_placement {
@@ -250,4 +250,4 @@ inline WaveOverlayMonitor x11_overlay_monitor(Display *display,
   return target;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

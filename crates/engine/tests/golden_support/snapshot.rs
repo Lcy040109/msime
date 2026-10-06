@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use msime_engine::{KeyResult, Session, SessionSnapshot, WordItem};
+use lingyao_engine::{KeyResult, Session, SessionSnapshot, WordItem};
 use rusqlite::types::ValueRef;
 use rusqlite::{Connection, OpenFlags};
 use serde_json::{json, Map, Value};
@@ -137,7 +137,7 @@ fn candidate_json(item: &WordItem, view: &SessionSnapshot, index: usize) -> Valu
 
 /// Every journal table, every column but `updated_at` and `created_at`, ordered by all columns; flushes personal learning first.
 pub fn dump_journal(journal: &Path) -> Value {
-    msime_engine::flush_personal_learning();
+    lingyao_engine::flush_personal_learning();
     journal_tables(journal)
 }
 
@@ -301,7 +301,7 @@ mod tests {
     #[test]
     fn journal_tables_skip_timestamps_and_empty_tables_and_order_by_every_column() {
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("msime_user.db");
+        let path = dir.path().join("lingyao_user.db");
         assert_eq!(journal_tables(&path), json!({}));
         let connection = Connection::open(&path).unwrap();
         connection

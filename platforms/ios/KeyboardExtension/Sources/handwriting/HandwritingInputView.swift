@@ -24,7 +24,7 @@ final class HandwritingRecognizer {
   func download(onProgress: (Double) -> Void) async throws {
     if isReady { return }
     guard HandwritingDownloadSession.configureSharedContainer(InputSchemePreference.appGroupIdentifier) else {
-      throw NSError(domain: "MSIMEHandwriting", code: 4,
+      throw NSError(domain: "LINGYAOHandwriting", code: 4,
         userInfo: [NSLocalizedDescriptionKey: "无法访问手写模型共享目录，请检查完全访问权限"])
     }
     let failure = HandwritingDownloadFailure()
@@ -34,7 +34,7 @@ final class HandwritingRecognizer {
       guard let remote = notification.userInfo?[ModelDownloadUserInfoKey.remoteModel.rawValue] as? DigitalInkRecognitionModel,
         remote.modelIdentifier.languageTag == languageTag else { return }
       failure.record(notification.userInfo?[ModelDownloadUserInfoKey.error.rawValue] as? Error
-        ?? NSError(domain: "MSIMEHandwriting", code: 3))
+        ?? NSError(domain: "LINGYAOHandwriting", code: 3))
     }
     defer { NotificationCenter.default.removeObserver(observer) }
     let progress = ModelManager.modelManager().download(model, conditions:
@@ -48,14 +48,14 @@ final class HandwritingRecognizer {
       if progress.isCancelled { throw CancellationError() }
       try await Task.sleep(nanoseconds: 300_000_000)
     }
-    throw NSError(domain: "MSIMEHandwriting", code: 2,
+    throw NSError(domain: "LINGYAOHandwriting", code: 2,
       userInfo: [NSLocalizedDescriptionKey: "模型下载未完成，请检查网络后重试"])
   }
 
   func recognize(_ strokes: [[CGPoint]], width: Double, height: Double) async throws -> [String] {
     try Task.checkCancellation()
     guard isReady else {
-      throw NSError(domain: "MSIMEHandwriting", code: 1,
+      throw NSError(domain: "LINGYAOHandwriting", code: 1,
         userInfo: [NSLocalizedDescriptionKey: "请先下载中文手写模型"])
     }
     let ink = Ink(strokes: strokes.map { Stroke(points: $0.map { StrokePoint(x: Float($0.x), y: Float($0.y)) }) })

@@ -21,7 +21,7 @@ PR_WORKFLOW = ROOT / ".github/workflows/ci-macos-package.yml"
 RELEASE_WORKFLOW = ROOT / ".github/workflows/release-macos.yml"
 INPUTS = (RESOURCES_RS, DESKTOP_LOCK, LANGUAGE_LOCK, HANDWRITING_LOCK, PACKAGE, TAURI_MACOS, PR_WORKFLOW, RELEASE_WORKFLOW)
 
-EXPECTED_ON_DEMAND = ["msime-japanese.dat", "msime-mozc_dictionary_oss_README.txt", "msime-mozc_LICENSE.txt"]
+EXPECTED_ON_DEMAND = ["lingyao-japanese.dat", "lingyao-mozc_dictionary_oss_README.txt", "lingyao-mozc_LICENSE.txt"]
 # 决定发布包内容和资源包能否下载的文件。任何一个改动都要让 ci-macos-package.yml 打一次包。
 PACKAGING_INPUTS = (
     "platforms/macos/package-release.sh",
@@ -75,13 +75,13 @@ def main() -> int:
     # 打包脚本：不再取回或拷入资源包，并在编译前确认资源包可下载。
     package = live_lines(PACKAGE)
     package_text = "\n".join(package)
-    for forbidden in ("fetch_handwriting_model.py", "fetch_language_dictionaries.py", "MSIME_REQUIRE_LANGUAGE_DICTIONARIES"):
+    for forbidden in ("fetch_handwriting_model.py", "fetch_language_dictionaries.py", "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES"):
         check(forbidden not in package_text, f"package-release.sh still uses {forbidden} on a live line")
     for line in package:
         if "language-dictionaries" in line and re.search(r"\b(ditto|cp|mv|rsync)\b", line):
             failures.append(f"package-release.sh copies language dictionaries into the package: {line.strip()}")
     check("install_resource_pack" in package_text, "package-release.sh does not check the on-demand packs with install_resource_pack")
-    check("MSIME_MACOS_OMIT_ON_DEMAND=1" in package_text, "package-release.sh does not stage with MSIME_MACOS_OMIT_ON_DEMAND=1")
+    check("LINGYAO_MACOS_OMIT_ON_DEMAND=1" in package_text, "package-release.sh does not stage with LINGYAO_MACOS_OMIT_ON_DEMAND=1")
     # 包内检查要逐个确认按需文件不在 EngineResources 里，名单多了一个文件时这里跟着要求多一行。
     for name in EXPECTED_ON_DEMAND:
         check(f'test ! -e "$resources_dir/EngineResources/{name}"' in package_text, f"package-release.sh does not check that {name} stays out of EngineResources")

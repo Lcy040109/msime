@@ -1,8 +1,8 @@
 #import "AISettingsWindow.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #import "AISettingsSnapshot.h"
 
-static BOOL MSIMEAIStrictRevision(id value, uint64_t *result) {
+static BOOL LINGYAOAIStrictRevision(id value, uint64_t *result) {
     if (![value isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() || CFNumberIsFloatType((__bridge CFNumberRef)value)) return NO;
     NSNumber *number = (NSNumber *)value;
     if ([number compare:@0] == NSOrderedAscending) return NO;
@@ -24,24 +24,24 @@ static BOOL SafeAIEndpoint(NSString *value) {
 
 /// Saves `edits` (a subset of the AI keys) over `snapshot`; when another writer saved first, they are merged onto its revision and written once more so its other changes survive.
 static NSDictionary *SaveAIEdits(NSString *directory, NSDictionary *snapshot, NSDictionary *edits) {
-    NSMutableDictionary *next = [snapshot mutableCopy]; next[@"preferences"] = MSIMEAISettingsMerge(snapshot[@"preferences"], edits);
+    NSMutableDictionary *next = [snapshot mutableCopy]; next[@"preferences"] = LINGYAOAISettingsMerge(snapshot[@"preferences"], edits);
     uint64_t revision = 0;
-    if (!MSIMEAIStrictRevision(snapshot[@"revision"], &revision)) return nil;
-    NSDictionary *saved = [MSIMEClientSession savePreferencesInDirectory:directory expectedRevision:revision snapshot:next error:nil];
+    if (!LINGYAOAIStrictRevision(snapshot[@"revision"], &revision)) return nil;
+    NSDictionary *saved = [LINGYAOClientSession savePreferencesInDirectory:directory expectedRevision:revision snapshot:next error:nil];
     if (saved) return saved;
-    NSDictionary *latest = [MSIMEClientSession loadPreferencesInDirectory:directory error:nil];
+    NSDictionary *latest = [LINGYAOClientSession loadPreferencesInDirectory:directory error:nil];
     // The same revision means the document itself was refused, which another attempt cannot fix.
     uint64_t latestRevision = 0;
-    if (!latest || !MSIMEAIStrictRevision(latest[@"revision"], &latestRevision) || latestRevision == revision) return nil;
-    next = [latest mutableCopy]; next[@"preferences"] = MSIMEAISettingsMerge(latest[@"preferences"], edits);
-    return [MSIMEClientSession savePreferencesInDirectory:directory expectedRevision:latestRevision snapshot:next error:nil];
+    if (!latest || !LINGYAOAIStrictRevision(latest[@"revision"], &latestRevision) || latestRevision == revision) return nil;
+    next = [latest mutableCopy]; next[@"preferences"] = LINGYAOAISettingsMerge(latest[@"preferences"], edits);
+    return [LINGYAOClientSession savePreferencesInDirectory:directory expectedRevision:latestRevision snapshot:next error:nil];
 }
 
-@interface MSIMEAISettingsWindow () <NSWindowDelegate, NSTextFieldDelegate>
+@interface LINGYAOAISettingsWindow () <NSWindowDelegate, NSTextFieldDelegate>
 @end
 
 // Saves as each control is set, like the voice settings window: the checkbox and provider at once, a field when it loses focus, and any edit still in progress when the window closes. There is no 保存 or 重新加载 button; the window reads the stored settings each time it opens.
-@implementation MSIMEAISettingsWindow {
+@implementation LINGYAOAISettingsWindow {
     NSString *_directory;
     void (^_saved)(NSDictionary *);
     NSDictionary *_snapshot;
@@ -71,7 +71,7 @@ static NSDictionary *SaveAIEdits(NSString *directory, NSDictionary *snapshot, NS
     NSStackView *stack = [NSStackView stackViewWithViews:@[grid, _status]]; stack.orientation = NSUserInterfaceLayoutOrientationVertical; stack.spacing = 16; stack.translatesAutoresizingMaskIntoConstraints = NO; [window.contentView addSubview:stack]; [NSLayoutConstraint activateConstraints:@[[stack.leadingAnchor constraintEqualToAnchor:window.contentView.leadingAnchor constant:20], [stack.trailingAnchor constraintEqualToAnchor:window.contentView.trailingAnchor constant:-20], [stack.topAnchor constraintEqualToAnchor:window.contentView.topAnchor constant:20]]]; [window center];
 }
 - (void)showWindow:(id)sender { if (!self.window) [self loadWindow]; [super showWindow:sender]; [self reload:nil]; }
-- (void)reload:(id)sender { (void)sender; if (!_directory.isAbsolutePath) { _status.stringValue = @"请先激活输入法。"; return; } _snapshot = [MSIMEClientSession loadPreferencesInDirectory:_directory error:nil]; NSDictionary *ai = _snapshot[@"preferences"][@"ai_assistant"]; _enabled.state = [ai[@"enabled"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff; NSArray *providers = @[@"deepseek", @"openai", @"siliconflow", @"groq"]; NSUInteger index = [providers indexOfObject:ai[@"provider"]]; [_provider selectItemAtIndex:index == NSNotFound ? 0 : index]; _model.stringValue = ai[@"model"] ?: @""; _endpoint.stringValue = ai[@"endpoint"] ?: @""; _limit.stringValue = [ai[@"candidate_limit"] stringValue] ?: @"3"; for (NSUInteger i = 0; i < 3; ++i) _prompts[i].stringValue = ai[[NSString stringWithFormat:@"prompt_custom_%lu", (unsigned long)i + 1]] ?: @""; _committed = _snapshot ? [self form] : nil; _status.stringValue = _snapshot ? @"修改会自动保存。" : @"加载失败。"; }
+- (void)reload:(id)sender { (void)sender; if (!_directory.isAbsolutePath) { _status.stringValue = @"请先激活输入法。"; return; } _snapshot = [LINGYAOClientSession loadPreferencesInDirectory:_directory error:nil]; NSDictionary *ai = _snapshot[@"preferences"][@"ai_assistant"]; _enabled.state = [ai[@"enabled"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff; NSArray *providers = @[@"deepseek", @"openai", @"siliconflow", @"groq"]; NSUInteger index = [providers indexOfObject:ai[@"provider"]]; [_provider selectItemAtIndex:index == NSNotFound ? 0 : index]; _model.stringValue = ai[@"model"] ?: @""; _endpoint.stringValue = ai[@"endpoint"] ?: @""; _limit.stringValue = [ai[@"candidate_limit"] stringValue] ?: @"3"; for (NSUInteger i = 0; i < 3; ++i) _prompts[i].stringValue = ai[[NSString stringWithFormat:@"prompt_custom_%lu", (unsigned long)i + 1]] ?: @""; _committed = _snapshot ? [self form] : nil; _status.stringValue = _snapshot ? @"修改会自动保存。" : @"加载失败。"; }
 /// The AI keys as the controls now read.
 - (NSDictionary *)form { NSArray *providers = @[@"deepseek", @"openai", @"siliconflow", @"groq"]; return @{ @"enabled": @(_enabled.state == NSControlStateValueOn), @"provider": providers[_provider.indexOfSelectedItem], @"model": _model.stringValue, @"endpoint": _endpoint.stringValue, @"candidate_limit": @(_limit.integerValue), @"prompt_custom_1": _prompts[0].stringValue, @"prompt_custom_2": _prompts[1].stringValue, @"prompt_custom_3": _prompts[2].stringValue }; }
 /// Writes the keys that changed since the last save; an invalid value is reported and nothing is written until it is corrected.

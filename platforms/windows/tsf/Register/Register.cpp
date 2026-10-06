@@ -15,7 +15,7 @@ static const WCHAR RegInfo_Key_InProSvr32[] = L"InProcServer32";
 static const WCHAR RegInfo_Key_ThreadModel[] = L"ThreadingModel";
 
 // 系统输入法列表里显示的文本服务名，按版本取（版本表 platforms.windows.text_service_description）；full 是「Lingyao 灵耀输入法」。
-static const WCHAR TEXTSERVICE_DESC[] = MSIME_EDITION_TEXT_SERVICE_DESCRIPTION;
+static const WCHAR TEXTSERVICE_DESC[] = LINGYAO_EDITION_TEXT_SERVICE_DESCRIPTION;
 
 static const GUID SupportCategories[] = {
     GUID_TFCAT_TIP_KEYBOARD,

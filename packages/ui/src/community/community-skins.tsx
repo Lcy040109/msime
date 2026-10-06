@@ -1,4 +1,4 @@
-// Source: MSIME-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
+// Source: LINGYAO-Apple@9ca823ab40018ced3cb71812503dbc3b94615ac0
 // (`SkinCommunityView.swift`, `CommunityGalleryStyle.swift`).
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { pushMobileSettingsState } from "../settings/mobile-navigation";

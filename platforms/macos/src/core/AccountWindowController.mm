@@ -5,12 +5,12 @@
 #import "../settings/PreferencesWindowController.h"
 #import "WindowPresentation.h"
 
-@implementation MSIMEAccountWindowController {
+@implementation LINGYAOAccountWindowController {
     NSString *_accountID;
 }
 
 + (instancetype)sharedController {
-    static MSIMEAccountWindowController *controller;
+    static LINGYAOAccountWindowController *controller;
     static dispatch_once_t once;
     dispatch_once(&once, ^{ controller = [[self alloc] initWithWindow:nil]; });
     return controller;
@@ -24,7 +24,7 @@
                                                      backing:NSBackingStoreBuffered defer:NO];
         self.window.title = @"灵耀账号";
     }
-    NSString *token = [[MSIMEAccountSessionManager sharedManager] accessTokenForAccountID:accountID];
+    NSString *token = [[LINGYAOAccountSessionManager sharedManager] accessTokenForAccountID:accountID];
     NSTextField *label = [[NSTextField alloc] initWithFrame:NSMakeRect(24, 90, 372, 50)];
     label.editable = NO; label.bezeled = NO; label.drawsBackground = NO;
     label.stringValue = token.length ? [NSString stringWithFormat:@"账号 %@\n已保存授权凭据。", accountID] : @"尚未找到授权凭据。";
@@ -38,12 +38,12 @@
         button.title = surfaces[index]; button.bezelStyle = NSBezelStyleRounded; button.target = self; button.action = @selector(showSurface:); button.tag = (NSInteger)index + 1; [buttons addObject:button];
     }
     NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 420, 280)]; [view addSubview:label]; [view addSubview:login]; [view addSubview:settings]; for (NSButton *button in buttons) [view addSubview:button]; self.window.contentView = view;
-    [self.window center]; [self showWindow:nil]; MSIMEPresentWindow(self.window);
+    [self.window center]; [self showWindow:nil]; LINGYAOPresentWindow(self.window);
 }
 
 - (void)showSettings:(id)sender {
     (void)sender;
-    Class bridgeClass = NSClassFromString(@"MSIMEBackendWindowBridge");
+    Class bridgeClass = NSClassFromString(@"LINGYAOBackendWindowBridge");
     id bridge = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -53,10 +53,10 @@
 #pragma clang diagnostic pop
 }
 
-- (void)login:(id)sender { (void)sender; MSIMEAuthChallenge(nil, ^(NSData *data, NSInteger status, NSError *error) { if (status < 200 || status >= 300 || error) return; NSDictionary *challenge = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil]; NSString *value = challenge[@"challenge"]; if (![value isKindOfClass:NSString.class]) return; NSAlert *alert = [[NSAlert alloc] init]; alert.messageText = @"输入登录凭据"; NSSecureTextField *field = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 260, 24)]; alert.accessoryView = field; [alert addButtonWithTitle:@"登录"]; [alert addButtonWithTitle:@"取消"]; if ([alert runModal] != NSAlertFirstButtonReturn) return; MSIMEAuthLogin(value, field.stringValue, nil, ^(NSData *result, NSInteger resultStatus, NSError *resultError) { if (resultStatus < 200 || resultStatus >= 300 || resultError) return; NSDictionary *tokens = [NSJSONSerialization JSONObjectWithData:result options:0 error:nil]; NSString *access = tokens[@"access_token"]; if ([access isKindOfClass:NSString.class]) { NSError *storeError = nil; MSIMEStoreKeychainToken(self->_accountID, access, &storeError); } }); }); }
+- (void)login:(id)sender { (void)sender; LINGYAOAuthChallenge(nil, ^(NSData *data, NSInteger status, NSError *error) { if (status < 200 || status >= 300 || error) return; NSDictionary *challenge = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil]; NSString *value = challenge[@"challenge"]; if (![value isKindOfClass:NSString.class]) return; NSAlert *alert = [[NSAlert alloc] init]; alert.messageText = @"输入登录凭据"; NSSecureTextField *field = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 260, 24)]; alert.accessoryView = field; [alert addButtonWithTitle:@"登录"]; [alert addButtonWithTitle:@"取消"]; if ([alert runModal] != NSAlertFirstButtonReturn) return; LINGYAOAuthLogin(value, field.stringValue, nil, ^(NSData *result, NSInteger resultStatus, NSError *resultError) { if (resultStatus < 200 || resultStatus >= 300 || resultError) return; NSDictionary *tokens = [NSJSONSerialization JSONObjectWithData:result options:0 error:nil]; NSString *access = tokens[@"access_token"]; if ([access isKindOfClass:NSString.class]) { NSError *storeError = nil; LINGYAOStoreKeychainToken(self->_accountID, access, &storeError); } }); }); }
 - (void)showSurface:(NSButton *)sender {
     SEL selector = sender.tag == 1 ? @selector(showDictionaryForAccountID:) : sender.tag == 2 ? @selector(showClipboardForAccountID:) : @selector(showSnapshotForAccountID:);
-    Class bridgeClass = NSClassFromString(@"MSIMEBackendWindowBridge"); id bridge = nil;
+    Class bridgeClass = NSClassFromString(@"LINGYAOBackendWindowBridge"); id bridge = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     if ([bridgeClass respondsToSelector:@selector(shared)]) bridge = [bridgeClass performSelector:@selector(shared)];

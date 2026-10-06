@@ -1,4 +1,4 @@
-import app.msime.android.MoreToolsLayout;
+import app.lingyao.android.MoreToolsLayout;
 
 public final class MoreToolsLayoutSmoke {
     public static void main(String[] args) {
@@ -32,7 +32,7 @@ public final class MoreToolsLayoutSmoke {
         check("✦".equals(MoreToolsLayout.icon("AI 回复与润色")), "merged AI tile icon");
         check("≈".equals(MoreToolsLayout.icon("模糊音")) && "繁".equals(MoreToolsLayout.icon("繁体")),
             "page one icons");
-        for (app.msime.android.FunctionPanelModel.Item item : app.msime.android.FunctionPanelModel.items())
+        for (app.lingyao.android.FunctionPanelModel.Item item : app.lingyao.android.FunctionPanelModel.items())
             check(!"⌨".equals(MoreToolsLayout.icon(item)), "every P25 tile has its own icon: " + item.label());
         check(MoreToolsLayout.CARD_HEIGHT_DP == 48 && MoreToolsLayout.HEADER_HEIGHT_DP == 44,
             "card and header dimensions");

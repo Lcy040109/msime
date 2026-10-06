@@ -1,7 +1,7 @@
 //! Bundled dictionary rows through the management request: found by code, re-weighted or deleted, journaled so the change survives replay onto a freshly installed dictionary, and exported with the learned pinyin weights.
 
-use msime_client_core::dictionary::access::DictionaryAccess;
-use msime_host_api::dictionary_request_json;
+use lingyao_client_core::dictionary::access::DictionaryAccess;
+use lingyao_host_api::dictionary_request_json;
 use serde_json::{json, Value};
 use std::path::PathBuf;
 
@@ -18,7 +18,7 @@ impl Fixture {
             std::fs::create_dir_all(root.join(name)).unwrap();
         }
         let resources = root.join("resources");
-        rusqlite::Connection::open(resources.join("msime-pinyin.db"))
+        rusqlite::Connection::open(resources.join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(
                 "CREATE TABLE tbl_1_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);\
@@ -33,7 +33,7 @@ impl Fixture {
                  INSERT INTO quick_parases VALUES('dh','电话',1);",
             )
             .unwrap();
-        rusqlite::Connection::open(resources.join("msime-english.db"))
+        rusqlite::Connection::open(resources.join("lingyao-english.db"))
             .unwrap()
             .execute_batch(
                 "CREATE TABLE english_words(word TEXT COLLATE BINARY NOT NULL,display TEXT NOT NULL,weight INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(word,display)) WITHOUT ROWID;\
@@ -56,7 +56,7 @@ impl Fixture {
 
     /// What an upgrade does: fresh copies of the packaged dictionaries, then the journal replayed onto them.
     fn install_packaged_dictionaries(&self) {
-        for name in ["msime-pinyin.db", "msime-english.db"] {
+        for name in ["lingyao-pinyin.db", "lingyao-english.db"] {
             std::fs::copy(
                 self.path("resources").join(name),
                 self.path("dictionaries").join(name),
@@ -68,10 +68,10 @@ impl Fixture {
     fn upgrade(&self) {
         self.install_packaged_dictionaries();
         let text = |path: PathBuf| path.to_str().unwrap().to_owned();
-        let (applied, _skipped, failed, error) = msime_engine::host::replay_user_dictionary(
-            &text(self.path("user").join("msime_user.db")),
-            &text(self.path("dictionaries").join("msime-pinyin.db")),
-            &text(self.path("dictionaries").join("msime-english.db")),
+        let (applied, _skipped, failed, error) = lingyao_engine::host::replay_user_dictionary(
+            &text(self.path("user").join("lingyao_user.db")),
+            &text(self.path("dictionaries").join("lingyao-pinyin.db")),
+            &text(self.path("dictionaries").join("lingyao-english.db")),
         );
         assert!(applied > 0 && failed == 0 && error.is_empty(), "{error}");
     }
@@ -85,7 +85,7 @@ impl Fixture {
                 "user_data": path("user"),
                 "cache": path("cache"),
                 "dictionaries": path("dictionaries"),
-                "preferences": msime_client_core::preferences::Preferences::default(),
+                "preferences": lingyao_client_core::preferences::Preferences::default(),
             },
             "action": action,
         });

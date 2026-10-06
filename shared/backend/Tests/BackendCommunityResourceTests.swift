@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class ResourceProtocol: URLProtocol {
   static let id = UUID(uuidString: "10000000-0000-0000-0000-000000000001")!

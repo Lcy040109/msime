@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // Temporary focus suspension must not hide the toolbar. Only a real IME
 // deactivation or fullscreen presentation removes it.
@@ -16,4 +16,4 @@ constexpr bool ShouldDeferFloatingToolbarHide(bool paint_grace_active) {
   return paint_grace_active;
 }
 
-}  // namespace msime::windows
+}  // namespace lingyao::windows

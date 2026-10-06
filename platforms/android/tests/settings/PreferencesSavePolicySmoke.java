@@ -1,4 +1,4 @@
-import app.msime.android.PreferencesSavePolicy;
+import app.lingyao.android.PreferencesSavePolicy;
 
 public final class PreferencesSavePolicySmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

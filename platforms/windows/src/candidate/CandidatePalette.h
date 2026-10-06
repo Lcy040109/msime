@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Candidate colors ported from the shipped presenter. Skin manifests carry CSS
 // strings because the settings page renders them in a WebView, so a native
 // presenter parses the same subset and keeps its own value for anything it
@@ -84,7 +84,7 @@ inline CandidateColor parse_css_color(const std::string &text,
             channel(4, 2) / 255.0f, channel(6, 2) / 255.0f};
   return fallback;
 }
-// The candidate slots of a resolved global theme (msime_client_resolve_theme). An absent slot is one the theme leaves to the platform, and keeps the native token; an unparsable one is treated the same way.
+// The candidate slots of a resolved global theme (lingyao_client_resolve_theme). An absent slot is one the theme leaves to the platform, and keeps the native token; an unparsable one is treated the same way.
 struct CandidatePaletteOverrides {
   std::optional<std::string> accent, selected, hover, surface, border, text,
       number, selected_text, selected_number, secondary;
@@ -241,4 +241,4 @@ inline CandidateColor candidate_on_accent(const CandidateColor &accent) {
                           0.0722f * linear(accent.b);
   return luminance > 0.179f ? candidate_rgb(0x000000) : candidate_rgb(0xFFFFFF);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

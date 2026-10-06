@@ -21,19 +21,19 @@
 - (void)cancel { ++self.cancellations; }
 @end
 @interface HTTPCaptureFixture : NSObject
-@property(copy) MSIMEVoiceAudioBuffer bufferHandler;
+@property(copy) LINGYAOVoiceAudioBuffer bufferHandler;
 @property NSTimeInterval capturedSeconds;
 @property(getter=isActive) BOOL active;
 @property BOOL failStart;
 @property NSUInteger cancellations;
 @property(copy) void (^failure)(NSError *);
-- (BOOL)startPCMRecording:(MSIMEVoiceAudioBuffer)handler deviceUID:(NSString *)device failure:(void (^)(NSError *))failure error:(NSError **)error;
+- (BOOL)startPCMRecording:(LINGYAOVoiceAudioBuffer)handler deviceUID:(NSString *)device failure:(void (^)(NSError *))failure error:(NSError **)error;
 - (NSData *)finishPCMRecordingWithError:(NSError **)error;
 - (BOOL)cancelWithError:(NSError **)error;
 @end
 @implementation HTTPCaptureFixture
 - (NSTimeInterval)recordedDuration { return self.capturedSeconds; }
-- (BOOL)startPCMRecording:(MSIMEVoiceAudioBuffer)handler deviceUID:(NSString *)device failure:(void (^)(NSError *))failure error:(NSError **)error {
+- (BOOL)startPCMRecording:(LINGYAOVoiceAudioBuffer)handler deviceUID:(NSString *)device failure:(void (^)(NSError *))failure error:(NSError **)error {
     (void)device; (void)error; self.bufferHandler = handler; self.failure = failure; self.active = !self.failStart; return self.active;
 }
 - (NSData *)finishPCMRecordingWithError:(NSError **)error { (void)error; return [NSMutableData dataWithLength:640]; }
@@ -57,24 +57,24 @@
     ++self.submissions; return @{@"commit": text};
 }
 @end
-@interface HTTPControllerFixture : MSIMEInputController
+@interface HTTPControllerFixture : LINGYAOInputController
 @property HTTPRequestFixture *requestFixture;
 @property NSUInteger applies;
 @property NSUInteger imkCommits;
 @property NSUInteger externalCommits;
-@property MSIMEVoiceCommitOutcome commitOutcome;
+@property LINGYAOVoiceCommitOutcome commitOutcome;
 @property(copy) NSString *commitMode;
 @property NSUInteger requestSampleLimit;
 @end
 @implementation HTTPControllerFixture
 - (void)ensureAppearance {}
-- (MSIMEHTTPVoiceRequest *)makeHTTPVoiceRequest:(NSDictionary *)options error:(NSError **)error {
+- (LINGYAOHTTPVoiceRequest *)makeHTTPVoiceRequest:(NSDictionary *)options error:(NSError **)error {
     (void)options; (void)error; self.requestFixture = [HTTPRequestFixture new];
     if (self.requestSampleLimit) self.requestFixture.sampleLimit = self.requestSampleLimit;
     return (id)self.requestFixture;
 }
 - (void)apply:(NSDictionary *)result { if (result[@"commit"]) ++self.imkCommits; ++self.applies; }
-- (MSIMEVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const MSIMEVoiceCommitRoute &)route {
+- (LINGYAOVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const LINGYAOVoiceCommitRoute &)route {
     assert([text isEqual:@"synthetic"]); self.commitMode = route.mode;
     ++self.externalCommits; return self.commitOutcome;
 }
@@ -96,7 +96,7 @@
 - (void)setInputLevel:(float)level { self.lastLevel = level; ++self.levelUpdates; }
 - (void)dismissProcessing { self.dismissed = YES; }
 - (void)setListening:(BOOL)listening { self.phase = listening ? 1 : 0; self.failure = 0; }
-- (void)showFailure:(MSIMEVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; }
+- (void)showFailure:(LINGYAOVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; }
 - (void)dismissFailure { if (self.failure) [self setListening:NO]; }
 - (void)setProcessing:(BOOL)polishing { self.phase = polishing ? 3 : 2; }
 @end
@@ -123,7 +123,7 @@ OSStatus OrderSet(AudioObjectID object, const AudioObjectPropertyAddress *addres
     return noErr;
 }
 }
-@interface HTTPOrderedCueFixture : MSIMEVoiceCueFixture
+@interface HTTPOrderedCueFixture : LINGYAOVoiceCueFixture
 @end
 @implementation HTTPOrderedCueFixture
 - (void)playStartCueThen:(void (^)(void))completion { [audioEvents addObject:@"start"]; [super playStartCueThen:completion]; }
@@ -135,33 +135,33 @@ int main() {
         HTTPControllerFixture *controller = [HTTPControllerFixture alloc];
         HTTPOverlayFixture *overlay = [HTTPOverlayFixture new];
         [controller setValue:overlay forKey:@"voiceOverlay"];
-        MSIMEVoiceCueFixture *cues = [MSIMEVoiceCueFixture new];
+        LINGYAOVoiceCueFixture *cues = [LINGYAOVoiceCueFixture new];
         [controller setValue:cues forKey:@"voiceCuePlayer"];
         NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
         NSDictionary *oldArguments = [defaults volatileDomainForName:NSArgumentDomain];
-        [defaults setVolatileDomain:@{@"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @YES, @"MSIMEClientVoiceEndSound": @YES} forName:NSArgumentDomain];
+        [defaults setVolatileDomain:@{@"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @YES, @"LINGYAOClientVoiceEndSound": @YES} forName:NSArgumentDomain];
         HTTPCaptureFixture *capture = [HTTPCaptureFixture new];
         capture.capturedSeconds = 0.25;
         HTTPHostFixture *session = [HTTPHostFixture new];
-        NSObject *client = [MSIMEVoiceClientFixture new];
+        NSObject *client = [LINGYAOVoiceClientFixture new];
         [controller setValue:capture forKey:@"voiceService"];
         [controller setValue:session forKey:@"session"];
         [controller setValue:client forKey:@"activeClient"];
         [controller setValue:@42 forKey:@"voiceGeneration"];
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         assert(cues.starts == 1 && cues.stops == 0);
-        MSIMEVoiceAudioBuffer oldMeter = capture.bufferHandler;
-        oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        LINGYAOVoiceAudioBuffer oldMeter = capture.bufferHandler;
+        oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(overlay.lastLevel > 0.5f && overlay.lastLevel < 0.7f && overlay.levelUpdates == 1);
         for (NSString *field in @[@"activeClient", @"session", @"voiceGeneration"]) {
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [MSIMEVoiceClientFixture new] forKey:field];
-            oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [LINGYAOVoiceClientFixture new] forKey:field];
+            oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
             assert(overlay.levelUpdates == 1);
             [controller setValue:original forKey:field];
         }
         [controller finishVoiceInputForDisable];
-        oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(overlay.levelUpdates == 1); // A queued meter cannot change processing presentation.
         [controller finishVoiceInputForDisable];
         assert(controller.requestFixture.submitted && !controller.requestFixture.cancellations);
@@ -179,8 +179,8 @@ int main() {
             assert([controller startHTTPVoiceInputWithOptions:@{}]);
             [controller finishHTTPVoiceInput];
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [MSIMEVoiceClientFixture new] forKey:field];
-            capture.bufferHandler(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [LINGYAOVoiceClientFixture new] forKey:field];
+            capture.bufferHandler(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
             assert(overlay.levelUpdates == 1);
             controller.requestFixture.polishingHandler();
             assert(overlay.phase == 2);
@@ -203,7 +203,7 @@ int main() {
         capture.failStart = YES;
         const auto beforeFailure = cues.starts;
         assert(![controller startHTTPVoiceInputWithOptions:@{}]);
-        assert(overlay.failure == MSIMEVoiceFailureCapture);
+        assert(overlay.failure == LINGYAOVoiceFailureCapture);
         assert(cues.starts == beforeFailure && cues.stops == beforeFailure);
         assert(controller.requestFixture.cancellations == 1);
         capture.failStart = NO;
@@ -211,7 +211,7 @@ int main() {
         void (^oldFailure)(NSError *) = capture.failure;
         oldFailure([NSError errorWithDomain:@"synthetic" code:1 userInfo:nil]);
         assert(!capture.active && controller.requestFixture.cancellations == 1 && !controller.requestFixture.submitted);
-        assert(overlay.failure == MSIMEVoiceFailureCapture);
+        assert(overlay.failure == LINGYAOVoiceFailureCapture);
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         oldFailure([NSError errorWithDomain:@"synthetic" code:1 userInfo:nil]);
         assert(capture.active && controller.requestFixture.cancellations == 0);
@@ -222,22 +222,22 @@ int main() {
         [controller finishHTTPVoiceInput];
         controller.requestFixture.completion(nil, [NSError errorWithDomain:@"synthetic" code:1
             userInfo:@{NSLocalizedDescriptionKey:@"synthetic detail must not be presented"}]);
-        assert(overlay.failure == MSIMEVoiceFailureProvider && overlay.failures == beforeErrors + 1 && !capture.active);
+        assert(overlay.failure == LINGYAOVoiceFailureProvider && overlay.failures == beforeErrors + 1 && !capture.active);
         assert(!overlay.detail); // Only the voice requests' own detail reaches the overlay.
         controller.requestFixture.completion(nil, nil);
         assert(overlay.failures == beforeErrors + 1);
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         [controller finishHTTPVoiceInput];
-        controller.requestFixture.completion(nil, [NSError errorWithDomain:@"app.msime.client.voice" code:6
+        controller.requestFixture.completion(nil, [NSError errorWithDomain:@"app.lingyao.client.voice" code:6
             userInfo:@{NSLocalizedFailureReasonErrorKey:@"语音识别失败：synthetic provider message"}]);
-        assert(overlay.failure == MSIMEVoiceFailureProvider && [overlay.detail isEqual:@"语音识别失败：synthetic provider message"]);
+        assert(overlay.failure == LINGYAOVoiceFailureProvider && [overlay.detail isEqual:@"语音识别失败：synthetic provider message"]);
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         [controller finishHTTPVoiceInput];
         controller.requestFixture.completion(@"", nil);
-        assert(overlay.failure == MSIMEVoiceFailureNoSpeech && !capture.active);
+        assert(overlay.failure == LINGYAOVoiceFailureNoSpeech && !capture.active);
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         [controller finishHTTPVoiceInput];
-        [controller setValue:[MSIMEVoiceClientFixture new] forKey:@"activeClient"];
+        [controller setValue:[LINGYAOVoiceClientFixture new] forKey:@"activeClient"];
         const NSUInteger beforeStale = overlay.failures;
         controller.requestFixture.completion(nil, [NSError errorWithDomain:@"synthetic" code:1 userInfo:nil]);
         assert(overlay.failures == beforeStale && !capture.active);
@@ -258,7 +258,7 @@ int main() {
         // Focus, session and generation mismatches make both buttons inert.
         for (NSString *field in @[@"activeClient", @"session", @"voiceGeneration"]) {
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [MSIMEVoiceClientFixture new] forKey:field];
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @43 : [LINGYAOVoiceClientFixture new] forKey:field];
             overlay.actionHandler(YES); overlay.actionHandler(NO);
             assert(capture.active && !controller.requestFixture.submitted);
             [controller setValue:original forKey:field];
@@ -282,7 +282,7 @@ int main() {
         controller.requestFixture.completion(@"synthetic", nil);
         assert(session.submissions == beforeShort + 1 && cues.starts == cues.stops);
         for (NSString *mode in @[@"sendinput", @"ctrl_v"]) {
-            for (auto outcome : {MSIMEVoiceCommitOutcome::posted, MSIMEVoiceCommitOutcome::unavailable, MSIMEVoiceCommitOutcome::stale}) {
+            for (auto outcome : {LINGYAOVoiceCommitOutcome::posted, LINGYAOVoiceCommitOutcome::unavailable, LINGYAOVoiceCommitOutcome::stale}) {
                 controller.commitOutcome = outcome;
                 const NSUInteger external = controller.externalCommits, imk = controller.imkCommits;
                 NSMutableDictionary *options = [@{@"commit_mode": mode} mutableCopy];
@@ -292,7 +292,7 @@ int main() {
                 controller.requestFixture.completion(@"synthetic", nil);
                 controller.requestFixture.completion(@"synthetic", nil);
                 assert(controller.externalCommits == external + 1 && [controller.commitMode isEqual:mode]);
-                assert(controller.imkCommits == imk + (outcome == MSIMEVoiceCommitOutcome::unavailable ? 1 : 0));
+                assert(controller.imkCommits == imk + (outcome == LINGYAOVoiceCommitOutcome::unavailable ? 1 : 0));
             }
         }
         // Capturing as much as the provider takes ends the recording the way a release does: 识别中 shows, the end cue plays, and what was kept is submitted once.
@@ -300,12 +300,12 @@ int main() {
         capture.capturedSeconds = 59.9;
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         const NSUInteger stopsBeforeLimit = cues.stops, submissionsBeforeLimit = session.submissions;
-        capture.bufferHandler(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        capture.bufferHandler(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(!controller.requestFixture.submitted && capture.active && cues.stops == stopsBeforeLimit);
         capture.capturedSeconds = 60;
-        capture.bufferHandler(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        capture.bufferHandler(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(controller.requestFixture.submitted && overlay.phase == 2 && cues.stops == stopsBeforeLimit + 1);
-        capture.bufferHandler(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        capture.bufferHandler(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(!controller.requestFixture.cancellations); // A meter queued behind the stop cannot stop it again, which would cancel.
         controller.requestFixture.completion(@"synthetic", nil);
         assert(session.submissions == submissionsBeforeLimit + 1 && !capture.active);
@@ -317,9 +317,9 @@ int main() {
             [controller setValue:client forKey:@"activeClient"];
             assert([controller startHTTPVoiceInputWithOptions:@{}]);
             HTTPRequestFixture *departing = controller.requestFixture;
-            MSIMEVoiceAudioBuffer oldBuffer = capture.bufferHandler;
+            LINGYAOVoiceAudioBuffer oldBuffer = capture.bufferHandler;
             if (processing.boolValue) [controller finishHTTPVoiceInput];
-            NSObject *successor = [MSIMEVoiceClientFixture new];
+            NSObject *successor = [LINGYAOVoiceClientFixture new];
             NSEvent *event = [NSEvent keyEventWithType:NSEventTypeFlagsChanged location:NSZeroPoint modifierFlags:0 timestamp:1 windowNumber:0 context:nil characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:56];
             const NSUInteger submissions = session.submissions;
             assert(![controller handleEvent:event client:successor]);
@@ -329,7 +329,7 @@ int main() {
             [controller deactivateServer:client]; // Delayed old-client deactivation must not cancel the successor.
             assert(![controller handleEvent:event client:successor]);
             const NSUInteger levels = overlay.levelUpdates;
-            oldBuffer(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+            oldBuffer(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
             departing.polishingHandler();
             if (departing.completion) departing.completion(@"synthetic", nil);
             assert(capture.active && !controller.requestFixture.cancellations);
@@ -341,8 +341,8 @@ int main() {
         audioEvents = [NSMutableArray array];
         HTTPOrderedCueFixture *ordered = [HTTPOrderedCueFixture new];
         [controller setValue:ordered forKey:@"voiceCuePlayer"];
-        [controller setValue:[[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{OrderGet, OrderSet, nullptr, nullptr}] forKey:@"voiceAudioMuter"];
-        [defaults setVolatileDomain:@{@"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @YES, @"MSIMEClientVoiceEndSound": @YES, @"MSIMEClientVoiceMuteSystemAudio": @YES} forName:NSArgumentDomain];
+        [controller setValue:[[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{OrderGet, OrderSet, nullptr, nullptr}] forKey:@"voiceAudioMuter"];
+        [defaults setVolatileDomain:@{@"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @YES, @"LINGYAOClientVoiceEndSound": @YES, @"LINGYAOClientVoiceMuteSystemAudio": @YES} forName:NSArgumentDomain];
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         assert([audioEvents isEqual:@[@"start"]] && !outputMuted && ordered.startCompletion);
         ordered.startCompletion();
@@ -363,7 +363,7 @@ int main() {
         assert(![controller startHTTPVoiceInputWithOptions:@{}] && !audioEvents.count && !outputMuted);
         capture.failStart = NO;
         // Without a start cue the mute follows the start of capture directly.
-        [defaults setVolatileDomain:@{@"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @NO, @"MSIMEClientVoiceEndSound": @YES, @"MSIMEClientVoiceMuteSystemAudio": @YES} forName:NSArgumentDomain];
+        [defaults setVolatileDomain:@{@"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @NO, @"LINGYAOClientVoiceEndSound": @YES, @"LINGYAOClientVoiceMuteSystemAudio": @YES} forName:NSArgumentDomain];
         assert([controller startHTTPVoiceInputWithOptions:@{}]);
         assert([audioEvents isEqual:@[@"mute"]] && outputMuted);
         [controller cancelHTTPVoiceInput];

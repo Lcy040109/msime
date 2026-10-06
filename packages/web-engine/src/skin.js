@@ -1,6 +1,6 @@
 // 候选框皮肤的模型：把内置皮肤 ID 或皮肤对象解析成候选条要画的颜色、几何和 CSS 自定义属性。这是 `crates/client-core/src/skin/theme.rs` 的 `resolve()` 在网页上的移植，逐条照着设置页的镜像 `packages/ui/src/theme/global-theme.ts`（`normalizedColor`、`customCandidatePalette`、`candidatePaletteStyle`）和 `packages/ui/src/skin/external-skins.tsx`（`dimension`、`decorationImage`、`skinGeometryStyle`、`drawnPackagePalette`）写成；`apps/desktop/tests/candidate/custom-theme-parity.json` 由 Rust 测试写出，test/skin.test.mjs 用它核对这里的结果与 `resolve()` 一致。
 //
-// 内置配色表 `./theme-catalog.js` 不是手写的副本：它由 `packages/web-engine/tools/theme-catalog.mjs` 从 `packages/ui/src/theme/theme-catalog.json`（Rust 主题表的网页副本）和 `crates/client-core/src/skin/catalog/windows_looks.rs`（msime-windows 内置外观，没有网页副本）生成。scripts/build-web-engine.sh 构建 npm 包时生成一份放在本文件旁边；在仓库里直接对 src/ 运行时，先跑 `node packages/web-engine/tools/theme-catalog.mjs` 生成 `src/theme-catalog.js`（被 git 忽略），test/skin.test.mjs 每次运行前会自动重新生成。
+// 内置配色表 `./theme-catalog.js` 不是手写的副本：它由 `packages/web-engine/tools/theme-catalog.mjs` 从 `packages/ui/src/theme/theme-catalog.json`（Rust 主题表的网页副本）和 `crates/client-core/src/skin/catalog/windows_looks.rs`（lingyao-windows 内置外观，没有网页副本）生成。scripts/build-web-engine.sh 构建 npm 包时生成一份放在本文件旁边；在仓库里直接对 src/ 运行时，先跑 `node packages/web-engine/tools/theme-catalog.mjs` 生成 `src/theme-catalog.js`（被 git 忽略），test/skin.test.mjs 每次运行前会自动重新生成。
 import { plainWindowsLooks, themes, windowsLooks } from "./theme-catalog.js";
 
 const LAYOUTS = ["horizontal", "vertical"];
@@ -26,7 +26,7 @@ const builtinThemes = themes.filter((entry) => entry.candidate !== null);
 if (!systemEntry) throw new Error("theme catalog: no system entry");
 
 /**
- * SDK 接受的内置皮肤 ID，顺序同主题表：`system`（含义见上）、五个全局主题，再加 msime-windows 的五个内置外观。外观在桌面上只能作为皮肤包的 `base`，这里把它们当作一个两种布局、深浅两种模式都支持、没写任何颜色的皮肤包，按 `windows_looks::fill_from_look` 补齐配色和圆角后画在 `system` 之上，与 Windows 上同名外观一致。`fluent` 就是 Windows 原生配色、等同 `system`，不单列；`custom` 是桌面设置里的自定义主题，不是皮肤。
+ * SDK 接受的内置皮肤 ID，顺序同主题表：`system`（含义见上）、五个全局主题，再加 lingyao-windows 的五个内置外观。外观在桌面上只能作为皮肤包的 `base`，这里把它们当作一个两种布局、深浅两种模式都支持、没写任何颜色的皮肤包，按 `windows_looks::fill_from_look` 补齐配色和圆角后画在 `system` 之上，与 Windows 上同名外观一致。`fluent` 就是 Windows 原生配色、等同 `system`，不单列；`custom` 是桌面设置里的自定义主题，不是皮肤。
  */
 export const SKINS = Object.freeze([
   ...themes.filter((entry) => entry.id === "system" || entry.candidate !== null).map((entry) => entry.id),
@@ -264,7 +264,7 @@ function completePalette(raw, mode, lookSelectedText) {
 }
 
 /**
- * 候选条用的 CSS 自定义属性。与桌面同名的沿用 `candidatePaletteStyle`（`--cand-*`、`--accent-strong`）和 `skinGeometryStyle`（`--msime-skin-*`）的名字；桌面样式表没有的几项是 SDK 新增的：`--cand-secondary`、`--cand-selected-text`、`--cand-selected-num`、`--msime-skin-selected-bar`（`block` 或 `none`，对应 `selectedBarCss` 隐藏选中条）、`--msime-skin-decoration-image`、`--msime-skin-background-image`、`--msime-skin-background-opacity` 和 `--msime-skin-background-fit`（`object-fit` 的值，`stretch` 写成 `fill`）。每个值都是规范化的颜色、有限的数字、白名单里的关键字或经 `skinImageUrl` 检查过的 `url("…")`，跳不出声明。阴影不随皮肤变，由候选条按明暗自己画。
+ * 候选条用的 CSS 自定义属性。与桌面同名的沿用 `candidatePaletteStyle`（`--cand-*`、`--accent-strong`）和 `skinGeometryStyle`（`--lingyao-skin-*`）的名字；桌面样式表没有的几项是 SDK 新增的：`--cand-secondary`、`--cand-selected-text`、`--cand-selected-num`、`--lingyao-skin-selected-bar`（`block` 或 `none`，对应 `selectedBarCss` 隐藏选中条）、`--lingyao-skin-decoration-image`、`--lingyao-skin-background-image`、`--lingyao-skin-background-opacity` 和 `--lingyao-skin-background-fit`（`object-fit` 的值，`stretch` 写成 `fill`）。每个值都是规范化的颜色、有限的数字、白名单里的关键字或经 `skinImageUrl` 检查过的 `url("…")`，跳不出声明。阴影不随皮肤变，由候选条按明暗自己画。
  */
 function cssVariables(palette, geometry) {
   const variables = {
@@ -279,17 +279,17 @@ function cssVariables(palette, geometry) {
     "--cand-secondary": palette.secondary,
     "--cand-selected-text": palette.selectedText,
     "--cand-selected-num": palette.selectedNumber,
-    "--msime-skin-selected-bar": palette.showSelectedBar ? "block" : "none",
-    "--msime-skin-decoration-top": `${geometry.decoration ? geometry.decoration.top : 0}px`,
-    "--msime-skin-decoration-width": `${geometry.decoration ? geometry.decoration.width : 0}px`,
+    "--lingyao-skin-selected-bar": palette.showSelectedBar ? "block" : "none",
+    "--lingyao-skin-decoration-top": `${geometry.decoration ? geometry.decoration.top : 0}px`,
+    "--lingyao-skin-decoration-width": `${geometry.decoration ? geometry.decoration.width : 0}px`,
   };
-  if (geometry.minWidth !== null) variables["--msime-skin-min-width"] = `${geometry.minWidth}px`;
-  if (geometry.cornerRadius !== null) variables["--msime-skin-radius"] = `${geometry.cornerRadius}px`;
-  if (geometry.decoration) variables["--msime-skin-decoration-image"] = `url("${geometry.decoration.url}")`;
+  if (geometry.minWidth !== null) variables["--lingyao-skin-min-width"] = `${geometry.minWidth}px`;
+  if (geometry.cornerRadius !== null) variables["--lingyao-skin-radius"] = `${geometry.cornerRadius}px`;
+  if (geometry.decoration) variables["--lingyao-skin-decoration-image"] = `url("${geometry.decoration.url}")`;
   if (geometry.background) {
-    variables["--msime-skin-background-image"] = `url("${geometry.background.url}")`;
-    variables["--msime-skin-background-opacity"] = String(geometry.background.opacity);
-    variables["--msime-skin-background-fit"] = geometry.background.fit === "stretch" ? "fill" : geometry.background.fit;
+    variables["--lingyao-skin-background-image"] = `url("${geometry.background.url}")`;
+    variables["--lingyao-skin-background-opacity"] = String(geometry.background.opacity);
+    variables["--lingyao-skin-background-fit"] = geometry.background.fit === "stretch" ? "fill" : geometry.background.fit;
   }
   return variables;
 }
@@ -305,7 +305,7 @@ function deepFreeze(value) {
 /**
  * 把皮肤解析成候选条要画的样子。
  *
- * `skin`：`SKINS` 里的内置 ID；或皮肤对象，形状同桌面的 `SkinSummary` JSON（`base`、`layouts`/`themes` 或 `supports: { layouts, themes }`、`minWidthDip`、`cornerRadiusDip`、`decorationTopDip`、`decorationWidthDip`、`decorationImage`、`decorationAlign`、`background: { image, fit, opacity }`、`candidate: { dark, light }`），图片写成网址或 `data:` URI；不传时为 `DEFAULT_SKIN`。`base` 可以是全局主题、`system` 或 msime-windows 的内置外观，不写时为 `system`。
+ * `skin`：`SKINS` 里的内置 ID；或皮肤对象，形状同桌面的 `SkinSummary` JSON（`base`、`layouts`/`themes` 或 `supports: { layouts, themes }`、`minWidthDip`、`cornerRadiusDip`、`decorationTopDip`、`decorationWidthDip`、`decorationImage`、`decorationAlign`、`background: { image, fit, opacity }`、`candidate: { dark, light }`），图片写成网址或 `data:` URI；不传时为 `DEFAULT_SKIN`。`base` 可以是全局主题、`system` 或 lingyao-windows 的内置外观，不写时为 `system`。
  *
  * 规则同 `resolve()`：内置全局主题和 base 为内置全局主题的皮肤固定画在那个主题的明暗下，`dark` 选项不起作用；皮肤对象只在它声明的布局和明暗下画，否则只画 base，结果的 `drawn` 为 `false`，也不带皮肤的几何。读不懂的颜色当没写，越界的尺寸按 `dimension` 归零，不合规的图片地址丢弃。
  *

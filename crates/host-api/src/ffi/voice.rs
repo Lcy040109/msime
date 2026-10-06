@@ -3,7 +3,7 @@
 //! Part of the C ABI; see the parent module for what these shims guarantee.
 
 use crate::*;
-use msime_client_core::{is_bounded_chars_without_nul, is_bounded_text};
+use lingyao_client_core::{is_bounded_chars_without_nul, is_bounded_text};
 
 /// Decode one Doubao v1 response frame for Apple hosts. The returned payload
 /// is UTF-8 JSON text; no frame bytes or credentials are retained.
@@ -11,7 +11,7 @@ use msime_client_core::{is_bounded_chars_without_nul, is_bounded_text};
 /// # Safety
 /// `frame` must reference a readable buffer for the duration of this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_doubao_decode_frame(
+pub unsafe extern "C" fn lingyao_client_doubao_decode_frame(
     frame: *const u8,
     frame_length: usize,
 ) -> *mut c_char {
@@ -58,7 +58,7 @@ unsafe fn write_doubao_frame(
 /// nonzero. `output` must point to `output_capacity` writable bytes and `output_length` must point
 /// to a writable `usize`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_doubao_start_frame(
+pub unsafe extern "C" fn lingyao_client_doubao_start_frame(
     enable_itn: bool,
     enable_punc: bool,
     enable_ddc: bool,
@@ -99,7 +99,7 @@ pub unsafe extern "C" fn msime_client_doubao_start_frame(
 /// `pcm` must point to `pcm_length` readable bytes when the length is nonzero. `output` must point
 /// to `output_capacity` writable bytes and `output_length` must point to a writable `usize`.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_doubao_audio_frame(
+pub unsafe extern "C" fn lingyao_client_doubao_audio_frame(
     sequence: i32,
     pcm: *const u8,
     pcm_length: usize,
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn msime_client_doubao_audio_frame(
 /// the duration of this call; the buffers are not retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_request(
+pub unsafe extern "C" fn lingyao_client_voice_provider_request(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -176,7 +176,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_request(
 /// must remain valid and must copy the text before returning.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_stream(
+pub unsafe extern "C" fn lingyao_client_voice_provider_stream(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -185,7 +185,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_stream(
     context: *mut c_void,
 ) -> *mut c_char {
     unsafe {
-        msime_client_voice_provider_stream_events(
+        lingyao_client_voice_provider_stream_events(
             query,
             query_length,
             socket_path,
@@ -203,7 +203,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_stream(
 /// Buffers and callbacks must remain valid for this synchronous call. Callbacks must not unwind.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_stream_events(
+pub unsafe extern "C" fn lingyao_client_voice_provider_stream_events(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -213,7 +213,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_stream_events(
     context: *mut c_void,
 ) -> *mut c_char {
     unsafe {
-        msime_client_voice_provider_stream_feedback(
+        lingyao_client_voice_provider_stream_feedback(
             query,
             query_length,
             socket_path,
@@ -232,7 +232,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_stream_events(
 /// Buffers and callbacks must remain valid for this synchronous call. Callbacks must not unwind.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_stream_feedback(
+pub unsafe extern "C" fn lingyao_client_voice_provider_stream_feedback(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -320,7 +320,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_stream_feedback(
 /// `socket_path` must reference a readable UTF-8 buffer for this call.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_cancel(
+pub unsafe extern "C" fn lingyao_client_voice_provider_cancel(
     socket_path: *const u8,
     socket_length: usize,
     generation: u64,
@@ -343,7 +343,7 @@ pub unsafe extern "C" fn msime_client_voice_provider_cancel(
 /// `socket_path` must reference a readable UTF-8 buffer for this call.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_provider_stop(
+pub unsafe extern "C" fn lingyao_client_voice_provider_stop(
     socket_path: *const u8,
     socket_length: usize,
     generation: u64,
@@ -403,12 +403,12 @@ fn local_model_installs() -> &'static Mutex<HashMap<String, Arc<std::sync::atomi
 
 /// Hotwords for on-device recognition from the user's own pinyin dictionary words.
 ///
-/// Request `{"options": HostOptions, "limit": 200}`, the same HostOptions `msime_client_dictionary` takes. Response `{"hotwords":[{"text","pinyin"}]}`, highest-weighted words first. Reads through the dictionary list action, so it fails with "dictionary maintenance busy" while a maintenance writer holds the store.
+/// Request `{"options": HostOptions, "limit": 200}`, the same HostOptions `lingyao_client_dictionary` takes. Response `{"hotwords":[{"text","pinyin"}]}`, highest-weighted words first. Reads through the dictionary list action, so it fails with "dictionary maintenance busy" while a maintenance writer holds the store.
 ///
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_hotwords(
+pub unsafe extern "C" fn lingyao_client_voice_hotwords(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -423,10 +423,10 @@ pub unsafe extern "C" fn msime_client_voice_hotwords(
             local_voice_request(request, length, HOST_OPTIONS_DOCUMENT_LIMIT)?;
         let limit = request
             .limit
-            .unwrap_or(msime_client_core::voice::hotwords::DEFAULT_HOTWORD_LIMIT)
+            .unwrap_or(lingyao_client_core::voice::hotwords::DEFAULT_HOTWORD_LIMIT)
             .min(1_000);
         // Enough rows that the heaviest words can be picked even from a large dictionary, without reading the whole store for every voice session.
-        let hotwords = msime_client_core::voice::hotwords::hotwords_from_dictionary_pages(
+        let hotwords = lingyao_client_core::voice::hotwords::hotwords_from_dictionary_pages(
             limit,
             1_000,
             5_000,
@@ -447,8 +447,8 @@ pub unsafe extern "C" fn msime_client_voice_hotwords(
                         entry["weight"].as_i64().unwrap_or(0),
                     ))
                 }));
-                Ok::<Option<msime_client_core::voice::hotwords::DictionaryHotwordPage>, String>(
-                    Some(msime_client_core::voice::hotwords::DictionaryHotwordPage {
+                Ok::<Option<lingyao_client_core::voice::hotwords::DictionaryHotwordPage>, String>(
+                    Some(lingyao_client_core::voice::hotwords::DictionaryHotwordPage {
                         entries: hotword_entries,
                         has_more: page["has_more"].as_bool() == Some(true),
                     }),
@@ -466,7 +466,7 @@ pub unsafe extern "C" fn msime_client_voice_hotwords(
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_hotword_correct(
+pub unsafe extern "C" fn lingyao_client_voice_hotword_correct(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -475,7 +475,7 @@ pub unsafe extern "C" fn msime_client_voice_hotword_correct(
         struct CorrectRequest {
             text: String,
             #[serde(default)]
-            hotwords: Vec<msime_client_core::voice::hotwords::Hotword>,
+            hotwords: Vec<lingyao_client_core::voice::hotwords::Hotword>,
         }
         let request: CorrectRequest =
             local_voice_request(request, length, LOCAL_VOICE_REQUEST_LIMIT)?;
@@ -490,7 +490,7 @@ pub unsafe extern "C" fn msime_client_voice_hotword_correct(
             return Err("invalid voice hotword correction request".into());
         }
         Ok(json!({
-            "text": msime_client_core::voice::hotwords::correct(&request.text, &request.hotwords),
+            "text": lingyao_client_core::voice::hotwords::correct(&request.text, &request.hotwords),
         }))
     })
 }
@@ -502,7 +502,7 @@ pub unsafe extern "C" fn msime_client_voice_hotword_correct(
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_local_models(
+pub unsafe extern "C" fn lingyao_client_voice_local_models(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -514,20 +514,20 @@ pub unsafe extern "C" fn msime_client_voice_local_models(
         let request: ModelsRequest = local_voice_request(request, length, 16_384)?;
         let root = local_model_root(&request.root)?;
         Ok(json!({
-            "models": msime_client_core::voice::local_models::list(root),
-            "default": msime_client_core::voice::local_models::default_model_id(),
+            "models": lingyao_client_core::voice::local_models::list(root),
+            "default": lingyao_client_core::voice::local_models::default_model_id(),
         }))
     })
 }
 
 /// Download, verify and install one catalog model. Blocks until done: call it on a worker thread.
 ///
-/// Request `{"root": "<absolute dir>", "id": "<catalog id>", "mirror": ""}`; response `{"path": "<root>/<id>"}`. `progress` (may be null) is called on the calling thread with `{"id","stage","downloaded","total"}` JSON, stage one of download, verify, extract, done; the buffer is only valid during the call. `msime_client_voice_local_model_cancel` stops it from any thread, and the call then fails with "local_model_cancelled". One install per id at a time; a second fails with "local_model_install_running". Other failures are "local_model_*" codes (network, http_status, size_mismatch, checksum_mismatch, unsafe_archive, missing_file, io, invalid_mirror, unknown).
+/// Request `{"root": "<absolute dir>", "id": "<catalog id>", "mirror": ""}`; response `{"path": "<root>/<id>"}`. `progress` (may be null) is called on the calling thread with `{"id","stage","downloaded","total"}` JSON, stage one of download, verify, extract, done; the buffer is only valid during the call. `lingyao_client_voice_local_model_cancel` stops it from any thread, and the call then fails with "local_model_cancelled". One install per id at a time; a second fails with "local_model_install_running". Other failures are "local_model_*" codes (network, http_status, size_mismatch, checksum_mismatch, unsafe_archive, missing_file, io, invalid_mirror, unknown).
 ///
 /// # Safety
 /// `request` must point to `length` readable bytes. `progress` must stay valid for the call, must copy the buffer before returning and must not unwind.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_local_model_install(
+pub unsafe extern "C" fn lingyao_client_voice_local_model_install(
     request: *const u8,
     length: usize,
     progress: Option<unsafe extern "C" fn(*const u8, usize, *mut std::ffi::c_void)>,
@@ -562,7 +562,7 @@ pub unsafe extern "C" fn msime_client_voice_local_model_install(
             }
         }
         let _registered = Registered(&request.id);
-        let mut report = |event: msime_client_core::voice::local_models::InstallProgress| {
+        let mut report = |event: lingyao_client_core::voice::local_models::InstallProgress| {
             if let Some(callback) = progress {
                 let text = json!({
                     "id": request.id,
@@ -576,7 +576,7 @@ pub unsafe extern "C" fn msime_client_voice_local_model_install(
                 }
             }
         };
-        let path = msime_client_core::voice::local_models::install(
+        let path = lingyao_client_core::voice::local_models::install(
             root,
             &request.id,
             &request.mirror,
@@ -593,7 +593,7 @@ pub unsafe extern "C" fn msime_client_voice_local_model_install(
 /// # Safety
 /// `request` must be null or point to `length` readable bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_local_model_cancel(
+pub unsafe extern "C" fn lingyao_client_voice_local_model_cancel(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -627,7 +627,7 @@ pub unsafe extern "C" fn msime_client_voice_local_model_cancel(
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_local_model_remove(
+pub unsafe extern "C" fn lingyao_client_voice_local_model_remove(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -647,7 +647,7 @@ pub unsafe extern "C" fn msime_client_voice_local_model_remove(
         if installs.contains_key(&request.id) {
             return Err("local_model_install_running".into());
         }
-        let removed = msime_client_core::voice::local_models::remove(root, &request.id);
+        let removed = lingyao_client_core::voice::local_models::remove(root, &request.id);
         drop(installs);
         removed.map_err(|error| error.to_string())?;
         Ok(Value::Null)

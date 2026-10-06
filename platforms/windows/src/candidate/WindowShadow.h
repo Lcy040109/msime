@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <iterator>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct WindowShadowPass {
   float sigma = 0.0f;
   float alpha = 0.0f;
@@ -158,4 +158,4 @@ inline void draw_window_shadow_passes(ID2D1RenderTarget *target,
   if (!drew)
     detail::draw_layered_shadow(target, bounds, radius, 1.0f, 0.35f);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

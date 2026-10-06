@@ -6,7 +6,7 @@
 #include <optional>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Supplied by the TSF-compatible dispatch path, not inferred from a VK alone:
 // e.g. a digit in Unicode mode is composition, not candidate selection.
 enum class ReplyPath {
@@ -152,4 +152,4 @@ private:
   nlohmann::json translation_page_view_;
   std::vector<PendingReply::SegmentRestore> segment_restore_history_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -13,7 +13,7 @@ import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-loader = importlib.machinery.SourceFileLoader("clipboard_monitor", str(ROOT / "scripts" / "msime-linux-clipboard-monitor"))
+loader = importlib.machinery.SourceFileLoader("clipboard_monitor", str(ROOT / "scripts" / "lingyao-linux-clipboard-monitor"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 monitor = importlib.util.module_from_spec(spec)
 loader.exec_module(monitor)
@@ -42,7 +42,7 @@ class WatchLifecycle(unittest.TestCase):
             raise RuntimeError("could not enable fixture child reaping")
 
     def check_shutdown(self, mode):
-        with tempfile.TemporaryDirectory(prefix="msime-watch-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-watch-") as directory:
             pid_file = Path(directory) / "child.pid"
             leader = subprocess.Popen([sys.executable, "-c", LEADER, CHILD, str(pid_file), mode],
                                       start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

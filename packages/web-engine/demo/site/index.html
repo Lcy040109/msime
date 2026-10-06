@@ -8,14 +8,14 @@
     <meta property="og:title" content="灵耀输入法网页版" />
     <meta property="og:description" content="不用安装，在浏览器里打中文。全拼、双拼、五笔，完全离线运行，两行代码嵌进你的网页。" />
     <meta name="theme-color" content="#1E8E4E" />
-    <link rel="icon" href="msime.svg" type="image/svg+xml" />
+    <link rel="icon" href="lingyao.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="style.css" />
-    <link rel="modulepreload" href="msime/index.js" />
+    <link rel="modulepreload" href="lingyao/index.js" />
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="https://msime.app/">
-        <span class="logo"><img src="msime.svg" width="22" height="22" alt="" /></span>
+        <span class="logo"><img src="lingyao.svg" width="22" height="22" alt="" /></span>
         <span>灵耀输入法</span>
       </a>
       <nav class="links">
@@ -29,7 +29,7 @@
 
     <main>
       <section class="hero">
-        <p class="eyebrow">MSIME · WebAssembly</p>
+        <p class="eyebrow">LINGYAO · WebAssembly</p>
         <h1>不用安装，<br class="br-narrow" />在浏览器里打中文</h1>
         <p class="lead">灵耀输入法的 Rust 引擎编译成 WebAssembly，就运行在这个页面里。全拼、双拼、五笔，整句联想，完全离线，输入的内容不会离开你的设备。</p>
         <p class="hero-actions">
@@ -187,7 +187,7 @@
               </dl>
             </div>
             <div class="inspector-block">
-              <h3>最新一帧 <code>MsimeFrame</code></h3>
+              <h3>最新一帧 <code>LingyaoFrame</code></h3>
               <pre class="frame" id="frame">打字后，这里显示引擎返回的每一帧。</pre>
             </div>
           </div>
@@ -241,7 +241,7 @@
         </details>
         <details>
           <summary>可以用在商业网站里吗？</summary>
-          <p><code>@msime/web-engine</code> 以 GPL-3.0-only 发布，使用时需要遵守 GPL 的条款。词库、模型和第三方组件的许可见包内的 <code>assets/NOTICE.md</code>，部署时请一并发布。</p>
+          <p><code>@lingyao/web-engine</code> 以 GPL-3.0-only 发布，使用时需要遵守 GPL 的条款。词库、模型和第三方组件的许可见包内的 <code>assets/NOTICE.md</code>，部署时请一并发布。</p>
         </details>
       </section>
 
@@ -256,14 +256,14 @@
         </article>
         <article>
           <h2>部署到任意静态托管</h2>
-          <p>以 npm 包 <code>@msime/web-engine</code> 发布，GitHub Pages、Vercel、Cloudflare Pages / Workers 都能直接托管，也能从 jsDelivr CDN 引用。</p>
+          <p>以 npm 包 <code>@lingyao/web-engine</code> 发布，GitHub Pages、Vercel、Cloudflare Pages / Workers 都能直接托管，也能从 jsDelivr CDN 引用。</p>
         </article>
       </section>
     </main>
 
     <footer class="footer">
       <span>灵耀输入法 · GPL-3.0 开源 · <span id="build"></span></span>
-      <span><a href="https://msime.app/">msime.app</a> · <a href="https://www.npmjs.com/package/@msime/web-engine">npm</a> · <a href="msime/assets/NOTICE.md">第三方许可声明</a></span>
+      <span><a href="https://msime.app/">msime.app</a> · <a href="https://www.npmjs.com/package/@msime/web-engine">npm</a> · <a href="lingyao/assets/NOTICE.md">第三方许可声明</a></span>
     </footer>
 
     <!-- 代码高亮：Prism（MIT，许可见 vendor/prism-LICENSE.txt），data-manual 让它不自动扫描页面，由 demo.js 在生成代码时调用。 -->

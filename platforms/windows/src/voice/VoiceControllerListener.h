@@ -1,10 +1,10 @@
 #pragma once
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 #include "VoiceControllerConnection.h"
 #include "VoiceControllerMailbox.h"
 #include <thread>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Owns all pipe I/O; never calls microphone/UI/dispatcher methods. One
 // authenticated controller at a time, with finite handshake/idle/dispatch
 // waits.
@@ -13,7 +13,7 @@ public:
   static std::unique_ptr<VoiceControllerListener>
   create(VoiceControllerMailbox &mailbox, DWORD &error,
          const std::wstring &name =
-             L"\\\\.\\pipe\\FanyImeVoiceControlNamedPipe" MSIME_EDITION_NAME_SUFFIX) {
+             L"\\\\.\\pipe\\FanyImeVoiceControlNamedPipe" LINGYAO_EDITION_NAME_SUFFIX) {
     auto pipe = PipeListener::create(name, error);
     if (!pipe)
       return {};
@@ -118,4 +118,4 @@ private:
   std::mutex stop_mutex_;
   std::atomic<DWORD> failure_{ERROR_SUCCESS};
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

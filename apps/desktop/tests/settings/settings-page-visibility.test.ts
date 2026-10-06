@@ -4,7 +4,7 @@ import {
   canRestoreDefaultsOnPage,
   isSettingsFormPage,
   type SettingsPageId,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 const pages: SettingsPageId[] = [
   "home",

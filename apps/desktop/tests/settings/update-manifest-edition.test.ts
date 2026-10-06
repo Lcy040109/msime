@@ -13,11 +13,11 @@ const linuxRelease = [
     tag_name: "linux-v1.2.0",
     html_url: `${page}/tag/linux-v1.2.0`,
     assets: [
-      { name: "msime-linux_1.2.0_amd64.deb", digest: digest("a") },
-      { name: "msime-linux-1.2.0-linux-x86_64.tar.gz", digest: digest("b") },
-      { name: "msime-linux-wubi_1.2.0_amd64.deb", digest: digest("c") },
-      { name: "msime-linux-wubi-1.2.0-linux-x86_64.tar.gz", digest: digest("d") },
-      { name: "msime-linux-pinyin_1.2.0_amd64.deb", digest: digest("e") },
+      { name: "lingyao-linux_1.2.0_amd64.deb", digest: digest("a") },
+      { name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz", digest: digest("b") },
+      { name: "lingyao-linux-wubi_1.2.0_amd64.deb", digest: digest("c") },
+      { name: "lingyao-linux-wubi-1.2.0-linux-x86_64.tar.gz", digest: digest("d") },
+      { name: "lingyao-linux-pinyin_1.2.0_amd64.deb", digest: digest("e") },
       { name: "SHA256SUMS", digest: digest("f") },
     ],
   },
@@ -48,7 +48,7 @@ function pick(
 test("full picks its own Linux package beside the other editions' packages", () => {
   for (const edition of [undefined, "full"]) {
     expect(pick(linuxRelease, "linux", edition)).toEqual({
-      name: "msime-linux_1.2.0_amd64.deb",
+      name: "lingyao-linux_1.2.0_amd64.deb",
       sha256: "a".repeat(64),
     });
   }
@@ -63,16 +63,16 @@ test("full picks its own Linux package beside the other editions' packages", () 
       ],
       "linux",
     ),
-  ).toEqual({ name: "msime-linux-1.2.0-linux-x86_64.tar.gz", sha256: "b".repeat(64) });
+  ).toEqual({ name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz", sha256: "b".repeat(64) });
 });
 
 test("an edition picks only its own package and installer", () => {
   expect(pick(linuxRelease, "linux", "wubi")).toEqual({
-    name: "msime-linux-wubi_1.2.0_amd64.deb",
+    name: "lingyao-linux-wubi_1.2.0_amd64.deb",
     sha256: "c".repeat(64),
   });
   expect(pick(linuxRelease, "linux", "pinyin")).toEqual({
-    name: "msime-linux-pinyin_1.2.0_amd64.deb",
+    name: "lingyao-linux-pinyin_1.2.0_amd64.deb",
     sha256: "e".repeat(64),
   });
   expect(pick(windowsRelease, "windows")).toEqual({
@@ -111,9 +111,9 @@ test("an edition picks its own package for the host's architecture", () => {
       ...linuxRelease[0]!,
       assets: [
         ...linuxRelease[0]!.assets,
-        { name: "msime-linux_1.2.0_arm64.deb", digest: digest("1") },
-        { name: "msime-linux-wubi_1.2.0_arm64.deb", digest: digest("2") },
-        { name: "msime-linux-wubi-1.2.0-linux-aarch64.tar.gz", digest: digest("3") },
+        { name: "lingyao-linux_1.2.0_arm64.deb", digest: digest("1") },
+        { name: "lingyao-linux-wubi_1.2.0_arm64.deb", digest: digest("2") },
+        { name: "lingyao-linux-wubi-1.2.0-linux-aarch64.tar.gz", digest: digest("3") },
       ],
     },
   ];
@@ -122,15 +122,15 @@ test("an edition picks its own package for the host's architecture", () => {
     return update && { name: update.installerName, sha256: update.installerSha256 };
   };
   expect(pickFor(undefined, "aarch64")).toEqual({
-    name: "msime-linux_1.2.0_arm64.deb",
+    name: "lingyao-linux_1.2.0_arm64.deb",
     sha256: "1".repeat(64),
   });
   expect(pickFor("wubi", "aarch64")).toEqual({
-    name: "msime-linux-wubi_1.2.0_arm64.deb",
+    name: "lingyao-linux-wubi_1.2.0_arm64.deb",
     sha256: "2".repeat(64),
   });
   expect(pickFor("wubi", "x86_64")).toEqual({
-    name: "msime-linux-wubi_1.2.0_amd64.deb",
+    name: "lingyao-linux-wubi_1.2.0_amd64.deb",
     sha256: "c".repeat(64),
   });
   // pinyin has no aarch64 package in this release, so an aarch64 host is offered none of the x86_64 ones.

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { settingsPageLinks, settingsPageTitle } from "@msime/ui";
+import { settingsPageLinks, settingsPageTitle } from "@lingyao/ui";
 
 const pages = [
   { id: "appearance" as const, title: "外观", icon: "appearance.svg" },

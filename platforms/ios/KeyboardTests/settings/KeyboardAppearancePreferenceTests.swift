@@ -7,7 +7,7 @@ final class KeyboardAppearancePreferenceTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-keyboard-appearance-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-keyboard-appearance-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

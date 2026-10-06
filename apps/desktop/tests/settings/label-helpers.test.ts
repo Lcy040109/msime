@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { schemeTitle } from "@msime/ui";
+import { schemeTitle } from "@lingyao/ui";
 
 test("labels every supported input scheme", () => {
   expect(schemeTitle("quanpin")).toBe("全拼");

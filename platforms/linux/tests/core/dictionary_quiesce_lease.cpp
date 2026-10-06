@@ -7,11 +7,11 @@
 #include <unistd.h>
 
 int main() {
-  using msime::linux_host::dictionary_quiesced;
-  using msime::linux_host::preference_save_held;
+  using lingyao::linux_host::dictionary_quiesced;
+  using lingyao::linux_host::preference_save_held;
 
   // The lease itself is covered by platforms/common/tests/dictionary_quiesce_lease.cpp; this is what the Linux hosts add on top of it.
-  char pattern[] = "/tmp/msime-quiesce-XXXXXX";
+  char pattern[] = "/tmp/lingyao-quiesce-XXXXXX";
   const std::filesystem::path root = mkdtemp(pattern);
 
   // A data directory move holds the lease on the old user directory for the whole copy, in the form the settings window stages and renames into place. A host still configured for the old directory stays off it; one that has read the rewritten locator opens on the copy, which carries no lease.
@@ -20,7 +20,7 @@ int main() {
   std::filesystem::create_directories(old_user);
   std::filesystem::create_directories(new_user);
   {
-    std::ofstream(old_user / ".msime-dictionary-quiesce") << "1030000\n";
+    std::ofstream(old_user / ".lingyao-dictionary-quiesce") << "1030000\n";
   }
   assert(dictionary_quiesced(old_user.string(), 1000000));
   assert(dictionary_quiesced(old_user.string() + "/", 1000000));
@@ -31,9 +31,9 @@ int main() {
   assert(!preference_save_held("", 1000000));
   assert(!preference_save_held("relative", 1000000));
   // A lease still being staged is not the lease; the rename is what raises it.
-  std::filesystem::remove(old_user / ".msime-dictionary-quiesce");
+  std::filesystem::remove(old_user / ".lingyao-dictionary-quiesce");
   {
-    std::ofstream(old_user / ".msime-dictionary-quiesce.4242") << "1030000\n";
+    std::ofstream(old_user / ".lingyao-dictionary-quiesce.4242") << "1030000\n";
   }
   assert(!dictionary_quiesced(old_user.string(), 1000000));
   // Once the move has taken the old user directory away there is no lease to read; the host's session open fails there instead, so it cannot start an empty library at the old path.

@@ -1,6 +1,6 @@
 //! Relocation of the Linux user-data root.
 //!
-//! On Linux the default state root (`$XDG_CONFIG_HOME/msime-client`) is also where every consumer finds its locator: the IBus launcher, the Fcitx5 addon, the clipboard monitor unit and the settings launcher all read `runtime-options.json` from that fixed path, and the provider services read their credential files from the same directory. A move therefore never relocates that directory itself. It moves the state entries (dictionaries, learning data, cache, preferences, skins, clipboard history) into the chosen directory and rewrites the path-bearing values of the locators in place, keeping every other key (provider sockets, models) the setup wrote.
+//! On Linux the default state root (`$XDG_CONFIG_HOME/lingyao-client`) is also where every consumer finds its locator: the IBus launcher, the Fcitx5 addon, the clipboard monitor unit and the settings launcher all read `runtime-options.json` from that fixed path, and the provider services read their credential files from the same directory. A move therefore never relocates that directory itself. It moves the state entries (dictionaries, learning data, cache, preferences, skins, clipboard history) into the chosen directory and rewrites the path-bearing values of the locators in place, keeping every other key (provider sockets, models) the setup wrote.
 //!
 //! The IBus and Fcitx5 hosts write the learning data under `user/` while a session is open, so the whole move runs with them held off it (`linux_dictionary_quiesce::hold_hosts_off`): the quiesce lease asks them to close their sessions and the exclusive dictionary lock proves they did and keeps new ones out until the locators point at the copy and the old entries are gone. The input method framework is restarted before the hold is released.
 
@@ -20,14 +20,14 @@ pub(crate) const DATA_DIRECTORY_MARKER: &str = ".lingyaoime-data";
 const OPTIONS_FILE: &str = "runtime-options.json";
 const MAX_OPTIONS_BYTES: u64 = 1024 * 1024;
 const INITIAL_OPTIONS_READ_CAPACITY: usize = 8 * 1024;
-/// Files that belong to the fixed configuration directory rather than to the movable state: the locator and the provider credentials the systemd services read from `$XDG_CONFIG_HOME/msime-client`.
+/// Files that belong to the fixed configuration directory rather than to the movable state: the locator and the provider credentials the systemd services read from `$XDG_CONFIG_HOME/lingyao-client`.
 const PINNED_FILES: [&str; 4] = [
     OPTIONS_FILE,
     "ai-provider.json",
     "tencent-provider.json",
     "voice-provider.json",
 ];
-const STAGING_PREFIX: &str = ".msime-data-migration-";
+const STAGING_PREFIX: &str = ".lingyao-data-migration-";
 /// The picker is interactive, so this only bounds a dialog that was abandoned on another workspace.
 const PICKER_TIMEOUT: Duration = Duration::from_secs(600);
 
@@ -74,15 +74,15 @@ fn is_pinned(name: &std::ffi::OsStr) -> bool {
         .any(|pinned| name == *pinned || name.strip_suffix(".new") == Some(pinned))
 }
 
-/// `$XDG_CONFIG_HOME/msime-client`, or `~/.config/msime-client`. A relative `XDG_CONFIG_HOME` is invalid per the base directory specification and is ignored the same way the setup script ignores it.
+/// `$XDG_CONFIG_HOME/lingyao-client`, or `~/.config/lingyao-client`. A relative `XDG_CONFIG_HOME` is invalid per the base directory specification and is ignored the same way the setup script ignores it.
 pub(crate) fn default_root() -> Option<PathBuf> {
     let base = super::config_home(
         std::env::var_os("XDG_CONFIG_HOME").as_deref(),
         std::env::var_os("HOME").as_deref(),
     )?;
-    // 目录名随本安装包所属的版本（full 是 msime-client）。
+    // 目录名随本安装包所属的版本（full 是 lingyao-client）。
     Some(base.join(
-        &msime_client_core::edition::Edition::linux_package_identity_or_full().client_directory,
+        &lingyao_client_core::edition::Edition::linux_package_identity_or_full().client_directory,
     ))
 }
 
@@ -593,7 +593,7 @@ pub(crate) async fn move_data_directory(
                 Ok(()) => true,
                 Err(error) => {
                     eprintln!(
-                        "msime-linux-settings: data directory moved, but restarting the input method failed ({})",
+                        "lingyao-linux-settings: data directory moved, but restarting the input method failed ({})",
                         error.code
                     );
                     false
@@ -632,7 +632,7 @@ pub(crate) async fn move_data_directory(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::dictionary::access::DictionaryAccess;
+    use lingyao_client_core::dictionary::access::DictionaryAccess;
     use serde_json::json;
     use tempfile::tempdir;
 
@@ -646,12 +646,12 @@ mod tests {
     fn setup() -> Layout {
         let root = tempdir().unwrap();
         let base = fs::canonicalize(root.path()).unwrap();
-        let default = base.join("config/msime-client");
+        let default = base.join("config/lingyao-client");
         let target = base.join("chosen-empty");
         fs::create_dir_all(default.join("user")).unwrap();
         fs::create_dir_all(&target).unwrap();
         fs::write(default.join("preferences.json"), b"synthetic-preferences").unwrap();
-        fs::write(default.join("user/msime_user.db"), b"synthetic-dictionary").unwrap();
+        fs::write(default.join("user/lingyao_user.db"), b"synthetic-dictionary").unwrap();
         fs::write(default.join("ai-provider.json"), b"synthetic-credential").unwrap();
         let locator = default.join(OPTIONS_FILE);
         let document = json!({
@@ -659,8 +659,8 @@ mod tests {
             "user_data": default.join("user"),
             "cache": default.join("cache"),
             "preferences_directory": default,
-            "dictionaries": [{"path": default.join("user/msime_user.db")}],
-            "online_provider_socket": "/run/user/1000/msime-client/online.sock",
+            "dictionaries": [{"path": default.join("user/lingyao_user.db")}],
+            "online_provider_socket": "/run/user/1000/lingyao-client/online.sock",
         });
         fs::write(&locator, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
         Layout {
@@ -743,7 +743,7 @@ mod tests {
         assert!(fs::read_dir(&layout.target).unwrap().next().is_none());
         assert_eq!(fs::read(&layout.locator).unwrap(), before);
         assert_eq!(
-            fs::read(layout.default.join("user/msime_user.db")).unwrap(),
+            fs::read(layout.default.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
         assert!(layout.default.join("preferences.json").is_file());
@@ -771,7 +771,7 @@ mod tests {
         assert!(!has_lease(&user));
         assert!(fs::read_dir(&layout.target).unwrap().next().is_none());
         assert_eq!(fs::read(&layout.locator).unwrap(), before);
-        assert!(user.join("msime_user.db").is_file());
+        assert!(user.join("lingyao_user.db").is_file());
     }
 
     #[test]
@@ -781,7 +781,7 @@ mod tests {
         let source = layout.default.parent().unwrap().join("external-source");
         let user = source.join("user");
         fs::create_dir_all(&user).unwrap();
-        fs::write(user.join("msime_user.db"), b"synthetic-dictionary").unwrap();
+        fs::write(user.join("lingyao_user.db"), b"synthetic-dictionary").unwrap();
         let document = json!({"user_data": user, "preferences_directory": source});
         fs::write(
             &layout.locator,
@@ -819,7 +819,7 @@ mod tests {
         let moved = layout.target.join("user");
         assert!(!has_lease(&moved));
         assert_eq!(
-            fs::read(moved.join("msime_user.db")).unwrap(),
+            fs::read(moved.join("lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
         assert!(DictionaryAccess::try_session(&moved, &moved)
@@ -858,7 +858,7 @@ mod tests {
             .collect();
         assert!(leftovers.is_empty(), "{leftovers:?}");
         assert_eq!(
-            fs::read(layout.target.join("user/msime_user.db")).unwrap(),
+            fs::read(layout.target.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
     }
@@ -891,7 +891,7 @@ mod tests {
         );
         assert!(fs::read_dir(&layout.target).unwrap().next().is_none());
         assert_eq!(fs::read(&layout.locator).unwrap(), before);
-        assert!(layout.default.join("user/msime_user.db").is_file());
+        assert!(layout.default.join("user/lingyao_user.db").is_file());
     }
 
     #[test]
@@ -909,7 +909,7 @@ mod tests {
             &[OsString::from("preferences.json"), OsString::from("user")],
         );
         assert_eq!(
-            fs::read(source.join("user/msime_user.db")).unwrap(),
+            fs::read(source.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
         assert!(!source.join("preferences.json").exists());
@@ -945,7 +945,7 @@ mod tests {
         .unwrap();
         assert!(!outcome.retained_old_data);
         assert_eq!(
-            fs::read(layout.default.join("user/msime_user.db")).unwrap(),
+            fs::read(layout.default.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
     }
@@ -985,7 +985,7 @@ mod tests {
         .unwrap();
         assert!(!outcome.retained_old_data);
         assert_eq!(
-            fs::read(layout.target.join("user/msime_user.db")).unwrap(),
+            fs::read(layout.target.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
         assert!(layout.target.join(DATA_DIRECTORY_MARKER).is_file());
@@ -1001,11 +1001,11 @@ mod tests {
         assert_eq!(document["user_data"], json!(layout.target.join("user")));
         assert_eq!(
             document["dictionaries"][0]["path"],
-            json!(layout.target.join("user/msime_user.db"))
+            json!(layout.target.join("user/lingyao_user.db"))
         );
         assert_eq!(
             document["online_provider_socket"],
-            "/run/user/1000/msime-client/online.sock"
+            "/run/user/1000/lingyao-client/online.sock"
         );
         assert_ne!(
             document["resources"],

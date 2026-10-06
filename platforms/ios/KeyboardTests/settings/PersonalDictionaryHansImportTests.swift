@@ -27,7 +27,7 @@ final class PersonalDictionaryHansImportTests: XCTestCase {
 
   func testMissingDictionaryIsReportedAsUnavailable() throws {
     let empty = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-hans-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-hans-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: empty, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: empty) }
     XCTAssertThrowsError(try PersonalDictionaryBridge.hansEntries("你好", resources: empty)) {
@@ -63,7 +63,7 @@ final class PersonalDictionaryHansImportTests: XCTestCase {
     XCTAssertEqual(capped.entries.count, 128)
     XCTAssertEqual(capped.report["truncated"] as? Bool, true)
     let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-import-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-import-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = PersonalDictionaryStore(directory: directory)
     try store.enqueueImport(capped.entries, requestID: "ui-import-1")
@@ -125,7 +125,7 @@ final class PersonalDictionaryHansImportTests: XCTestCase {
     XCTAssertEqual(PersonalWord.weightRange, 1...100_000_000)
     XCTAssertEqual(PersonalWord(key: "ni hao", value: "你好").weight, PersonalWord.defaultWeight)
     let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-weight-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-weight-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = PersonalDictionaryStore(directory: directory)
     let previous = PersonalWord(key: "ni hao", value: "你好", weight: 100_000)

@@ -1,8 +1,8 @@
-// msime-voice-local: on-device recognition in its own process.
+// lingyao-voice-local: on-device recognition in its own process.
 //
 // An input method process is the worst place to hold a speech model: it is loaded into every app that takes text (macOS IMK, fcitx5), a crash there takes typing down with it, and hundreds of megabytes resident in it count against whatever the host was already allowed. Hosts spawn this helper instead and talk to it over stdin/stdout, one JSON object per line. The protocol is documented in shared/voice/README.md.
 //
-// `msime-voice-local --model <dir> --wav <file>` transcribes a 16 kHz mono 16-bit WAV file and prints the text, for tests and for checking an installed model by hand.
+// `lingyao-voice-local --model <dir> --wav <file>` transcribes a 16 kHz mono 16-bit WAV file and prints the text, for tests and for checking an installed model by hand.
 
 #include "LocalAsr.h"
 #include "LocalAsrCommandQueue.h"
@@ -41,10 +41,10 @@
 
 namespace {
 
-using msime::voice::LocalAsrOptions;
-using msime::voice::LocalAsrSession;
+using lingyao::voice::LocalAsrOptions;
+using lingyao::voice::LocalAsrSession;
 
-constexpr std::size_t kMaxWavBytes = 44 + msime::voice::local_asr_sample_limit * 2;
+constexpr std::size_t kMaxWavBytes = 44 + lingyao::voice::local_asr_sample_limit * 2;
 constexpr std::size_t kMaxRequestLineBytes = 1024 * 1024;
 constexpr std::size_t kMaxQueuedRequestBytes = 8 * 1024 * 1024;
 
@@ -140,7 +140,7 @@ public:
   explicit Server(std::chrono::seconds idle_exit) : idle_exit_(idle_exit) {}
 
   int run() {
-    emit({{"type", "hello"}, {"version", 1}, {"available", msime::voice::sherpa_runtime_available()}, {"error", msime::voice::sherpa_runtime_error()}});
+    emit({{"type", "hello"}, {"version", 1}, {"available", lingyao::voice::sherpa_runtime_available()}, {"error", lingyao::voice::sherpa_runtime_error()}});
 #if !defined(_WIN32)
     if (::pipe(stop_pipe_) != 0)
       return 1;
@@ -184,7 +184,7 @@ private:
         break;
       }
       if (descriptors[0].revents & POLLIN) break;
-      // macOS 的 poll() 不支持 /dev/null 这类设备文件，只回 POLLNVAL；不认它的话这里会立刻再 poll、空转到空闲退出（CI 里 `msime-voice-local < /dev/null` 因此每次卡满 600 秒）。交给下面的 read() 判断：/dev/null 读到 0 即 EOF，真正失效的描述符读出错，两种都结束循环。
+      // macOS 的 poll() 不支持 /dev/null 这类设备文件，只回 POLLNVAL；不认它的话这里会立刻再 poll、空转到空闲退出（CI 里 `lingyao-voice-local < /dev/null` 因此每次卡满 600 秒）。交给下面的 read() 判断：/dev/null 读到 0 即 EOF，真正失效的描述符读出错，两种都结束循环。
       if (!(descriptors[1].revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL))) continue;
       const auto count = ::read(STDIN_FILENO, buffer.data(), buffer.size());
       if (count == 0) break;
@@ -329,7 +329,7 @@ private:
         lock.unlock();
         const auto idle = std::chrono::steady_clock::now() - last_activity;
         if (!session_) {
-          msime::voice::release_idle_local_models(release_after);
+          lingyao::voice::release_idle_local_models(release_after);
           if (idle_exit_.count() > 0 && idle >= idle_exit_)
             return;
         }
@@ -404,9 +404,9 @@ private:
           if (!queue_overflowed()) emit({{"type", "cancelled"}, {"id", id}});
         }
       } else if (op == "release") {
-        msime::voice::release_local_models();
+        lingyao::voice::release_local_models();
       } else if (op == "ping") {
-        emit({{"type", "pong"}, {"id", id}, {"available", msime::voice::sherpa_runtime_available()}});
+        emit({{"type", "pong"}, {"id", id}, {"available", lingyao::voice::sherpa_runtime_available()}});
       } else {
         throw std::runtime_error("unknown op");
       }
@@ -441,7 +441,7 @@ private:
   std::chrono::seconds idle_exit_;
   std::mutex mutex_;
   std::condition_variable ready_;
-  msime::voice::BoundedCommandQueue<Command> queue_{kMaxQueuedRequestBytes};
+  lingyao::voice::BoundedCommandQueue<Command> queue_{kMaxQueuedRequestBytes};
   bool queue_overflowed_ = false;
   bool overflow_cancelled_ = false;
   nlohmann::json overflow_id_;
@@ -498,11 +498,11 @@ int main(int argc, char **argv) {
     else if (argument == "--hotword")
       hotwords.push_back(value());
     else if (argument == "--runtime")
-      msime::voice::set_sherpa_library_path(value());
+      lingyao::voice::set_sherpa_library_path(value());
     else if (argument == "--idle-exit" && parse_seconds(value(), idle_exit))
       ; // a malformed or negative value falls through to usage
     else {
-      std::fprintf(stderr, "usage: msime-voice-local [--runtime <library>] [--idle-exit <seconds>] [--model <dir> --wav <file> [--language <tag>] [--hotword <word>]...]\n");
+      std::fprintf(stderr, "usage: lingyao-voice-local [--runtime <library>] [--idle-exit <seconds>] [--model <dir> --wav <file> [--language <tag>] [--hotword <word>]...]\n");
       return 2;
     }
   }
@@ -512,7 +512,7 @@ int main(int argc, char **argv) {
       options.model_dir = model;
       options.language = language;
       options.hotwords = hotwords;
-      const auto text = msime::voice::recognize_local_model(read_wav(wav), options, nullptr);
+      const auto text = lingyao::voice::recognize_local_model(read_wav(wav), options, nullptr);
       std::fwrite(text.data(), 1, text.size(), stdout);
       std::fputc('\n', stdout);
       return 0;

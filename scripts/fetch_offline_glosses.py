@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fetch the offline candidate gloss dictionaries for the non-English translation targets.
 
-``resources/offline-glosses.lock.json`` pins one ``zh-<lang>.db`` per language (fr, ja, es, ru, de, ko) built by ``scripts/build_offline_glosses.py``, plus ``offline-glosses-NOTICE.txt``, which must travel with them because they adapt CC BY-SA 4.0 Wiktionary text. The staging scripts, the Android build scripts and the Windows installer all read ``target/offline-glosses`` and package nothing when it is absent; Linux takes the directory through ``-DMSIME_OFFLINE_GLOSSES``. The lock's ``filtered_input`` is the reduced dump the files were built from and is not fetched here: it is only needed to rebuild them.
+``resources/offline-glosses.lock.json`` pins one ``zh-<lang>.db`` per language (fr, ja, es, ru, de, ko) built by ``scripts/build_offline_glosses.py``, plus ``offline-glosses-NOTICE.txt``, which must travel with them because they adapt CC BY-SA 4.0 Wiktionary text. The staging scripts, the Android build scripts and the Windows installer all read ``target/offline-glosses`` and package nothing when it is absent; Linux takes the directory through ``-DLINGYAO_OFFLINE_GLOSSES``. The lock's ``filtered_input`` is the reduced dump the files were built from and is not fetched here: it is only needed to rebuild them.
 
 The lock pins a SHA-256 and a size for every file, and a download that does not match them is discarded rather than installed. Idempotent: a file already present and matching is left alone, so packaging can call this unconditionally.
 

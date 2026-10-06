@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Decode the entire candidate before exposing a destructive dictionary action.
 // This mirrors Windows' UTF-8 distance check and rejects a valid prefix with
@@ -99,4 +99,4 @@ inline std::string candidate_fix_label(int slot) {
   return "固定到第 " + std::to_string(slot) + " 位";
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

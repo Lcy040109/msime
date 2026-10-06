@@ -4,7 +4,7 @@
 #include <cassert>
 #include <sys/stat.h>
 
-@interface SyntheticCloudProvider : NSObject <MSIMEDesktopCloudClipboardProvider>
+@interface SyntheticCloudProvider : NSObject <LINGYAODesktopCloudClipboardProvider>
 @property(nonatomic) unsigned calls;
 @end
 @implementation SyntheticCloudProvider
@@ -24,15 +24,15 @@ int main(int argc, const char *argv[]) {
     @autoreleasepool {
         assert(argc == 2);
         SyntheticCloudProvider *provider = [SyntheticCloudProvider new];
-        MSIMEDesktopCloudClipboardSession *session = [[MSIMEDesktopCloudClipboardSession alloc] initWithProvider:provider];
+        LINGYAODesktopCloudClipboardSession *session = [[LINGYAODesktopCloudClipboardSession alloc] initWithProvider:provider];
         assert(session);
         NSObject *capturedClient = [NSObject new];
-        __block MSIMEToolTextReturn delivery;
+        __block LINGYAOToolTextReturn delivery;
         const auto token = delivery.capture(capturedClient);
         __block unsigned committed = 0;
-        MSIMEDesktopInputSession *input = [[MSIMEDesktopInputSession alloc]
+        LINGYAODesktopInputSession *input = [[LINGYAODesktopInputSession alloc]
             initWithTargetPID:getpid() launchTime:42 clipboard:YES
-            handler:^(NSString *text, double deadline, MSIMEPanelTextCompletion completion) {
+            handler:^(NSString *text, double deadline, LINGYAOPanelTextCompletion completion) {
                 assert(NSThread.isMainThread && text.length == 4000);
                 assert([text hasSuffix:@"\n\r\t"]);
                 const double now = NSProcessInfo.processInfo.systemUptime;
@@ -43,7 +43,7 @@ int main(int argc, const char *argv[]) {
                 completion(YES);
             }];
         assert(input);
-        NSData *configuration = [session.launchEnvironment[@"MSIME_CLIENT_CLOUD_CLIPBOARD_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
+        NSData *configuration = [session.launchEnvironment[@"LINGYAO_CLIENT_CLOUD_CLIPBOARD_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
         NSString *path = [NSJSONSerialization JSONObjectWithData:configuration options:0 error:nil][@"path"];
         struct stat status{};
         assert(stat(path.fileSystemRepresentation, &status) == 0 && (status.st_mode & 0777) == 0600);

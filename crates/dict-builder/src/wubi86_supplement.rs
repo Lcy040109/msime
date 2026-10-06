@@ -1,4 +1,4 @@
-//! `wubi86-supplement`：生成 msime-dictionary 的 `sources/wubi/wubi86-supplement.txt`，即 86 五笔码表（`sources/wubi/wubi86-jidian.txt`）缺少的多字词，编码按 86 版词组规则由该表自己的单字编码推出。
+//! `wubi86-supplement`：生成 lingyao-dictionary 的 `sources/wubi/wubi86-supplement.txt`，即 86 五笔码表（`sources/wubi/wubi86-jidian.txt`）缺少的多字词，编码按 86 版词组规则由该表自己的单字编码推出。
 //!
 //! 一个词在极点码表的任何编码下都没有，并且满足以下其一时收录：98 五笔码表（`sources/wubi/wubi98.txt` 和 `sources/wubi/wubi98-fcitx.txt`）列有它；或 `sources/pinyin/rime-ice.txt` 里它是权重不低于 `MIN_PINYIN_WEIGHT` 的二字词。只算全部由汉字组成的词。98 码表是人工整理的词表，所以两字及以上的词都从中收录；rime-ice 的权重来自语料，语料也会产生词的碎片（被他、请把），所以从它只收超过阈值的二字词。9999 这类人工填写的权重不与词频区分。
 //!
@@ -11,7 +11,7 @@ use std::fmt::Write as _;
 
 use anyhow::{bail, Result};
 
-use crate::msime;
+use crate::lingyao;
 use crate::places_supplement::{is_han, weighted_rows};
 use crate::text;
 
@@ -60,7 +60,7 @@ pub struct Supplement {
 fn jidian_rows(source: &str) -> Vec<(String, &str, i64)> {
     text::universal_lines(text::without_bom(source))
         .into_iter()
-        .filter_map(|line| msime::parse_code_line(line, false))
+        .filter_map(|line| lingyao::parse_code_line(line, false))
         .collect()
 }
 
@@ -150,12 +150,12 @@ pub fn build(inputs: &Inputs) -> Result<Supplement> {
 
     let mut wubi98: BTreeSet<String> = BTreeSet::new();
     for line in text::universal_lines(text::without_bom(inputs.wubi98)) {
-        if let Some((_, value)) = msime::parse_wubi98_line(line) {
+        if let Some((_, value)) = lingyao::parse_wubi98_line(line) {
             wubi98.insert(value.to_owned());
         }
     }
     for line in text::universal_lines(inputs.wubi98_fcitx) {
-        if let Some((_, value)) = msime::parse_fcitx_wubi98_line(line) {
+        if let Some((_, value)) = lingyao::parse_fcitx_wubi98_line(line) {
             wubi98.insert(value);
         }
     }
@@ -220,7 +220,7 @@ pub fn build(inputs: &Inputs) -> Result<Supplement> {
 pub struct Provenance<'a> {
     /// 每个输入的 `(path, sha256)`。
     pub inputs: &'a [(&'a str, &'a str)],
-    /// 运行生成器的 msime 提交；构建器有未提交改动时带 `-dirty` 后缀。
+    /// 运行生成器的 lingyao 提交；构建器有未提交改动时带 `-dirty` 后缀。
     pub generator_commit: &'a str,
 }
 
@@ -232,7 +232,7 @@ pub fn render(supplement: &Supplement, provenance: &Provenance) -> String {
         .collect::<Vec<_>>()
         .join("、");
     let mut out = String::new();
-    let _ = writeln!(out, "# 86 五笔词组补充表，由 msime 仓库提交 {} 的 crates/dict-builder/src/wubi86_supplement.rs 以 `msime-dict-build wubi86-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out sources/wubi/wubi86-supplement.txt` 生成；不要手工编辑。", provenance.generator_commit);
+    let _ = writeln!(out, "# 86 五笔词组补充表，由 lingyao 仓库提交 {} 的 crates/dict-builder/src/wubi86_supplement.rs 以 `lingyao-dict-build wubi86-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out sources/wubi/wubi86-supplement.txt` 生成；不要手工编辑。", provenance.generator_commit);
     let _ = writeln!(out, "# 输入：{inputs}。");
     let _ = writeln!(out, "# 收录：{JIDIAN} 在任何编码下都没有、且全部由汉字组成的词，满足其一即收：在 98 五笔的 {WUBI98} 或 {WUBI98_FCITX} 里是两字及以上的词；或在 {BASE} 里是权重不低于 {MIN_PINYIN_WEIGHT} 的二字词（9999 这类人工填写的权重不与词频区分）。");
     let _ = writeln!(out, "# 编码：按 86 版词组规则，取 {JIDIAN} 里单字的全码（该字单独出现时最长的编码）：二字词各取前两码；三字词取前两字的首码和第三字的前两码；四字及以上取第一、二、三字和末字的首码。单字表里没有、或几个全码在所需码位上不一致的字，含它的词不收。");
@@ -403,13 +403,13 @@ mod tests {
         );
         let first = rendered.lines().next().unwrap();
         assert!(
-            first.contains("msime 仓库提交 0123456789abcdef0123456789abcdef01234567"),
+            first.contains("lingyao 仓库提交 0123456789abcdef0123456789abcdef01234567"),
             "{first}"
         );
         assert!(!first.contains("dictionary-sources.lock.json"));
         let parsed: Vec<_> = text::universal_lines(&rendered)
             .into_iter()
-            .filter_map(|line| msime::parse_code_line(line, false))
+            .filter_map(|line| lingyao::parse_code_line(line, false))
             .collect();
         assert_eq!(parsed, [("ukuy".to_owned(), "冲凉", 9)]);
     }

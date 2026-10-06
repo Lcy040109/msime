@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-@interface RowLayoutClient : NSObject <MSIMETextClient>
+@interface RowLayoutClient : NSObject <LINGYAOTextClient>
 @property(nonatomic) NSRect caret;
 @end
 @implementation RowLayoutClient
@@ -30,7 +30,7 @@
 @end
 
 // Keep the panel off the screen while it still lays its content out.
-@interface RowLayoutPanel : MSIMECandidatePanel
+@interface RowLayoutPanel : LINGYAOCandidatePanel
 @end
 @implementation RowLayoutPanel
 - (void)orderFrontRegardless
@@ -38,10 +38,10 @@
 }
 @end
 
-static MSIMECandidateButton *CandidateButton(NSView *content, NSInteger tag)
+static LINGYAOCandidateButton *CandidateButton(NSView *content, NSInteger tag)
 {
     for (NSView *view in content.subviews)
-        if ([view isKindOfClass:MSIMECandidateButton.class] && view.tag == tag) return (MSIMECandidateButton *)view;
+        if ([view isKindOfClass:LINGYAOCandidateButton.class] && view.tag == tag) return (LINGYAOCandidateButton *)view;
     return nil;
 }
 
@@ -50,11 +50,11 @@ int main(void)
     @autoreleasepool
     {
         [NSApplication sharedApplication];
-        NSString *suite = [@"app.msime.test.rowfit." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"app.lingyao.test.rowfit." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         appearance.vertical = NO;
-        MSIMEInputController *controller = [[MSIMEInputController alloc] init];
+        LINGYAOInputController *controller = [[LINGYAOInputController alloc] init];
         RowLayoutClient *client = [RowLayoutClient new];
         NSRect screen = NSScreen.mainScreen.visibleFrame;
         client.caret = NSMakeRect(NSMidX(screen), NSMidY(screen), 1, 20);
@@ -71,7 +71,7 @@ int main(void)
                                      @"candidates": @[@{@"text": @"测试", @"highlighted": @YES}]};
         [controller setValue:singleView forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *measured = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *measured = CandidateButton(panel.contentView, 0);
         assert(measured);
         NSFont *rowFont = measured.font;
         const CGFloat glyphWidth = [@"水" sizeWithAttributes:@{NSFontAttributeName: rowFont}].width;
@@ -89,7 +89,7 @@ int main(void)
         [controller renderCandidates];
         assert(panel.contentView.frame.size.width >= MIN(halfScreen, 7 * rowFont.pointSize) - 0.5);
         // A vertical row stretches across the whole card.
-        MSIMECandidateButton *oneCharacter = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *oneCharacter = CandidateButton(panel.contentView, 0);
         assert(oneCharacter && fabs(NSWidth(oneCharacter.frame) - (panel.contentView.frame.size.width - 2 * NSMinX(oneCharacter.frame))) <= 1.0);
         appearance.vertical = NO;
         NSString *(^glyphs)(CGFloat) = ^NSString *(CGFloat points) {
@@ -107,8 +107,8 @@ int main(void)
         [controller setValue:[pageView copy] forKey:@"view"];
         [controller renderCandidates];
 
-        MSIMECandidateButton *sentenceButton = CandidateButton(panel.contentView, 0);
-        MSIMECandidateButton *tailButton = CandidateButton(panel.contentView, 8);
+        LINGYAOCandidateButton *sentenceButton = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *tailButton = CandidateButton(panel.contentView, 8);
         assert(sentenceButton && tailButton);
         const CGFloat sentenceWidth = ceil([sentence sizeWithAttributes:@{NSFontAttributeName: rowFont}].width);
         // The head keeps its full width and every candidate keeps its natural width; the ones that do not fit start new lines below.
@@ -121,15 +121,15 @@ int main(void)
             NSRect frame = CandidateButton(panel.contentView, tag).frame;
             assert(NSMinX(frame) >= 0 && NSMaxX(frame) <= panel.frame.size.width + 0.5 && NSMinY(frame) >= 0);
         }
-        assert(panel.frame.size.width <= MAX(halfScreen, floor(screen.size.width - 2 * MSIMECandidateScreenMargin)) + 0.5);
+        assert(panel.frame.size.width <= MAX(halfScreen, floor(screen.size.width - 2 * LINGYAOCandidateScreenMargin)) + 0.5);
 
         // A page that fits keeps every candidate at its natural width on one line.
         NSMutableDictionary *narrowView = [singleView mutableCopy];
         narrowView[@"candidates"] = @[@{@"text": @"测试", @"highlighted": @YES}, @{@"text": @"测试测试"}];
         [controller setValue:[narrowView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *shorter = CandidateButton(panel.contentView, 0);
-        MSIMECandidateButton *longer = CandidateButton(panel.contentView, 1);
+        LINGYAOCandidateButton *shorter = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *longer = CandidateButton(panel.contentView, 1);
         assert(shorter && longer);
         assert(longer.frame.size.width > shorter.frame.size.width);
         assert(longer.frame.size.width - shorter.frame.size.width >= 2 * glyphWidth - 1.0);
@@ -142,16 +142,16 @@ int main(void)
         wideView[@"candidates"] = @[@{@"text": paragraph, @"highlighted": @YES}, @{@"text": @"测试"}];
         [controller setValue:[wideView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *wrapped = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *wrapped = CandidateButton(panel.contentView, 0);
         assert(wrapped.itemLayout.textWrapped && wrapped.frame.size.height > oneLine * 1.5);
-        assert(panel.frame.size.width <= MAX(halfScreen, floor(screen.size.width - 2 * MSIMECandidateScreenMargin)) + 0.5 && NSMaxX(wrapped.frame) <= panel.frame.size.width + 0.5);
+        assert(panel.frame.size.width <= MAX(halfScreen, floor(screen.size.width - 2 * LINGYAOCandidateScreenMargin)) + 0.5 && NSMaxX(wrapped.frame) <= panel.frame.size.width + 0.5);
         assert(NSMaxY(CandidateButton(panel.contentView, 1).frame) <= NSMinY(wrapped.frame) + 0.5);
 
         // A horizontal page whose glosses are wider than half the screen grows past it instead of wrapping them, as long as the screen has room: every gloss keeps the single line a short one gets.
         wideView[@"candidates"] = @[@{@"text": @"汉语", @"translation": @"Chinese", @"highlighted": @YES}];
         [controller setValue:[wideView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *shortGloss = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *shortGloss = CandidateButton(panel.contentView, 0);
         const CGFloat glossLine = shortGloss.itemLayout.translation.height;
         assert(glossLine > 0 && shortGloss.translationFont);
         // Six glosses of a quarter of half the screen each: half again as wide as a half-screen card, still well inside the screen.
@@ -165,7 +165,7 @@ int main(void)
         [controller renderCandidates];
         CGFloat glossTotal = 0;
         for (NSInteger tag = 0; tag < 6; ++tag) {
-            MSIMECandidateButton *button = CandidateButton(panel.contentView, tag);
+            LINGYAOCandidateButton *button = CandidateButton(panel.contentView, tag);
             assert(button && fabs(button.itemLayout.translation.height - glossLine) < 0.5);
             assert(fabs(NSMinY(button.frame) - NSMinY(CandidateButton(panel.contentView, 0).frame)) < 0.5);
             glossTotal += button.itemLayout.translation.width;
@@ -178,9 +178,9 @@ int main(void)
         wideView[@"candidates"] = @[@{@"text": @"测试", @"highlighted": @YES}, @{@"text": paragraph}, @{@"text": @"测试测试"}];
         [controller setValue:[wideView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *first = CandidateButton(panel.contentView, 0);
-        MSIMECandidateButton *tall = CandidateButton(panel.contentView, 1);
-        MSIMECandidateButton *last = CandidateButton(panel.contentView, 2);
+        LINGYAOCandidateButton *first = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *tall = CandidateButton(panel.contentView, 1);
+        LINGYAOCandidateButton *last = CandidateButton(panel.contentView, 2);
         assert(first && tall && last);
         assert(panel.frame.size.width <= halfScreen + 0.5);
         assert(tall.itemLayout.textWrapped && tall.frame.size.height > first.frame.size.height * 2);
@@ -192,7 +192,7 @@ int main(void)
         wideView[@"candidates"] = @[@{@"text": @"汉语", @"annotation": @"(aB)", @"highlighted": @YES}];
         [controller setValue:[wideView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *annotated = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *annotated = CandidateButton(panel.contentView, 0);
         assert(![annotated.title containsString:@"(aB)"] && [annotated.title containsString:@"汉语"]);
         assert([annotated.annotation isEqual:@"(aB)"] && !annotated.itemLayout.annotation.below);
         assert([annotated.toolTip isEqual:@"汉语(aB)"] && [annotated.accessibilityLabel containsString:@"汉语(aB)"]);
@@ -213,7 +213,7 @@ int main(void)
         wideView[@"candidates"] = @[@{@"text": @"汉语", @"translation": longGloss, @"highlighted": @YES}];
         [controller setValue:[wideView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *glossed = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *glossed = CandidateButton(panel.contentView, 0);
         assert(glossed.itemLayout.translation.below && glossed.translationBelow);
         assert(glossed.itemLayout.translation.height > glossed.itemLayout.textHeight);
         assert(panel.frame.size.width <= halfScreen + 0.5);
@@ -226,13 +226,13 @@ int main(void)
         appearance.candidateTranslations = NO;
         appearance.candidateEnglishGloss = NO;
         NSString *reading = @"나라 이름 한, 한나라 한";
-        NSDictionary *hanjaBase = @{@"focused": @YES, @"scheme": @(msime::mac::KoreanScheme), @"local_mode": @"none", @"editing_text": @"한",
+        NSDictionary *hanjaBase = @{@"focused": @YES, @"scheme": @(lingyao::mac::KoreanScheme), @"local_mode": @"none", @"editing_text": @"한",
                                     @"candidate_list_open": @YES, @"page": @0, @"page_count": @1};
         NSMutableDictionary *hanjaView = [hanjaBase mutableCopy];
         hanjaView[@"candidates"] = @[@{@"text": @"韓", @"annotation": reading, @"highlighted": @YES}, @{@"text": @"漢", @"annotation": @"한수 한"}];
         [controller setValue:[hanjaView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *hanja = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *hanja = CandidateButton(panel.contentView, 0);
         assert(hanja && [hanja.title isEqual:@"1  韓"] && hanja.annotation.length == 0 && hanja.itemLayout.annotation.width == 0);
         assert([hanja.glossReading isEqual:reading] && hanja.translation.length == 0);
         assert(hanja.itemLayout.translation.width > 0 && hanja.itemLayout.translation.below && hanja.translationBelow);
@@ -251,7 +251,7 @@ int main(void)
         hanjaView[@"candidates"] = @[@{@"text": @"韓", @"highlighted": @YES}];
         [controller setValue:[hanjaView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *bare = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *bare = CandidateButton(panel.contentView, 0);
         assert(bare.glossReading.length == 0 && fabs(NSHeight(bare.frame) - hanjaHeight) < 0.5);
         [controller setValue:@{@"focused": @YES, @"editing_text": @"han", @"page": @0, @"page_count": @1,
                                @"candidates": @[@{@"text": @"韩", @"highlighted": @YES}]} forKey:@"view"];
@@ -263,7 +263,7 @@ int main(void)
         hanjaView[@"candidates"] = @[@{@"text": @"韓", @"annotation": reading, @"translation": @"Korea", @"highlighted": @YES}];
         [controller setValue:[hanjaView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *translated = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *translated = CandidateButton(panel.contentView, 0);
         assert([translated.translation isEqual:@"Korea"] && [translated.glossReading isEqual:reading]);
         assert(translated.itemLayout.translation.height > glossLine * 1.5);
         NSString *translatedTip = [NSString stringWithFormat:@"韓\n%@\nKorea", reading];
@@ -279,10 +279,10 @@ int main(void)
         hanjaView[@"candidates"] = @[@{@"text": @"韓", @"annotation": reading, @"highlighted": @YES}];
         [controller setValue:[hanjaView copy] forKey:@"view"];
         [controller renderCandidates];
-        MSIMECandidateButton *verticalHanja = CandidateButton(panel.contentView, 0);
+        LINGYAOCandidateButton *verticalHanja = CandidateButton(panel.contentView, 0);
         assert(verticalHanja.itemLayout.translation.width > 0 && !verticalHanja.itemLayout.translation.below && !verticalHanja.translationBelow);
         assert(verticalHanja.annotation.length == 0 && [verticalHanja.glossReading isEqual:reading]);
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
     return 0;
 }

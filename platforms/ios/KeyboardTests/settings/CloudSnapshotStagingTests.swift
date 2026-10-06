@@ -18,7 +18,7 @@ final class CloudSnapshotStagingTests: XCTestCase {
       entry.replacingOccurrences(of: "synthetic", with: "pinyin-fixture").replacingOccurrences(of: "quick", with: "pinyin").replacingOccurrences(of: "snapshot", with: "he'cheng").replacingOccurrences(of: "合成词条", with: "合成"),
       entry.replacingOccurrences(of: "synthetic", with: "wubi-fixture").replacingOccurrences(of: "quick", with: "wubi").replacingOccurrences(of: "snapshot", with: "wgk").replacingOccurrences(of: "合成词条", with: "合"),
       entry.replacingOccurrences(of: "synthetic", with: "english-fixture").replacingOccurrences(of: "quick", with: "english").replacingOccurrences(of: "合成词条", with: "Snapshot")]
-    var lines = [#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":1}"#]
+    var lines = [#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":1}"#]
     lines += entries.map { "{\"type\":\"entry\",\"data\":\($0)}" }
     lines += entries.map { "{\"type\":\"overlay\",\"deleted\":false,\"data\":\($0)}" }
     lines += [
@@ -32,7 +32,7 @@ final class CloudSnapshotStagingTests: XCTestCase {
     let file = root.appendingPathComponent("source.ndjson")
     try (body + footer + Data([10])).write(to: file)
     var snapshot = try BackendPreparedSnapshot(copying: file)
-    func stage(_ identifier: String) throws -> MSIMEPreparedDictionarySnapshot {
+    func stage(_ identifier: String) throws -> LINGYAOPreparedDictionarySnapshot {
       let stream = try BackendSnapshotRecordStream(snapshot: snapshot)
       let recordCount = snapshot.envelope.overlays + snapshot.envelope.positions + snapshot.envelope.selections
       return try DictionarySnapshotBridge.prepare(resources: resources, user: user, identifier: identifier,

@@ -1,0 +1,11 @@
+[Unit]
+Description=LINGYAO voice provider socket
+
+[Socket]
+ListenStream=%t/lingyao-client/voice.sock
+SocketMode=0600
+DirectoryMode=0700
+RemoveOnStop=true
+
+[Install]
+WantedBy=sockets.target

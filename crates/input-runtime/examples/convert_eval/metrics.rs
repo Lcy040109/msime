@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 /// Where a candidate came from. Mirrors the Engine's CandidateSource discriminants, which the
 /// runtime passes through untouched as `Candidate::source`.
 pub fn source_name(source: u8) -> &'static str {
-    // Mirrors msime_engine::CandidateSource, in declaration order.
+    // Mirrors lingyao_engine::CandidateSource, in declaration order.
     match source {
         0 => "database",
         1 => "user-database",

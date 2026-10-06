@@ -12,20 +12,20 @@
 # Not every disabled source is that, though - see the three outcomes at the bottom.
 #
 # Usage: platforms/macos/scripts/install.sh [path/to/bundle.app]
-#   MSIME_SIGNING_IDENTITY       signing identity, a name or a SHA-1; defaults to the first Developer ID Application certificate in the keychain, by SHA-1
-#   MSIME_INPUT_METHODS_DIR      destination; defaults to ~/Library/Input Methods
-#   MSIME_VOICE_ENTITLEMENTS     entitlements to sign with; defaults to resources/VoiceInput.entitlements
+#   LINGYAO_SIGNING_IDENTITY       signing identity, a name or a SHA-1; defaults to the first Developer ID Application certificate in the keychain, by SHA-1
+#   LINGYAO_INPUT_METHODS_DIR      destination; defaults to ~/Library/Input Methods
+#   LINGYAO_VOICE_ENTITLEMENTS     entitlements to sign with; defaults to resources/VoiceInput.entitlements
 set -euo pipefail
 
 name="灵耀输入法.app"
 executable="灵耀输入法"
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 source_bundle="${1:-$root/target/macos/$name}"
-destination_root="${MSIME_INPUT_METHODS_DIR:-$HOME/Library/Input Methods}"
-entitlements="${MSIME_VOICE_ENTITLEMENTS:-$root/platforms/macos/resources/VoiceInput.entitlements}"
+destination_root="${LINGYAO_INPUT_METHODS_DIR:-$HOME/Library/Input Methods}"
+entitlements="${LINGYAO_VOICE_ENTITLEMENTS:-$root/platforms/macos/resources/VoiceInput.entitlements}"
 
 if [ ! -d "$source_bundle" ]; then
-  echo "no bundle at $source_bundle; build MSIMEClientInputMethod first (see platforms/macos/README.md)" >&2
+  echo "no bundle at $source_bundle; build LINGYAOClientInputMethod first (see platforms/macos/README.md)" >&2
   exit 1
 fi
 /usr/bin/plutil -lint "$entitlements" >/dev/null
@@ -63,7 +63,7 @@ if pgrep -f "$destination/Contents/MacOS/$executable" >/dev/null 2>&1; then
   fi
 fi
 
-staging="$(mktemp -d "$destination_root/.msime-staging.XXXXXX")"
+staging="$(mktemp -d "$destination_root/.lingyao-staging.XXXXXX")"
 backup=""
 restore() {
   status=$?
@@ -82,7 +82,7 @@ trap restore EXIT
 ditto "$source_bundle" "$staging/$name"
 
 # Sign the staged copy, not the destination: a half-signed bundle must never be the installed one.
-identity="${MSIME_SIGNING_IDENTITY:-}"
+identity="${LINGYAO_SIGNING_IDENTITY:-}"
 label="$identity"
 if [ -z "$identity" ]; then
   # Resolve to the certificate's SHA-1, not its name. Two valid Developer ID Application certificates for
@@ -101,11 +101,11 @@ if [ -z "$identity" ]; then
   found="$(printf '%s\n' "$candidates" | grep -c . || true)"
   if [ "${found:-0}" -gt 1 ]; then
     echo "$found Developer ID Application identities in the keychain; signing with $label ($identity)" >&2
-    echo "set MSIME_SIGNING_IDENTITY to a SHA-1 from 'security find-identity -v -p codesigning' for another" >&2
+    echo "set LINGYAO_SIGNING_IDENTITY to a SHA-1 from 'security find-identity -v -p codesigning' for another" >&2
   fi
 fi
 if [ -z "$identity" ]; then
-  echo "no Developer ID Application identity found; set MSIME_SIGNING_IDENTITY" >&2
+  echo "no Developer ID Application identity found; set LINGYAO_SIGNING_IDENTITY" >&2
   echo "an ad-hoc signed bundle will not register as an input source" >&2
   exit 1
 fi
@@ -129,7 +129,7 @@ codesign --verify --strict "$staging/$name"
 if [ "$label" = "$identity" ]; then echo "signed with $identity"; else echo "signed with $label ($identity)"; fi
 
 if [ -d "$destination" ]; then
-  backup="$(mktemp -d "$destination_root/.msime-backup.XXXXXX")"
+  backup="$(mktemp -d "$destination_root/.lingyao-backup.XXXXXX")"
   mv "$destination" "$backup/$name"
 fi
 mv "$staging/$name" "$destination"

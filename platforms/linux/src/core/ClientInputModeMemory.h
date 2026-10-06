@@ -6,7 +6,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // IBus does not keep the Windows TSF client's CN/EN status for us. Keep a
 // bounded in-process map keyed by the client identity supplied by IBus so
@@ -56,4 +56,4 @@ private:
   std::optional<bool> anonymous_;
 };
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

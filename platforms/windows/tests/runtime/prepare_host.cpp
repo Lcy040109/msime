@@ -5,7 +5,7 @@
 int main() {
   namespace fs = std::filesystem;
   const auto root = fs::temp_directory_path() /
-      ("msime-prepare-test-" + std::to_string(
+      ("lingyao-prepare-test-" + std::to_string(
           std::chrono::steady_clock::now().time_since_epoch().count()));
   if (!fs::create_directory(root)) return 1;
   try {
@@ -27,15 +27,15 @@ int main() {
       if (!rejected) throw std::runtime_error("Expected refusal");
     };
     const auto state = root / "new state";
-    const auto path = msime::windows::prepare_host_state(resources, state, host);
+    const auto path = lingyao::windows::prepare_host_state(resources, state, host);
     std::ifstream input(path);
     const auto saved = nlohmann::json::parse(input);
     if (saved.at("preferences_directory") != state.u8string() || calls != 1 ||
         fs::exists(state / ".runtime-options-prepared"))
       throw std::runtime_error("Publication mismatch");
-    reject([&] { msime::windows::prepare_host_state(resources, state, host); });
-    reject([&] { msime::windows::prepare_host_state("relative", root / "bad", host); });
-    reject([&] { msime::windows::prepare_host_state(resources, root / "missing" / "child", host); });
+    reject([&] { lingyao::windows::prepare_host_state(resources, state, host); });
+    reject([&] { lingyao::windows::prepare_host_state("relative", root / "bad", host); });
+    reject([&] { lingyao::windows::prepare_host_state(resources, root / "missing" / "child", host); });
     if (calls != 1) throw std::runtime_error("Invalid request reached host");
 
     // 临时配置文件必须独占创建，不能覆盖预先存在的文件或跟随符号链接。
@@ -49,7 +49,7 @@ int main() {
 #else
     fs::create_symlink(staged_target, staged);
 #endif
-    reject([&] { msime::windows::prepare_host_state_in_directory(resources, staged_state, host); });
+    reject([&] { lingyao::windows::prepare_host_state_in_directory(resources, staged_state, host); });
     std::ifstream preserved(staged_target);
     std::string preserved_value;
     preserved >> preserved_value;
@@ -59,13 +59,13 @@ int main() {
     for (const std::string response : {"{", "{\"ok\":false}",
                                       "{\"ok\":true,\"value\":null}"}) {
       const auto failed = root / ("failure-" + std::to_string(++calls));
-      reject([&] { msime::windows::prepare_host_state(resources, failed,
+      reject([&] { lingyao::windows::prepare_host_state(resources, failed,
           [&](const std::string &) { return response; }); });
       if (!fs::is_directory(failed) || fs::exists(failed / "runtime-options.json"))
         throw std::runtime_error("Failure retention mismatch");
     }
     const auto raced = root / "raced";
-    reject([&] { msime::windows::prepare_host_state(resources, raced,
+    reject([&] { lingyao::windows::prepare_host_state(resources, raced,
         [&](const std::string &request) {
           std::ofstream(raced / "runtime-options.json") << "sentinel";
           return host(request);

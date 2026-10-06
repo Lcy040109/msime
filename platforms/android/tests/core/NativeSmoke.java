@@ -1,4 +1,4 @@
-import app.msime.android.NativeClient;
+import app.lingyao.android.NativeClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -25,7 +25,7 @@ public final class NativeSmoke {
                 "relative").contains("\"ok\":false")) {
             throw new AssertionError("candidate gloss accepted a relative resource path");
         }
-        Path root = Files.createTempDirectory("msime-jni-");
+        Path root = Files.createTempDirectory("lingyao-jni-");
         try {
             Path preferences = Files.createDirectory(root.resolve("preferences-🌲"));
             success(NativeClient.loadPreferences(preferences.toString()));

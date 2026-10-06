@@ -8,7 +8,7 @@
 #include <atomic>
 #include <functional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class VoiceHotkeyController final {
 public:
   using ConfigProvider = std::function<VoiceInputConfig()>;
@@ -58,4 +58,4 @@ private:
   bool observed_hotkey_hold_space_lock_ = true;
   static VoiceHotkeyController *instance_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

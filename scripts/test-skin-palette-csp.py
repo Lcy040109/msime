@@ -268,7 +268,7 @@ with sync_playwright() as playwright:
       const {installToolbarCss} = await import('/skin-toolbar-css.js');
       const bytes = Uint8Array.from(atob(fontBase64), c => c.charCodeAt(0)).buffer;
       const reads = [];
-      const prepared = await prepareToolbarFonts('@supports (font-family:serif) {@media (min-width:800px) {@font-face{font-family:Conditional;src:url(fonts/test.ttf)}}} @supports (msime-unsupported:yes) {@font-face{font-family:Unused;src:url(fonts/unused.ttf)}} .sample{font-family:Conditional,monospace;font-size:20px}', async path => { reads.push(path); return bytes; });
+      const prepared = await prepareToolbarFonts('@supports (font-family:serif) {@media (min-width:800px) {@font-face{font-family:Conditional;src:url(fonts/test.ttf)}}} @supports (lingyao-unsupported:yes) {@font-face{font-family:Unused;src:url(fonts/unused.ttf)}} .sample{font-family:Conditional,monospace;font-size:20px}', async path => { reads.push(path); return bytes; });
       if (prepared.partial || reads.join(',') !== 'fonts/test.ttf') throw Error('conditional preparation failed');
       const initial = document.fonts.size;
       const remove = prepared.install(), style = installToolbarCss('card1', prepared.css);

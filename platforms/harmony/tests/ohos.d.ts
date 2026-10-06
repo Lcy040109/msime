@@ -23,7 +23,7 @@ declare module "@ohos.deviceInfo" {
   export default deviceInfo;
 }
 
-declare module "libmsimeclient.so" {
+declare module "liblingyaoclient.so" {
   const client: {
     loadPreferences(directory: string): string;
     savePreferences(directory: string, expectedRevision: number, snapshot: string): string;

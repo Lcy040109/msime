@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value, int line) {
   if (!value)
@@ -60,21 +60,21 @@ int main() {
     // Brackets: the left one takes the first Han character, the right one the
     // last. That direction is the whole feature.
     REQUIRE(word_character_edge(key(0xDB, '['), WordCharacterBinding::Brackets) ==
-            MSIME_FIRST_HAN);
+            LINGYAO_FIRST_HAN);
     REQUIRE(word_character_edge(key(0xDD, ']'), WordCharacterBinding::Brackets) ==
-            MSIME_LAST_HAN);
+            LINGYAO_LAST_HAN);
     // Minus and equals, under their own binding.
     REQUIRE(word_character_edge(key(0xBD, '-'), WordCharacterBinding::MinusEqual) ==
-            MSIME_FIRST_HAN);
+            LINGYAO_FIRST_HAN);
     REQUIRE(word_character_edge(key(0xBB, '='), WordCharacterBinding::MinusEqual) ==
-            MSIME_LAST_HAN);
+            LINGYAO_LAST_HAN);
 
     // In the Japanese scheme '-' is the long-vowel mark, not the first character; '=' still takes the last.
     REQUIRE(!word_character_edge(key(0xBD, '-'), WordCharacterBinding::MinusEqual, true));
     REQUIRE(word_character_edge(key(0xBB, '='), WordCharacterBinding::MinusEqual, true) ==
-            MSIME_LAST_HAN);
+            LINGYAO_LAST_HAN);
     REQUIRE(word_character_edge(key(0xDB, '['), WordCharacterBinding::Brackets, true) ==
-            MSIME_FIRST_HAN);
+            LINGYAO_FIRST_HAN);
 
     // One binding does not answer for the other's keys: with minus/equals
     // chosen, a bracket is an ordinary bracket.

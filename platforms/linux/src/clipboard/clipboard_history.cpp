@@ -19,7 +19,7 @@ constexpr size_t kMaxStoreBytes = 1024 * 1024;
 class HistoryLock {
  public:
   explicit HistoryLock(const std::filesystem::path &history) {
-    fd_ = msime::linux_host::open_clipboard_lock(history);
+    fd_ = lingyao::linux_host::open_clipboard_lock(history);
     if (fd_ >= 0 && flock(fd_, LOCK_EX) != 0) { close(fd_); fd_ = -1; }
   }
   ~HistoryLock() { if (fd_ >= 0) { flock(fd_, LOCK_UN); close(fd_); } }
@@ -57,7 +57,7 @@ std::string normalize(std::string text) {
   return text;
 }
 std::vector<std::string> load(const std::filesystem::path &path) {
-  const auto payload = msime::linux_host::read_clipboard_file(path, kMaxStoreBytes);
+  const auto payload = lingyao::linux_host::read_clipboard_file(path, kMaxStoreBytes);
   if (!payload) return {};
   try { auto value = Json::parse(*payload); if (!value.is_array()) return {};
     std::vector<std::string> items;
@@ -70,12 +70,12 @@ std::vector<std::string> load(const std::filesystem::path &path) {
   } catch (...) { return {}; }
 }
 bool save(const std::filesystem::path &path, const std::vector<std::string> &items) {
-  return msime::linux_host::write_clipboard_file_atomically(path, Json(items).dump());
+  return lingyao::linux_host::write_clipboard_file_atomically(path, Json(items).dump());
 }
 }
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "--help") {
-    std::cout << "Usage: msime-linux-clipboard <history.json> <list|get|add|add-stdin|remove|remove-index|clear> [value]\n";
+    std::cout << "Usage: lingyao-linux-clipboard <history.json> <list|get|add|add-stdin|remove|remove-index|clear> [value]\n";
     return 0;
   }
   if (argc < 3) return 2;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     if (invalid_input) return 2;
     if (added_text.empty()) return 0;
     if (!path.parent_path().empty() &&
-        !msime::linux_host::prepare_clipboard_directory(path.parent_path()))
+        !lingyao::linux_host::prepare_clipboard_directory(path.parent_path()))
       return 1;
   }
   HistoryLock lock(path);
@@ -144,6 +144,6 @@ int main(int argc, char **argv) {
       return save(path, items) ? 0 : 1;
     } catch (...) { return 2; }
   }
-  if (op == "clear") return msime::linux_host::remove_clipboard_file(path) ? 0 : 1;
+  if (op == "clear") return lingyao::linux_host::remove_clipboard_file(path) ? 0 : 1;
   return 2;
 }

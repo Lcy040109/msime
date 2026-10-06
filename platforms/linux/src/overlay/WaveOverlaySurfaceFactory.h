@@ -5,9 +5,9 @@
 
 #include <memory>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 std::unique_ptr<WaveOverlaySurface> create_wave_overlay_surface(
     IBusEngine *engine, WaveOverlaySurface::ActionHandler action_handler = {});
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

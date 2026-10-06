@@ -37,7 +37,7 @@
                 android:textFontWeight="600"
                 android:textSize="28sp" />
 
-            <app.msime.android.home.KeyboardPreview
+            <app.lingyao.android.home.KeyboardPreview
                 android:id="@+id/community_item_preview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

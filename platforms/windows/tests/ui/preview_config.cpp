@@ -1,7 +1,7 @@
 #include "PreviewConfig.h"
 #include <iostream>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 // A bare `return 1` told us only that something in three hundred assertions
 // broke, which is how this test stayed red unnoticed: the pipe-only preset
 // skips it, so nobody read the exit code. Report the line instead.
@@ -31,7 +31,7 @@ int main() {
             !good.navigation.mouse_wheel &&
             good.word_character == WordCharacterBinding::Disabled);
     const auto names = good.pipe_names();
-    require(names[0] == L"\\\\.\\pipe\\msime-client-preview-fixture-12-0" &&
+    require(names[0] == L"\\\\.\\pipe\\lingyao-client-preview-fixture-12-0" &&
             names[0] != names[1] && names[1] != names[2]);
     // Takes the caller's line, or every rejection failure would report the one
     // line inside this lambda and name none of the ~60 documents it checks.

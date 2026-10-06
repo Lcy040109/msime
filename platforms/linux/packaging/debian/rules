@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
-# 灵耀输入法 Linux 完整版的 Debian 源码包构建，供 Launchpad PPA 或 OBS 使用。构建步骤照搬 platforms/linux/package-container.sh：Release 的 Host API、MCP 服务和 Tauri 设置窗口，再以 MSIME_ENABLE_PACKAGING=ON 配置 CMake，跑与门禁相同的 ctest。
+# 灵耀输入法 Linux 完整版的 Debian 源码包构建，供 Launchpad PPA 或 OBS 使用。构建步骤照搬 platforms/linux/package-container.sh：Release 的 Host API、MCP 服务和 Tauri 设置窗口，再以 LINGYAO_ENABLE_PACKAGING=ON 配置 CMake，跑与门禁相同的 ctest。
 #
-# 构建农场没有网络。Cargo 依赖、设置窗口的前端和需要下载的数据来自组件 tarball msime_VERSION.orig-vendor.tar.xz，dpkg-source 把它解到 vendor/；它就是发布页上的 msime-VERSION-vendor.tar.xz，由 platforms/linux/packaging/make-source-tarballs.sh 生成。
+# 构建农场没有网络。Cargo 依赖、设置窗口的前端和需要下载的数据来自组件 tarball lingyao_VERSION.orig-vendor.tar.xz，dpkg-source 把它解到 vendor/；它就是发布页上的 lingyao-VERSION-vendor.tar.xz，由 platforms/linux/packaging/make-source-tarballs.sh 生成。
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export PYTHONDONTWRITEBYTECODE = 1
@@ -11,7 +11,7 @@ include /usr/share/dpkg/pkg-info.mk
 
 VENDOR := $(CURDIR)/vendor
 CMAKE_BUILD := debian/build-cmake
-PRIVATE_LIB := $(CURDIR)/debian/msime/usr/lib/$(DEB_HOST_MULTIARCH)/msime-client
+PRIVATE_LIB := $(CURDIR)/debian/lingyao/usr/lib/$(DEB_HOST_MULTIARCH)/lingyao-client
 
 export CARGO_HOME := $(CURDIR)/debian/cargo-home
 export CARGO_NET_OFFLINE := true
@@ -45,32 +45,32 @@ override_dh_auto_configure:
 	python3 scripts/fetch_handwriting_model.py --out $(VENDOR)/handwriting-model
 	python3 scripts/fetch_offline_glosses.py --out $(VENDOR)/offline-glosses
 	python3 scripts/fetch_language_dictionaries.py --out $(VENDOR)/language-dictionaries
-	# msime-desktop 编译时把前端嵌进去。tauri/custom-protocol 是 `tauri build` 打开的特性，没有它就是加载 devUrl 的开发构建；TAURI_CONFIG 设定应用报告的版本。
+	# lingyao-desktop 编译时把前端嵌进去。tauri/custom-protocol 是 `tauri build` 打开的特性，没有它就是加载 devUrl 的开发构建；TAURI_CONFIG 设定应用报告的版本。
 	rm -rf apps/desktop/dist
 	cp -a $(VENDOR)/frontend/dist apps/desktop/dist
-	cargo build --release --locked --offline -p msime-host-api
-	cargo build --release --locked --offline -p msime-mcp-server --bin msime-mcp
+	cargo build --release --locked --offline -p lingyao-host-api
+	cargo build --release --locked --offline -p lingyao-mcp-server --bin lingyao-mcp
 	TAURI_CONFIG='{"version":"$(DEB_VERSION_UPSTREAM)"}' \
-	  cargo build --release --locked --offline -p msime-desktop --bin msime-desktop --features tauri/custom-protocol
+	  cargo build --release --locked --offline -p lingyao-desktop --bin lingyao-desktop --features tauri/custom-protocol
 	python3 platforms/linux/collect-notices.py cargo debian/notices/rust-crates-NOTICES.txt \
-	  msime-host-api msime-mcp-server msime-desktop:tauri/custom-protocol
+	  lingyao-host-api lingyao-mcp-server lingyao-desktop:tauri/custom-protocol
 	# Release 与发布页的 .deb 一致：测试目标自带 -UNDEBUG，产品代码的 assert 不进发布构建。
 	dh_auto_configure -- \
 	  -DCMAKE_BUILD_TYPE=Release \
-	  -DMSIME_EDITION=full \
-	  -DMSIME_ENABLE_PACKAGING=ON \
-	  -DMSIME_ENABLE_FCITX5=ON \
-	  -DMSIME_PACKAGE_VERSION=$(DEB_VERSION_UPSTREAM) \
-	  -DMSIME_HOST_LIBRARY=$(CURDIR)/target/release/libmsime_host_api.so \
-	  -DMSIME_MCP_BINARY=$(CURDIR)/target/release/msime-mcp \
-	  -DMSIME_DESKTOP_BINARY=$(CURDIR)/target/release/msime-desktop \
-	  -DMSIME_RUST_NOTICES=$(CURDIR)/debian/notices/rust-crates-NOTICES.txt \
-	  -DMSIME_FRONTEND_NOTICES=$(VENDOR)/frontend/frontend-npm-NOTICES.txt \
-	  -DMSIME_VOICE_RUNTIME_DIR=$(CURDIR)/debian/voice-runtime \
-	  -DMSIME_HANDWRITING_MODEL_DIR=$(VENDOR)/handwriting-model \
-	  -DMSIME_OFFLINE_GLOSSES=$(VENDOR)/offline-glosses \
-	  -DMSIME_LANGUAGE_DICTIONARIES=$(VENDOR)/language-dictionaries \
-	  -DMSIME_REQUIRE_LANGUAGE_DICTIONARIES=ON
+	  -DLINGYAO_EDITION=full \
+	  -DLINGYAO_ENABLE_PACKAGING=ON \
+	  -DLINGYAO_ENABLE_FCITX5=ON \
+	  -DLINGYAO_PACKAGE_VERSION=$(DEB_VERSION_UPSTREAM) \
+	  -DLINGYAO_HOST_LIBRARY=$(CURDIR)/target/release/liblingyao_host_api.so \
+	  -DLINGYAO_MCP_BINARY=$(CURDIR)/target/release/lingyao-mcp \
+	  -DLINGYAO_DESKTOP_BINARY=$(CURDIR)/target/release/lingyao-desktop \
+	  -DLINGYAO_RUST_NOTICES=$(CURDIR)/debian/notices/rust-crates-NOTICES.txt \
+	  -DLINGYAO_FRONTEND_NOTICES=$(VENDOR)/frontend/frontend-npm-NOTICES.txt \
+	  -DLINGYAO_VOICE_RUNTIME_DIR=$(CURDIR)/debian/voice-runtime \
+	  -DLINGYAO_HANDWRITING_MODEL_DIR=$(VENDOR)/handwriting-model \
+	  -DLINGYAO_OFFLINE_GLOSSES=$(VENDOR)/offline-glosses \
+	  -DLINGYAO_LANGUAGE_DICTIONARIES=$(VENDOR)/language-dictionaries \
+	  -DLINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=ON
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
@@ -80,25 +80,25 @@ endif
 # ctest 跑的是构建目录，看不到装出去的程序能不能加载。Fcitx5 插件、IBus engine 和本地语音运行库都按 RUNPATH 找包内私有目录里的库，它们必须解析到同一个目录。
 execute_after_dh_auto_install:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	desktop-file-validate debian/msime/usr/share/applications/msime-linux.desktop
-	set -e; for binary in debian/msime/usr/lib/$(DEB_HOST_MULTIARCH)/fcitx5/libmsime-fcitx5.so debian/msime/usr/bin/msime-linux-ibus; do \
-	  resolved=$$(ldd $$binary | awk '$$1 == "libmsime_host_api.so" { print $$3 }'); \
-	  echo "$$binary: libmsime_host_api.so => $$resolved"; \
-	  test "$$(realpath -- "$$resolved")" = "$$(realpath -- $(PRIVATE_LIB)/libmsime_host_api.so)"; \
+	desktop-file-validate debian/lingyao/usr/share/applications/lingyao-linux.desktop
+	set -e; for binary in debian/lingyao/usr/lib/$(DEB_HOST_MULTIARCH)/fcitx5/liblingyao-fcitx5.so debian/lingyao/usr/bin/lingyao-linux-ibus; do \
+	  resolved=$$(ldd $$binary | awk '$$1 == "liblingyao_host_api.so" { print $$3 }'); \
+	  echo "$$binary: liblingyao_host_api.so => $$resolved"; \
+	  test "$$(realpath -- "$$resolved")" = "$$(realpath -- $(PRIVATE_LIB)/liblingyao_host_api.so)"; \
 	done
 	set -e; resolved=$$(ldd $(PRIVATE_LIB)/libsherpa-onnx-c-api.so | awk '$$1 == "libonnxruntime.so" { print $$3 }'); \
 	  echo "libsherpa-onnx-c-api.so: libonnxruntime.so => $$resolved"; \
 	  test "$$(realpath -- "$$resolved")" = "$$(realpath -- $(PRIVATE_LIB)/libonnxruntime.so)"
 	# 插件条目按绝对路径指向插件：fcitx5 插件目录不是多架构目录的发行版（AOSC OS）装这个包时，插件才加载得到。
-	grep -qx 'Library=/usr/lib/$(DEB_HOST_MULTIARCH)/fcitx5/libmsime-fcitx5' debian/msime/usr/share/fcitx5/addon/msime.conf
+	grep -qx 'Library=/usr/lib/$(DEB_HOST_MULTIARCH)/fcitx5/liblingyao-fcitx5' debian/lingyao/usr/share/fcitx5/addon/lingyao.conf
 endif
 
-# 维护脚本用 CMake 由 platforms/linux/cmake/deb-*.in 配置出的那两份，与发布页的 .deb 是同一份；只在结尾的 exit 0 前给 debhelper 留出插入点。postinst 在那之前再接上 debian/postinst-register：每次安装（替换掉 msime-linux，或从 config-files 状态重装）之后替每个用户恢复卸载时撤下的用户单元和输入法列表，「这次是安装」由 debian/msime.preinst 留下的标记告诉它，debian/msime.postrm 在 purge 与 abort-install 时清掉没用上的标记。
+# 维护脚本用 CMake 由 platforms/linux/cmake/deb-*.in 配置出的那两份，与发布页的 .deb 是同一份；只在结尾的 exit 0 前给 debhelper 留出插入点。postinst 在那之前再接上 debian/postinst-register：每次安装（替换掉 lingyao-linux，或从 config-files 状态重装）之后替每个用户恢复卸载时撤下的用户单元和输入法列表，「这次是安装」由 debian/lingyao.preinst 留下的标记告诉它，debian/lingyao.postrm 在 purge 与 abort-install 时清掉没用上的标记。
 execute_before_dh_installdeb:
 	test "$$(tail -n 1 $(CMAKE_BUILD)/debian/postinst)" = "exit 0"
-	{ sed '$$d' $(CMAKE_BUILD)/debian/postinst; cat debian/postinst-register; printf '#DEBHELPER#\nexit 0\n'; } > debian/msime.postinst
-	sed '$$s/^exit 0$$/#DEBHELPER#\nexit 0/' $(CMAKE_BUILD)/debian/prerm > debian/msime.prerm
-	grep -q '^#DEBHELPER#$$' debian/msime.prerm
+	{ sed '$$d' $(CMAKE_BUILD)/debian/postinst; cat debian/postinst-register; printf '#DEBHELPER#\nexit 0\n'; } > debian/lingyao.postinst
+	sed '$$s/^exit 0$$/#DEBHELPER#\nexit 0/' $(CMAKE_BUILD)/debian/prerm > debian/lingyao.prerm
+	grep -q '^#DEBHELPER#$$' debian/lingyao.prerm
 
 # dh_clean 默认删除源码树里所有 *.orig 文件，而 vendor/cargo 里每个 crate 都带一份 Cargo.toml.orig，并记在 .cargo-checksum.json 里；删掉后 Cargo 校验目录源失败。Launchpad 构建前同样先跑 clean。
 override_dh_clean:

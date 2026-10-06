@@ -5,9 +5,9 @@
 
 // Called on the main thread after validating the departing input client.
 // Cancel, rather than stop-and-transcribe, so a focus loss never submits speech.
-static inline void MSIMEDeactivateVoice(MSIMEVoiceInputService *service,
-    MSIMEClientSession *session, MSIMEVoiceAudioMuter *muter,
-    MSIMEVoiceWaveOverlay *overlay, NSString *socket, uint64_t generation) {
+static inline void LINGYAODeactivateVoice(LINGYAOVoiceInputService *service,
+    LINGYAOClientSession *session, LINGYAOVoiceAudioMuter *muter,
+    LINGYAOVoiceWaveOverlay *overlay, NSString *socket, uint64_t generation) {
     const BOOL cancelProvider = service.active && socket.length && session;
     [service cancelWithError:nil];
     [muter restore];

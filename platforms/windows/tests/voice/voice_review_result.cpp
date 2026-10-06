@@ -4,7 +4,7 @@
 #include <thread>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   using Phase = VoiceReviewResult::Phase;
   auto review = std::make_shared<VoiceReviewResult>();
   assert(review->active() && review->snapshot().phase == Phase::Recording);

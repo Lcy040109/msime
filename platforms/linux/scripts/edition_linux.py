@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """从版本表 `shared/contracts/editions.json` 生成各版本的 Linux 身份。
 
-多个版本可以同时装在一台 Linux 上，彼此完全隔离。full 就是今天的 `msime-linux` 包，装在 `/usr` 下，包结构、文件和名字都不变；其他版本是各自独立的包（`msime-linux-<id>`），整个装在自己的前缀 `/opt/msime-linux-<id>` 下，只有系统按名字查找的那几样装到系统目录，名字都带版本：IBus 组件和引擎、Fcitx5 插件与输入法条目、systemd 用户单元、桌面入口、XDG 自启动项、图标，以及 `/usr/bin` 下指向前缀的 `<package>-setup` 和 `<package>-settings`。每个用户的状态目录、运行时目录（socket 和状态文件）、下载的词库和缓存都在 `<client_directory>` 下，宿主生成的 Fcitx5 主题和 Omarchy 钩子按 Fcitx5 插件名命名。
+多个版本可以同时装在一台 Linux 上，彼此完全隔离。full 就是今天的 `lingyao-linux` 包，装在 `/usr` 下，包结构、文件和名字都不变；其他版本是各自独立的包（`lingyao-linux-<id>`），整个装在自己的前缀 `/opt/lingyao-linux-<id>` 下，只有系统按名字查找的那几样装到系统目录，名字都带版本：IBus 组件和引擎、Fcitx5 插件与输入法条目、systemd 用户单元、桌面入口、XDG 自启动项、图标，以及 `/usr/bin` 下指向前缀的 `<package>-setup` 和 `<package>-settings`。每个用户的状态目录、运行时目录（socket 和状态文件）、下载的词库和缓存都在 `<client_directory>` 下，宿主生成的 Fcitx5 主题和 Omarchy 钩子按 Fcitx5 插件名命名。
 
 这些值只在版本表里写一次，这里把它们交给三处：
 
-- `platforms/linux/src/core/LinuxEdition.h`：C++ 侧（IBus 宿主、Fcitx5 插件、prepare 工具和各 provider 入口）读的宏，提交进仓库，构建时不需要 Python。构建必须定义且只定义一个 `MSIME_EDITION_<ID>`（CMake 的 `MSIME_EDITION` 缓存变量），否则头文件以 `#error` 拒绝编译，不会悄悄编成 full；
+- `platforms/linux/src/core/LinuxEdition.h`：C++ 侧（IBus 宿主、Fcitx5 插件、prepare 工具和各 provider 入口）读的宏，提交进仓库，构建时不需要 Python。构建必须定义且只定义一个 `LINGYAO_EDITION_<ID>`（CMake 的 `LINGYAO_EDITION` 缓存变量），否则头文件以 `#error` 拒绝编译，不会悄悄编成 full；
 - 脚本和数据文件：full 原样安装仓库里的文件，所以 full 的包与引入版本之前逐字节相同；其他版本在配置阶段由 `render` 按下面的规则改写一份再安装。每条规则必须至少命中一次，改写后不能再留下任何一个 full 的名字，否则配置失败——源文件改了写法而规则没跟上时，不会悄悄装出一个去读写 full 状态目录的版本；
 - 登记语言：IBus 组件与引擎的 `<language>` 和 Fcitx5 输入法条目的 `LangCode` 取默认方案所属的语言（`SCHEME_LANGUAGES`）。中文的版本（full、拼音版、五笔版）仍是 `zh` / `zh_CN`；日文、越南文、藏文版是 `ja`、`vi`、`bo`，GNOME 的输入源对话框和 Fcitx5 的配置工具把它们列在日语、越南语、藏语下；
-- 版本声明：其他版本在前缀的 `bin` 目录写 `edition.json`（`Edition::PACKAGE_MARKER_FILE`），设置应用和 `msime-mcp` 从它知道自己属于哪个版本；full 不写。
+- 版本声明：其他版本在前缀的 `bin` 目录写 `edition.json`（`Edition::PACKAGE_MARKER_FILE`），设置应用和 `lingyao-mcp` 从它知道自己属于哪个版本；full 不写。
 
 用法：
 
@@ -90,95 +90,95 @@ def identity(entry: dict) -> Identity:
 Rule = tuple[str, str, Replacement]
 
 # 用户单元：<package>-online.socket 等。
-UNITS: Rule = ("systemd user units", r"msime-linux-(online|voice|clipboard)\.(socket|service)", lambda n: n["package"] + r"-\1.\2")
+UNITS: Rule = ("systemd user units", r"lingyao-linux-(online|voice|clipboard)\.(socket|service)", lambda n: n["package"] + r"-\1.\2")
 # /usr/bin 下的两个命令，前缀 bin 里也用同一个名字安装，脚本之间按这个名字互相找到。
-COMMANDS: Rule = ("setup and settings commands", r"msime-linux-(setup|settings)(?![-\w])", lambda n: n["package"] + r"-\1")
+COMMANDS: Rule = ("setup and settings commands", r"lingyao-linux-(setup|settings)(?![-\w])", lambda n: n["package"] + r"-\1")
 # 每个用户的状态、运行时、下载词库和缓存目录，以及前缀下 share、lib、doc 和 /etc 里的子目录。
-CLIENT_DIRECTORY: Rule = ("client directory", r"msime-client(?![-\w])", lambda n: n["client_directory"])
+CLIENT_DIRECTORY: Rule = ("client directory", r"lingyao-client(?![-\w])", lambda n: n["client_directory"])
 # 包名、IBus 组件与引擎名和图标名。
-PACKAGE: Rule = ("package, IBus engine and icon", r"msime-linux(?![-\w])", lambda n: n["package"])
+PACKAGE: Rule = ("package, IBus engine and icon", r"lingyao-linux(?![-\w])", lambda n: n["package"])
 DISPLAY_NAME: Rule = ("display name", r"灵耀输入法", lambda n: n["zh"])
 # 桌面入口和 Fcitx5 条目的英文名。
-ENGLISH_NAME: Rule = ("English name", r"^Name=MSIME\b", lambda n: "Name=" + n["en"])
-FCITX5_ADDON_PYTHON: Rule = ("Fcitx5 addon and theme", r'^(FCITX5_INPUT_METHOD|FCITX5_THEME) = "msime"$', lambda n: rf'\1 = "{n["fcitx5_addon"]}"')
+ENGLISH_NAME: Rule = ("English name", r"^Name=LINGYAO\b", lambda n: "Name=" + n["en"])
+FCITX5_ADDON_PYTHON: Rule = ("Fcitx5 addon and theme", r'^(FCITX5_INPUT_METHOD|FCITX5_THEME) = "lingyao"$', lambda n: rf'\1 = "{n["fcitx5_addon"]}"')
 
 RULES: dict[str, list[Rule]] = {
-    "scripts/msime-linux-setup": [
+    "scripts/lingyao-linux-setup": [
         UNITS, COMMANDS, CLIENT_DIRECTORY, PACKAGE, DISPLAY_NAME, FCITX5_ADDON_PYTHON,
-        ("Omarchy hook", r'theme-set\.d/msime"', lambda n: f'theme-set.d/{n["fcitx5_addon"]}"'),
-        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
-        ("English name in the Fcitx5 hint", r"「MSIME」", lambda n: f"「{n['en']}」"),
+        ("Omarchy hook", r'theme-set\.d/lingyao"', lambda n: f'theme-set.d/{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.lingyao"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
+        ("English name in the Fcitx5 hint", r"「LINGYAO」", lambda n: f"「{n['en']}」"),
     ],
-    "scripts/msime-linux-ibus-launcher": [CLIENT_DIRECTORY],
-    "scripts/msime-linux-first-run-guide": [COMMANDS, CLIENT_DIRECTORY, PACKAGE, DISPLAY_NAME],
-    "scripts/msime-linux-provider-session": [CLIENT_DIRECTORY],
-    "scripts/msime-linux-online-provider": [CLIENT_DIRECTORY],
-    "data/msime-linux.xml.in": [
-        # full 的组件写的图标名是 msime-client，没有这个名字的图标；其他版本直接用装上的图标名。
-        ("engine icon", r"<icon>msime-client</icon>", lambda n: f"<icon>{n['package']}</icon>"),
+    "scripts/lingyao-linux-ibus-launcher": [CLIENT_DIRECTORY],
+    "scripts/lingyao-linux-first-run-guide": [COMMANDS, CLIENT_DIRECTORY, PACKAGE, DISPLAY_NAME],
+    "scripts/lingyao-linux-provider-session": [CLIENT_DIRECTORY],
+    "scripts/lingyao-linux-online-provider": [CLIENT_DIRECTORY],
+    "data/lingyao-linux.xml.in": [
+        # full 的组件写的图标名是 lingyao-client，没有这个名字的图标；其他版本直接用装上的图标名。
+        ("engine icon", r"<icon>lingyao-client</icon>", lambda n: f"<icon>{n['package']}</icon>"),
         ("engine language", r"<language>zh</language>", lambda n: f"<language>{n['ibus_language']}</language>"),
         CLIENT_DIRECTORY, PACKAGE, DISPLAY_NAME,
     ],
-    "data/msime-linux-clipboard.service.in": [CLIENT_DIRECTORY],
+    "data/lingyao-linux-clipboard.service.in": [CLIENT_DIRECTORY],
     # 这两个单元只按前缀找程序，没有要换的名字；列在这里是为了让改写后的检查（不留下 full 的名字）照样覆盖它们。
-    "data/msime-linux-online.service.in": [],
-    "data/msime-linux-voice.service.in": [],
-    "data/msime-linux-online.socket": [CLIENT_DIRECTORY],
-    "data/msime-linux-voice.socket": [CLIENT_DIRECTORY],
-    "data/msime-linux-clipboard.desktop": [UNITS, DISPLAY_NAME, ENGLISH_NAME],
-    "data/msime-linux-settings.in": [COMMANDS, CLIENT_DIRECTORY],
-    "data/msime-linux.desktop.in": [
+    "data/lingyao-linux-online.service.in": [],
+    "data/lingyao-linux-voice.service.in": [],
+    "data/lingyao-linux-online.socket": [CLIENT_DIRECTORY],
+    "data/lingyao-linux-voice.socket": [CLIENT_DIRECTORY],
+    "data/lingyao-linux-clipboard.desktop": [UNITS, DISPLAY_NAME, ENGLISH_NAME],
+    "data/lingyao-linux-settings.in": [COMMANDS, CLIENT_DIRECTORY],
+    "data/lingyao-linux.desktop.in": [
         COMMANDS, PACKAGE, DISPLAY_NAME, ENGLISH_NAME,
-        ("English name in About", r"About MSIME\b", lambda n: f"About {n['en']}"),
+        ("English name in About", r"About LINGYAO\b", lambda n: f"About {n['en']}"),
     ],
     "data/omarchy/menu.in": [
         COMMANDS, DISPLAY_NAME,
-        ("Fcitx5 addon to reload", r"\"'msime'\"", lambda n: f"\"'{n['fcitx5_addon']}'\""),
+        ("Fcitx5 addon to reload", r"\"'lingyao'\"", lambda n: f"\"'{n['fcitx5_addon']}'\""),
     ],
     "data/omarchy/theme-set.in": [
         COMMANDS,
-        ("Omarchy hook name", r"as `msime`", lambda n: f"as `{n['fcitx5_addon']}`"),
+        ("Omarchy hook name", r"as `lingyao`", lambda n: f"as `{n['fcitx5_addon']}`"),
     ],
     "data/omarchy/plugin/Widget.qml.in": [
         COMMANDS, CLIENT_DIRECTORY, DISPLAY_NAME,
-        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.lingyao"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
     ],
     "data/omarchy/plugin/manifest.json": [
         DISPLAY_NAME,
-        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.lingyao"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
     ],
-    "fcitx5/msime.conf": [
+    "fcitx5/lingyao.conf": [
         DISPLAY_NAME, ENGLISH_NAME,
-        ("addon library", r"^Library=libmsime-fcitx5$", lambda n: f"Library=lib{n['fcitx5_addon']}-fcitx5"),
+        ("addon library", r"^Library=liblingyao-fcitx5$", lambda n: f"Library=lib{n['fcitx5_addon']}-fcitx5"),
     ],
-    "fcitx5/msime-inputmethod.conf": [
+    "fcitx5/lingyao-inputmethod.conf": [
         PACKAGE, DISPLAY_NAME, ENGLISH_NAME,
-        ("addon", r"^Addon=msime$", lambda n: f"Addon={n['fcitx5_addon']}"),
+        ("addon", r"^Addon=lingyao$", lambda n: f"Addon={n['fcitx5_addon']}"),
         ("language", r"^LangCode=zh_CN$", lambda n: f"LangCode={n['fcitx5_language']}"),
     ],
     "cmake/deb-prerm.in": [
         COMMANDS, CLIENT_DIRECTORY, DISPLAY_NAME,
-        ("English name in the removal hint", r"MSIME from the current group", lambda n: f"{n['en']} from the current group"),
+        ("English name in the removal hint", r"LINGYAO from the current group", lambda n: f"{n['en']} from the current group"),
     ],
     "cmake/deb-postinst.in": [CLIENT_DIRECTORY],
     "cmake/uninstall.cmake.in": [
         COMMANDS, CLIENT_DIRECTORY, DISPLAY_NAME,
-        ("English name in the removal hint", r"MSIME from the current group", lambda n: f"{n['en']} from the current group"),
+        ("English name in the removal hint", r"LINGYAO from the current group", lambda n: f"{n['en']} from the current group"),
     ],
 }
 
 # 改写之后不能再出现的 full 的名字。
 LEFTOVERS = [
-    r"msime-client(?![-\w])",
-    r"msime-linux(?![-\w])",
-    r"msime-linux-(online|voice|clipboard)\.(socket|service)",
-    r"msime-linux-(setup|settings)(?![-\w])",
+    r"lingyao-client(?![-\w])",
+    r"lingyao-linux(?![-\w])",
+    r"lingyao-linux-(online|voice|clipboard)\.(socket|service)",
+    r"lingyao-linux-(setup|settings)(?![-\w])",
     r"灵耀输入法",
-    r"""["'`]msime["'`]""",
-    r"theme-set\.d/msime\b(?!-)",
-    r"lingyao\.msime(?![-\w])",
-    r"^(Name|Addon)=(MSIME|msime)$",
-    r"libmsime-fcitx5",
+    r"""["'`]lingyao["'`]""",
+    r"theme-set\.d/lingyao\b(?!-)",
+    r"lingyao\.lingyao(?![-\w])",
+    r"^(Name|Addon)=(LINGYAO|lingyao)$",
+    r"liblingyao-fcitx5",
 ]
 
 
@@ -224,18 +224,18 @@ def narrow(text: str) -> str:
 
 def header_text(table: dict) -> str:
     editions = linux_editions(table)
-    macros = [f"MSIME_EDITION_{entry['id'].upper()}" for entry in editions]
+    macros = [f"LINGYAO_EDITION_{entry['id'].upper()}" for entry in editions]
     lines = [
         "#pragma once",
         "",
         "// 由 platforms/linux/scripts/edition_linux.py 从 shared/contracts/editions.json 生成，不要手改；改了版本表之后运行 `python3 platforms/linux/scripts/edition_linux.py gen` 并提交结果。",
         "//",
-        f"// 每个 Linux 构建必须定义且只定义一个版本选择宏（{', '.join(macros)}），CMake 按缓存变量 MSIME_EDITION 定义。少了它就停在这里，而不是悄悄编成 full、去读写 full 的状态目录和 socket。",
+        f"// 每个 Linux 构建必须定义且只定义一个版本选择宏（{', '.join(macros)}），CMake 按缓存变量 LINGYAO_EDITION 定义。少了它就停在这里，而不是悄悄编成 full、去读写 full 的状态目录和 socket。",
         "//",
         "// full 的名字与引入版本之前相同；其他版本的每用户目录、IBus 引擎、Fcitx5 插件与动作名、图标和命令名都带版本，所以几个版本可以同时安装，两个版本的 Fcitx5 插件也可以被同一个 fcitx5 进程同时加载。",
         "",
         "#if (" + " + ".join(f"defined({macro})" for macro in macros) + ") != 1",
-        f'#error "Define exactly one of {", ".join(macros)}; platforms/linux/cmake/Edition.cmake does this from MSIME_EDITION"',
+        f'#error "Define exactly one of {", ".join(macros)}; platforms/linux/cmake/Edition.cmake does this from LINGYAO_EDITION"',
         "#endif",
     ]
     for index, entry in enumerate(editions):
@@ -257,15 +257,15 @@ def header_text(table: dict) -> str:
             ("SETUP_PROGRAM", narrow(names["package"] + "-setup")),
             ("SETTINGS_PROGRAM", narrow(names["package"] + "-settings")),
             ("TAURI_IDENTIFIER", narrow(names["tauri_identifier"])),
-            # 使用统计目录（$XDG_STATE_HOME 下）：full 仍是 msime，其他版本是同级的 msime-<id>，互不嵌套。
-            ("TELEMETRY_DIRECTORY", narrow("msime" if entry["id"] == FULL else "msime-" + entry["id"])),
+            # 使用统计目录（$XDG_STATE_HOME 下）：full 仍是 lingyao，其他版本是同级的 lingyao-<id>，互不嵌套。
+            ("TELEMETRY_DIRECTORY", narrow("lingyao" if entry["id"] == FULL else "lingyao-" + entry["id"])),
             ("DEFAULT_SCHEME", narrow(entry["default_scheme"])),
             ("INPUT_SCHEMES", ", ".join(narrow(scheme) for scheme in entry["input_schemes"])),
             ("TEMPORARY_JAPANESE", "1" if entry["features"]["temporary_japanese"] else "0"),
             # 手写模型只认汉字：为 0 的版本（日文、越南文和藏文版）IBus 菜单里没有手写识别板。
             ("HANDWRITING", "1" if entry["features"]["handwriting"] else "0"),
         ]
-        lines += [f"#define MSIME_EDITION_{name} {value}" for name, value in values]
+        lines += [f"#define LINGYAO_EDITION_{name} {value}" for name, value in values]
     lines += ["#endif", ""]
     return "\n".join(lines)
 

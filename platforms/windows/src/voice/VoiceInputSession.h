@@ -19,7 +19,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class AudioCapture;
 class LocalAsrStream;
 
@@ -161,4 +161,4 @@ private:
   std::atomic<std::chrono::steady_clock::rep> local_model_used_{0};
   std::future<void> idle_release_; // control-thread owned
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

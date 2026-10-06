@@ -3,7 +3,7 @@
 
 int main() {
   using Microsoft::WRL::ComPtr;
-  using msime::windows::set_candidate_font_fallback;
+  using lingyao::windows::set_candidate_font_fallback;
   ComPtr<IDWriteFactory2> factory;
   assert(SUCCEEDED(DWriteCreateFactory(
       DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),

@@ -14,11 +14,11 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHARED = ROOT / "crates/client-core/src/cloud/candidates.rs"
-HEADER = ROOT / "crates/host-api/include/msime_client.h"
+HEADER = ROOT / "crates/host-api/include/lingyao_client.h"
 HOSTS = [
     (
         ROOT / "platforms/macos/src/cloud/CloudCandidateRequest.mm",
-        ["MSIME_CLOUD_REQUEST_TIMEOUT_MS"],
+        ["LINGYAO_CLOUD_REQUEST_TIMEOUT_MS"],
         # Only the cloud-candidate initialiser. The translation and AI initialisers in the same
         # file set their own deadlines from the descriptors they validate a few lines earlier, so
         # a literal there is the host holding a contract rather than inventing one.
@@ -26,11 +26,11 @@ HOSTS = [
     ),
     (
         ROOT / "platforms/windows/src/candidate/CloudCandidateWorker.cpp",
-        ["MSIME_CLOUD_CONNECT_TIMEOUT_MS", "MSIME_CLOUD_REQUEST_TIMEOUT_MS"],
+        ["LINGYAO_CLOUD_CONNECT_TIMEOUT_MS", "LINGYAO_CLOUD_REQUEST_TIMEOUT_MS"],
         (None, None, r"CURLOPT_\w*TIMEOUT\w*_MS,\s*([0-9]+)L"),
     ),
     (
-        ROOT / "platforms/android/java/app/msime/android/candidate/OnlineCandidateTransport.java",
+        ROOT / "platforms/android/java/app/lingyao/android/candidate/OnlineCandidateTransport.java",
         [
             "setConnectTimeout(OnlineCandidatePolicy.CLOUD_TIMEOUT_MILLIS)",
             "setReadTimeout(OnlineCandidatePolicy.CLOUD_TIMEOUT_MILLIS)",
@@ -49,7 +49,7 @@ HOSTS = [
 # Android 和 HarmonyOS 的云候选时限常量。它们连接和整体共用一个数，所以要同时等于 client-core 的 CONNECT 与 REQUEST。
 MOBILE_CONSTANTS = [
     (
-        ROOT / "platforms/android/java/app/msime/android/candidate/OnlineCandidatePolicy.java",
+        ROOT / "platforms/android/java/app/lingyao/android/candidate/OnlineCandidatePolicy.java",
         r"CLOUD_TIMEOUT_MILLIS = ([0-9_]+);",
     ),
     (
@@ -63,7 +63,7 @@ REFERENCE = {"CONNECT": 2000, "REQUEST": 2000}
 
 # The AI candidate has its own budget. client-core's AI descriptor carries the reference's 2500 ms connect and 8000 ms total, and Windows AiAssistant waits 650 ms of idle input before asking (the cloud candidate waits 500 ms). The Linux hosts do not read the descriptor: the online provider fetches with its own Python constants and both engines hold their own idle timers, so those literals are pinned here against the descriptor.
 AI_DESCRIPTOR = ROOT / "crates/client-core/src/ai.rs"
-LINUX_PROVIDER = ROOT / "platforms/linux/scripts/msime-linux-online-provider"
+LINUX_PROVIDER = ROOT / "platforms/linux/scripts/lingyao-linux-online-provider"
 LINUX_TRANSPORT = ROOT / "crates/input-runtime/src/providers.rs"
 LINUX_IBUS = ROOT / "platforms/linux/src/core/ClientEngine.cpp"
 LINUX_FCITX = ROOT / "platforms/linux/fcitx5/FcitxEngine.cpp"
@@ -141,7 +141,7 @@ def main() -> int:
     failures: list[str] = []
 
     shared = declared(SHARED, r"pub const (CONNECT|REQUEST)_TIMEOUT_MS: u64 = (\d+)")
-    header = declared(HEADER, r"#define MSIME_CLOUD_(CONNECT|REQUEST)_TIMEOUT_MS (\d+)")
+    header = declared(HEADER, r"#define LINGYAO_CLOUD_(CONNECT|REQUEST)_TIMEOUT_MS (\d+)")
     for name, expected in REFERENCE.items():
         if shared.get(name) != expected:
             failures.append(
@@ -149,7 +149,7 @@ def main() -> int:
             )
         if header.get(name) != expected:
             failures.append(
-                f"the C header's MSIME_CLOUD_{name}_TIMEOUT_MS is {header.get(name)}, and the reference asks for {expected}"
+                f"the C header's LINGYAO_CLOUD_{name}_TIMEOUT_MS is {header.get(name)}, and the reference asks for {expected}"
             )
 
     for path, pattern in MOBILE_CONSTANTS:

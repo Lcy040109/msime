@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <utility>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Tray menu layout validation failed");

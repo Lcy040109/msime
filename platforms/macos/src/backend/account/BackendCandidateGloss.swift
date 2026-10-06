@@ -12,7 +12,7 @@ enum BackendCandidateGloss {
     let generation: UInt64
   }
 
-  nonisolated static let notification = Notification.Name("MSIMEBackendCandidateTranslationsDidArrive")
+  nonisolated static let notification = Notification.Name("LINGYAOBackendCandidateTranslationsDidArrive")
   private nonisolated static let account = BackendAccountSession.shared
   private nonisolated static let anonymous = BackendAnonymousAccount.session
   private nonisolated static let client = BackendAccountClient()
@@ -82,14 +82,14 @@ enum BackendCandidateGloss {
 }
 
 // Called on the main thread by InputController.mm whenever it stops asking the account.
-@_cdecl("MSIMECancelAccountCandidateGlosses")
-public func msimeCancelAccountCandidateGlosses() {
+@_cdecl("LINGYAOCancelAccountCandidateGlosses")
+public func lingyaoCancelAccountCandidateGlosses() {
   MainActor.assumeIsolated { BackendCandidateGloss.cancelPending() }
 }
 
 // Called on the main thread by InputController.mm, from the idle timer that follows a page change.
-@_cdecl("MSIMEFetchAccountCandidateGlosses")
-public func msimeFetchAccountCandidateGlosses(_ wordsJSON: UnsafePointer<CChar>, _ primary: UnsafePointer<CChar>,
+@_cdecl("LINGYAOFetchAccountCandidateGlosses")
+public func lingyaoFetchAccountCandidateGlosses(_ wordsJSON: UnsafePointer<CChar>, _ primary: UnsafePointer<CChar>,
                                                _ secondary: UnsafePointer<CChar>, _ generation: UInt64) {
   guard let data = String(cString: wordsJSON).data(using: .utf8),
         let words = try? JSONDecoder().decode([String].self, from: data),

@@ -27,15 +27,15 @@ pub enum InputScheme {
     Japanese,
     /// Korean Hangul on the Dubeolsik layout. The Engine ordinal is 4.
     Korean,
-    /// Cantonese in toneless Jyutping, read from `msime-cantonese.db`. A Chinese scheme. The Engine ordinal is 5.
+    /// Cantonese in toneless Jyutping, read from `lingyao-cantonese.db`. A Chinese scheme. The Engine ordinal is 5.
     Cantonese,
-    /// Bopomofo on the Dachen layout, read from `msime-zhuyin.db`. A Chinese scheme. The Engine ordinal is 6.
+    /// Bopomofo on the Dachen layout, read from `lingyao-zhuyin.db`. A Chinese scheme. The Engine ordinal is 6.
     Zhuyin,
     /// Vietnamese through Telex or VNI, set in `vietnamese`. The Engine ordinal is 7.
     Vietnamese,
     /// 藏文：在拉丁字母键盘上按 EWTS（扩展威利转写）输入，不用词库，也不是中文方案。Engine 序号为 8。
     Tibetan,
-    /// 笔画：按横竖撇点折（h s p n z，x 为通配）笔顺输入单字，读取 `msime-stroke.db`。是中文方案。Engine 序号为 9。
+    /// 笔画：按横竖撇点折（h s p n z，x 为通配）笔顺输入单字，读取 `lingyao-stroke.db`。是中文方案。Engine 序号为 9。
     Stroke,
 }
 
@@ -299,7 +299,7 @@ impl CustomTheme {
                 return Err(error);
             }
         }
-        // 与皮肤目录的文件夹名同一形状，但沿用较宽的 `is_selectable_id`：被 msime-windows 内置外观占用的旧皮肤名仍可保存，只是目录里找不到它。
+        // 与皮肤目录的文件夹名同一形状，但沿用较宽的 `is_selectable_id`：被 lingyao-windows 内置外观占用的旧皮肤名仍可保存，只是目录里找不到它。
         if self
             .candidate_skin
             .as_deref()
@@ -939,7 +939,7 @@ pub struct VoiceInputPreferences {
     pub asr_endpoint: String,
     #[serde(default)]
     pub asr_model: String,
-    /// Absolute path to the installed model directory the `local` provider runs (one containing `msime-model.json`, see `voice::local_models`). Nothing is uploaded and no endpoint or token applies. Only the path's shape is checked here, since the same document is read on every OS: any absolute form the host OS uses is accepted, and the recognizer finds its files only through `msime-model.json`, so a path without one is a missing model rather than an invalid document.
+    /// Absolute path to the installed model directory the `local` provider runs (one containing `lingyao-model.json`, see `voice::local_models`). Nothing is uploaded and no endpoint or token applies. Only the path's shape is checked here, since the same document is read on every OS: any absolute form the host OS uses is accepted, and the recognizer finds its files only through `lingyao-model.json`, so a path without one is a missing model rather than an invalid document.
     #[serde(default)]
     pub asr_model_path: String,
     /// Optional `https://` prefix placed in front of every local model download URL (ghproxy-style), for networks where GitHub release downloads are slow or blocked. Empty downloads from the catalog URLs as they are.

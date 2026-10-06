@@ -1,6 +1,6 @@
 /**
  * Privacy and size bounds for text-only clipboard history entries, ported from
- * platforms/android/java/app/msime/android/ClipboardHistoryPolicy.java.
+ * platforms/android/java/app/lingyao/android/ClipboardHistoryPolicy.java.
  *
  * The character bound is measured in extended graphemes, matching the shared Rust store. The byte
  * bound is measured in UTF-8, which is what the store writes.

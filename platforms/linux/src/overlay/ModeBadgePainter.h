@@ -8,7 +8,7 @@
 
 #include "ModeBadgeStyle.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Drawing the badge: a rounded plate, the product logo and one "中" or "英". It lives here so the Wayland and X11 backends share one drawing; they differ only in where the pixels go, and two drawings would drift apart between session types.
 
@@ -120,4 +120,4 @@ inline void paint_mode_badge(cairo_t *cairo, const ModeBadgeLayout &layout, cons
   g_object_unref(text_layout);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

@@ -1,4 +1,4 @@
-//! The desktop dictionary product: release checks, `msime-dictionary-manifest.json` and `msime-SHA256SUMS.txt`. The manifest keeps the schema clients already read (`profile`, `source.commit`, `files`, ...).
+//! The desktop dictionary product: release checks, `lingyao-dictionary-manifest.json` and `lingyao-SHA256SUMS.txt`. The manifest keeps the schema clients already read (`profile`, `source.commit`, `files`, ...).
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -12,21 +12,21 @@ use serde::Serialize;
 use crate::english_supplement;
 use crate::japanese;
 use crate::licensing;
-use crate::msime::quanpin_tables;
+use crate::lingyao::quanpin_tables;
 use crate::ngram;
 use crate::sources::{sha256_file, Lock, Reference};
 
-pub const MANIFEST: &str = "msime-dictionary-manifest.json";
+pub const MANIFEST: &str = "lingyao-dictionary-manifest.json";
 /// 产物和 manifest 的校验和文件，与 manifest 一起写出。
-pub const SUMS: &str = "msime-SHA256SUMS.txt";
+pub const SUMS: &str = "lingyao-SHA256SUMS.txt";
 pub const SHIPPING_ARTIFACTS: [&str; 10] = [
-    "msime-pinyin.db",
-    "msime-wubi.db",
-    "msime-english.db",
-    "msime-others.db",
-    "msime-japanese.dat",
-    "msime-bigram.bin",
-    "msime-trigram.bin",
+    "lingyao-pinyin.db",
+    "lingyao-wubi.db",
+    "lingyao-english.db",
+    "lingyao-others.db",
+    "lingyao-japanese.dat",
+    "lingyao-bigram.bin",
+    "lingyao-trigram.bin",
     japanese::NOTICE_NAME,
     japanese::LICENSE_NAME,
     english_supplement::NOTICE_NAME,
@@ -41,11 +41,11 @@ const FEATURES: [&str; 8] = [
     "symbols",
     "japanese",
 ];
-const REPOSITORY: &str = "Lcy040109/msime";
+const REPOSITORY: &str = "Lcy040109/lingyao";
 const SOURCE_PATH: &str = "resources/dictionary-sources";
 /// manifest 的 references 用这个名字列出词库源仓库，提交取 `--dictionary` checkout 的 HEAD。自定义词、翻译和英文词在它的 `custom/` 目录，基础词库来自同一个提交。
-const CUSTOM_DICTIONARY: &str = "msime-dictionary";
-const CUSTOM_DICTIONARY_REPOSITORY: &str = "metasequoiaime/msime-dictionary";
+const CUSTOM_DICTIONARY: &str = "lingyao-dictionary";
+const CUSTOM_DICTIONARY_REPOSITORY: &str = "metasequoiaime/lingyao-dictionary";
 const CUSTOM_DICTIONARY_PATH: &str = "custom";
 
 #[derive(Serialize)]
@@ -110,7 +110,7 @@ fn git(repository: &Path, arguments: &[&str]) -> Result<String> {
     Ok(String::from_utf8(output.stdout)?.trim().to_owned())
 }
 
-/// 构建所在的 msime 提交，以及构建器或其输入是否有未提交改动：检查 msime checkout，有 `--dictionary` 时还检查 msime-dictionary checkout 的 `sources/`、`custom/` 和 `upstream.lock.json`。
+/// 构建所在的 lingyao 提交，以及构建器或其输入是否有未提交改动：检查 lingyao checkout，有 `--dictionary` 时还检查 lingyao-dictionary checkout 的 `sources/`、`custom/` 和 `upstream.lock.json`。
 fn provenance(repository: &Path, dictionary: Option<&Path>) -> Result<Provenance> {
     let commit = git(repository, &["rev-parse", "HEAD"])?;
     let changes = git(
@@ -148,7 +148,7 @@ fn provenance(repository: &Path, dictionary: Option<&Path>) -> Result<Provenance
     })
 }
 
-/// 构建读取的 msime-dictionary 提交：`--dictionary` checkout 的 HEAD。
+/// 构建读取的 lingyao-dictionary 提交：`--dictionary` checkout 的 HEAD。
 fn custom_dictionary_reference(dictionary: &Path) -> Result<Reference> {
     Ok(Reference {
         repository: format!("https://github.com/{CUSTOM_DICTIONARY_REPOSITORY}.git"),
@@ -156,7 +156,7 @@ fn custom_dictionary_reference(dictionary: &Path) -> Result<Reference> {
     })
 }
 
-/// 生成器写进表头的 msime 提交：`provenance` 判定构建器或其输入有未提交改动时加 `-dirty` 后缀。
+/// 生成器写进表头的 lingyao 提交：`provenance` 判定构建器或其输入有未提交改动时加 `-dirty` 后缀。
 pub(crate) fn builder_commit(repository: &Path) -> Result<String> {
     let source = provenance(repository, None)?;
     Ok(if source.dirty {
@@ -174,9 +174,9 @@ fn row_count(connection: &Connection, table: &str) -> Result<i64> {
     )
 }
 
-/// 把五笔码表从拼音工作库拆进单独发布的 `msime-wubi.db`。各阶段共用 `msime-pinyin.db` 一个连接，自定义词检查与 n-gram 权重看到的是完整来源，产品检查与清单之前再拆出只读的五笔资源。只搬这次构建在拼音库里留下的表：`--only`/`--skip` 只跑部分阶段、或拼音库已经拆过时，拼音库里没有五笔表，`msime-wubi.db` 里已有的表原样保留；拼音库不存在时什么也不做。
+/// 把五笔码表从拼音工作库拆进单独发布的 `lingyao-wubi.db`。各阶段共用 `lingyao-pinyin.db` 一个连接，自定义词检查与 n-gram 权重看到的是完整来源，产品检查与清单之前再拆出只读的五笔资源。只搬这次构建在拼音库里留下的表：`--only`/`--skip` 只跑部分阶段、或拼音库已经拆过时，拼音库里没有五笔表，`lingyao-wubi.db` 里已有的表原样保留；拼音库不存在时什么也不做。
 pub fn split_wubi_database(out: &Path) -> Result<()> {
-    let pinyin_path = out.join("msime-pinyin.db");
+    let pinyin_path = out.join("lingyao-pinyin.db");
     if !pinyin_path.is_file() {
         return Ok(());
     }
@@ -211,7 +211,7 @@ pub fn split_wubi_database(out: &Path) -> Result<()> {
         return Ok(());
     }
 
-    let mut wubi = Connection::open(out.join("msime-wubi.db"))?;
+    let mut wubi = Connection::open(out.join("lingyao-wubi.db"))?;
     wubi.execute_batch("PRAGMA journal_mode=delete; PRAGMA synchronous=off;")?;
     let transaction = wubi.transaction()?;
     for (name, rows) in &tables {
@@ -241,10 +241,10 @@ pub fn split_wubi_database(out: &Path) -> Result<()> {
 /// Every shipping table exists with at least a floor number of rows, far below today's counts: these catch a table that came out empty because an input silently changed shape, not ordinary dictionary edits. A licensed build legitimately has fewer rows.
 pub fn verify(out: &Path, complete: bool) -> Result<()> {
     let floors: [(&str, &[(&str, i64)]); 4] = [
-        ("msime-wubi.db", &[("wubi86", 50_000), ("wubi98", 50_000)]),
-        ("msime-pinyin.db", &[("quick_parases", 1)]),
+        ("lingyao-wubi.db", &[("wubi86", 50_000), ("wubi98", 50_000)]),
+        ("lingyao-pinyin.db", &[("quick_parases", 1)]),
         (
-            "msime-english.db",
+            "lingyao-english.db",
             &[
                 ("english_words", if complete { 100_000 } else { 15_000 }),
                 ("en_zh_glosses", if complete { 50_000 } else { 15_000 }),
@@ -252,7 +252,7 @@ pub fn verify(out: &Path, complete: bool) -> Result<()> {
             ],
         ),
         (
-            "msime-others.db",
+            "lingyao-others.db",
             &[
                 ("emoji", 1_000),
                 ("emoji_pinyin", 1_000),
@@ -275,28 +275,28 @@ pub fn verify(out: &Path, complete: bool) -> Result<()> {
         }
     }
 
-    let msime = Connection::open_with_flags(
-        out.join("msime-pinyin.db"),
+    let lingyao = Connection::open_with_flags(
+        out.join("lingyao-pinyin.db"),
         OpenFlags::SQLITE_OPEN_READ_ONLY,
     )?;
     let mut quanpin_rows = 0;
     for table in quanpin_tables() {
-        quanpin_rows += row_count(&msime, &table)
-            .with_context(|| format!("msime-pinyin.db: quanpin table {table}"))?;
+        quanpin_rows += row_count(&lingyao, &table)
+            .with_context(|| format!("lingyao-pinyin.db: quanpin table {table}"))?;
     }
     let minimum = if complete { 1_000_000 } else { 800_000 };
     if quanpin_rows < minimum {
-        bail!("msime-pinyin.db: quanpin rows total {quanpin_rows}, expected at least {minimum}");
+        bail!("lingyao-pinyin.db: quanpin rows total {quanpin_rows}, expected at least {minimum}");
     }
 
-    let model = std::fs::read(out.join("msime-japanese.dat"))?;
+    let model = std::fs::read(out.join("lingyao-japanese.dat"))?;
     if model.len() < 32 * 1024 * 1024 || !model.starts_with(japanese::MAGIC) {
         bail!(
-            "msime-japanese.dat is not a complete MSJPDT1 model ({} bytes)",
+            "lingyao-japanese.dat is not a complete MSJPDT1 model ({} bytes)",
             model.len()
         );
     }
-    for name in ["msime-bigram.bin", "msime-trigram.bin"] {
+    for name in ["lingyao-bigram.bin", "lingyao-trigram.bin"] {
         let table = std::fs::read(out.join(name))?;
         let field = |offset: usize| {
             table
@@ -313,17 +313,17 @@ pub fn verify(out: &Path, complete: bool) -> Result<()> {
     verify_notices(out)
 }
 
-/// The licence notices the data's terms require beside it: Mozc's dictionary README (IPAdic, ICOT, Okinawa) and Mozc's BSD `LICENSE` for `msime-japanese.dat`, and SCOWL's copyright notice, byte for byte the text `msime-english.db` stores, for the SCOWL words in `msime-english.db`.
+/// The licence notices the data's terms require beside it: Mozc's dictionary README (IPAdic, ICOT, Okinawa) and Mozc's BSD `LICENSE` for `lingyao-japanese.dat`, and SCOWL's copyright notice, byte for byte the text `lingyao-english.db` stores, for the SCOWL words in `lingyao-english.db`.
 fn verify_notices(out: &Path) -> Result<()> {
     let required: [(&str, &str, &[&str]); 2] = [
         (
             japanese::NOTICE_NAME,
-            "msime-japanese.dat",
+            "lingyao-japanese.dat",
             &["ipadic", "icot", "okinawa"],
         ),
         (
             japanese::LICENSE_NAME,
-            "msime-japanese.dat",
+            "lingyao-japanese.dat",
             &[
                 "google inc.",
                 "redistribution and use in source and binary forms",
@@ -343,14 +343,14 @@ fn verify_notices(out: &Path) -> Result<()> {
     }
     let name = english_supplement::NOTICE_NAME;
     let notice = std::fs::read(out.join(name))
-        .with_context(|| format!("{name}: msime-english.db must not ship without it"))?;
+        .with_context(|| format!("{name}: lingyao-english.db must not ship without it"))?;
     if notice != english_supplement::COPYRIGHT.as_bytes() {
-        bail!("{name} differs from resources/licenses/scowl-aspell6-en-Copyright.txt, the notice msime-english.db's SCOWL words ship under");
+        bail!("{name} differs from resources/licenses/scowl-aspell6-en-Copyright.txt, the notice lingyao-english.db's SCOWL words ship under");
     }
     Ok(())
 }
 
-/// 写出 manifest 和校验和。`dictionary` 是读取 msime-dictionary 文件的 `--dictionary` checkout，manifest 把它的 HEAD 记为 msime-dictionary 的提交；其余 references 和 `mozc_revision` 原样取自锁文件。`Dictionary::open` 只核对了 checkout 的 `upstream.lock.json` 也列出的上游（`mozc_revision` 对应其中的 `mozc`）：它们的 repository 和 commit 与锁文件相同；记录里没有的 reference（如 `ECDICT`）没有和任何东西比对。
+/// 写出 manifest 和校验和。`dictionary` 是读取 lingyao-dictionary 文件的 `--dictionary` checkout，manifest 把它的 HEAD 记为 lingyao-dictionary 的提交；其余 references 和 `mozc_revision` 原样取自锁文件。`Dictionary::open` 只核对了 checkout 的 `upstream.lock.json` 也列出的上游（`mozc_revision` 对应其中的 `mozc`）：它们的 repository 和 commit 与锁文件相同；记录里没有的 reference（如 `ECDICT`）没有和任何东西比对。
 pub fn write_manifest(
     out: &Path,
     repository: &Path,
@@ -374,9 +374,9 @@ pub fn write_manifest(
     let manifest = Manifest {
         manifest_version: 1,
         profile: "desktop",
-        format_version: msime_engine::format::FORMAT_VERSION,
+        format_version: lingyao_engine::format::FORMAT_VERSION,
         engine_compatibility: EngineCompatibility {
-            dictionary_format: msime_engine::format::FORMAT_VERSION,
+            dictionary_format: lingyao_engine::format::FORMAT_VERSION,
             japanese_model_magic: "MSJPDT1",
         },
         sqlite_journal_mode: "delete",
@@ -466,9 +466,9 @@ mod tests {
     /// manifest 记下 `--dictionary` checkout 的 HEAD，repository 由常量拼出，不读锁文件；checkout 的 `sources/`、`custom/` 或 `upstream.lock.json` 有未提交改动时构建记为 dirty。
     #[test]
     fn a_dictionary_checkout_is_the_recorded_provenance() {
-        let msime = tempfile::tempdir().unwrap();
+        let lingyao = tempfile::tempdir().unwrap();
         let checkout = tempfile::tempdir().unwrap();
-        git_repository_with_commit(msime.path());
+        git_repository_with_commit(lingyao.path());
         let head = git_repository_with_commit(checkout.path());
 
         let reference = custom_dictionary_reference(checkout.path()).unwrap();
@@ -479,7 +479,7 @@ mod tests {
         );
 
         assert!(
-            !provenance(msime.path(), Some(checkout.path()))
+            !provenance(lingyao.path(), Some(checkout.path()))
                 .unwrap()
                 .dirty
         );
@@ -489,25 +489,25 @@ mod tests {
         )
         .unwrap();
         assert!(
-            provenance(msime.path(), Some(checkout.path()))
+            provenance(lingyao.path(), Some(checkout.path()))
                 .unwrap()
                 .dirty
         );
         std::fs::remove_file(checkout.path().join(crate::sources::UPSTREAM_LOCK)).unwrap();
         std::fs::write(checkout.path().join("custom/words.txt"), "changed\n").unwrap();
         assert!(
-            provenance(msime.path(), Some(checkout.path()))
+            provenance(lingyao.path(), Some(checkout.path()))
                 .unwrap()
                 .dirty
         );
-        assert!(!provenance(msime.path(), None).unwrap().dirty);
-        let msime_head = git(msime.path(), &["rev-parse", "HEAD"]).unwrap();
-        assert_eq!(builder_commit(msime.path()).unwrap(), msime_head);
-        std::fs::create_dir_all(msime.path().join("crates/dict-builder")).unwrap();
-        std::fs::write(msime.path().join("crates/dict-builder/new.rs"), "\n").unwrap();
+        assert!(!provenance(lingyao.path(), None).unwrap().dirty);
+        let lingyao_head = git(lingyao.path(), &["rev-parse", "HEAD"]).unwrap();
+        assert_eq!(builder_commit(lingyao.path()).unwrap(), lingyao_head);
+        std::fs::create_dir_all(lingyao.path().join("crates/dict-builder")).unwrap();
+        std::fs::write(lingyao.path().join("crates/dict-builder/new.rs"), "\n").unwrap();
         assert_eq!(
-            builder_commit(msime.path()).unwrap(),
-            format!("{msime_head}-dirty")
+            builder_commit(lingyao.path()).unwrap(),
+            format!("{lingyao_head}-dirty")
         );
     }
 
@@ -515,13 +515,13 @@ mod tests {
     #[test]
     fn a_build_without_a_manifest_removes_the_stale_one() {
         let out = tempfile::tempdir().unwrap();
-        for name in [MANIFEST, SUMS, "msime-others.db"] {
+        for name in [MANIFEST, SUMS, "lingyao-others.db"] {
             std::fs::write(out.path().join(name), b"old").unwrap();
         }
         assert_eq!(remove_stale_manifest(out.path()).unwrap(), [MANIFEST, SUMS]);
         assert!(!out.path().join(MANIFEST).exists());
         assert!(!out.path().join(SUMS).exists());
-        assert!(out.path().join("msime-others.db").is_file());
+        assert!(out.path().join("lingyao-others.db").is_file());
         assert!(remove_stale_manifest(out.path()).unwrap().is_empty());
     }
 
@@ -567,7 +567,7 @@ mod tests {
     #[test]
     fn split_wubi_moves_tables_to_the_named_database() {
         let directory = tempfile::tempdir().unwrap();
-        let pinyin = Connection::open(directory.path().join("msime-pinyin.db")).unwrap();
+        let pinyin = Connection::open(directory.path().join("lingyao-pinyin.db")).unwrap();
         pinyin
             .execute_batch(
                 "CREATE TABLE tbl_1_a(key TEXT,jp TEXT,value TEXT,weight INTEGER); CREATE TABLE wubi86(key TEXT,value TEXT,weight INTEGER); CREATE TABLE wubi98(key TEXT,value TEXT,weight INTEGER); INSERT INTO wubi86 VALUES('aaa','甲',10); INSERT INTO wubi98 VALUES('bbb','乙',20);",
@@ -577,7 +577,7 @@ mod tests {
 
         split_wubi_database(directory.path()).unwrap();
 
-        let pinyin = Connection::open(directory.path().join("msime-pinyin.db")).unwrap();
+        let pinyin = Connection::open(directory.path().join("lingyao-pinyin.db")).unwrap();
         assert!(pinyin
             .query_row(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('wubi86', 'wubi98')",
@@ -585,7 +585,7 @@ mod tests {
                 |row| row.get::<_, i64>(0),
             )
             .unwrap() == 0);
-        let wubi = Connection::open(directory.path().join("msime-wubi.db")).unwrap();
+        let wubi = Connection::open(directory.path().join("lingyao-wubi.db")).unwrap();
         assert_eq!(
             wubi.query_row("SELECT value FROM wubi86 WHERE key = 'aaa'", [], |row| {
                 row.get::<_, String>(0)
@@ -607,9 +607,9 @@ mod tests {
     fn split_wubi_keeps_tables_this_build_did_not_rebuild() {
         let directory = tempfile::tempdir().unwrap();
         split_wubi_database(directory.path()).unwrap();
-        assert!(!directory.path().join("msime-wubi.db").exists());
+        assert!(!directory.path().join("lingyao-wubi.db").exists());
 
-        let pinyin_path = directory.path().join("msime-pinyin.db");
+        let pinyin_path = directory.path().join("lingyao-pinyin.db");
         Connection::open(&pinyin_path)
             .unwrap()
             .execute_batch(
@@ -629,7 +629,7 @@ mod tests {
             .unwrap();
         split_wubi_database(directory.path()).unwrap();
 
-        let wubi = Connection::open(directory.path().join("msime-wubi.db")).unwrap();
+        let wubi = Connection::open(directory.path().join("lingyao-wubi.db")).unwrap();
         let values = |table: &str| -> Vec<String> {
             wubi.prepare(&format!("SELECT value FROM {table} ORDER BY rowid"))
                 .unwrap()

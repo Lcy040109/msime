@@ -5,7 +5,7 @@
 #include <optional>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct FocusLease {
   PipeTicket transport;
   uint64_t epoch = 0;
@@ -131,4 +131,4 @@ private:
   std::optional<FocusLease> current_;
   bool ready_ = false;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

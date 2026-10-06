@@ -2,7 +2,7 @@
 #include "../../../shared/contracts/voice_controller.h"
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // Large enough for every frame this transport is required to carry. The TSF
 // endpoints exchange a few hundred bytes, but a voice controller reply carries
@@ -144,4 +144,4 @@ IoResult write_frame(HANDLE pipe, const std::vector<uint8_t> &frame,
   auto buffer = frame;
   return transfer(pipe, buffer, true, timeout, cancel);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

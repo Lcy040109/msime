@@ -279,7 +279,7 @@ struct WelcomeFlowView: View {
 
   /// full 的说法不变；其他版本只说本版本提供的入口。
   private static var schemeStepBody: String {
-    if MSIMEAppEdition.isFull { return "全拼、9 键、双拼和五笔用的是同一套引擎，词库和自造词通用。" }
+    if LINGYAOAppEdition.isFull { return "全拼、9 键、双拼和五笔用的是同一套引擎，词库和自造词通用。" }
     if schemeChoices.count > 1 {
       return schemeChoices.map(\.title).joined(separator: "、") + "用的是同一套引擎，词库和自造词通用。"
     }

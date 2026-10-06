@@ -193,7 +193,7 @@ def main() -> int:
 
     resolved = reference_labels()
     if resolved is None:
-        print("skipped the reference comparison: no MSIME-Windows checkout beside this repository")
+        print("skipped the reference comparison: no LINGYAO-Windows checkout beside this repository")
         print(f"  expected a git checkout at {REFERENCE} carrying {PARTIAL}")
         truth, source = copies[first], first
     elif not resolved[0]:

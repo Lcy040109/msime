@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""The Debian prerm and postinst: which systemctl and systemd-run calls they make for which dpkg action, including the prerm's msime-linux-setup --unregister.
+"""The Debian prerm and postinst: which systemctl and systemd-run calls they make for which dpkg action, including the prerm's lingyao-linux-setup --unregister.
 
 systemctl, systemd-run and loginctl are stubs that record their arguments, and PATH holds nothing else, so the scripts also prove they need no other program. A real systemd user manager is not started here; the build-gate container runs under an init that is not systemd.
 
-Usage: deb_maintainer_scripts.py <configured-debian-dir> <configured-uninstall.cmake> <unit list> <installed msime-linux-setup>
+Usage: deb_maintainer_scripts.py <configured-debian-dir> <configured-uninstall.cmake> <unit list> <installed lingyao-linux-setup>
 """
 import os
 import subprocess
@@ -16,9 +16,9 @@ UNINSTALL = Path(sys.argv[2])
 UNITS = sys.argv[3].split()
 SERVICES = [unit for unit in UNITS if unit.endswith(".service")]
 SETUP = sys.argv[4]
-PROVIDER = SETUP.rsplit("/", 1)[0] + "/msime-linux-online-provider"
+PROVIDER = SETUP.rsplit("/", 1)[0] + "/lingyao-linux-online-provider"
 # Removing the input method from each user's lists, the counterpart of the Windows uninstaller unregistering the TSF profile.
-MANUAL_LISTS = "remove the input method from its lists: Lingyao 灵耀输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)"
+MANUAL_LISTS = "remove the input method from its lists: Lingyao 灵耀输入法 from the desktop input sources (IBus), LINGYAO from the current group in fcitx5-configtool (Fcitx5)"
 
 # systemd 252 prints UID USER LINGER, newer releases add STATE and indent the UID column; both must parse.
 USERS = "1000 alice no\n   1001 bob yes active\n"
@@ -109,7 +109,7 @@ def configure_calls(uid: str, account: bool = True) -> list:
 
 def main() -> None:
     assert UNITS and SERVICES and len(SERVICES) < len(UNITS), UNITS
-    assert SETUP.startswith("/") and SETUP.endswith("/bin/msime-linux-setup"), SETUP
+    assert SETUP.startswith("/") and SETUP.endswith("/bin/lingyao-linux-setup"), SETUP
     # Both removal paths stop the same units: the CMake uninstall is configured from the same list.
     assert f"set(user_units {' '.join(UNITS)})" in UNINSTALL.read_text()
 
@@ -117,7 +117,7 @@ def main() -> None:
         path = DEBIAN / script
         assert os.access(path, os.X_OK), path
         assert path.read_text().startswith("#!/bin/sh\n"), path
-        assert "@" + "MSIME_" not in path.read_text(), f"{script} has an unconfigured placeholder"
+        assert "@" + "LINGYAO_" not in path.read_text(), f"{script} has an unconfigured placeholder"
 
     # Removal stops and disables every unit for every logged-in user, sockets before their services.
     result, calls = run("prerm", "remove")
@@ -154,7 +154,7 @@ def main() -> None:
     result, calls = run("prerm", "remove", tools=WITH_SYSTEMD_RUN, STUB_UNREACHABLE="1000")
     expect(result, calls, disable_calls("1000")[:1] + removal_calls("1001"), stderr_lines=1)
     assert "alice" in result.stderr and MANUAL_LISTS in result.stderr, result.stderr
-    assert "msime-linux-setup --unregister" not in result.stderr, result.stderr
+    assert "lingyao-linux-setup --unregister" not in result.stderr, result.stderr
 
     # An upgrade keeps the input method, and a deconfigure keeps the package installed: neither unregisters.
     for args in (("upgrade", "1.0.1"), ("failed-upgrade", "1.0.0"), ("deconfigure", "in-favour", "breaker", "2.0")):
@@ -190,7 +190,7 @@ def main() -> None:
     for args in (("abort-upgrade", "1.0.1"), ("abort-remove",)):
         expect(*run("postinst", *args, tools=WITH_SYSTEMD_RUN), [])
 
-    # A first installation has nothing running; the abort paths have nothing to undo. Without systemd-run, account registration is deferred to msime-linux-setup.
+    # A first installation has nothing running; the abort paths have nothing to undo. Without systemd-run, account registration is deferred to lingyao-linux-setup.
     for args in (("configure", ""), ("configure",), ("abort-upgrade", "1.0.1"), ("abort-remove",), ("abort-deconfigure", "in-favour", "breaker", "2.0")):
         expected = restart_calls("1000") + restart_calls("1001") if args[0] == "configure" else []
         expect(*run("postinst", *args), expected)

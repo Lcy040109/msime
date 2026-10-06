@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { expect, test } from "vitest";
-import { decodeDictionaryBytes } from "@msime/ui";
+import { decodeDictionaryBytes } from "@lingyao/ui";
 
 const row = "你好\tni'hao\n";
 

@@ -13,7 +13,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-loader = importlib.machinery.SourceFileLoader("online_provider", str(ROOT / "scripts" / "msime-linux-online-provider"))
+loader = importlib.machinery.SourceFileLoader("online_provider", str(ROOT / "scripts" / "lingyao-linux-online-provider"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 provider = importlib.util.module_from_spec(spec)
 loader.exec_module(provider)
@@ -21,7 +21,7 @@ loader.exec_module(provider)
 
 class TencentCredentials(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix="msime-tencent-")
+        directory = tempfile.TemporaryDirectory(prefix="lingyao-tencent-")
         self.addCleanup(directory.cleanup)
         self.path = Path(directory.name) / "tencent.json"
         self.clean = {"secret_id": "synthetic-local-id", "secret_key": "synthetic-local-key"}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "msimeui/Layout.h"
+#include "lingyaoui/Layout.h"
 
-namespace msimeui
+namespace lingyaoui
 {
 class DeviceResources;
 
@@ -23,5 +23,5 @@ class EmojiPanelIcons final
 
     bool DrawTabIcon(DeviceResources &resources, Tab tab, const RectF &designRect, bool lightTheme) const;
 };
-} // namespace msimeui
+} // namespace lingyaoui
 

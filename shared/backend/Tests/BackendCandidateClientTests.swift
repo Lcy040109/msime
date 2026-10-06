@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class CandidateProtocol: URLProtocol {
   override class func canInit(with request: URLRequest) -> Bool { true }

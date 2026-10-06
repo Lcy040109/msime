@@ -87,13 +87,13 @@ pub struct EngineOptions {
     pub vietnamese_input_method: u8,
     /// 0 modern (hoà), 1 classic (hòa) (`vietnamese::ToneStyle`).
     pub vietnamese_tone_style: u8,
-    /// Absolute path of `msime-cantonese.db`, empty when the host has none; the Cantonese scheme is unavailable without it.
+    /// Absolute path of `lingyao-cantonese.db`, empty when the host has none; the Cantonese scheme is unavailable without it.
     pub cantonese_dictionary: String,
-    /// Absolute path of `msime-zhuyin.db`, empty when the host has none; the Zhuyin scheme is unavailable without it.
+    /// Absolute path of `lingyao-zhuyin.db`, empty when the host has none; the Zhuyin scheme is unavailable without it.
     pub zhuyin_dictionary: String,
-    /// Absolute path of `msime-stroke.db`, empty when the host has none; the Stroke scheme is unavailable without it.
+    /// Absolute path of `lingyao-stroke.db`, empty when the host has none; the Stroke scheme is unavailable without it.
     pub stroke_dictionary: String,
-    /// `msime-japanese.dat` 的绝对路径；为空时从资源目录读取。
+    /// `lingyao-japanese.dat` 的绝对路径；为空时从资源目录读取。
     pub japanese_dictionary: String,
 }
 
@@ -107,7 +107,7 @@ pub fn prepare_options(
     prepare_options_for(resources, user_data, cache, content_id, SchemeSet::ALL)
 }
 
-/// [`prepare_options`] 按会话允许的方案准备，`enabled_schemes` 也填它。集合不读 `msime-pinyin.db`（`SchemeSet::reads_main_dictionary`，例如只有日文、越南文或藏文的版本）时，资源目录里不需要 `msime-pinyin.db`，代次里也没有它（`prepare_runtime_paths_for`）；读它的集合与 [`prepare_options`] 准备出的代次相同。
+/// [`prepare_options`] 按会话允许的方案准备，`enabled_schemes` 也填它。集合不读 `lingyao-pinyin.db`（`SchemeSet::reads_main_dictionary`，例如只有日文、越南文或藏文的版本）时，资源目录里不需要 `lingyao-pinyin.db`，代次里也没有它（`prepare_runtime_paths_for`）；读它的集合与 [`prepare_options`] 准备出的代次相同。
 pub fn prepare_options_for(
     resources: &str,
     user_data: &str,

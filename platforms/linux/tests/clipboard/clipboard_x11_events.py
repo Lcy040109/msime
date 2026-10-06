@@ -42,20 +42,20 @@ class ClipboardEvents(unittest.TestCase):
             # Same owner and same text: this is invisible to text-only polling.
             x11.XSetSelectionOwner(display, clipboard, window, 0)
             x11.XSync(display, 0)
-        with tempfile.TemporaryDirectory(prefix="msime-x11-clipboard-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-x11-clipboard-") as directory:
             root = Path(directory)
-            monitor = root / "msime-linux-clipboard-monitor"
+            monitor = root / "lingyao-linux-clipboard-monitor"
             shutil.copyfile(ROOT / "scripts" / monitor.name, monitor)
-            (root / "msime-linux-clipboard-watch-x11").symlink_to(WATCHER)
+            (root / "lingyao-linux-clipboard-watch-x11").symlink_to(WATCHER)
             log = root / "captures"
             def executable(name, source):
                 path = root / name
                 path.write_text("#!" + sys.executable + "\n" + source)
                 path.chmod(0o700)
             executable("xclip", "import sys\nsys.stdout.write('synthetic identical clipboard')\n")
-            executable("msime-linux-clipboard-capture", "import os, sys\n"
+            executable("lingyao-linux-clipboard-capture", "import os, sys\n"
                        "assert sys.stdin.buffer.read() == b'synthetic identical clipboard'\n"
-                       "with open(os.environ['MSIME_TEST_CAPTURES'], 'a') as log: log.write('capture\\n')\n")
+                       "with open(os.environ['LINGYAO_TEST_CAPTURES'], 'a') as log: log.write('capture\\n')\n")
             options = root / "runtime.json"
             options.write_text(json.dumps({"preferences_directory": str(root)}))
             def enable(value):
@@ -64,7 +64,7 @@ class ClipboardEvents(unittest.TestCase):
                 temporary.replace(root / "preferences.json")
             enable(True)
             env = {**os.environ, "PATH": str(root) + os.pathsep + os.environ["PATH"],
-                   "MSIME_TEST_CAPTURES": str(log)}
+                   "LINGYAO_TEST_CAPTURES": str(log)}
             env.pop("WAYLAND_DISPLAY", None)
             process = subprocess.Popen([sys.executable, str(monitor), str(options)], env=env,
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

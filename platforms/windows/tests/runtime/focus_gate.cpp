@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 struct ReleaseOnExit {
   std::promise<void> &promise;
   bool done = false;

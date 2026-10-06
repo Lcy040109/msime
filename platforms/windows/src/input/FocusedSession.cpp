@@ -10,7 +10,7 @@
 #include <utility>
 #include "FullscreenForeground.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // Effect sounds and music stay quiet while a full-screen application is in front: a game, a video or a presentation the user did not ask to hear typing in.
 bool sound_allowed() { return !foreground_is_fullscreen(GetForegroundWindow()); }
@@ -32,10 +32,10 @@ void submit_typing_statistics_request(std::string request) {
   try {
     std::thread([payload = std::move(request)] {
       try {
-        if (auto *raw = msime_client_typing_statistics(
+        if (auto *raw = lingyao_client_typing_statistics(
                 reinterpret_cast<const uint8_t *>(payload.data()),
                 payload.size()))
-          msime_client_string_free(raw);
+          lingyao_client_string_free(raw);
       } catch (...) {
         // Best effort; text commitment has already happened.
       }
@@ -576,4 +576,4 @@ std::optional<PendingReply> FocusedSession::configured_key(
   });
   return result;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

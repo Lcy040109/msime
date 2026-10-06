@@ -1,4 +1,4 @@
-//! 代次准备（core-session.md §12、data-formats.md §3、`runtime_paths.cpp:116-182`）：`user_data/dictionaries/<content id>` 里是经 backup API 复制的 `msime-pinyin.db` 与 `msime-english.db`（资源单独发布的 `msime-wubi.db` 五笔码表并回前者），回放过用户日志，旁边还有 n-gram 表。不读 `msime-pinyin.db` 的方案集合（见 `SchemeSet::reads_main_dictionary`）准备的代次只有 `msime-english.db`。
+//! 代次准备（core-session.md §12、data-formats.md §3、`runtime_paths.cpp:116-182`）：`user_data/dictionaries/<content id>` 里是经 backup API 复制的 `lingyao-pinyin.db` 与 `lingyao-english.db`（资源单独发布的 `lingyao-wubi.db` 五笔码表并回前者），回放过用户日志，旁边还有 n-gram 表。不读 `lingyao-pinyin.db` 的方案集合（见 `SchemeSet::reads_main_dictionary`）准备的代次只有 `lingyao-english.db`。
 
 use std::ffi::OsString;
 use std::fs;
@@ -22,7 +22,7 @@ pub const MAX_CONTENT_ID_LENGTH: usize = 128;
 /// Tables the lattice reads through `RuntimePaths::dictionary`. They are built from one generation's vocabulary, so they live beside it, and a resource set without them simply leaves the decoder without them (RP:56-59).
 const GENERATION_COPIES: [&str; 2] = [assets::BIGRAM_TABLE, assets::TRIGRAM_TABLE];
 
-/// `msime-wubi.db` 里单独发布、准备代次时并回工作主词库的五笔码表。
+/// `lingyao-wubi.db` 里单独发布、准备代次时并回工作主词库的五笔码表。
 const SPLIT_WUBI_TABLES: [&str; 2] = ["wubi86", "wubi98"];
 
 /// Validate the content id (1..=128 of `[0-9A-Za-z_-]`) and the disjoint absolute roots, create `user_data` and `cache`, then either re-replay an existing ready generation (copying n-gram tables it lacks) or stage `<id>.incoming`, replay, write `.ready` and rename it into place. A failed staging removes only its own directory.
@@ -35,7 +35,7 @@ pub fn prepare_runtime_paths(
     prepare_runtime_paths_for(resources, user_data, cache, content_id, SchemeSet::ALL)
 }
 
-/// 按会话允许的方案准备代次。`schemes` 读 `msime-pinyin.db`（[`SchemeSet::reads_main_dictionary`]）时与 [`prepare_runtime_paths`] 完全相同：`msime-pinyin.db` 和 `msime-english.db` 都必须在资源目录里，都复制进代次。不读它时（只有日文、越南文、藏文这类方案的版本）资源目录里本来就没有它：代次只复制并要求 `msime-english.db`，日志只回放英文行（`replay_english`）。
+/// 按会话允许的方案准备代次。`schemes` 读 `lingyao-pinyin.db`（[`SchemeSet::reads_main_dictionary`]）时与 [`prepare_runtime_paths`] 完全相同：`lingyao-pinyin.db` 和 `lingyao-english.db` 都必须在资源目录里，都复制进代次。不读它时（只有日文、越南文、藏文这类方案的版本）资源目录里本来就没有它：代次只复制并要求 `lingyao-english.db`，日志只回放英文行（`replay_english`）。
 pub fn prepare_runtime_paths_for(
     resources: &Path,
     user_data: &Path,
@@ -138,7 +138,7 @@ fn valid_content_id(content_id: &str) -> bool {
             .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
 }
 
-/// 代次里的词库工作副本：`main_dictionary` 为假时没有 `msime-pinyin.db`，只有 `msime-english.db`。
+/// 代次里的词库工作副本：`main_dictionary` 为假时没有 `lingyao-pinyin.db`，只有 `lingyao-english.db`。
 fn generation_dictionaries(main_dictionary: bool) -> &'static [&'static str] {
     if main_dictionary {
         &[assets::MAIN_DICTIONARY, assets::ENGLISH_DICTIONARY]
@@ -147,7 +147,7 @@ fn generation_dictionaries(main_dictionary: bool) -> &'static [&'static str] {
     }
 }
 
-/// Replay the journal of `paths` into the dictionaries in `generation`; any failed row or error refuses the generation. 没有 `msime-pinyin.db` 的代次只回放英文行。
+/// Replay the journal of `paths` into the dictionaries in `generation`; any failed row or error refuses the generation. 没有 `lingyao-pinyin.db` 的代次只回放英文行。
 fn replay_into(paths: &RuntimePaths, generation: &Path, main_dictionary: bool) -> Result<()> {
     let journal = paths.user(assets::USER_JOURNAL);
     let english = generation.join(assets::ENGLISH_DICTIONARY);
@@ -180,7 +180,7 @@ fn index_reverse_lookup(generation: &Path, main_dictionary: bool) {
             .and_then(|connection| ensure_reverse_indexes(&connection).map_err(Into::into));
         if let Err(error) = indexed {
             eprintln!(
-                "msime: wubi reverse lookup index unavailable in {}, lookups stay unindexed: {error}",
+                "lingyao: wubi reverse lookup index unavailable in {}, lookups stay unindexed: {error}",
                 database.display()
             );
         }
@@ -223,7 +223,7 @@ fn copy_database(source: &Path, target: &Path) -> Result<()> {
     Ok(())
 }
 
-/// 词库发布把五笔码表单独放在只读的 `msime-wubi.db` 里，`msime-pinyin.db` 不再含 `wubi86`/`wubi98`。五笔的学习调序、删词、个人词典编辑与日志回放都写代次里的工作主词库，五笔 provider 也从它读，所以准备代次（以及重置学习数据）时把这两张表连同索引并回工作副本：读写落在同一个文件上，学到的权重立即可见。资源目录没有 `msime-wubi.db`（旧的合并发布）或工作副本里已有同名表时不动。
+/// 词库发布把五笔码表单独放在只读的 `lingyao-wubi.db` 里，`lingyao-pinyin.db` 不再含 `wubi86`/`wubi98`。五笔的学习调序、删词、个人词典编辑与日志回放都写代次里的工作主词库，五笔 provider 也从它读，所以准备代次（以及重置学习数据）时把这两张表连同索引并回工作副本：读写落在同一个文件上，学到的权重立即可见。资源目录没有 `lingyao-wubi.db`（旧的合并发布）或工作副本里已有同名表时不动。
 pub(crate) fn merge_split_wubi(resources: &Path, main_db: &Path) -> Result<()> {
     let source = resources.join(assets::WUBI_DICTIONARY);
     if !is_real_file(&source) {
@@ -458,7 +458,7 @@ mod tests {
 
         let root = tempfile::tempdir().unwrap();
         let resources = resources(root.path());
-        let external = root.path().join("external-msime-pinyin.db");
+        let external = root.path().join("external-lingyao-pinyin.db");
         fs::rename(resources.join(assets::MAIN_DICTIONARY), &external).unwrap();
         symlink(&external, resources.join(assets::MAIN_DICTIONARY)).unwrap();
 
@@ -799,7 +799,7 @@ mod tests {
             fs::read(paths.dictionary(assets::BIGRAM_TABLE)).unwrap(),
             b"first"
         );
-        assert!(!paths.dictionary("msime-trigram.bin.incoming").exists());
+        assert!(!paths.dictionary("lingyao-trigram.bin.incoming").exists());
         let fresh = prepare_runtime_paths(&resources, &user, &cache, "v2").unwrap();
         assert_eq!(
             fs::read(fresh.dictionary(assets::BIGRAM_TABLE)).unwrap(),
@@ -807,7 +807,7 @@ mod tests {
         );
     }
 
-    /// 发布把五笔码表拆进 `msime-wubi.db` 后，准备代次要把它并回工作主词库：日志里的五笔行照常回放，不会让整个代次因为缺表被拒；索引与 rowid 原样保留；再次准备已就绪的代次时不重复导入。
+    /// 发布把五笔码表拆进 `lingyao-wubi.db` 后，准备代次要把它并回工作主词库：日志里的五笔行照常回放，不会让整个代次因为缺表被拒；索引与 rowid 原样保留；再次准备已就绪的代次时不重复导入。
     #[test]
     fn split_wubi_tables_are_merged_into_the_generation_before_replay() {
         let root = tempfile::tempdir().unwrap();
@@ -888,9 +888,9 @@ mod tests {
     /// 发布的整套词库能完整准备：两个数据库复制进来（五笔码表并回主词库），两张 n-gram 表逐字节一致，每种日志行都回放到真实的表上。
     #[test]
     fn the_real_dictionary_set_stages_and_replays() {
-        let Some(resources) = std::env::var_os("MSIME_EVAL_RESOURCES") else {
+        let Some(resources) = std::env::var_os("LINGYAO_EVAL_RESOURCES") else {
             eprintln!(
-                "skipped: MSIME_EVAL_RESOURCES is not set to the dict-v2.0.5 resource directory"
+                "skipped: LINGYAO_EVAL_RESOURCES is not set to the dict-v2.0.5 resource directory"
             );
             return;
         };
@@ -963,7 +963,7 @@ mod tests {
         SchemeSet::of(&[crate::types::SchemeType::JapaneseRomaji])
     }
 
-    /// 只有日文（或越南文、藏文）的版本不带 `msime-pinyin.db`：代次只复制 `msime-english.db`，日志里的英文词照样回放，拼音行跳过而不拒绝这个代次；再次准备同一个代次也不要求 `msime-pinyin.db`。读 `msime-pinyin.db` 的集合缺了它仍然失败，与以前相同。
+    /// 只有日文（或越南文、藏文）的版本不带 `lingyao-pinyin.db`：代次只复制 `lingyao-english.db`，日志里的英文词照样回放，拼音行跳过而不拒绝这个代次；再次准备同一个代次也不要求 `lingyao-pinyin.db`。读 `lingyao-pinyin.db` 的集合缺了它仍然失败，与以前相同。
     #[test]
     fn a_generation_without_the_main_dictionary_holds_only_english() {
         let root = tempfile::tempdir().unwrap();
@@ -992,13 +992,13 @@ mod tests {
             Some(11)
         );
 
-        // 已经准备好的代次再准备一次：不要求 msime-pinyin.db，日志再回放一次。
+        // 已经准备好的代次再准备一次：不要求 lingyao-pinyin.db，日志再回放一次。
         let again =
             prepare_runtime_paths_for(&resources, &user, &cache, "v1", japanese_only()).unwrap();
         assert_eq!(again, paths);
         assert!(!again.dictionary(assets::MAIN_DICTIONARY).exists());
 
-        // 同一个资源目录给读 msime-pinyin.db 的集合准备，照旧因为缺 msime-pinyin.db 失败。
+        // 同一个资源目录给读 lingyao-pinyin.db 的集合准备，照旧因为缺 lingyao-pinyin.db 失败。
         let error = prepare_runtime_paths(&resources, &user, &cache, "v2").unwrap_err();
         assert_eq!(
             error.to_string(),
@@ -1009,7 +1009,7 @@ mod tests {
             )
         );
         assert!(!user.join("dictionaries/v2").exists());
-        // 读 msime-pinyin.db 的集合也不接受一个没有 msime-pinyin.db 的现成代次。
+        // 读 lingyao-pinyin.db 的集合也不接受一个没有 lingyao-pinyin.db 的现成代次。
         let error = prepare_runtime_paths(&resources, &user, &cache, "v1").unwrap_err();
         assert_eq!(
             error.to_string(),
@@ -1017,7 +1017,7 @@ mod tests {
         );
     }
 
-    /// 不读 msime-pinyin.db 的代次仍然要求 `msime-english.db`：资源目录缺了它就失败，不留下暂存目录。
+    /// 不读 lingyao-pinyin.db 的代次仍然要求 `lingyao-english.db`：资源目录缺了它就失败，不留下暂存目录。
     #[test]
     fn a_generation_without_the_main_dictionary_still_needs_english() {
         let root = tempfile::tempdir().unwrap();

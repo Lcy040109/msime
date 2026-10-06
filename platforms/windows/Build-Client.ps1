@@ -40,12 +40,12 @@ $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 $editionTable = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared/contracts/editions.json') -Raw | ConvertFrom-Json
 $editionEntry = @($editionTable.editions | Where-Object { $_.id -ceq $Edition -and $null -ne $_.platforms.windows })
 if ($editionEntry.Count -ne 1) { throw "Edition $Edition has no Windows identifiers in shared/contracts/editions.json" }
-# 两个版本的 TIP 被同一个应用加载时，按导入表找 msime_host_api.dll 会拿到先加载的那一个，所以不是 full 的版本把它改成自己的名字（版本表 host_dll），并生成同名的导入库给 TSF DLL、Server 和设置窗口链接。
+# 两个版本的 TIP 被同一个应用加载时，按导入表找 lingyao_host_api.dll 会拿到先加载的那一个，所以不是 full 的版本把它改成自己的名字（版本表 host_dll），并生成同名的导入库给 TSF DLL、Server 和设置窗口链接。
 $hostDll = [string]$editionEntry[0].platforms.windows.host_dll
 $buildRoot = Join-Path $RepoRoot "target/windows-$Edition"
 foreach ($relative in @('Cargo.toml', 'crates/engine/Cargo.toml',
                          'platforms/windows/CMakeLists.txt', 'platforms/windows/tsf/CMakeLists.txt',
-                         'platforms/windows/settings/MSIME.Settings.vcxproj',
+                         'platforms/windows/settings/LINGYAO.Settings.vcxproj',
                          'apps/desktop/package.json', 'scripts/fetch_voice_runtime.py')) {
     if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot $relative) -PathType Leaf)) {
         throw "Missing Client build source: $relative"
@@ -71,12 +71,12 @@ try {
         $release = Join-Path $rust $arch
         $output = Join-Path $buildRoot $arch
         $bin = Join-Path $output 'bin'
-        $hostLibrary = Join-Path $release 'msime_host_api.dll.lib'
+        $hostLibrary = Join-Path $release 'lingyao_host_api.dll.lib'
         if ($Edition -ne 'full') {
             New-Item -ItemType Directory -Force -Path $output | Out-Null
             $hostDefinition = Join-Path $output ([IO.Path]::ChangeExtension($hostDll, '.def'))
             Invoke-ClientBuild python @((Join-Path $RepoRoot 'platforms/windows/scripts/edition_windows.py'), 'host-def',
-                '--edition', $Edition, '--dll', (Join-Path $release 'msime_host_api.dll'), '--output', $hostDefinition)
+                '--edition', $Edition, '--dll', (Join-Path $release 'lingyao_host_api.dll'), '--output', $hostDefinition)
             $hostLibrary = Join-Path $output "$hostDll.lib"
             $machine = if ($arch -eq 'x64') { 'X64' } else { 'X86' }
             Invoke-ClientBuild lib @('/NOLOGO', "/DEF:$hostDefinition", "/OUT:$hostLibrary", "/MACHINE:$machine")
@@ -85,38 +85,38 @@ try {
         $configure = @('-S', (Join-Path $RepoRoot $source), '-B', $output,
             '-G', $Generator, '-A', $platform,
             "-DCMAKE_PREFIX_PATH=$($env:CMAKE_PREFIX_PATH)",
-            "-DMSIME_HOST_LIBRARY=$hostLibrary", "-DMSIME_EDITION=$Edition",
+            "-DLINGYAO_HOST_LIBRARY=$hostLibrary", "-DLINGYAO_EDITION=$Edition",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO=$bin",
-            '-DMSIMEUI_BUILD_HANDWRITING_DEMO=OFF')
-        if ($arch -eq 'x64') { $configure += '-DMSIME_SERVER_UIACCESS=ON' }
-        if ($TargetVersion -ne '') { $configure += "-DMSIME_WINDOWS_VERSION=$TargetVersion" }
+            '-DLINGYAOUI_BUILD_HANDWRITING_DEMO=OFF')
+        if ($arch -eq 'x64') { $configure += '-DLINGYAO_SERVER_UIACCESS=ON' }
+        if ($TargetVersion -ne '') { $configure += "-DLINGYAO_WINDOWS_VERSION=$TargetVersion" }
         Invoke-ClientBuild cmake $configure
         $targets = if ($arch -eq 'x64') {
-            @('msime-client-server', 'msime-client-watchdog', 'msime-client-prepare', 'msime-tsf')
-        } else { @('msime-tsf') }
+            @('lingyao-client-server', 'lingyao-client-watchdog', 'lingyao-client-prepare', 'lingyao-tsf')
+        } else { @('lingyao-tsf') }
         Invoke-ClientBuild cmake (@('--build', $output, '--config', 'RelWithDebInfo', '--parallel', '4', '--target') + $targets)
         # 宿主 DLL 的 PDB 保留 DLL 内嵌的文件名；Collect-Symbols.ps1 把它打进符号包。
-        Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $release 'msime_host_api.dll'), (Join-Path $bin $hostDll))
-        Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $release 'msime_host_api.pdb'), (Join-Path $bin 'msime_host_api.pdb'))
+        Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $release 'lingyao_host_api.dll'), (Join-Path $bin $hostDll))
+        Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $release 'lingyao_host_api.pdb'), (Join-Path $bin 'lingyao_host_api.pdb'))
         if ($arch -eq 'x64') {
             $x64HostLibrary = $hostLibrary
             # The Rust outputs: the MCP server and the shared Tauri panel shell, each with its PDB under the name the package wants.
             Invoke-ClientBuild cmake (@('-E', 'copy_if_different') +
-                @('msime-mcp.exe', 'msime-mcp.pdb', 'MSIME.exe', 'MSIME.pdb' | ForEach-Object { Join-Path $release $_ }) + @($bin))
+                @('lingyao-mcp.exe', 'lingyao-mcp.pdb', 'LINGYAO.exe', 'LINGYAO.pdb' | ForEach-Object { Join-Path $release $_ }) + @($bin))
 
             # Windows settings are a native WinUI 3 app. Keep the shared Tauri
             # shell below for the emoji/handwriting/keyboard panels, but do not
             # use it as the settings product anymore.
-            $settingsProject = Join-Path $RepoRoot 'platforms/windows/settings/MSIME.Settings.vcxproj'
+            $settingsProject = Join-Path $RepoRoot 'platforms/windows/settings/LINGYAO.Settings.vcxproj'
             $settingsIntermediate = Join-Path $output 'settings-obj'
             # -restore rather than /t:Restore,Build: restore writes obj\*.nuget.g.targets, where the CppWinRT and Windows App SDK build logic lives, and only a separate evaluation after it imports them. In one evaluation the build skips header generation, which only a previously restored obj directory hides.
-            # Built under the name the Server launcher, PE checks and packaging expect. Renaming the output afterwards would leave its resource index behind as MSIME.Settings.pri, which MRT Core looks up by the executable's name.
+            # Built under the name the Server launcher, PE checks and packaging expect. Renaming the output afterwards would leave its resource index behind as LINGYAO.Settings.pri, which MRT Core looks up by the executable's name.
             Invoke-ClientBuild msbuild @($settingsProject, '-restore', '/t:Build',
                 '/p:Configuration=RelWithDebInfo', '/p:Platform=x64',
-                '/p:TargetName=msime-client-settings',
-                "/p:HostApiLibrary=$hostLibrary", "/p:MsimeEdition=$Edition",
+                '/p:TargetName=lingyao-client-settings',
+                "/p:HostApiLibrary=$hostLibrary", "/p:LingyaoEdition=$Edition",
                 "/p:OutDir=$bin\", "/p:IntDir=$settingsIntermediate\")
-            $settingsPdb = Join-Path $bin 'msime-client-settings.pdb'
+            $settingsPdb = Join-Path $bin 'lingyao-client-settings.pdb'
             if (-not (Test-Path -LiteralPath $settingsPdb -PathType Leaf)) {
                 throw "Expected one WinUI settings PDB output: $settingsPdb"
             }
@@ -130,17 +130,17 @@ try {
     Invoke-ClientBuild cmake (@('-E', 'copy_if_different') +
         @($voiceRuntimeLibraries | ForEach-Object { Join-Path $voiceRuntime $_ }) +
         @((Join-Path $buildRoot 'x64/bin')))
-    # Windows on Arm: the 64-bit TIP there is Arm64X (tsf/CMakeLists.txt, MSIME_TSF_ARM64X), linked from an ARM64 and an ARM64EC build of the same sources. Its ARM64 half imports the ARM64 host (Build-RustOutputs.ps1, with a static C runtime like the TIP's, so it needs no ARM64 Visual C++ runtime) under its own name; its ARM64EC half runs in emulated x64 processes and imports the x64 host. Everything else stays x64 and runs emulated. The TIP takes only header-only libraries from its prefix, so both passes use the x64 one.
+    # Windows on Arm: the 64-bit TIP there is Arm64X (tsf/CMakeLists.txt, LINGYAO_TSF_ARM64X), linked from an ARM64 and an ARM64EC build of the same sources. Its ARM64 half imports the ARM64 host (Build-RustOutputs.ps1, with a static C runtime like the TIP's, so it needs no ARM64 Visual C++ runtime) under its own name; its ARM64EC half runs in emulated x64 processes and imports the x64 host. Everything else stays x64 and runs emulated. The TIP takes only header-only libraries from its prefix, so both passes use the x64 one.
     $arm64Release = Join-Path $rust 'arm64'
     $arm64Output = Join-Path $buildRoot 'arm64'
     $arm64Bin = Join-Path $arm64Output 'bin'
     New-Item -ItemType Directory -Force -Path $arm64Output | Out-Null
     $arm64HostDefinition = Join-Path $arm64Output ([IO.Path]::ChangeExtension($arm64HostDll, '.def'))
     Invoke-ClientBuild python @((Join-Path $RepoRoot 'platforms/windows/scripts/edition_windows.py'), 'host-def',
-        '--edition', $Edition, '--arm64', '--dll', (Join-Path $arm64Release 'msime_host_api.dll'), '--output', $arm64HostDefinition)
+        '--edition', $Edition, '--arm64', '--dll', (Join-Path $arm64Release 'lingyao_host_api.dll'), '--output', $arm64HostDefinition)
     $arm64HostLibrary = Join-Path $arm64Output "$arm64HostDll.lib"
     Invoke-ClientBuild lib @('/NOLOGO', "/DEF:$arm64HostDefinition", "/OUT:$arm64HostLibrary", '/MACHINE:ARM64')
-    $arm64Response = Join-Path $arm64Output 'msime-tsf-arm64.rsp'
+    $arm64Response = Join-Path $arm64Output 'lingyao-tsf-arm64.rsp'
     foreach ($pass in @('ARM64', 'ARM64EC')) {
         $passOutput = Join-Path $arm64Output $pass.ToLowerInvariant()
         # The ARM64 pass's own DLL is only an input to the Arm64X link, so it stays in its build tree.
@@ -149,15 +149,15 @@ try {
         $configure = @('-S', (Join-Path $RepoRoot 'platforms/windows/tsf'), '-B', $passOutput,
             '-G', $Generator, '-A', $pass,
             "-DCMAKE_PREFIX_PATH=$X64Dependencies",
-            "-DMSIME_HOST_LIBRARY=$passHost", "-DMSIME_EDITION=$Edition",
-            "-DMSIME_TSF_ARM64X=$pass", "-DMSIME_TSF_ARM64X_RESPONSE=$arm64Response",
+            "-DLINGYAO_HOST_LIBRARY=$passHost", "-DLINGYAO_EDITION=$Edition",
+            "-DLINGYAO_TSF_ARM64X=$pass", "-DLINGYAO_TSF_ARM64X_RESPONSE=$arm64Response",
             "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO=$passBin")
-        if ($TargetVersion -ne '') { $configure += "-DMSIME_WINDOWS_VERSION=$TargetVersion" }
+        if ($TargetVersion -ne '') { $configure += "-DLINGYAO_WINDOWS_VERSION=$TargetVersion" }
         Invoke-ClientBuild cmake $configure
-        Invoke-ClientBuild cmake @('--build', $passOutput, '--config', 'RelWithDebInfo', '--parallel', '4', '--target', 'msime-tsf')
+        Invoke-ClientBuild cmake @('--build', $passOutput, '--config', 'RelWithDebInfo', '--parallel', '4', '--target', 'lingyao-tsf')
     }
-    Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $arm64Release 'msime_host_api.dll'), (Join-Path $arm64Bin $arm64HostDll))
-    Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $arm64Release 'msime_host_api.pdb'), (Join-Path $arm64Bin 'msime_host_api.pdb'))
+    Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $arm64Release 'lingyao_host_api.dll'), (Join-Path $arm64Bin $arm64HostDll))
+    Invoke-ClientBuild cmake @('-E', 'copy_if_different', (Join-Path $arm64Release 'lingyao_host_api.pdb'), (Join-Path $arm64Bin 'lingyao_host_api.pdb'))
     foreach ($arch in @('x64', 'x86')) {
         $bin = Join-Path $buildRoot "$arch/bin"
         $prefix = if ($arch -eq 'x64') { $X64Dependencies } else { $X86Dependencies }
@@ -171,8 +171,8 @@ try {
                 & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $bin $dll) -Architecture x64 -Kind dll
             }
             foreach ($exe in @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe',
-                'msime-client-prepare.exe', 'msime-mcp.exe',
-                'msime-client-settings.exe', 'MSIME.exe')) {
+                'lingyao-client-prepare.exe', 'lingyao-mcp.exe',
+                'lingyao-client-settings.exe', 'LINGYAO.exe')) {
                 & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $bin $exe) -Architecture x64 -Kind exe
             }
         }

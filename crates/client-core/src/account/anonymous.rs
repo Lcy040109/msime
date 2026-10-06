@@ -1,13 +1,13 @@
-//! The device's anonymous MSIME account, registered when the client is first installed or run so services that need an account work before anyone signs in.
+//! The device's anonymous LINGYAO account, registered when the client is first installed or run so services that need an account work before anyone signs in.
 //!
-//! The identity is a client-generated subject and secret, the same shape the macOS/iOS (`shared/backend/account/BackendAnonymousAccount.swift`), Android (`BackendAnonymousAccount.java`) and Linux (`msime-linux-online-provider`) clients create: `msime-` plus 16 characters, and a 48-character secret, both drawn from `[a-z0-9]`. Whoever presents the subject first creates the account. The files are those clients' names and layout too: `anonymous-account.json` holds `{subject, secret}` and `anonymous-session.json` holds a `SavedAccountSession`.
+//! The identity is a client-generated subject and secret, the same shape the macOS/iOS (`shared/backend/account/BackendAnonymousAccount.swift`), Android (`BackendAnonymousAccount.java`) and Linux (`lingyao-linux-online-provider`) clients create: `lingyao-` plus 16 characters, and a 48-character secret, both drawn from `[a-z0-9]`. Whoever presents the subject first creates the account. The files are those clients' names and layout too: `anonymous-account.json` holds `{subject, secret}` and `anonymous-session.json` holds a `SavedAccountSession`.
 
 use super::*;
 use std::path::PathBuf;
 
 pub const ANONYMOUS_ACCOUNT_FILE: &str = "anonymous-account.json";
 pub const ANONYMOUS_SESSION_FILE: &str = "anonymous-session.json";
-const SUBJECT_PREFIX: &str = "msime-";
+const SUBJECT_PREFIX: &str = "lingyao-";
 const SUBJECT_LENGTH: usize = 16;
 const SECRET_LENGTH: usize = 48;
 const ALPHABET: &[u8; 36] = b"abcdefghijklmnopqrstuvwxyz0123456789";
@@ -391,7 +391,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join(ANONYMOUS_ACCOUNT_FILE),
-            br#"{"subject":"msime-short","secret":"x"}"#,
+            br#"{"subject":"lingyao-short","secret":"x"}"#,
         )
         .unwrap();
         assert_eq!(
@@ -407,7 +407,7 @@ mod tests {
             assert!(identity.is_valid());
             assert!(valid_anonymous_subject(&identity.subject));
         }
-        assert!(!valid_anonymous_subject("msime-ABCDEFGHIJKLMNOP"));
+        assert!(!valid_anonymous_subject("lingyao-ABCDEFGHIJKLMNOP"));
         assert!(!valid_anonymous_subject("someone@example.com"));
     }
 
@@ -415,7 +415,7 @@ mod tests {
     fn anonymous_json_file_read_reserves_file_size() {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("identity.json");
-        let contents = br#"{"subject":"msime-synthetic","secret":"synthetic"}"#;
+        let contents = br#"{"subject":"lingyao-synthetic","secret":"synthetic"}"#;
         std::fs::write(&path, contents).unwrap();
 
         let bytes = read_private_file(std::fs::File::open(path).unwrap()).unwrap();

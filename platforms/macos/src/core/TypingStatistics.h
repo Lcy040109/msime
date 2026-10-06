@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::mac {
+namespace lingyao::mac {
 
 enum class TypingSource {
     Quanpin,
@@ -88,7 +88,7 @@ constexpr TypingSource ResolveTypingSource(int scheme, bool nineKey,
     }
 }
 
-// A key the input method hands back to the application is typed by the application itself, so it never reaches a commit path; this decides whether such a key counts, mirroring `ShouldCountPassthroughChar` in MSIME-Windows windows/src/Statistics/stats_passthrough.h. Like the source it is a key-time prediction, not an edit confirmation: a key the application treats as a shortcut or drops in a read-only field is still counted.
+// A key the input method hands back to the application is typed by the application itself, so it never reaches a commit path; this decides whether such a key counts, mirroring `ShouldCountPassthroughChar` in LINGYAO-Windows windows/src/Statistics/stats_passthrough.h. Like the source it is a key-time prediction, not an edit confirmation: a key the application treats as a shortcut or drops in a read-only field is still counted.
 //
 // Command and Control are the shortcut modifiers, the role Ctrl, Alt and Win play in the source. Option is allowed on purpose: on macOS it is the character layer, like AltGr on Windows, and produces characters such as the euro sign, the em dash and, on German or French layouts, @ [ { |. Control characters, DEL and lone surrogates are rejected as in the source, and so is the AppKit function-key range 0xF700-0xF8FF, which is where arrows, F-keys, Home/End and forward delete land in `NSEvent.characters`.
 constexpr bool ShouldCountPassthroughCharacter(char16_t ch, bool control, bool command) {
@@ -282,4 +282,4 @@ private:
     uint64_t presses_ = 0;
 };
 
-} // namespace msime::mac
+} // namespace lingyao::mac

@@ -13,9 +13,9 @@ use crate::words::{
     LookupRequest, LookupView, WordEditRequest, WordImportOutcome, WordImportRequest, WordListPage,
     WordListRequest,
 };
-use msime_client_core::dictionary::quiesce::QuiescedHosts;
-use msime_client_core::file_lock;
-use msime_host_api::{DictionaryOptions, QuickPhrase, QuickPhraseEdit, WordEdit};
+use lingyao_client_core::dictionary::quiesce::QuiescedHosts;
+use lingyao_client_core::file_lock;
+use lingyao_host_api::{DictionaryOptions, QuickPhrase, QuickPhraseEdit, WordEdit};
 use rmcp::handler::server::router::prompt::PromptRouter;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
@@ -50,10 +50,10 @@ const DICTIONARY_READ_TOOLS: [&str; 2] = ["list_dictionary_words", "lookup_candi
 /// Offered with --allow-write and --allow-dictionary-read together: an edit or import also tells whether a word is there.
 const DICTIONARY_WRITE_TOOLS: [&str; 2] = ["edit_dictionary_words", "import_dictionary_words"];
 
-const INSTRUCTIONS: &str = "Manages 灵耀输入法 (MSIME), a Chinese input method: its quick phrases (a short code the user types that expands to a longer text), a few of its preferences, and aggregate typing statistics. With --allow-dictionary-read it also lists the user's own dictionary words and shows which candidates a code offers and why, which is how to explain a candidate's rank; with --allow-write as well it adds, reweights, removes and imports words. To import a word list the user gives you, read it yourself and send the words, 200 at a time. It also helps with problems the user runs into: lag, a candidate window that is missing or in the wrong place, the input method stopping or switching by itself. The user may not be technical, so do the steps yourself rather than asking them to open files, settings or a terminal: read the log with read_diagnostic_log; if it is off, turn it on with set_diagnostic_log, ask the user in plain words to do again what went wrong and to tell you when they have, then read the log again and explain what you found in plain words. Turn the log off with set_diagnostic_log when you are done. It also lists the user's candidate-window skins and, with --allow-write, makes new ones: write a skin.toml and PNG or JPEG images yourself and pass them to create_candidate_skin. The desktop app then syncs every skin made this way to the user's cloud library as a private package, from where the user can publish it to the community; this server never signs in to the account itself. Changes take effect in the input method within a few seconds. Apart from set_diagnostic_log, writing tools are only offered when the user started the server with --allow-write.";
+const INSTRUCTIONS: &str = "Manages 灵耀输入法 (LINGYAO), a Chinese input method: its quick phrases (a short code the user types that expands to a longer text), a few of its preferences, and aggregate typing statistics. With --allow-dictionary-read it also lists the user's own dictionary words and shows which candidates a code offers and why, which is how to explain a candidate's rank; with --allow-write as well it adds, reweights, removes and imports words. To import a word list the user gives you, read it yourself and send the words, 200 at a time. It also helps with problems the user runs into: lag, a candidate window that is missing or in the wrong place, the input method stopping or switching by itself. The user may not be technical, so do the steps yourself rather than asking them to open files, settings or a terminal: read the log with read_diagnostic_log; if it is off, turn it on with set_diagnostic_log, ask the user in plain words to do again what went wrong and to tell you when they have, then read the log again and explain what you found in plain words. Turn the log off with set_diagnostic_log when you are done. It also lists the user's candidate-window skins and, with --allow-write, makes new ones: write a skin.toml and PNG or JPEG images yourself and pass them to create_candidate_skin. The desktop app then syncs every skin made this way to the user's cloud library as a private package, from where the user can publish it to the community; this server never signs in to the account itself. Changes take effect in the input method within a few seconds. Apart from set_diagnostic_log, writing tools are only offered when the user started the server with --allow-write.";
 
 #[derive(Clone)]
-pub struct MsimeServer {
+pub struct LingyaoServer {
     config: Arc<Config>,
     last_write: Arc<Mutex<Option<Instant>>>,
     /// Set while a write runs. rmcp runs each request as its own task and a write can outlast the interval, so spacing alone would let two overlap on the quiesce lease and on a check-then-write edit.
@@ -162,7 +162,7 @@ impl From<Edit> for QuickPhraseEdit {
 }
 
 #[tool_router]
-impl MsimeServer {
+impl LingyaoServer {
     pub fn new(config: Config) -> Self {
         let mut tool_router = Self::tool_router();
         let hidden = [
@@ -211,7 +211,7 @@ impl MsimeServer {
         let config = self.config.clone();
         blocking(move || {
             let options = DictionaryOptions::from_host_document(config.read_host_options()?)?;
-            let page = msime_host_api::user_quick_phrases(
+            let page = lingyao_host_api::user_quick_phrases(
                 &options,
                 request.code_prefix.as_deref().unwrap_or(""),
                 request.offset.unwrap_or(0),
@@ -252,12 +252,12 @@ impl MsimeServer {
             Ok(apply_edits(
                 &options,
                 &edits,
-                msime_host_api::edit_user_quick_phrase,
+                lingyao_host_api::edit_user_quick_phrase,
             ))
         })
         .await?;
         eprintln!(
-            "msime-mcp: edit_quick_phrases applied {}{}",
+            "lingyao-mcp: edit_quick_phrases applied {}{}",
             outcome.applied,
             if outcome.error.is_some() {
                 " then failed"
@@ -313,7 +313,7 @@ impl MsimeServer {
         })
         .await;
         eprintln!(
-            "msime-mcp: update_preferences {}",
+            "lingyao-mcp: update_preferences {}",
             if result.is_ok() { "saved" } else { "refused" }
         );
         result
@@ -335,7 +335,7 @@ impl MsimeServer {
 
     #[tool(
         name = "create_candidate_skin",
-        description = "Install a candidate-window skin from a skin.toml and its images. The manifest is TOML: schema_version = 1; id (equal to package_id); name (at most 80 bytes); version; base, the look drawn under it: a built-in theme (system, lingyao, light, paper, night or ink) or an msime-windows built-in look (fluent, wechat, graphite, willow_green, autumn_osmanthus or microsoft), whose colours fill the ones the manifest leaves out; preview, the path of a PNG or JPEG shown in the skin list; optional author, description and [license] code, assets and source; [supports] layouts (horizontal, vertical) and themes (dark, light); [candidate_window] min_width_dip (0-1000), optional corner_radius_dip (0-32), optional [candidate_window.decoration] top_inset_dip, width_dip, image and align (left, center, right), optional [candidate_window.background] image, fit (cover, contain, stretch) and opacity (0-1); [candidate.dark] and [candidate.light] colours accent, selected, hover, surface, border, text, number and translation as #RRGGBB or #RRGGBBAA, plus show_selected_bar. images must hold exactly the images the manifest references. A stylesheet is not accepted, so the skin can be synced and shared. Refused when the skin exists, unless replace is true.",
+        description = "Install a candidate-window skin from a skin.toml and its images. The manifest is TOML: schema_version = 1; id (equal to package_id); name (at most 80 bytes); version; base, the look drawn under it: a built-in theme (system, lingyao, light, paper, night or ink) or an lingyao-windows built-in look (fluent, wechat, graphite, willow_green, autumn_osmanthus or microsoft), whose colours fill the ones the manifest leaves out; preview, the path of a PNG or JPEG shown in the skin list; optional author, description and [license] code, assets and source; [supports] layouts (horizontal, vertical) and themes (dark, light); [candidate_window] min_width_dip (0-1000), optional corner_radius_dip (0-32), optional [candidate_window.decoration] top_inset_dip, width_dip, image and align (left, center, right), optional [candidate_window.background] image, fit (cover, contain, stretch) and opacity (0-1); [candidate.dark] and [candidate.light] colours accent, selected, hover, surface, border, text, number and translation as #RRGGBB or #RRGGBBAA, plus show_selected_bar. images must hold exactly the images the manifest references. A stylesheet is not accepted, so the skin can be synced and shared. Refused when the skin exists, unless replace is true.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -357,7 +357,7 @@ impl MsimeServer {
         })
         .await;
         eprintln!(
-            "msime-mcp: create_candidate_skin {}",
+            "lingyao-mcp: create_candidate_skin {}",
             match &result {
                 Ok(created) if created.0.replaced => "replaced",
                 Ok(_) => "installed",
@@ -427,7 +427,7 @@ impl MsimeServer {
         })
         .await;
         eprintln!(
-            "msime-mcp: set_diagnostic_log {}",
+            "lingyao-mcp: set_diagnostic_log {}",
             match (&result, request.enabled) {
                 (Err(_), _) => "refused",
                 (Ok(_), true) => "on",
@@ -458,7 +458,7 @@ impl MsimeServer {
         let config = self.config.clone();
         blocking(move || {
             let options = DictionaryOptions::from_host_document(config.read_host_options()?)?;
-            let page = msime_host_api::dictionary_words(
+            let page = lingyao_host_api::dictionary_words(
                 &options,
                 request.dictionary.into(),
                 &code_prefix,
@@ -501,12 +501,12 @@ impl MsimeServer {
             Ok(apply_edits(
                 &options,
                 &edits,
-                msime_host_api::edit_dictionary_word,
+                lingyao_host_api::edit_dictionary_word,
             ))
         })
         .await?;
         eprintln!(
-            "msime-mcp: edit_dictionary_words applied {}{}",
+            "lingyao-mcp: edit_dictionary_words applied {}{}",
             outcome.applied,
             if outcome.error.is_some() {
                 " then failed"
@@ -542,21 +542,21 @@ impl MsimeServer {
             let _guard = guard;
             let _shared = claim_shared_write(&config)?;
             let options = DictionaryOptions::from_host_document(config.read_host_options()?)?;
-            let request_id = msime_client_core::uuid::Uuid::new_v4().simple().to_string();
+            let request_id = lingyao_client_core::uuid::Uuid::new_v4().simple().to_string();
             let mut hosts = QuiescedHosts::new(Some(options.user_data()), || {});
             hosts.run(|| {
-                msime_host_api::import_dictionary_words(&options, kind, &new_words, &request_id)
+                lingyao_host_api::import_dictionary_words(&options, kind, &new_words, &request_id)
             })
         })
         .await;
         match &result {
             Ok(outcome) => eprintln!(
-                "msime-mcp: import_dictionary_words added {}, found {}, refused {}",
+                "lingyao-mcp: import_dictionary_words added {}, found {}, refused {}",
                 outcome.added,
                 outcome.existing,
                 outcome.rejected.len()
             ),
-            Err(_) => eprintln!("msime-mcp: import_dictionary_words failed"),
+            Err(_) => eprintln!("lingyao-mcp: import_dictionary_words failed"),
         }
         result.map(|outcome| Json(outcome.into()))
     }
@@ -574,7 +574,7 @@ impl MsimeServer {
         let config = self.config.clone();
         blocking(move || {
             let options = DictionaryOptions::from_host_document(config.read_host_options()?)?;
-            let candidates = msime_host_api::lookup_candidates(
+            let candidates = lingyao_host_api::lookup_candidates(
                 &options,
                 request.scheme.map(Into::into),
                 &request.code,
@@ -590,7 +590,7 @@ impl MsimeServer {
 
 #[tool_handler(router = self.tool_router)]
 #[prompt_handler(router = self.prompt_router)]
-impl ServerHandler for MsimeServer {
+impl ServerHandler for LingyaoServer {
     fn get_info(&self) -> ServerConfig {
         ServerConfig::new(
             ServerCapabilities::builder()
@@ -600,13 +600,13 @@ impl ServerHandler for MsimeServer {
         )
         .with_server_info(Implementation::new(
             self.config.server_name(),
-            env!("MSIME_APP_VERSION"),
+            env!("LINGYAO_APP_VERSION"),
         ))
         .with_instructions(INSTRUCTIONS)
     }
 }
 
-impl MsimeServer {
+impl LingyaoServer {
     /// Take the next write slot, or refuse when another write is still running or the previous one was too recent. The guard goes into the blocking work, not the handler future: a cancelled request drops the future while the work runs on.
     fn claim_write(&self) -> Result<WriteGuard, String> {
         if self
@@ -630,7 +630,7 @@ impl MsimeServer {
     }
 }
 
-/// Space writes across processes as `claim_write` spaces them within one: each `msime-mcp call` is a process of its own, and a server may run beside it. The returned file holds the lock for the whole write, so two processes never overlap on a check-then-write edit either. Waits for a write another process is running, then refuses when that one began less than the interval ago.
+/// Space writes across processes as `claim_write` spaces them within one: each `lingyao-mcp call` is a process of its own, and a server may run beside it. The returned file holds the lock for the whole write, so two processes never overlap on a check-then-write edit either. Waits for a write another process is running, then refuses when that one began less than the interval ago.
 fn claim_shared_write(config: &Config) -> Result<File, String> {
     let state_dir = config.state_dir(&config.read_options()?)?;
     let mut file = file_lock::open_private_lock_file(state_dir.join(WRITE_LOCK))
@@ -673,7 +673,7 @@ fn apply_edits<E>(
 ) -> EditOutcome {
     let mut hosts = QuiescedHosts::new(Some(options.user_data()), || {});
     for (index, edit) in edits.iter().enumerate() {
-        let request_id = msime_client_core::uuid::Uuid::new_v4().simple().to_string();
+        let request_id = lingyao_client_core::uuid::Uuid::new_v4().simple().to_string();
         if let Err(error) = hosts.run(|| apply(options, edit, &request_id)) {
             return EditOutcome {
                 applied: index,
@@ -703,12 +703,12 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
 
-    fn server(allow_write: bool) -> MsimeServer {
+    fn server(allow_write: bool) -> LingyaoServer {
         server_with(allow_write, false)
     }
 
-    fn server_with(allow_write: bool, allow_dictionary_read: bool) -> MsimeServer {
-        MsimeServer::new(Config {
+    fn server_with(allow_write: bool, allow_dictionary_read: bool) -> LingyaoServer {
+        LingyaoServer::new(Config {
             options: PathBuf::from("/nonexistent/runtime-options.json"),
             state_dir: None,
             allow_write,
@@ -718,7 +718,7 @@ mod tests {
 
     #[test]
     fn write_tools_are_offered_only_when_allowed() {
-        let names = |server: &MsimeServer| {
+        let names = |server: &LingyaoServer| {
             let mut names: Vec<String> = server
                 .tool_router
                 .list_all()

@@ -1,6 +1,6 @@
 """Open a pinned download, retrying the failures a CDN serves transiently.
 
-The ``fetch_*.py`` scripts download release assets from GitHub, whose CDN now and then answers a single request with a 5xx; one such answer used to fail a whole release build (Release Linux run 37259338700, ``HTTP Error 500`` on ``msime-cantonese.db``). Server errors, 429, timeouts and connection failures are retried after ``RETRY_DELAYS``; any other HTTP status (404, 403, ...) fails at once, since asking again cannot change it. Only opening the response is retried: the callers stream into a staged file and verify the size and SHA-256 afterwards, so a body cut off mid-way is still rejected rather than retried.
+The ``fetch_*.py`` scripts download release assets from GitHub, whose CDN now and then answers a single request with a 5xx; one such answer used to fail a whole release build (Release Linux run 37259338700, ``HTTP Error 500`` on ``lingyao-cantonese.db``). Server errors, 429, timeouts and connection failures are retried after ``RETRY_DELAYS``; any other HTTP status (404, 403, ...) fails at once, since asking again cannot change it. Only opening the response is retried: the callers stream into a staged file and verify the size and SHA-256 afterwards, so a body cut off mid-way is still rejected rather than retried.
 """
 import sys
 import time

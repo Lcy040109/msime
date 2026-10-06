@@ -4,8 +4,8 @@
 #include <optional>
 #include <string_view>
 
-namespace msime::windows {
-// The events msime_client_typing_effect takes beyond the key_sound classes 0-3, the flag for an auto-repeated key (drawn but not counted toward the combo), and the flag that keeps its tier-up sound quiet.
+namespace lingyao::windows {
+// The events lingyao_client_typing_effect takes beyond the key_sound classes 0-3, the flag for an auto-repeated key (drawn but not counted toward the combo), and the flag that keeps its tier-up sound quiet.
 constexpr uint32_t typing_effect_commit_event = 4u;
 constexpr uint32_t typing_effect_repeat_flag = 0x100u;
 constexpr uint32_t typing_effect_muted_flag = 0x200u;
@@ -29,7 +29,7 @@ inline uint32_t typing_effect_commit(bool sound_allowed) {
   return typing_effect_key_event(typing_effect_commit_event, sound_allowed, false);
 }
 
-// Unpacks msime_client_typing_effect's return value: bits 0-15 the combo count, bit 16 a new tier, bits 17-19 the style. A style number this host does not know is drawn as the strongest one it does.
+// Unpacks lingyao_client_typing_effect's return value: bits 0-15 the combo count, bit 16 a new tier, bits 17-19 the style. A style number this host does not know is drawn as the strongest one it does.
 inline TypingEffect decode_typing_effect(uint32_t packed) {
   TypingEffect effect;
   effect.combo = packed & 0xFFFFu;
@@ -39,7 +39,7 @@ inline TypingEffect decode_typing_effect(uint32_t packed) {
   return effect;
 }
 
-// The parts of msime_client_typing_effect_settings Windows draws: the intensity, the flash length (the pack's duration_ms, else the host's own 150 ms) and the flash colour (the pack's first colour, else the theme accent). Particles have nothing to drive on a card that only flashes, and the other colours of a pack are ignored.
+// The parts of lingyao_client_typing_effect_settings Windows draws: the intensity, the flash length (the pack's duration_ms, else the host's own 150 ms) and the flash colour (the pack's first colour, else the theme accent). Particles have nothing to drive on a card that only flashes, and the other colours of a pack are ignored.
 struct TypingEffectSettings {
   uint32_t intensity = 50;
   uint32_t flash_millis = typing_effect_flash_millis;
@@ -117,4 +117,4 @@ inline float typing_effect_flash_alpha(const TypingEffect &effect, uint32_t inte
 inline bool typing_effect_shows_combo(uint32_t combo, uint64_t elapsed) {
   return combo >= 2 && elapsed < typing_effect_combo_millis;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -221,7 +221,7 @@ where
     );
     let parent = target.parent().ok_or(MoveError::InvalidTarget)?;
     let staging = tempfile::Builder::new()
-        .prefix(".msime-data-migration-")
+        .prefix(".lingyao-data-migration-")
         .tempdir_in(parent)
         .map_err(|_| MoveError::Copy)?;
     copy_tree_contents(&source, staging.path())?;
@@ -281,7 +281,7 @@ mod tests {
         fs::create_dir_all(&target).unwrap();
         fs::write(default.join("preferences.json"), b"synthetic-preferences").unwrap();
         fs::create_dir(default.join("user")).unwrap();
-        fs::write(default.join("user/msime_user.db"), b"synthetic-dictionary").unwrap();
+        fs::write(default.join("user/lingyao_user.db"), b"synthetic-dictionary").unwrap();
         let locators = vec![default.join(OPTIONS_FILE), native.join(OPTIONS_FILE)];
         for locator in &locators {
             fs::write(locator, b"old locator").unwrap();
@@ -302,7 +302,7 @@ mod tests {
             b"synthetic-preferences"
         );
         assert_eq!(
-            fs::read(target.join("user/msime_user.db")).unwrap(),
+            fs::read(target.join("user/lingyao_user.db")).unwrap(),
             b"synthetic-dictionary"
         );
         assert!(target.join(DATA_DIRECTORY_MARKER).is_file());

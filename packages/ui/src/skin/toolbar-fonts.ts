@@ -101,7 +101,7 @@ export async function prepareToolbarFonts(
   let partial = preserved.partial,
     total = 0,
     count = 0;
-  const prefix = "msime-skin-font-" + ++generation + "-";
+  const prefix = "lingyao-skin-font-" + ++generation + "-";
   const families = new Map<string, string>();
   const loaded: ConditionalFont[] = [];
   const cache = new Map<string, Promise<ArrayBuffer>>();

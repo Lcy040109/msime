@@ -1,12 +1,12 @@
 #pragma once
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include "PipeMetadata.h"
 #include "InputKeyPolicy.h"
 #include "windows_ipc.h"
 #include <optional>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class KeyKind { Ignore, LocalReset, CancelAndForward, Character, Command };
 struct KeyAction {
   KeyKind kind = KeyKind::Ignore;
@@ -33,7 +33,7 @@ inline KeyAction translate_key(const FanyImeNamedpipeData &packet) {
   // reverse-pipe key reply. This differs from raw OS modifier key-down
   // handling.
   if (is_backend_independent_reset_key(key))
-    return {KeyKind::LocalReset, MSIME_CANCEL};
+    return {KeyKind::LocalReset, LINGYAO_CANCEL};
   if (key == 0x11 || key == 0x12 || (key >= 0xA2 && key <= 0xA5) ||
       key == 0x5B || key == 0x5C)
     return {};
@@ -43,44 +43,44 @@ inline KeyAction translate_key(const FanyImeNamedpipeData &packet) {
   if (is_segment_backspace_key(key, modifiers) ||
       is_segment_caret_key(key, modifiers)) {
     // The conditional is not a constant expression, so MSVC rejects the enum-to-uint32_t conversion as narrowing inside braces; GCC and Clang accept it.
-    return {KeyKind::Command, static_cast<uint32_t>(key == 0x08   ? MSIME_BACKSPACE_SEGMENT
-                                                    : key == 0x25 ? MSIME_MOVE_LEFT_SEGMENT
-                                                                  : MSIME_MOVE_RIGHT_SEGMENT)};
+    return {KeyKind::Command, static_cast<uint32_t>(key == 0x08   ? LINGYAO_BACKSPACE_SEGMENT
+                                                    : key == 0x25 ? LINGYAO_MOVE_LEFT_SEGMENT
+                                                                  : LINGYAO_MOVE_RIGHT_SEGMENT)};
   }
   if (modifiers & ~1u)
-    return {KeyKind::CancelAndForward, MSIME_CANCEL};
+    return {KeyKind::CancelAndForward, LINGYAO_CANCEL};
   switch (key) {
   case 0x08:
-    return {KeyKind::Command, MSIME_BACKSPACE};
+    return {KeyKind::Command, LINGYAO_BACKSPACE};
   case 0x0D:
-    return {KeyKind::Command, MSIME_COMMIT_RAW};
+    return {KeyKind::Command, LINGYAO_COMMIT_RAW};
   case 0x20:
-    return {KeyKind::Command, MSIME_COMMIT_CANDIDATE};
+    return {KeyKind::Command, LINGYAO_COMMIT_CANDIDATE};
   case 0x21:
-    return {KeyKind::Command, MSIME_PREVIOUS_PAGE};
+    return {KeyKind::Command, LINGYAO_PREVIOUS_PAGE};
   case 0x22:
-    return {KeyKind::Command, MSIME_NEXT_PAGE};
+    return {KeyKind::Command, LINGYAO_NEXT_PAGE};
   case 0x23:
-    return {KeyKind::Command, MSIME_MOVE_END};
+    return {KeyKind::Command, LINGYAO_MOVE_END};
   case 0x24:
-    return {KeyKind::Command, MSIME_MOVE_HOME};
+    return {KeyKind::Command, LINGYAO_MOVE_HOME};
   case 0x25:
-    return {KeyKind::Command, MSIME_MOVE_LEFT};
+    return {KeyKind::Command, LINGYAO_MOVE_LEFT};
   case 0x26:
-    return {KeyKind::Command, MSIME_PREVIOUS_CANDIDATE};
+    return {KeyKind::Command, LINGYAO_PREVIOUS_CANDIDATE};
   case 0x27:
-    return {KeyKind::Command, MSIME_MOVE_RIGHT};
+    return {KeyKind::Command, LINGYAO_MOVE_RIGHT};
   case 0x28:
-    return {KeyKind::Command, MSIME_NEXT_CANDIDATE};
+    return {KeyKind::Command, LINGYAO_NEXT_CANDIDATE};
   case 0x2E:
-    return {KeyKind::Command, MSIME_DELETE_FORWARD};
+    return {KeyKind::Command, LINGYAO_DELETE_FORWARD};
   }
   if (key >= 0x60 && key <= 0x69)
     return {KeyKind::Character, normalize_digit_key(key), false};
   const auto text = static_cast<uint32_t>(packet.wch);
   if (text >= 0x21 && text <= 0x7E)
     return {KeyKind::Character, text, (modifiers & 1u) != 0};
-  return {KeyKind::CancelAndForward, MSIME_CANCEL};
+  return {KeyKind::CancelAndForward, LINGYAO_CANCEL};
 }
 
 // Enter is completed in-process by the legacy TSF. Carry its bounded local
@@ -132,4 +132,4 @@ local_commit_observation(const FanyImeNamedpipeData &packet) {
   }
   return result;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

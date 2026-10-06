@@ -1,4 +1,4 @@
-//! `msime-english.db`: the English prefix-candidate table, the bidirectional glosses derived from ECDICT, and the hand-maintained translation overrides.
+//! `lingyao-english.db`: the English prefix-candidate table, the bidirectional glosses derived from ECDICT, and the hand-maintained translation overrides.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::Path;
@@ -619,9 +619,9 @@ fn english_candidates(connection: &Connection) -> Result<HashSet<String>> {
 }
 
 /// Every pinyin-table value in `terms`, with its best weight (floored at zero).
-fn chinese_term_weights(msime: &Connection, terms: &HashSet<&str>) -> Result<HashMap<String, i64>> {
+fn chinese_term_weights(lingyao: &Connection, terms: &HashSet<&str>) -> Result<HashMap<String, i64>> {
     let table_pattern = Regex::new(r"\Atbl_(?:[1-7]|others)_[a-z]\z").expect("valid regex");
-    let tables: Vec<String> = msime
+    let tables: Vec<String> = lingyao
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name GLOB 'tbl_*_[a-z]' ORDER BY name")?
         .query_map([], |row| row.get(0))?
         .collect::<rusqlite::Result<Vec<String>>>()?
@@ -630,7 +630,7 @@ fn chinese_term_weights(msime: &Connection, terms: &HashSet<&str>) -> Result<Has
         .collect();
     let mut weights = HashMap::new();
     for table in tables {
-        let mut statement = msime.prepare(&format!("SELECT value,weight FROM \"{table}\""))?;
+        let mut statement = lingyao.prepare(&format!("SELECT value,weight FROM \"{table}\""))?;
         let mut rows = statement.query([])?;
         while let Some(row) = rows.next()? {
             let Some(value) = row.get::<_, Option<String>>(0)? else {
@@ -650,7 +650,7 @@ fn chinese_term_weights(msime: &Connection, terms: &HashSet<&str>) -> Result<Has
 pub fn derive_glosses(
     ecdict: &Path,
     english: &Connection,
-    msime: &Connection,
+    lingyao: &Connection,
     reverse_excluded: &HashSet<String>,
 ) -> Result<Glosses> {
     let candidates = english_candidates(english)?;
@@ -757,7 +757,7 @@ pub fn derive_glosses(
         .values()
         .flat_map(|entry| entry.terms.iter().map(|term| term.text.as_str()))
         .collect();
-    let weights = chinese_term_weights(msime, &all_terms)?;
+    let weights = chinese_term_weights(lingyao, &all_terms)?;
     let en_zh = entries
         .iter()
         .map(|(english, entry)| {
@@ -1162,14 +1162,14 @@ mod tests {
     fn fixture_databases() -> (Connection, Connection) {
         let english = Connection::open_in_memory().unwrap();
         english.execute_batch("CREATE TABLE english_words(word, display, weight); INSERT INTO english_words VALUES ('bank','bank',0),('banks','banks',0),('run','run',0),('rare','rare',0);").unwrap();
-        let msime = Connection::open_in_memory().unwrap();
-        msime.execute_batch("CREATE TABLE tbl_2_y(key, jp, value, weight); INSERT INTO tbl_2_y VALUES ('yin''hang','yh','银行',900); CREATE TABLE tbl_2_p(key, jp, value, weight); INSERT INTO tbl_2_p VALUES ('pao''bu','pb','跑步',50);").unwrap();
-        (english, msime)
+        let lingyao = Connection::open_in_memory().unwrap();
+        lingyao.execute_batch("CREATE TABLE tbl_2_y(key, jp, value, weight); INSERT INTO tbl_2_y VALUES ('yin''hang','yh','银行',900); CREATE TABLE tbl_2_p(key, jp, value, weight); INSERT INTO tbl_2_p VALUES ('pao''bu','pb','跑步',50);").unwrap();
+        (english, lingyao)
     }
 
     #[test]
     fn glosses_intersect_ecdict_with_both_dictionaries() {
-        let (english, msime) = fixture_databases();
+        let (english, lingyao) = fixture_databases();
         let dir = tempfile::tempdir().unwrap();
         let csv = dir.path().join("ecdict.csv");
         std::fs::write(
@@ -1182,7 +1182,7 @@ mod tests {
              absent,,,n. 缺席,,5,1,,1,1,,,\n",
         )
         .unwrap();
-        let glosses = derive_glosses(&csv, &english, &msime, &HashSet::new()).unwrap();
+        let glosses = derive_glosses(&csv, &english, &lingyao, &HashSet::new()).unwrap();
         assert_eq!(
             glosses.en_zh.get("bank").map(String::as_str),
             Some("银行；堤")
@@ -1194,7 +1194,7 @@ mod tests {
         assert_eq!(glosses.zh_en.get("银行").map(String::as_str), Some("bank"));
         // An excluded word keeps its English-to-Chinese gloss but neither feeds the reverse index nor stands in for its inflections there.
         let excluded =
-            derive_glosses(&csv, &english, &msime, &HashSet::from(["bank".to_owned()])).unwrap();
+            derive_glosses(&csv, &english, &lingyao, &HashSet::from(["bank".to_owned()])).unwrap();
         assert_eq!(excluded.en_zh, glosses.en_zh);
         assert_eq!(
             excluded.zh_en.get("银行").map(String::as_str),

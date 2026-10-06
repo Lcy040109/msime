@@ -1,6 +1,6 @@
-import app.msime.android.TypingStatisticsModel;
-import app.msime.android.TypingStatisticsModel.Section;
-import app.msime.android.TypingStatisticsModel.Slice;
+import app.lingyao.android.TypingStatisticsModel;
+import app.lingyao.android.TypingStatisticsModel.Section;
+import app.lingyao.android.TypingStatisticsModel.Slice;
 import java.util.List;
 import java.util.Map;
 

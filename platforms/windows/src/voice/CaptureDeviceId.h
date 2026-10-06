@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // A WASAPI endpoint identity as the opaque ASCII id saved preferences hold: "wasapi:" and then every UTF-16 unit of the terminated native id as four lowercase hex digits. The settings list reads the same form from crates/host-api/src/voice_capture.rs (wasapi_device_id), so the two encoders must stay byte-for-byte identical. An empty or unterminated native id has no identity.
 inline std::string wasapi_capture_device_id(const ma_device_id &id) {
   constexpr char hex[] = "0123456789abcdef";
@@ -49,4 +49,4 @@ inline const ma_device_info *select_capture_device(const ma_device_info *devices
     }
   return selected;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

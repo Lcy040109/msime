@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 用 Material 3 而不是框架的 Theme.Material：宿主用 MaterialCardView、MaterialButton、BottomNavigationView，它们解析各自的主题属性。 -->
-    <!-- 清单里用的是 Theme.MSIME，属性都在 Theme.MSIME.Base。首次启动的开屏是 HomeActivity 自己的 home_intro 视图而不是系统 splash screen；values-v31 只把系统启动画面改成不画图标的页面底色。深色值来自 values-night 的同名颜色。 -->
-    <style name="Theme.MSIME" parent="Theme.MSIME.Base" />
+    <!-- 清单里用的是 Theme.LINGYAO，属性都在 Theme.LINGYAO.Base。首次启动的开屏是 HomeActivity 自己的 home_intro 视图而不是系统 splash screen；values-v31 只把系统启动画面改成不画图标的页面底色。深色值来自 values-night 的同名颜色。 -->
+    <style name="Theme.LINGYAO" parent="Theme.LINGYAO.Base" />
 
-    <!-- 宿主颜色契约：页面和组件只读这里的 M3 角色和 ?attr/ms*，不写死颜色。基础值是秋杉；其他季节由 home/AppMode 在 activity 创建前叠加 ThemeOverlay.MSIME.Season.*，它们覆盖的正是下面标了「随季节」的那些角色。主题里没给的角色会落回 Material 3 自带的紫色基线，所以 surface container 这一串全部给出。 -->
-    <style name="Theme.MSIME.Base" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- 宿主颜色契约：页面和组件只读这里的 M3 角色和 ?attr/ms*，不写死颜色。基础值是秋杉；其他季节由 home/AppMode 在 activity 创建前叠加 ThemeOverlay.LINGYAO.Season.*，它们覆盖的正是下面标了「随季节」的那些角色。主题里没给的角色会落回 Material 3 自带的紫色基线，所以 surface container 这一串全部给出。 -->
+    <style name="Theme.LINGYAO.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- 随季节：accent、onAccent、accentSoft。 -->
         <item name="colorPrimary">@color/ms_accent</item>
         <item name="colorOnPrimary">@color/ms_on_accent</item>
@@ -61,18 +61,18 @@
         <item name="android:windowLightStatusBar">@bool/light_bars</item>
         <item name="android:windowLightNavigationBar">@bool/light_bars</item>
         <!-- Fade-through between activities instead of the platform slide, the same motion the tabs use. -->
-        <item name="android:windowAnimationStyle">@style/Animation.MSIME.FadeThrough</item>
+        <item name="android:windowAnimationStyle">@style/Animation.LINGYAO.FadeThrough</item>
         <!-- 组件的默认样式，见 styles.xml。 -->
-        <item name="bottomNavigationStyle">@style/Widget.MSIME.BottomNavigation</item>
-        <item name="materialSwitchStyle">@style/Widget.MSIME.Switch</item>
-        <item name="sliderStyle">@style/Widget.MSIME.Slider</item>
-        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.MSIME.BottomSheetDialog</item>
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MSIME.MaterialAlertDialog</item>
+        <item name="bottomNavigationStyle">@style/Widget.LINGYAO.BottomNavigation</item>
+        <item name="materialSwitchStyle">@style/Widget.LINGYAO.Switch</item>
+        <item name="sliderStyle">@style/Widget.LINGYAO.Slider</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.LINGYAO.BottomSheetDialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.LINGYAO.MaterialAlertDialog</item>
     </style>
 
     <!-- ==== 四季叠加层：只覆盖随季节的角色。深色不另起一套样式，引用的 ms_<季节>_* 颜色在 values-night 里有深色同名值，叠加层随模式自动取到深色那组。 ==== -->
     <!-- 春芽。 -->
-    <style name="ThemeOverlay.MSIME.Season.Spring" parent="">
+    <style name="ThemeOverlay.LINGYAO.Season.Spring" parent="">
         <item name="colorPrimary">@color/ms_spring_accent</item>
         <item name="colorOnPrimary">@color/ms_spring_on_accent</item>
         <item name="colorSecondary">@color/ms_spring_accent</item>
@@ -105,7 +105,7 @@
     </style>
 
     <!-- 夏荫。 -->
-    <style name="ThemeOverlay.MSIME.Season.Summer" parent="">
+    <style name="ThemeOverlay.LINGYAO.Season.Summer" parent="">
         <item name="colorPrimary">@color/ms_summer_accent</item>
         <item name="colorOnPrimary">@color/ms_summer_on_accent</item>
         <item name="colorSecondary">@color/ms_summer_accent</item>
@@ -138,7 +138,7 @@
     </style>
 
     <!-- 秋杉。 -->
-    <style name="ThemeOverlay.MSIME.Season.Autumn" parent="">
+    <style name="ThemeOverlay.LINGYAO.Season.Autumn" parent="">
         <item name="colorPrimary">@color/ms_autumn_accent</item>
         <item name="colorOnPrimary">@color/ms_autumn_on_accent</item>
         <item name="colorSecondary">@color/ms_autumn_accent</item>
@@ -171,7 +171,7 @@
     </style>
 
     <!-- 冬雪。 -->
-    <style name="ThemeOverlay.MSIME.Season.Winter" parent="">
+    <style name="ThemeOverlay.LINGYAO.Season.Winter" parent="">
         <item name="colorPrimary">@color/ms_winter_accent</item>
         <item name="colorOnPrimary">@color/ms_winter_on_accent</item>
         <item name="colorSecondary">@color/ms_winter_accent</item>
@@ -204,17 +204,17 @@
     </style>
 
     <!-- M3 modal bottom sheet：顶角 28，底色 andCard（M3 的 colorSurfaceContainerLow）。 -->
-    <style name="ThemeOverlay.MSIME.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/Widget.MSIME.BottomSheet</item>
+    <style name="ThemeOverlay.LINGYAO.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.LINGYAO.BottomSheet</item>
     </style>
 
     <!-- 居中对话框：圆角 28，底色 rowBg。 -->
-    <style name="ThemeOverlay.MSIME.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="alertDialogStyle">@style/MaterialAlertDialog.MSIME</item>
+    <style name="ThemeOverlay.LINGYAO.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.LINGYAO</item>
     </style>
 
     <!-- M3 fade-through: the incoming screen fades in while growing from 94 %, the outgoing one only fades. -->
-    <style name="Animation.MSIME.FadeThrough" parent="@android:style/Animation.Activity">
+    <style name="Animation.LINGYAO.FadeThrough" parent="@android:style/Animation.Activity">
         <item name="android:activityOpenEnterAnimation">@anim/fade_through_in</item>
         <item name="android:activityOpenExitAnimation">@anim/fade_through_out</item>
         <item name="android:activityCloseEnterAnimation">@anim/fade_through_in</item>
@@ -224,7 +224,7 @@
     <!-- The rounded badge behind each feature tile's glyph. -->
     <!-- 关于页那几块：段标题、段脚注、和承载行的卡片。 -->
     <!-- Onboarding's left-hand text button: 40dp, pill-shaped, accent text; pulled 12dp left so its label lines up with the page text as the design has it. -->
-    <style name="Widget.MSIME.OnboardingText" parent="Widget.Material3.Button.TextButton">
+    <style name="Widget.LINGYAO.OnboardingText" parent="Widget.Material3.Button.TextButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">40dp</item>
         <item name="android:layout_marginStart">-12dp</item>
@@ -239,7 +239,7 @@
     </style>
 
     <!-- One segment of the design's Android segmented control: a 1dp outline around a pill whose inner edges the toggle group squares off, accentSoft under the selected segment, 13sp labels. -->
-    <style name="Widget.MSIME.Segment" parent="Widget.Material3.Button.OutlinedButton">
+    <style name="Widget.LINGYAO.Segment" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:minHeight">36dp</item>
         <item name="android:minWidth">0dp</item>
         <item name="android:insetTop">0dp</item>

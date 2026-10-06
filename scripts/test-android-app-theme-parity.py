@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """确保 Android 四季主题叠加层里的种子色与 Rust 生成的应用主题目录一致。
 
-`platforms/android/tests/settings/app-theme-catalog.json` 由 client-core 的主题测试生成（`MSIME_WRITE_THEME_CATALOG=1`），是应用主题种子色的唯一来源。Android 宿主把同一组颜色写死在 `res/values/colors.xml`（浅色）和 `res/values-night/colors.xml`（深色）的 `ms_<季节>_*` 里，由 `ThemeOverlay.MSIME.Season.*` 叠加；两边任何一边改了而另一边没跟，宿主就会和键盘、其他平台画出不同的季节色。本脚本逐项对照，并检查基础主题（秋杉）的别名、四个叠加层都引用了本季的颜色。
+`platforms/android/tests/settings/app-theme-catalog.json` 由 client-core 的主题测试生成（`LINGYAO_WRITE_THEME_CATALOG=1`），是应用主题种子色的唯一来源。Android 宿主把同一组颜色写死在 `res/values/colors.xml`（浅色）和 `res/values-night/colors.xml`（深色）的 `ms_<季节>_*` 里，由 `ThemeOverlay.LINGYAO.Season.*` 叠加；两边任何一边改了而另一边没跟，宿主就会和键盘、其他平台画出不同的季节色。本脚本逐项对照，并检查基础主题（秋杉）的别名、四个叠加层都引用了本季的颜色。
 """
 from pathlib import Path
 import json
@@ -127,7 +127,7 @@ class AppThemeParity(unittest.TestCase):
     def test_overlays_reference_their_season(self):
         styles = {node.get("name"): node for node in ET.parse(THEMES).getroot().iter("style")}
         for season, suffix in OVERLAYS.items():
-            style = styles.get(f"ThemeOverlay.MSIME.Season.{suffix}")
+            style = styles.get(f"ThemeOverlay.LINGYAO.Season.{suffix}")
             self.assertIsNotNone(style, f"missing overlay for {season}")
             items = {item.get("name"): (item.text or "").strip() for item in style.iter("item")}
             for attribute, color in (("colorPrimary", "accent"), ("colorOnPrimary", "on_accent"),

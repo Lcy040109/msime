@@ -7,7 +7,7 @@
 
 #include "../candidates/CandidatePalette.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The badge is the floating toolbar's size, as on macOS (InputModeHUDPanel.mm), read from the same shared floating_toolbar.font_size and scale_percent: the toolbar's (font + 20) x scale height, a 0.95 x font glyph, the 22 px full-colour brand mark leading it with 6 px between them, a 12 px inset on both sides and a 10 px corner radius, all multiplied by the scale; the width is fitted to that content. Linux has no floating toolbar, so these two values size only the badge. All lengths are logical pixels; the X11 backend multiplies them by the desktop scale.
 struct ModeBadgeGeometry {
@@ -83,4 +83,4 @@ struct ModeBadgeStyle {
   FloatingSurfaceColors colors;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

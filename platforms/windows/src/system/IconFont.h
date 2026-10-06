@@ -2,7 +2,7 @@
 #include <dwrite.h>
 #include <wrl/client.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Installed icon font, resolved once. "Segoe Fluent Icons" is Windows 11 only,
 // so Windows 10 falls back to "Segoe MDL2 Assets"; neither installed means
 // every icon draws its text label instead.
@@ -44,4 +44,4 @@ inline bool icon_font_has(IDWriteFactory *factory, const wchar_t *family,
   BOOL has = FALSE;
   return SUCCEEDED(font->HasCharacter(codepoint, &has)) && has;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

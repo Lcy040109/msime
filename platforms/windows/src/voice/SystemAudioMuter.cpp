@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 struct MutedSession {
   ISimpleAudioVolume *volume = nullptr;
@@ -334,4 +334,4 @@ void restore_other_system_audio() {
   if (owned)
     CoUninitialize();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

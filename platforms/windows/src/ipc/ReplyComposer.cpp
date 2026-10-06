@@ -8,7 +8,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 std::optional<NavigationReply> navigation_for(ReplyPath path) {
   switch (path) {
@@ -242,16 +242,16 @@ const PendingReply &ReplyComposer::dispatch(
     const auto action = translate_key(packet);
     const auto raw = session.view().at("editing_text").get<std::string>();
     // The TSF has already inserted its local text. Validate that observation
-    // before MSIME_COMMIT_RAW can clear Engine state. The postflight check in
+    // before LINGYAO_COMMIT_RAW can clear Engine state. The postflight check in
     // stage() remains necessary; never manufacture proof from Engine's result.
-    if (action.kind != KeyKind::Command || action.value != MSIME_COMMIT_RAW ||
+    if (action.kind != KeyKind::Command || action.value != LINGYAO_COMMIT_RAW ||
         !local_text || *local_text != prefix_ + raw)
       throw std::invalid_argument("Invalid local commit observation");
   }
   const auto action = translate_key(packet);
   const bool candidate_enter =
       path == ReplyPath::Selection && action.kind == KeyKind::Command &&
-      action.value == MSIME_COMMIT_RAW;
+      action.value == LINGYAO_COMMIT_RAW;
   std::string selected_raw_before;
   KeyResult result;
   if (path == ReplyPath::Punctuation) {
@@ -351,7 +351,7 @@ std::optional<PendingReply> ReplyComposer::basic_key(
   if (action.kind == KeyKind::CancelAndForward)
     return std::nullopt; // Configuration-specific shortcuts are not generic
                          // cancel.
-  if (action.kind == KeyKind::Command && action.value == MSIME_COMMIT_RAW) {
+  if (action.kind == KeyKind::Command && action.value == LINGYAO_COMMIT_RAW) {
     const auto current = session.view();
     const bool candidate_active =
         (packet.modifiers_down & PipeMetadata::CandidateActive) != 0;
@@ -736,7 +736,7 @@ std::optional<PendingReply> ReplyComposer::korean_hanja(
     // The TIP eats the Hanja key only while a Korean syllable composes. One that arrives after the syllable ended, or after the scheme changed, is spent here too rather than left with no reply; in every other scheme it is no key of a list and is spent the same way.
     transition = {{"handled", false}, {"commit", nullptr}, {"view", current}};
   } else if (trigger) {
-    transition = session.command(epoch, MSIME_OPEN_CANDIDATE_LIST);
+    transition = session.command(epoch, LINGYAO_OPEN_CANDIDATE_LIST);
   } else if (key.kind == KoreanHanjaKeyKind::Select) {
     // A digit past the visible page chooses nothing.
     const auto &page = current.at("candidates");
@@ -905,4 +905,4 @@ std::optional<PendingReply> ReplyComposer::configured_key(
     return std::nullopt;
   return navigate(session, packet, epoch, bindings);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

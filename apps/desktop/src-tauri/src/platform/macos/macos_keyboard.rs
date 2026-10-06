@@ -1,11 +1,11 @@
-use msime_client_core::host_surface::{PanelSurface, SurfaceRoute};
+use lingyao_client_core::host_surface::{PanelSurface, SurfaceRoute};
 use tauri::utils::config::WindowConfig;
 #[cfg(target_os = "macos")]
 use tauri::Manager;
 
 #[cfg(target_os = "macos")]
 tauri_nspanel::tauri_panel! {
-    panel!(MSIMEKeyboardPanel {
+    panel!(LINGYAOKeyboardPanel {
         config: {
             can_become_key_window: false,
             can_become_main_window: false,
@@ -63,7 +63,7 @@ pub(crate) fn prepare(
     use tauri_nspanel::{ManagerExt, WebviewWindowExt};
     let content = if window.get_webview_panel(window.label()).is_err() {
         Some(
-            msime_host_macos::detach_window_content(window.ns_window()? as usize).ok_or_else(
+            lingyao_host_macos::detach_window_content(window.ns_window()? as usize).ok_or_else(
                 || tauri::Error::Io(std::io::Error::other("Cannot prepare keyboard view")),
             )?,
         )
@@ -72,7 +72,7 @@ pub(crate) fn prepare(
     };
     let panel = match window.get_webview_panel(window.label()) {
         Ok(panel) => panel,
-        Err(_) => window.to_panel::<MSIMEKeyboardPanel>()?,
+        Err(_) => window.to_panel::<LINGYAOKeyboardPanel>()?,
     };
     panel.set_style_mask(tauri_nspanel::panel::NSWindowStyleMask::NonactivatingPanel);
     panel.set_hides_on_deactivate(false);
@@ -85,7 +85,7 @@ pub(crate) fn prepare(
 pub(crate) fn restore(window: &tauri::WebviewWindow) -> tauri::Result<()> {
     use tauri_nspanel::ManagerExt;
     if let Ok(panel) = window.get_webview_panel(window.label()) {
-        let content = msime_host_macos::detach_window_content(window.ns_window()? as usize)
+        let content = lingyao_host_macos::detach_window_content(window.ns_window()? as usize)
             .ok_or_else(|| {
                 tauri::Error::Io(std::io::Error::other("Cannot restore keyboard view"))
             })?;

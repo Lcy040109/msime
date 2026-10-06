@@ -3,7 +3,7 @@
 #include <thread>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   auto defaults = candidate_font_settings(nlohmann::json::object());
   assert(defaults && defaults->family == "Segoe UI" && defaults->size == 18 &&
          defaults->preedit_size == 15 && defaults->fallback.size() == 2);

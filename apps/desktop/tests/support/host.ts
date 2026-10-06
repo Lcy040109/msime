@@ -1,4 +1,4 @@
-import type { HostCapabilities } from "@msime/ui";
+import type { HostCapabilities } from "@lingyao/ui";
 
 /** A complete host for a settings test that names only the platform and the fields it is about. Every other field takes a default for that platform: off for an opt-in surface, and the platform's usual answer where the field tells the platforms apart. */
 export function testHost(

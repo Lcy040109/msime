@@ -83,29 +83,29 @@ OSStatus Get(AudioObjectID object, const AudioObjectPropertyAddress *address,
 int main() {
     using namespace CaptureFixture;
     @autoreleasepool {
-        MSIMEVoiceCaptureDeviceAPI api{Get, CaptureFixture::Size, SetUnit, GetUnit};
+        LINGYAOVoiceCaptureDeviceAPI api{Get, CaptureFixture::Size, SetUnit, GetUnit};
         AudioUnit unit = reinterpret_cast<AudioUnit>(1); // Never dereferenced.
-        assert(MSIMEConfigureVoiceCaptureDevice(nil, nullptr, nil, api));
-        assert(MSIMEConfigureVoiceCaptureDevice(@"", nullptr, nil, api));
+        assert(LINGYAOConfigureVoiceCaptureDevice(nil, nullptr, nil, api));
+        assert(LINGYAOConfigureVoiceCaptureDevice(@"", nullptr, nil, api));
         assert(!propertyReads && !sizes && !sets && !reads);
         NSError *error = nil;
-        assert(!MSIMEConfigureVoiceCaptureDevice(@"synthetic-input", nullptr, &error, api));
+        assert(!LINGYAOConfigureVoiceCaptureDevice(@"synthetic-input", nullptr, &error, api));
         assert(error.code == 20 && !propertyReads);
         for (failure = 1; failure <= 10; ++failure) {
             propertyReads = sizes = sets = reads = 0; error = nil;
-            assert(!MSIMEConfigureVoiceCaptureDevice(@"synthetic-input", unit, &error, api));
+            assert(!LINGYAOConfigureVoiceCaptureDevice(@"synthetic-input", unit, &error, api));
             assert(error && ![error.description containsString:@"synthetic-input"]);
             assert(propertyReads == 1 && sizes == (failure > 3 ? 1 : 0));
             assert(sets == (failure > 6 ? 1 : 0) && reads == (failure > 7 ? 1 : 0));
         }
         failure = 0; propertyReads = sizes = sets = reads = 0; error = nil;
-        assert(MSIMEConfigureVoiceCaptureDevice(@"synthetic-input", unit, &error, api));
+        assert(LINGYAOConfigureVoiceCaptureDevice(@"synthetic-input", unit, &error, api));
         assert(!error && propertyReads == 1 && sizes == 1 && sets == 1 && reads == 1);
         failure = 1;
-        assert(!MSIMEConfigureVoiceCaptureDevice(@"synthetic-input", unit, nil, api));
+        assert(!LINGYAOConfigureVoiceCaptureDevice(@"synthetic-input", unit, nil, api));
 
-        MSIMEVoiceCaptureDeviceListAPI listAPI{ListFixture::Get, ListFixture::Size};
-        NSArray<NSDictionary *> *devices = MSIMEListVoiceCaptureDevices(listAPI);
+        LINGYAOVoiceCaptureDeviceListAPI listAPI{ListFixture::Get, ListFixture::Size};
+        NSArray<NSDictionary *> *devices = LINGYAOListVoiceCaptureDevices(listAPI);
         assert(devices.count == 2); // Output-only and missing-UID devices are omitted.
         assert([devices[0][@"uid"] isEqual:@"uid-default"]);
         assert([devices[0][@"name"] isEqual:@"Zulu Mic"]);

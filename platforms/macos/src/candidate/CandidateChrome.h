@@ -4,31 +4,31 @@
 #import "CandidateTextMetrics.h"
 #include "CandidateItemLayout.h"
 #include "CandidateSkin.h"
-// Drawing adapted from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
-static const CGFloat MSIMECandidateTranslationOpacity = 0.62;
+// Drawing adapted from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
+static const CGFloat LINGYAOCandidateTranslationOpacity = 0.62;
 // The translation under or beside a candidate is a fixed 12pt run at every candidate size (design-input-surfaces §2.1), so a large candidate font does not grow a gloss the eye only glances at.
-static const CGFloat MSIMECandidateTranslationPointSize = 12.0;
+static const CGFloat LINGYAOCandidateTranslationPointSize = 12.0;
 // The top row of the card: the reading on the left, then 「1 / 3」 and the two page arrows on the right.
-static const CGFloat MSIMECandidateHeaderHeight = 26.0;
+static const CGFloat LINGYAOCandidateHeaderHeight = 26.0;
 // Room kept between a horizontal card that grows past half the screen and each edge of the visible area.
-static const CGFloat MSIMECandidateScreenMargin = 16.0;
+static const CGFloat LINGYAOCandidateScreenMargin = 16.0;
 // 「1 / 3」 is set at the design's 13pt in the secondary colour (dc.html L1324), a point above the translation run.
-static const CGFloat MSIMECandidatePageIndicatorPointSize = 13.0;
-static const CGFloat MSIMECandidatePageArrowWidth = 28.0;
-static const CGFloat MSIMECandidatePageIndicatorGap = 4.0;
+static const CGFloat LINGYAOCandidatePageIndicatorPointSize = 13.0;
+static const CGFloat LINGYAOCandidatePageArrowWidth = 28.0;
+static const CGFloat LINGYAOCandidatePageIndicatorGap = 4.0;
 // A row keeps 6 points above and below its text, and a gloss under the text 2 points on each side of its lines.
-static const CGFloat MSIMECandidateRowPadding = 12.0;
-static const CGFloat MSIMECandidateGlossPadding = 4.0;
-static const CGFloat MSIMECandidateTextRight = 8.0;
+static const CGFloat LINGYAOCandidateRowPadding = 12.0;
+static const CGFloat LINGYAOCandidateGlossPadding = 4.0;
+static const CGFloat LINGYAOCandidateTextRight = 8.0;
 
 // Every length below is the window at 100%; `scale` is candidate_scale_percent as a factor, which the candidate fonts are already set at.
-static inline CGFloat MSIMECandidateTextLeft(BOOL showSelectedBar, CGFloat scale = 1.0)
+static inline CGFloat LINGYAOCandidateTextLeft(BOOL showSelectedBar, CGFloat scale = 1.0)
 {
     return (8.0 + (showSelectedBar ? 6.0 : 0.0)) * scale;
 }
 
 // One set of attributes for measuring and drawing a run, so a wrapped run is drawn in exactly the height the layout measured for it. A run that fits clips instead of wrapping.
-static inline NSDictionary *MSIMECandidateRunAttributes(NSFont *font, NSColor *color, BOOL wraps)
+static inline NSDictionary *LINGYAOCandidateRunAttributes(NSFont *font, NSColor *color, BOOL wraps)
 {
     NSMutableParagraphStyle *paragraph = [NSMutableParagraphStyle new];
     paragraph.lineBreakMode = wraps ? NSLineBreakByWordWrapping : NSLineBreakByClipping;
@@ -37,78 +37,78 @@ static inline NSDictionary *MSIMECandidateRunAttributes(NSFont *font, NSColor *c
     return attributes;
 }
 
-static inline CGFloat MSIMECandidateWrappedHeight(NSString *text, NSFont *font, CGFloat width)
+static inline CGFloat LINGYAOCandidateWrappedHeight(NSString *text, NSFont *font, CGFloat width)
 {
     if (text.length == 0 || font == nil || !(width > 0.0)) return 0.0;
     const NSRect bounds = [text boundingRectWithSize:NSMakeSize(width, CGFLOAT_MAX)
                                              options:NSStringDrawingUsesLineFragmentOrigin
-                                          attributes:MSIMECandidateRunAttributes(font, nil, YES)];
+                                          attributes:LINGYAOCandidateRunAttributes(font, nil, YES)];
     return ceil(bounds.size.height);
 }
 
-static inline CGFloat MSIMECandidateSingleLineWidth(NSString *text, NSFont *font)
+static inline CGFloat LINGYAOCandidateSingleLineWidth(NSString *text, NSFont *font)
 {
     return text.length ? ceil([text sizeWithAttributes:@{NSFontAttributeName : font}].width) : 0.0;
 }
 
 // Height of a gloss drawn without wrapping, one line per target language, with its padding.
-static inline CGFloat MSIMECandidateGlossHeight(NSString *text, NSFont *font, CGFloat scale = 1.0)
+static inline CGFloat LINGYAOCandidateGlossHeight(NSString *text, NSFont *font, CGFloat scale = 1.0)
 {
     if (text.length == 0) return 0.0;
     const NSRect bounds = [text boundingRectWithSize:NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX)
                                              options:NSStringDrawingUsesLineFragmentOrigin
                                           attributes:@{NSFontAttributeName : font}];
-    return ceil(bounds.size.height) + MSIMECandidateGlossPadding * scale;
+    return ceil(bounds.size.height) + LINGYAOCandidateGlossPadding * scale;
 }
 
 // Metrics of a candidate row. The annotation is drawn at the candidate font, the gloss at glossFont; `chrome` is the width of the number, bar and paddings around the content.
-static inline msime::mac::CandidateLayoutMetrics MSIMECandidateLayoutMetrics(NSFont *font, NSFont *glossFont, CGFloat candidateRow, CGFloat chrome, CGFloat scale = 1.0)
+static inline lingyao::mac::CandidateLayoutMetrics LINGYAOCandidateLayoutMetrics(NSFont *font, NSFont *glossFont, CGFloat candidateRow, CGFloat chrome, CGFloat scale = 1.0)
 {
-    msime::mac::CandidateLayoutMetrics metrics;
+    lingyao::mac::CandidateLayoutMetrics metrics;
     metrics.candidateRow = candidateRow;
     metrics.chrome = chrome;
     metrics.annotationGap = 4.0 * scale;
-    metrics.annotationLine = MSIMECandidateTextHeight(@"", font);
+    metrics.annotationLine = LINGYAOCandidateTextHeight(@"", font);
     metrics.translationGap = font.pointSize * 0.65;
-    metrics.translationLine = MSIMECandidateGlossHeight(@"X", glossFont, scale);
+    metrics.translationLine = LINGYAOCandidateGlossHeight(@"X", glossFont, scale);
     return metrics;
 }
 
-static inline msime::mac::CandidateItemWidths MSIMECandidateItemWidths(NSString *text, NSString *annotation, NSString *translation, NSFont *font, NSFont *glossFont, CGFloat scale = 1.0)
+static inline lingyao::mac::CandidateItemWidths LINGYAOCandidateItemWidths(NSString *text, NSString *annotation, NSString *translation, NSFont *font, NSFont *glossFont, CGFloat scale = 1.0)
 {
-    msime::mac::CandidateItemWidths widths;
-    widths.text = MSIMECandidateSingleLineWidth(text, font);
-    widths.annotation = MSIMECandidateSingleLineWidth(annotation, font);
-    widths.translation = MSIMECandidateSingleLineWidth(translation, glossFont);
-    widths.translationHeight = MSIMECandidateGlossHeight(translation, glossFont, scale);
+    lingyao::mac::CandidateItemWidths widths;
+    widths.text = LINGYAOCandidateSingleLineWidth(text, font);
+    widths.annotation = LINGYAOCandidateSingleLineWidth(annotation, font);
+    widths.translation = LINGYAOCandidateSingleLineWidth(translation, glossFont);
+    widths.translationHeight = LINGYAOCandidateGlossHeight(translation, glossFont, scale);
     return widths;
 }
 
 // Wrapped height of each run, as the layout asks for it: the text keeps the row's padding, a gloss its own.
-static inline msime::mac::CandidateRunMeasure MSIMECandidateRunMeasure(NSString *text, NSString *annotation, NSString *translation, NSFont *font, NSFont *glossFont, CGFloat scale = 1.0)
+static inline lingyao::mac::CandidateRunMeasure LINGYAOCandidateRunMeasure(NSString *text, NSString *annotation, NSString *translation, NSFont *font, NSFont *glossFont, CGFloat scale = 1.0)
 {
-    return [text = [text copy], annotation = [annotation copy], translation = [translation copy], font, glossFont, scale](msime::mac::CandidateRun run, double width) -> double {
+    return [text = [text copy], annotation = [annotation copy], translation = [translation copy], font, glossFont, scale](lingyao::mac::CandidateRun run, double width) -> double {
         switch (run)
         {
-        case msime::mac::CandidateRun::text:
-            return MSIMECandidateWrappedHeight(text, font, width) + MSIMECandidateRowPadding * scale;
-        case msime::mac::CandidateRun::annotation:
-            return MSIMECandidateWrappedHeight(annotation, font, width);
-        case msime::mac::CandidateRun::translation:
-            return MSIMECandidateWrappedHeight(translation, glossFont, width) + MSIMECandidateGlossPadding * scale;
+        case lingyao::mac::CandidateRun::text:
+            return LINGYAOCandidateWrappedHeight(text, font, width) + LINGYAOCandidateRowPadding * scale;
+        case lingyao::mac::CandidateRun::annotation:
+            return LINGYAOCandidateWrappedHeight(annotation, font, width);
+        case lingyao::mac::CandidateRun::translation:
+            return LINGYAOCandidateWrappedHeight(translation, glossFont, width) + LINGYAOCandidateGlossPadding * scale;
         }
         return 0.0;
     };
 }
 
 // The text of a row's gloss run: the reading lines drawn first (a Korean Hanja's 훈음), then the translation, one line each. The reading is shown but never committed, so it stays out of the candidate's `translation`, and an armed translation column is counted from the first line after it.
-static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *translation)
+static inline NSString *LINGYAOCandidateGlossRun(NSString *reading, NSString *translation)
 {
     if (reading.length == 0) return translation ?: @"";
     return translation.length ? [NSString stringWithFormat:@"%@\n%@", reading, translation] : reading;
 }
 
-@interface MSIMECandidateButton : NSButton
+@interface LINGYAOCandidateButton : NSButton
 @property(nonatomic, copy) NSDictionary *candidateID;
 @property(nonatomic, strong) NSFont *numberFont;
 @property(nonatomic) BOOL candidateHighlighted;
@@ -122,7 +122,7 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
 // A reading drawn on the gloss run above the translation, in the gloss style, and never committed: a Korean Hanja's 훈음. Empty for every other row.
 @property(nonatomic, copy) NSString *glossReading;
 // Geometry from the panel's page layout; frames, drawing and hit testing all come from it. Without one the button lays itself out in its bounds.
-@property(nonatomic) msime::mac::CandidateItemLayout itemLayout;
+@property(nonatomic) lingyao::mac::CandidateItemLayout itemLayout;
 @property(nonatomic) BOOL hasItemLayout;
 // Where the candidate text starts, the same for every row of a page so their text lines up. Zero derives it from the number drawn.
 @property(nonatomic) CGFloat contentLeft;
@@ -139,7 +139,7 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
 // candidate_scale_percent as a factor, for the lengths the row draws itself: the text insets and the selection bar. Zero draws at 100%.
 @property(nonatomic) CGFloat chromeScale;
 @end
-@implementation MSIMECandidateButton
+@implementation LINGYAOCandidateButton
 {
     NSTrackingArea *_candidateTrackingArea;
 }
@@ -210,16 +210,16 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
                               yRadius:1.5 * scale] fill];
     }
     NSDictionary *numberAttributes = @{
-        NSFontAttributeName : self.numberFont ?: MSIMECandidateNumberFont(self.font),
+        NSFontAttributeName : self.numberFont ?: LINGYAOCandidateNumberFont(self.font),
         NSForegroundColorAttributeName : self.numberColor != nil ? self.numberColor : NSColor.tertiaryLabelColor,
     };
     NSColor *titleColor = self.titleColor != nil ? self.titleColor : NSColor.labelColor;
     // Runs that fit are drawn on one line with clipping rather than wrapping, so a rounding difference between measuring and drawing can never fold text that fits; only runs the layout wrapped are drawn wrapped.
-    NSDictionary *titleAttributes = MSIMECandidateRunAttributes(self.font, titleColor, NO);
+    NSDictionary *titleAttributes = LINGYAOCandidateRunAttributes(self.font, titleColor, NO);
     NSString *title = self.title;
     NSRange split = [title rangeOfString:@"  "];
-    const CGFloat textLeft = MSIMECandidateTextLeft(self.showSelectedBar, scale);
-    const CGFloat textRight = MSIMECandidateTextRight * scale;
+    const CGFloat textLeft = LINGYAOCandidateTextLeft(self.showSelectedBar, scale);
+    const CGFloat textRight = LINGYAOCandidateTextRight * scale;
     const BOOL flipped = self.isFlipped;
     const CGFloat boundsHeight = self.bounds.size.height;
     // Layout boxes run downwards from the row top; convert them for either orientation of the view.
@@ -238,31 +238,31 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
     NSString *word = [title substringFromIndex:NSMaxRange(split)];
     NSString *annotation = self.annotation ?: @"";
     NSString *glossReading = self.glossReading ?: @"";
-    NSString *translation = MSIMECandidateGlossRun(glossReading, self.translation);
+    NSString *translation = LINGYAOCandidateGlossRun(glossReading, self.translation);
     const NSSize numberSize = [number sizeWithAttributes:numberAttributes];
     const NSSize wordSize = [word sizeWithAttributes:titleAttributes];
-    NSFont *glossFont = self.translationFont ?: [NSFont systemFontOfSize:MSIMECandidateTranslationPointSize * scale];
-    const CGFloat contentLeft = self.contentLeft > 0.0 ? self.contentLeft : textLeft + numberSize.width + MSIMECandidateNumberGap * scale;
-    msime::mac::CandidateItemLayout layout = self.itemLayout;
+    NSFont *glossFont = self.translationFont ?: [NSFont systemFontOfSize:LINGYAOCandidateTranslationPointSize * scale];
+    const CGFloat contentLeft = self.contentLeft > 0.0 ? self.contentLeft : textLeft + numberSize.width + LINGYAOCandidateNumberGap * scale;
+    lingyao::mac::CandidateItemLayout layout = self.itemLayout;
     if (!self.hasItemLayout)
     {
         // A button nobody laid out lays itself out in its own bounds, with the same rule the panel uses.
-        const msime::mac::CandidateLayoutMetrics metrics =
-            MSIMECandidateLayoutMetrics(self.font, glossFont, MAX(boundsHeight, MSIMECandidateTextHeight(word, self.font) + MSIMECandidateRowPadding * scale),
+        const lingyao::mac::CandidateLayoutMetrics metrics =
+            LINGYAOCandidateLayoutMetrics(self.font, glossFont, MAX(boundsHeight, LINGYAOCandidateTextHeight(word, self.font) + LINGYAOCandidateRowPadding * scale),
                                         contentLeft + textRight, scale);
-        layout = msime::mac::LayoutCandidateItem(MSIMECandidateItemWidths(word, annotation, translation, self.font, glossFont, scale),
+        layout = lingyao::mac::LayoutCandidateItem(LINGYAOCandidateItemWidths(word, annotation, translation, self.font, glossFont, scale),
                                                  self.bounds.size.width - contentLeft - textRight, metrics,
-                                                 self.translationBelow, MSIMECandidateRunMeasure(word, annotation, translation, self.font, glossFont, scale));
+                                                 self.translationBelow, LINGYAOCandidateRunMeasure(word, annotation, translation, self.font, glossFont, scale));
     }
     // The number sits on the text's first line.
     CGFloat textTop = (layout.textHeight - wordSize.height) / 2;
     CGFloat firstLine = wordSize.height;
     if (layout.textWrapped)
     {
-        const CGFloat drawn = MSIMECandidateWrappedHeight(word, self.font, layout.textWidth);
+        const CGFloat drawn = LINGYAOCandidateWrappedHeight(word, self.font, layout.textWidth);
         textTop = MAX(0.0, (layout.textHeight - drawn) / 2);
-        firstLine = MSIMECandidateTextHeight(@"", self.font);
-        [word drawInRect:box(contentLeft, textTop, layout.textWidth, drawn) withAttributes:MSIMECandidateRunAttributes(self.font, titleColor, YES)];
+        firstLine = LINGYAOCandidateTextHeight(@"", self.font);
+        [word drawInRect:box(contentLeft, textTop, layout.textWidth, drawn) withAttributes:LINGYAOCandidateRunAttributes(self.font, titleColor, YES)];
     }
     else
     {
@@ -272,9 +272,9 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
         withAttributes:numberAttributes];
     if (annotation.length && layout.annotation.width > 0.0)
     {
-        const msime::mac::CandidateRunBox &run = layout.annotation;
+        const lingyao::mac::CandidateRunBox &run = layout.annotation;
         if (run.below)
-            [annotation drawInRect:box(contentLeft + run.x, run.y, run.width, run.height) withAttributes:MSIMECandidateRunAttributes(self.font, titleColor, YES)];
+            [annotation drawInRect:box(contentLeft + run.x, run.y, run.width, run.height) withAttributes:LINGYAOCandidateRunAttributes(self.font, titleColor, YES)];
         else
         {
             const NSSize size = [annotation sizeWithAttributes:titleAttributes];
@@ -283,10 +283,10 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
     }
     if (translation.length && layout.translation.width > 0.0)
     {
-        const msime::mac::CandidateRunBox &run = layout.translation;
-        NSColor *glossColor = self.translationColor ?: [titleColor colorWithAlphaComponent:MSIMECandidateTranslationOpacity];
+        const lingyao::mac::CandidateRunBox &run = layout.translation;
+        NSColor *glossColor = self.translationColor ?: [titleColor colorWithAlphaComponent:LINGYAOCandidateTranslationOpacity];
         NSMutableAttributedString *glossText = [[NSMutableAttributedString alloc] initWithString:translation
-            attributes:MSIMECandidateRunAttributes(glossFont, glossColor, run.below)];
+            attributes:LINGYAOCandidateRunAttributes(glossFont, glossColor, run.below)];
         if (self.armedGlossColumn > 0) {
             NSArray<NSString *> *parts = [translation componentsSeparatedByString:@"\n"];
             // The reading's lines come first in the run and are no column of their own.
@@ -301,13 +301,13 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
             }
         }
         const CGFloat drawnWidth = run.below ? run.width : run.width + 1.0;
-        const CGFloat drawn = MIN(run.height, MSIMECandidateWrappedHeight(translation, glossFont, run.width));
+        const CGFloat drawn = MIN(run.height, LINGYAOCandidateWrappedHeight(translation, glossFont, run.width));
         [glossText drawInRect:box(contentLeft + run.x, run.y + MAX(0.0, (run.height - drawn) / 2), drawnWidth, drawn)];
     }
 }
 @end
 
-@interface MSIMECandidateChromeView : NSView
+@interface LINGYAOCandidateChromeView : NSView
 @property(nonatomic, weak) id appearanceTarget;
 @property(nonatomic) SEL appearanceAction;
 @property(nonatomic, copy) NSColor *fillColor;
@@ -316,12 +316,12 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
 @property(nonatomic) CGFloat lineWidth;
 // A package's background image, drawn over the fill and under the stroke and the candidates, clipped to the rounded outline. Nil draws none.
 @property(nonatomic, strong) NSImage *backgroundImage;
-@property(nonatomic) msime::mac::BackgroundFit backgroundFit;
+@property(nonatomic) lingyao::mac::BackgroundFit backgroundFit;
 @property(nonatomic) CGFloat backgroundOpacity;
 // The transparent band above the card that a skin's decoration stands in. The fill, background image and stroke cover only the card below it.
 @property(nonatomic) CGFloat cardTopInset;
 @end
-@implementation MSIMECandidateChromeView
+@implementation LINGYAOCandidateChromeView
 - (BOOL)isOpaque { return NO; }
 - (void)viewDidMoveToWindow
 {
@@ -353,7 +353,7 @@ static inline NSString *MSIMECandidateGlossRun(NSString *reading, NSString *tran
     [path fill];
     NSImage *background = self.backgroundImage;
     const auto rects = background != nil && self.backgroundOpacity > 0.0
-        ? msime::mac::BackgroundRects(self.backgroundFit, {NSMinX(bounds), NSMinY(bounds), NSWidth(bounds), NSHeight(bounds)},
+        ? lingyao::mac::BackgroundRects(self.backgroundFit, {NSMinX(bounds), NSMinY(bounds), NSWidth(bounds), NSHeight(bounds)},
                                       background.size.width, background.size.height)
         : std::nullopt;
     if (rects)

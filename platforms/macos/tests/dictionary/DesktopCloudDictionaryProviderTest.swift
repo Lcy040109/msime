@@ -57,7 +57,7 @@ import Foundation
   }
   func exportDictionary(_ kind: BackendAccountClient.DictionaryKind, format: BackendAccountClient.DictionaryFileFormat, token: String) async throws -> URL {
     try tick()
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-export-" + UUID().uuidString)
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-export-" + UUID().uuidString)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false, attributes: [.posixPermissions:0o700])
     let file = root.appendingPathComponent("dictionary-" + kind.rawValue + ".tsv")
     let content = String(repeating: "synthetic\t合成\t100\n", count: 150_000).data(using: .utf8)!

@@ -38,7 +38,7 @@ export function rewriteAnimationNames(
 
 let generation = 0;
 export function isolateToolbarAnimations(sheet: CSSStyleSheet): boolean {
-  const prefix = "msime-skin-animation-" + ++generation + "-";
+  const prefix = "lingyao-skin-animation-" + ++generation + "-";
   const names = new Map<string, string>();
   walkCssRules(sheet.cssRules, (rule) => {
     if (rule.type !== CSSRule.KEYFRAMES_RULE) return;

@@ -6,7 +6,7 @@ import {
   type CandidateSkinCommunityClient,
   type Snapshot,
   type SkinCatalog,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import "../../../../packages/ui/src/styles.css";
 
 export function mountKeyboard(theme: "dark" | "light" = "dark") {

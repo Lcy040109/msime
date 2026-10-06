@@ -11,7 +11,7 @@ use crate::*;
 /// The caller must provide readable buffers of the stated lengths, or null pointers only with
 /// zero lengths; buffers are read for the duration of this call and never retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_apply_online_candidate(
+pub unsafe extern "C" fn lingyao_client_apply_online_candidate(
     handle: u64,
     query: *const u8,
     query_length: usize,
@@ -53,7 +53,7 @@ pub unsafe extern "C" fn msime_client_apply_online_candidate(
 /// # Safety
 /// Both pointers must reference readable buffers of their stated lengths.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_apply_cloud_response(
+pub unsafe extern "C" fn lingyao_client_apply_cloud_response(
     handle: u64,
     query: *const u8,
     query_length: usize,
@@ -68,7 +68,7 @@ pub unsafe extern "C" fn msime_client_apply_cloud_response(
             std::slice::from_raw_parts(query, query_length)
         })
         .map_err(|_| "invalid online query document")?;
-        let candidate = msime_input_runtime::cloud_candidate_from_response(query, unsafe {
+        let candidate = lingyao_input_runtime::cloud_candidate_from_response(query, unsafe {
             std::slice::from_raw_parts(body, body_length)
         });
         with_session(handle, |session| {
@@ -99,7 +99,7 @@ pub unsafe extern "C" fn msime_client_apply_cloud_response(
 /// # Safety
 /// Both pointers must reference readable buffers of their stated lengths.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_apply_online_candidates(
+pub unsafe extern "C" fn lingyao_client_apply_online_candidates(
     handle: u64,
     query: *const u8,
     query_length: usize,
@@ -142,7 +142,7 @@ pub unsafe extern "C" fn msime_client_apply_online_candidates(
 
 /// Select one Han edge through Engine using the displayed candidate identity.
 #[no_mangle]
-pub extern "C" fn msime_client_select_edge(
+pub extern "C" fn lingyao_client_select_edge(
     handle: u64,
     generation: u64,
     index: usize,

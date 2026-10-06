@@ -3,7 +3,7 @@ import { testHost } from "../support/host";
 import { settingsFormReady } from "../support/settings-form";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ASR_PROVIDER_DEFAULTS, SettingsPage, asrProviderUpdate, type Snapshot } from "@msime/ui";
+import { ASR_PROVIDER_DEFAULTS, SettingsPage, asrProviderUpdate, type Snapshot } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

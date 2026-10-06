@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class RegistryStatus { Ready, Rejected, Capacity, Stale, TransportError };
 struct PipeRegistration {
   RegistryStatus status = RegistryStatus::Rejected;
@@ -68,4 +68,4 @@ private:
   std::unordered_map<uint64_t, std::shared_ptr<Client>> clients_;
   uint64_t next_generation();
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

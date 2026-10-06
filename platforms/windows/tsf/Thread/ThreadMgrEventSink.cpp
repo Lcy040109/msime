@@ -16,10 +16,10 @@ void CLingyaoIME::_SyncHostContextFocus(_In_opt_ ITfContext *context)
         const bool success = _hostFocusState.update(context != nullptr, changed, [&](bool focused) {
             std::string raw, error;
             if (!host->focus(focused, &raw, &error)) return false;
-            msime::tsf::EngineResult result;
-            koreanFinished = msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) &&
+            lingyao::tsf::EngineResult result;
+            koreanFinished = lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) &&
                              result.has_commit && !result.commit.empty() &&
-                             msime::windows::scheme::CommitsOnBlur(static_cast<int>(result.view.scheme));
+                             lingyao::windows::scheme::CommitsOnBlur(static_cast<int>(result.view.scheme));
             return true;
         });
         if (!success) context = nullptr;

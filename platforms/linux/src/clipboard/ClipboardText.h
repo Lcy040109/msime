@@ -4,7 +4,7 @@
 #include <string>
 
 // Input is UTF-8. Keep a byte limit without splitting the last code point.
-inline void msime_clipboard_truncate(std::string &text, size_t limit) {
+inline void lingyao_clipboard_truncate(std::string &text, size_t limit) {
   if (text.size() <= limit)
     return;
   while (limit > 0 &&

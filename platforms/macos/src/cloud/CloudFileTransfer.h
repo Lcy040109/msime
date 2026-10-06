@@ -1,3 +1,3 @@
 #pragma once
 #import <Foundation/Foundation.h>
-FOUNDATION_EXPORT BOOL MSIMESafelyReplaceLocalFile(NSURL *source, NSURL *destination, NSError **error);
+FOUNDATION_EXPORT BOOL LINGYAOSafelyReplaceLocalFile(NSURL *source, NSURL *destination, NSError **error);

@@ -5,7 +5,7 @@ import * as path from "path";
 /** The settings page is built by platforms/harmony/stage-settings.sh rather than committed. A HAP without it installs and runs but opens a blank settings window with no error anywhere, so hvigor stops here and says what to run instead. */
 function settingsPagePlugin() {
   return {
-    pluginId: "msimeSettingsPagePlugin",
+    pluginId: "lingyaoSettingsPagePlugin",
     apply(node: { getNodePath(): string }): void {
       const page: string = path.join(
         node.getNodePath(),

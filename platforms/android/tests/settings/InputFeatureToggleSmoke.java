@@ -1,5 +1,5 @@
-import app.msime.android.InputFeatureToggle;
-import app.msime.android.InputFeatureToggle.Group;
+import app.lingyao.android.InputFeatureToggle;
+import app.lingyao.android.InputFeatureToggle.Group;
 import java.util.ArrayList;
 import java.util.List;
 

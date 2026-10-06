@@ -7,7 +7,7 @@ import {
   macosInputModeEntries,
   macosInputModeEntriesFor,
   type MacosInputModesClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -15,7 +15,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const prefix = "app.msime.inputmethod.LingyaoIME.";
+const prefix = "app.lingyao.inputmethod.LingyaoIME.";
 const allSchemes = [
   "quanpin",
   "shuangpin",
@@ -226,7 +226,7 @@ test("full keeps the table and each edition lists only its own entries under its
 test("an edition whose entries are all in the list says so under its own name", async () => {
   render(
     <MacosInputModeEntriesSection
-      client={client(["app.msime.inputmethod.wubi.Hans", "app.msime.inputmethod.wubi.Roman"])}
+      client={client(["app.lingyao.inputmethod.wubi.Hans", "app.lingyao.inputmethod.wubi.Roman"])}
       scheme="wubi"
       inputSchemes={["wubi"]}
       edition={wubiEdition}
@@ -239,7 +239,7 @@ test("an edition whose entries are all in the list says so under its own name", 
 test("an edition names its missing entry by the edition's name", async () => {
   render(
     <MacosInputModeEntriesSection
-      client={client(["app.msime.inputmethod.wubi.Roman"])}
+      client={client(["app.lingyao.inputmethod.wubi.Roman"])}
       scheme="wubi"
       inputSchemes={["wubi"]}
       edition={wubiEdition}

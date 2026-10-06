@@ -11,7 +11,7 @@ std::string wstring_to_string(const std::wstring &wstr);
 std::string to_lower_copy(const std::string &str);
 std::wstring GetCurrentProcessName();
 std::string::size_type count_utf8_chars(const std::string &str);
-// Read default_ime_mode from the shared MSIME-Client PreferencesStore. Returns TRUE for Chinese (also when the store cannot be read), FALSE for English.
+// Read default_ime_mode from the shared LINGYAO-Client PreferencesStore. Returns TRUE for Chinese (also when the store cannot be read), FALSE for English.
 BOOL ReadConfiguredDefaultImeModeChinese();
 // Read the active scheme from shared PreferencesStore. TRUE when Japanese input is active.
 BOOL ReadConfiguredJapaneseInputMode();

@@ -1,5 +1,5 @@
 [package]
-name = "msime-path-trust"
+name = "lingyao-path-trust"
 description = "The one list of system symbolic links a storage path may pass through, and the walk that rejects every other link on the way to it."
 version.workspace = true
 edition.workspace = true

@@ -6,7 +6,7 @@
 #include <vector>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class IoStatus {
   Complete,
   InvalidArgument,
@@ -51,4 +51,4 @@ IoResult read_frame_until_cancel(HANDLE pipe, DWORD expected_bytes,
                                  HANDLE cancel_event);
 IoResult write_frame(HANDLE pipe, const std::vector<uint8_t> &frame,
                      DWORD timeout_ms, HANDLE cancel_event = nullptr);
-} // namespace msime::windows
+} // namespace lingyao::windows

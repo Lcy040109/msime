@@ -1,6 +1,6 @@
-import app.msime.android.KeyboardGapPolicy;
-import app.msime.android.KeyboardGeometry;
-import app.msime.android.KeyboardLayout;
+import app.lingyao.android.KeyboardGapPolicy;
+import app.lingyao.android.KeyboardGeometry;
+import app.lingyao.android.KeyboardLayout;
 
 public final class KeyboardGeometrySmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

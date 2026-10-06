@@ -1,5 +1,5 @@
 {
-  "name": "@msime/web-engine",
+  "name": "@lingyao/web-engine",
   "version": "0.0.0",
   "description": "灵耀输入法的网页引擎：在浏览器的 Web Worker 里运行的拼音、双拼和五笔输入法，可部署到任意静态站点。",
   "license": "GPL-3.0-only",
@@ -28,7 +28,7 @@
   },
   "sideEffects": ["./worker.js"],
   "bin": {
-    "msime-web-engine": "./bin/msime-web-engine.mjs"
+    "lingyao-web-engine": "./bin/lingyao-web-engine.mjs"
   },
   "files": [
     "index.js",
@@ -41,7 +41,7 @@
     "theme-catalog.js",
     "worker.js",
     "assets.js",
-    "msime_engine.js",
+    "lingyao_engine.js",
     "bin/",
     "assets/",
     "LICENSE"

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The TSF DLL writes Aux messages as the raw UTF-16 code units of a string with
 // no length prefix, no magic and no NUL terminator: the byte count is
 // length * sizeof(wchar_t) (tsf/IPC/Ipc.cpp:1449-1456). Framing therefore comes
@@ -340,4 +340,4 @@ parse_aux_typing_keys(const std::wstring &text) {
 inline TrayMenuAnchor tray_menu_anchor(const AuxLangbarRightClick &click) {
   return {click.left + (click.right - click.left) / 2, click.top};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

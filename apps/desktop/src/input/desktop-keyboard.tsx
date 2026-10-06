@@ -7,7 +7,7 @@ import {
   type TouchKeyboardSkinDesign,
   defaultTouchKeyboardGeometry,
   keyboardThemeId,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import { useCandidatePreviewTheme } from "../../../../packages/ui/src/candidate/candidate-preview-theme";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 

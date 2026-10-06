@@ -14,7 +14,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("IBus", "1.0")
 from gi.repository import Gdk, GLib, Gtk, IBus
 
-assert os.environ.get("MSIME_ISOLATED_LINUX_TEST") == "1"
+assert os.environ.get("LINGYAO_ISOLATED_LINUX_TEST") == "1"
 assert os.environ.get("GTK_IM_MODULE") == "ibus"
 assert "Wayland" in type(Gdk.Display.get_default()).__name__, "GTK did not use Wayland"
 IBus.init()
@@ -43,9 +43,9 @@ keys = keyboard.keys
 
 
 wait(lambda: bus.is_connected(), "GTK fixture could not connect to IBus")
-wait(lambda: any(engine.get_name() == "msime-linux" for engine in bus.list_active_engines()),
+wait(lambda: any(engine.get_name() == "lingyao-linux" for engine in bus.list_active_engines()),
      "Native IBus engine was not registered")
-window = Gtk.Window(title="MSIME synthetic GTK acceptance")
+window = Gtk.Window(title="LINGYAO synthetic GTK acceptance")
 layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 window.add(layout)
 first, second, password = Gtk.Entry(), Gtk.Entry(), Gtk.Entry()
@@ -62,9 +62,9 @@ pump()
 wait(window.is_active, "Wayland compositor did not focus GTK window")
 first.grab_focus()
 pump()
-assert bus.set_global_engine("msime-linux")
+assert bus.set_global_engine("lingyao-linux")
 wait(lambda: bus.get_global_engine() is not None and
-     bus.get_global_engine().get_name() == "msime-linux", "GTK engine activation failed")
+     bus.get_global_engine().get_name() == "lingyao-linux", "GTK engine activation failed")
 # Let the GTK IM module finish its asynchronous input-context setup.
 end = time.monotonic() + 0.3
 while time.monotonic() < end:

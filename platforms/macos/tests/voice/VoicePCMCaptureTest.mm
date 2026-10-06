@@ -10,8 +10,8 @@ static void Drain() {
     while (!done) [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.001]];
 }
 
-@interface SyntheticCapture : MSIMEVoiceInputService
-@property(copy) MSIMEVoiceAudioBuffer capture;
+@interface SyntheticCapture : LINGYAOVoiceInputService
+@property(copy) LINGYAOVoiceAudioBuffer capture;
 @property(copy) NSString *device;
 @property BOOL failStart;
 @property NSUInteger stops;
@@ -40,7 +40,7 @@ static void Drain() {
 - (BOOL)startAndReturnError:(NSError **)error { (void)error; return !self.failStart; }
 - (void)stop {}
 @end
-@interface DurationCapture : MSIMEVoiceInputService
+@interface DurationCapture : LINGYAOVoiceInputService
 @property DurationEngine *engine;
 @property BOOL failStart;
 @end
@@ -51,7 +51,7 @@ static void Drain() {
 }
 @end
 @implementation SyntheticCapture
-- (BOOL)startMicrophoneCapture:(MSIMEVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
+- (BOOL)startMicrophoneCapture:(LINGYAOVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
     (void)error;
     self.capture = handler; self.device = device;
     return !self.failStart;
@@ -61,27 +61,27 @@ static void Drain() {
 int main() {
     @autoreleasepool {
         for (double rate : {16000.0, 44100.0, 48000.0, 96000.0}) {
-            auto previous = std::make_shared<msime::voice::CaptureDuration>(rate);
-            assert(msime::voice::short_capture(previous->seconds()));
+            auto previous = std::make_shared<lingyao::voice::CaptureDuration>(rate);
+            assert(lingyao::voice::short_capture(previous->seconds()));
             assert(previous->append(static_cast<uint64_t>(rate / 4) - 1));
-            assert(msime::voice::short_capture(previous->seconds()));
+            assert(lingyao::voice::short_capture(previous->seconds()));
             assert(previous->append(1));
-            assert(previous->finish() == 0.25 && !msime::voice::short_capture(previous->seconds()));
-            msime::voice::CaptureDuration next(rate);
+            assert(previous->finish() == 0.25 && !lingyao::voice::short_capture(previous->seconds()));
+            lingyao::voice::CaptureDuration next(rate);
             assert(!previous->append(1000) && next.seconds() == 0 && previous->seconds() == 0.25);
         }
-        assert(msime::voice::short_capture(std::numeric_limits<double>::quiet_NaN()));
+        assert(lingyao::voice::short_capture(std::numeric_limits<double>::quiet_NaN()));
         AVAudioFormat *format = [[AVAudioFormat alloc] initStandardFormatWithSampleRate:48000 channels:1];
         AVAudioPCMBuffer *buffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:format frameCapacity:4800];
         buffer.frameLength = 4800;
         for (NSUInteger i = 0; i < 4800; ++i) buffer.floatChannelData[0][i] = 0.125f;
         SyntheticCapture *service = [SyntheticCapture new];
         __block NSUInteger callbacks = 0;
-        MSIMEVoiceAudioBuffer observe = ^(AVAudioPCMBuffer *value) { assert(value == buffer); ++callbacks; };
+        LINGYAOVoiceAudioBuffer observe = ^(AVAudioPCMBuffer *value) { assert(value == buffer); ++callbacks; };
         assert([service startPCMRecording:observe deviceUID:@"synthetic-device" error:nil]);
         assert([service.device isEqual:@"synthetic-device"]);
         assert(![service startPCMRecording:observe deviceUID:nil error:nil]);
-        MSIMEVoiceAudioBuffer old = service.capture;
+        LINGYAOVoiceAudioBuffer old = service.capture;
         old(buffer);
         NSData *pcm = [service finishPCMRecordingWithError:nil];
         assert(pcm.length == 1600 * sizeof(float) && callbacks == 1 && service.stops == 1);
@@ -130,7 +130,7 @@ int main() {
         // Exercise the production tap wiring without opening an audio device.
         DurationCapture *durationService = [DurationCapture new];
         __block NSUInteger delivered = 0;
-        MSIMEVoiceAudioBuffer durationObserve = ^(AVAudioPCMBuffer *) { ++delivered; };
+        LINGYAOVoiceAudioBuffer durationObserve = ^(AVAudioPCMBuffer *) { ++delivered; };
         assert([durationService startMicrophoneCapture:durationObserve deviceUID:nil error:nil]);
         AVAudioNodeTapBlock previousTap = durationService.engine.inputNode.tap;
         AVAudioTime *timestamp = [AVAudioTime timeWithSampleTime:0 atRate:48000];

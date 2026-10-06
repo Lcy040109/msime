@@ -32,8 +32,8 @@ int main()
         UpdateDriverFixture *driver = [UpdateDriverFixture new];
         driver.canCheckForUpdates = YES;
         driver.automaticallyChecksForUpdates = YES;
-        MSIMEUpdateController *controller =
-            [[MSIMEUpdateController alloc] initWithDriver:driver
+        LINGYAOUpdateController *controller =
+            [[LINGYAOUpdateController alloc] initWithDriver:driver
                                         activationHandler:^{ ++activations; }];
 
         assert(controller.canCheckForUpdates);
@@ -57,26 +57,26 @@ int main()
         // command-line tool, a bundle whose identifier never made it into the plist - it answers a start
         // with a modal alert, and an input method that stops typing behind a dialog is the worse failure.
         NSString *feed = @"https://example.invalid/appcast.xml";
-        assert(MSIMEUpdateHostCanStartSparkle(@"app.msime.inputmethod.LingyaoIME",
+        assert(LINGYAOUpdateHostCanStartSparkle(@"app.lingyao.inputmethod.LingyaoIME",
                                               @"/Users/someone/Library/Input Methods/灵耀输入法.app", feed));
-        assert(MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/", feed));
-        assert(!MSIMEUpdateHostCanStartSparkle(nil, @"/Applications/Example.app", feed));
-        assert(!MSIMEUpdateHostCanStartSparkle(@"", @"/Applications/Example.app", feed));
-        assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", nil, feed));
-        assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", @"/usr/local/bin/example", feed));
+        assert(LINGYAOUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/", feed));
+        assert(!LINGYAOUpdateHostCanStartSparkle(nil, @"/Applications/Example.app", feed));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"", @"/Applications/Example.app", feed));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"app.example", nil, feed));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"app.example", @"/usr/local/bin/example", feed));
         // A bundle with no feed configured is the shape this product currently ships: Sparkle started
         // there has nothing to check and answers with the same modal alert, so it must stay unstarted.
-        assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app", nil));
-        assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app", @""));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app", nil));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app", @""));
         // A bundle path that merely contains ".app" is not one: this is the shape a test binary built
         // inside a bundle's directory has.
-        assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/Contents/MacOS/example", feed));
+        assert(!LINGYAOUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/Contents/MacOS/example", feed));
 
-        assert(MSIMEUpdateRouteForHost(@"app.example", @"/Applications/Example.app", feed) ==
+        assert(LINGYAOUpdateRouteForHost(@"app.example", @"/Applications/Example.app", feed) ==
                LingyaoUpdateRouteSparkle);
-        assert(MSIMEUpdateRouteForHost(@"app.example", @"/Applications/Example.app", nil) ==
+        assert(LINGYAOUpdateRouteForHost(@"app.example", @"/Applications/Example.app", nil) ==
                LingyaoUpdateRouteReleasePage);
-        assert(MSIMEUpdateRouteForHost(@"app.example", @"/usr/local/bin/example", nil) ==
+        assert(LINGYAOUpdateRouteForHost(@"app.example", @"/usr/local/bin/example", nil) ==
                LingyaoUpdateRouteUnavailable);
 
         __block NSInteger confirmations = 0;
@@ -119,10 +119,10 @@ int main()
 
         // This binary is exactly the case the guard exists for, so the shared controller must not have
         // started Sparkle - and must still answer rather than crash the caller.
-        assert(!MSIMEUpdateHostCanStartSparkle(NSBundle.mainBundle.bundleIdentifier,
+        assert(!LINGYAOUpdateHostCanStartSparkle(NSBundle.mainBundle.bundleIdentifier,
                                                NSBundle.mainBundle.bundlePath,
                                                [NSBundle.mainBundle objectForInfoDictionaryKey:@"SUFeedURL"]));
-        MSIMEUpdateController *shared = MSIMEUpdateController.sharedController;
+        LINGYAOUpdateController *shared = LINGYAOUpdateController.sharedController;
         assert(shared && !shared.canCheckForUpdates && !shared.automaticallyChecksForUpdates);
         [shared checkForUpdates:nil];
     }

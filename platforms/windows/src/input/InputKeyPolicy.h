@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 inline constexpr uint32_t kVirtualKeyBackspace = 0x08;
 inline constexpr uint32_t kVirtualKeyShift = 0x10;
@@ -89,4 +89,4 @@ constexpr bool should_learn_entered_english_word(bool dedicated_english_mode,
          (chinese_scheme && !all_complete_pure_pinyin);
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

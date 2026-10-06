@@ -53,14 +53,14 @@ protocol BackendSessionStorage: Sendable {
 struct BackendKeychain: BackendSessionStorage {
   /// On iOS the session lives in the App Group's keychain access group, which the app and the keyboard extension both already hold as an entitlement, so the keyboard can reach the signed-in account (cloud clipboard) without the token ever being written to a file. Other platforms keep the item in the process's default access group.
   #if os(iOS)
-  static let defaultAccessGroup: String? = MSIMEAppEdition.appGroupIdentifier
+  static let defaultAccessGroup: String? = LINGYAOAppEdition.appGroupIdentifier
   #else
   static let defaultAccessGroup: String? = nil
   #endif
   private let accessGroup: String?
   private let service: String
 
-  init(accessGroup: String? = BackendKeychain.defaultAccessGroup, service: String = "app.msime.backend.account") {
+  init(accessGroup: String? = BackendKeychain.defaultAccessGroup, service: String = "app.lingyao.backend.account") {
     self.accessGroup = accessGroup
     self.service = service
   }
@@ -114,11 +114,11 @@ struct BackendKeychain: BackendSessionStorage {
 struct BackendDesktopSessionFile: BackendSessionStorage {
   static let fileName = "account-session.json"
   static let maximumBytes = 64 * 1024
-  /// 状态目录随版本而变：输入法的 Info.plist 声明了版本（`MSIMEEdition`）时取它的 `MSIMESettingsBundleIdentifier`，否则是 full 的 `app.msime.macos`。与 platforms/macos/src/core/EditionIdentity.h 一致。
+  /// 状态目录随版本而变：输入法的 Info.plist 声明了版本（`LINGYAOEdition`）时取它的 `LINGYAOSettingsBundleIdentifier`，否则是 full 的 `app.lingyao.macos`。与 platforms/macos/src/core/EditionIdentity.h 一致。
   static var standardDirectory: URL? {
-    let edition = Bundle.main.object(forInfoDictionaryKey: "MSIMEEdition") as? String
+    let edition = Bundle.main.object(forInfoDictionaryKey: "LINGYAOEdition") as? String
     let declared = edition.map { !$0.isEmpty && $0 != "full" } ?? false
-    let identifier = declared ? (Bundle.main.object(forInfoDictionaryKey: "MSIMESettingsBundleIdentifier") as? String ?? "app.msime.macos") : "app.msime.macos"
+    let identifier = declared ? (Bundle.main.object(forInfoDictionaryKey: "LINGYAOSettingsBundleIdentifier") as? String ?? "app.lingyao.macos") : "app.lingyao.macos"
     return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
       .appendingPathComponent(identifier, isDirectory: true)
   }
@@ -201,7 +201,7 @@ struct BackendFileRefreshLock: BackendRefreshLock {
   /// iOS: the App Group container, opened by both the app and the keyboard extension.
   static var appGroup: BackendFileRefreshLock {
     BackendFileRefreshLock(url: FileManager.default
-      .containerURL(forSecurityApplicationGroupIdentifier: MSIMEAppEdition.appGroupIdentifier)?
+      .containerURL(forSecurityApplicationGroupIdentifier: LINGYAOAppEdition.appGroupIdentifier)?
       .appendingPathComponent("backend-account-refresh.lock", isDirectory: false))
   }
 

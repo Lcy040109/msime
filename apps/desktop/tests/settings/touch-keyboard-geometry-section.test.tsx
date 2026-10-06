@@ -5,7 +5,7 @@ import {
   defaultTouchKeyboardGeometry,
   TouchKeyboardGeometrySection,
   type TouchToolbarPreferences,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

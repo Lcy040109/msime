@@ -32,7 +32,7 @@
                 android:textSize="28sp" />
 
             <!-- 设计的搜索胶囊：按 PageId 的标题与关键词找页面，也按本页各行的名字和当前值过滤（KeyboardFragment.applySearch）。 -->
-            <app.msime.android.home.SearchPill
+            <app.lingyao.android.home.SearchPill
                 android:id="@+id/keyboard_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

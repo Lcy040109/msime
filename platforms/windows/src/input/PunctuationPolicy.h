@@ -3,7 +3,7 @@
 #include "NavigationPolicy.h"
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Native routing only, not translation. Resolve input separators, Unicode
 // selection and word-to-character priority before calling this predicate.
 // The Japanese scheme never pages on minus/equals (the reference's IsJapaneseDisabledPagingKey), and the TSF sends those keys as punctuation there, so '_', '=' and '+' commit the highlighted candidate. A bare '-' stays the long-vowel mark.
@@ -59,4 +59,4 @@ inline char literal_candidate_punctuation(const FanyImeNamedpipeData &packet) {
   }
   return packet.wch == '/' ? '/' : 0;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

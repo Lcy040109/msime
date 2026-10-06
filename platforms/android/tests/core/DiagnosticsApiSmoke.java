@@ -1,5 +1,5 @@
-import app.msime.android.CloudApi;
-import app.msime.android.DiagnosticsApi;
+import app.lingyao.android.CloudApi;
+import app.lingyao.android.DiagnosticsApi;
 import java.util.ArrayList;
 import java.util.List;
 

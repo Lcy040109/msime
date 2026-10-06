@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { HandwritingPanel, VoicePanel } from "@msime/ui";
+import { HandwritingPanel, VoicePanel } from "@lingyao/ui";
 import capability from "../../src-tauri/capabilities/input-panel-drag.json";
 
 afterEach(cleanup);

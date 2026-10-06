@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <vector>
 int main() {
-    msime::tsf::HostFocusState state;
+    lingyao::tsf::HostFocusState state;
     std::vector<bool> calls;
     auto send = [&](bool focused) { calls.push_back(focused); return true; };
     if (!state.update(true, true, send)) return EXIT_FAILURE;

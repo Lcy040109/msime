@@ -9,7 +9,7 @@ import {
   type ProviderCredentialClient,
   type ProviderCredentialStatus,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(cleanup);
 
@@ -129,7 +129,7 @@ test("Linux saves the Doubao recognition credential bound to the current voice s
   });
   // The file is saved even when the user service manager is not reachable, and the user is told how to start the service.
   expect((await screen.findByRole("alert")).textContent).toContain(
-    "systemctl --user enable --now msime-linux-voice.socket",
+    "systemctl --user enable --now lingyao-linux-voice.socket",
   );
   expect(group.textContent).toContain("已保存");
   expect(screen.getByRole("button", { name: "清除识别凭据" })).toBeTruthy();

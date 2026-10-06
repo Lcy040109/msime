@@ -6,11 +6,11 @@
 #include <utility>
 #include <vector>
 
-using msime::linux_host::PanelInputBroker;
-using msime::linux_host::PanelInputDelivery;
-using msime::linux_host::PanelInputFocus;
-using msime::linux_host::PanelInputRequest;
-using msime::linux_host::parse_panel_input_request;
+using lingyao::linux_host::PanelInputBroker;
+using lingyao::linux_host::PanelInputDelivery;
+using lingyao::linux_host::PanelInputFocus;
+using lingyao::linux_host::PanelInputRequest;
+using lingyao::linux_host::parse_panel_input_request;
 
 namespace {
 
@@ -49,7 +49,7 @@ void rejects_what_the_ime_route_does_not_carry() {
 }
 
 void rejects_socket_directories_below_a_symlink() {
-  const auto root = std::filesystem::temp_directory_path() / "msime-panel-input-path-test";
+  const auto root = std::filesystem::temp_directory_path() / "lingyao-panel-input-path-test";
   const auto outside = root / "outside";
   std::error_code error;
   std::filesystem::remove_all(root, error);
@@ -59,7 +59,7 @@ void rejects_socket_directories_below_a_symlink() {
   // 以 root 身份运行时（Linux 容器里就是这样），root 自己不对外开放的目录里的链接会被当成受信任的系统链接（见 `src/core/SafePath.h`）；把目录改成其他人可写，这条链接就成了任何人都可能放进去的链接。
   std::filesystem::permissions(root, std::filesystem::perms::others_write, std::filesystem::perm_options::add);
 
-  msime::linux_host::PanelInputSocket socket;
+  lingyao::linux_host::PanelInputSocket socket;
   assert(!socket.open((linked / "nested" / "panel-input.sock").string()));
   assert(!std::filesystem::exists(outside / "nested"));
   std::filesystem::remove_all(root, error);
@@ -131,14 +131,14 @@ void expires_rather_than_typing_late() {
   PanelInputBroker broker;
   Harness harness;
   broker.submit(-1, text("迟"), 0);
-  harness.pump(broker, msime::linux_host::kPanelInputWaitUs - 1);
+  harness.pump(broker, lingyao::linux_host::kPanelInputWaitUs - 1);
   assert(harness.replies.empty());
-  harness.pump(broker, msime::linux_host::kPanelInputWaitUs);
+  harness.pump(broker, lingyao::linux_host::kPanelInputWaitUs);
   assert(harness.replies.size() == 1);
   assert(harness.replies[0].second == R"({"error":"no_focus","ok":false})");
   // A focus arriving afterwards finds nothing left to type.
   harness.focus = {true, 1};
-  harness.pump(broker, msime::linux_host::kPanelInputWaitUs + 1);
+  harness.pump(broker, lingyao::linux_host::kPanelInputWaitUs + 1);
   assert(harness.delivered.empty() && broker.empty());
 }
 
@@ -172,17 +172,17 @@ void keeps_requests_in_order() {
 void rejects_requests_beyond_pending_capacity() {
   PanelInputBroker broker;
   Harness harness;
-  for (std::size_t index = 0; index < msime::linux_host::kPanelInputPendingLimit; ++index)
+  for (std::size_t index = 0; index < lingyao::linux_host::kPanelInputPendingLimit; ++index)
     assert(broker.submit(static_cast<int>(index), text("合成"), 0));
   assert(!broker.submit(999, text("拒绝"), 0));
-  harness.pump(broker, msime::linux_host::kPanelInputWaitUs);
-  assert(harness.replies.size() == msime::linux_host::kPanelInputPendingLimit);
+  harness.pump(broker, lingyao::linux_host::kPanelInputWaitUs);
+  assert(harness.replies.size() == lingyao::linux_host::kPanelInputPendingLimit);
   assert(broker.empty());
 }
 
 std::vector<std::string> stroke(bool press_consumed, bool release_consumed) {
   std::vector<std::string> events;
-  msime::linux_host::deliver_panel_key_stroke(
+  lingyao::linux_host::deliver_panel_key_stroke(
       [&](bool release) {
         events.push_back(release ? "process release" : "process press");
         return release ? release_consumed : press_consumed;

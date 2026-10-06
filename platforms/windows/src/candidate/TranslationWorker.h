@@ -12,7 +12,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class TranslationWorker final {
 public:
   struct Result {
@@ -76,4 +76,4 @@ private:
       translation_negative_cache_;
   std::thread worker_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -1,13 +1,13 @@
 # Windows shared-host preparation
 
-`msime-client-prepare.exe` is a native command-line entry point for the shared Host API. It verifies the pinned desktop resources and asks the shared Engine bridge to prepare writable dictionaries. It does not implement input algorithms, register TSF, start processes, or change system settings.
+`lingyao-client-prepare.exe` is a native command-line entry point for the shared Host API. It verifies the pinned desktop resources and asks the shared Engine bridge to prepare writable dictionaries. It does not implement input algorithms, register TSF, start processes, or change system settings.
 
-Build the `msime-client-prepare` CMake target with `MSIME_HOST_LIBRARY` pointing to the same-architecture Rust Host API import library; its DLL must be available at runtime. The executable is included in CMake's `bin` installation.
+Build the `lingyao-client-prepare` CMake target with `LINGYAO_HOST_LIBRARY` pointing to the same-architecture Rust Host API import library; its DLL must be available at runtime. The executable is included in CMake's `bin` installation.
 
 Run as the intended input-method user, before starting Server or TSF:
 
 ```powershell
-& .\msime-client-prepare.exe 'C:\MSIME Resources' "$env:LOCALAPPDATA\MSIME-Client"
+& .\lingyao-client-prepare.exe 'C:\LINGYAO Resources' "$env:LOCALAPPDATA\LINGYAO-Client"
 ```
 
 The resource directory must contain the bundle required by `resources/desktop-dictionary.lock.json`. Both arguments must be absolute. The state directory must not exist and its parent must exist. For the production Server and TSF, use the LocalAppData path above. The new directory inherits its parent's Windows permissions; do not run this command as an elevated installer or point it at a shared writable parent.

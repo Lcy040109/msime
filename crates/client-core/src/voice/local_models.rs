@@ -1,6 +1,6 @@
 //! On-device speech models: the pinned catalog, and installing, listing and removing models under a host-chosen root.
 //!
-//! A model lives in `<root>/<id>/`. The directory is recognised as an installed model by `msime-model.json`, the catalog entry copied verbatim, which the installer writes last and only after every file the entry names is in place; the recognizer (`shared/voice/LocalAsr.cpp`) reads nothing else to find its files. Everything is assembled in a staging directory beside the target and renamed into place, so a crash, a cancel or a failed checksum never leaves a directory that looks installed.
+//! A model lives in `<root>/<id>/`. The directory is recognised as an installed model by `lingyao-model.json`, the catalog entry copied verbatim, which the installer writes last and only after every file the entry names is in place; the recognizer (`shared/voice/LocalAsr.cpp`) reads nothing else to find its files. Everything is assembled in a staging directory beside the target and renamed into place, so a crash, a cancel or a failed checksum never leaves a directory that looks installed.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -16,7 +16,7 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 /// The file that marks a directory as an installed model. Kept in step with `local_model_manifest` in `shared/voice/LocalAsr.cpp`.
-pub const MANIFEST_FILE: &str = "msime-model.json";
+pub const MANIFEST_FILE: &str = "lingyao-model.json";
 
 const CATALOG_JSON: &str = include_str!("../../../../resources/local-asr-models.json");
 
@@ -70,7 +70,7 @@ pub struct CatalogModel {
     #[serde(default)]
     pub desktop_only: bool,
     pub license: CatalogLicense,
-    /// The entry exactly as the catalog has it, written out as `msime-model.json`.
+    /// The entry exactly as the catalog has it, written out as `lingyao-model.json`.
     #[serde(skip)]
     pub manifest: Value,
 }
@@ -321,8 +321,8 @@ fn check_root(root: &Path) -> Result<(), LocalModelError> {
         current = path.parent();
     }
     for path in ancestors.into_iter().rev() {
-        // 系统自己的符号链接（macOS 的 /var、Android 的 /data/user/0）由 msime-path-trust 列出。
-        if msime_path_trust::is_trusted_system_alias(path) {
+        // 系统自己的符号链接（macOS 的 /var、Android 的 /data/user/0）由 lingyao-path-trust 列出。
+        if lingyao_path_trust::is_trusted_system_alias(path) {
             continue;
         }
         match fs::symlink_metadata(path) {
@@ -409,7 +409,7 @@ impl HttpFetcher {
             .connect_timeout(Duration::from_secs(30))
             // In the blocking client this bounds each read rather than the whole transfer, so a stalled connection fails without capping a slow but steady download.
             .timeout(Duration::from_secs(60))
-            .user_agent(concat!("msime/", env!("CARGO_PKG_VERSION")))
+            .user_agent(concat!("lingyao/", env!("CARGO_PKG_VERSION")))
             .build()
             .map_err(|error| LocalModelError::Network(error.to_string()))?;
         Ok(Self { client })
@@ -565,7 +565,7 @@ pub(crate) fn install_model(
     Ok(target)
 }
 
-/// 把 `msime-model.json` 写进暂存目录；它总是该目录里最后写入的文件，有它才算安装完整。
+/// 把 `lingyao-model.json` 写进暂存目录；它总是该目录里最后写入的文件，有它才算安装完整。
 fn write_manifest(dir: &Path, manifest: &Value) -> Result<(), LocalModelError> {
     let manifest = serde_json::to_vec_pretty(manifest).map_err(io::Error::other)?;
     let mut file = fs::File::create(dir.join(MANIFEST_FILE))?;
@@ -596,7 +596,7 @@ fn publish(root: &Path, id: &str, staged: &Path) -> Result<PathBuf, LocalModelEr
     Ok(target)
 }
 
-/// 下载一组固定的文件（名称、URL、长度、SHA-256 都来自仓库里审过的锁文件）到 `<root>/<id>`，写入 `manifest` 作为 `msime-model.json` 并整体发布，替换之前的安装。阻塞调用，不要放在 UI 线程。
+/// 下载一组固定的文件（名称、URL、长度、SHA-256 都来自仓库里审过的锁文件）到 `<root>/<id>`，写入 `manifest` 作为 `lingyao-model.json` 并整体发布，替换之前的安装。阻塞调用，不要放在 UI 线程。
 pub fn install_files(
     root: &Path,
     id: &str,
@@ -618,7 +618,7 @@ pub fn install_files(
     )
 }
 
-/// 不变量：已经发布的文件永远不会被重新打开写入。输入法会内存映射 msime-japanese.dat，原地改写会让正在使用的映射读到半新半旧的内容甚至触发 SIGBUS；所以新文件一律写进暂存目录，再整体改名替换旧目录，旧文件只被改名和删除，已打开的句柄仍能读到原来的字节。
+/// 不变量：已经发布的文件永远不会被重新打开写入。输入法会内存映射 lingyao-japanese.dat，原地改写会让正在使用的映射读到半新半旧的内容甚至触发 SIGBUS；所以新文件一律写进暂存目录，再整体改名替换旧目录，旧文件只被改名和删除，已打开的句柄仍能读到原来的字节。
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn install_files_with(
     root: &Path,
@@ -696,7 +696,7 @@ pub(crate) fn install_files_with(
     Ok(target)
 }
 
-/// 读取 `<root>/<id>/msime-model.json`。只接受不超过 64 KiB 的普通文件，符号链接、目录或无法解析的内容都视为没有。
+/// 读取 `<root>/<id>/lingyao-model.json`。只接受不超过 64 KiB 的普通文件，符号链接、目录或无法解析的内容都视为没有。
 pub fn installed_manifest(root: &Path, id: &str) -> Option<Value> {
     if check_root(root).is_err() {
         return None;
@@ -723,7 +723,7 @@ pub fn installed_manifest(root: &Path, id: &str) -> Option<Value> {
     serde_json::from_slice(&bytes).ok()
 }
 
-/// `msime-model.json` 由安装器在本机写出，正常只有几 KB；限制大小，免得被替换的文件占用无界内存。
+/// `lingyao-model.json` 由安装器在本机写出，正常只有几 KB；限制大小，免得被替换的文件占用无界内存。
 const MAX_MANIFEST_BYTES: u64 = 64 * 1024;
 
 fn check_cancel(cancel: &AtomicBool) -> Result<(), LocalModelError> {

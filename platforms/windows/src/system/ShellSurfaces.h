@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // What a tray entry asks a desktop surface to open. Settings uses the native WinUI 3 process; panels use the shared Tauri process. Both hosts read the same `--route=` argument, so routing remains one small protocol.
 struct ShellSurfaceRequest {
   // Panel route head. Empty opens the settings window itself.
@@ -76,8 +76,8 @@ inline std::string shell_surface_route(const ShellSurfaceRequest &request) {
 inline std::vector<std::wstring>
 shell_executable_names(const ShellSurfaceRequest &request) {
   if (request.panel.empty())
-    return {L"msime-client-settings.exe"};
-  return {L"MSIME.exe"};
+    return {L"lingyao-client-settings.exe"};
+  return {L"LINGYAO.exe"};
 }
 inline std::optional<std::filesystem::path>
 shell_executable(const std::filesystem::path &directory,
@@ -99,14 +99,14 @@ shell_executable(const std::filesystem::path &directory,
   }
   return std::nullopt;
 }
-// Compose the child environment from this process's block plus the request. Existing MSIME_CLIENT_ROUTE and the two context entries are dropped, so a value this process was started with cannot outvote the clicked row.
+// Compose the child environment from this process's block plus the request. Existing LINGYAO_CLIENT_ROUTE and the two context entries are dropped, so a value this process was started with cannot outvote the clicked row.
 // The result is the double-NUL terminated block CreateProcessW expects.
 inline std::wstring shell_environment_block(const wchar_t *existing,
                                             const ShellSurfaceRequest &request,
                                             const ShellLaunchContext *context) {
-  static constexpr std::wstring_view state_name = L"MSIME_CLIENT_STATE_DIR=";
-  static constexpr std::wstring_view options_name = L"MSIME_CLIENT_HOST_OPTIONS=";
-  static constexpr std::wstring_view route_name = L"MSIME_CLIENT_ROUTE=";
+  static constexpr std::wstring_view state_name = L"LINGYAO_CLIENT_STATE_DIR=";
+  static constexpr std::wstring_view options_name = L"LINGYAO_CLIENT_HOST_OPTIONS=";
+  static constexpr std::wstring_view route_name = L"LINGYAO_CLIENT_ROUTE=";
   auto owned = [](std::wstring_view entry) {
     auto starts_with = [entry](std::wstring_view name) {
       if (entry.size() < name.size())
@@ -183,4 +183,4 @@ inline std::wstring shell_route_argument(const ShellSurfaceRequest &request) {
     throw std::invalid_argument("Invalid shell surface route");
   return std::wstring(route.begin(), route.end());
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -50,7 +50,7 @@ struct BackendSnapshotEnvelope: Sendable {
       switch type {
       case "header":
         guard count == 0, Set(object.keys) == ["type", "format", "version", "revision"],
-              object["format"] as? String == "msime-dictionary-snapshot",
+              object["format"] as? String == "lingyao-dictionary-snapshot",
               try integer(object["version"]) == 1 else { throw bad }
         let value = try integer(object["revision"])
         guard value >= 0 else { throw bad }
@@ -111,7 +111,7 @@ extension BackendAccountClient {
 
   func dictionarySnapshot(token: String) async throws -> DownloadedSnapshot {
     let url = try await download("/v1/users/me/dictionary/snapshot", token: token,
-      filename: "msime-dictionary-snapshot.ndjson", maximumBytes: 512 * 1024 * 1024, mediaType: "application/x-ndjson")
+      filename: "lingyao-dictionary-snapshot.ndjson", maximumBytes: 512 * 1024 * 1024, mediaType: "application/x-ndjson")
     do {
       let envelope = try BackendSnapshotEnvelope.inspect(url)
       return .init(url: url, envelope: envelope)
@@ -267,7 +267,7 @@ private final class SnapshotRecordIndex {
   private var entries = 0
   private let bad = BackendAccountClient.Failure(status: 400)
   init() throws {
-    directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-index-" + UUID().uuidString, isDirectory: true)
+    directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-index-" + UUID().uuidString, isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
     do {
       let file = directory.appendingPathComponent("records.sqlite")
@@ -356,7 +356,7 @@ final class BackendPreparedSnapshot: @unchecked Sendable {
   }
   init(copying source: URL) throws {
     guard source.isFileURL else { throw BackendAccountClient.Failure(status: 400) }
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-upload-" + UUID().uuidString, isDirectory: true)
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-upload-" + UUID().uuidString, isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
     url = directory.appendingPathComponent("snapshot.ndjson")
     do {

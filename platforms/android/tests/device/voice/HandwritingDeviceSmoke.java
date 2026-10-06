@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,10 +16,10 @@ import java.util.function.Predicate;
 
 /** Device-only acceptance for the packaged ML Kit recognizer and real IME controls. */
 public final class HandwritingDeviceSmoke extends DeviceSmoke {
-    private static final String PREVIEW_PACKAGE = "app.msime.android";
+    private static final String PREVIEW_PACKAGE = "app.lingyao.android";
     private static final long MODEL_TIMEOUT_MILLIS = 180_000;
-    private static final String TOUCH_REQUEST = "msime-handwriting-touch.request";
-    private static final String TOUCH_ACK = "msime-handwriting-touch.ack";
+    private static final String TOUCH_REQUEST = "lingyao-handwriting-touch.request";
+    private static final String TOUCH_ACK = "lingyao-handwriting-touch.ack";
     private int touchRequestSequence;
 
     @Override protected String successDescription() {
@@ -28,19 +28,19 @@ public final class HandwritingDeviceSmoke extends DeviceSmoke {
 
     @Override protected void runChecks() throws Exception {
         stage = "handwriting preview wake";
-        shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+        shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
         stage = "handwriting IME rebind";
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
         stage = "handwriting editor launch";
         Intent intent = new Intent(getTargetContext(), EditorActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivitySync(intent);
         stage = "handwriting editor focus";
-        tap(field("msime-test-plain"));
-        await(field("msime-test-plain").and(AccessibilityNodeInfo::isFocused));
+        tap(field("lingyao-test-plain"));
+        await(field("lingyao-test-plain").and(AccessibilityNodeInfo::isFocused));
 
         stage = "handwriting keyboard ready";
         AccessibilityNodeInfo schemeControl = awaitAnyFor(schemeControl(true), 30_000);
@@ -78,7 +78,7 @@ public final class HandwritingDeviceSmoke extends DeviceSmoke {
             if (firstText == null || firstText.length() == 0)
                 throw new AssertionError("Recognized candidate was empty");
             tap(key("空格"));
-            AccessibilityNodeInfo afterSpace = awaitFor(field("msime-test-plain").and(node ->
+            AccessibilityNodeInfo afterSpace = awaitFor(field("lingyao-test-plain").and(node ->
                 node.getText() != null && !node.getText().toString().isEmpty()
                     && node.getText().chars().noneMatch(Character::isWhitespace)), 15_000);
             String firstCommitted = afterSpace.getText().toString();
@@ -91,7 +91,7 @@ public final class HandwritingDeviceSmoke extends DeviceSmoke {
                 throw new AssertionError("Recognized candidate was empty");
             stage = "handwriting return key commit";
             tap(returnKey());
-            AccessibilityNodeInfo afterReturn = awaitFor(field("msime-test-plain").and(node ->
+            AccessibilityNodeInfo afterReturn = awaitFor(field("lingyao-test-plain").and(node ->
                 node.getText() != null && node.getText().length() > firstCommitted.length()
                     && node.getText().chars().noneMatch(Character::isWhitespace)), 15_000);
             String committed = afterReturn.getText().toString();
@@ -101,7 +101,7 @@ public final class HandwritingDeviceSmoke extends DeviceSmoke {
             awaitFor(firstCandidate(), 60_000);
             injectKey(KeyEvent.KEYCODE_SPACE);
             String beforeHardwareSpace = committed;
-            AccessibilityNodeInfo afterHardwareSpace = awaitFor(field("msime-test-plain").and(node ->
+            AccessibilityNodeInfo afterHardwareSpace = awaitFor(field("lingyao-test-plain").and(node ->
                 node.getText() != null && node.getText().length() > beforeHardwareSpace.length()
                     && node.getText().chars().noneMatch(Character::isWhitespace)), 15_000);
             committed = afterHardwareSpace.getText().toString();
@@ -110,7 +110,7 @@ public final class HandwritingDeviceSmoke extends DeviceSmoke {
             drawStroke(canvasBounds(), new float[][] {{0.50f, 0.10f}, {0.50f, 0.90f}});
             injectKey(KeyEvent.KEYCODE_DEL);
             awaitFor(imeTextContains("在此手写，停笔后选字"), 15_000);
-            AccessibilityNodeInfo editor = awaitFor(field("msime-test-plain"), 15_000);
+            AccessibilityNodeInfo editor = awaitFor(field("lingyao-test-plain"), 15_000);
             if (!equalsText(committed, editor.getText()))
                 throw new AssertionError("Hardware delete changed committed editor text");
 

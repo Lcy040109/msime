@@ -2,28 +2,28 @@
 //!
 //! Both targets used to carry their own copy of these commands, identical apart from the account storage type the services authenticate through. The services live in [`MobileCommunityState`], which each target's setup manages next to its own account state; the session they share is the target's account session.
 
-use msime_client_core::account::{AccountError, BackendAccountClient, BackendAccountSession};
-use msime_client_core::community::report::{
+use lingyao_client_core::account::{AccountError, BackendAccountClient, BackendAccountSession};
+use lingyao_client_core::community::report::{
     BackendCommunityReportService, CommunityReport, CommunityReportKind, CommunityReportReason,
 };
-use msime_client_core::community::resource::{
+use lingyao_client_core::community::resource::{
     BackendCommunityResourceService, CommunityResource, CommunityResourceApplication,
     CommunityResourceContent, CommunityResourceKind, CommunityResourcePage,
     CommunityResourcePublication, CommunityResourceScope,
 };
-use msime_client_core::community::resource_library::{
+use lingyao_client_core::community::resource_library::{
     CommunityResourceLibraryError, CommunityResourceLibraryStore,
 };
-use msime_client_core::preferences::TouchKeyboardSkinDesign;
-use msime_client_core::skin::ai::{AiSkinError, AiSkinProposal, BackendAiSkinService};
-use msime_client_core::skin::category::SkinCategory;
-use msime_client_core::skin::community::{
+use lingyao_client_core::preferences::TouchKeyboardSkinDesign;
+use lingyao_client_core::skin::ai::{AiSkinError, AiSkinProposal, BackendAiSkinService};
+use lingyao_client_core::skin::category::SkinCategory;
+use lingyao_client_core::skin::community::{
     BackendCommunitySkinService, CommunitySkin, CommunitySkinPage,
 };
-use msime_client_core::skin::custom_library::{
+use lingyao_client_core::skin::custom_library::{
     CustomSkinLibraryError, CustomSkinLibraryStore, SavedTouchKeyboardSkin,
 };
-use msime_client_core::skin::keyboard_trial::{
+use lingyao_client_core::skin::keyboard_trial::{
     KeyboardSkinTrial, KeyboardSkinTrialError, KeyboardSkinTrialStore,
 };
 use serde::Serialize;
@@ -109,7 +109,7 @@ fn ai_skin_error(error: AiSkinError) -> crate::CommandError {
 }
 
 fn valid_ai_skin_request_id(value: &str) -> bool {
-    msime_client_core::is_bounded_ascii_identifier(value, 96)
+    lingyao_client_core::is_bounded_ascii_identifier(value, 96)
 }
 
 fn community_id(value: &str) -> Result<uuid::Uuid, crate::CommandError> {

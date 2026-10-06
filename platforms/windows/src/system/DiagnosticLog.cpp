@@ -5,7 +5,7 @@
 #include <string>
 #include <system_error>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 std::string timestamp() {
   SYSTEMTIME now{};
@@ -74,4 +74,4 @@ void DiagnosticLog::append(std::string_view line) {
   } catch (...) {
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -2,15 +2,15 @@
 #import "InputModeIdentifiers.h"
 #include <cstring>
 
-@implementation MSIMEInputSourceMonitor {
+@implementation LINGYAOInputSourceMonitor {
     NSNotificationCenter *_center;
     NSString *_identifier;
-    MSIMEInputSourceCopier _copier;
-    MSIMEInputSourcePropertyGetter _getter;
+    LINGYAOInputSourceCopier _copier;
+    LINGYAOInputSourcePropertyGetter _getter;
     void (^_action)(void);
 }
 - (instancetype)initWithCenter:(NSNotificationCenter *)center bundleIdentifier:(NSString *)identifier
-                    copySource:(MSIMEInputSourceCopier)copier propertyGetter:(MSIMEInputSourcePropertyGetter)getter
+                    copySource:(LINGYAOInputSourceCopier)copier propertyGetter:(LINGYAOInputSourcePropertyGetter)getter
                     switchedAway:(void (^)(void))action {
     self = [super init];
     if (self) {
@@ -26,7 +26,7 @@
 - (void)sourceChanged:(NSNotification *)notification {
     (void)notification;
     if (!NSThread.isMainThread) {
-        __weak MSIMEInputSourceMonitor *weakSelf = self;
+        __weak LINGYAOInputSourceMonitor *weakSelf = self;
         dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf sourceChanged:nil]; });
         return;
     }
@@ -52,24 +52,24 @@
 - (void)dealloc { [self stop]; }
 @end
 
-bool MSIMEShouldRegisterInputSource(int argc, const char *argv[]) {
+bool LINGYAOShouldRegisterInputSource(int argc, const char *argv[]) {
     return argc == 2 && argv && argv[1] &&
         (std::strcmp(argv[1], "--register-input-source") == 0 ||
          std::strcmp(argv[1], "--reregister-input-source") == 0);
 }
 
-OSStatus MSIMERegisterInputSource(NSURL *bundleURL, MSIMEInputSourceRegistrar registrar) {
+OSStatus LINGYAORegisterInputSource(NSURL *bundleURL, LINGYAOInputSourceRegistrar registrar) {
     if (!bundleURL || !registrar) return paramErr;
     return registrar((__bridge CFURLRef)bundleURL);
 }
 
-OSStatus MSIMERegisterAndEnableInputSources(NSURL *bundleURL, NSString *bundleIdentifier,
-                                            MSIMEInputSourceRegistrar registrar,
-                                            MSIMEInputSourceLister lister,
-                                            MSIMEInputSourcePropertyGetter propertyGetter,
-                                            MSIMEInputSourceEnabler enabler) {
+OSStatus LINGYAORegisterAndEnableInputSources(NSURL *bundleURL, NSString *bundleIdentifier,
+                                            LINGYAOInputSourceRegistrar registrar,
+                                            LINGYAOInputSourceLister lister,
+                                            LINGYAOInputSourcePropertyGetter propertyGetter,
+                                            LINGYAOInputSourceEnabler enabler) {
     if (!bundleIdentifier.length || !lister || !propertyGetter || !enabler) return paramErr;
-    OSStatus status = MSIMERegisterInputSource(bundleURL, registrar);
+    OSStatus status = LINGYAORegisterInputSource(bundleURL, registrar);
     if (status != noErr) return status;
     NSDictionary *filter = @{(__bridge NSString *)kTISPropertyBundleID: bundleIdentifier,
                              (__bridge NSString *)kTISPropertyInputSourceIsEnableCapable: @YES};
@@ -97,7 +97,7 @@ OSStatus MSIMERegisterAndEnableInputSources(NSURL *bundleURL, NSString *bundleId
             void *property = propertyGetter(source, kTISPropertyInputSourceID);
             if (!property || CFGetTypeID(property) != CFStringGetTypeID() ||
                 ![(__bridge NSString *)property hasPrefix:modePrefix] ||
-                MSIMEIsOptInInputModeID((__bridge NSString *)property)) continue;
+                LINGYAOIsOptInInputModeID((__bridge NSString *)property)) continue;
             status = enabler(source); if (status != noErr) { CFRelease(sources); return status; }
             primary = source;
             enabled = true;
@@ -111,7 +111,7 @@ OSStatus MSIMERegisterAndEnableInputSources(NSURL *bundleURL, NSString *bundleId
         if (source == primary) continue;
         void *property = propertyGetter(source, kTISPropertyInputSourceID);
         const BOOL identified = property && CFGetTypeID(property) == CFStringGetTypeID();
-        if (identified && MSIMEIsOptInInputModeID((__bridge NSString *)property)) continue;
+        if (identified && LINGYAOIsOptInInputModeID((__bridge NSString *)property)) continue;
         if (!identified || ![(__bridge NSString *)property isEqualToString:bundleIdentifier]) {
             status = enabler(source); if (status != noErr) { CFRelease(sources); return status; }
         }
@@ -119,14 +119,14 @@ OSStatus MSIMERegisterAndEnableInputSources(NSURL *bundleURL, NSString *bundleId
     CFRelease(sources); return noErr;
 }
 
-NSArray<NSString *> *MSIMEEnableNewInputModes(NSString *bundleIdentifier, NSArray<NSString *> *offered,
-                                              MSIMEInputSourceLister lister,
-                                              MSIMEInputSourcePropertyGetter propertyGetter,
-                                              MSIMEInputSourceEnabler enabler,
-                                              MSIMEInputSourceEnabler disabler) {
+NSArray<NSString *> *LINGYAOEnableNewInputModes(NSString *bundleIdentifier, NSArray<NSString *> *offered,
+                                              LINGYAOInputSourceLister lister,
+                                              LINGYAOInputSourcePropertyGetter propertyGetter,
+                                              LINGYAOInputSourceEnabler enabler,
+                                              LINGYAOInputSourceEnabler disabler) {
     // 没有记录说明这是第一次留记录的启动。full 在开始记录之前的每次安装都登记并启用过中、英、日、韩，它们算作已经提供过，用户移除过的就保持移除；之后新增的模式才是没重新登记的更新漏掉的。其他版本从一开始就留记录，没有这样的历史，第一次启动把本版本的模式各启用一次。
-    NSArray<NSString *> *legacy = MSIMEEditionIsFull() ? @[
-        MSIMEChineseInputModeID, MSIMEEnglishInputModeID, MSIMEJapaneseInputModeID, MSIMEKoreanInputModeID
+    NSArray<NSString *> *legacy = LINGYAOEditionIsFull() ? @[
+        LINGYAOChineseInputModeID, LINGYAOEnglishInputModeID, LINGYAOJapaneseInputModeID, LINGYAOKoreanInputModeID
     ] : @[];
     NSMutableOrderedSet<NSString *> *record = [NSMutableOrderedSet orderedSetWithArray:offered ?: legacy];
     if (!bundleIdentifier.length || !lister || !propertyGetter || !enabler || !disabler) return record.array;
@@ -144,7 +144,7 @@ NSArray<NSString *> *MSIMEEnableNewInputModes(NSString *bundleIdentifier, NSArra
         void *enabled = propertyGetter(source, kTISPropertyInputSourceIsEnabled);
         const BOOL alreadyEnabled = enabled && CFGetTypeID(enabled) == CFBooleanGetTypeID() && CFBooleanGetValue((CFBooleanRef)enabled);
         // An opt-in mode is recorded without being enabled, so no later launch enables it either. One the system enabled by itself, ignoring its tsInputModeDefaultStateKey, is turned off this once; it is recorded whatever that returns, because the next launch could no longer tell the system's doing from the user picking the scheme.
-        if (MSIMEIsOptInInputModeID(identifier)) {
+        if (LINGYAOIsOptInInputModeID(identifier)) {
             if (alreadyEnabled) disabler(source);
             [record addObject:identifier];
             continue;
@@ -156,7 +156,7 @@ NSArray<NSString *> *MSIMEEnableNewInputModes(NSString *bundleIdentifier, NSArra
     return record.array;
 }
 
-OSStatus MSIMEEnableInputMode(NSString *identifier, MSIMEInputSourceLister lister, MSIMEInputSourceEnabler enabler) {
+OSStatus LINGYAOEnableInputMode(NSString *identifier, LINGYAOInputSourceLister lister, LINGYAOInputSourceEnabler enabler) {
     if (!identifier.length || !lister || !enabler) return paramErr;
     // includeAllInstalled, because the mode being enabled is by definition not in the enabled list yet.
     NSDictionary *filter = @{(__bridge NSString *)kTISPropertyInputSourceID: identifier};
@@ -167,7 +167,7 @@ OSStatus MSIMEEnableInputMode(NSString *identifier, MSIMEInputSourceLister liste
     return status;
 }
 
-BOOL MSIMEInputSourceIsEnabled(NSString *identifier) {
+BOOL LINGYAOInputSourceIsEnabled(NSString *identifier) {
     if (!identifier.length) return NO;
     // Without includeAllInstalled the list holds only enabled sources.
     NSDictionary *filter = @{(__bridge NSString *)kTISPropertyInputSourceID: identifier};
@@ -178,7 +178,7 @@ BOOL MSIMEInputSourceIsEnabled(NSString *identifier) {
     return enabled;
 }
 
-void MSIMELaunchInputSourceReregistration(NSURL *bundleURL, NSWorkspace *workspace,
+void LINGYAOLaunchInputSourceReregistration(NSURL *bundleURL, NSWorkspace *workspace,
                                           void (^completion)(BOOL launched)) {
     if (!completion) return;
     if (!bundleURL || !bundleURL.isFileURL || !workspace) {

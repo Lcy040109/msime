@@ -4,7 +4,7 @@
 #include <cstring>
 
 int main() {
-  using msime::linux_host::candidate_local_mode_label;
+  using lingyao::linux_host::candidate_local_mode_label;
   // Every non-default name the engine emits in `local_mode`.
   for (const char *mode :
        {"unicode", "date_time", "quick_phrase", "emoji", "kaomoji",

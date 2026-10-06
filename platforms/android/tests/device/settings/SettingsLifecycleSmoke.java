@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import java.io.ByteArrayOutputStream;
@@ -11,29 +11,29 @@ public final class SettingsLifecycleSmoke extends DeviceSmoke {
         stage = "initial IME process";
         // The preceding instrumentation may force-stop its target package. Rebind
         // once before measuring; never rebind between either settings close and input.
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         android.os.SystemClock.sleep(1000);
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
-        tap(field("msime-test-plain"));
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
+        tap(field("lingyao-test-plain"));
         await(key("n"));
-        String originalPid = shell("pidof app.msime.android:ime").trim();
+        String originalPid = shell("pidof app.lingyao.android:ime").trim();
         if (!originalPid.matches("[0-9]+")) throw new AssertionError("Dedicated IME process missing");
         for (int iteration = 0; iteration < 2; iteration++) {
             stage = "settings open and close";
-            shell("am start -W -n app.msime.android/.MainActivity");
-            await(node -> equalsText("app.msime.android", node.getPackageName()) && equalsText("android.webkit.WebView", node.getClassName()));
+            shell("am start -W -n app.lingyao.android/.MainActivity");
+            await(node -> equalsText("app.lingyao.android", node.getPackageName()) && equalsText("android.webkit.WebView", node.getClassName()));
             shell("input keyevent 4");
-            await(field("msime-test-plain"));
-            String afterPid = shell("pidof app.msime.android:ime").trim();
+            await(field("lingyao-test-plain"));
+            String afterPid = shell("pidof app.lingyao.android:ime").trim();
             if (!originalPid.equals(afterPid)) throw new AssertionError("Closing settings restarted the IME process");
             stage = "input after settings close";
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             for (String key : new String[] {"n", "i", "h", "a", "o"}) tap(key(key));
             tap(key("空格"));
             String expected = iteration == 0 ? "你好" : "你好你好";
-            await(field("msime-test-plain").and(node -> equalsText(expected, node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText(expected, node.getText())));
         }
     }
     private String shell(String command) throws Exception {

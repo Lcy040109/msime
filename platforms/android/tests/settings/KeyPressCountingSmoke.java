@@ -1,6 +1,6 @@
 import android.view.KeyEvent;
-import app.msime.android.KeyPressBatch;
-import app.msime.android.KeyPressIds;
+import app.lingyao.android.KeyPressBatch;
+import app.lingyao.android.KeyPressIds;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

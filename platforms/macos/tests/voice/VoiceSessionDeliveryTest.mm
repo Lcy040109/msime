@@ -1,7 +1,7 @@
 #import "../../src/voice/VoiceInputService.h"
 #include <cassert>
 
-@interface MalformedVoiceSession : MSIMEClientSession
+@interface MalformedVoiceSession : LINGYAOClientSession
 @property(nonatomic, strong) id generationValue;
 @end
 @implementation MalformedVoiceSession
@@ -31,14 +31,14 @@ int main() {
             MalformedVoiceSession *session = [[MalformedVoiceSession alloc] initWithOptions:options error:nil];
             assert(session);
             session.generationValue = invalid;
-            MSIMEVoiceInputService *service = [MSIMEVoiceInputService new];
+            LINGYAOVoiceInputService *service = [LINGYAOVoiceInputService new];
             uint64_t generation = 0;
             assert(![service startWithSession:session generation:&generation error:nil] && !service.active);
         }
         NSError *error = nil;
-        MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+        LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
         assert(session && !error);
-        MSIMEVoiceInputService *service = [MSIMEVoiceInputService new];
+        LINGYAOVoiceInputService *service = [LINGYAOVoiceInputService new];
         uint64_t generation = 0;
         assert([service startWithSession:session generation:&generation error:&error] && generation);
         __block BOOL done = NO;

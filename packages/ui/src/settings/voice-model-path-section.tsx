@@ -9,7 +9,7 @@ export interface VoiceModelPathSectionProps {
 
 /** Manual model directory input shared by voice hosts with and without a model store. */
 export function VoiceModelPathSection({ path, pickPath, onChange }: VoiceModelPathSectionProps) {
-  const description = "已安装模型所在文件夹的绝对路径（包含 msime-model.json）";
+  const description = "已安装模型所在文件夹的绝对路径（包含 lingyao-model.json）";
   const editor = (
     <span className="flex items-center gap-2 [&>input]:min-w-0 [&>input]:flex-1">
       <input

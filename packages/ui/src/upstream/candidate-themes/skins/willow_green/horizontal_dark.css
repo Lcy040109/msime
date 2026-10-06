@@ -5,8 +5,8 @@
       --cand-text: #b7b7b7;
       --cand-num: #858585;
       /* Fallback before C++ injects host-width DIP. Wrap limit = 宿主宽度. */
-      --msime-max-width-dip: 100%;
-      --msime-max-height-dip: 100%;
+      --lingyao-max-width-dip: 100%;
+      --lingyao-max-height-dip: 100%;
     }
 
     body {
@@ -21,7 +21,7 @@
 
     .containerParent {
       width: fit-content;
-      max-width: var(--msime-max-width-dip);
+      max-width: var(--lingyao-max-width-dip);
     }
 
     .container {
@@ -34,12 +34,12 @@
       box-shadow: 8px 10px 24px rgba(0, 0, 0, 0.34), 2px 3px 8px rgba(0, 0, 0, 0.22);
       min-width: 7em;
       /* Wrap only when content reaches the host (injected) max width. */
-      width: min(max-content, var(--msime-max-width-dip));
-      max-width: var(--msime-max-width-dip);
+      width: min(max-content, var(--lingyao-max-width-dip));
+      max-width: var(--lingyao-max-width-dip);
       /* Host height in DIP (injected). Do not use min(100%, …): parent height is
          content-sized so 100% never resolves and tall vertical lists get clipped
          by the HWND instead of scrolling. */
-      max-height: var(--msime-max-height-dip);
+      max-height: var(--lingyao-max-height-dip);
       box-sizing: border-box;
       overflow-x: hidden;
       overflow-y: auto;

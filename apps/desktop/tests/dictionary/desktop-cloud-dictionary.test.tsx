@@ -8,7 +8,7 @@ import {
   CloudDictionaryApplyPanel,
   CloudDictionaryCatalogPanel,
   CloudDictionaryFilesPanel,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import { answerConfirm } from "../support/confirm";
 
 afterEach(cleanup);

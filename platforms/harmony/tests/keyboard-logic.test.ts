@@ -937,7 +937,7 @@ group("bounds native speech language, session and result text", () => {
     "the same voice language reuses the system engine",
   );
   check(
-    VoiceRecognitionPolicy.sessionId(12) === "msime-voice-12",
+    VoiceRecognitionPolicy.sessionId(12) === "lingyao-voice-12",
     "voice session ids are deterministic",
   );
   check(
@@ -1911,7 +1911,7 @@ group("高情商回复不再是输入方案，存量的 thoughtful_reply 按未�
 });
 
 group("turning off the scheme the keyboard is on moves it somewhere it can be left", () => {
-  // MSIME-Apple's DisabledSchemesAreHiddenAndCurrentSchemeFallsBack: with 日语 applied, enabling
+  // LINGYAO-Apple's DisabledSchemesAreHiddenAndCurrentSchemeFallsBack: with 日语 applied, enabling
   // only [全拼9键, 五笔] makes the stored scheme 全拼9键. Until this was read the keyboard stayed on
   // a scheme the picker no longer offered, so there was no card to leave by.
   const enabled: SchemeDefinition[] = [KeyboardScheme.QUANPIN_NINE_KEY, KeyboardScheme.WUBI];
@@ -2125,7 +2125,7 @@ group("the quanpin grid is three by three and sends characters, not labels", () 
 });
 
 group("the digit layer re-labels the grid instead of handing over ten across", () => {
-  // MSIME-Apple's testNineKeyDigitLayerKeepsTheGridInsteadOfTheTwentySixKeyRows: a typist who chose
+  // LINGYAO-Apple's testNineKeyDigitLayerKeepsTheGridInsteadOfTheTwentySixKeyRows: a typist who chose
   // three columns keeps three columns, and nineKey1..nineKey9 read 1..9 rather than ABC, DEF, GHI.
   const digits: NineKey[][] = NineKeyLayout.digits();
   check(digits.length === 3, "still three rows");
@@ -2732,7 +2732,7 @@ group("resolves external candidate skin tokens without trusting missing fields",
       decoration.align === "right",
     "the decoration image is the scanned decorationImage, right-aligned by default",
   );
-  // msime-skins keys: its own decoration image and alignment, a background, a radius and a toolbar palette.
+  // lingyao-skins keys: its own decoration image and alignment, a background, a radius and a toolbar palette.
   const styled: CandidateSkinPackage = {
     ...sample,
     id: "styled",
@@ -3285,7 +3285,7 @@ group("offers all fixed candidate slots and checks the active one", () => {
 });
 
 group("a chip is as wide as its column, whether or not the gloss has arrived", () => {
-  // MSIME-Apple's AChipKeepsItsWidthWhateverTheGlossTurnsOutToBe. The networked glosses come back
+  // LINGYAO-Apple's AChipKeepsItsWidthWhateverTheGlossTurnsOutToBe. The networked glosses come back
   // over a few hundred milliseconds; a width that follows them widens one chip at a time and pushes
   // every candidate to its right along with it. Columns first, answers into the columns after.
   const column = CandidateChipWidth.column(390 - 24, 6, 11);
@@ -3397,7 +3397,7 @@ group("candidate gloss layout follows both independent switches before answers a
 });
 
 group("the expanded panel offers the same gloss the strip does", () => {
-  // MSIME-Apple's TheExpandedPanelAnswersALongPressToo and TheExpandedPanelDrawsTheSameGlossesAsThe
+  // LINGYAO-Apple's TheExpandedPanelAnswersALongPressToo and TheExpandedPanelDrawsTheSameGlossesAsThe
   // Strip. Here allCandidates() kept only the text, so the panel listed words while the strip
   // beside it explained them, and its long press had nothing to read.
   //
@@ -3450,7 +3450,7 @@ group("expanded candidates stay on one line and inside their row", () => {
 });
 
 group("a candidate with a gloss offers the gloss as something to type", () => {
-  // MSIME-Apple's TheCandidateMenuOffersToInsertTheGlossItself: macOS hands the translation over
+  // LINGYAO-Apple's TheCandidateMenuOffersToInsertTheGlossItself: macOS hands the translation over
   // with Option and a digit, a touch keyboard has no modifiers, so it goes on the long press. Until
   // this, the host could draw a translation under a candidate with no way to type it.
   const gloss = CandidateManagementAction.glossAction("hello");
@@ -4665,7 +4665,7 @@ group("the Japanese variant key needs kana already composing", () => {
 });
 
 group("on the digit layer the same cell holds the brackets instead", () => {
-  // MSIME-Apple's JapaneseNineKeyView.setDigits: the post-modifier has nothing to modify once the
+  // LINGYAO-Apple's JapaneseNineKeyView.setDigits: the post-modifier has nothing to modify once the
   // keys stop producing kana, so the slot goes to the brackets, which have no other home on this
   // layout. Here the cell was simply dead — enabled() is false for the whole digit layer.
   check(
@@ -5782,8 +5782,8 @@ group("quietening other applications is off unless asked for", () => {
 
 group("a staged resource copy is trusted only while it matches the package", () => {
   const set: StagedArtifact[] = [
-    { name: "msime-pinyin.db", size: 107552768 },
-    { name: "msime-others.db", size: 1495040 },
+    { name: "lingyao-pinyin.db", size: 107552768 },
+    { name: "lingyao-others.db", size: 1495040 },
   ];
   const token: string = StagedResourcePolicy.generationToken(set);
   check(token.length > 0, "a package can be described");
@@ -5794,15 +5794,15 @@ group("a staged resource copy is trusted only while it matches the package", () 
   // The defect this replaces: a marker saying only "staged" went on saying so after the package
   // changed, and the shared verification then refused the directory outright.
   const upgraded: StagedArtifact[] = [
-    { name: "msime-pinyin.db", size: 107552769 },
-    { name: "msime-others.db", size: 1495040 },
+    { name: "lingyao-pinyin.db", size: 107552769 },
+    { name: "lingyao-others.db", size: 1495040 },
   ];
   check(
     StagedResourcePolicy.needsStaging(token, StagedResourcePolicy.generationToken(upgraded)) ===
       true,
     "an artifact that changed size is a different generation",
   );
-  const dropped: StagedArtifact[] = [{ name: "msime-pinyin.db", size: 107552768 }];
+  const dropped: StagedArtifact[] = [{ name: "lingyao-pinyin.db", size: 107552768 }];
   check(
     StagedResourcePolicy.needsStaging(token, StagedResourcePolicy.generationToken(dropped)) ===
       true,
@@ -6416,7 +6416,7 @@ group("Latin is preferred where Chinese would only be in the way", () => {
 });
 
 group("an address field gets the full letter face instead of a nine-key grid", () => {
-  // MSIME-Apple's testLatinFieldsUseFullKeyboardAndRestoreNineKeyHeight: with the nine-key scheme
+  // LINGYAO-Apple's testLatinFieldsUseFullKeyboardAndRestoreNineKeyHeight: with the nine-key scheme
   // selected, focusing an asciiCapable, email or URL field hides the grid and shows Q, and going
   // back to an ordinary field brings 全拼 9 键 back. A grid resolves a digit sequence against a
   // dictionary, and none of these fields holds dictionary words.
@@ -10584,7 +10584,7 @@ group("a malformed enumeration is not trusted", () => {
 });
 
 group("setup has two steps and they fail separately", () => {
-  const own = "app.msime.harmony";
+  const own = "app.lingyao.harmony";
   check(
     OnboardingStatePolicy.required({
       enabled: ImeEnabledState.DISABLED,
@@ -10629,7 +10629,7 @@ group("an unanswerable setup query does not send anyone back to a welcome screen
     OnboardingStatePolicy.required({
       enabled: null,
       currentBundle: "",
-      ownBundle: "app.msime.harmony",
+      ownBundle: "app.lingyao.harmony",
     }) === false,
     "an unreadable enablement state opens settings",
   );
@@ -10637,7 +10637,7 @@ group("an unanswerable setup query does not send anyone back to a welcome screen
     OnboardingStatePolicy.required({
       enabled: ImeEnabledState.FULL_EXPERIENCE_MODE,
       currentBundle: "",
-      ownBundle: "app.msime.harmony",
+      ownBundle: "app.lingyao.harmony",
     }) === false,
     "an unreadable current keyboard opens settings",
   );
@@ -10645,7 +10645,7 @@ group("an unanswerable setup query does not send anyone back to a welcome screen
   check(
     OnboardingStatePolicy.required({
       enabled: ImeEnabledState.FULL_EXPERIENCE_MODE,
-      currentBundle: "app.msime.harmony",
+      currentBundle: "app.lingyao.harmony",
       ownBundle: "",
     }) === false,
     "an unreadable own bundle opens settings",
@@ -10654,7 +10654,7 @@ group("an unanswerable setup query does not send anyone back to a welcome screen
     OnboardingStatePolicy.describe({
       enabled: ImeEnabledState.FULL_EXPERIENCE_MODE,
       currentBundle: "com.example.other",
-      ownBundle: "app.msime.harmony",
+      ownBundle: "app.lingyao.harmony",
     }) === "enabled but not current, opening welcome flow",
     "the reason the window opened where it did is recorded, not inferred afterwards",
   );
@@ -14291,8 +14291,8 @@ group(
       "the preference ids resolve, in the fixed order",
     );
     check(
-      KeyboardScheme.languageDictionary("cantonese") === "msime-cantonese.db" &&
-        KeyboardScheme.languageDictionary("zhuyin") === "msime-zhuyin.db" &&
+      KeyboardScheme.languageDictionary("cantonese") === "lingyao-cantonese.db" &&
+        KeyboardScheme.languageDictionary("zhuyin") === "lingyao-zhuyin.db" &&
         KeyboardScheme.languageDictionary("vietnamese") === null &&
         KeyboardScheme.languageDictionary("quanpin") === null,
       "Cantonese and Zhuyin read their own lexicon; Vietnamese needs none",
@@ -14303,7 +14303,7 @@ group(
       KeyboardScheme.ZHUYIN,
       KeyboardScheme.VIETNAMESE,
     ];
-    const onlyCantonese = (file: string): boolean => file === "msime-cantonese.db";
+    const onlyCantonese = (file: string): boolean => file === "lingyao-cantonese.db";
     check(
       KeyboardScheme.withInstalledDictionaries(enabled, onlyCantonese)
         .map((scheme: SchemeDefinition): string => scheme.engineScheme)
@@ -14438,7 +14438,7 @@ group("the Dachen keys wear their bopomofo and send their ASCII key", () => {
   );
 });
 
-group("Stroke is one more card, opt-in and needing msime-stroke.db", () => {
+group("Stroke is one more card, opt-in and needing lingyao-stroke.db", () => {
   check(
     KeyboardScheme.SCHEMES.length === 16 &&
       KeyboardScheme.SCHEMES[14] === KeyboardScheme.TIBETAN &&
@@ -14485,23 +14485,23 @@ group("Stroke is one more card, opt-in and needing msime-stroke.db", () => {
     "nine names Stroke rather than falling back to quanpin",
   );
   check(
-    KeyboardScheme.languageDictionary("stroke") === "msime-stroke.db",
-    "Stroke reads msime-stroke.db",
+    KeyboardScheme.languageDictionary("stroke") === "lingyao-stroke.db",
+    "Stroke reads lingyao-stroke.db",
   );
   const enabled: SchemeDefinition[] = [KeyboardScheme.QUANPIN, KeyboardScheme.ZHUYIN, stroke];
   check(
     KeyboardScheme.withInstalledDictionaries(
       enabled,
-      (file: string): boolean => file === "msime-zhuyin.db",
+      (file: string): boolean => file === "lingyao-zhuyin.db",
     )
       .map((scheme: SchemeDefinition): string => scheme.preferenceId)
       .join() === "quanpin,zhuyin",
-    "without msime-stroke.db the card is hidden",
+    "without lingyao-stroke.db the card is hidden",
   );
   check(
     KeyboardScheme.withInstalledDictionaries(
       enabled,
-      (file: string): boolean => file === "msime-stroke.db",
+      (file: string): boolean => file === "lingyao-stroke.db",
     )
       .map((scheme: SchemeDefinition): string => scheme.preferenceId)
       .join() === "quanpin,stroke",
@@ -15191,11 +15191,11 @@ group("usage reporting reads HiAppEvent crash reports without leaking directorie
       exception: {
         message: "",
         signal: { signo: 11, code: 1, address: "0x0" },
-        thread_name: "msime",
+        thread_name: "lingyao",
         frames: [
           {
-            symbol: "msime_client_create+24",
-            file: "/data/storage/el1/bundle/libs/arm64/libmsimeclient.so",
+            symbol: "lingyao_client_create+24",
+            file: "/data/storage/el1/bundle/libs/arm64/liblingyaoclient.so",
             pc: "000000000001a2b0",
           },
           { file: "/system/lib/ld-musl-aarch64.so.1", pc: "00000000000c4f10" },
@@ -15208,7 +15208,7 @@ group("usage reporting reads HiAppEvent crash reports without leaking directorie
   check(native?.message === "SIGSEGV (code 1)", "the signal is named; the address is left out");
   check(
     native?.stack ===
-      "libmsimeclient.so+0x1a2b0 msime_client_create+24\nld-musl-aarch64.so.1+0xc4f10",
+      "liblingyaoclient.so+0x1a2b0 lingyao_client_create+24\nld-musl-aarch64.so.1+0xc4f10",
     "frames keep the file name and pc, never the directory, and an empty frame is skipped",
   );
   check(

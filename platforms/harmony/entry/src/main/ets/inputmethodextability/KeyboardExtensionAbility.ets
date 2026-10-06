@@ -5,7 +5,7 @@ import { KeyboardSession, KeyboardPreferences } from '../keyboard/KeyboardSessio
 import { CandidateAnchor, CandidateAnchorPolicy } from './CandidateAnchorPolicy';
 import { KeyboardLog, describeError } from '../keyboard/KeyboardLog';
 import fs from '@ohos.file.fs';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import display from '@ohos.display';
 import window from '@ohos.window';
 import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
@@ -40,7 +40,7 @@ import { HarmonyTelemetry } from '../telemetry/Telemetry';
 const HUD_SCREEN_MARGIN_VP: number = 8;
 const HUD_CARET_GAP_VP: number = 10;
 const HUD_VISIBLE_MS: number = 780;
-const BUNDLE_NAME: string = 'app.msime.harmony';
+const BUNDLE_NAME: string = 'app.lingyao.harmony';
 // KEYCODE_DEL, the Backspace key.
 const KEYCODE_DEL: number = 2055;
 const TOOLBAR_MARGIN_VP: number = 20;

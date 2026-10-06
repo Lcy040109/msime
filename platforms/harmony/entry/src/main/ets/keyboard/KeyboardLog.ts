@@ -5,12 +5,12 @@
  * startup is otherwise silent: the panel simply never appears and there is nothing to read. Every
  * refusal path logs why.
  *
- * The domain is what hilog filters on, and the tag is what `hdc shell hilog | grep MSIME` finds.
+ * The domain is what hilog filters on, and the tag is what `hdc shell hilog | grep LINGYAO` finds.
  */
 import hilog from '@ohos.hilog';
 
 const DOMAIN: number = 0x0051;
-const TAG: string = 'MSIME';
+const TAG: string = 'LINGYAO';
 
 /** OHOS rejects with a BusinessError carrying code and message; it is not an Error instance. */
 export function describeError(error: unknown): string {

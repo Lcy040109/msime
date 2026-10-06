@@ -2,7 +2,7 @@
 import { settingsFormReady } from "../support/settings-form";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { SettingsPage, type DictionaryEntry, type Snapshot } from "@msime/ui";
+import { SettingsPage, type DictionaryEntry, type Snapshot } from "@lingyao/ui";
 import { answerConfirm } from "../support/confirm";
 // Not re-exported from the package root; take it from the module that owns it.
 import {
@@ -148,7 +148,7 @@ test("Android personal dictionary JSON import previews and queues only after con
   const file = new File(
     [
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [
           { kind: "pinyin", key: "ni hao", value: "你好", weight: 100000 },
@@ -165,7 +165,7 @@ test("Android personal dictionary JSON import previews and queues only after con
   fireEvent.click(screen.getByRole("button", { name: "确认导入" }));
   await waitFor(() =>
     expect(importPersonal).toHaveBeenCalledWith(
-      expect.stringContaining("msime-personal-dictionary"),
+      expect.stringContaining("lingyao-personal-dictionary"),
       expect.stringMatching(/^ui-personal-import-/),
     ),
   );
@@ -191,7 +191,7 @@ test("personal dictionary import ignores a duplicate confirmation while pending"
   const file = new File(
     [
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [{ kind: "pinyin", key: "ni", value: "你", weight: 1 }],
       }),
@@ -230,7 +230,7 @@ test("personal dictionary import ignores a response from a replaced dictionary c
   const file = new File(
     [
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [{ kind: "pinyin", key: "ni", value: "你", weight: 1 }],
       }),
@@ -259,7 +259,7 @@ test("personal dictionary JSON validation normalizes before keeping malformed an
   expect(() =>
     parsePersonalDictionaryImport(
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [
           { kind: "pinyin", key: "ni hao", value: "你好", weight: 1 },
@@ -271,7 +271,7 @@ test("personal dictionary JSON validation normalizes before keeping malformed an
   expect(() =>
     parsePersonalDictionaryImport(
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [{ kind: "quickPhrase", key: "BAD;CODE", value: "坏", weight: 1 }],
       }),
@@ -280,7 +280,7 @@ test("personal dictionary JSON validation normalizes before keeping malformed an
   expect(
     parsePersonalDictionaryImport(
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [{ kind: "pinyin", key: "NI HAO", value: "拟好", weight: 1 }],
       }),

@@ -1,8 +1,8 @@
-//! `msime-zhuyin.db`：注音方案的注音词库，按 `msime_engine::language_dictionary` 定义的结构写出。数据是 libchewing-data（LGPL-2.1-or-later，见 `resources/licenses/libchewing-data-LGPL-2.1.txt`）在 `resources/dictionary-sources.lock.json` 的 `libchewing-data` 引用所记提交的 `dict/chewing/tsi.csv`、`dict/chewing/word.csv`，由 msime-dictionary 原样收在 `sources/zhuyin/` 下；构建从 `--dictionary` checkout 读取，并按它的 `upstream.lock.json` 校验。
+//! `lingyao-zhuyin.db`：注音方案的注音词库，按 `lingyao_engine::language_dictionary` 定义的结构写出。数据是 libchewing-data（LGPL-2.1-or-later，见 `resources/licenses/libchewing-data-LGPL-2.1.txt`）在 `resources/dictionary-sources.lock.json` 的 `libchewing-data` 引用所记提交的 `dict/chewing/tsi.csv`、`dict/chewing/word.csv`，由 lingyao-dictionary 原样收在 `sources/zhuyin/` 下；构建从 `--dictionary` checkout 读取，并按它的 `upstream.lock.json` 校验。
 //!
 //! Three files are read, all `text,frequency,reading` CSV: `tsi.csv` (phrases and characters with their use counts), `word.csv` (every character with each of its readings, all at frequency 0), and the McBopomofo phrase supplement (frequency 0). The scheme types toned syllables, so an entry's key is its syllables joined by one space as the files write them (`ㄋㄧˇ ㄏㄠˇ`): tone 1 is unmarked and ˊ ˇ ˋ ˙ follow the letters. A row appearing more than once keeps its largest frequency, so a `word.csv` character and a supplement phrase weigh 0 unless `tsi.csv` gives the same combination a count.
 //!
-//! About a third of the phrases still weigh 0 that way: the whole supplement and the `tsi.csv` rows chewing never counted. McBopomofo's `phrase.occ` (MIT, its own corpus counts, one `phrase count` per line, msime-dictionary keeps it verbatim in `sources/zhuyin/`) fills them in. A phrase of two or more characters that weighs 0 and that no row counts under any reading takes its `phrase.occ` count times `occurrence_scale`, the median ratio between the chewing count and the `phrase.occ` count of the phrases both count, which puts the counts on chewing's scale. A text some row counts is left alone, since its other readings at 0 are ones chewing chose not to count, and single characters too, since `phrase.occ` counts a character across all its readings. The filled weight never takes a key's first place from an entry chewing counts: on a key that has one, it is capped one below the largest counted weight there, because `phrase.occ` counts substrings of running text, which inflates fragments such as 小的 against the words of the same reading (曉得).
+//! About a third of the phrases still weigh 0 that way: the whole supplement and the `tsi.csv` rows chewing never counted. McBopomofo's `phrase.occ` (MIT, its own corpus counts, one `phrase count` per line, lingyao-dictionary keeps it verbatim in `sources/zhuyin/`) fills them in. A phrase of two or more characters that weighs 0 and that no row counts under any reading takes its `phrase.occ` count times `occurrence_scale`, the median ratio between the chewing count and the `phrase.occ` count of the phrases both count, which puts the counts on chewing's scale. A text some row counts is left alone, since its other readings at 0 are ones chewing chose not to count, and single characters too, since `phrase.occ` counts a character across all its readings. The filled weight never takes a key's first place from an entry chewing counts: on a key that has one, it is capped one below the largest counted weight there, because `phrase.occ` counts substrings of running text, which inflates fragments such as 小的 against the words of the same reading (曉得).
 //!
 //! The syllable inventory is every syllable some key uses. A syllable must be at most one initial, one medial and one rime in that order, then an optional tone mark, because that is all the Dachen editor can compose; anything else fails the build. The only rows left out are the four tone marks listed as their own text and reading, which have no letters to type.
 
@@ -10,8 +10,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::Path;
 
 use anyhow::{bail, Context, Result};
-use msime_engine::language_dictionary;
-use msime_engine::zhuyin::layout::{self, Kind};
+use lingyao_engine::language_dictionary;
+use lingyao_engine::zhuyin::layout::{self, Kind};
 use rusqlite::{Connection, OpenFlags};
 
 use crate::sqlite;
@@ -24,10 +24,10 @@ pub const OCCURRENCES: &str = "sources/zhuyin/phrase.occ";
 pub const REFERENCE: &str = "libchewing-data";
 /// The SPDX identifier recorded as the database's `license`, as the CSV headers declare it.
 pub const LICENSE: &str = "LGPL-2.1-or-later";
-pub const DATABASE: &str = "msime-zhuyin.db";
+pub const DATABASE: &str = "lingyao-zhuyin.db";
 /// The licence text in `resources/licenses/` and the name it ships under beside the database.
 pub const LICENSE_SOURCE: &str = "libchewing-data-LGPL-2.1.txt";
-pub const LICENSE_NAME: &str = "msime-libchewing_data_LICENSE.txt";
+pub const LICENSE_NAME: &str = "lingyao-libchewing_data_LICENSE.txt";
 
 /// The floors `verify` enforces on a release build.
 pub const FLOORS: Floors = Floors {

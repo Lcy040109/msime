@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libmsimeclient.so": "file:./src/main/cpp/types/libmsimeclient",
+    "liblingyaoclient.so": "file:./src/main/cpp/types/liblingyaoclient",
     "sherpa_onnx": "file:./libs/sherpa_onnx.har"
   }
 }

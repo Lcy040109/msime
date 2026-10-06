@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 /** Device-only acceptance for Shift helpcode during a Chinese composition. */
 public final class ChineseHelpcodeDeviceSmoke extends DeviceSmoke {
@@ -13,7 +13,7 @@ public final class ChineseHelpcodeDeviceSmoke extends DeviceSmoke {
             | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivitySync(intent);
         stage = "helpcode composition start";
-        tap(field("msime-test-plain"));
+        tap(field("lingyao-test-plain"));
         tap(key("n"));
         await(imeTextContains("n"));
 
@@ -22,7 +22,7 @@ public final class ChineseHelpcodeDeviceSmoke extends DeviceSmoke {
         await(key("N"));
         stage = "helpcode letter";
         tap(key("N"));
-        await(field("msime-test-plain").and(node -> equalsText("", node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText("", node.getText())));
         await(key("n"));
     }
 }

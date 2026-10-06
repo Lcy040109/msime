@@ -4,20 +4,20 @@ import Darwin
 
 private typealias UsageByte = UInt8
 
-@_silgen_name("msime_client_telemetry_begin")
-private func msimeClientTelemetryBegin(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_telemetry_end")
-private func msimeClientTelemetryEnd(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_telemetry_record_crash")
-private func msimeClientTelemetryRecordCrash(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_telemetry_flush")
-private func msimeClientTelemetryFlush(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_telemetry_clear")
-private func msimeClientTelemetryClear(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientUsageStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_telemetry_begin")
+private func lingyaoClientTelemetryBegin(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_telemetry_end")
+private func lingyaoClientTelemetryEnd(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_telemetry_record_crash")
+private func lingyaoClientTelemetryRecordCrash(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_telemetry_flush")
+private func lingyaoClientTelemetryFlush(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_telemetry_clear")
+private func lingyaoClientTelemetryClear(_ request: UnsafePointer<UsageByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientUsageStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
-/// Anonymous usage reporting through client-core's telemetry queue (msime_client_telemetry_* in msime_client.h), shared by the app and the keyboard through the App Group.
+/// Anonymous usage reporting through client-core's telemetry queue (lingyao_client_telemetry_* in lingyao_client.h), shared by the app and the keyboard through the App Group.
 ///
 /// The keyboard is the input method, so it owns the sessions: one per keyboard presentation that ended normally, and a session_crash only when its crash handler left a record. The app sends what is queued and turns MetricKit crash diagnostics into crash records. Nothing is recorded or sent while the usage_reporting preference (default on) is off.
 enum UsageReporting {
@@ -26,7 +26,7 @@ enum UsageReporting {
   /// The App Group directory with the queue, the random install id, the session marker and crash records.
   static var directory: URL? {
     FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: InputSchemePreference.appGroupIdentifier)?
-      .appendingPathComponent("MSIME/telemetry", isDirectory: true)
+      .appendingPathComponent("LINGYAO/telemetry", isDirectory: true)
   }
 
   static func isEnabled(in preferences: [String: Any]?) -> Bool {
@@ -39,7 +39,7 @@ enum UsageReporting {
   @discardableResult
   static func setEnabled(_ enabled: Bool) -> Bool {
     guard LingyaoInputSessionBridge.updateSharedPreferences({ $0[preferenceKey] = enabled }) else { return false }
-    if !enabled, let directory { call(msimeClientTelemetryClear, ["directory": directory.path]) }
+    if !enabled, let directory { call(lingyaoClientTelemetryClear, ["directory": directory.path]) }
     return true
   }
 
@@ -57,7 +57,7 @@ enum UsageReporting {
   /// Starts a keyboard session: closes the previous one, queues crash records and today's active. Returns the crash record path for the signal handler, or nil when reporting is off. No network I/O.
   static func begin() -> String? {
     guard let directory else { return nil }
-    guard let value = call(msimeClientTelemetryBegin, request(directory)) as? [String: Any],
+    guard let value = call(lingyaoClientTelemetryBegin, request(directory)) as? [String: Any],
           value["enabled"] as? Bool == true else { return nil }
     return value["crash_record_path"] as? String
   }
@@ -65,19 +65,19 @@ enum UsageReporting {
   /// The keyboard was dismissed normally: queues the session event. No network I/O.
   static func end() {
     guard let directory else { return }
-    call(msimeClientTelemetryEnd, ["directory": directory.path])
+    call(lingyaoClientTelemetryEnd, ["directory": directory.path])
   }
 
   /// Queues today's active and sends the queue. Blocks on the network: never on the main thread.
   static func flush() {
     guard let directory else { return }
-    call(msimeClientTelemetryFlush, request(directory))
+    call(lingyaoClientTelemetryFlush, request(directory))
   }
 
   /// From an uncaught-exception handler in the keyboard: writes the running session's crash record, sent on a later start.
   static func recordCrash(message: String, stack: String) {
     guard let directory else { return }
-    call(msimeClientTelemetryRecordCrash, ["directory": directory.path, "message": message, "stack": stack])
+    call(lingyaoClientTelemetryRecordCrash, ["directory": directory.path, "message": message, "stack": stack])
   }
 
   private static func rejectsSymlinkAncestors(_ path: URL) -> Bool {
@@ -130,7 +130,7 @@ enum UsageReporting {
     guard let body = try? JSONSerialization.data(withJSONObject: request) else { return nil }
     let raw = body.withUnsafeBytes { function($0.bindMemory(to: UsageByte.self).baseAddress, UInt(body.count)) }
     guard let raw else { return nil }
-    defer { msimeClientUsageStringFree(raw) }
+    defer { lingyaoClientUsageStringFree(raw) }
     guard let envelope = try? JSONSerialization.jsonObject(with: Data(bytes: raw, count: strlen(raw))) as? [String: Any],
           envelope["ok"] as? Bool == true else { return nil }
     return envelope["value"]

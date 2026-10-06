@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { runAccountOperation } from "@msime/ui";
+import { runAccountOperation } from "@lingyao/ui";
 
 test("runs an account operation with shared busy and status handling", async () => {
   const setBusy = vi.fn();

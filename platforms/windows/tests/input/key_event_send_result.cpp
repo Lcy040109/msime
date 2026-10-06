@@ -2,8 +2,8 @@
 
 #include <cstdlib>
 
-using msime::windows::KeyEventSendResult;
-using msime::windows::definitely_not_sent;
+using lingyao::windows::KeyEventSendResult;
+using lingyao::windows::definitely_not_sent;
 
 int main() {
   if (!definitely_not_sent(KeyEventSendResult::DefinitelyNotSent))

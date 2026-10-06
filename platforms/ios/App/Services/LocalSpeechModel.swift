@@ -1,7 +1,7 @@
 import Foundation
 import Darwin
 
-/// An installed on-device model as its `msime-model.json` describes it: the same manifest and the same rules `shared/voice/LocalAsr.cpp` applies on the desktops, so a model directory means the same thing on every platform.
+/// An installed on-device model as its `lingyao-model.json` describes it: the same manifest and the same rules `shared/voice/LocalAsr.cpp` applies on the desktops, so a model directory means the same thing on every platform.
 struct LocalSpeechModelManifest: Equatable {
   enum Kind: String {
     case onlineTransducer = "online_transducer"
@@ -9,7 +9,7 @@ struct LocalSpeechModelManifest: Equatable {
     case offlineFunAsrNano = "offline_funasr_nano"
   }
 
-  static let fileName = "msime-model.json"
+  static let fileName = "lingyao-model.json"
   /// The manifest is a small catalog entry, not a model payload. Keep a damaged or untrusted file from being read without a bound.
   static let maximumManifestBytes = 256 * 1024
   /// Token vocabularies are model data, but only their first field is needed for native hotwords.
@@ -217,7 +217,7 @@ enum LocalSpeechText {
   }
 }
 
-/// A catalog model with what is installed of it, as `msime_client_voice_local_models` reports it.
+/// A catalog model with what is installed of it, as `lingyao_client_voice_local_models` reports it.
 struct LocalSpeechModelInfo: Decodable, Identifiable, Equatable {
   let id: String
   let title: String

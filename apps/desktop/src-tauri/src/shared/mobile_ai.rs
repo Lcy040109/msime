@@ -5,7 +5,7 @@
 //! boundaries as the Android native implementation without exposing secrets to
 //! JavaScript logs or browser extensions.
 
-use msime_client_core::{
+use lingyao_client_core::{
     is_bounded_chars, is_bounded_chars_with_options, is_bounded_text_with_options,
 };
 use serde::Deserialize;

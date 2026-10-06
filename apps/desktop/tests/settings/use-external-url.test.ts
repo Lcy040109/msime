@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
-import { useExternalUrl } from "@msime/ui";
+import { useExternalUrl } from "@lingyao/ui";
 
 afterEach(() => {
   vi.restoreAllMocks();

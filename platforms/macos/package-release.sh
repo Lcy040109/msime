@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build the installable macOS release: the Tauri settings app with the pinned core dictionaries (EngineResources), the licence files and the InputMethodKit bundle 灵耀输入法.app embedded as resources, packed into a DMG with a SHA256SUMS beside it.
 #
-# 包里只带装好就能打中文的核心词库（msime-pinyin.db、msime-wubi.db、bigram/trigram、msime-english.db、SCOWL 许可声明 msime-scowl_Copyright.txt、msime-others.db、sentence-model、helpcodes/、msime-dictionary-manifest.json）。其余三个资源包由 App 在首次用到时下载到 <state_root>/resource-packs/<id>/（state_root 默认 ~/Library/Application Support/app.msime.macos），查找时下载的优先、包内或旧版本记录的副本次之，两者都没有时对应功能显示为不可用：
-#   japanese              msime-japanese.dat 与两份 Mozc 许可文本（mozc_dictionary_oss_README、mozc_LICENSE），用户选日文方案时下载
+# 包里只带装好就能打中文的核心词库（lingyao-pinyin.db、lingyao-wubi.db、bigram/trigram、lingyao-english.db、SCOWL 许可声明 lingyao-scowl_Copyright.txt、lingyao-others.db、sentence-model、helpcodes/、lingyao-dictionary-manifest.json）。其余三个资源包由 App 在首次用到时下载到 <state_root>/resource-packs/<id>/（state_root 默认 ~/Library/Application Support/app.lingyao.macos），查找时下载的优先、包内或旧版本记录的副本次之，两者都没有时对应功能显示为不可用：
+#   japanese              lingyao-japanese.dat 与两份 Mozc 许可文本（mozc_dictionary_oss_README、mozc_LICENSE），用户选日文方案时下载
 #   language-dictionaries 粤拼、注音与笔画词库及其许可证（resources/language-dictionaries.lock.json），用户选粤拼、注音或笔画时下载
 #   handwriting           手写模型及其许可证（resources/handwriting-model.lock.json），首次打开手写面板时下载
 # 打包时在编译之前先把三个资源包按 App 用的同一套安装器、URL 和哈希装一遍，链接失效或内容漂移的资源包不会随发布包出去。
@@ -10,15 +10,15 @@
 # The same steps run locally and in release-macos.yml, so a package that passes here is the package CI publishes.
 #
 # Usage: platforms/macos/package-release.sh [--editions ID[,ID...]] [VERSION] [OUT_DIR]
-#   --editions 是版本表 shared/contracts/editions.json 里的版本 id，缺省只打 full，产物与引入版本之前相同。几个版本共用一次编译：输入法、msime-mcp 和设置应用的可执行文件都只编一遍，每个版本只重新暂存自己的资源、用 platforms/macos/scripts/edition_bundle.py 把输入法 bundle 改成该版本的身份、按该版本的 identifier 和 productName 打一个设置应用，再各出一个 DMG。多个版本可以同时安装，彼此完全隔离。
+#   --editions 是版本表 shared/contracts/editions.json 里的版本 id，缺省只打 full，产物与引入版本之前相同。几个版本共用一次编译：输入法、lingyao-mcp 和设置应用的可执行文件都只编一遍，每个版本只重新暂存自己的资源、用 platforms/macos/scripts/edition_bundle.py 把输入法 bundle 改成该版本的身份、按该版本的 identifier 和 productName 打一个设置应用，再各出一个 DMG。多个版本可以同时安装，彼此完全隔离。
 #   VERSION defaults to platforms/macos/version.txt, the version release-macos.yml tags as macos-vVERSION. It becomes the version the settings app reports, so the in-app update check compares like with like, and it must equal the input method's CFBundleShortVersionString (platforms/macos/Info.plist.in).
-#   OUT_DIR defaults to target/macos-package/dist and receives one <dmg_prefix>-VERSION-universal.dmg per edition (full: msime-macos-VERSION-universal.dmg) and SHA256SUMS.
-#   发布的可执行文件在剥离符号之前先生成 dSYM，放在 target/macos-package/dsym，每次运行开头清空；全部版本打完后再打成 OUT_DIR 里的 msime-macos-VERSION-dsym.zip，release-macos.yml 把它作为发布资产上传。各版本带的是同样的四个可执行文件，一份覆盖全部版本。
+#   OUT_DIR defaults to target/macos-package/dist and receives one <dmg_prefix>-VERSION-universal.dmg per edition (full: lingyao-macos-VERSION-universal.dmg) and SHA256SUMS.
+#   发布的可执行文件在剥离符号之前先生成 dSYM，放在 target/macos-package/dsym，每次运行开头清空；全部版本打完后再打成 OUT_DIR 里的 lingyao-macos-VERSION-dsym.zip，release-macos.yml 把它作为发布资产上传。各版本带的是同样的四个可执行文件，一份覆盖全部版本。
 #
 # Environment:
-#   MSIME_SPARKLE_ROOT            required; directory containing the pinned Sparkle.framework (see README.md)
+#   LINGYAO_SPARKLE_ROOT            required; directory containing the pinned Sparkle.framework (see README.md)
 #   CARGO_TARGET_DIR              defaults to target/ in the repository
-#   MSIME_MACOS_BUILD_DIR         CMake build tree; defaults to target/macos-release
+#   LINGYAO_MACOS_BUILD_DIR         CMake build tree; defaults to target/macos-release
 #   MACOS_SIGNING_IDENTITY        a "Developer ID Application: ... (TEAMID)" identity in the keychain. Without it everything is signed ad-hoc: the package builds and the settings app runs, but macOS will not register the embedded input method as an input source (see scripts/install.sh)
 #   APPLE_ID, APPLE_TEAM_ID, APPLE_APP_SPECIFIC_PASSWORD
 #                                 when all three are set (and an identity is), the DMG is notarized and stapled
@@ -47,16 +47,16 @@ version="${1:-$(tr -d '[:space:]' < platforms/macos/version.txt)}"
   exit 2
 }
 out_dir="${2:-$repo_root/target/macos-package/dist}"
-: "${MSIME_SPARKLE_ROOT:?set MSIME_SPARKLE_ROOT to the directory containing Sparkle.framework 2.9.6}"
+: "${LINGYAO_SPARKLE_ROOT:?set LINGYAO_SPARKLE_ROOT to the directory containing Sparkle.framework 2.9.6}"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$repo_root/target}"
-build_dir="${MSIME_MACOS_BUILD_DIR:-$repo_root/target/macos-release}"
+build_dir="${LINGYAO_MACOS_BUILD_DIR:-$repo_root/target/macos-release}"
 identity="${MACOS_SIGNING_IDENTITY:-}"
 arch=universal
 architectures=(arm64 x86_64)
 rust_targets=(aarch64-apple-darwin x86_64-apple-darwin)
 entitlements="$repo_root/platforms/macos/resources/VoiceInput.entitlements"
 
-work="$(mktemp -d "${TMPDIR:-/tmp}/msime-macos-package.XXXXXX")"
+work="$(mktemp -d "${TMPDIR:-/tmp}/lingyao-macos-package.XXXXXX")"
 mount_point=""
 cleanup() {
   if [ -n "$mount_point" ]; then hdiutil detach -quiet "$mount_point" || true; fi
@@ -111,7 +111,7 @@ sign() {
   fi
 }
 
-# 发布的 Mach-O 在签名之前剥掉局部符号：几个 universal 可执行文件在磁盘上合计少约 45 MB，每个 DMG 也小几 MB。`strip -x` 保留全局符号，所以 dylib 的导出（MSIMEBackend 的 `_MSIME*` 入口、sherpa-onnx 的 C API）和 dyld 要绑定的导入都还在。可执行文件先写出 dSYM，崩溃报告仍能符号化；dylib 和以前一样不生成 dSYM。
+# 发布的 Mach-O 在签名之前剥掉局部符号：几个 universal 可执行文件在磁盘上合计少约 45 MB，每个 DMG 也小几 MB。`strip -x` 保留全局符号，所以 dylib 的导出（LINGYAOBackend 的 `_LINGYAO*` 入口、sherpa-onnx 的 C API）和 dyld 要绑定的导入都还在。可执行文件先写出 dSYM，崩溃报告仍能符号化；dylib 和以前一样不生成 dSYM。
 dsym_dir="$repo_root/target/macos-package/dsym"
 rm -rf "$dsym_dir"
 mkdir -p "$dsym_dir"
@@ -131,23 +131,23 @@ only() {
 
 # ---- Core dictionaries ----
 # install_resources prints progress on stderr and the verified directory as its last stdout line. Each edition's stage-resources.sh run (below) re-verifies it and stages target/macos/EngineResources, which tauri.macos.conf.json embeds.
-resources="$(cargo run --quiet --locked -p msime-client-core --example install_resources -- "$work/desktop-resources" | tail -n 1)"
+resources="$(cargo run --quiet --locked -p lingyao-client-core --example install_resources -- "$work/desktop-resources" | tail -n 1)"
 
 # ---- On-demand resource packs ----
 # 编译之前先用 App 运行时的同一个安装器、同一组 URL 和 SHA-256 把三个资源包装一遍，失败就在这里停下：资源包不在包里，发布出去的 App 只能靠这些地址补齐，地址失效或内容漂移的发布包不该出去。不接管道，安装器的退出码就是这一步的结果。
-cargo run --quiet --locked -p msime-client-core --example install_resource_pack -- "$work/pack-check" >/dev/null
+cargo run --quiet --locked -p lingyao-client-core --example install_resource_pack -- "$work/pack-check" >/dev/null
 
 # ---- Input method bundle ----
 # The minimum system version goes to the C/C++ compilers and to CMake separately, never as MACOSX_DEPLOYMENT_TARGET: rustc applies that to host proc-macro dylibs too, which then fail to load (README.md, 构建与本地测试).
 CFLAGS="-mmacosx-version-min=13.0" CXXFLAGS="-mmacosx-version-min=13.0" CMAKE_OSX_DEPLOYMENT_TARGET=13.0 CMAKE_PREFIX_PATH="$(brew --prefix)" \
-  cargo_universal "$universal_dir/libmsime_host_api.a" libmsime_host_api.a -p msime-host-api
-# MSIME_HOST_LIBRARY is explicit: the CMake default is target/debug, which would link the debug Rust library into a Release bundle.
+  cargo_universal "$universal_dir/liblingyao_host_api.a" liblingyao_host_api.a -p lingyao-host-api
+# LINGYAO_HOST_LIBRARY is explicit: the CMake default is target/debug, which would link the debug Rust library into a Release bundle.
 cmake -S platforms/macos -B "$build_dir" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
   -DCMAKE_OSX_ARCHITECTURES="$(IFS=';'; echo "${architectures[*]}")" \
-  -DMSIME_SPARKLE_ROOT="$MSIME_SPARKLE_ROOT" -DMSIME_HOST_LIBRARY="$universal_dir/libmsime_host_api.a"
+  -DLINGYAO_SPARKLE_ROOT="$LINGYAO_SPARKLE_ROOT" -DLINGYAO_HOST_LIBRARY="$universal_dir/liblingyao_host_api.a"
 # An explicit job count: a bare --parallel with the Makefile generator starts every compile at once and runs a 7 GB runner out of memory (ci-macos.yml).
 cmake --build "$build_dir" --config Release --parallel "$(sysctl -n hw.logicalcpu)"
-# `backend-library-load` 加载 bundle 里的 MSIMEBackend.dylib（Release 构建会对它做优化、dead strip 和剥离符号，见 scripts/build_backend_swift.sh），确认输入法按名字查找的 Objective-C 类和 selector 都还在。
+# `backend-library-load` 加载 bundle 里的 LINGYAOBackend.dylib（Release 构建会对它做优化、dead strip 和剥离符号，见 scripts/build_backend_swift.sh），确认输入法按名字查找的 Objective-C 类和 selector 都还在。
 ctest --test-dir "$build_dir" --no-tests=error --output-on-failure -R '^(bundle-contents|backend-library-load)$'
 
 built_bundle="$(only "$build_dir"/*.app)"
@@ -161,19 +161,19 @@ mkdir -p "$work/input-method"
 ditto "$built_bundle" "$work/input-method/$(basename "$built_bundle")"
 built_bundle="$(only "$work/input-method"/*.app)"
 strip_executable "$built_bundle/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$built_bundle/Contents/Info.plist")"
-strip_executable "$built_bundle/Contents/MacOS/msime-voice-local"
-# dylib 只用 `-x`：完全剥离会删掉使用方要绑定的导出符号。Release 构建已经剥离过 MSIMEBackend.dylib，除非构建目录配置成了别的配置，这一步对它不起作用。
-strip -x "$built_bundle/Contents/Frameworks/MSIMEBackend.dylib" "$built_bundle/Contents/Frameworks/libsherpa-onnx-c-api.dylib"
+strip_executable "$built_bundle/Contents/MacOS/lingyao-voice-local"
+# dylib 只用 `-x`：完全剥离会删掉使用方要绑定的导出符号。Release 构建已经剥离过 LINGYAOBackend.dylib，除非构建目录配置成了别的配置，这一步对它不起作用。
+strip -x "$built_bundle/Contents/Frameworks/LINGYAOBackend.dylib" "$built_bundle/Contents/Frameworks/libsherpa-onnx-c-api.dylib"
 
 # ---- MCP server ----
-# The same compiler flags as the input method: msime-mcp links the Engine through msime-host-api, and those objects are shared with the build above. Nothing in the app starts it; an agent's MCP configuration runs Contents/MacOS/msime-mcp over stdio.
-# MSIME_VERSION 是 msime-mcp --version 和 MCP 握手报告的版本（crates/mcp-server/build.rs），与这个包的版本相同。
-MSIME_VERSION="$version" CFLAGS="-mmacosx-version-min=13.0" CXXFLAGS="-mmacosx-version-min=13.0" CMAKE_OSX_DEPLOYMENT_TARGET=13.0 CMAKE_PREFIX_PATH="$(brew --prefix)" \
-  cargo_universal "$universal_dir/msime-mcp" msime-mcp -p msime-mcp-server --bin msime-mcp
-strip_executable "$universal_dir/msime-mcp"
+# The same compiler flags as the input method: lingyao-mcp links the Engine through lingyao-host-api, and those objects are shared with the build above. Nothing in the app starts it; an agent's MCP configuration runs Contents/MacOS/lingyao-mcp over stdio.
+# LINGYAO_VERSION 是 lingyao-mcp --version 和 MCP 握手报告的版本（crates/mcp-server/build.rs），与这个包的版本相同。
+LINGYAO_VERSION="$version" CFLAGS="-mmacosx-version-min=13.0" CXXFLAGS="-mmacosx-version-min=13.0" CMAKE_OSX_DEPLOYMENT_TARGET=13.0 CMAKE_PREFIX_PATH="$(brew --prefix)" \
+  cargo_universal "$universal_dir/lingyao-mcp" lingyao-mcp -p lingyao-mcp-server --bin lingyao-mcp
+strip_executable "$universal_dir/lingyao-mcp"
 
 # tauri-build checks every resource path in tauri.macos.conf.json while it compiles the settings app, so full's input method bundle and EngineResources are staged once before the compile below; package_edition stages each edition's own again before bundling.
-MSIME_EDITION=full MSIME_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$resources"
+LINGYAO_EDITION=full LINGYAO_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$resources"
 mkdir -p target/macos
 find target/macos -maxdepth 1 -name '*.app' -exec rm -rf {} +
 ditto "$built_bundle" "target/macos/$(python3 "$edition_tool" field --edition full bundle_name)"
@@ -181,16 +181,16 @@ ditto "$built_bundle" "target/macos/$(python3 "$edition_tool" field --edition fu
 # ---- Settings app executable ----
 # 所有版本共用这一个可执行文件，编进去的是 full 的 Tauri 配置；不是 full 的版本在运行时按 Contents/Resources/edition.json 换上自己的 identifier 和 productName（apply_edition_to_config），打包时 tauri bundle --config 写进包里的是同样的值。
 pnpm install --frozen-lockfile
-pnpm --filter @msime/desktop build
+pnpm --filter @lingyao/desktop build
 # Compiled with cargo and only then bundled by `tauri bundle`, not with `tauri build`: tauri build exports MACOSX_DEPLOYMENT_TARGET from bundle.macOS.minimumSystemVersion, rustc applies it to the host proc-macro dylibs as well, and on current macOS those come out with a mis-aligned LINKEDIT string pool that dlopen rejects, so the build fails with "can't find crate". cargo leaves the variable out of its fingerprint, so a broken proc-macro would also be reused by later builds. tauri/custom-protocol is what tauri build would enable (the binary serves the embedded frontend instead of devUrl), and TAURI_CONFIG sets the version the app reports, as package-container.sh does for Linux.
-# cargo_universal 是 shell 函数，env 只能执行外部程序，所以在子 shell 里 unset 再调用。合并后的 universal 可执行文件放在 target/release/msime-desktop，tauri bundle 从那里取。
+# cargo_universal 是 shell 函数，env 只能执行外部程序，所以在子 shell 里 unset 再调用。合并后的 universal 可执行文件放在 target/release/lingyao-desktop，tauri bundle 从那里取。
 (
   unset MACOSX_DEPLOYMENT_TARGET
   TAURI_CONFIG="{\"version\":\"$version\"}" \
     CFLAGS="-mmacosx-version-min=13.0" CXXFLAGS="-mmacosx-version-min=13.0" CMAKE_OSX_DEPLOYMENT_TARGET=13.0 CMAKE_PREFIX_PATH="$(brew --prefix)" \
-    cargo_universal "$CARGO_TARGET_DIR/release/msime-desktop" msime-desktop -p msime-desktop --bin msime-desktop --features tauri/custom-protocol
+    cargo_universal "$CARGO_TARGET_DIR/release/lingyao-desktop" lingyao-desktop -p lingyao-desktop --bin lingyao-desktop --features tauri/custom-protocol
 )
-strip_executable "$CARGO_TARGET_DIR/release/msime-desktop"
+strip_executable "$CARGO_TARGET_DIR/release/lingyao-desktop"
 tauri_bundle_dir="$CARGO_TARGET_DIR/release/bundle/macos"
 # Non-English candidate glosses (scripts/fetch_offline_glosses.py), copied here rather than listed in tauri.macos.conf.json because Tauri fails on a resource path that does not exist and the package must still build without them. The input method reads them beside EngineResources.
 glosses="$repo_root/target/macos/offline-glosses"
@@ -211,8 +211,8 @@ offline_glosses="$(python3 "$edition_tool" field --edition "$edition" features.o
 echo "packaging edition $edition: $bundle_name ($bundle_id)"
 
 # ---- Core dictionaries for this edition ----
-# 只暂存核心词库：日文词典那一组文件（词典与两份 Mozc 许可文本）不进 EngineResources，粤拼、注音、笔画词库和手写模型也不再取回，三者都由 App 按需下载。MSIME_EDITION 让不是 full 的版本只带自己资源锁里的文件。
-MSIME_EDITION="$edition" MSIME_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$resources"
+# 只暂存核心词库：日文词典那一组文件（词典与两份 Mozc 许可文本）不进 EngineResources，粤拼、注音、笔画词库和手写模型也不再取回，三者都由 App 按需下载。LINGYAO_EDITION 让不是 full 的版本只带自己资源锁里的文件。
+LINGYAO_EDITION="$edition" LINGYAO_MACOS_OMIT_ON_DEMAND=1 bash platforms/macos/stage-resources.sh "$resources"
 
 # ---- Input method bundle for this edition ----
 mkdir -p target/macos
@@ -263,15 +263,15 @@ fi
 rm -rf "$tauri_bundle_dir"
 # No APPLE_SIGNING_IDENTITY: Tauri would sign the nested input method again without its entitlements. The outer app is signed below instead. tauri.macos.conf.json is merged automatically on macOS and is what embeds EngineResources and the input method.
 env -u APPLE_SIGNING_IDENTITY -u APPLE_CERTIFICATE \
-  pnpm --filter @msime/desktop exec tauri bundle --bundles app --config "$bundle_config"
+  pnpm --filter @lingyao/desktop exec tauri bundle --bundles app --config "$bundle_config"
 app="$(only "$tauri_bundle_dir"/*.app)"
 app_name="$(basename "$app")"
 # Tauri copies resources by following symlinks, which turns Sparkle.framework's links into duplicate files and drops the directory links, and codesign then rejects the nested bundle ("invalid Info.plist (plist or signature have been modified)"). The signed bundle staged above is copied back over it with ditto, which keeps the links; the settings app's installer recreates them in ~/Library/Input Methods the same way.
 find "$app/Contents/Resources" -maxdepth 1 -name '*.app' -exec rm -rf {} +
 ditto "$staged_bundle" "$app/Contents/Resources/$bundle_name"
 # A helper executable beside the app's own is signed on its own first, and the outer signature below seals it.
-ditto "$universal_dir/msime-mcp" "$app/Contents/MacOS/msime-mcp"
-sign "$app/Contents/MacOS/msime-mcp"
+ditto "$universal_dir/lingyao-mcp" "$app/Contents/MacOS/lingyao-mcp"
+sign "$app/Contents/MacOS/lingyao-mcp"
 if [ -d "$glosses" ]; then
   ditto "$glosses" "$app/Contents/Resources/offline-glosses"
 fi
@@ -284,20 +284,20 @@ check_app() {
   local root="$1"
   local resources_dir="$root/Contents/Resources"
   test -d "$resources_dir/EngineResources"
-  cargo run --quiet --locked -p msime-client-core --example verify_resources -- --omit-on-demand --edition "$edition" "$resources_dir/EngineResources" >/dev/null
+  cargo run --quiet --locked -p lingyao-client-core --example verify_resources -- --omit-on-demand --edition "$edition" "$resources_dir/EngineResources" >/dev/null
   for table in helpcode.txt zrm_helpcode_big_unique.txt shouyou2_0_helpcode.txt shouyouplus_helpcode.txt xiaohe_helpcode.txt jiajia_helpcode.txt NOTICE.md NOTICE-jiajia.md; do
     test -f "$resources_dir/EngineResources/helpcodes/$table"
   done
   # 按需下载的资源包不该出现在包里：日文词典、粤拼、注音与笔画词库、手写模型都由 App 下载到 resource-packs/<id>/，不提供手写的版本（日文、越南文和藏文版）连手写模型也不下载（desktop_resource_packs.rs）。识别器代码的 Zinnia 许可证仍由 tauri.macos.conf.json 放进包里：Zinnia 的移植编在共用的 host 库里，每个版本都带着这份代码。
-  test ! -e "$resources_dir/EngineResources/msime-japanese.dat"
-  test ! -e "$resources_dir/EngineResources/msime-mozc_dictionary_oss_README.txt"
-  test ! -e "$resources_dir/EngineResources/msime-mozc_LICENSE.txt"
-  # SCOWL 的条款要求它的版权与许可声明随 msime-english.db 一起分发；verify_resources 已按锁文件要求它在场，这里再明确查一次，免得有人把它当成可有可无的文本挪走。
-  test -f "$resources_dir/EngineResources/msime-scowl_Copyright.txt"
+  test ! -e "$resources_dir/EngineResources/lingyao-japanese.dat"
+  test ! -e "$resources_dir/EngineResources/lingyao-mozc_dictionary_oss_README.txt"
+  test ! -e "$resources_dir/EngineResources/lingyao-mozc_LICENSE.txt"
+  # SCOWL 的条款要求它的版权与许可声明随 lingyao-english.db 一起分发；verify_resources 已按锁文件要求它在场，这里再明确查一次，免得有人把它当成可有可无的文本挪走。
+  test -f "$resources_dir/EngineResources/lingyao-scowl_Copyright.txt"
   test ! -e "$resources_dir/language-dictionaries"
   test ! -e "$resources_dir/handwriting/handwriting-zh_CN.model"
   test -f "$resources_dir/handwriting/Zinnia-LICENSE.txt"
-  # 核心词库的体积预算（KiB）。按需资源包被误放回 EngineResources，或者核心词库意外变大，都会在这里报出来。dict-v2.0.5 把五笔码表拆进单独的 msime-wubi.db，它与 msime-pinyin.db 合计比 dict-v2.0.2 的 msime.db 大约 5.7 MB，当时核心文件加 helpcodes/ 约 116900 KiB，预算 121000 KiB。dict-v2.0.7 的 msime-english.db 并入 SCOWL 英文词表，从 1626112 字节涨到 4521984 字节（约 +2.8 MB），另加 4 KiB 的 msime-scowl_Copyright.txt；核心文件按锁文件大小逐个向上取整到 4 KiB 合计 119224 KiB，加上 helpcodes/ 的 528 KiB 约 119752 KiB，原预算只剩约 1.2 MB 余量，所以抬到 124000 KiB，保持与此前相同的约 4 MB 余量。dict-v2.0.10 的 msime-wubi.db 并入 86 五笔词组补充表，从 13688832 字节涨到 15720448 字节（约 +2.0 MB），拼音库与二元、三元模型也略有变化，核心文件合计 121208 KiB，加上 helpcodes/ 约 121736 KiB，余量只剩约 2.2 MB，所以再抬到 126000 KiB，仍保持约 4 MB 余量。
+  # 核心词库的体积预算（KiB）。按需资源包被误放回 EngineResources，或者核心词库意外变大，都会在这里报出来。dict-v2.0.5 把五笔码表拆进单独的 lingyao-wubi.db，它与 lingyao-pinyin.db 合计比 dict-v2.0.2 的 lingyao.db 大约 5.7 MB，当时核心文件加 helpcodes/ 约 116900 KiB，预算 121000 KiB。dict-v2.0.7 的 lingyao-english.db 并入 SCOWL 英文词表，从 1626112 字节涨到 4521984 字节（约 +2.8 MB），另加 4 KiB 的 lingyao-scowl_Copyright.txt；核心文件按锁文件大小逐个向上取整到 4 KiB 合计 119224 KiB，加上 helpcodes/ 的 528 KiB 约 119752 KiB，原预算只剩约 1.2 MB 余量，所以抬到 124000 KiB，保持与此前相同的约 4 MB 余量。dict-v2.0.10 的 lingyao-wubi.db 并入 86 五笔词组补充表，从 13688832 字节涨到 15720448 字节（约 +2.0 MB），拼音库与二元、三元模型也略有变化，核心文件合计 121208 KiB，加上 helpcodes/ 约 121736 KiB，余量只剩约 2.2 MB，所以再抬到 126000 KiB，仍保持约 4 MB 余量。
   local engine_kib
   engine_kib="$(du -sk "$resources_dir/EngineResources" | cut -f1)"
   test "$engine_kib" -le 126000 || {
@@ -305,8 +305,8 @@ check_app() {
     exit 1
   }
   test -f "$resources_dir/Licenses/THIRD_PARTY_NOTICES.txt"
-  test -x "$root/Contents/MacOS/msime-mcp"
-  codesign --verify --strict "$root/Contents/MacOS/msime-mcp"
+  test -x "$root/Contents/MacOS/lingyao-mcp"
+  codesign --verify --strict "$root/Contents/MacOS/lingyao-mcp"
   if [ "$offline_glosses" != true ]; then
     test ! -e "$resources_dir/offline-glosses"
   elif [ -d "$glosses" ]; then
@@ -323,7 +323,7 @@ check_app() {
   fi
   test -L "$nested/Contents/Frameworks/Sparkle.framework/Versions/Current"
   # On-device voice models run in this helper, which loads the sherpa-onnx runtime beside it; the CMake build fetches the runtime from resources/voice-runtime.lock.json and stages both.
-  test -x "$nested/Contents/MacOS/msime-voice-local"
+  test -x "$nested/Contents/MacOS/lingyao-voice-local"
   test -s "$nested/Contents/Frameworks/libsherpa-onnx-c-api.dylib"
   codesign -d --entitlements - --xml "$nested" 2>/dev/null | grep -q 'com.apple.security.device.audio-input' || {
     echo "the embedded input method lost its entitlements: $nested" >&2
@@ -331,10 +331,10 @@ check_app() {
   }
   codesign --verify --deep --strict "$nested"
   codesign --verify --deep --strict "$root"
-  # 每个发布的可执行文件都在签名之前剥离（`strip_executable`），`strip -x` 之后任何架构里都不应再有局部符号（nm 类型 t、d、b、s）。不能拿调试映射（OSO stabs）来判断：Cargo 的 release profile 本来就去掉了 msime-mcp 和设置应用的调试信息，但没人剥离时它们仍带着几万个局部符号。
+  # 每个发布的可执行文件都在签名之前剥离（`strip_executable`），`strip -x` 之后任何架构里都不应再有局部符号（nm 类型 t、d、b、s）。不能拿调试映射（OSO stabs）来判断：Cargo 的 release profile 本来就去掉了 lingyao-mcp 和设置应用的调试信息，但没人剥离时它们仍带着几万个局部符号。
   local executable input_method_executable architecture local_symbols
   input_method_executable="$nested/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$nested/Contents/Info.plist")"
-  for executable in "$root/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$root/Contents/Info.plist")" "$root/Contents/MacOS/msime-mcp" "$input_method_executable" "$nested/Contents/MacOS/msime-voice-local"; do
+  for executable in "$root/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$root/Contents/Info.plist")" "$root/Contents/MacOS/lingyao-mcp" "$input_method_executable" "$nested/Contents/MacOS/lingyao-voice-local"; do
     for architecture in "${architectures[@]}"; do
       local_symbols="$(nm -a -arch "$architecture" "$executable" | awk '$2 ~ /^[tdbs]$/' | wc -l | tr -d ' ')"
       test "$local_symbols" -eq 0 || {
@@ -343,18 +343,18 @@ check_app() {
       }
     done
   done
-  # 输入法从 MSIMEBackend.dylib 绑定的 `_MSIME*` 入口，在每种架构里都必须经过 `-Osize`、dead strip 和 `strip -x` 后依然存在。只有 `_MSIMEFetchOnDeviceCandidateGlosses` 允许缺失：Swift 6.2 之前的工具链不编它，CMakeLists.txt 也允许输入法在没有它时链接。
+  # 输入法从 LINGYAOBackend.dylib 绑定的 `_LINGYAO*` 入口，在每种架构里都必须经过 `-Osize`、dead strip 和 `strip -x` 后依然存在。只有 `_LINGYAOFetchOnDeviceCandidateGlosses` 允许缺失：Swift 6.2 之前的工具链不编它，CMakeLists.txt 也允许输入法在没有它时链接。
   local backend_architecture backend_exports backend_import backend_imports
   for backend_architecture in "${architectures[@]}"; do
-    backend_exports="$(nm -gU -arch "$backend_architecture" "$nested/Contents/Frameworks/MSIMEBackend.dylib" | awk '{print $NF}')"
-    backend_imports="$(nm -u -arch "$backend_architecture" "$input_method_executable" | grep '^_MSIME' | grep -vx '_MSIMEFetchOnDeviceCandidateGlosses' || true)"
+    backend_exports="$(nm -gU -arch "$backend_architecture" "$nested/Contents/Frameworks/LINGYAOBackend.dylib" | awk '{print $NF}')"
+    backend_imports="$(nm -u -arch "$backend_architecture" "$input_method_executable" | grep '^_LINGYAO' | grep -vx '_LINGYAOFetchOnDeviceCandidateGlosses' || true)"
     test -n "$backend_imports" || {
-      echo "the input method imports no _MSIME* symbols from MSIMEBackend.dylib ($backend_architecture): $input_method_executable" >&2
+      echo "the input method imports no _LINGYAO* symbols from LINGYAOBackend.dylib ($backend_architecture): $input_method_executable" >&2
       exit 1
     }
     while IFS= read -r backend_import; do
       grep -qx -- "$backend_import" <<< "$backend_exports" || {
-        echo "MSIMEBackend.dylib ($backend_architecture) does not export $backend_import, which the input method binds" >&2
+        echo "LINGYAOBackend.dylib ($backend_architecture) does not export $backend_import, which the input method binds" >&2
         exit 1
       }
     done <<< "$backend_imports"
@@ -434,7 +434,7 @@ for edition in "${editions[@]}"; do
 done
 
 # 所有版本的 DMG 都打完之后才把 dSYM 打成一个 zip：各版本带的是同一组可执行文件，只编一次、只剥离一次，所以一份 dSYM 覆盖全部版本。zip 随 DMG 一起作为发布资产上传并写进 SHA256SUMS，用来符号化这个版本的崩溃报告。
-dsym_zip="$out_dir/msime-macos-$version-dsym.zip"
+dsym_zip="$out_dir/lingyao-macos-$version-dsym.zip"
 rm -f "$dsym_zip"
 ditto -c -k --keepParent "$dsym_dir" "$dsym_zip"
 

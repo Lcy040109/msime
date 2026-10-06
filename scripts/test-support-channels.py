@@ -20,14 +20,14 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 QQ_GROUP = "829919142"
-TELEGRAM = "t.me/msimegroup"
+TELEGRAM = "t.me/lingyaogroup"
 
 SURFACES = {
     "shared feedback channel component": "packages/ui/src/settings/feedback-channels.tsx",
     "macOS": "platforms/macos/src/core/SupportWindowController.mm",
     "iOS": "platforms/ios/App/Sources/settings/HelpAndFeedbackViews.swift",
     "Android strings": "platforms/android/res/values/strings.xml",
-    "Android feedback page": "platforms/android/java/app/msime/android/home/FeedbackPage.java",
+    "Android feedback page": "platforms/android/java/app/lingyao/android/home/FeedbackPage.java",
 }
 
 shared_page = ROOT / "packages/ui/src/settings/pages/feedback-page.tsx"

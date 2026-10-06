@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   using namespace FanyImeVoiceController;
   VoiceControllerMailbox mailbox;
   std::shared_ptr<VoiceReviewResult> result;
@@ -27,7 +27,7 @@ int main() {
          return true;
        }});
   const auto name =
-      std::wstring(L"\\\\.\\pipe\\MSIMEControllerListenerFixture-") +
+      std::wstring(L"\\\\.\\pipe\\LINGYAOControllerListenerFixture-") +
       std::to_wstring(GetCurrentProcessId());
   DWORD error = ERROR_SUCCESS;
   auto listener = VoiceControllerListener::create(mailbox, error, name);

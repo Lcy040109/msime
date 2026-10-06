@@ -34,16 +34,16 @@ final class KeyboardAppLauncherTests: XCTestCase {
   /// scheme 在 project.yml 的 CFBundleURLTypes 里注册。两边对不上时应用不会被拉起,而键盘这边看不出区别,
   /// 所以把这个字面值钉在测试里。
   func testTargetsTheRegisteredScheme() {
-    XCTAssertEqual(KeyboardAppLauncher.settingsURL.scheme, "msime")
-    XCTAssertEqual(KeyboardAppLauncher.settingsURL.absoluteString, "msime://settings")
-    XCTAssertEqual(KeyboardAppLauncher.voiceURL.absoluteString, "msime://voice")
+    XCTAssertEqual(KeyboardAppLauncher.settingsURL.scheme, "lingyao")
+    XCTAssertEqual(KeyboardAppLauncher.settingsURL.absoluteString, "lingyao://settings")
+    XCTAssertEqual(KeyboardAppLauncher.voiceURL.absoluteString, "lingyao://voice")
   }
 
-  /// 每个版本各用一个 scheme，装了多个版本时键盘才不会拉起另一个版本的 App；full 仍是 msime。
+  /// 每个版本各用一个 scheme，装了多个版本时键盘才不会拉起另一个版本的 App；full 仍是 lingyao。
   func testURLSchemeIsPerEdition() {
-    XCTAssertEqual(MSIMEAppEdition.urlScheme(in: [:]), "msime")
-    XCTAssertEqual(MSIMEAppEdition.urlScheme(in: ["MSIMEEdition": "full"]), "msime")
-    XCTAssertEqual(MSIMEAppEdition.urlScheme(in: ["MSIMEEdition": "wubi"]), "msime-wubi")
-    XCTAssertEqual(MSIMEAppEdition.urlScheme(in: ["MSIMEEdition": "pinyin"]), "msime-pinyin")
+    XCTAssertEqual(LINGYAOAppEdition.urlScheme(in: [:]), "lingyao")
+    XCTAssertEqual(LINGYAOAppEdition.urlScheme(in: ["LINGYAOEdition": "full"]), "lingyao")
+    XCTAssertEqual(LINGYAOAppEdition.urlScheme(in: ["LINGYAOEdition": "wubi"]), "lingyao-wubi")
+    XCTAssertEqual(LINGYAOAppEdition.urlScheme(in: ["LINGYAOEdition": "pinyin"]), "lingyao-pinyin")
   }
 }

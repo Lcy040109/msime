@@ -8,7 +8,7 @@ struct MacSettingsAccess {
   var validate: (Values) throws -> Void
   var apply: (Values) throws -> Void
   private static func bridge() throws -> NSObject.Type {
-    guard let type = NSClassFromString("MSIMEPreferencesWindowController") as? NSObject.Type,
+    guard let type = NSClassFromString("LINGYAOPreferencesWindowController") as? NSObject.Type,
           type.responds(to: NSSelectorFromString("cloudSettingsSnapshot")),
           type.responds(to: NSSelectorFromString("validateCloudSettingsSnapshot:")),
           type.responds(to: NSSelectorFromString("applyCloudSettingsSnapshot:")) else { throw BackendAccountClient.Failure(status: 503) }
@@ -163,7 +163,7 @@ struct MacCloudSettingsView: View {
     }
     if key == "platform.macos.global_theme" || key == "platform.macos.custom_theme_base", case .string(let id) = value {
       // The titles live in the host catalog; the settings window answers with the id itself when it cannot be asked.
-      guard let type = NSClassFromString("MSIMEPreferencesWindowController") as? NSObject.Type,
+      guard let type = NSClassFromString("LINGYAOPreferencesWindowController") as? NSObject.Type,
             type.responds(to: NSSelectorFromString("themeTitleForIdentifier:")),
             let title = type.perform(NSSelectorFromString("themeTitleForIdentifier:"), with: id)?.takeUnretainedValue() as? String else { return id }
       return title

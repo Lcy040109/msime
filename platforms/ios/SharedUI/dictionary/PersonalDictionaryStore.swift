@@ -201,7 +201,7 @@ final class PersonalDictionaryStore: @unchecked Sendable {
     guard !SafePath.hasRefusedSymbolicLink(path) else { throw StoreError.unavailable }
   }
 
-  init(directory: URL? = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: MSIMEAppEdition.appGroupIdentifier)) {
+  init(directory: URL? = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: LINGYAOAppEdition.appGroupIdentifier)) {
     self.directory = directory?.appendingPathComponent("PersonalDictionary", isDirectory: true)
   }
 

@@ -15,7 +15,7 @@
 
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 namespace {
 
@@ -23,11 +23,11 @@ constexpr int kEdgeMargin = 24;
 
 int shared_fd() {
 #ifdef SYS_memfd_create
-  const auto memfd = static_cast<int>(syscall(SYS_memfd_create, "msime-mode-badge", MFD_CLOEXEC));
+  const auto memfd = static_cast<int>(syscall(SYS_memfd_create, "lingyao-mode-badge", MFD_CLOEXEC));
   if (memfd >= 0) return memfd;
 #endif
   char name[64];
-  std::snprintf(name, sizeof(name), "/msime-badge-%ld", static_cast<long>(getpid()));
+  std::snprintf(name, sizeof(name), "/lingyao-badge-%ld", static_cast<long>(getpid()));
   const auto fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
   if (fd >= 0) shm_unlink(name);
   return fd;
@@ -90,7 +90,7 @@ bool ModeBadgeWaylandSurface::ensure_surface() {
     surface_ = wl_compositor_create_surface(compositor_);
     layer_surface_ = zwlr_layer_shell_v1_get_layer_surface(
         layer_shell_, surface_, nullptr, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
-        "msime-linux-mode-badge");
+        "lingyao-linux-mode-badge");
     static const zwlr_layer_surface_v1_listener layer_listener = {layer_configure, layer_closed};
     zwlr_layer_surface_v1_add_listener(layer_surface_, &layer_listener, this);
     zwlr_layer_surface_v1_set_size(layer_surface_, static_cast<uint32_t>(width_), static_cast<uint32_t>(height_));
@@ -229,4 +229,4 @@ void ModeBadgeWaylandSurface::destroy_surface() {
   visible_ = false;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

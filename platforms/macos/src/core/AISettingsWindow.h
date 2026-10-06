@@ -1,4 +1,4 @@
 #import <AppKit/AppKit.h>
-@interface MSIMEAISettingsWindow : NSWindowController
+@interface LINGYAOAISettingsWindow : NSWindowController
 - (instancetype)initWithDirectory:(NSString *)directory saved:(void (^)(NSDictionary *))saved;
 @end

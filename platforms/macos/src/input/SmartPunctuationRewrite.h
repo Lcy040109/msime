@@ -11,10 +11,10 @@
 // Posting needs the Accessibility permission. It is only ever checked here, never requested: a prompt raised from a keystroke would steal focus from the editor being typed into, which is the same rule the screen keyboard follows.
 
 // The reference gives its queued rewrite 500 ms (SMART_PUNCTUATION_SENDINPUT_TIMEOUT_MS) before the spot it was computed against no longer counts as the one under the caret.
-static constexpr NSTimeInterval MSIMESmartPunctuationRewriteTimeout = 0.5;
-static constexpr CGKeyCode MSIMESmartPunctuationRewriteDeleteKey = 51; // kVK_Delete
+static constexpr NSTimeInterval LINGYAOSmartPunctuationRewriteTimeout = 0.5;
+static constexpr CGKeyCode LINGYAOSmartPunctuationRewriteDeleteKey = 51; // kVK_Delete
 
-struct MSIMESmartPunctuationRewriteIO {
+struct LINGYAOSmartPunctuationRewriteIO {
     std::function<bool()> permitted = [] { return CGPreflightPostEventAccess(); };
     std::function<CGEventRef(CGKeyCode, bool)> create = [](CGKeyCode key, bool down) {
         return CGEventCreateKeyboardEvent(nullptr, key, down);
@@ -23,7 +23,7 @@ struct MSIMESmartPunctuationRewriteIO {
     std::function<NSTimeInterval()> now = [] { return NSProcessInfo.processInfo.systemUptime; };
 };
 
-struct MSIMESmartPunctuationRewrite {
+struct LINGYAOSmartPunctuationRewrite {
     static constexpr std::size_t kEventCount = 4;
     pid_t pid = 0;
     NSTimeInterval deadline = 0;
@@ -31,7 +31,7 @@ struct MSIMESmartPunctuationRewrite {
     std::function<bool()> current;
 
     // Returns true only when the whole burst was posted; nothing is posted otherwise.
-    bool deliver(unichar replacement, const MSIMESmartPunctuationRewriteIO &io = {}) const {
+    bool deliver(unichar replacement, const LINGYAOSmartPunctuationRewriteIO &io = {}) const {
         if (!replacement || pid <= 0 || !current) return false;
         if (!io.permitted() || !current() || io.now() > deadline) return false;
         using Event = std::unique_ptr<__CGEvent, decltype(&CFRelease)>;
@@ -39,10 +39,10 @@ struct MSIMESmartPunctuationRewrite {
         events.reserve(kEventCount);
         for (const bool unicode : {false, true}) {
             for (const bool down : {true, false}) {
-                Event event(io.create(unicode ? 0 : MSIMESmartPunctuationRewriteDeleteKey, down), CFRelease);
+                Event event(io.create(unicode ? 0 : LINGYAOSmartPunctuationRewriteDeleteKey, down), CFRelease);
                 if (!event) return false;
                 CGEventSetFlags(event.get(), 0);
-                CGEventSetIntegerValueField(event.get(), kCGEventSourceUserData, MSIMEVoiceCommitEventTag);
+                CGEventSetIntegerValueField(event.get(), kCGEventSourceUserData, LINGYAOVoiceCommitEventTag);
                 if (unicode) CGEventKeyboardSetUnicodeString(event.get(), 1, &replacement);
                 events.push_back(std::move(event));
             }
@@ -55,15 +55,15 @@ struct MSIMESmartPunctuationRewrite {
 };
 
 // Captures the frontmost application when it is the one the client belongs to. Any other frontmost application, or this process itself, gives a route that delivers nothing.
-static inline MSIMESmartPunctuationRewrite MSIMECaptureSmartPunctuationRewrite(id client, NSTimeInterval now) {
-    MSIMESmartPunctuationRewrite route;
+static inline LINGYAOSmartPunctuationRewrite LINGYAOCaptureSmartPunctuationRewrite(id client, NSTimeInterval now) {
+    LINGYAOSmartPunctuationRewrite route;
     if (![client respondsToSelector:@selector(bundleIdentifier)]) return route;
     NSString *bundle = [[client bundleIdentifier] copy];
     NSRunningApplication *application = NSWorkspace.sharedWorkspace.frontmostApplication;
     if (!bundle.length || ![application.bundleIdentifier isEqual:bundle] ||
         application.processIdentifier == NSProcessInfo.processInfo.processIdentifier) return route;
     route.pid = application.processIdentifier;
-    route.deadline = now + MSIMESmartPunctuationRewriteTimeout;
+    route.deadline = now + LINGYAOSmartPunctuationRewriteTimeout;
     route.current = [application, bundle] {
         NSRunningApplication *front = NSWorkspace.sharedWorkspace.frontmostApplication;
         return !application.terminated && front.processIdentifier == application.processIdentifier &&

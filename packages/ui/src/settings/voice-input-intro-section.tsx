@@ -38,7 +38,7 @@ export function VoiceInputIntroSection({
         <SettingsGroupNote>
           {localVoiceModelsAvailable
             ? "录音和识别都在这台设备上完成，音频不会离开本机，也不需要任何 API Key。在下方下载一个模型并点击“使用”即可生效；下载只会连接 GitHub 或你配置的镜像。你的用户词库会作为热词提高专有名词的识别率。可选的文本润色仍会调用你配置的云服务。"
-            : "录音和识别都在这台机器上完成，音频不会离开本机，也不需要任何 API Key。需要一个已安装模型目录（包含 msime-model.json）的绝对路径，在下方填写；模型越大越准也越慢，首次识别要等模型载入。可选的文本润色仍会调用你配置的云服务。"}
+            : "录音和识别都在这台机器上完成，音频不会离开本机，也不需要任何 API Key。需要一个已安装模型目录（包含 lingyao-model.json）的绝对路径，在下方填写；模型越大越准也越慢，首次识别要等模型载入。可选的文本润色仍会调用你配置的云服务。"}
         </SettingsGroupNote>
       </GroupList>
     );

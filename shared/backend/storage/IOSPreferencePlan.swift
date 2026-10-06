@@ -17,7 +17,7 @@ struct IOSPreferencePlan {
   /// `custom_theme.keyboard`, the keyboard design as JSON; absent when the uploading device had none, which leaves the local design alone.
   let customSkinJSON: String?
 
-  /// `themes` is the global theme catalog of the client-core the app links (`msime_client_theme_catalog`); the plan does not keep its own copy of the ids.
+  /// `themes` is the global theme catalog of the client-core the app links (`lingyao_client_theme_catalog`); the plan does not keep its own copy of the ids.
   init(_ values: [String: BackendPreferenceValue], themes: Set<String>) throws {
     func string(_ key: String) throws -> String? {
       guard let value = values[key] else { return nil }
@@ -67,7 +67,7 @@ struct IOSPreferencePlan {
   }
 }
 
-/// 按产品版本过滤账号设置，规则与 client-core 的 `filter_uploaded_account_settings` 和 `filter_downloaded_account_settings`（crates/client-core/src/edition.rs）相同，Tauri 公共组件的 iOS 工程走的就是那两个函数。`offered` 是本版本提供的方案（版本表里的方案名，见 `MSIMEAppEdition.inputSchemes`），nil 表示 full：提供全部方案，什么也不去掉。
+/// 按产品版本过滤账号设置，规则与 client-core 的 `filter_uploaded_account_settings` 和 `filter_downloaded_account_settings`（crates/client-core/src/edition.rs）相同，Tauri 公共组件的 iOS 工程走的就是那两个函数。`offered` 是本版本提供的方案（版本表里的方案名，见 `LINGYAOAppEdition.inputSchemes`），nil 表示 full：提供全部方案，什么也不去掉。
 extension IOSPreferencePlan {
   /// 账号设置里 `input.schema` 认得的取值，即 client-core `InputScheme` 的全部方案。不在这里的取值留给 `init` 按原来的规则处理。
   static let accountSchemes: Set<String> = ["quanpin", "shuangpin", "wubi", "japanese", "korean", "cantonese", "zhuyin", "vietnamese", "tibetan", "stroke"]

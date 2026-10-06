@@ -6,7 +6,7 @@
 // the workspace adds later.
 #![allow(unsafe_code)]
 
-use msime_client_core::panels::KeyboardInputRequest;
+use lingyao_client_core::panels::KeyboardInputRequest;
 #[cfg(target_os = "macos")]
 pub mod cloud_clipboard;
 #[cfg(target_os = "macos")]
@@ -19,16 +19,16 @@ pub(crate) const SESSION_JSON_MAX_BYTES: usize = 2048;
 
 /// 本安装包的版本在 macOS 上的身份标识。版本表里每个版本都有 macOS 段，`scripts/test-editions.py` 守着这一点。
 pub fn packaged_macos_identity(
-) -> Result<&'static msime_client_core::edition::MacosIdentity, &'static str> {
-    msime_client_core::edition::Edition::of_macos_bundle()?
+) -> Result<&'static lingyao_client_core::edition::MacosIdentity, &'static str> {
+    lingyao_client_core::edition::Edition::of_macos_bundle()?
         .macos()
         .ok_or("this edition has no macOS identifiers")
 }
 
-/// 设置应用和输入法之间的分布式通知名。它们在整个登录会话里广播，所以不是 full 的版本在名字后面加上 `.<版本 id>`，一个版本的设置应用不会叫醒或改动另一个版本的输入法；full 的名字不变。与 platforms/macos/src/core/EditionIdentity.h 的 `MSIMEEditionNotificationName` 一致。
+/// 设置应用和输入法之间的分布式通知名。它们在整个登录会话里广播，所以不是 full 的版本在名字后面加上 `.<版本 id>`，一个版本的设置应用不会叫醒或改动另一个版本的输入法；full 的名字不变。与 platforms/macos/src/core/EditionIdentity.h 的 `LINGYAOEditionNotificationName` 一致。
 pub fn edition_notification_name(
     base: &str,
-    edition: &msime_client_core::edition::Edition,
+    edition: &lingyao_client_core::edition::Edition,
 ) -> String {
     if edition.is_full() {
         base.to_owned()
@@ -39,7 +39,7 @@ pub fn edition_notification_name(
 
 /// 设置应用让输入法在词库维护前放开会话的通知，与 InputController.mm 收听的一致。
 pub const DICTIONARY_MAINTENANCE_NOTIFICATION: &str =
-    "MSIMEDictionaryMaintenanceWillBeginNotification";
+    "LINGYAODictionaryMaintenanceWillBeginNotification";
 /// 打字统计开关变化的通知，与 InputController.mm 收听的一致。
 pub const TYPING_STATISTICS_NOTIFICATION: &str =
     "LingyaoTypingStatisticsEnabledChangedNotification";
@@ -60,11 +60,11 @@ pub struct DetachedWindowContent {
 #[cfg(target_os = "macos")]
 pub fn detach_window_content(window_address: usize) -> Option<DetachedWindowContent> {
     unsafe extern "C" {
-        fn msime_macos_detach_window_content(address: usize) -> usize;
+        fn lingyao_macos_detach_window_content(address: usize) -> usize;
     }
     // SAFETY: native code resolves this address against NSApp's live windows;
     // arbitrary caller addresses are never dereferenced.
-    let token = unsafe { msime_macos_detach_window_content(window_address) };
+    let token = unsafe { lingyao_macos_detach_window_content(window_address) };
     (token != 0).then_some(DetachedWindowContent {
         token,
         _main_thread: std::marker::PhantomData,
@@ -75,10 +75,10 @@ pub fn detach_window_content(window_address: usize) -> Option<DetachedWindowCont
 impl Drop for DetachedWindowContent {
     fn drop(&mut self) {
         unsafe extern "C" {
-            fn msime_macos_restore_window_content(token: usize);
+            fn lingyao_macos_restore_window_content(token: usize);
         }
         // SAFETY: private, uniquely-owned native token; !Send keeps drop on main.
-        unsafe { msime_macos_restore_window_content(self.token) };
+        unsafe { lingyao_macos_restore_window_content(self.token) };
     }
 }
 
@@ -94,11 +94,11 @@ pub struct LaunchTarget {
 #[cfg(target_os = "macos")]
 pub fn capture_launch_target() -> Option<LaunchTarget> {
     unsafe extern "C" {
-        fn msime_macos_capture_launch_target(launched: *mut f64) -> i32;
+        fn lingyao_macos_capture_launch_target(launched: *mut f64) -> i32;
     }
     let mut launched = 0.0;
     // SAFETY: native code writes one double to this valid local output pointer.
-    let pid = unsafe { msime_macos_capture_launch_target(&mut launched) };
+    let pid = unsafe { lingyao_macos_capture_launch_target(&mut launched) };
     (pid > 0 && launched > 0.0).then_some(LaunchTarget { pid, launched })
 }
 
@@ -106,10 +106,10 @@ pub fn capture_launch_target() -> Option<LaunchTarget> {
 #[cfg(target_os = "macos")]
 pub fn restore_launch_target(target: LaunchTarget) -> bool {
     unsafe extern "C" {
-        fn msime_macos_restore_launch_target(pid: i32, launched: f64) -> bool;
+        fn lingyao_macos_restore_launch_target(pid: i32, launched: f64) -> bool;
     }
     // SAFETY: scalar ABI; native side validates thread, process identity and focus.
-    unsafe { msime_macos_restore_launch_target(target.pid, target.launched) }
+    unsafe { lingyao_macos_restore_launch_target(target.pid, target.launched) }
 }
 
 const INITIAL_CAPTURE_DEVICE_CAPACITY: usize = 128;
@@ -143,8 +143,8 @@ pub fn voice_capture_devices() -> Vec<(String, String)> {
             || name.is_empty()
             || uid.len() > 512
             || name.len() > 512
-            || msime_client_core::has_disallowed_control_with_options(uid, false)
-            || msime_client_core::has_disallowed_control_with_options(name, false)
+            || lingyao_client_core::has_disallowed_control_with_options(uid, false)
+            || lingyao_client_core::has_disallowed_control_with_options(name, false)
         {
             return;
         }
@@ -155,7 +155,7 @@ pub fn voice_capture_devices() -> Vec<(String, String)> {
     }
 
     unsafe extern "C" {
-        fn msime_macos_list_voice_capture_devices(
+        fn lingyao_macos_list_voice_capture_devices(
             callback: extern "C" fn(*const c_char, *const c_char, bool, *mut c_void),
             context: *mut c_void,
         );
@@ -165,7 +165,7 @@ pub fn voice_capture_devices() -> Vec<(String, String)> {
     // SAFETY: `collect` has the ABI and lifetime required by the native
     // callback; the context points to a live Vec for the duration of the call.
     unsafe {
-        msime_macos_list_voice_capture_devices(
+        lingyao_macos_list_voice_capture_devices(
             collect,
             (&mut devices as *mut Vec<(String, String)>).cast::<c_void>(),
         );
@@ -196,7 +196,7 @@ pub fn uninstall_input_source(
     let domain = CString::new(identity.input_method_bundle_id.as_bytes())
         .map_err(|_| "invalid preferences domain")?;
     unsafe extern "C" {
-        fn msime_macos_uninstall_input_source(
+        fn lingyao_macos_uninstall_input_source(
             bundle: *const std::ffi::c_char,
             user_data: *const std::ffi::c_char,
             preferences_domain: *const std::ffi::c_char,
@@ -204,7 +204,7 @@ pub fn uninstall_input_source(
         ) -> bool;
     }
     let ok = unsafe {
-        msime_macos_uninstall_input_source(
+        lingyao_macos_uninstall_input_source(
             bundle.as_ptr(),
             user_data.as_ptr(),
             domain.as_ptr(),
@@ -220,9 +220,9 @@ pub fn uninstall_input_source(
 #[cfg(target_os = "macos")]
 pub fn quiesce_input_sessions() {
     unsafe extern "C" {
-        fn msime_macos_quiesce_input_sessions(notification: *const std::ffi::c_char);
+        fn lingyao_macos_quiesce_input_sessions(notification: *const std::ffi::c_char);
     }
-    let Ok(edition) = msime_client_core::edition::Edition::of_macos_bundle() else {
+    let Ok(edition) = lingyao_client_core::edition::Edition::of_macos_bundle() else {
         return;
     };
     let Ok(name) = std::ffi::CString::new(edition_notification_name(
@@ -232,7 +232,7 @@ pub fn quiesce_input_sessions() {
         return;
     };
     // SAFETY: `name` 是以 NUL 结尾的字符串，调用期间一直有效；原生代码不保留它。
-    unsafe { msime_macos_quiesce_input_sessions(name.as_ptr()) };
+    unsafe { lingyao_macos_quiesce_input_sessions(name.as_ptr()) };
 }
 
 /// Tell the separate IMK process that the private aggregate-statistics opt-in changed.
@@ -244,12 +244,12 @@ pub fn quiesce_input_sessions() {
 #[cfg(target_os = "macos")]
 pub fn notify_typing_statistics_enabled(enabled: bool) {
     unsafe extern "C" {
-        fn msime_macos_notify_typing_statistics_enabled(
+        fn lingyao_macos_notify_typing_statistics_enabled(
             notification: *const std::ffi::c_char,
             enabled: bool,
         );
     }
-    let Ok(edition) = msime_client_core::edition::Edition::of_macos_bundle() else {
+    let Ok(edition) = lingyao_client_core::edition::Edition::of_macos_bundle() else {
         return;
     };
     let Ok(name) = std::ffi::CString::new(edition_notification_name(
@@ -259,7 +259,7 @@ pub fn notify_typing_statistics_enabled(enabled: bool) {
         return;
     };
     // SAFETY: `name` 是以 NUL 结尾的字符串，调用期间一直有效；原生代码只发一条本用户的通知，不保留调用方的任何东西。
-    unsafe { msime_macos_notify_typing_statistics_enabled(name.as_ptr(), enabled) };
+    unsafe { lingyao_macos_notify_typing_statistics_enabled(name.as_ptr(), enabled) };
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -288,12 +288,12 @@ pub struct ClipboardSnapshot {
 
 #[cfg(target_os = "macos")]
 pub fn clipboard_snapshot(include_text: bool) -> Option<ClipboardSnapshot> {
-    let mut bytes = vec![0_u8; msime_client_core::clipboard::MAX_TEXT_BYTES];
+    let mut bytes = vec![0_u8; lingyao_client_core::clipboard::MAX_TEXT_BYTES];
     let mut length = 0_usize;
     let mut has_text = false;
     let mut change_count = 0_i64;
     unsafe extern "C" {
-        fn msime_macos_read_clipboard(
+        fn lingyao_macos_read_clipboard(
             buffer: *mut u8,
             capacity: usize,
             read_text: bool,
@@ -305,7 +305,7 @@ pub fn clipboard_snapshot(include_text: bool) -> Option<ClipboardSnapshot> {
     // SAFETY: the native function fills only the provided bounded buffer and
     // scalar outputs, and never retains any pointer after returning.
     let available = unsafe {
-        msime_macos_read_clipboard(
+        lingyao_macos_read_clipboard(
             bytes.as_mut_ptr(),
             bytes.len(),
             include_text,
@@ -328,16 +328,16 @@ mod clipboard_type_tests {
     use std::ffi::CString;
 
     unsafe extern "C" {
-        /// Pure predicate `msime_macos_read_clipboard` applies to `pasteboard.types`: true only when the list carries plain text and none of the nspasteboard.org or password-manager marker types.
-        fn msime_macos_clipboard_types_capturable(
+        /// Pure predicate `lingyao_macos_read_clipboard` applies to `pasteboard.types`: true only when the list carries plain text and none of the nspasteboard.org or password-manager marker types.
+        fn lingyao_macos_clipboard_types_capturable(
             types: *const *const std::ffi::c_char,
             count: usize,
         ) -> bool;
     }
 
     unsafe extern "C" {
-        /// Same normalization `msime_macos_read_clipboard` applies to the pasteboard string before copying it out.
-        fn msime_macos_normalize_clipboard_text(
+        /// Same normalization `lingyao_macos_read_clipboard` applies to the pasteboard string before copying it out.
+        fn lingyao_macos_normalize_clipboard_text(
             input: *const u8,
             input_length: usize,
             buffer: *mut u8,
@@ -347,11 +347,11 @@ mod clipboard_type_tests {
     }
 
     fn normalized(text: &str) -> Option<String> {
-        let mut buffer = vec![0_u8; msime_client_core::clipboard::MAX_TEXT_BYTES];
+        let mut buffer = vec![0_u8; lingyao_client_core::clipboard::MAX_TEXT_BYTES];
         let mut length = 0_usize;
         // SAFETY: both buffers stay valid for the call and the native function writes at most `buffer.len()` bytes.
         let ok = unsafe {
-            msime_macos_normalize_clipboard_text(
+            lingyao_macos_normalize_clipboard_text(
                 text.as_ptr(),
                 text.len(),
                 buffer.as_mut_ptr(),
@@ -387,7 +387,7 @@ mod clipboard_type_tests {
         ] {
             assert_eq!(
                 normalized(sample).unwrap(),
-                msime_client_core::clipboard::normalize_text(sample)
+                lingyao_client_core::clipboard::normalize_text(sample)
             );
         }
     }
@@ -396,7 +396,7 @@ mod clipboard_type_tests {
         let owned: Vec<CString> = types.iter().map(|t| CString::new(*t).unwrap()).collect();
         let pointers: Vec<*const std::ffi::c_char> = owned.iter().map(|t| t.as_ptr()).collect();
         // SAFETY: the pointers stay valid for the call and the native predicate only reads them.
-        unsafe { msime_macos_clipboard_types_capturable(pointers.as_ptr(), pointers.len()) }
+        unsafe { lingyao_macos_clipboard_types_capturable(pointers.as_ptr(), pointers.len()) }
     }
 
     #[test]
@@ -539,11 +539,11 @@ pub fn send_keyboard_key(request: &KeyboardInputRequest) -> bool {
         return false;
     };
     unsafe extern "C" {
-        fn msime_macos_send_keyboard_key(code: u16, flags: u64) -> bool;
+        fn lingyao_macos_send_keyboard_key(code: u16, flags: u64) -> bool;
     }
     // SAFETY: scalar-only ABI. Native code checks main thread, permissions,
     // external foreground ownership and event allocation before posting.
-    unsafe { msime_macos_send_keyboard_key(stroke.code, stroke.flags) }
+    unsafe { lingyao_macos_send_keyboard_key(stroke.code, stroke.flags) }
 }
 
 /// Ask the user for a file and return its path, or `None` if they cancelled.
@@ -555,11 +555,11 @@ pub fn send_keyboard_key(request: &KeyboardInputRequest) -> bool {
 #[cfg(target_os = "macos")]
 pub fn pick_file() -> Option<String> {
     unsafe extern "C" {
-        fn msime_macos_pick_file() -> *mut std::os::raw::c_char;
-        fn msime_macos_free_picked_path(path: *mut std::os::raw::c_char);
+        fn lingyao_macos_pick_file() -> *mut std::os::raw::c_char;
+        fn lingyao_macos_free_picked_path(path: *mut std::os::raw::c_char);
     }
     // SAFETY: the native side returns either null or a strdup'd UTF-8 path that this owns and frees.
-    let raw = unsafe { msime_macos_pick_file() };
+    let raw = unsafe { lingyao_macos_pick_file() };
     if raw.is_null() {
         return None;
     }
@@ -567,7 +567,7 @@ pub fn pick_file() -> Option<String> {
         .to_str()
         .ok()
         .map(str::to_owned);
-    unsafe { msime_macos_free_picked_path(raw) };
+    unsafe { lingyao_macos_free_picked_path(raw) };
     path
 }
 
@@ -576,11 +576,11 @@ pub fn pick_file() -> Option<String> {
 #[cfg(target_os = "macos")]
 pub fn pick_directory() -> Option<String> {
     unsafe extern "C" {
-        fn msime_macos_pick_directory() -> *mut std::os::raw::c_char;
-        fn msime_macos_free_picked_path(path: *mut std::os::raw::c_char);
+        fn lingyao_macos_pick_directory() -> *mut std::os::raw::c_char;
+        fn lingyao_macos_free_picked_path(path: *mut std::os::raw::c_char);
     }
     // SAFETY: the native side returns either null or a strdup'd UTF-8 path that this owns and frees.
-    let raw = unsafe { msime_macos_pick_directory() };
+    let raw = unsafe { lingyao_macos_pick_directory() };
     if raw.is_null() {
         return None;
     }
@@ -588,21 +588,21 @@ pub fn pick_directory() -> Option<String> {
         .to_str()
         .ok()
         .map(str::to_owned);
-    unsafe { msime_macos_free_picked_path(raw) };
+    unsafe { lingyao_macos_free_picked_path(raw) };
     path
 }
 
-/// Ask the user for an installed voice model directory (one holding msime-model.json) and return its absolute path, or `None` when cancelled.
+/// Ask the user for an installed voice model directory (one holding lingyao-model.json) and return its absolute path, or `None` when cancelled.
 ///
 /// Unlike [`pick_directory`], the panel offers no new folder and says nothing about the data directory. Must run on the AppKit main thread; the native side refuses anywhere else.
 #[cfg(target_os = "macos")]
 pub fn pick_voice_model_directory() -> Option<String> {
     unsafe extern "C" {
-        fn msime_macos_pick_voice_model_directory() -> *mut std::os::raw::c_char;
-        fn msime_macos_free_picked_path(path: *mut std::os::raw::c_char);
+        fn lingyao_macos_pick_voice_model_directory() -> *mut std::os::raw::c_char;
+        fn lingyao_macos_free_picked_path(path: *mut std::os::raw::c_char);
     }
     // SAFETY: the native side returns either null or a strdup'd UTF-8 path that this owns and frees.
-    let raw = unsafe { msime_macos_pick_voice_model_directory() };
+    let raw = unsafe { lingyao_macos_pick_voice_model_directory() };
     if raw.is_null() {
         return None;
     }
@@ -610,7 +610,7 @@ pub fn pick_voice_model_directory() -> Option<String> {
         .to_str()
         .ok()
         .map(str::to_owned);
-    unsafe { msime_macos_free_picked_path(raw) };
+    unsafe { lingyao_macos_free_picked_path(raw) };
     path
 }
 
@@ -618,7 +618,7 @@ pub fn pick_voice_model_directory() -> Option<String> {
 #[cfg(target_os = "macos")]
 pub fn stop_input_method() -> bool {
     unsafe extern "C" {
-        fn msime_macos_stop_input_method(bundle_identifier: *const std::ffi::c_char) -> bool;
+        fn lingyao_macos_stop_input_method(bundle_identifier: *const std::ffi::c_char) -> bool;
     }
     let Ok(identity) = packaged_macos_identity() else {
         return false;
@@ -627,20 +627,20 @@ pub fn stop_input_method() -> bool {
         return false;
     };
     // SAFETY: `identifier` 是以 NUL 结尾的字符串，调用期间一直有效；原生代码检查调用线程，不保留它。
-    unsafe { msime_macos_stop_input_method(identifier.as_ptr()) }
+    unsafe { lingyao_macos_stop_input_method(identifier.as_ptr()) }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::panels::KeyboardModifiers;
+    use lingyao_client_core::panels::KeyboardModifiers;
 
     #[test]
     fn full_keeps_its_notification_names_and_other_editions_get_their_own() {
-        use msime_client_core::edition::Edition;
+        use lingyao_client_core::edition::Edition;
         assert_eq!(
             edition_notification_name(DICTIONARY_MAINTENANCE_NOTIFICATION, Edition::full()),
-            "MSIMEDictionaryMaintenanceWillBeginNotification"
+            "LINGYAODictionaryMaintenanceWillBeginNotification"
         );
         assert_eq!(
             edition_notification_name(
@@ -655,7 +655,7 @@ mod tests {
     fn a_test_process_is_not_inside_a_package_and_runs_as_full() {
         assert_eq!(
             packaged_macos_identity().unwrap().input_method_bundle_id,
-            "app.msime.inputmethod.LingyaoIME"
+            "app.lingyao.inputmethod.LingyaoIME"
         );
     }
 

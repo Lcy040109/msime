@@ -25,23 +25,23 @@ const LOG10_TO_NATS: f64 = std::f64::consts::LN_10;
 
 static MODELS: OnceLock<Mutex<LruCache<PathBuf, Option<Arc<SentenceModel>>>>> = OnceLock::new();
 
-/// A shipped model for tests: from `MSIME_EVAL_RESOURCES` (the dictionary resource set), else from `MSIME_NEURAL_MODEL_DIR` (where `scripts/fetch_neural_model.py` puts both models, `target/neural-model` by default); the error is the reason a test skips.
+/// A shipped model for tests: from `LINGYAO_EVAL_RESOURCES` (the dictionary resource set), else from `LINGYAO_NEURAL_MODEL_DIR` (where `scripts/fetch_neural_model.py` puts both models, `target/neural-model` by default); the error is the reason a test skips.
 #[cfg(test)]
 pub(crate) fn test_model_path(name: &str) -> Result<PathBuf, String> {
-    let directories: Vec<PathBuf> = ["MSIME_EVAL_RESOURCES", "MSIME_NEURAL_MODEL_DIR"]
+    let directories: Vec<PathBuf> = ["LINGYAO_EVAL_RESOURCES", "LINGYAO_NEURAL_MODEL_DIR"]
         .into_iter()
         .filter_map(std::env::var_os)
         .map(PathBuf::from)
         .collect();
     if directories.is_empty() {
-        return Err("neither MSIME_EVAL_RESOURCES nor MSIME_NEURAL_MODEL_DIR is set".to_owned());
+        return Err("neither LINGYAO_EVAL_RESOURCES nor LINGYAO_NEURAL_MODEL_DIR is set".to_owned());
     }
     directories
         .iter()
         .map(|directory| directory.join(name))
         .find(|path| path.is_file())
         .ok_or_else(|| {
-            format!("{name} is in neither MSIME_EVAL_RESOURCES nor MSIME_NEURAL_MODEL_DIR")
+            format!("{name} is in neither LINGYAO_EVAL_RESOURCES nor LINGYAO_NEURAL_MODEL_DIR")
         })
 }
 
@@ -391,22 +391,22 @@ mod tests {
         assert!(candidates.iter().all(|item| item.word != "他事件"));
     }
 
-    /// The keyboard-model rerank on the real dictionary, keystroke by keystroke, as a mobile host with the switch on runs it: every prefix of a nine-syllable reading is answered and the full reading carries the NeuralKeyboard row. This pins that the rerank is on the key path; its latency is measured by `crates/input-runtime/examples/rerank_latency.rs`, not here, because a debug `cargo test` timing would only be noise. Needs the dict-v2.0.1 resources with the keyboard model in `MSIME_EVAL_RESOURCES`.
+    /// The keyboard-model rerank on the real dictionary, keystroke by keystroke, as a mobile host with the switch on runs it: every prefix of a nine-syllable reading is answered and the full reading carries the NeuralKeyboard row. This pins that the rerank is on the key path; its latency is measured by `crates/input-runtime/examples/rerank_latency.rs`, not here, because a debug `cargo test` timing would only be noise. Needs the dict-v2.0.1 resources with the keyboard model in `LINGYAO_EVAL_RESOURCES`.
     #[test]
     fn the_keyboard_rerank_answers_every_keystroke_on_the_real_dictionary() {
         use crate::paths::RuntimePaths;
         use crate::quanpin::dictionary::QuanpinDictionary;
         use crate::types::{FuzzyPinyinOptions, SentenceAssociationOptions};
 
-        let Some(resources) = std::env::var_os("MSIME_EVAL_RESOURCES").map(PathBuf::from) else {
+        let Some(resources) = std::env::var_os("LINGYAO_EVAL_RESOURCES").map(PathBuf::from) else {
             eprintln!(
-                "skipped: MSIME_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory"
+                "skipped: LINGYAO_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory"
             );
             return;
         };
         if !resources.join(assets::NEURAL_MODEL_KEYBOARD).is_file() {
             eprintln!(
-                "skipped: {} is not in MSIME_EVAL_RESOURCES",
+                "skipped: {} is not in LINGYAO_EVAL_RESOURCES",
                 assets::NEURAL_MODEL_KEYBOARD
             );
             return;

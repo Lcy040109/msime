@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 inline std::vector<std::string> hotword_texts(const nlohmann::json &hotwords) {
   std::vector<std::string> texts;
@@ -18,4 +18,4 @@ inline std::vector<std::string> hotword_texts(const nlohmann::json &hotwords) {
   return texts;
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

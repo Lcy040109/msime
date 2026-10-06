@@ -84,8 +84,8 @@ import {
   type PluginPackage,
   UNBATCHED_DICTIONARY_FILE_BYTES,
   StatusMessage,
-} from "@msime/ui";
-import "@msime/ui/styles.css";
+} from "@lingyao/ui";
+import "@lingyao/ui/styles.css";
 import { subscribeWindowState } from "./input/window-state";
 import { discoverFontReader } from "./candidate/system-font-client";
 import { DesktopKeyboard, useHostPlatform } from "./input/desktop-keyboard";
@@ -151,7 +151,7 @@ async function downloadCloudEntryToLocal(
   if (!dictionaryClient.importPersonal)
     throw new Error("personal dictionary import is unavailable");
   const text = JSON.stringify({
-    format: "msime-personal-dictionary",
+    format: "lingyao-personal-dictionary",
     version: 1,
     entries: [
       {
@@ -516,7 +516,7 @@ function DesktopSettings() {
       const current = window.history.state;
       const state = {
         ...(current && typeof current === "object" ? current : {}),
-        msimeSettings: true,
+        lingyaoSettings: true,
         panel: next,
       };
       if (replace) window.history.replaceState(state, "");
@@ -527,7 +527,7 @@ function DesktopSettings() {
   const closeMobilePanel = useCallback(() => {
     if (
       typeof window !== "undefined" &&
-      window.history.state?.msimeSettings === true &&
+      window.history.state?.lingyaoSettings === true &&
       window.history.state?.panel
     ) {
       window.history.back();
@@ -566,7 +566,7 @@ function DesktopSettings() {
   useEffect(() => {
     const onPopState = (event: PopStateEvent) => {
       const state = event.state;
-      if (state?.msimeSettings === true && typeof state.panel === "string") {
+      if (state?.lingyaoSettings === true && typeof state.panel === "string") {
         setMobilePanel(state.panel as NonNullable<typeof mobilePanel>);
       } else if (mobilePanelRef.current !== null) {
         setMobilePanel(null);
@@ -602,12 +602,12 @@ function DesktopSettings() {
       }
     };
     window.addEventListener("popstate", onPopState);
-    window.addEventListener("msime-mobile-panel", onNativePanel);
-    window.addEventListener("msime-settings-page", onNativeSettingsPage);
+    window.addEventListener("lingyao-mobile-panel", onNativePanel);
+    window.addEventListener("lingyao-settings-page", onNativeSettingsPage);
     return () => {
       window.removeEventListener("popstate", onPopState);
-      window.removeEventListener("msime-mobile-panel", onNativePanel);
-      window.removeEventListener("msime-settings-page", onNativeSettingsPage);
+      window.removeEventListener("lingyao-mobile-panel", onNativePanel);
+      window.removeEventListener("lingyao-settings-page", onNativeSettingsPage);
     };
   }, []);
   // The host menu entry that started this window names a section; resolve it
@@ -717,7 +717,7 @@ function DesktopSettings() {
                     ),
                 }
               : {}),
-            // msime-mcp is packaged beside the settings app on the three desktop hosts only.
+            // lingyao-mcp is packaged beside the settings app on the three desktop hosts only.
             ...(host.platform === "macos" ||
             host.platform === "linux" ||
             host.platform === "windows"

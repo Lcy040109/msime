@@ -51,7 +51,7 @@ export function pushMobileSettingsState(state: Record<string, unknown>): void {
   window.history.pushState(
     {
       ...(current && typeof current === "object" ? current : {}),
-      msimeSettings: true,
+      lingyaoSettings: true,
       ...state,
     },
     "",

@@ -7,7 +7,7 @@
 
 #include <nlohmann/json.hpp>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The voice preferences a host forwards to the voice provider with each request. Both Linux hosts send the same set: the Fcitx5 host once kept its own list and dropped the prompt text, so custom polishing schemes silently fell back to the cleanup prompt there.
 //
@@ -69,7 +69,7 @@ inline bool voice_wants_hotwords(const nlohmann::json &options) {
   return options.value("asr_provider", std::string{}) == "local";
 }
 
-// Pack the `hotwords` array msime_client_voice_hotwords returns into the `voice_hotwords` option, one `text<TAB>pinyin` line per word, heaviest first as given. The provider takes only boolean and string options, and the whole query the host sends must stay within `query_limit` bytes (the provider request is capped at 16 KiB), so words are added while `query` with the option still fits; the rest are dropped. The default leaves 512 bytes for the envelope the provider client wraps around the query. Words carrying a tab or a line break would break the packing and are skipped.
+// Pack the `hotwords` array lingyao_client_voice_hotwords returns into the `voice_hotwords` option, one `text<TAB>pinyin` line per word, heaviest first as given. The provider takes only boolean and string options, and the whole query the host sends must stay within `query_limit` bytes (the provider request is capped at 16 KiB), so words are added while `query` with the option still fits; the rest are dropped. The default leaves 512 bytes for the envelope the provider client wraps around the query. Words carrying a tab or a line break would break the packing and are skipped.
 inline void add_voice_hotwords(nlohmann::json &query, const nlohmann::json &hotwords, std::size_t query_limit = 15872) {
   if (!hotwords.is_array() || hotwords.empty() || !query.contains("options") || !query.at("options").is_object())
     return;
@@ -93,4 +93,4 @@ inline void add_voice_hotwords(nlohmann::json &query, const nlohmann::json &hotw
   if (!packed.empty()) query["options"]["voice_hotwords"] = std::move(packed);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

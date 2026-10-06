@@ -1,4 +1,4 @@
-import app.msime.android.EnglishLetterCaseState;
+import app.lingyao.android.EnglishLetterCaseState;
 
 public final class EnglishLetterCaseStateSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

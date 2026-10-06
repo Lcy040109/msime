@@ -110,7 +110,7 @@ class Handler(BaseHTTPRequestHandler):
             elif self.path == "/invalid-pcm":
                 self.receive()
             elif self.path == "/long":
-                # A stream well past the old 60 s cap arrives whole, as the MSIME-Windows client sends it.
+                # A stream well past the old 60 s cap arrives whole, as the LINGYAO-Windows client sends it.
                 samples = 0
                 while True:
                     kind, sequence, pcm = self.receive()

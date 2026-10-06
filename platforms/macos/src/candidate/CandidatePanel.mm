@@ -106,7 +106,7 @@
     NSMutableParagraphStyle *paragraph = [NSMutableParagraphStyle new];
     paragraph.lineBreakMode = NSLineBreakByTruncatingTail;
     NSDictionary *numberAttributes = @{
-        NSFontAttributeName : self.numberFont ?: MSIMECandidateNumberFont(self.font),
+        NSFontAttributeName : self.numberFont ?: LINGYAOCandidateNumberFont(self.font),
         NSForegroundColorAttributeName : self.numberColor != nil ? self.numberColor : NSColor.tertiaryLabelColor,
     };
     NSDictionary *titleAttributes = @{
@@ -132,7 +132,7 @@
     const CGFloat numberY = (self.bounds.size.height - numberSize.height) / 2;
     const CGFloat wordY = (self.bounds.size.height - wordSize.height) / 2;
     [number drawAtPoint:NSMakePoint(textLeft, numberY) withAttributes:numberAttributes];
-    const CGFloat wordX = textLeft + numberSize.width + MSIMECandidateNumberGap;
+    const CGFloat wordX = textLeft + numberSize.width + LINGYAOCandidateNumberGap;
     const CGFloat maxWidth = MAX(0.0, self.bounds.size.width - wordX - 8.0);
     [word drawInRect:NSMakeRect(wordX, wordY, maxWidth, wordSize.height) withAttributes:titleAttributes];
 }
@@ -317,14 +317,14 @@
     const CGFloat availableWidth = MAX(80, screenWidth - 20 - 2 * inset - (paging && !vertical ? 56 : 0));
     const CGFloat leftPad = 8.0 + (_skin.tokens.showSelectedBar ? 6.0 : 0.0);
     NSDictionary *measure = @{NSFontAttributeName : _font};
-    NSFont *numberFont = MSIMECandidateNumberFont(_font);
+    NSFont *numberFont = LINGYAOCandidateNumberFont(_font);
     NSDictionary *numberMeasure = @{NSFontAttributeName : numberFont};
     for (NSUInteger index = 0; index < _data.count; ++index)
     {
         NSString *number = [NSString stringWithFormat:@"%lu", (unsigned long)index + 1];
         NSString *word = _data[index].string;
         NSString *title = [NSString stringWithFormat:@"%@  %@", number, word];
-        const CGFloat itemWidth = ceil(leftPad + [number sizeWithAttributes:numberMeasure].width + MSIMECandidateNumberGap +
+        const CGFloat itemWidth = ceil(leftPad + [number sizeWithAttributes:numberMeasure].width + LINGYAOCandidateNumberGap +
                                        [word sizeWithAttributes:measure].width + 8.0);
         [titles addObject:title];
         [widths addObject:@(itemWidth)];
@@ -365,11 +365,11 @@
         const CGFloat decorationWidth =
             _skin.decorationWidthDip > 0.0 ? _skin.decorationWidthDip : MIN(size.width, _decorationImage.size.width);
         _decorationView.image = _decorationImage;
-        _decorationView.imageAlignment = _skin.decorationAlign == msime::mac::DecorationAlign::left     ? NSImageAlignTopLeft
-                                         : _skin.decorationAlign == msime::mac::DecorationAlign::center ? NSImageAlignTop
+        _decorationView.imageAlignment = _skin.decorationAlign == lingyao::mac::DecorationAlign::left     ? NSImageAlignTopLeft
+                                         : _skin.decorationAlign == lingyao::mac::DecorationAlign::center ? NSImageAlignTop
                                                                                                         : NSImageAlignTopRight;
         _decorationView.frame =
-            NSMakeRect(msime::mac::DecorationLeft(_skin.decorationAlign, size.width, inset, decorationWidth),
+            NSMakeRect(lingyao::mac::DecorationLeft(_skin.decorationAlign, size.width, inset, decorationWidth),
                        size.height - decorationHeight, decorationWidth, decorationHeight);
         [_chrome addSubview:_decorationView];
     }
@@ -473,12 +473,12 @@
     y = MIN(MAX(y, NSMinY(bounds)), MAX(NSMinY(bounds), NSMaxY(bounds) - size.height));
     [_window setFrameOrigin:NSMakePoint(x, y)];
     [_window orderFrontRegardless];
-    msime_macos_diagnostic_writef("candidate-position hint=%ld rows=%lu vertical=%d size=(%.0f,%.0f) origin=(%.0f,%.0f) flipped=%d",
+    lingyao_macos_diagnostic_writef("candidate-position hint=%ld rows=%lu vertical=%d size=(%.0f,%.0f) origin=(%.0f,%.0f) flipped=%d",
         (long)hint, (unsigned long)_data.count, vertical ? 1 : 0, size.width, size.height, x, y, y >= NSMaxY(caret) ? 1 : 0);
 }
 - (void)hide
 {
-    if (msime_macos_diagnostic_enabled() && _window.isVisible) msime_macos_diagnostic_write("candidate hide reason=panel_hide");
+    if (lingyao_macos_diagnostic_enabled() && _window.isVisible) lingyao_macos_diagnostic_write("candidate hide reason=panel_hide");
     _tallestVerticalHeight = 0;
     [_window orderOut:nil];
 }

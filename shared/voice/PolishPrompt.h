@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The stored polish prompt fields, as the settings page writes them.
 struct PolishPromptSlots {
   std::string id;
@@ -74,4 +74,4 @@ inline std::string polish_prompt_for(const PolishPromptSlots &config) {
   return std::string(kCleanupPrompt);
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

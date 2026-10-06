@@ -1,4 +1,4 @@
-import app.msime.android.CustomSkinLibrary;
+import app.lingyao.android.CustomSkinLibrary;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -20,8 +20,8 @@ public final class CustomSkinLibrarySmoke {
     }
 
     public static void main(String[] args) throws Exception {
-        Path root = Files.createTempDirectory("msime-custom-skin-");
-        Path outside = Files.createTempDirectory("msime-custom-skin-outside-");
+        Path root = Files.createTempDirectory("lingyao-custom-skin-");
+        Path outside = Files.createTempDirectory("lingyao-custom-skin-outside-");
         try {
             Path preferences = root.resolve("preferences");
             Path directory = preferences.resolve("CustomSkins");

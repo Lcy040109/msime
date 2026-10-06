@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot 'pe_fixture.ps1')
-$root = Join-Path ([IO.Path]::GetTempPath()) ('msime-pe-' + [Guid]::NewGuid())
+$root = Join-Path ([IO.Path]::GetTempPath()) ('lingyao-pe-' + [Guid]::NewGuid())
 $path = Join-Path $root 'synthetic image.bin'
 $verify = Join-Path $PSScriptRoot '../../Test-PortableExecutable.ps1'
 try {

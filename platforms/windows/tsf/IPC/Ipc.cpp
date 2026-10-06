@@ -984,7 +984,7 @@ void DebugTsfKeyLatency(const wchar_t *stage, uint64_t requestId, double elapsed
     }
 
     const std::wstring message =
-        fmt::format(L"[msime][key-latency] side=tsf stage={} request={} elapsed_ms={:.3f} result=0x{:08X} process={}\n",
+        fmt::format(L"[lingyao][key-latency] side=tsf stage={} request={} elapsed_ms={:.3f} result=0x{:08X} process={}\n",
                     stage, requestId, elapsedMs, static_cast<unsigned long>(result),
                     Global::current_process_name.empty() ? L"unknown" : Global::current_process_name);
     QueueTsfDiagnosticLog(message);
@@ -1032,7 +1032,7 @@ void DebugTsfIssue47(const wchar_t *stage, uint64_t requestId, UINT code, WCHAR 
 
     const uint64_t sequence = issue47Sequence.fetch_add(1, std::memory_order_relaxed) + 1;
     const std::wstring message =
-        fmt::format(L"[msime][issue47] seq={} stage={} request={} vk=0x{:02X} wch=U+{:04X} key={} "
+        fmt::format(L"[lingyao][issue47] seq={} stage={} request={} vk=0x{:02X} wch=U+{:04X} key={} "
                     L"key_class={} category={} function={} eaten={} composing={} buffer_len={} "
                     L"result=0x{:08X} correlation={} process={}\n",
                     sequence, stage, requestId, code, static_cast<unsigned int>(wch), keyText, keyClass, category,

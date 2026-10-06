@@ -2,7 +2,7 @@
 #include <stdexcept>
 #ifdef _WIN32
 #include <windows.h>
-namespace msime::windows {
+namespace lingyao::windows {
 void paste_clipboard_text(const std::string &text) {
   const int count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()), nullptr, 0);
   if (count <= 0 || !OpenClipboard(nullptr)) throw std::runtime_error("Clipboard unavailable");
@@ -14,7 +14,7 @@ void paste_clipboard_text(const std::string &text) {
   if (!SetClipboardData(CF_UNICODETEXT, memory)) { GlobalFree(memory); CloseClipboard(); throw std::runtime_error("Clipboard write failed"); }
   CloseClipboard();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows
 #else
-namespace msime::windows { void paste_clipboard_text(const std::string &) { throw std::runtime_error("Windows clipboard unavailable"); } }
+namespace lingyao::windows { void paste_clipboard_text(const std::string &) { throw std::runtime_error("Windows clipboard unavailable"); } }
 #endif

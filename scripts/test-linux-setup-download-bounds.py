@@ -7,9 +7,9 @@ import pathlib
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "platforms/linux/scripts/msime-linux-setup"
+SOURCE = ROOT / "platforms/linux/scripts/lingyao-linux-setup"
 SPEC = importlib.util.spec_from_file_location(
-    "msime_linux_setup", SOURCE, loader=importlib.machinery.SourceFileLoader("msime_linux_setup", str(SOURCE))
+    "lingyao_linux_setup", SOURCE, loader=importlib.machinery.SourceFileLoader("lingyao_linux_setup", str(SOURCE))
 )
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

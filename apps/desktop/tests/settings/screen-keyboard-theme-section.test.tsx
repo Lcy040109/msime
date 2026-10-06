@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ScreenKeyboardThemeSection, type SurfaceTheme } from "@msime/ui";
+import { ScreenKeyboardThemeSection, type SurfaceTheme } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

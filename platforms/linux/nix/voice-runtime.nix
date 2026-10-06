@@ -1,4 +1,4 @@
-# voice-runtime.lock.json 为本机平台钉住的 sherpa-onnx 运行库，`msime-voice-local` 用 dlopen 打开它做
+# voice-runtime.lock.json 为本机平台钉住的 sherpa-onnx 运行库，`lingyao-voice-local` 用 dlopen 打开它做
 # 本地语音识别。与其他平台一样用上游的预编译库，不自己编 onnxruntime（见 scripts/fetch_voice_runtime.py）；
 # 地址和 SHA-256 直接读锁文件。
 {
@@ -16,7 +16,7 @@ let
   artifact = lock.platforms."linux-${stdenv.hostPlatform.uname.processor}";
 in
 stdenv.mkDerivation {
-  pname = "msime-voice-runtime";
+  pname = "lingyao-voice-runtime";
   inherit (lock) version;
 
   src = fetchurl { inherit (artifact) url sha256; };
@@ -30,13 +30,13 @@ stdenv.mkDerivation {
   # 转去加载这里的 libonnxruntime.so。
   #
   # 上游归档只有库，不带许可证。本包也会被单独分发，所以装上仓库里固定的那几份，与插件包里 CMake 装的
-  # 同源同名（见 platforms/linux/CMakeLists.txt 的 MSIME_NOTICE_SOURCES）；放在子目录里，CMake 只按库名
+  # 同源同名（见 platforms/linux/CMakeLists.txt 的 LINGYAO_NOTICE_SOURCES）；放在子目录里，CMake 只按库名
   # 从顶层取库，不受影响。
   installPhase = ''
     runHook preInstall
     install -Dm755 -t $out ${lib.escapeShellArgs artifact.libraries}
     patchelf --add-rpath ${lib.getLib stdenv.cc.cc}/lib $out/*.so
-    doc=$out/share/doc/msime-voice-runtime
+    doc=$out/share/doc/lingyao-voice-runtime
     install -Dm644 ${../../../shared/voice/third_party/sherpa-onnx/LICENSE} $doc/sherpa-onnx-Apache-2.0.txt
     install -Dm644 ${../data/licenses/onnxruntime-MIT.txt} $doc/onnxruntime-MIT.txt
     install -Dm644 ${../data/licenses/onnxruntime-ThirdPartyNotices.txt} $doc/onnxruntime-ThirdPartyNotices.txt

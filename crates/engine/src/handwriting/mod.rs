@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-// The model-backed recognizer is left out of the Android and OHOS builds, which only order provider replies (host-api gates its caller the same way); platforms/android/verify-native.sh checks that it stays out of libmsime_host_api.so.
+// The model-backed recognizer is left out of the Android and OHOS builds, which only order provider replies (host-api gates its caller the same way); platforms/android/verify-native.sh checks that it stays out of liblingyao_host_api.so.
 #[cfg(not(any(target_os = "android", target_env = "ohos")))]
 mod features;
 #[cfg(not(any(target_os = "android", target_env = "ohos")))]

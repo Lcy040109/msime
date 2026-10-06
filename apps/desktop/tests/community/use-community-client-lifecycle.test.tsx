@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useCommunityClientLifecycle } from "@msime/ui";
+import { useCommunityClientLifecycle } from "@lingyao/ui";
 
 test("invalidates stale actions and clears the running lock when the client changes", () => {
   const firstClient = {};

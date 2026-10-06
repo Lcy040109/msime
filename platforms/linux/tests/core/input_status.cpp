@@ -1,4 +1,4 @@
-// The per-session file the MSIME bar widget for Omarchy reads the input mode from (src/core/InputStatus.h, data/omarchy/plugin).
+// The per-session file the LINGYAO bar widget for Omarchy reads the input mode from (src/core/InputStatus.h, data/omarchy/plugin).
 #include "../src/core/InputStatus.h"
 
 #include <cassert>
@@ -9,10 +9,10 @@
 #include <unistd.h>
 
 int main() {
-  using namespace msime::linux_host;
+  using namespace lingyao::linux_host;
   assert(!input_status_file(nullptr));
   assert(!input_status_file("relative"));
-  assert(*input_status_file("/run/user/1000") == std::filesystem::path("/run/user/1000/msime-client/input-status.json"));
+  assert(*input_status_file("/run/user/1000") == std::filesystem::path("/run/user/1000/lingyao-client/input-status.json"));
 
   // The widget parses these keys; the label is UTF-8 as the tray shows it.
   assert(input_status_document(true, "中", "quanpin") == "{\"active\":true,\"label\":\"中\",\"scheme\":\"quanpin\"}\n");
@@ -20,7 +20,7 @@ int main() {
   // A scheme id comes from the user's preferences document and is escaped rather than trusted.
   assert(input_status_document(true, "中", "a\"b") == "{\"active\":true,\"label\":\"中\",\"scheme\":\"a\\\"b\"}\n");
 
-  const auto root = std::filesystem::temp_directory_path() / ("msime-input-status-" + std::to_string(::getpid()));
+  const auto root = std::filesystem::temp_directory_path() / ("lingyao-input-status-" + std::to_string(::getpid()));
   std::filesystem::remove_all(root);
   std::filesystem::create_directories(root);
   const auto read = [&] {

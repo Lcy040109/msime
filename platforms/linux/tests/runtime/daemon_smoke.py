@@ -37,7 +37,7 @@ def running(pid):
 
 
 def hosts(parent=None):
-    """Live msime-linux-ibus processes, optionally only the children of one supervisor."""
+    """Live lingyao-linux-ibus processes, optionally only the children of one supervisor."""
     found = []
     for entry in os.listdir("/proc"):
         if not entry.isdigit():
@@ -50,7 +50,7 @@ def hosts(parent=None):
                 arguments = cmdline.read().decode(errors="replace").split("\0")
         except OSError:
             continue
-        if os.path.basename(arguments[0]) == "msime-linux-ibus":
+        if os.path.basename(arguments[0]) == "lingyao-linux-ibus":
             found.append((int(entry), arguments[1:]))
     return found
 
@@ -60,14 +60,14 @@ def host_of(supervisor):
     return children[0] if len(children) == 1 else (None, None)
 
 
-wait(lambda: any(engine.get_name() == "msime-linux" for engine in bus.list_active_engines()))
-context = bus.create_input_context("msime-synthetic-editor")
+wait(lambda: any(engine.get_name() == "lingyao-linux" for engine in bus.list_active_engines()))
+context = bus.create_input_context("lingyao-synthetic-editor")
 commits = []
 context.connect("commit-text", lambda _context, text: commits.append(text.get_text()))
 context.set_capabilities(IBus.Capabilite.FOCUS | IBus.Capabilite.PREEDIT_TEXT | IBus.Capabilite.LOOKUP_TABLE)
 context.focus_in()
-assert bus.set_global_engine("msime-linux"), "Global engine activation failed"
-wait(lambda: context.get_engine() is not None and context.get_engine().get_name() == "msime-linux")
+assert bus.set_global_engine("lingyao-linux"), "Global engine activation failed"
+wait(lambda: context.get_engine() is not None and context.get_engine().get_name() == "lingyao-linux")
 context.property_activate("ChinesePunctuation", IBus.PropState.UNCHECKED)
 context.property_activate("EnglishCandidates", IBus.PropState.CHECKED)
 context.property_activate("EmojiCandidates", IBus.PropState.CHECKED)
@@ -83,16 +83,16 @@ context.property_activate("InputMode", IBus.PropState.UNCHECKED)
 assert not context.process_key_event(ord("n"), 0, 0), "InputMode property did not leave Chinese"
 assert bus.set_global_engine("xkb:us::eng"), "US input source activation failed"
 wait(lambda: context.get_engine() is not None and context.get_engine().get_name() == "xkb:us::eng")
-assert bus.set_global_engine("msime-linux"), "Input source reactivation failed"
-wait(lambda: context.get_engine() is not None and context.get_engine().get_name() == "msime-linux")
+assert bus.set_global_engine("lingyao-linux"), "Input source reactivation failed"
+wait(lambda: context.get_engine() is not None and context.get_engine().get_name() == "lingyao-linux")
 for character in "nihao":
     assert context.process_key_event(ord(character), 0, 0), "Source switch retained global English mode"
 assert context.process_key_event(IBus.KEY_space, 0, 0)
 wait(lambda: commits == ["你好", "你好"])
 
-supervisor = int(os.environ.get("MSIME_SMOKE_SUPERVISOR_PID", "0"))
+supervisor = int(os.environ.get("LINGYAO_SMOKE_SUPERVISOR_PID", "0"))
 if supervisor:
-    # ibus-daemon never respawns a dead component. The launcher's supervisor does, and the restarted host puts MSIME back on the focused context, so typing resumes without the user reselecting the input source. The second crash lands inside the backoff window and waits 4 s instead of 2 s.
+    # ibus-daemon never respawns a dead component. The launcher's supervisor does, and the restarted host puts LINGYAO back on the focused context, so typing resumes without the user reselecting the input source. The second crash lands inside the backoff window and waits 4 s instead of 2 s.
     for crash in (signal.SIGSEGV, signal.SIGKILL):
         crashed, _ = host_of(supervisor)
         assert crashed, "supervised host is not running"
@@ -102,7 +102,7 @@ if supervisor:
         assert arguments[0] == "--recovered", arguments
 
         def typing_resumed():
-            if context.get_engine() is None or context.get_engine().get_name() != "msime-linux":
+            if context.get_engine() is None or context.get_engine().get_name() != "lingyao-linux":
                 return False
             context.property_activate("InputMode", IBus.PropState.CHECKED)
             return context.process_key_event(ord("n"), 0, 0)
@@ -128,11 +128,11 @@ context.destroy()
 
 if supervisor:
     # ibus exit disconnects the host, which returns 0; the supervisor does not restart it and exits too. Nothing starts again, since no daemon is left.
-    environment = dict(os.environ, MSIME_IBUS_OPTIONS=os.environ["MSIME_SMOKE_OPTIONS"])
-    launcher = subprocess.Popen([os.environ["MSIME_SMOKE_LAUNCHER"]], env=environment)
+    environment = dict(os.environ, LINGYAO_IBUS_OPTIONS=os.environ["LINGYAO_SMOKE_OPTIONS"])
+    launcher = subprocess.Popen([os.environ["LINGYAO_SMOKE_LAUNCHER"]], env=environment)
     try:
         wait(lambda: host_of(launcher.pid)[0] is not None
-             and any(engine.get_name() == "msime-linux" for engine in bus.list_active_engines()))
+             and any(engine.get_name() == "lingyao-linux" for engine in bus.list_active_engines()))
         bus.exit(False)  # What `ibus exit` sends.
         assert launcher.wait(timeout=10) == 0, launcher.returncode
     finally:

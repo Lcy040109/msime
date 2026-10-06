@@ -9,7 +9,7 @@
 #include <string_view>
 #include <unistd.h>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The Windows installer stops the IME processes before it replaces their files and starts the new ones afterwards. dpkg (and `cmake --install`, and a relink in a build tree) instead renames a new file over the old path while the running process keeps executing the old inode, so after an upgrade the hosts would go on running the previous build indefinitely. The kernel marks such a file in /proc: the target of /proc/self/exe and the pathname of a /proc/self/maps entry gain this suffix once the path no longer names the file the process has open.
 inline constexpr std::string_view kDeletedSuffix = " (deleted)";
@@ -132,4 +132,4 @@ inline std::string fcitx5_restart_command() {
   return "fcitx5 -r";
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

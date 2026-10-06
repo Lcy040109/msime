@@ -1,7 +1,7 @@
 import audio from '@ohos.multimedia.audio';
 import webSocket from '@ohos.net.webSocket';
 import util from '@ohos.util';
-import client, { DoubaoFrameResult } from 'libmsimeclient.so';
+import client, { DoubaoFrameResult } from 'liblingyaoclient.so';
 import { KeyboardLog, describeError } from '../KeyboardLog';
 import { VoiceRecognitionPolicy } from './VoiceRecognitionPolicy';
 import { HarmonyVoiceCaptureDevices } from './HarmonyVoiceCaptureDevices';

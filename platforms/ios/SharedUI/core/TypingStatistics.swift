@@ -538,11 +538,11 @@ extension TypingStatistics {
   }
 }
 
-@_silgen_name("msime_client_typing_statistics")
-private func msimeTypingStatistics(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_typing_statistics")
+private func lingyaoTypingStatistics(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_string_free")
-private func msimeTypingStatisticsStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoTypingStatisticsStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 enum TypingStatisticsError: LocalizedError {
   case requestTooLarge
@@ -558,13 +558,13 @@ enum TypingStatisticsError: LocalizedError {
   }
 }
 
-// The keyboard writes only aggregate counts, never document text or preedit. Every read and write goes through the shared Rust store behind `msime_client_typing_statistics`, the one macOS and the shared statistics page use, so active time, the hourly buckets and the retention window are recorded by the same rules everywhere and no host rewrites the document without the fields it does not know. The store's lock file serializes the extension and app processes.
+// The keyboard writes only aggregate counts, never document text or preedit. Every read and write goes through the shared Rust store behind `lingyao_client_typing_statistics`, the one macOS and the shared statistics page use, so active time, the hourly buckets and the retention window are recorded by the same rules everywhere and no host rewrites the document without the fields it does not know. The store's lock file serializes the extension and app processes.
 struct TypingStatisticsStore {
   let directory: URL?
 
   init() {
     directory = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: MSIMEAppEdition.appGroupIdentifier)?.appendingPathComponent("MSIME", isDirectory: true)
+      forSecurityApplicationGroupIdentifier: LINGYAOAppEdition.appGroupIdentifier)?.appendingPathComponent("LINGYAO", isDirectory: true)
   }
 
   init(directory: URL?) {
@@ -589,11 +589,11 @@ struct TypingStatisticsStore {
     let request = try JSONSerialization.data(withJSONObject: ["directory": directory.path, "action": action])
     guard request.count <= Self.maximumRequestBytes else { throw TypingStatisticsError.requestTooLarge }
     let pointer = request.withUnsafeBytes { bytes in
-      msimeTypingStatistics(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(request.count))
+      lingyaoTypingStatistics(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(request.count))
     }
     guard let pointer else { throw TypingStatisticsError.invalidResponse }
     let response = String(cString: pointer)
-    msimeTypingStatisticsStringFree(pointer)
+    lingyaoTypingStatisticsStringFree(pointer)
     guard let envelope = try JSONSerialization.jsonObject(with: Data(response.utf8)) as? [String: Any] else {
       throw TypingStatisticsError.invalidResponse
     }

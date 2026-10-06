@@ -1,7 +1,7 @@
 #import "../../src/core/DesktopCloudClipboard.h"
 #include <cassert>
 
-@interface SyntheticDictionaryProvider : NSObject <MSIMEDesktopCloudClipboardProvider>
+@interface SyntheticDictionaryProvider : NSObject <LINGYAODesktopCloudClipboardProvider>
 @property(nonatomic) unsigned calls;
 @property(nonatomic, strong) NSURL *exportDirectory;
 @end
@@ -16,7 +16,7 @@
         assert([request[@"text"] length] == 65536);
         result = @{@"imported":@1};
     } else if ([operation isEqual:@"export"]) {
-        self.exportDirectory = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[@"msime-export-" stringByAppendingString:NSUUID.UUID.UUIDString]]];
+        self.exportDirectory = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[@"lingyao-export-" stringByAppendingString:NSUUID.UUID.UUIDString]]];
         assert([NSFileManager.defaultManager createDirectoryAtURL:self.exportDirectory withIntermediateDirectories:NO attributes:@{NSFilePosixPermissions:@0700} error:nil]);
         NSMutableString *text = [NSMutableString new];
         for (int i = 0; i < 150000; ++i) [text appendString:@"synthetic\t合成\t100\n"];
@@ -34,8 +34,8 @@ int main(int argc, const char *argv[]) {
     @autoreleasepool {
         assert(argc == 2);
         SyntheticDictionaryProvider *provider = [SyntheticDictionaryProvider new];
-        MSIMEDesktopCloudClipboardSession *session = [[MSIMEDesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
-        assert(session && session.launchEnvironment[@"MSIME_CLIENT_CLOUD_DICTIONARY_SESSION"]);
+        LINGYAODesktopCloudClipboardSession *session = [[LINGYAODesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
+        assert(session && session.launchEnvironment[@"LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION"]);
         NSTask *probe = [NSTask new];
         probe.executableURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:argv[1]]];
         probe.environment = session.launchEnvironment;

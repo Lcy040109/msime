@@ -1,10 +1,10 @@
 #import "BoundedFileReader.h"
 
-static NSString *const MSIMEBoundedFileReaderError = @"app.msime.client.bounded-file-reader";
+static NSString *const LINGYAOBoundedFileReaderError = @"app.lingyao.client.bounded-file-reader";
 
-NSData *MSIMEReadFileUpTo(NSURL *url, NSUInteger maximumBytes, NSError **error) {
+NSData *LINGYAOReadFileUpTo(NSURL *url, NSUInteger maximumBytes, NSError **error) {
     if (!url.isFileURL || maximumBytes == NSUIntegerMax) {
-        if (error) *error = [NSError errorWithDomain:MSIMEBoundedFileReaderError
+        if (error) *error = [NSError errorWithDomain:LINGYAOBoundedFileReaderError
                                                   code:1
                                               userInfo:@{NSLocalizedDescriptionKey: @"文件参数无效"}];
         return nil;
@@ -24,7 +24,7 @@ NSData *MSIMEReadFileUpTo(NSURL *url, NSUInteger maximumBytes, NSError **error) 
         return nil;
     }
     if (data.length > maximumBytes) {
-        if (error) *error = [NSError errorWithDomain:MSIMEBoundedFileReaderError
+        if (error) *error = [NSError errorWithDomain:LINGYAOBoundedFileReaderError
                                                   code:2
                                               userInfo:@{NSLocalizedDescriptionKey: @"文件超过大小限制"}];
         return nil;

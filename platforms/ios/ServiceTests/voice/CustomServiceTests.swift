@@ -96,7 +96,7 @@ final class CustomServiceTests: XCTestCase {
   }
 
   func testPresetsAreUsableAndKeepSeparateSavedConfigurations() throws {
-    let suite = "msime-provider-tests-\(UUID().uuidString)"
+    let suite = "lingyao-provider-tests-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     var custom = CustomServiceConfiguration()
@@ -121,7 +121,7 @@ final class CustomServiceTests: XCTestCase {
   }
 
   func testVoicePresetsPreserveCustomAndDoNotChangeAI() throws {
-    let suite = "msime-voice-tests-\(UUID().uuidString)"
+    let suite = "lingyao-voice-tests-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let ai = CustomServiceConfiguration.loadPreset(.deepSeek, defaults: defaults)
@@ -155,7 +155,7 @@ final class CustomServiceTests: XCTestCase {
   }
 
   func testOnDeviceProvidersSaveOnlyTheChoiceAndKeepTheCloudService() throws {
-    let suite = "msime-voice-on-device-\(UUID().uuidString)"
+    let suite = "lingyao-voice-on-device-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     var customVoice = CustomServiceConfiguration.loadVoicePreset(.custom, defaults: defaults)
@@ -180,7 +180,7 @@ final class CustomServiceTests: XCTestCase {
   }
 
   func testDoubaoKeepsTheChosenStreamEndpointAndReadsBothResultShapes() throws {
-    let suite = "msime-doubao-endpoint-\(UUID().uuidString)"
+    let suite = "lingyao-doubao-endpoint-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let endpoints = VoiceProviderPreset.doubaoStreamEndpoints.map(\.endpoint)

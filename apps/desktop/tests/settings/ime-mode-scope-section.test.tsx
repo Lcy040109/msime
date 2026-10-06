@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ImeModeScopeSection } from "@msime/ui";
+import { ImeModeScopeSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

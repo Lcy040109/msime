@@ -3,7 +3,7 @@
 #include "PipePeer.h"
 #include "ipc_negotiation.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class HandshakeStatus {
   Verified,
   Ready,
@@ -53,4 +53,4 @@ MainHandshake negotiate_main(HANDLE main_pipe, HANDLE reply_pipe,
                              const FanyImeNamedpipeData &hello,
                              uint32_t implemented_capabilities,
                              DWORD timeout_ms, HANDLE cancel = nullptr);
-} // namespace msime::windows
+} // namespace lingyao::windows

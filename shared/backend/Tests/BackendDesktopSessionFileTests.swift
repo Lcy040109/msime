@@ -1,7 +1,7 @@
 #if os(macOS)
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 final class BackendDesktopSessionFileTests: XCTestCase {
   private var directory: URL!

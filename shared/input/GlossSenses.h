@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::input {
+namespace lingyao::input {
 
 // The senses inside one candidate's gloss.
 //
@@ -55,4 +55,4 @@ inline std::vector<std::string> gloss_senses(std::string_view gloss)
     return senses;
 }
 
-} // namespace msime::input
+} // namespace lingyao::input

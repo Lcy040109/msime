@@ -1,22 +1,22 @@
 # TSF host configuration
 
-The Windows DLL requires `MSIME_HOST_LIBRARY` at CMake configure time. Supply an absolute path to the Cargo-built host static library or DLL import library for the same architecture. Missing paths and directories are rejected before native dependency discovery. The linker remains responsible for format, architecture and symbols. Portable component tests and the standalone export fixture do not require it.
+The Windows DLL requires `LINGYAO_HOST_LIBRARY` at CMake configure time. Supply an absolute path to the Cargo-built host static library or DLL import library for the same architecture. Missing paths and directories are rejected before native dependency discovery. The linker remains responsible for format, architecture and symbols. Portable component tests and the standalone export fixture do not require it.
 
 The DLL version resource uses the standard `VS_VERSION_INFO` identifier, the workspace package version with a zero Windows revision, and the actual `LingyaoImeTsf.dll` output name. The portable CMake tests verify this source contract without loading or registering the DLL.
 
-The TIP reads `%LOCALAPPDATA%\MSIME-Client\runtime-options.json`, not legacy product state or guessed paths relative to the embedding application. The installer prepares that state for the production TIP; the command below prepares an equivalent state directory by hand, which is what a development build of the DLL wants.
+The TIP reads `%LOCALAPPDATA%\LINGYAO-Client\runtime-options.json`, not legacy product state or guessed paths relative to the embedding application. The installer prepares that state for the production TIP; the command below prepares an equivalent state directory by hand, which is what a development build of the DLL wants.
 
 With all sessions using that state stopped, prepare it through the shared host tool (PowerShell, from the repository root):
 
 ```powershell
-cargo run -p msime-host-api --example prepare_host -- '<verified-resource-directory>' "$env:LOCALAPPDATA\MSIME-Client"
+cargo run -p lingyao-host-api --example prepare_host -- '<verified-resource-directory>' "$env:LOCALAPPDATA\LINGYAO-Client"
 ```
 
-The tool verifies locked resources, prepares Engine working data, loads shared preferences and atomically publishes the complete document. The TIP reads up to the C ABI limit of 16384 bytes and passes it unchanged to the host. Missing, empty, unreadable or oversized files do not create a session; malformed schema and invalid preferences are rejected by the shared host. Running it by hand neither registers the TIP nor updates resources later — installation and registration belong to `installer/msime_setup.iss`.
+The tool verifies locked resources, prepares Engine working data, loads shared preferences and atomically publishes the complete document. The TIP reads up to the C ABI limit of 16384 bytes and passes it unchanged to the host. Missing, empty, unreadable or oversized files do not create a session; malformed schema and invalid preferences are rejected by the shared host. Running it by hand neither registers the TIP nor updates resources later — installation and registration belong to `installer/lingyao_setup.iss`.
 
 Native focus is routed through activation, document/top-context changes, deferred loss and deactivation; repeated same-context notifications are deduplicated because runtime focus resets composition. Preference changes reach the input path through the Server's `PreferenceMonitor` rather than through the DLL, so the TIP does not poll the preference file itself.
 
-The 19 CTest entries registered here (`msime-tsf-version-resource`, `msime-tsf-client-key-router`, `msime-tsf-host-focus`, `msime-tsf-prepared-options`, `msime-tsf-candidate-ownership`, `msime-tsf-engine-response` and the rest) cover the DLL-side policy and encoding without loading the TIP into a TSF host. `tests/registration_profiles` and `tests/registration_categories` are separate sub-projects covering profile and category registration; `tests/exports` covers the COM export surface below.
+The 19 CTest entries registered here (`lingyao-tsf-version-resource`, `lingyao-tsf-client-key-router`, `lingyao-tsf-host-focus`, `lingyao-tsf-prepared-options`, `lingyao-tsf-candidate-ownership`, `lingyao-tsf-engine-response` and the rest) cover the DLL-side policy and encoding without loading the TIP into a TSF host. `tests/registration_profiles` and `tests/registration_categories` are separate sub-projects covering profile and category registration; `tests/exports` covers the COM export surface below.
 
 ## COM export contract
 

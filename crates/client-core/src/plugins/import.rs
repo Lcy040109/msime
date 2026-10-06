@@ -1,6 +1,6 @@
 //! Installing a pack the user picked: a folder, or a `.zip` archive of one.
 //!
-//! `validate` runs the same steps without installing anything, for the `msime-pack` tool an author checks a pack with before publishing it: both go through `stage` and `check_staged`, so a pack the tool accepts is a pack import accepts.
+//! `validate` runs the same steps without installing anything, for the `lingyao-pack` tool an author checks a pack with before publishing it: both go through `stage` and `check_staged`, so a pack the tool accepts is a pack import accepts.
 //!
 //! The pack is copied or extracted into a staging directory beside the kind directories, checked there by the same rules `scan` lists packs by, and only then renamed into `<root>/<kind>/<id>`, replacing an installed pack of that id whole (`skin::folder_import::replace_directory`). A failed or interrupted import therefore never leaves a directory that looks installed, and never a pack that is half one version and half another.
 
@@ -92,7 +92,7 @@ pub fn import(source: &Path, root: &Path) -> Result<PluginSummary, PluginError> 
 /// Check the pack at `source` - a folder or a `.zip` file, as `import` takes them - by exactly the rules `import` installs it by, without a plugins root and without installing anything. The files are copied or extracted into a temporary directory first, as `import` stages them, so an archive is held to the same member, size and layout rules. The summary's `directory` is `source`.
 pub fn validate(source: &Path) -> Result<PluginSummary, PluginError> {
     let archive = is_archive(source)?;
-    let staging = tempfile::Builder::new().prefix("msime-pack-").tempdir()?;
+    let staging = tempfile::Builder::new().prefix("lingyao-pack-").tempdir()?;
     stage(source, archive, staging.path())?;
     let mut summary = check_staged(staging.path())?;
     summary.directory = source.to_path_buf();

@@ -6,7 +6,7 @@
 
 export const LOCAL_ASR_SAMPLE_RATE: number = 16000;
 /** The file the installer writes last into a model directory: the catalog entry, verbatim. */
-export const LOCAL_MODEL_MANIFEST: string = "msime-model.json";
+export const LOCAL_MODEL_MANIFEST: string = "lingyao-model.json";
 /** CoreSpeechKit's writeAudio accepts exactly 640 or 1280 bytes per call. */
 export const CORE_SPEECH_CHUNK_BYTES: number = 1280;
 /** One Silero VAD window at 16 kHz. */

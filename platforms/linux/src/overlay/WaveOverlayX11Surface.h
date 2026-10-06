@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Lightweight X11 fallback for desktops that do not expose a layer-shell
 // protocol. The surface never takes focus and accepts pointer input only in
@@ -65,4 +65,4 @@ class WaveOverlayX11Surface final : public WaveOverlaySurface {
   std::chrono::steady_clock::time_point placed_at_{};
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

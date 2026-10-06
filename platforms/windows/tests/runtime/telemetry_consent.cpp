@@ -1,7 +1,7 @@
 #include "TelemetryConsent.h"
 #include <stdexcept>
 
-using msime::windows::usage_reporting_enabled;
+using lingyao::windows::usage_reporting_enabled;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Usage reporting consent validation failed");

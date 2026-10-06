@@ -13,8 +13,8 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined \
   -I/opt/homebrew/include platforms/windows/tests/voice/voice_capture_selection.cpp \
   -o target/voice-capture-selection
 ./target/voice-capture-selection
-pnpm --filter @msime/desktop exec vitest run tests/input/windows-capture-devices.test.tsx
-pnpm --filter @msime/desktop build
+pnpm --filter @lingyao/desktop exec vitest run tests/input/windows-capture-devices.test.tsx
+pnpm --filter @lingyao/desktop build
 ```
 
 The C++ test uses synthetic configuration; the UI test uses synthetic same-label devices and reorders their list. Engine's own capture-device tests verify the same ID resolver the Server uses, including ambiguous and missing IDs and invalid syntax rejected before device initialization. What these cover is the selection and resolution logic; whether a given endpoint records depends on the machine's devices and the microphone permission granted there.

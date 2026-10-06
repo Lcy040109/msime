@@ -5,7 +5,7 @@
 这份指南覆盖八种类型：音效包（`sound`）、音乐包（`music`）、指令表（`command_table`）、特效包（`effect`）、短语表（`phrase_table`）、辅助码表（`helpcode`）、单词本（`wordbook`）和符号集（`symbol_set`）。下面的限制都取自 `crates/client-core/src/plugins/` 里的代码，两者不一致时以代码为准。`crates/client-core/tests/fixtures/plugin-packs/` 里有每种新类型能通过和会被拒绝的示例包，社区后端用同一批包校验。
 
 - 想直接开始：复制 [plugin-template](plugin-template/)，这是一个能通过校验的最小按键音效包。
-- 社区插件收集在 [metasequoiaime/msime-plugins](https://github.com/metasequoiaime/msime-plugins)，欢迎把自己的包提交到那里。
+- 社区插件收集在 [metasequoiaime/lingyao-plugins](https://github.com/metasequoiaime/msime-plugins)，欢迎把自己的包提交到那里。
 
 ## 文件夹结构
 
@@ -53,8 +53,8 @@ permissions = []        # 可选，只能是空数组
 
 - 清单里出现上表和该类型专属键以外的任何键，都会拒绝整个包。专属键之内的未知键同样会被拒绝。
 - 以下 id 属于内置包，安装的包不能使用：
-  - 音效包：`default`、`twinkle`、`msime-typewriter`、`msime-bubble`、`msime-8bit`、`msime-woodblock`、`msime-pentatonic`、`msime-canon`、`msime-ode-to-joy`
-  - 音乐包：`msime-music-lofi`、`msime-music-ambient`
+  - 音效包：`default`、`twinkle`、`lingyao-typewriter`、`lingyao-bubble`、`lingyao-8bit`、`lingyao-woodblock`、`lingyao-pentatonic`、`lingyao-canon`、`lingyao-ode-to-joy`
+  - 音乐包：`lingyao-music-lofi`、`lingyao-music-ambient`
 - 导入与已安装的包同类型、同 id 的包，会整包替换旧包。
 
 ## 音效包（`kind = "sound"`）
@@ -313,11 +313,11 @@ items = ["→", "←", "⇒"]
 
 ## 校验
 
-用 `msime-pack` 检查插件。它调用的就是输入法导入时用的校验代码：它接受的包，设置页一定能导入；它拒绝的包，设置页也会拒绝。
+用 `lingyao-pack` 检查插件。它调用的就是输入法导入时用的校验代码：它接受的包，设置页一定能导入；它拒绝的包，设置页也会拒绝。
 
 ```sh
-cargo build -p msime-pack-tool --bin msime-pack
-target/debug/msime-pack validate path/to/my-keys path/to/other-pack.zip
+cargo build -p lingyao-pack-tool --bin lingyao-pack
+target/debug/lingyao-pack validate path/to/my-keys path/to/other-pack.zip
 ```
 
 - 每个包输出一行，顺序与参数相同：

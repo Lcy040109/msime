@@ -9,7 +9,7 @@
 # 并装进本机受信任存储（这一步需要管理员 PowerShell；没有管理员权限只会警告，
 # 签名照做，只是 signtool verify 的链校验过不了）。之后每次运行都会复用它。
 #
-# 安装包文件名从 msime_setup.iss 的 MyAppVersion 读出，免得两处版本号打架。
+# 安装包文件名从 lingyao_setup.iss 的 MyAppVersion 读出，免得两处版本号打架。
 # 传 -Light 时签名 Output\LingyaoIME_Setup_v*_light.exe。
 
 param(
@@ -84,7 +84,7 @@ function Add-CertificateTrust {
     }
 
     $temporaryFile = Join-Path ([System.IO.Path]::GetTempPath()) `
-        ('msime-local-test-{0}.cer' -f $Certificate.Thumbprint)
+        ('lingyao-local-test-{0}.cer' -f $Certificate.Thumbprint)
     try {
         Export-Certificate -Cert $Certificate -FilePath $temporaryFile -Type CERT -Force | Out-Null
         foreach ($store in $missing) {
@@ -151,20 +151,20 @@ function Invoke-Sign {
     }
 }
 
-$issPath = Join-Path $PSScriptRoot 'msime_setup.iss'
+$issPath = Join-Path $PSScriptRoot 'lingyao_setup.iss'
 if (-not (Test-Path -LiteralPath $issPath -PathType Leaf)) {
     throw "找不到安装脚本：$issPath"
 }
 $issContent = Get-Content -LiteralPath $issPath -Raw
 if ($issContent -notmatch '(?m)^#define\s+MyAppVersion\s+"(?<version>[^"]+)"') {
-    throw '未能在 msime_setup.iss 中找到 MyAppVersion。'
+    throw '未能在 lingyao_setup.iss 中找到 MyAppVersion。'
 }
 $version = $Matches.version
 
 $suffix = if ($Light) { '_light' } else { '' }
 $installerPath = Join-Path $PSScriptRoot "Output\LingyaoIME_Setup_v$version$suffix.exe"
 if (-not (Test-Path -LiteralPath $installerPath -PathType Leaf)) {
-    throw "安装文件不存在，请先用 Inno Setup 编译 msime_setup.iss：$installerPath"
+    throw "安装文件不存在，请先用 Inno Setup 编译 lingyao_setup.iss：$installerPath"
 }
 $resolvedInstaller = (Resolve-Path -LiteralPath $installerPath).Path
 

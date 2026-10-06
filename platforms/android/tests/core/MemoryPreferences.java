@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 import android.content.SharedPreferences;
 import java.util.HashMap;

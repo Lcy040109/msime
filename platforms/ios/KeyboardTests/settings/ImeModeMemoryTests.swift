@@ -8,7 +8,7 @@ final class ImeModeMemoryTests: XCTestCase {
 
   override func setUp() {
     super.setUp()
-    suite = "msime-ime-mode-memory-\(UUID().uuidString)"
+    suite = "lingyao-ime-mode-memory-\(UUID().uuidString)"
     defaults = UserDefaults(suiteName: suite)
   }
 

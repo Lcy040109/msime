@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $Installers.ContainsKey('full') -or $Installers.Count -lt 2) { throw 'Provide the full installer and at least one other edition' }
 $table = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../../../shared/contracts/editions.json') -Raw | ConvertFrom-Json
-$logs = Join-Path $env:RUNNER_TEMP 'msime-coexistence-smoke'
+$logs = Join-Path $env:RUNNER_TEMP 'lingyao-coexistence-smoke'
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $failures = [Collections.Generic.List[string]]::new()
 function Check([bool]$Condition, [string]$What) {
@@ -69,7 +69,7 @@ function Uninstall([string]$Edition) {
 $order = @('full') + @($Installers.Keys | Where-Object { $_ -ne 'full' } | Sort-Object)
 foreach ($edition in $order) {
     $installer = (Resolve-Path -LiteralPath $Installers[$edition]).Path
-    $dataDir = Join-Path $env:RUNNER_TEMP "msime-coexistence-data-$edition"
+    $dataDir = Join-Path $env:RUNNER_TEMP "lingyao-coexistence-data-$edition"
     if (Test-Path -LiteralPath $dataDir) { Remove-Item -LiteralPath $dataDir -Recurse -Force }
     $run = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DATADIR=`"$dataDir`"", "/LOG=`"$logs\install-$edition.log`"" -Wait -PassThru
     if ($run.ExitCode -ne 0) { Get-Content -LiteralPath "$logs\install-$edition.log" -Tail 60; throw "$edition installer exited with $($run.ExitCode)" }

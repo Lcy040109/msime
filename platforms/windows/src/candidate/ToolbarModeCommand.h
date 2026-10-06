@@ -3,7 +3,7 @@
 #include "ToolbarIcons.h"
 #include "TrayMenuCommand.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The worker protocol sets modes explicitly; it has no toggle opcode.
 // Unknown is not false: wait for the focused TIP's reported state.
 inline std::optional<WorkerMode> toolbar_mode_command(
@@ -96,4 +96,4 @@ inline bool tray_menu_mode_row(TrayMenuCommand command) {
          command == TrayMenuCommand::ToggleFullwidth ||
          command == TrayMenuCommand::ToggleChinesePunctuation;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

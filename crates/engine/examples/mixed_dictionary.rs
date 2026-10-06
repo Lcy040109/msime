@@ -1,7 +1,7 @@
 //! Verify mixed candidate switches against isolated locked dictionary copies.
-use msime_engine::host::{prepare_options, EngineOptions, Session};
+use lingyao_engine::host::{prepare_options, EngineOptions, Session};
 
-fn query(options: &EngineOptions) -> msime_engine::Result<Vec<String>> {
+fn query(options: &EngineOptions) -> lingyao_engine::Result<Vec<String>> {
     let mut session = Session::new(options)?;
     session.character(b'h', false)?;
     session.character(b'a', false)?;

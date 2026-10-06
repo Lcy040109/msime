@@ -1,14 +1,14 @@
 import Foundation
 import CoreFoundation
 
-private typealias MSIMEClipboardByte = UInt8
+private typealias LINGYAOClipboardByte = UInt8
 
-@_silgen_name("msime_client_mobile_clipboard_history")
-private func msimeClientMobileClipboardHistory(
-  _ request: UnsafePointer<MSIMEClipboardByte>?, _ length: UInt
+@_silgen_name("lingyao_client_mobile_clipboard_history")
+private func lingyaoClientMobileClipboardHistory(
+  _ request: UnsafePointer<LINGYAOClipboardByte>?, _ length: UInt
 ) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientClipboardStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientClipboardStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 struct ClipboardHistoryItem: Equatable, Identifiable {
   var id: String { text }
@@ -32,7 +32,7 @@ struct ClipboardHistoryStore {
     root = directory ?? FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: InputSchemePreference.appGroupIdentifier)
       ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-    file = root.appendingPathComponent("MSIME/clipboard_history.json")
+    file = root.appendingPathComponent("LINGYAO/clipboard_history.json")
   }
 
   func load() throws -> [ClipboardHistoryItem] {
@@ -94,12 +94,12 @@ struct ClipboardHistoryStore {
       "action": action,
     ])
     let pointer = request.withUnsafeBytes { bytes in
-      msimeClientMobileClipboardHistory(
-        bytes.bindMemory(to: MSIMEClipboardByte.self).baseAddress, UInt(request.count))
+      lingyaoClientMobileClipboardHistory(
+        bytes.bindMemory(to: LINGYAOClipboardByte.self).baseAddress, UInt(request.count))
     }
     guard let pointer else { throw Failure.invalidFile }
     let response = String(cString: pointer)
-    msimeClientClipboardStringFree(pointer)
+    lingyaoClientClipboardStringFree(pointer)
     guard let data = response.data(using: .utf8),
           let envelope = try JSONSerialization.jsonObject(with: data) as? [String: Any],
           envelope["ok"] as? Bool == true,

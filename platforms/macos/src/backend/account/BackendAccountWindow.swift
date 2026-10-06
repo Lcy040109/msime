@@ -323,7 +323,7 @@ private struct MacAccountView: View {
   }
 }
 
-@MainActor @objc(MSIMEBackendAccountWindow)
+@MainActor @objc(LINGYAOBackendAccountWindow)
 final class BackendAccountWindow: NSWindowController, NSWindowDelegate {
   @objc static let shared = BackendAccountWindow()
   private let model = MacAccountModel()
@@ -346,7 +346,7 @@ final class BackendAccountWindow: NSWindowController, NSWindowDelegate {
   func windowWillClose(_ notification: Notification) { model.close() }
 }
 
-@_cdecl("MSIMEShowBackendAccount")
+@_cdecl("LINGYAOShowBackendAccount")
 public func showBackendAccount() {
   Task { @MainActor in BackendAccountWindow.shared.showAccount() }
 }
@@ -365,13 +365,13 @@ private final class AccountPane {
   }()
 }
 
-@_cdecl("MSIMEAccountPaneView")
+@_cdecl("LINGYAOAccountPaneView")
 @MainActor
 public func accountPaneView() -> NSView {
   MainActor.assumeIsolated { AccountPane.shared.hosting }
 }
 
-@_cdecl("MSIMEAccountPaneAttach")
+@_cdecl("LINGYAOAccountPaneAttach")
 @MainActor
 public func accountPaneAttach(_ window: NSWindow?) {
   MainActor.assumeIsolated {
@@ -380,7 +380,7 @@ public func accountPaneAttach(_ window: NSWindow?) {
   }
 }
 
-@_cdecl("MSIMEAccountPaneClose")
+@_cdecl("LINGYAOAccountPaneClose")
 @MainActor
 public func accountPaneClose() {
   MainActor.assumeIsolated { AccountPane.shared.model.close() }

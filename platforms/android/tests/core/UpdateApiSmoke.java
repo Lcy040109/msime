@@ -1,4 +1,4 @@
-import app.msime.android.UpdateApi;
+import app.lingyao.android.UpdateApi;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -13,8 +13,8 @@ import java.util.Map;
 public final class UpdateApiSmoke {
     public static void main(String[] arguments) throws Exception {
         // 资产名与 edition_android.py 的 apk_name 一致。
-        check("msime-client".equals(UpdateApi.apkAssetName("full")), "full asset name");
-        check("msime-client-wubi".equals(UpdateApi.apkAssetName("wubi")), "edition asset name");
+        check("lingyao-client".equals(UpdateApi.apkAssetName("full")), "full asset name");
+        check("lingyao-client-wubi".equals(UpdateApi.apkAssetName("wubi")), "edition asset name");
         rejects(() -> UpdateApi.apkAssetName("../x"), "edition ids are validated");
 
         // 只允许 https 与白名单主机。
@@ -48,7 +48,7 @@ public final class UpdateApiSmoke {
         check(UpdateApi.update(new UpdateApi.Release("../../x", "9", false), "full") == null, "tags are validated");
 
         String digest = "ab".repeat(32);
-        check(digest.equals(UpdateApi.parseChecksum(digest.toUpperCase(Locale.ROOT) + "  msime-client.apk\n")), "sha256sum format");
+        check(digest.equals(UpdateApi.parseChecksum(digest.toUpperCase(Locale.ROOT) + "  lingyao-client.apk\n")), "sha256sum format");
         check(UpdateApi.parseChecksum("not-a-digest") == null, "malformed checksum");
 
         // 下载：每一跳都过白名单，校验通过才留下文件。
@@ -63,17 +63,17 @@ public final class UpdateApiSmoke {
             return exchange;
         });
         routes.put(update.checksumUrl(), new UpdateApi.Exchange(302, "https://release-assets.githubusercontent.com/sum", -1, null));
-        routes.put("https://release-assets.githubusercontent.com/sum", body(good + "  msime-client.apk\n"));
+        routes.put("https://release-assets.githubusercontent.com/sum", body(good + "  lingyao-client.apk\n"));
         routes.put(update.apkUrl(), new UpdateApi.Exchange(200, null, apk.length, new ByteArrayInputStream(apk)));
         File cache = Files.createTempDirectory("update-smoke").toFile();
         File downloaded = api.download(update, cache, null);
-        check(downloaded.isFile() && downloaded.getName().equals("msime-client.apk"), "verified file kept");
+        check(downloaded.isFile() && downloaded.getName().equals("lingyao-client.apk"), "verified file kept");
         check(downloaded.getParentFile().getName().equals("updates"), "stored under cache/updates");
 
         // 关于页和每日任务同时下载：排队进行，后一次直接用前一次已经核对过的文件，不互删 .part、也不再下一遍。
         java.util.concurrent.atomic.AtomicInteger apkFetches = new java.util.concurrent.atomic.AtomicInteger();
         UpdateApi racing = new UpdateApi(url -> {
-            if (url.equals(update.checksumUrl())) return body(good + "  msime-client.apk\n");
+            if (url.equals(update.checksumUrl())) return body(good + "  lingyao-client.apk\n");
             if (url.equals(update.apkUrl())) {
                 apkFetches.incrementAndGet();
                 return new UpdateApi.Exchange(200, null, apk.length, new ByteArrayInputStream(apk));
@@ -90,15 +90,15 @@ public final class UpdateApiSmoke {
         check(one.equals(two) && one.isFile(), "concurrent downloads end with the same verified file");
         check(good.equals(UpdateApi.sha256Hex(one)), "the shared file is intact");
         check(apkFetches.get() == 1, "the second download reuses the verified file");
-        check(!new File(raceCache, "updates/msime-client.apk.part").exists(), "no partial file is left behind");
+        check(!new File(raceCache, "updates/lingyao-client.apk.part").exists(), "no partial file is left behind");
 
-        routes.put("https://release-assets.githubusercontent.com/sum", body("cd".repeat(32) + "  msime-client.apk\n"));
+        routes.put("https://release-assets.githubusercontent.com/sum", body("cd".repeat(32) + "  lingyao-client.apk\n"));
         routes.put(update.apkUrl(), new UpdateApi.Exchange(200, null, apk.length, new ByteArrayInputStream(apk)));
         try {
             api.download(update, cache, null);
             throw new AssertionError("a checksum mismatch must fail");
         } catch (UpdateApi.Failure expected) {
-            check(!new File(cache, "updates/msime-client.apk.part").exists(), "a failed download leaves nothing behind");
+            check(!new File(cache, "updates/lingyao-client.apk.part").exists(), "a failed download leaves nothing behind");
         }
 
         routes.put(update.checksumUrl(), new UpdateApi.Exchange(302, "https://evil.example/sum", -1, null));

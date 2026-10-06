@@ -4,7 +4,7 @@
 `crates/client-core/src/clipboard.rs` owns the rule: trimmed non-blank, at most forty thousand UTF-8
 bytes, at most ten thousand **graphemes**, and no control characters other than newline, carriage
 return and tab. Every mobile host writes into that store through
-`msime_client_mobile_clipboard_history`, which already answers with `captured` and a `reason`.
+`lingyao_client_mobile_clipboard_history`, which already answers with `captured` and a `reason`.
 
 Android kept a second copy of the rule and the two had drifted three ways at once. It counted
 `text.length()` - UTF-16 code units - where the shared store counts graphemes, so six thousand emoji
@@ -37,7 +37,7 @@ MEASURE = re.compile(r"\.length\b|\.count\b|getBytes\(|utf8\.count|lengthOfBytes
 PENDING = {}
 
 HOSTS = [
-    "platforms/android/java/app/msime/android/clipboard",
+    "platforms/android/java/app/lingyao/android/clipboard",
     "platforms/ios/SharedUI/clipboard",
     "platforms/harmony/entry/src/main/ets/keyboard/clipboard",
 ]

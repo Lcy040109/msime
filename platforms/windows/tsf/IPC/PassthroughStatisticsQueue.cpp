@@ -23,7 +23,7 @@ constexpr ULONGLONG SuppressionMilliseconds = 30000;
 
 bool SendBatch(bool english, const std::wstring &characters)
 {
-    for (const auto &message : msime::windows::aux_typing_statistics_messages(english, characters))
+    for (const auto &message : lingyao::windows::aux_typing_statistics_messages(english, characters))
     {
         if (!SendToAuxNamedpipe(message, true))
         {

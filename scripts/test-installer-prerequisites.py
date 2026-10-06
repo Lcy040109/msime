@@ -22,7 +22,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SETUP = ROOT / "platforms/windows/installer/msime_setup.iss"
+SETUP = ROOT / "platforms/windows/installer/lingyao_setup.iss"
 
 
 def strip_pascal_comments(code: str) -> str:

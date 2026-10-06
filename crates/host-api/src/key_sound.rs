@@ -14,12 +14,12 @@
     allow(dead_code)
 )]
 
-use msime_client_core::plugins::effect_pack::TypingEffect;
-use msime_client_core::plugins::{
+use lingyao_client_core::plugins::effect_pack::TypingEffect;
+use lingyao_client_core::plugins::{
     self, music_pack, sound_pack, EffectStyle, PluginContent, PluginKind, PluginSummary,
     MANIFEST_FILE,
 };
-use msime_client_core::preferences::{KeySoundMode, PluginPreferences};
+use lingyao_client_core::preferences::{KeySoundMode, PluginPreferences};
 use serde_json::{json, Value};
 use std::cell::Cell;
 use std::path::{Path, PathBuf};
@@ -36,7 +36,7 @@ mod player;
 pub(crate) use effect::typing_effect;
 use effect::Combo;
 
-/// The key classes a host reports, numbered as `msime_client_key_sound` takes them.
+/// The key classes a host reports, numbered as `lingyao_client_key_sound` takes them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum KeyClass {
     Default = 0,
@@ -316,7 +316,7 @@ impl SessionSound {
     }
 }
 
-/// The session's resolved typing effect for `msime_client_typing_effect_settings`: the style and parameters the host draws with, and whether it shows the combo count. Not for the key path: the host reads it when the preferences change or a field gains focus, and draws each key from `msime_client_typing_effect`'s answer.
+/// The session's resolved typing effect for `lingyao_client_typing_effect_settings`: the style and parameters the host draws with, and whether it shows the combo count. Not for the key path: the host reads it when the preferences change or a field gains focus, and draws each key from `lingyao_client_typing_effect`'s answer.
 pub(crate) fn effect_settings(sound: &SessionSound) -> Value {
     let settings = &sound.settings;
     let mut value = serde_json::to_value(&settings.effect).unwrap_or(Value::Null);

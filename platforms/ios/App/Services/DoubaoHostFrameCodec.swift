@@ -1,23 +1,23 @@
 import Foundation
 
-private typealias MSIMEByte = UInt8
+private typealias LINGYAOByte = UInt8
 
-@_silgen_name("msime_client_doubao_decode_frame")
-private func msimeClientDoubaoDecodeFrame(_ frame: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_doubao_decode_frame")
+private func lingyaoClientDoubaoDecodeFrame(_ frame: UnsafePointer<LINGYAOByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_doubao_start_frame")
-private func msimeClientDoubaoStartFrame(_ enableITN: Bool, _ enablePunctuation: Bool, _ enableDDC: Bool,
-                                         _ boostingTable: UnsafePointer<MSIMEByte>?, _ boostingTableLength: UInt,
-                                         _ output: UnsafeMutablePointer<MSIMEByte>?, _ outputCapacity: UInt,
+@_silgen_name("lingyao_client_doubao_start_frame")
+private func lingyaoClientDoubaoStartFrame(_ enableITN: Bool, _ enablePunctuation: Bool, _ enableDDC: Bool,
+                                         _ boostingTable: UnsafePointer<LINGYAOByte>?, _ boostingTableLength: UInt,
+                                         _ output: UnsafeMutablePointer<LINGYAOByte>?, _ outputCapacity: UInt,
                                          _ outputLength: UnsafeMutablePointer<UInt>?) -> Bool
 
-@_silgen_name("msime_client_doubao_audio_frame")
-private func msimeClientDoubaoAudioFrame(_ sequence: Int32, _ pcm: UnsafePointer<MSIMEByte>?, _ pcmLength: UInt,
-                                         _ finalChunk: Bool, _ output: UnsafeMutablePointer<MSIMEByte>?,
+@_silgen_name("lingyao_client_doubao_audio_frame")
+private func lingyaoClientDoubaoAudioFrame(_ sequence: Int32, _ pcm: UnsafePointer<LINGYAOByte>?, _ pcmLength: UInt,
+                                         _ finalChunk: Bool, _ output: UnsafeMutablePointer<LINGYAOByte>?,
                                          _ outputCapacity: UInt, _ outputLength: UnsafeMutablePointer<UInt>?) -> Bool
 
-@_silgen_name("msime_client_string_free")
-private func msimeClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 /// Swift closures over the host-api Doubao C ABI. The frame layout stays in
 /// client-core; this adapter only owns pointer lifetime and response JSON
@@ -49,10 +49,10 @@ enum DoubaoHostFrameCodec {
     var written: UInt = 0
     let ok = output.withUnsafeMutableBytes { outputBytes in
       table.withUnsafeBytes { tableBytes in
-        msimeClientDoubaoStartFrame(
+        lingyaoClientDoubaoStartFrame(
           enableITN, punctuation, DDC,
-          tableBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(table.count),
-          outputBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(capacity), &written)
+          tableBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(table.count),
+          outputBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(capacity), &written)
       }
     }
     guard ok, written <= UInt(output.count) else { throw Failure.startFrame }
@@ -66,9 +66,9 @@ enum DoubaoHostFrameCodec {
     var written: UInt = 0
     let ok = output.withUnsafeMutableBytes { outputBytes in
       pcm.withUnsafeBytes { pcmBytes in
-        msimeClientDoubaoAudioFrame(
-          sequence, pcmBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(pcm.count), final,
-          outputBytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(capacity), &written)
+        lingyaoClientDoubaoAudioFrame(
+          sequence, pcmBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(pcm.count), final,
+          outputBytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(capacity), &written)
       }
     }
     guard ok, written <= UInt(output.count) else { throw Failure.audioFrame }
@@ -78,10 +78,10 @@ enum DoubaoHostFrameCodec {
 
   private static func decodeFrame(_ frame: Data) -> (isFinal: Bool, text: String?)? {
     let raw: UnsafeMutablePointer<CChar>? = frame.withUnsafeBytes { bytes in
-      msimeClientDoubaoDecodeFrame(bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(frame.count))
+      lingyaoClientDoubaoDecodeFrame(bytes.bindMemory(to: LINGYAOByte.self).baseAddress, UInt(frame.count))
     }
     guard let raw else { return nil }
-    defer { msimeClientStringFree(raw) }
+    defer { lingyaoClientStringFree(raw) }
     guard let data = String(cString: raw).data(using: .utf8),
           let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     else { return nil }

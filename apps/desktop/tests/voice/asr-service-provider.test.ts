@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { isAsrServiceProvider } from "@msime/ui";
+import { isAsrServiceProvider } from "@lingyao/ui";
 
 test("recognizes credential-backed ASR service providers", () => {
   expect(isAsrServiceProvider("openai")).toBe(true);

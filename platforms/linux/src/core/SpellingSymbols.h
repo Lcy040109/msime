@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Engine 在 View.spelling_symbols 里列出当前状态下它当作输入的非字母字符：表达式模式的运算符和数字、Unicode 模式的数字、网址模式的数字和网址符号、没有组字时打开模式的按键（"/" 和 "@"）、组字原文是网址触发词时打开网址模式的按键（"." 或 ":"），以及方案拼写用的按键（注音键盘的数字和符号、粤拼的音节分隔撇号、越南文 VNI 的声调数字、藏文威利转写的撇号、叠写加号、消歧句点、连字符和上屏垂符的斜杠）。IBus 和 Fcitx5 宿主共用它，因此两边都不必各自维护哪个模式拼写什么的列表；自己维护的列表会在 Engine 第一次新增模式时就跑偏。
 inline bool spelling_symbol(const nlohmann::json &view, char32_t character) {
@@ -62,4 +62,4 @@ inline bool shifted_number_row_picks(const nlohmann::json &view, char32_t charac
          spelling_digits(view);
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

@@ -9,7 +9,7 @@ import {
   type CommunityPluginClient,
   type CommunityResource,
   type CommunityResourceClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import {
   candidateSkinMessage,
   communityPluginMessage,

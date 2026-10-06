@@ -7,7 +7,7 @@ use crate::*;
 /// # Safety
 /// `options` must point to `length` readable bytes for this call. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_create(options: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_create(options: *const u8, length: usize) -> *mut c_char {
     response(|| {
         if options.is_null() || length > HOST_OPTIONS_DOCUMENT_LIMIT {
             return Err("invalid options buffer".into());
@@ -168,13 +168,13 @@ pub unsafe extern "C" fn msime_client_create(options: *const u8, length: usize) 
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_focus(handle: u64, focused: bool) -> *mut c_char {
+pub extern "C" fn lingyao_client_focus(handle: u64, focused: bool) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             // Focus-out is where a host's field ends, so selections counted in it are written here rather than waiting for a batch to fill. The same goes for the engine's delayed context learning: the iOS keyboard extension and the Android IME process can be killed without ever destroying their sessions, and the engine no longer writes that queue at process exit.
             if !focused {
                 session.flush_selections();
-                msime_engine::flush_personal_learning();
+                lingyao_engine::flush_personal_learning();
             } else {
                 session.refresh_plugin_tables()?;
                 // 设置应用可能刚下载好日文、粤拼、注音、笔画的资源包或落定重排模型；Engine 重建和模型加载在随后的 `complete_transition` 里空闲时进行。
@@ -190,12 +190,12 @@ pub extern "C" fn msime_client_focus(handle: u64, focused: bool) -> *mut c_char 
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_reset_cache(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_reset_cache(handle: u64) -> *mut c_char {
     dispatch(handle, Action::ResetCache)
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_voice_start(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_voice_start(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             let generation = session.voice.start();
@@ -208,7 +208,7 @@ pub extern "C" fn msime_client_voice_start(handle: u64) -> *mut c_char {
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_voice_cancel(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_voice_cancel(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             session.voice.cancel();
@@ -219,7 +219,7 @@ pub extern "C" fn msime_client_voice_cancel(handle: u64) -> *mut c_char {
 
 /// Capture a bounded PCM16-compatible sample buffer from the default input device. The returned JSON contains only the samples for this call; callers must transport them immediately and must not log or persist them.
 #[no_mangle]
-pub extern "C" fn msime_client_voice_capture(milliseconds: u32) -> *mut c_char {
+pub extern "C" fn lingyao_client_voice_capture(milliseconds: u32) -> *mut c_char {
     response(|| {
         if !(1..=60_000).contains(&milliseconds) {
             return Err("invalid voice capture duration".into());
@@ -240,7 +240,7 @@ pub extern "C" fn msime_client_voice_capture(milliseconds: u32) -> *mut c_char {
 /// `text` must point to a readable UTF-8 buffer of `length` bytes and must not
 /// be null. The buffer is not retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_voice_apply(
+pub unsafe extern "C" fn lingyao_client_voice_apply(
     handle: u64,
     generation: u64,
     text: *const u8,

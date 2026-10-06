@@ -1,4 +1,4 @@
-import app.msime.android.TypingStatisticsLifecyclePolicy;
+import app.lingyao.android.TypingStatisticsLifecyclePolicy;
 
 public final class TypingStatisticsLifecycleSmoke {
     public static void main(String[] args) {

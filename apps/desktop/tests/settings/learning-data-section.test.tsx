@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { LearningDataSection } from "@msime/ui";
+import { LearningDataSection } from "@lingyao/ui";
 import { utilityCss } from "../support/utility-css";
 
 afterEach(() => {

@@ -1,8 +1,8 @@
 #!/bin/bash
-# The MSIME menu for Omarchy, opened by the bar widget in plugin/. Omarchy starts fcitx5 with --disable notificationitem, so the tray menu that carries these entries elsewhere never shows; this offers the ones that do not need a focused text field, through Omarchy's own picker. Entries that act on the text being typed (中英, 简繁, punctuation) stay on their keyboard shortcuts.
+# The LINGYAO menu for Omarchy, opened by the bar widget in plugin/. Omarchy starts fcitx5 with --disable notificationitem, so the tray menu that carries these entries elsewhere never shows; this offers the ones that do not need a focused text field, through Omarchy's own picker. Entries that act on the text being typed (中英, 简繁, punctuation) stay on their keyboard shortcuts.
 set -uo pipefail
 
-settings='@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings'
+settings='@CMAKE_INSTALL_FULL_BINDIR@/lingyao-linux-settings'
 command -v omarchy-menu-select >/dev/null 2>&1 || exit 0
 
 entries=(
@@ -30,6 +30,6 @@ case "$choice" in
   语音输入) exec "$settings" --panel voice ;;
   云剪贴板) exec "$settings" --panel cloud-clipboard ;;
   # The same in-process reset as the settings page's restart button and Ctrl+Shift+Alt+R: every composition ends and runtime-options.json is read again, other input methods are untouched.
-  重载灵耀输入法) exec gdbus call --session --dest org.fcitx.Fcitx5 --object-path /controller --method org.fcitx.Fcitx.Controller1.ReloadAddonConfig "'msime'" ;;
+  重载灵耀输入法) exec gdbus call --session --dest org.fcitx.Fcitx5 --object-path /controller --method org.fcitx.Fcitx.Controller1.ReloadAddonConfig "'lingyao'" ;;
   '重启 Fcitx5') exec systemctl --user restart omarchy-fcitx5.service ;;
 esac

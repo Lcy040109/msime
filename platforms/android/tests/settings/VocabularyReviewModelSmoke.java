@@ -1,6 +1,6 @@
-import app.msime.android.VocabularyReviewModel;
-import app.msime.android.VocabularyReviewModel.Card;
-import app.msime.android.VocabularyReviewModel.Wordbook;
+import app.lingyao.android.VocabularyReviewModel;
+import app.lingyao.android.VocabularyReviewModel.Card;
+import app.lingyao.android.VocabularyReviewModel.Wordbook;
 import java.util.List;
 
 public final class VocabularyReviewModelSmoke {

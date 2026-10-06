@@ -43,7 +43,7 @@
 - 各平台版本号（`platforms/<os>/version.txt` 及随它一起改的文件，macOS 还有 `build-number.txt`）先经普通 PR 合入 `develop`，再从包含它的 `develop` 切 release 分支，让 `main` 上的版本号始终来自 `develop`。
 - release 分支合入 `main` 用 merge commit，不要 squash：squash 会让 `develop` 的提交不在 `main` 的祖先里，下一次发版会在双方各自新增过的文件上冲突。
 - 各平台的 Release 工作流按触发分支给发布加后缀：`main` 不加（`android-v0.1.4`），`develop` 加 `-beta`（`android-v0.1.4-beta`），其他分支加 `-alpha`。后缀只在 tag、标题和发布说明上，包内版本号仍是 `X.Y.Z`；带后缀的发布一律标为 prerelease，应用内更新检查不会提供它，Homebrew cask 和 Linux 发行版包定义也只在 `main` 的正式版之后更新。网页引擎只能从 `main` 发布，后缀只出现在其他分支的构建产物里。
-- 网页引擎（Release Web Engine）勾选 `publish` 时只能在 `main` 上运行，workflow 会拒绝其他分支：它同时发布 npm 包 `@msime/web-engine`，npm 的 `latest` 会被接入方的版本范围和不带版本号的 CDN 地址自动取走。只构建不发布时任何分支都可以。
+- 网页引擎（Release Web Engine）勾选 `publish` 时只能在 `main` 上运行，workflow 会拒绝其他分支：它同时发布 npm 包 `@lingyao/web-engine`，npm 的 `latest` 会被接入方的版本范围和不带版本号的 CDN 地址自动取走。只构建不发布时任何分支都可以。
 
 ## Worktree
 
@@ -54,7 +54,7 @@
 - `<feature>` 用 kebab-case，从分支名或 issue 编号推出；不要加 `wt-` 前缀，父目录已经说明了它是什么。
 - 一路提交，不要把所有东西攒到最后。分支是第一道防线，目录只是第二道：一个 WIP 提交不花什么代价，却能扛住检出目录出的任何事。
 - 分支合并或废弃后立刻移除 worktree：`git worktree remove <path>`，然后 `git branch -D <branch>`。目录被手工删掉的话跑一次 `git worktree prune`。
-- **只用仓库规定的产物目录，不要自己另起 `CARGO_TARGET_DIR`。** 规定的目录是 `target/`，以及各平台脚本和 README 固定下来的 `target/<platform>-cargo`（`macos-cargo`、`android-cargo`、`ohos-cargo` 等）。原生工程的构建目录同理只用 README 和 `scripts/verify-local.sh` 固定的那一个：macOS 的 CMake 构建目录是 `target/macos-isolated`（`MSIME_MACOS_BUILD` 的默认值，`platforms/macos/README.md` 和 `launch-platform-host` skill 都用它）。它是 CMake 目录，不要拿它当 `CARGO_TARGET_DIR`，也不要在它旁边再另起一个 macOS 构建目录。每多一个目录，整棵依赖树就要从头再编一遍、再占几个 GB。2026-09-24 有一个 worktree 为不同平台和子任务分别建了 `build/rust-local-asr`、`build/macos-local-asr`、`build/tauri-local-asr`、`build/macos-crossfix`、`build/ios-local-asr`，单它一个就堆到 34 GB；另一个在 `target/macos-cargo` 旁边又建了 `target/macos-isolated`，比规定目录还大一倍。这类目录和另外五六个并行的 worktree 一起，一小时内把 461 GB 的盘写满了三次。产物目录里的东西坏了（典型是 `platforms/macos/README.md` 说的过程宏 dylib），删掉坏的那部分让它重编，不要换一个新目录绕开它。
+- **只用仓库规定的产物目录，不要自己另起 `CARGO_TARGET_DIR`。** 规定的目录是 `target/`，以及各平台脚本和 README 固定下来的 `target/<platform>-cargo`（`macos-cargo`、`android-cargo`、`ohos-cargo` 等）。原生工程的构建目录同理只用 README 和 `scripts/verify-local.sh` 固定的那一个：macOS 的 CMake 构建目录是 `target/macos-isolated`（`LINGYAO_MACOS_BUILD` 的默认值，`platforms/macos/README.md` 和 `launch-platform-host` skill 都用它）。它是 CMake 目录，不要拿它当 `CARGO_TARGET_DIR`，也不要在它旁边再另起一个 macOS 构建目录。每多一个目录，整棵依赖树就要从头再编一遍、再占几个 GB。2026-09-24 有一个 worktree 为不同平台和子任务分别建了 `build/rust-local-asr`、`build/macos-local-asr`、`build/tauri-local-asr`、`build/macos-crossfix`、`build/ios-local-asr`，单它一个就堆到 34 GB；另一个在 `target/macos-cargo` 旁边又建了 `target/macos-isolated`，比规定目录还大一倍。这类目录和另外五六个并行的 worktree 一起，一小时内把 461 GB 的盘写满了三次。产物目录里的东西坏了（典型是 `platforms/macos/README.md` 说的过程宏 dylib），删掉坏的那部分让它重编，不要换一个新目录绕开它。
 
 清理不是可选的杂务。一个残留的 worktree 会让它完整的构建树一直活着——`target/`、`node_modules/` 和 `gradle-home/` 各自都是几个 GB——几十个被遗忘的 worktree 足以填满一块盘。
 

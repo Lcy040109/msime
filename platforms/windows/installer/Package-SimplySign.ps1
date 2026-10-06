@@ -63,7 +63,7 @@ $prepareArgs = @{
     Tsf32ReleaseDirectory="$editionBuild/x86/bin"
     Tsf64ReleaseDirectory="$editionBuild/x64/bin"
     TsfArm64ReleaseDirectory="$editionBuild/arm64/bin"
-    DesktopExecutable="$editionBuild/x64/bin/msime-client-settings.exe"
+    DesktopExecutable="$editionBuild/x64/bin/lingyao-client-settings.exe"
 }
 $signArgs = @{ PackageRoot=$PSScriptRoot; CertificateThumbprint=$CertificateThumbprint; TimestampUrl=$TimestampUrl; SignToolPath=$SignToolPath }
 $outerName = "$($editionEntry[0].platforms.windows.installer_base_name)_v$TargetVersion"

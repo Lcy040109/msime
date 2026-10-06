@@ -3,7 +3,7 @@
 
 int main() {
     @autoreleasepool {
-        MSIMEToolTextReturn state;
+        LINGYAOToolTextReturn state;
         NSObject *first = [NSObject new];
         NSObject *other = [NSObject new];
         auto token = state.capture(first);

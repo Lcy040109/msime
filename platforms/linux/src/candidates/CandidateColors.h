@@ -11,7 +11,7 @@
 #include "../core/CandidateSkinCatalog.h"
 #include "CandidatePalette.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 struct ThemeColor {
   std::uint32_t rgb = 0;
@@ -105,12 +105,12 @@ inline bool surface_dark_theme(const nlohmann::json &preferences, const char *su
   return global == "system" ? system_dark : global != "light";
 }
 
-// The candidate window being drawn, as msime_client_resolve_theme takes it: a package may declare only one of the two layouts.
+// The candidate window being drawn, as lingyao_client_resolve_theme takes it: a package may declare only one of the two layouts.
 inline std::string candidate_layout_id(const nlohmann::json &preferences) {
   return preferences.value("candidate_layout", std::string{}) == "horizontal" ? "horizontal" : "vertical";
 }
 
-// The msime_client_resolve_theme request for the candidate window: the global theme and the custom theme exactly as stored, the mode candidate_dark_theme settles on, the layout being drawn and, when the custom theme names an installed package, that package's catalogue entry unchanged. The shared layer uses the package only for `custom` and only when its id equals custom_theme.candidate_skin, so it is sent only then. The caller does the FFI call; this header stays free of it so the palette tests need no engine.
+// The lingyao_client_resolve_theme request for the candidate window: the global theme and the custom theme exactly as stored, the mode candidate_dark_theme settles on, the layout being drawn and, when the custom theme names an installed package, that package's catalogue entry unchanged. The shared layer uses the package only for `custom` and only when its id equals custom_theme.candidate_skin, so it is sent only then. The caller does the FFI call; this header stays free of it so the palette tests need no engine.
 inline nlohmann::json candidate_theme_request(const nlohmann::json &preferences, bool dark,
                                               const nlohmann::json &catalog) {
   using Json = nlohmann::json;
@@ -137,7 +137,7 @@ struct CandidateTheme {
   std::string candidate_skin;
 };
 
-// Map a ResolvedTheme (the `value` of msime_client_resolve_theme) onto the colours the frontends draw. Every null slot, or a null palette as `system` resolves to, takes the Adwaita token from candidate_native_palette in the mode drawn. The frontends paint opaque colours only, so translucent slots are composited: the surface over the native surface, everything else over the surface. The hover slot has no counterpart on the card (neither IBus attributes nor the classic UI theme track the pointer over candidates) and reaches only the Fcitx5 menu highlight, through `menu`; show_selected_bar is not read, because neither frontend draws a selection bar that a package could hide. An empty object resolves to the native tokens, which is also what a host draws when the call fails.
+// Map a ResolvedTheme (the `value` of lingyao_client_resolve_theme) onto the colours the frontends draw. Every null slot, or a null palette as `system` resolves to, takes the Adwaita token from candidate_native_palette in the mode drawn. The frontends paint opaque colours only, so translucent slots are composited: the surface over the native surface, everything else over the surface. The hover slot has no counterpart on the card (neither IBus attributes nor the classic UI theme track the pointer over candidates) and reaches only the Fcitx5 menu highlight, through `menu`; show_selected_bar is not read, because neither frontend draws a selection bar that a package could hide. An empty object resolves to the native tokens, which is also what a host draws when the call fails.
 inline CandidateTheme candidate_theme_colors(const nlohmann::json &resolved, bool dark) {
   using Json = nlohmann::json;
   CandidateTheme theme;
@@ -213,4 +213,4 @@ inline FloatingSurfaceColors floating_surface_colors(const CandidateTheme &theme
   };
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

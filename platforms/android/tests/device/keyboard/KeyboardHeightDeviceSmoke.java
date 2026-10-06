@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -96,14 +96,14 @@ public final class KeyboardHeightDeviceSmoke extends DeviceSmoke {
                     + standard + " -> " + resetHeight);
 
             stage = "height survives input method restart";
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             rebindInputMethod();
             openEditor();
             int restarted = keyHeight("n");
             if (Math.abs(restarted - resetHeight) > 2)
                 throw new AssertionError("Persisted height changed after restart");
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath());
             else publish(preferences, original);
             if (originalLocal == null) Files.deleteIfExists(localSettings.toPath());
@@ -112,14 +112,14 @@ public final class KeyboardHeightDeviceSmoke extends DeviceSmoke {
     }
 
     private void openEditor() throws Exception {
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
-        tap(field("msime-test-plain"));
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
+        tap(field("lingyao-test-plain"));
     }
 
     private void rebindInputMethod() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
@@ -145,7 +145,7 @@ public final class KeyboardHeightDeviceSmoke extends DeviceSmoke {
     }
 
     private java.util.function.Predicate<AccessibilityNodeInfo> description(String value) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText(value, node.getContentDescription());
     }
 

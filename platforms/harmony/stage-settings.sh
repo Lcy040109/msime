@@ -7,7 +7,7 @@ repo_root=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$repo_root"
 command -v pnpm >/dev/null 2>&1 || { echo "pnpm is required to build the settings page (corepack enable)" >&2; exit 1; }
 [ -d node_modules ] || { echo "dependencies are not installed: run pnpm install --frozen-lockfile at the repository root" >&2; exit 1; }
-pnpm --filter @msime/harmony build >/dev/null
+pnpm --filter @lingyao/harmony build >/dev/null
 page="$repo_root/platforms/harmony/entry/src/main/resources/rawfile/settings/index.html"
 [ -s "$page" ] || { echo "the settings build produced no $page" >&2; exit 1; }
 # The WebView reads this one file and nothing beside it.

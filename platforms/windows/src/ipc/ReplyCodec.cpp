@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <charconv>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 EncodedReply failed(ReplyError error) { return {error, {}}; }
 EncodedReply text_reply(uint64_t request, uint32_t type,
@@ -418,4 +418,4 @@ EncodedReply uiless_reply(uint64_t request, std::string_view display,
   payload += std::to_string(highlighted);
   return text_reply(request, FanyImeReplyType::UiLessComposition, payload);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SettingsFormFooter, type Preferences } from "@msime/ui";
+import { SettingsFormFooter, type Preferences } from "@lingyao/ui";
 
 test("explains the invalid candidate fonts that hold the automatic save back", () => {
   const draft = { candidate_font_family: "" } as Preferences;

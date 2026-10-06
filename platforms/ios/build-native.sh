@@ -24,6 +24,6 @@ linker_var="CARGO_TARGET_$(printf '%s' "$rust_target" | tr '[:lower:]-' '[:upper
 env "$linker_var=$linker" \
   IPHONEOS_DEPLOYMENT_TARGET="$deployment_target" \
   CARGO_TARGET_DIR="$target_dir" \
-  cargo build -p msime-host-api --target "$rust_target" --release --locked
-cp "$target_dir/$rust_target/release/libmsime_host_api.a" "$output_dir/libmsime_host_api.a"
-echo "iOS host library built: $output_dir/libmsime_host_api.a"
+  cargo build -p lingyao-host-api --target "$rust_target" --release --locked
+cp "$target_dir/$rust_target/release/liblingyao_host_api.a" "$output_dir/liblingyao_host_api.a"
+echo "iOS host library built: $output_dir/liblingyao_host_api.a"

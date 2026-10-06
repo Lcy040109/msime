@@ -13,14 +13,14 @@
 - helpcode：1 时显示编码提示。
 - anchor：bottom 时把输入框放在视口底部，用来检查翻到上方的定位；right 时放在右侧，检查横向夹紧。
 
-页面的 CSP 不允许任何内联样式（style-src 'none'），用来证明候选栏只靠可构造样式表和 setProperty 也能画出来。画完后 document.body 带 data-ready；出错时带 data-error，错误信息写在 #status 里。window.msimeBar 是候选栏对象，window.msimePicks 记着点过的候选下标。
+页面的 CSP 不允许任何内联样式（style-src 'none'），用来证明候选栏只靠可构造样式表和 setProperty 也能画出来。画完后 document.body 带 data-ready；出错时带 data-error，错误信息写在 #status 里。window.lingyaoBar 是候选栏对象，window.lingyaoPicks 记着点过的候选下标。
 -->
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'none'; img-src 'self' data:" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@msime/web-engine 候选栏预览</title>
+    <title>@lingyao/web-engine 候选栏预览</title>
   </head>
   <body>
     <p id="status">loading</p>
@@ -96,16 +96,16 @@
           rerankMs: 0,
         };
         document.body.dataset.anchor = params.get("anchor") ?? "";
-        window.msimePicks = [];
+        window.lingyaoPicks = [];
         const bar = createCandidateBar({
           skin,
           layout,
           dark,
           helpcode: params.get("helpcode") === "1",
-          onPick: (i) => window.msimePicks.push(i),
+          onPick: (i) => window.lingyaoPicks.push(i),
         });
-        window.msimeBar = bar;
-        window.msimeFrame = frame;
+        window.lingyaoBar = bar;
+        window.lingyaoFrame = frame;
         const draw = () => bar.render(frame, field.getBoundingClientRect());
         draw();
         addEventListener("resize", draw);

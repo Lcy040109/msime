@@ -1,6 +1,6 @@
-import app.msime.android.AppThemePalette;
-import app.msime.android.AppThemePalette.Mode;
-import app.msime.android.AppThemePalette.Seed;
+import app.lingyao.android.AppThemePalette;
+import app.lingyao.android.AppThemePalette.Mode;
+import app.lingyao.android.AppThemePalette.Seed;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useAccountPageActions } from "@msime/ui";
+import { useAccountPageActions } from "@lingyao/ui";
 
 test("builds mobile account actions and reports cloud action failures", async () => {
   const openCloudDictionary = vi.fn().mockRejectedValue(new Error("synthetic"));

@@ -25,7 +25,7 @@ pub(crate) struct VoiceRecognitionResult {
 // 润色配置只有 Android 的语音面板读；iOS 和测试构建只用到提供方配置。
 #[cfg(any(target_os = "ios", target_os = "android", test))]
 #[cfg_attr(not(target_os = "android"), allow(unused_imports))]
-pub(crate) use msime_client_core::voice::provider::{
+pub(crate) use lingyao_client_core::voice::provider::{
     mobile_voice_polish_configuration, mobile_voice_provider_configuration,
 };
 
@@ -104,7 +104,7 @@ pub(crate) fn voice_provider_options(document: &Value) -> Result<Value, HostActi
     if let Some(path) = voice
         .get("asr_model_path")
         .and_then(Value::as_str)
-        .filter(|path| !path.is_empty() && msime_client_core::is_bounded_text(path, 4096))
+        .filter(|path| !path.is_empty() && lingyao_client_core::is_bounded_text(path, 4096))
     {
         options.insert("asr_model_path".to_owned(), Value::String(path.to_owned()));
     }
@@ -144,7 +144,7 @@ pub(crate) fn resolve_voice_provider_socket(
         .map(std::path::PathBuf::from)
         .filter(|path| path.is_absolute())
         .or_else(|| {
-            std::env::var_os("MSIME_VOICE_PROVIDER_SOCKET")
+            std::env::var_os("LINGYAO_VOICE_PROVIDER_SOCKET")
                 .map(std::path::PathBuf::from)
                 .filter(|path| path.is_absolute())
         })
@@ -158,15 +158,15 @@ pub(crate) const PROVIDER_OPTIONS_BUDGET: usize = 16_384 - 512;
 /// The user's dictionary words for a mobile `local` session; none for a network provider, whose request may not carry them.
 #[cfg(any(target_os = "ios", target_os = "android"))]
 fn mobile_session_hotwords(
-    configuration: &msime_client_core::voice::provider::MobileVoiceProviderConfiguration,
+    configuration: &lingyao_client_core::voice::provider::MobileVoiceProviderConfiguration,
     dictionary: &DictionaryHostOptions,
-) -> Vec<msime_tauri_mobile_platform::MobileVoiceHotword> {
+) -> Vec<lingyao_tauri_mobile_platform::MobileVoiceHotword> {
     if configuration.provider != "local" {
         return Vec::new();
     }
     local_models::session_hotwords(dictionary)
         .into_iter()
-        .map(|hotword| msime_tauri_mobile_platform::MobileVoiceHotword {
+        .map(|hotword| lingyao_tauri_mobile_platform::MobileVoiceHotword {
             text: hotword.text,
             pinyin: hotword.pinyin,
         })
@@ -203,10 +203,10 @@ pub(crate) async fn recognize_voice(
     let _ = (&runtime, &store);
     #[cfg(not(any(unix, windows)))]
     let _ = (&app, &runtime, &store, &dictionary);
-    if !msime_client_core::voice::is_valid_request_id(&request.request_id)
+    if !lingyao_client_core::voice::is_valid_request_id(&request.request_id)
         || request.language.is_empty()
         || request.language.len() > 64
-        || msime_client_core::has_disallowed_control_with_options(&request.language, false)
+        || lingyao_client_core::has_disallowed_control_with_options(&request.language, false)
     {
         return Err(HostActionError {
             code: "invalid_voice",

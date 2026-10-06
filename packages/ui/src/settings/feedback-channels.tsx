@@ -72,7 +72,7 @@ export function FeedbackChannels({
       icon: telegramIcon,
       title: "Telegram 群组",
       description: "面向国际用户和开发者的即时讨论频道。",
-      code: "t.me/msimegroup",
+      code: "t.me/lingyaogroup",
       action: "打开群组",
       onClick: onOpenTelegram,
     },

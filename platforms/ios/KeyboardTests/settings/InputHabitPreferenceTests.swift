@@ -8,7 +8,7 @@ final class InputHabitPreferenceTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-input-habit-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-input-habit-\(UUID().uuidString)", isDirectory: true)
     saved = InputHabitPreference.mirrored
   }
 

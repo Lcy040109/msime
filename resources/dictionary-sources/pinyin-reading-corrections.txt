@@ -1,7 +1,7 @@
-# word<TAB>wrong pinyin<TAB>correct pinyin: a reading of a word in the pinned quanpin inputs (sources/pinyin/*.txt and custom/words.txt in msime-dictionary, or the unlicensed custom-pinyin-dictionary parts in a --include-unlicensed build) that is wrong for that word. The reading-corrections stage of msime-dict-build runs after every quanpin input is merged, deletes every row whose word and pinyin match an entry, and fails when an entry deletes nothing (so the list cannot outlive the data it corrects) or when the word has no row at the correct pinyin afterwards (so a correction never leaves a word untypeable). The pinned files are locked byte for byte and are not edited; when the correct reading is missing from every input, append it to msime-dictionary's custom/words.txt in the same change.
+# word<TAB>wrong pinyin<TAB>correct pinyin: a reading of a word in the pinned quanpin inputs (sources/pinyin/*.txt and custom/words.txt in lingyao-dictionary, or the unlicensed custom-pinyin-dictionary parts in a --include-unlicensed build) that is wrong for that word. The reading-corrections stage of lingyao-dict-build runs after every quanpin input is merged, deletes every row whose word and pinyin match an entry, and fails when an entry deletes nothing (so the list cannot outlive the data it corrects) or when the word has no row at the correct pinyin afterwards (so a correction never leaves a word untypeable). The pinned files are locked byte for byte and are not edited; when the correct reading is missing from every input, append it to lingyao-dictionary's custom/words.txt in the same change.
 # Only readings provable from the word's meaning belong here, such as 重 read chong in the sense of 'again' or 'layer', 调 read tiao in the sense of 'adjust', 行 read hang in the sense of 'row' or 'trade'. A word with two valid readings (重载, 调配) keeps both; a name or place whose reading cannot be checked is left alone.
 
-# ---- Listed in msime-dictionary NOTICE.md (上游状态与已知数据问题): the correct reading is in rime-ice-supplement.txt, rime-ice.txt or custom/words.txt ----
+# ---- Listed in lingyao-dictionary NOTICE.md (上游状态与已知数据问题): the correct reading is in rime-ice-supplement.txt, rime-ice.txt or custom/words.txt ----
 重采样	zhong'cai'yang	chong'cai'yang
 数据去重	shu'ju'qu'zhong	shu'ju'qu'chong
 数组去重	shu'zu'qu'zhong	shu'zu'qu'chong
@@ -211,7 +211,7 @@
 嘴快舌长	zui'kuai'she'zhang	zui'kuai'she'chang
 行纪行为	xing'ji'xing'wei	hang'ji'xing'wei
 
-# ---- Wrong in every input, including rime-ice at 3aea6d3: the correct reading is appended to msime-dictionary's custom/words.txt at the wrong row's weight ----
+# ---- Wrong in every input, including rime-ice at 3aea6d3: the correct reading is appended to lingyao-dictionary's custom/words.txt at the wrong row's weight ----
 何日更重游	he'ri'geng'zhong'you	he'ri'geng'chong'you
 弃妾已去难重回	qi'qie'yi'qu'nan'zhong'hui	qi'qie'yi'qu'nan'chong'hui
 飞镜又重磨	fei'jing'you'zhong'mo	fei'jing'you'chong'mo

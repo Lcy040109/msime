@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-using msime::windows::should_wait_for_candidate_render;
-using msime::windows::candidate_render_key;
+using lingyao::windows::should_wait_for_candidate_render;
+using lingyao::windows::candidate_render_key;
 
 namespace {
 void require(bool value) {

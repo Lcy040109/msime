@@ -1,6 +1,6 @@
 //! Pure descriptors and response parsing for the host-owned NiuTrans v2 API.
-use msime_client_core::cloud::dictionary::percent_encode;
-use msime_client_core::translation;
+use lingyao_client_core::cloud::dictionary::percent_encode;
+use lingyao_client_core::translation;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -42,7 +42,7 @@ pub fn descriptor(bytes: &[u8]) -> Result<Value, &'static str> {
         || !translation::is_valid_source_text(&request.text)
         || request.timestamp.is_empty()
         || request.timestamp.len() > 20
-        || !msime_client_core::is_ascii_digits(&request.timestamp)
+        || !lingyao_client_core::is_ascii_digits(&request.timestamp)
         || !translation::is_supported_translation_pair(source, target)
     {
         return Err("invalid NiuTrans parameters");

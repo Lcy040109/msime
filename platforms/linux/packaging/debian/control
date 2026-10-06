@@ -1,4 +1,4 @@
-Source: msime
+Source: lingyao
 Section: utils
 Priority: optional
 Maintainer: Lingyao IME <metasequoiaime@gmail.com>
@@ -40,7 +40,7 @@ Build-Depends: debhelper-compat (= 13),
  desktop-file-utils <!nocheck>,
  procps <!nocheck>,
 
-Package: msime
+Package: lingyao
 Architecture: amd64 arm64
 Depends: ${misc:Depends},
  ${shlibs:Depends},
@@ -51,13 +51,13 @@ Depends: ${misc:Depends},
  python3 (>= 3.9),
 Recommends: pulseaudio-utils | pipewire-bin | alsa-utils,
  python3-websockets (>= 15),
-Conflicts: msime-linux,
-Replaces: msime-linux,
+Conflicts: lingyao-linux,
+Replaces: lingyao-linux,
 Description: Lingyao IME (灵耀输入法): Chinese input method for Fcitx5 and IBus
  Lingyao IME (灵耀输入法) is a Chinese input method. This package
  contains the native Linux hosts built from source: the Fcitx5 addon, the
- IBus engine, the first-run setup program msime-linux-setup, the provider
+ IBus engine, the first-run setup program lingyao-linux-setup, the provider
  services, the MCP server and the settings window.
  .
- The dictionaries are not included; msime-linux-setup --download fetches
+ The dictionaries are not included; lingyao-linux-setup --download fetches
  them on first use.

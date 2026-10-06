@@ -2,7 +2,7 @@
 //!
 //! Everything here is settled when the agent registers the server: the command line is written into the agent's configuration once, so a model talking to the server can neither widen what it may do nor point it at another directory.
 
-use msime_client_core::edition::Edition;
+use lingyao_client_core::edition::Edition;
 use serde_json::Value;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -19,7 +19,7 @@ const USAGE: &str = "usage: {program} expand <keys>... [--scheme <scheme>] [--li
        {program} [flags] prompts | prompt <name> [<args>]
        {program} [flags]
 
-Test 灵耀输入法 (MSIME) by hand, or let an AI assistant manage it.
+Test 灵耀输入法 (LINGYAO) by hand, or let an AI assistant manage it.
 
 Testing by hand:
   expand <keys>...         The candidates each <keys> offers, one per line
@@ -59,16 +59,16 @@ Flags:
   --allow-dictionary-read  Offer the tools that read your dictionary words
   --help, --version
   Both allow flags together also offer the tools that edit dictionary words.
-  --options defaults to MSIME_CLIENT_HOST_OPTIONS, then MSIME_IBUS_OPTIONS.
+  --options defaults to LINGYAO_CLIENT_HOST_OPTIONS, then LINGYAO_IBUS_OPTIONS.
   Without those, --options is the input method's usual place on this system.
-  --state-dir defaults to MSIME_CLIENT_STATE_DIR, then the document's own.";
+  --state-dir defaults to LINGYAO_CLIENT_STATE_DIR, then the document's own.";
 
 /// 帮助文本，用户敲的是什么命令名就写什么。
 pub fn usage() -> String {
     USAGE.replace("{program}", program())
 }
 
-/// 用户敲的命令名：经 Homebrew 或手动链接成 `msime` 时是 `msime`，否则是 `msime-mcp`。帮助和报错都用它，照着抄就能运行。
+/// 用户敲的命令名：经 Homebrew 或手动链接成 `lingyao` 时是 `lingyao`，否则是 `lingyao-mcp`。帮助和报错都用它，照着抄就能运行。
 pub fn program() -> &'static str {
     static NAME: std::sync::OnceLock<String> = std::sync::OnceLock::new();
     NAME.get_or_init(|| {
@@ -79,7 +79,7 @@ pub fn program() -> &'static str {
             .and_then(Path::file_stem)
             .and_then(|name| name.to_str())
             .filter(|name| !name.is_empty())
-            .unwrap_or("msime-mcp")
+            .unwrap_or("lingyao-mcp")
             .to_owned()
     })
 }
@@ -170,7 +170,7 @@ pub enum Arguments {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Config {
     pub options: PathBuf,
-    /// The explicit state directory, from `--state-dir` or `MSIME_CLIENT_STATE_DIR`. Absent means the document's `preferences_directory`, read on every call so a moved data directory is followed.
+    /// The explicit state directory, from `--state-dir` or `LINGYAO_CLIENT_STATE_DIR`. Absent means the document's `preferences_directory`, read on every call so a moved data directory is followed.
     pub state_dir: Option<PathBuf>,
     pub allow_write: bool,
     /// The user's own words are what they type, so reading them is a separate choice from writing quick phrases and preferences.
@@ -230,13 +230,13 @@ pub fn parse(
     }
     let options = match options {
         Some(path) => path,
-        None => env("MSIME_CLIENT_HOST_OPTIONS")
-            .or_else(|| env("MSIME_IBUS_OPTIONS"))
+        None => env("LINGYAO_CLIENT_HOST_OPTIONS")
+            .or_else(|| env("LINGYAO_IBUS_OPTIONS"))
             .map(PathBuf::from)
             .or_else(|| default_options_path(&env))
             .ok_or("no runtime options found; pass --options <path>")?,
     };
-    let state_dir = state_dir.or_else(|| env("MSIME_CLIENT_STATE_DIR").map(PathBuf::from));
+    let state_dir = state_dir.or_else(|| env("LINGYAO_CLIENT_STATE_DIR").map(PathBuf::from));
     for path in std::iter::once(&options).chain(state_dir.iter()) {
         if !path.is_absolute() {
             return Err(format!("{} must be an absolute path", path.display()));
@@ -348,8 +348,8 @@ fn setting(pair: &str) -> Result<(String, Value), String> {
 fn default_options_path(env: &impl Fn(&str) -> Option<OsString>) -> Option<PathBuf> {
     let absolute = |value: OsString| Some(PathBuf::from(value)).filter(|path| path.is_absolute());
     if cfg!(target_os = "macos") {
-        // 设置应用的 `native_locator_root`：目录名是 msime-mcp 所在安装包所属版本的设置应用 identifier（full 是 app.msime.macos）。安装包的版本声明坏了时没有默认位置，而不是退回 full 的。
-        let identity = msime_client_core::edition::Edition::of_macos_bundle()
+        // 设置应用的 `native_locator_root`：目录名是 lingyao-mcp 所在安装包所属版本的设置应用 identifier（full 是 app.lingyao.macos）。安装包的版本声明坏了时没有默认位置，而不是退回 full 的。
+        let identity = lingyao_client_core::edition::Edition::of_macos_bundle()
             .ok()?
             .macos()?;
         return env("HOME").and_then(absolute).map(|home| {
@@ -360,8 +360,8 @@ fn default_options_path(env: &impl Fn(&str) -> Option<OsString>) -> Option<PathB
     }
     if cfg!(target_os = "linux") {
         // The fixed locator every Linux frontend reads (`user_runtime_options` in the desktop app). A relative XDG value is ignored, as the specification requires.
-        // 目录名随本进程所在安装包的版本（前缀 bin 目录里的 edition.json，full 是 msime-client）；声明坏了时不猜成 full，免得读写 full 的状态。
-        let directory = &msime_client_core::edition::Edition::linux_package_identity()
+        // 目录名随本进程所在安装包的版本（前缀 bin 目录里的 edition.json，full 是 lingyao-client）；声明坏了时不猜成 full，免得读写 full 的状态。
+        let directory = &lingyao_client_core::edition::Edition::linux_package_identity()
             .ok()?
             .client_directory;
         return env("XDG_CONFIG_HOME")
@@ -377,7 +377,7 @@ fn default_options_path(env: &impl Fn(&str) -> Option<OsString>) -> Option<PathB
     {
         // The Server prepares the document in its state directory (`windows_server_state_directory` in the desktop app). That directory is resolved from the real environment and the registry, not from `env`.
         let _ = env;
-        return msime_host_windows::server_state_directory()
+        return lingyao_host_windows::server_state_directory()
             .map(|directory| directory.join("runtime-options.json"));
     }
     #[allow(unreachable_code)]
@@ -406,7 +406,7 @@ impl Config {
     pub fn read_host_options(&self) -> Result<Value, String> {
         let mut document = self.read_options()?;
         let snapshot =
-            msime_client_core::preferences::PreferencesStore::new(self.state_dir(&document)?)
+            lingyao_client_core::preferences::PreferencesStore::new(self.state_dir(&document)?)
                 .load()
                 .map_err(|error| error.to_string())?;
         if snapshot.revision > 0 {
@@ -422,7 +422,7 @@ impl Config {
             .ok_or_else(|| "the runtime options name an unknown edition of the input method".into())
     }
 
-    /// 向助手报告的服务器名，与设置页登记条目用的键相同（`Edition::mcp_server_name`）：full 是 `msime`。运行时选项还读不了时按 full 报告，各个工具被调用时会再读一次并报告问题。
+    /// 向助手报告的服务器名，与设置页登记条目用的键相同（`Edition::mcp_server_name`）：full 是 `lingyao`。运行时选项还读不了时按 full 报告，各个工具被调用时会再读一次并报告问题。
     pub fn server_name(&self) -> String {
         self.read_options()
             .ok()
@@ -481,9 +481,9 @@ mod tests {
     #[test]
     fn the_command_line_wins_over_the_environment_and_writing_is_off_by_default() {
         let env = |name: &str| match name {
-            "MSIME_CLIENT_HOST_OPTIONS" => Some("/env/host.json".into()),
-            "MSIME_IBUS_OPTIONS" => Some("/env/ibus.json".into()),
-            "MSIME_CLIENT_STATE_DIR" => Some("/env/state".into()),
+            "LINGYAO_CLIENT_HOST_OPTIONS" => Some("/env/host.json".into()),
+            "LINGYAO_IBUS_OPTIONS" => Some("/env/ibus.json".into()),
+            "LINGYAO_CLIENT_STATE_DIR" => Some("/env/state".into()),
             _ => None,
         };
         let config = serve(parse(args(&["--options", "/flag/options.json"]), env).unwrap());
@@ -495,7 +495,7 @@ mod tests {
         let config = serve(parse(args(&[]), env).unwrap());
         assert_eq!(config.options, PathBuf::from("/env/host.json"));
         let ibus_only =
-            |name: &str| (name == "MSIME_IBUS_OPTIONS").then(|| "/env/ibus.json".into());
+            |name: &str| (name == "LINGYAO_IBUS_OPTIONS").then(|| "/env/ibus.json".into());
         assert_eq!(
             serve(parse(args(&[]), ibus_only).unwrap()).options,
             PathBuf::from("/env/ibus.json")
@@ -504,7 +504,7 @@ mod tests {
 
     #[test]
     fn every_help_line_fits_an_80_column_terminal_under_either_name() {
-        for name in ["msime", "msime-mcp"] {
+        for name in ["lingyao", "lingyao-mcp"] {
             let text = USAGE.replace("{program}", name);
             for line in text.lines() {
                 assert!(line.chars().count() <= 80, "{line}");
@@ -747,9 +747,9 @@ mod tests {
     fn the_platform_default_follows_the_desktop_app() {
         let env = |name: &str| (name == "HOME").then(|| "/home/someone".into());
         let expected = if cfg!(target_os = "macos") {
-            "/home/someone/Library/Application Support/app.msime.macos/runtime-options.json"
+            "/home/someone/Library/Application Support/app.lingyao.macos/runtime-options.json"
         } else {
-            "/home/someone/.config/msime-client/runtime-options.json"
+            "/home/someone/.config/lingyao-client/runtime-options.json"
         };
         assert_eq!(
             serve(parse(args(&[]), env).unwrap()).options,
@@ -785,7 +785,7 @@ mod tests {
 
     #[test]
     fn the_live_preferences_replace_the_document_copy_once_written() {
-        use msime_client_core::preferences::{InputScheme, Preferences, PreferencesStore};
+        use lingyao_client_core::preferences::{InputScheme, Preferences, PreferencesStore};
         let directory = tempfile::tempdir().unwrap();
         let options = directory.path().join("runtime-options.json");
         std::fs::write(
@@ -831,21 +831,21 @@ mod tests {
             allow_dictionary_read: false,
         };
         // 还没有运行时选项：按 full 报告服务器名。
-        assert_eq!(config.server_name(), "msime");
+        assert_eq!(config.server_name(), "lingyao");
 
         std::fs::write(&options, br#"{"api_version":1}"#).unwrap();
         assert!(config
             .edition(&config.read_options().unwrap())
             .unwrap()
             .is_full());
-        assert_eq!(config.server_name(), "msime");
+        assert_eq!(config.server_name(), "lingyao");
 
         std::fs::write(&options, br#"{"api_version":1,"edition":"wubi"}"#).unwrap();
         assert_eq!(
             config.edition(&config.read_options().unwrap()).unwrap().id,
             "wubi"
         );
-        assert_eq!(config.server_name(), "msime-wubi");
+        assert_eq!(config.server_name(), "lingyao-wubi");
 
         std::fs::write(&options, br#"{"api_version":1,"edition":"klingon"}"#).unwrap();
         assert!(config.edition(&config.read_options().unwrap()).is_err());

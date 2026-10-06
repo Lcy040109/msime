@@ -6,7 +6,7 @@ int main(int argc, const char *argv[]) {
         assert(argc == 2);
         void *library = dlopen(argv[1], RTLD_NOW | RTLD_GLOBAL);
         assert(library);
-        Class bridge = NSClassFromString(@"MSIMEBackendWindowBridge");
+        Class bridge = NSClassFromString(@"LINGYAOBackendWindowBridge");
         assert(bridge && [bridge respondsToSelector:NSSelectorFromString(@"shared")]);
         for (NSString *selector in @[@"showDictionaryForAccountID:", @"showClipboardForAccountID:",
                                     @"showSnapshotForAccountID:", @"showSettingsForAccountID:",
@@ -16,14 +16,14 @@ int main(int argc, const char *argv[]) {
                                     @"stopClipboardCapture"]) {
             assert([bridge instancesRespondToSelector:NSSelectorFromString(selector)]);
         }
-        Class account = NSClassFromString(@"MSIMEBackendAccountWindow");
+        Class account = NSClassFromString(@"LINGYAOBackendAccountWindow");
         assert(account && [account respondsToSelector:@selector(shared)]);
         assert([account instancesRespondToSelector:@selector(showAccount)]);
         assert([account instancesRespondToSelector:@selector(showCloudClipboard)]);
-        Class clipboard = NSClassFromString(@"MSIMEBackendCloudClipboardProvider");
+        Class clipboard = NSClassFromString(@"LINGYAOBackendCloudClipboardProvider");
         assert(clipboard && [clipboard respondsToSelector:NSSelectorFromString(@"prepareWithCompletion:")]);
         assert([clipboard instancesRespondToSelector:NSSelectorFromString(@"request:completion:")]);
-        Class dictionary = NSClassFromString(@"MSIMEBackendCloudDictionaryProvider");
+        Class dictionary = NSClassFromString(@"LINGYAOBackendCloudDictionaryProvider");
         assert(dictionary && [dictionary respondsToSelector:NSSelectorFromString(@"prepareWithCompletion:")]);
         assert([dictionary instancesRespondToSelector:NSSelectorFromString(@"request:completion:")]);
         // Objective-C classes remain registered; retain the library for process lifetime.

@@ -1,11 +1,11 @@
 source 'https://cdn.cocoapods.org/'
 platform :ios, '15.5'
-project 'MSIMEClient.xcodeproj'
-workspace 'MSIMEClient.xcworkspace'
+project 'LINGYAOClient.xcodeproj'
+workspace 'LINGYAOClient.xcworkspace'
 use_frameworks! :linkage => :static
 
-target 'MSIMEApp' do
-  target 'MSIMEKeyboardExtension' do
+target 'LINGYAOApp' do
+  target 'LINGYAOKeyboardExtension' do
     pod 'MLKitDigitalInkRecognition', '8.0.0'
   end
 end

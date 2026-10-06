@@ -3,7 +3,7 @@
 
 // This page owns only these eight fields. Provider tokens, prompt selection and
 // custom slots must survive saving an unrelated model or candidate limit.
-static inline NSDictionary *MSIMEAISettingsMerge(NSDictionary *preferences, NSDictionary *edits) {
+static inline NSDictionary *LINGYAOAISettingsMerge(NSDictionary *preferences, NSDictionary *edits) {
     NSMutableDictionary *result = [preferences mutableCopy];
     id original = preferences[@"ai_assistant"];
     NSMutableDictionary *ai = [original isKindOfClass:NSDictionary.class]

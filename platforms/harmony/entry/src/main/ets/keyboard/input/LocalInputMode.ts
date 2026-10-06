@@ -1,6 +1,6 @@
 /**
  * Local input mode shortcuts the shared Engine exposes, ported from
- * platforms/android/java/app/msime/android/LocalInputMode.java.
+ * platforms/android/java/app/lingyao/android/LocalInputMode.java.
  *
  * The trigger is the uppercase letter, or for `/` and `@` the mark, that enters the mode; the preference key is what the shared settings store spells it as, which is also the Engine's `local_mode` name.
  */

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useWindowResizeCapture } from "@msime/ui";
+import { useWindowResizeCapture } from "@lingyao/ui";
 
 test("resizes from an edge and reports host failures", async () => {
   const resizeWindow = vi.fn().mockRejectedValue(new Error("synthetic"));

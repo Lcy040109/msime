@@ -10,9 +10,9 @@ NSBundle *MakeBundle(NSURL *root, NSString *name, NSArray<NSString *> *cues) {
     NSURL *contents = [bundle URLByAppendingPathComponent:@"Contents" isDirectory:YES];
     NSURL *audios = [contents URLByAppendingPathComponent:@"Resources/audios" isDirectory:YES];
     assert([files createDirectoryAtURL:audios withIntermediateDirectories:YES attributes:nil error:nil]);
-    NSDictionary *info = @{@"CFBundleIdentifier": [@"app.msime.test." stringByAppendingString:name], @"CFBundlePackageType": @"BNDL"};
+    NSDictionary *info = @{@"CFBundleIdentifier": [@"app.lingyao.test." stringByAppendingString:name], @"CFBundlePackageType": @"BNDL"};
     assert([info writeToURL:[contents URLByAppendingPathComponent:@"Info.plist"] error:nil]);
-    NSURL *source = [NSURL fileURLWithPath:@MSIME_VOICE_CUE_SOURCE_DIR isDirectory:YES];
+    NSURL *source = [NSURL fileURLWithPath:@LINGYAO_VOICE_CUE_SOURCE_DIR isDirectory:YES];
     for (NSString *cue in cues) {
         assert([files copyItemAtURL:[source URLByAppendingPathComponent:cue] toURL:[audios URLByAppendingPathComponent:cue] error:nil]);
     }
@@ -28,22 +28,22 @@ int main() {
 
         // Both product cues present: they are the ones loaded, and each is decodable audio rather than an empty placeholder.
         NSBundle *full = MakeBundle(root, @"Full.bundle", @[@"start.mp3", @"end.mp3"]);
-        assert([MSIMEVoiceCueResourceURL(full, YES).lastPathComponent isEqual:@"start.mp3"]);
-        assert([MSIMEVoiceCueResourceURL(full, NO).lastPathComponent isEqual:@"end.mp3"]);
-        MSIMEVoiceCuePlayer *player = [[MSIMEVoiceCuePlayer alloc] initWithBundle:full];
+        assert([LINGYAOVoiceCueResourceURL(full, YES).lastPathComponent isEqual:@"start.mp3"]);
+        assert([LINGYAOVoiceCueResourceURL(full, NO).lastPathComponent isEqual:@"end.mp3"]);
+        LINGYAOVoiceCuePlayer *player = [[LINGYAOVoiceCuePlayer alloc] initWithBundle:full];
         assert(player.startCueIsBundled && player.stopCueIsBundled);
         assert(player.startSound && player.stopSound && player.startSound != player.stopSound);
         assert(player.startSound.duration > 0 && player.stopSound.duration > 0);
 
         // A bundle without the cues must still give audible feedback: each side falls back to the system sound on its own.
         NSBundle *partial = MakeBundle(root, @"Partial.bundle", @[@"start.mp3"]);
-        assert(!MSIMEVoiceCueResourceURL(partial, NO));
-        MSIMEVoiceCuePlayer *fallback = [[MSIMEVoiceCuePlayer alloc] initWithBundle:partial];
+        assert(!LINGYAOVoiceCueResourceURL(partial, NO));
+        LINGYAOVoiceCuePlayer *fallback = [[LINGYAOVoiceCuePlayer alloc] initWithBundle:partial];
         assert(fallback.startCueIsBundled && !fallback.stopCueIsBundled);
         assert(fallback.stopSound);
 
         // A test executable's main bundle carries no cues at all; the default initialiser must not fail.
-        MSIMEVoiceCuePlayer *bare = [[MSIMEVoiceCuePlayer alloc] init];
+        LINGYAOVoiceCuePlayer *bare = [[LINGYAOVoiceCuePlayer alloc] init];
         assert(bare && !bare.startCueIsBundled && !bare.stopCueIsBundled && bare.startSound && bare.stopSound);
 
         // The start cue's completion (the deferred system-audio mute) runs once after the cue ends, never while it can still be heard. Restarting drops the earlier completion. Volume 0 keeps the run silent; a host without an output device fails play and runs the completion at once, which the same assertions accept.

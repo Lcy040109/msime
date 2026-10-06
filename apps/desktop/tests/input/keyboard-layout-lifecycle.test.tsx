@@ -2,9 +2,9 @@
 import { StrictMode } from "react";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { KeyboardPanel } from "@msime/ui";
+import { KeyboardPanel } from "@lingyao/ui";
 
-const storageKey = "msime.keyboard.layout";
+const storageKey = "lingyao.keyboard.layout";
 const client = { close: async () => {} };
 const currentLayout = () =>
   screen.getByRole("main", { name: "屏幕键盘" }).getAttribute("data-keyboard-layout");

@@ -1,4 +1,4 @@
-import app.msime.android.keyboard.EnglishSuggestionPolicy;
+import app.lingyao.android.keyboard.EnglishSuggestionPolicy;
 
 public final class EnglishSuggestionPolicySmoke {
     private static void check(boolean condition, String message) {

@@ -1,5 +1,5 @@
-import app.msime.android.AiPolishClient;
-import app.msime.android.AiPolishConfiguration;
+import app.lingyao.android.AiPolishClient;
+import app.lingyao.android.AiPolishConfiguration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;

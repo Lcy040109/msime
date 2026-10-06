@@ -2,7 +2,7 @@
 
 #include <gio/gio.h>
 
-namespace msime::fcitx_host {
+namespace lingyao::fcitx_host {
 
 std::optional<bool> fcitx_system_dark_theme() {
   GError *error = nullptr;
@@ -39,4 +39,4 @@ std::optional<bool> fcitx_system_dark_theme() {
   return scheme == 1;
 }
 
-}  // namespace msime::fcitx_host
+}  // namespace lingyao::fcitx_host

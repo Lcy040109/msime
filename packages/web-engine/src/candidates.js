@@ -1,6 +1,6 @@
 // 候选栏：按灵耀桌面端候选框的结构和样式画预编辑行、候选和翻页标记，配色和几何来自 skin.js 的 resolveSkin。
 //
-// 隔离：整个候选栏画在宿主元素 <msime-candidates> 的 Shadow DOM 里，页面的 CSS 改不到它，它的样式也漏不出去。样式表是可构造样式表（adoptedStyleSheets），每个皮肤的取值只经 `style.setProperty` 写到 Shadow DOM 内的根元素上，不用 <style> 元素，也不写 style 属性的文本，所以页面的 CSP 不开 `style-src 'unsafe-inline'` 也能用。皮肤里的图片用 <img> 加载，地址不进 CSS。
+// 隔离：整个候选栏画在宿主元素 <lingyao-candidates> 的 Shadow DOM 里，页面的 CSS 改不到它，它的样式也漏不出去。样式表是可构造样式表（adoptedStyleSheets），每个皮肤的取值只经 `style.setProperty` 写到 Shadow DOM 内的根元素上，不用 <style> 元素，也不写 style 属性的文本，所以页面的 CSP 不开 `style-src 'unsafe-inline'` 也能用。皮肤里的图片用 <img> 加载，地址不进 CSS。
 //
 // 页面能改的只有 `::part()` 暴露出来的部分，见 PARTS 和 README。
 import { PLATFORM_PALETTE, resolveSkin } from "./skin.js";
@@ -13,9 +13,9 @@ const MARGIN = 4;
 const PROPERTY = /^--[A-Za-z0-9-]+$/;
 
 /** 宿主元素的标签名；它没有注册成自定义元素，只是一个页面 CSS 不会顺手选中的名字。 */
-export const CANDIDATE_BAR_TAG = "msime-candidates";
+export const CANDIDATE_BAR_TAG = "lingyao-candidates";
 
-/** `::part()` 名字，页面可以用 `msime-candidates::part(candidate)` 这样的选择器改样式。 */
+/** `::part()` 名字，页面可以用 `lingyao-candidates::part(candidate)` 这样的选择器改样式。 */
 export const PARTS = Object.freeze({
   /** 整个候选栏（定位的那一层，含装饰带）。 */
   candidates: "candidates",
@@ -43,9 +43,9 @@ export const PARTS = Object.freeze({
   background: "background",
 });
 
-// 桌面端候选框的样式。类名沿用 msime-windows 候选框（ui-html/webview2/candwnd）的写法，规则由 packages/ui/src/styles.css 的 `skin-card-preview`、`external-skin-decorated` 两个 @utility 和 packages/ui/src/upstream/candidate-themes 的候选框页面改写成普通 CSS。
+// 桌面端候选框的样式。类名沿用 lingyao-windows 候选框（ui-html/webview2/candwnd）的写法，规则由 packages/ui/src/styles.css 的 `skin-card-preview`、`external-skin-decorated` 两个 @utility 和 packages/ui/src/upstream/candidate-themes 的候选框页面改写成普通 CSS。
 //
-// Source: MSIME-Windows 04a8df56 candidate window styles (candwnd style-h.css / style-v.css, skin.ts candidatePreviewCss / skin.css), GPL-3.0.
+// Source: LINGYAO-Windows 04a8df56 candidate window styles (candwnd style-h.css / style-v.css, skin.ts candidatePreviewCss / skin.css), GPL-3.0.
 //
 // 根元素上先声明每个用到的自定义属性的默认值（跟随系统时的桌面端原生配色，即 skin.js 的 `PLATFORM_PALETTE`），皮肤再用 setProperty 覆盖；这样页面在祖先元素上声明的同名自定义属性也继承不进来。
 function platformVariables(palette) {
@@ -75,14 +75,14 @@ ${platformVariables(PLATFORM_PALETTE.light)}
   --cand-secondary: var(--cand-num);
   --cand-selected-text: var(--cand-text);
   --cand-selected-num: var(--cand-num);
-  --msime-skin-radius: 6px;
-  --msime-skin-min-width: 0px;
-  --msime-skin-decoration-top: 0px;
-  --msime-skin-decoration-width: 0px;
-  --msime-skin-selected-bar: block;
-  --msime-skin-background-fit: cover;
-  --msime-skin-background-opacity: 1;
-  --msime-max-width: calc(100vw - ${2 * MARGIN}px);
+  --lingyao-skin-radius: 6px;
+  --lingyao-skin-min-width: 0px;
+  --lingyao-skin-decoration-top: 0px;
+  --lingyao-skin-decoration-width: 0px;
+  --lingyao-skin-selected-bar: block;
+  --lingyao-skin-background-fit: cover;
+  --lingyao-skin-background-opacity: 1;
+  --lingyao-max-width: calc(100vw - ${2 * MARGIN}px);
   position: fixed;
   z-index: 2147483647;
   left: 0;
@@ -121,37 +121,37 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
   box-sizing: border-box;
 }
 .candidate.wnd-h {
-  --msime-candidate-pad-x: 1px;
-  --msime-candidate-pad-y: 2px;
+  --lingyao-candidate-pad-x: 1px;
+  --lingyao-candidate-pad-y: 2px;
 }
 .candidate.wnd-v {
-  --msime-candidate-pad-x: 2px;
-  --msime-candidate-pad-y: 2px;
+  --lingyao-candidate-pad-x: 2px;
+  --lingyao-candidate-pad-y: 2px;
 }
 
 /* ---- 候选框 ---- */
 .containerParent {
   position: relative;
   width: fit-content;
-  max-width: var(--msime-max-width);
+  max-width: var(--lingyao-max-width);
 }
 .container {
   position: relative;
   pointer-events: auto;
   margin: 0;
-  padding: var(--msime-candidate-pad-y) var(--msime-candidate-pad-x);
+  padding: var(--lingyao-candidate-pad-y) var(--lingyao-candidate-pad-x);
   background: var(--cand-bg);
   border: 1.5px solid var(--cand-border);
-  border-radius: var(--msime-skin-radius);
+  border-radius: var(--lingyao-skin-radius);
   box-shadow: var(--cand-shadow);
-  min-width: max(7em, var(--msime-skin-min-width));
+  min-width: max(7em, var(--lingyao-skin-min-width));
   width: max-content;
-  max-width: var(--msime-max-width);
+  max-width: var(--lingyao-max-width);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 .wnd-v .container {
-  max-width: min(720px, var(--msime-max-width));
+  max-width: min(720px, var(--lingyao-max-width));
 }
 /* 皮肤的背景图：盖在底色上、候选下面，按候选框的圆角裁切。 */
 .container[data-background] {
@@ -166,8 +166,8 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: var(--msime-skin-background-fit);
-  opacity: var(--msime-skin-background-opacity);
+  object-fit: var(--lingyao-skin-background-fit);
+  opacity: var(--lingyao-skin-background-opacity);
   pointer-events: none;
 }
 .skin-background-image[hidden],
@@ -296,7 +296,7 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
 .first .cand-helpcode {
   color: var(--cand-selected-num);
 }
-/* 高亮候选左边的选中条；皮肤的 showSelectedBar 为 false 时 --msime-skin-selected-bar 是 none，不画。 */
+/* 高亮候选左边的选中条；皮肤的 showSelectedBar 为 false 时 --lingyao-skin-selected-bar 是 none，不画。 */
 .first::before {
   content: "";
   position: absolute;
@@ -305,7 +305,7 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
   transform: translateY(-50%);
   height: 0.8em;
   width: 0.2em;
-  display: var(--msime-skin-selected-bar);
+  display: var(--lingyao-skin-selected-bar);
   background: var(--accent-strong);
   border-radius: 8px;
 }
@@ -316,8 +316,8 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
 /* ---- 装饰带 ----
  * 与桌面端各平台一致（Windows CandidateWindow.cpp）：整体比候选框高出 decoration-top 的透明装饰带，候选框从装饰带下面开始；装饰图宽 decoration-width、保持比例，底边落在候选框上沿往下 pad_y 处，盖在候选框上；太高时等比缩小（contain，贴底和对齐的那一侧）；水平方向相对候选框定位：left 贴左 pad_x，center 居中，right（默认）贴右 pad_x，且不越过候选框左边。 */
 .candidate[data-decorated] .containerParent {
-  --msime-skin-decoration-bottom: calc(var(--msime-skin-decoration-top) + var(--msime-candidate-pad-y));
-  padding-top: var(--msime-skin-decoration-top);
+  --lingyao-skin-decoration-bottom: calc(var(--lingyao-skin-decoration-top) + var(--lingyao-candidate-pad-y));
+  padding-top: var(--lingyao-skin-decoration-top);
 }
 .skin-decoration-image {
   display: none;
@@ -326,11 +326,11 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
   display: block;
   position: absolute;
   z-index: 2;
-  bottom: calc(100% - var(--msime-skin-decoration-bottom));
-  left: max(0px, calc(100% - var(--msime-candidate-pad-x) - var(--msime-skin-decoration-width)));
-  width: var(--msime-skin-decoration-width);
+  bottom: calc(100% - var(--lingyao-skin-decoration-bottom));
+  left: max(0px, calc(100% - var(--lingyao-candidate-pad-x) - var(--lingyao-skin-decoration-width)));
+  width: var(--lingyao-skin-decoration-width);
   height: auto;
-  max-height: var(--msime-skin-decoration-bottom);
+  max-height: var(--lingyao-skin-decoration-bottom);
   object-fit: contain;
   object-position: right bottom;
   pointer-events: none;
@@ -339,11 +339,11 @@ ${platformVariables(PLATFORM_PALETTE.dark)}
   z-index: 1;
 }
 .candidate[data-decoration-align="left"] .skin-decoration-image {
-  left: var(--msime-candidate-pad-x);
+  left: var(--lingyao-candidate-pad-x);
   object-position: left bottom;
 }
 .candidate[data-decoration-align="center"] .skin-decoration-image {
-  left: max(0px, calc(50% - var(--msime-skin-decoration-width) / 2));
+  left: max(0px, calc(50% - var(--lingyao-skin-decoration-width) / 2));
   object-position: center bottom;
 }
 `;
@@ -356,7 +356,7 @@ function sheetFor(doc) {
   if (sheet) return sheet;
   const view = doc.defaultView;
   if (!view || !("adoptedStyleSheets" in doc) || typeof view.CSSStyleSheet?.prototype.replaceSync !== "function") {
-    throw new Error("@msime/web-engine: the candidate bar needs constructable stylesheets (adoptedStyleSheets)");
+    throw new Error("@lingyao/web-engine: the candidate bar needs constructable stylesheets (adoptedStyleSheets)");
   }
   sheet = new view.CSSStyleSheet();
   sheet.replaceSync(SHEET);
@@ -542,7 +542,7 @@ export function createCandidateBar({ skin, layout = "horizontal", dark = "auto",
     const html = doc.documentElement;
     const vw = html.clientWidth || view.innerWidth;
     const vh = html.clientHeight || view.innerHeight;
-    root.style.setProperty("--msime-max-width", `${Math.max(0, vw - 2 * MARGIN)}px`);
+    root.style.setProperty("--lingyao-max-width", `${Math.max(0, vw - 2 * MARGIN)}px`);
     root.style.setProperty("left", "0px");
     root.style.setProperty("top", "0px");
     const { width, height } = root.getBoundingClientRect();

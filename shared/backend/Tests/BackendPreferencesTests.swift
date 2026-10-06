@@ -1,5 +1,5 @@
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class MalformedPreferencesProtocol: URLProtocol {
   override class func canInit(with request: URLRequest) -> Bool {
@@ -124,41 +124,41 @@ final class BackendPreferencesTests: XCTestCase {
     let editions = try XCTUnwrap(document["editions"] as? [[String: Any]])
     let edition = try XCTUnwrap(editions.first { $0["id"] as? String == id })
     if id == "full" { return [:] }
-    var info: [String: Any] = ["MSIMEEdition": id, "MSIMEInputSchemes": try XCTUnwrap(edition["input_schemes"] as? [String]),
-                               "MSIMEDefaultScheme": try XCTUnwrap(edition["default_scheme"] as? String)]
+    var info: [String: Any] = ["LINGYAOEdition": id, "LINGYAOInputSchemes": try XCTUnwrap(edition["input_schemes"] as? [String]),
+                               "LINGYAODefaultScheme": try XCTUnwrap(edition["default_scheme"] as? String)]
     if let mixed = (edition["preference_defaults"] as? [String: Any])?["wubi_mixed_pinyin"] as? Bool {
-      info["MSIMEWubiMixedPinyinDefault"] = mixed
+      info["LINGYAOWubiMixedPinyinDefault"] = mixed
     }
     return info
   }
 
   func testFullKeepsTodaysAppGroupAndSchemes() throws {
     let info = try editionInfo("full")
-    XCTAssertEqual(MSIMEAppEdition.identifier(in: info), "full")
-    XCTAssertEqual(MSIMEAppEdition.appGroupIdentifier(in: info), "group.app.msime.ios")
-    XCTAssertNil(MSIMEAppEdition.inputSchemes(in: info))
-    XCTAssertEqual(MSIMEAppEdition.defaultScheme(in: info), "quanpin")
-    XCTAssertFalse(MSIMEAppEdition.wubiMixedPinyinDefault(in: info))
+    XCTAssertEqual(LINGYAOAppEdition.identifier(in: info), "full")
+    XCTAssertEqual(LINGYAOAppEdition.appGroupIdentifier(in: info), "group.app.lingyao.ios")
+    XCTAssertNil(LINGYAOAppEdition.inputSchemes(in: info))
+    XCTAssertEqual(LINGYAOAppEdition.defaultScheme(in: info), "quanpin")
+    XCTAssertFalse(LINGYAOAppEdition.wubiMixedPinyinDefault(in: info))
     // 测试进程不是 App bundle，读到的就是 full。
-    XCTAssertEqual(MSIMEAppEdition.appGroupIdentifier, "group.app.msime.ios")
+    XCTAssertEqual(LINGYAOAppEdition.appGroupIdentifier, "group.app.lingyao.ios")
     // 写明 full 的 Info.plist 和不写一样。
-    XCTAssertEqual(MSIMEAppEdition.appGroupIdentifier(in: ["MSIMEEdition": "full", "MSIMEInputSchemes": ["wubi"]]), "group.app.msime.ios")
-    XCTAssertNil(MSIMEAppEdition.inputSchemes(in: ["MSIMEEdition": "full", "MSIMEInputSchemes": ["wubi"]]))
+    XCTAssertEqual(LINGYAOAppEdition.appGroupIdentifier(in: ["LINGYAOEdition": "full", "LINGYAOInputSchemes": ["wubi"]]), "group.app.lingyao.ios")
+    XCTAssertNil(LINGYAOAppEdition.inputSchemes(in: ["LINGYAOEdition": "full", "LINGYAOInputSchemes": ["wubi"]]))
   }
 
   func testOtherEditionsGetTheirOwnAppGroupAndDefaultScheme() throws {
     let wubi = try editionInfo("wubi")
     let pinyin = try editionInfo("pinyin")
-    XCTAssertEqual(MSIMEAppEdition.appGroupIdentifier(in: wubi), "group.app.msime.ios.wubi")
-    XCTAssertEqual(MSIMEAppEdition.appGroupIdentifier(in: pinyin), "group.app.msime.ios.pinyin")
-    XCTAssertEqual(MSIMEAppEdition.inputSchemes(in: wubi), ["wubi"])
-    XCTAssertEqual(MSIMEAppEdition.defaultScheme(in: wubi), "wubi")
-    XCTAssertEqual(MSIMEAppEdition.defaultScheme(in: pinyin), "quanpin")
+    XCTAssertEqual(LINGYAOAppEdition.appGroupIdentifier(in: wubi), "group.app.lingyao.ios.wubi")
+    XCTAssertEqual(LINGYAOAppEdition.appGroupIdentifier(in: pinyin), "group.app.lingyao.ios.pinyin")
+    XCTAssertEqual(LINGYAOAppEdition.inputSchemes(in: wubi), ["wubi"])
+    XCTAssertEqual(LINGYAOAppEdition.defaultScheme(in: wubi), "wubi")
+    XCTAssertEqual(LINGYAOAppEdition.defaultScheme(in: pinyin), "quanpin")
     // 五笔版的混拼默认开，拼音版没有这一项。
-    XCTAssertTrue(MSIMEAppEdition.wubiMixedPinyinDefault(in: wubi))
-    XCTAssertFalse(MSIMEAppEdition.wubiMixedPinyinDefault(in: pinyin))
+    XCTAssertTrue(LINGYAOAppEdition.wubiMixedPinyinDefault(in: wubi))
+    XCTAssertFalse(LINGYAOAppEdition.wubiMixedPinyinDefault(in: pinyin))
     // 声明的默认方案不在方案里时退回第一个方案，回退到的方案一定能跑。
-    XCTAssertEqual(MSIMEAppEdition.defaultScheme(in: ["MSIMEEdition": "wubi", "MSIMEInputSchemes": ["wubi"], "MSIMEDefaultScheme": "quanpin"]), "wubi")
+    XCTAssertEqual(LINGYAOAppEdition.defaultScheme(in: ["LINGYAOEdition": "wubi", "LINGYAOInputSchemes": ["wubi"], "LINGYAODefaultScheme": "quanpin"]), "wubi")
   }
 
   func testAccountSchemeFollowsTheEditionInBothDirections() throws {
@@ -169,13 +169,13 @@ final class BackendPreferencesTests: XCTestCase {
     ]
     // full 提供全部方案，两个方向都什么也不去掉。
     var full = local
-    IOSPreferencePlan.filterUploaded(&full, offered: MSIMEAppEdition.inputSchemes(in: try editionInfo("full")))
+    IOSPreferencePlan.filterUploaded(&full, offered: LINGYAOAppEdition.inputSchemes(in: try editionInfo("full")))
     XCTAssertEqual(full, local)
     IOSPreferencePlan.filterDownloaded(&full, offered: nil)
     XCTAssertEqual(full, local)
 
     // 五笔版只有一个方案：方案和随它的九键开关不上传也不应用，双拼方案不上传，五笔版本照常上传。
-    let wubi = MSIMEAppEdition.inputSchemes(in: try editionInfo("wubi"))
+    let wubi = LINGYAOAppEdition.inputSchemes(in: try editionInfo("wubi"))
     var uploaded = local
     uploaded["input.schema"] = .string("wubi")
     IOSPreferencePlan.filterUploaded(&uploaded, offered: wubi)
@@ -187,7 +187,7 @@ final class BackendPreferencesTests: XCTestCase {
     XCTAssertEqual(downloaded["input.shuangpin_schema"], .string("ziranma"))
 
     // 拼音版：本版本的方案照常同步，账号里的五笔当作没有这一项，五笔版本不上传。
-    let pinyin = MSIMEAppEdition.inputSchemes(in: try editionInfo("pinyin"))
+    let pinyin = LINGYAOAppEdition.inputSchemes(in: try editionInfo("pinyin"))
     var pinyinUpload = local
     IOSPreferencePlan.filterUploaded(&pinyinUpload, offered: pinyin)
     XCTAssertEqual(pinyinUpload["input.schema"], .string("quanpin"))

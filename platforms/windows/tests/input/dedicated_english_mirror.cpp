@@ -1,7 +1,7 @@
 #include "DedicatedEnglishMirror.h"
 #include <cassert>
 
-using msime::windows::DedicatedEnglishMirror;
+using lingyao::windows::DedicatedEnglishMirror;
 
 int main() {
   constexpr uint64_t confirm = DedicatedEnglishMirror::kConfirmMs;

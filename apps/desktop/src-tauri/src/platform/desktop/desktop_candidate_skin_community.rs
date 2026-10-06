@@ -5,16 +5,16 @@
 use crate::platform::account_helpers::{community_error, community_id, community_service_call};
 use crate::platform::desktop::desktop_account::Storage;
 use crate::{CommandError, RuntimeOptionsState, SkinCatalogResponse, SkinDirectoryState};
-use msime_client_core::account::AccountError;
-use msime_client_core::account::BackendAccountClient;
-use msime_client_core::skin::candidate_community::{
+use lingyao_client_core::account::AccountError;
+use lingyao_client_core::account::BackendAccountClient;
+use lingyao_client_core::skin::candidate_community::{
     self, BackendCandidateSkinCommunityService, CandidateSkinCategory, CandidateSkinItem,
     CandidateSkinPackage, CandidateSkinPage, CandidateSkinVisibility,
 };
-use msime_client_core::skin::candidate_sync::{
+use lingyao_client_core::skin::candidate_sync::{
     self, CandidateSkinPublishError, CandidateSkinSyncReport,
 };
-use msime_client_core::skin::catalog::SkinLicense;
+use lingyao_client_core::skin::catalog::SkinLicense;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -365,7 +365,7 @@ mod tests {
         std::fs::write(skin.join("preview.png"), PNG).unwrap();
         let packed = candidate_community::pack(source.path(), "sakura").unwrap();
         CandidateSkinPackage {
-            id: msime_client_core::uuid::Uuid::new_v4(),
+            id: lingyao_client_core::uuid::Uuid::new_v4(),
             package_id: packed.package_id,
             manifest: packed.manifest,
             files: packed.files,

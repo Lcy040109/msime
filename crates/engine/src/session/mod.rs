@@ -223,7 +223,7 @@ impl Session {
         self.input.finish_composition(first_index)
     }
 
-    /// Discards the composition. Fails, staying in the current scheme with the composition untouched, when the new scheme's dictionary cannot be opened (Cantonese without a usable `msime-cantonese.db`, Stroke without a usable `msime-stroke.db`: `LANGUAGE_DICTIONARY_UNAVAILABLE`, `LANGUAGE_DICTIONARY_VERSION_UNSUPPORTED`).
+    /// Discards the composition. Fails, staying in the current scheme with the composition untouched, when the new scheme's dictionary cannot be opened (Cantonese without a usable `lingyao-cantonese.db`, Stroke without a usable `lingyao-stroke.db`: `LANGUAGE_DICTIONARY_UNAVAILABLE`, `LANGUAGE_DICTIONARY_VERSION_UNSUPPORTED`).
     pub fn switch_scheme(&mut self, scheme: SchemeType) -> Result<()> {
         self.input.switch_scheme(scheme)?;
         self.nine_key.command(Command::Cancel);

@@ -26,8 +26,8 @@
 #include "CandidateWindowStyle.h"
 #include "SettingsNavigation.h"
 #include "ShellLauncher.h"
-#include "msime_client.h"
-#include "../../../shared/contracts/msime_edition.h"
+#include "lingyao_client.h"
+#include "../../../shared/contracts/lingyao_edition.h"
 
 #include <winrt/base.h>
 
@@ -68,7 +68,7 @@ namespace {
 using Inspectable = winrt::Windows::Foundation::IInspectable;
 using Color = winrt::Windows::UI::Color;
 using A11y = Microsoft::UI::Xaml::Automation::AutomationProperties;
-namespace nav = msime::settings;
+namespace nav = lingyao::settings;
 
 struct Response {
   std::string text;
@@ -84,7 +84,7 @@ Response take_response(char *raw) {
     return {"{\"ok\":false,\"error\":\"empty host response\"}", false};
   }
   std::string value(raw);
-  msime_client_string_free(raw);
+  lingyao_client_string_free(raw);
   try {
     const auto object = JsonObject::Parse(text(value));
     return {std::move(value), object.GetNamedBoolean(L"ok", false)};
@@ -110,15 +110,15 @@ std::wstring environment(const wchar_t *name) {
 }
 
 std::filesystem::path state_directory() {
-  if (const auto raw = environment(L"MSIME_CLIENT_STATE_DIR"); !raw.empty()) {
+  if (const auto raw = environment(L"LINGYAO_CLIENT_STATE_DIR"); !raw.empty()) {
     std::filesystem::path path(raw);
     if (path.is_absolute()) {
       return path;
     }
   }
-  // 本版本的状态目录名（版本表 platforms.windows.state_directory），full 是 MSIME-Client。
+  // 本版本的状态目录名（版本表 platforms.windows.state_directory），full 是 LINGYAO-Client。
   if (const auto local = environment(L"LOCALAPPDATA"); !local.empty()) {
-    return std::filesystem::path(local) / MSIME_EDITION_STATE_DIRECTORY;
+    return std::filesystem::path(local) / LINGYAO_EDITION_STATE_DIRECTORY;
   }
   return {};
 }
@@ -144,17 +144,17 @@ std::string path_utf8(const std::filesystem::path &path) {
 // Whether this input method is in the user's keyboard list, and whether it is the default one. Unknown when input.dll cannot answer, in which case no banner is shown rather than a wrong one.
 enum class InputMethodState { unknown, missing, not_default, ready };
 
-// 本版本的文本服务和语言 profile，与 TSF 的 Globals.cpp 和看门狗读同一份 shared/contracts/msime_edition.h。
-constexpr GUID input_method_clsid = MSIME_EDITION_CLSID;
-constexpr GUID input_method_profile = MSIME_EDITION_PROFILE_GUID;
+// 本版本的文本服务和语言 profile，与 TSF 的 Globals.cpp 和看门狗读同一份 shared/contracts/lingyao_edition.h。
+constexpr GUID input_method_clsid = LINGYAO_EDITION_CLSID;
+constexpr GUID input_method_profile = LINGYAO_EDITION_PROFILE_GUID;
 // The same profile in the <LangID>:<CLSID><profile> form InstallLayoutOrTip and SetDefaultLayoutOrTip take.
 constexpr const wchar_t *input_method_id =
-    MSIME_EDITION_LANGID_STRING L":" MSIME_EDITION_CLSID_STRING
-    MSIME_EDITION_PROFILE_GUID_STRING;
+    LINGYAO_EDITION_LANGID_STRING L":" LINGYAO_EDITION_CLSID_STRING
+    LINGYAO_EDITION_PROFILE_GUID_STRING;
 
 // 本版本是否提供这个方案（版本表 input_schemes）。不提供的方案不出现在输入方案的选项里。
 bool edition_offers_scheme(std::wstring_view scheme) {
-  for (const char *name : {MSIME_EDITION_INPUT_SCHEMES}) {
+  for (const char *name : {LINGYAO_EDITION_INPUT_SCHEMES}) {
     const std::string_view narrow(name);
     if (scheme.size() == narrow.size() &&
         std::equal(narrow.begin(), narrow.end(), scheme.begin(),
@@ -257,13 +257,13 @@ std::string route_page() {
     }
     LocalFree(argv);
   }
-  return std::string(nav::offered_page_for_route(page.value_or(std::string()), MSIME_EDITION_HANDWRITING != 0));
+  return std::string(nav::offered_page_for_route(page.value_or(std::string()), LINGYAO_EDITION_HANDWRITING != 0));
 }
 
 // The runtime options file the Server hands this window, or the one in the state directory when started from the Start menu. None before the input method is set up.
 std::optional<std::filesystem::path> runtime_options_file() {
   std::error_code error;
-  if (const auto raw = environment(L"MSIME_CLIENT_HOST_OPTIONS"); !raw.empty()) {
+  if (const auto raw = environment(L"LINGYAO_CLIENT_HOST_OPTIONS"); !raw.empty()) {
     std::filesystem::path path(raw);
     if (path.is_absolute() && std::filesystem::is_regular_file(path, error))
       return path;
@@ -277,7 +277,7 @@ std::optional<std::filesystem::path> runtime_options_file() {
   return path;
 }
 
-// The runtime options msime-mcp is pointed at, as the UTF-8 path the host API takes.
+// The runtime options lingyao-mcp is pointed at, as the UTF-8 path the host API takes.
 std::optional<std::string> runtime_options_path() {
   const auto path = runtime_options_file();
   if (!path)
@@ -312,11 +312,11 @@ std::wstring response_error(Response const &response) {
   }
 }
 
-// 本版本在 AI 助手配置里登记的服务器名，与 client-core 的 `Edition::mcp_server_name` 相同：full 是 msime，其他版本是 msime-<id>。
+// 本版本在 AI 助手配置里登记的服务器名，与 client-core 的 `Edition::mcp_server_name` 相同：full 是 lingyao，其他版本是 lingyao-<id>。
 std::wstring mcp_server_name() {
-  const std::string_view id = MSIME_EDITION_ID;
-  return MSIME_EDITION_IS_FULL ? std::wstring(L"msime")
-                               : L"msime-" + std::wstring(id.begin(), id.end());
+  const std::string_view id = LINGYAO_EDITION_ID;
+  return LINGYAO_EDITION_IS_FULL ? std::wstring(L"lingyao")
+                               : L"lingyao-" + std::wstring(id.begin(), id.end());
 }
 
 std::wstring mcp_client_name(std::wstring_view id) {
@@ -335,7 +335,7 @@ std::wstring mcp_failure(std::wstring const &code, std::wstring const &name) {
   if (code == L"mcp_config_invalid")
     return name + L" 的配置文件不是有效的 JSON，已保持原样。请先修正该文件。";
   if (code == L"mcp_server_missing")
-    return L"没有找到 msime-mcp，请重新安装输入法。";
+    return L"没有找到 lingyao-mcp，请重新安装输入法。";
   if (code == L"mcp_options_missing")
     return L"输入法尚未完成初始化，请先完成设置向导。";
   return L"无法写入 " + name + L" 的配置文件。";
@@ -386,7 +386,7 @@ public:
       return false;
     }
     const auto path = path_utf8(directory);
-    auto response = take_response(msime_client_load_preferences(
+    auto response = take_response(lingyao_client_load_preferences(
         reinterpret_cast<const uint8_t *>(path.data()), path.size()));
     if (!response.ok) {
       error = L"读取设置失败，请稍后重试。";
@@ -410,7 +410,7 @@ public:
     const auto path = path_utf8(directory);
     document_.SetNamedValue(L"preferences", preferences_);
     const auto snapshot = utf8(document_.Stringify());
-    auto response = take_response(msime_client_save_preferences(
+    auto response = take_response(lingyao_client_save_preferences(
         reinterpret_cast<const uint8_t *>(path.data()), path.size(), revision_,
         reinterpret_cast<const uint8_t *>(snapshot.data()), snapshot.size()));
     if (!response.ok) {
@@ -514,7 +514,7 @@ public:
 
 private:
   void reset_defaults() {
-    auto defaults = take_response(msime_client_default_preferences());
+    auto defaults = take_response(lingyao_client_default_preferences());
     if (!defaults.ok) {
       document_ = JsonObject();
       preferences_ = JsonObject();
@@ -627,7 +627,7 @@ Palette make_palette(bool dark) {
 }
 
 // A colour of the candidate palette (straight alpha in [0,1]) as a XAML colour.
-Color to_color(msime::windows::CandidateColor const &color) {
+Color to_color(lingyao::windows::CandidateColor const &color) {
   auto channel = [](float value) {
     return static_cast<uint8_t>(
         std::lround(std::clamp(value, 0.0f, 1.0f) * 255.0f));
@@ -743,7 +743,7 @@ std::wstring number_text(double value) {
 
 hstring glyph_text(wchar_t glyph) { return hstring(std::wstring(1, glyph)); }
 
-// The largest PNG frame of the product icon (RCDATA 102 is msime.ico), for the title bar and the about card. Empty when the resource is missing or malformed: those places then show no picture.
+// The largest PNG frame of the product icon (RCDATA 102 is lingyao.ico), for the title bar and the about card. Empty when the resource is missing or malformed: those places then show no picture.
 std::vector<uint8_t> const &logo_png() {
   static const std::vector<uint8_t> bytes = [] {
     std::vector<uint8_t> result;
@@ -865,7 +865,7 @@ constexpr std::array<std::pair<const wchar_t *, const wchar_t *>, 9>
 struct MainWindow : WindowT<MainWindow> {
   explicit MainWindow(std::string page) : current_page_(std::move(page)) {
     // 窗口标题和侧栏的产品名按版本取，full 仍是「灵耀输入法」。
-    Title(MSIME_EDITION_DISPLAY_NAME L"设置");
+    Title(LINGYAO_EDITION_DISPLAY_NAME L"设置");
     ExtendsContentIntoTitleBar(true);
     reload_document();
     load_catalog();
@@ -904,7 +904,7 @@ private:
 
   void load_catalog() {
     themes_.clear();
-    auto response = take_response(msime_client_theme_catalog());
+    auto response = take_response(lingyao_client_theme_catalog());
     if (!response.ok)
       return;
     try {
@@ -972,7 +972,7 @@ private:
   }
 
   // The candidate palette the Server draws for a global theme. The request is the one the Server sends (candidate_theme_request): the stored custom theme without its keyboard design, the candidate window's mode and layout, and the skin root, so a custom theme's candidate_colors and skin package reach the preview exactly as they reach the real window. A request the shared layer refuses, or a response this reader does not recognise, draws the native tokens, as the Server does. The last answer is kept for its request, since the preview redraws on every slider step.
-  msime::windows::CandidatePalette candidate_theme(std::wstring const &id) {
+  lingyao::windows::CandidatePalette candidate_theme(std::wstring const &id) {
     const bool dark = candidate_dark();
     JsonObject request;
     request.SetNamedValue(L"global_theme",
@@ -999,8 +999,8 @@ private:
     if (resolved_theme_ && body == resolved_request_)
       return *resolved_theme_;
 
-    auto palette = msime::windows::candidate_native_palette(dark);
-    auto response = take_response(msime_client_resolve_theme(
+    auto palette = lingyao::windows::candidate_native_palette(dark);
+    auto response = take_response(lingyao_client_resolve_theme(
         reinterpret_cast<const uint8_t *>(body.data()), body.size()));
     if (response.ok) {
       try {
@@ -1015,7 +1015,7 @@ private:
           else if (appearance.GetString() == L"light")
             theme_dark = false;
         }
-        msime::windows::CandidatePaletteOverrides slots;
+        lingyao::windows::CandidatePaletteOverrides slots;
         const auto candidate =
             value.GetNamedValue(L"candidate", JsonValue::CreateNullValue());
         if (candidate.ValueType() == JsonValueType::Object) {
@@ -1042,11 +1042,11 @@ private:
           if (bar.ValueType() == JsonValueType::Boolean)
             slots.show_selected_bar = bar.GetBoolean();
         }
-        palette = msime::windows::candidate_palette(
-            slots, msime::windows::candidate_native_palette(
+        palette = lingyao::windows::candidate_palette(
+            slots, lingyao::windows::candidate_native_palette(
                        theme_dark.value_or(dark)));
       } catch (hresult_error const &) {
-        palette = msime::windows::candidate_native_palette(dark);
+        palette = lingyao::windows::candidate_native_palette(dark);
       }
     }
     resolved_request_ = std::move(body);
@@ -1308,7 +1308,7 @@ private:
     show_logo(logo, 36);
     identity.Children().Append(logo);
 
-    auto product = make_text(MSIME_EDITION_DISPLAY_NAME, 12, palette_.text);
+    auto product = make_text(LINGYAO_EDITION_DISPLAY_NAME, 12, palette_.text);
     product.VerticalAlignment(VerticalAlignment::Center);
     identity.Children().Append(product);
     auto section = make_text(L"设置", 12, palette_.sub);
@@ -1438,7 +1438,7 @@ private:
     // 每组以标题开头；`SettingsNavigation.h` 的页面按组排序，所以组一变就该插入标题。
     std::optional<std::size_t> group;
     for (const auto &page : nav::pages) {
-      if (!nav::page_offered(page.id, MSIME_EDITION_HANDWRITING != 0))
+      if (!nav::page_offered(page.id, LINGYAO_EDITION_HANDWRITING != 0))
         continue;
       if (page.group != group) {
         group = page.group;
@@ -1527,7 +1527,7 @@ private:
     indexing_ = true;
     const auto saved_page = current_page_;
     for (const auto &page : nav::pages) {
-      if (!nav::page_offered(page.id, MSIME_EDITION_HANDWRITING != 0))
+      if (!nav::page_offered(page.id, LINGYAO_EDITION_HANDWRITING != 0))
         continue;
       current_page_ = std::string(page.id);
       StackPanel scratch;
@@ -2264,7 +2264,7 @@ private:
 
   // ---- Launching ----
 
-  // The shared desktop app (MSIME.exe) is installed beside this executable.
+  // The shared desktop app (LINGYAO.exe) is installed beside this executable.
   static std::filesystem::path shell_executable() {
     std::wstring buffer(MAX_PATH, L'\0');
     for (;;) {
@@ -2278,24 +2278,24 @@ private:
       }
       buffer.resize(buffer.size() * 2);
     }
-    return std::filesystem::path(buffer).parent_path() / L"MSIME.exe";
+    return std::filesystem::path(buffer).parent_path() / L"LINGYAO.exe";
   }
 
   // The shared app must read the same store as this window; the context is passed only when both paths are known.
-  static std::optional<msime::windows::ShellLaunchContext> launch_context() {
+  static std::optional<lingyao::windows::ShellLaunchContext> launch_context() {
     const auto state_root = state_directory();
     const auto options = runtime_options_file();
     if (state_root.empty() || !state_root.is_absolute() || !options ||
         !options->is_absolute())
       return std::nullopt;
-    return msime::windows::ShellLaunchContext{state_root, *options};
+    return lingyao::windows::ShellLaunchContext{state_root, *options};
   }
 
   // Starting the shared app waits for it to become idle, so it runs off the UI thread; only a failure comes back.
   fire_and_forget open_shell(nav::ShellTarget target) {
     auto weak = get_weak();
     auto queue = DispatcherQueue();
-    const msime::windows::ShellSurfaceRequest request{
+    const lingyao::windows::ShellSurfaceRequest request{
         std::string(target.panel), std::string(target.page)};
     const auto executable = shell_executable();
     const auto context = launch_context();
@@ -2304,15 +2304,15 @@ private:
     const bool started =
         !executable.empty() &&
         std::filesystem::is_regular_file(executable, error) &&
-        (context ? msime::windows::launch_shell_surface(executable, request,
+        (context ? lingyao::windows::launch_shell_surface(executable, request,
                                                         *context)
-                 : msime::windows::launch_shell_surface(executable, request));
+                 : lingyao::windows::launch_shell_surface(executable, request));
     if (started)
       co_return;
     queue.TryEnqueue([weak] {
       if (auto self = weak.get())
         self->show_notice(
-            L"无法打开灵耀输入法应用（MSIME.exe）。请重新安装输入法后再试。");
+            L"无法打开灵耀输入法应用（LINGYAO.exe）。请重新安装输入法后再试。");
     });
   }
 
@@ -2578,16 +2578,16 @@ private:
     // Scale, opacity and radius through the rules the card itself uses (CandidateWindowStyle.h). The package's own radius is not known here, so an unset radius previews the theme's.
     const auto style = candidate_window_style();
     const double scale = style.scale();
-    const double radius = msime::windows::candidate_card_radius(
+    const double radius = lingyao::windows::candidate_card_radius(
         style, std::nullopt, theme.radius);
     const double row_radius =
-        msime::windows::candidate_row_radius(style, theme.item_radius,
+        lingyao::windows::candidate_row_radius(style, theme.item_radius,
                                              static_cast<float>(radius));
 
     preview_host_.Background(
-        brush(to_color(msime::windows::candidate_faded(theme.surface, style))));
+        brush(to_color(lingyao::windows::candidate_faded(theme.surface, style))));
     preview_host_.BorderBrush(
-        brush(to_color(msime::windows::candidate_faded(theme.border, style))));
+        brush(to_color(lingyao::windows::candidate_faded(theme.border, style))));
     preview_host_.BorderThickness(Thickness{1, 1, 1, 1});
     preview_host_.CornerRadius(CornerRadius{radius, radius, radius, radius});
     preview_host_.Padding(
@@ -2639,10 +2639,10 @@ private:
       cell.Spacing(8 * scale);
       // Alpha 0 in the selected slots means "keep the unselected colour", as the renderer reads it. The translation draws in the package's translation colour, or else the number colour, as the renderer draws it.
       const auto number_color =
-          msime::windows::candidate_row_number_color(theme, highlighted);
+          lingyao::windows::candidate_row_number_color(theme, highlighted);
       const auto translation_color =
-          msime::windows::candidate_row_translation_color(theme, highlighted);
-      const auto row_color = msime::windows::candidate_row_text_color(
+          lingyao::windows::candidate_row_translation_color(theme, highlighted);
+      const auto row_color = lingyao::windows::candidate_row_text_color(
           theme, theme.text, highlighted, false);
       auto number =
           make_text(std::to_wstring(i + 1), 13 * scale, to_color(number_color));
@@ -2697,7 +2697,7 @@ private:
     const auto stored = document_.Value(L"candidate_corner_radius");
     const bool overridden = stored && stored.ValueType() == JsonValueType::Number;
     const double fallback =
-        msime::windows::candidate_native_palette(candidate_dark()).radius;
+        lingyao::windows::candidate_native_palette(candidate_dark()).radius;
     StackPanel box;
     box.Orientation(Orientation::Horizontal);
     box.Spacing(8);
@@ -2721,8 +2721,8 @@ private:
   }
 
   // The style fields as the preview draws them. A document out of range previews the defaults; the card itself refuses such a document and keeps its previous style.
-  msime::windows::CandidateWindowStyle candidate_window_style() const {
-    msime::windows::CandidateWindowStyle style;
+  lingyao::windows::CandidateWindowStyle candidate_window_style() const {
+    lingyao::windows::CandidateWindowStyle style;
     style.scale_percent = static_cast<unsigned>(
         std::lround(document_.Number(L"candidate_scale_percent", 100)));
     style.opacity_percent = static_cast<unsigned>(
@@ -2731,7 +2731,7 @@ private:
     if (radius && radius.ValueType() == JsonValueType::Number)
       style.corner_radius =
           static_cast<unsigned>(std::lround((std::max)(0.0, radius.GetNumber())));
-    return style.valid() ? style : msime::windows::CandidateWindowStyle{};
+    return style.valid() ? style : lingyao::windows::CandidateWindowStyle{};
   }
 
   // ---- 悬浮工具栏 ----
@@ -2777,7 +2777,7 @@ private:
   // ---- 输入 ----
 
   void build_typing_page(StackPanel const &page) {
-    const auto scheme = document_.String(L"scheme", MSIME_EDITION_DEFAULT_SCHEME_W);
+    const auto scheme = document_.String(L"scheme", LINGYAO_EDITION_DEFAULT_SCHEME_W);
     auto schemes = add_group(page, L"输入方案");
     // 只列出本版本提供的方案。
     std::vector<Option> scheme_options;
@@ -2813,7 +2813,7 @@ private:
                  {{L"wubi86", L"86 五笔"}, {L"wubi98", L"98 五笔"}}, L"wubi86");
       bool_row(schemes, 0xE8D2, L"编码打不出时用拼音候选",
                L"五笔词库无法回答当前编码时，用同一串字母查询全拼；词库能回答时不影响。",
-               L"wubi_mixed_pinyin", MSIME_EDITION_WUBI_MIXED_PINYIN_DEFAULT != 0);
+               L"wubi_mixed_pinyin", LINGYAO_EDITION_WUBI_MIXED_PINYIN_DEFAULT != 0);
       bool_row(schemes, 0xE8CB, L"候选显示剩余编码",
                L"在候选后面标出还要再打哪几个字母才能单独打出它。已经打完整码的候选不标。",
                L"wubi_code_hint", true);
@@ -2932,7 +2932,7 @@ private:
     checks.reserve(modes.size());
     for (const auto &[id, label, default_on] : modes) {
       // 不带临时日语的版本（版本表 features.temporary_japanese，host-api 也始终把它关掉）不列出这个开关。
-      if constexpr (!MSIME_EDITION_TEMPORARY_JAPANESE) {
+      if constexpr (!LINGYAO_EDITION_TEMPORARY_JAPANESE) {
         if (std::wstring_view(id) == L"temporary_japanese")
           continue;
       }
@@ -2979,7 +2979,7 @@ private:
 
   // 选择日语、韩语、越南语或藏语时记住被替换的中文方案，切回时回到它；选择中文方案（包括粤拼、注音和笔画）时记住这个方案。在这几种语言之间切换保留记住的方案，因为它们都不是存储接受的中文方案。规则与托盘相同（server_main.cpp 的 store_input_scheme）。
   void select_scheme(std::wstring const &next) {
-    const auto current = document_.String(L"scheme", MSIME_EDITION_DEFAULT_SCHEME_W);
+    const auto current = document_.String(L"scheme", LINGYAO_EDITION_DEFAULT_SCHEME_W);
     if (current == next)
       return;
     const auto chinese = [](std::wstring const &value) {
@@ -3253,7 +3253,7 @@ private:
                            !directory.empty()));
 
     auto mcp = add_group(page, L"连接 AI 助手");
-    record(L"连接 AI 助手", L"MCP msime-mcp Claude Desktop Cursor");
+    record(L"连接 AI 助手", L"MCP lingyao-mcp Claude Desktop Cursor");
     if (!indexing_) {
       auto card = make_card();
       StackPanel content;
@@ -3359,11 +3359,11 @@ private:
     panel.Children().Append(block);
   }
 
-  // 「连接 AI 助手」: the msime-mcp entry an assistant runs, to copy or to write into Claude Desktop's or Cursor's configuration. The same section as the shared settings page, through msime_client_mcp_status and msime_client_mcp_install.
+  // 「连接 AI 助手」: the lingyao-mcp entry an assistant runs, to copy or to write into Claude Desktop's or Cursor's configuration. The same section as the shared settings page, through lingyao_client_mcp_status and lingyao_client_mcp_install.
   void append_mcp_section(StackPanel const &panel) {
     append_text(panel, L"连接后，直接告诉 AI 助手输入法哪里不对劲（比如卡顿、候选窗口不见了），它会打开诊断日志、请你把出问题的操作再做一遍，然后读日志帮你找原因。它也能读取快捷短语、设置、打字统计和已安装的候选窗口皮肤。通过 MCP（Model Context Protocol）在本机运行，不联网；除了开关诊断日志，默认不改动任何设置。");
     const auto response =
-        call_mcp(msime_client_mcp_status, mcp_request(runtime_options_path()));
+        call_mcp(lingyao_client_mcp_status, mcp_request(runtime_options_path()));
     JsonObject status{nullptr};
     if (response.ok) {
       try {
@@ -3449,7 +3449,7 @@ private:
     auto request = mcp_request(runtime_options_path());
     request.SetNamedValue(L"client", JsonValue::CreateStringValue(id));
     request.SetNamedValue(L"replace", JsonValue::CreateBooleanValue(false));
-    auto response = call_mcp(msime_client_mcp_install, request);
+    auto response = call_mcp(lingyao_client_mcp_install, request);
     if (!response.ok && response_error(response) == L"mcp_entry_exists") {
       ContentDialog dialog;
       const auto server = mcp_server_name();
@@ -3469,7 +3469,7 @@ private:
         co_return;
       }
       request.SetNamedValue(L"replace", JsonValue::CreateBooleanValue(true));
-      response = call_mcp(msime_client_mcp_install, request);
+      response = call_mcp(lingyao_client_mcp_install, request);
     }
     if (response.ok) {
       std::wstring outcome;
@@ -3496,7 +3496,7 @@ private:
   std::wstring load_error_;
   std::vector<ThemeEntry> themes_;
   std::string resolved_request_;
-  std::optional<msime::windows::CandidatePalette> resolved_theme_;
+  std::optional<lingyao::windows::CandidatePalette> resolved_theme_;
   Windows::UI::ViewManagement::UISettings ui_settings_;
   bool system_dark_ = false;
   InputMethodState input_method_ = InputMethodState::unknown;

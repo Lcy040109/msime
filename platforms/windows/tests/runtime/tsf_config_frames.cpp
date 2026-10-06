@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("TSF config frame test failed at line " +
@@ -77,15 +77,15 @@ int main() {
 
     // 输入模式帧给出方案所属的族："0" 全拼、双拼或五笔，"1" 日文，"2" 韩文，"3" 粤拼，"4" 注音，"5" 越南文，"6" 藏文，"7" 笔画。
     require(frame_text(frames[5]) == L"0");
-    const std::pair<msime::windows::scheme::InputMode, const wchar_t *> modes[] = {
-        {msime::windows::scheme::InputMode::Japanese, L"1"},
-        {msime::windows::scheme::InputMode::Korean, L"2"},
-        {msime::windows::scheme::InputMode::Cantonese, L"3"},
-        {msime::windows::scheme::InputMode::Zhuyin, L"4"},
-        {msime::windows::scheme::InputMode::Vietnamese, L"5"},
-        {msime::windows::scheme::InputMode::Tibetan, L"6"},
-        {msime::windows::scheme::InputMode::Stroke, L"7"},
-        {msime::windows::scheme::InputMode::Chinese, L"0"}};
+    const std::pair<lingyao::windows::scheme::InputMode, const wchar_t *> modes[] = {
+        {lingyao::windows::scheme::InputMode::Japanese, L"1"},
+        {lingyao::windows::scheme::InputMode::Korean, L"2"},
+        {lingyao::windows::scheme::InputMode::Cantonese, L"3"},
+        {lingyao::windows::scheme::InputMode::Zhuyin, L"4"},
+        {lingyao::windows::scheme::InputMode::Vietnamese, L"5"},
+        {lingyao::windows::scheme::InputMode::Tibetan, L"6"},
+        {lingyao::windows::scheme::InputMode::Stroke, L"7"},
+        {lingyao::windows::scheme::InputMode::Chinese, L"0"}};
     for (const auto &[mode, code] : modes) {
       config.input_mode = mode;
       require(frame_text(tsf_config_frames(config)[5]) == code);

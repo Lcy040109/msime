@@ -1,6 +1,6 @@
 #import "LocalVoiceRequest.h"
 #import "VoiceFailureMessages.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <atomic>
 #include <array>
 #include <cerrno>
@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace {
-NSString *const LocalVoiceDomain = @"app.msime.client.voice.local";
+NSString *const LocalVoiceDomain = @"app.lingyao.client.voice.local";
 // A protocol line is a few kilobytes of base64 audio or a sentence of text; anything this long is a helper gone wrong, not a message to keep buffering.
 constexpr NSUInteger MaximumHelperLine = 4 * 1024 * 1024;
 // 安装器拒绝超过 64 KiB 的模型清单；读取时也必须限制累计字节数，避免检查后文件膨胀。
@@ -22,7 +22,7 @@ constexpr NSUInteger MaximumModelManifestBytes = 64 * 1024;
 
 NSError *LocalVoiceFailure(NSString *detail = nil) {
     NSMutableDictionary *info = [@{NSLocalizedDescriptionKey : @"本地语音识别失败，请检查模型或重试"} mutableCopy];
-    if (detail.length) info[MSIMEVoiceFailureDetailKey] = detail;
+    if (detail.length) info[LINGYAOVoiceFailureDetailKey] = detail;
     return [NSError errorWithDomain:LocalVoiceDomain code:1 userInfo:info];
 }
 
@@ -31,8 +31,8 @@ id HostValue(char *(*function)(const uint8_t *, size_t), NSDictionary *request) 
     if (![NSJSONSerialization isValidJSONObject:request]) return nil;
     NSData *body = [NSJSONSerialization dataWithJSONObject:request options:0 error:nil];
     if (!body) return nil;
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        function(static_cast<const uint8_t *>(body.bytes), body.length), msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        function(static_cast<const uint8_t *>(body.bytes), body.length), lingyao_client_string_free);
     if (!raw) return nil;
     id response = [NSJSONSerialization JSONObjectWithData:[NSData dataWithBytesNoCopy:raw.get() length:std::strlen(raw.get()) freeWhenDone:NO]
                                                   options:0 error:nil];
@@ -42,7 +42,7 @@ id HostValue(char *(*function)(const uint8_t *, size_t), NSDictionary *request) 
 
 // The user's own dictionary words, heaviest first, as client-core picks them. A dictionary that is busy or unreadable only costs this session its hotwords.
 NSArray<NSDictionary *> *FetchHotwords(NSDictionary *hostOptions) {
-    id value = HostValue(msime_client_voice_hotwords, @{@"options" : hostOptions, @"limit" : @200});
+    id value = HostValue(lingyao_client_voice_hotwords, @{@"options" : hostOptions, @"limit" : @200});
     id words = [value isKindOfClass:NSDictionary.class] ? value[@"hotwords"] : nil;
     if (![words isKindOfClass:NSArray.class]) return @[];
     NSMutableArray<NSDictionary *> *hotwords = [NSMutableArray array];
@@ -54,7 +54,7 @@ NSArray<NSDictionary *> *FetchHotwords(NSDictionary *hostOptions) {
 }
 
 NSString *CorrectedText(NSString *text, NSArray<NSDictionary *> *hotwords) {
-    id value = HostValue(msime_client_voice_hotword_correct, @{@"text" : text, @"hotwords" : hotwords});
+    id value = HostValue(lingyao_client_voice_hotword_correct, @{@"text" : text, @"hotwords" : hotwords});
     id corrected = [value isKindOfClass:NSDictionary.class] ? value[@"text"] : nil;
     return [corrected isKindOfClass:NSString.class] ? corrected : text;
 }
@@ -93,7 +93,7 @@ NSDictionary *ModelManifest(NSString *path) {
     if (!path.isAbsolutePath) return nil;
     struct stat directoryStat = {};
     if (lstat(path.fileSystemRepresentation, &directoryStat) != 0 || !S_ISDIR(directoryStat.st_mode)) return nil;
-    NSString *manifestPath = [path stringByAppendingPathComponent:@"msime-model.json"];
+    NSString *manifestPath = [path stringByAppendingPathComponent:@"lingyao-model.json"];
     struct stat manifestStat = {};
     if (lstat(manifestPath.fileSystemRepresentation, &manifestStat) != 0 || !S_ISREG(manifestStat.st_mode)) return nil;
     NSData *data = BoundedModelManifestData(manifestPath);
@@ -102,52 +102,52 @@ NSDictionary *ModelManifest(NSString *path) {
 }
 } // namespace
 
-BOOL MSIMELocalVoiceModelDirectory(NSString *path) {
+BOOL LINGYAOLocalVoiceModelDirectory(NSString *path) {
     return ModelManifest(path) != nil;
 }
 
-NSString *MSIMELocalVoiceHelperPath(void) {
+NSString *LINGYAOLocalVoiceHelperPath(void) {
     NSFileManager *files = NSFileManager.defaultManager;
-    NSString *configured = NSProcessInfo.processInfo.environment[@"MSIME_VOICE_LOCAL_HELPER"];
+    NSString *configured = NSProcessInfo.processInfo.environment[@"LINGYAO_VOICE_LOCAL_HELPER"];
     if (configured.length) return configured.isAbsolutePath && [files isExecutableFileAtPath:configured] ? configured : nil;
-    NSString *bundled = [NSBundle.mainBundle.executablePath.stringByDeletingLastPathComponent stringByAppendingPathComponent:@"msime-voice-local"];
+    NSString *bundled = [NSBundle.mainBundle.executablePath.stringByDeletingLastPathComponent stringByAppendingPathComponent:@"lingyao-voice-local"];
     return bundled.isAbsolutePath && [files isExecutableFileAtPath:bundled] ? bundled : nil;
 }
 
-@interface MSIMELocalVoiceRequest ()
+@interface LINGYAOLocalVoiceRequest ()
 - (void)helperMessage:(NSDictionary *)message;
 - (void)helperFailed:(NSError *)error session:(NSNumber *)session;
 @end
 
 // The one helper process this input method talks to, and the pipe to it. Everything that touches the process or writes to it runs on `queue`, which also orders a session's start, audio and finish exactly as the request issued them; what the helper prints is handed to the active request on main.
-@interface MSIMELocalVoiceHelper : NSObject
+@interface LINGYAOLocalVoiceHelper : NSObject
 @property(nonatomic, readonly) dispatch_queue_t queue;
-@property(nonatomic, weak) MSIMELocalVoiceRequest *activeRequest; // main only
+@property(nonatomic, weak) LINGYAOLocalVoiceRequest *activeRequest; // main only
 + (instancetype)shared;
-- (BOOL)startSession:(NSNumber *)session request:(MSIMELocalVoiceRequest *)request message:(NSDictionary *)message error:(NSError **)error;
+- (BOOL)startSession:(NSNumber *)session request:(LINGYAOLocalVoiceRequest *)request message:(NSDictionary *)message error:(NSError **)error;
 - (void)sendMessage:(NSDictionary *)message session:(NSNumber *)session;
 - (void)endSession:(NSNumber *)session;
 @end
 
-@implementation MSIMELocalVoiceHelper {
+@implementation LINGYAOLocalVoiceHelper {
     NSTask *_task;
     NSFileHandle *_input;
     uint64_t _generation;
     // The session whose start went to the running process, so that process ending can fail it.
     NSNumber *_session;
-    __weak MSIMELocalVoiceRequest *_sessionRequest;
+    __weak LINGYAOLocalVoiceRequest *_sessionRequest;
 }
 
 + (instancetype)shared {
-    static MSIMELocalVoiceHelper *helper;
+    static LINGYAOLocalVoiceHelper *helper;
     static dispatch_once_t once;
-    dispatch_once(&once, ^{ helper = [MSIMELocalVoiceHelper new]; });
+    dispatch_once(&once, ^{ helper = [LINGYAOLocalVoiceHelper new]; });
     return helper;
 }
 
 - (instancetype)init {
     if (!(self = [super init])) return nil;
-    _queue = dispatch_queue_create("app.msime.client.voice.local", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0));
+    _queue = dispatch_queue_create("app.lingyao.client.voice.local", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0));
     return self;
 }
 
@@ -156,9 +156,9 @@ NSString *MSIMELocalVoiceHelperPath(void) {
 }
 
 - (BOOL)launch:(NSError **)error {
-    NSString *path = MSIMELocalVoiceHelperPath();
+    NSString *path = LINGYAOLocalVoiceHelperPath();
     if (!path) {
-        if (error) *error = LocalVoiceFailure(@"找不到本地识别组件 msime-voice-local，请重新安装输入法。");
+        if (error) *error = LocalVoiceFailure(@"找不到本地识别组件 lingyao-voice-local，请重新安装输入法。");
         return NO;
     }
     NSTask *task = [NSTask new];
@@ -170,7 +170,7 @@ NSString *MSIMELocalVoiceHelperPath(void) {
     task.standardError = NSFileHandle.fileHandleWithNullDevice;
     task.qualityOfService = NSQualityOfServiceUserInitiated;
     const uint64_t generation = ++_generation;
-    __weak MSIMELocalVoiceHelper *weakSelf = self;
+    __weak LINGYAOLocalVoiceHelper *weakSelf = self;
     NSMutableData *pending = [NSMutableData data];
     output.fileHandleForReading.readabilityHandler = ^(NSFileHandle *handle) {
         NSData *chunk = handle.availableData;
@@ -196,13 +196,13 @@ NSString *MSIMELocalVoiceHelperPath(void) {
     };
     task.terminationHandler = ^(NSTask *ended) {
         (void)ended;
-        MSIMELocalVoiceHelper *helper = weakSelf;
+        LINGYAOLocalVoiceHelper *helper = weakSelf;
         if (helper) dispatch_async(helper->_queue, ^{ [helper process:generation endedWithDetail:@"本地识别进程意外退出。"]; });
     };
     NSError *launchError = nil;
     if (![task launchAndReturnError:&launchError]) {
         output.fileHandleForReading.readabilityHandler = nil;
-        if (error) *error = LocalVoiceFailure(@"无法启动本地识别组件 msime-voice-local。");
+        if (error) *error = LocalVoiceFailure(@"无法启动本地识别组件 lingyao-voice-local。");
         return NO;
     }
     // A helper that has died between two writes must fail the write, not raise SIGPIPE in the input method.
@@ -222,7 +222,7 @@ NSString *MSIMELocalVoiceHelperPath(void) {
     _task = nil;
     _input = nil;
     NSNumber *session = _session;
-    MSIMELocalVoiceRequest *request = _sessionRequest;
+    LINGYAOLocalVoiceRequest *request = _sessionRequest;
     _session = nil;
     _sessionRequest = nil;
     if (session && request)
@@ -253,7 +253,7 @@ NSString *MSIMELocalVoiceHelperPath(void) {
     return YES;
 }
 
-- (BOOL)startSession:(NSNumber *)session request:(MSIMELocalVoiceRequest *)request message:(NSDictionary *)message error:(NSError **)error {
+- (BOOL)startSession:(NSNumber *)session request:(LINGYAOLocalVoiceRequest *)request message:(NSDictionary *)message error:(NSError **)error {
     if (!_task && ![self launch:error]) return NO;
     if (![self write:message error:error]) return NO;
     _session = session;
@@ -277,13 +277,13 @@ namespace {
 enum class LocalRequestState : int { idle, streaming, finishing, closed };
 }
 
-@implementation MSIMELocalVoiceRequest {
+@implementation LINGYAOLocalVoiceRequest {
     NSString *_model;
     NSString *_language;
     NSString *_hotwordMode;
     NSDictionary *_hostOptions;
     NSNumber *_session;
-    MSIMEDoubaoResult _result; // main only
+    LINGYAODoubaoResult _result; // main only
     std::atomic<LocalRequestState> _state;
     NSArray<NSDictionary *> *_hotwords; // helper queue only
 }
@@ -296,8 +296,8 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
         if (error) *error = LocalVoiceFailure(@"本地语音模型未安装或已被移动，请在语音设置中重新下载。");
         return nil;
     }
-    if (!MSIMELocalVoiceHelperPath()) {
-        if (error) *error = LocalVoiceFailure(@"找不到本地识别组件 msime-voice-local，请重新安装输入法。");
+    if (!LINGYAOLocalVoiceHelperPath()) {
+        if (error) *error = LocalVoiceFailure(@"找不到本地识别组件 lingyao-voice-local，请重新安装输入法。");
         return nil;
     }
     _model = [model copy];
@@ -313,7 +313,7 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
 - (void)dealloc {
     const LocalRequestState previous = _state.exchange(LocalRequestState::closed);
     if (previous == LocalRequestState::streaming || previous == LocalRequestState::finishing) {
-        MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+        LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
         NSNumber *session = _session;
         dispatch_async(helper.queue, ^{
             [helper sendMessage:@{@"op" : @"cancel"} session:session];
@@ -322,7 +322,7 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
     }
 }
 
-- (BOOL)startWithResult:(MSIMEDoubaoResult)result error:(NSError **)error {
+- (BOOL)startWithResult:(LINGYAODoubaoResult)result error:(NSError **)error {
     LocalRequestState expected = LocalRequestState::idle;
     if (!result || !_state.compare_exchange_strong(expected, LocalRequestState::streaming)) {
         if (error) *error = LocalVoiceFailure();
@@ -331,16 +331,16 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
     static uint64_t sessions = 0;
     _session = @(++sessions);
     _result = [result copy];
-    MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+    LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
     helper.activeRequest = self;
     NSNumber *session = _session;
     NSDictionary *hostOptions = _hostOptions;
     const BOOL native = [_hotwordMode isEqual:@"native"];
     const BOOL pinyin = [_hotwordMode isEqual:@"pinyin"];
     NSDictionary *start = @{@"op" : @"start", @"id" : session, @"model" : _model, @"language" : _language, @"threads" : @0};
-    __weak MSIMELocalVoiceRequest *weakSelf = self;
+    __weak LINGYAOLocalVoiceRequest *weakSelf = self;
     dispatch_async(helper.queue, ^{
-        MSIMELocalVoiceRequest *request = weakSelf;
+        LINGYAOLocalVoiceRequest *request = weakSelf;
         if (!request || request->_state.load() == LocalRequestState::closed) return;
         // Read here rather than on main: the dictionary lives behind the same store the rest of the session uses, and the first audio chunks queue behind this start instead of being dropped by a helper that has no session yet.
         NSArray<NSDictionary *> *hotwords = (native || pinyin) && hostOptions ? FetchHotwords(hostOptions) : @[];
@@ -370,7 +370,7 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
         bytes[2 * index + 1] = static_cast<uint8_t>(value >> 8);
     }
     NSString *encoded = [[NSData dataWithBytes:bytes.data() length:bytes.size()] base64EncodedStringWithOptions:0];
-    MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+    LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
     NSNumber *session = _session;
     dispatch_async(helper.queue, ^{ [helper sendMessage:@{@"op" : @"audio", @"pcm16" : encoded} session:session]; });
     return YES;
@@ -382,7 +382,7 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
         if (error) *error = LocalVoiceFailure();
         return NO;
     }
-    MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+    LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
     NSNumber *session = _session;
     dispatch_async(helper.queue, ^{ [helper sendMessage:@{@"op" : @"finish"} session:session]; });
     return YES;
@@ -391,7 +391,7 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
 - (void)cancel {
     const LocalRequestState previous = _state.exchange(LocalRequestState::closed);
     _result = nil;
-    MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+    LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
     if (helper.activeRequest == self) helper.activeRequest = nil;
     if (previous != LocalRequestState::streaming && previous != LocalRequestState::finishing) return;
     NSNumber *session = _session;
@@ -404,11 +404,11 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
 // Ends the request with its last callback. Later helper messages for this session find it closed.
 - (void)closeWithText:(NSString *)text error:(NSError *)error {
     _state.store(LocalRequestState::closed);
-    MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+    LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
     if (helper.activeRequest == self) helper.activeRequest = nil;
     NSNumber *session = _session;
     dispatch_async(helper.queue, ^{ [helper endSession:session]; });
-    MSIMEDoubaoResult result = _result;
+    LINGYAODoubaoResult result = _result;
     _result = nil;
     if (result) result(error ? nil : (text ?: @""), !error, error);
 }
@@ -423,12 +423,12 @@ enum class LocalRequestState : int { idle, streaming, finishing, closed };
         if (_result) _result(text, NO, nil);
     } else if ([type isEqual:@"final"]) {
         _state.store(LocalRequestState::closed);
-        MSIMELocalVoiceHelper *helper = MSIMELocalVoiceHelper.shared;
+        LINGYAOLocalVoiceHelper *helper = LINGYAOLocalVoiceHelper.shared;
         if (!text.length) { [self closeWithText:text error:nil]; return; }
         // Pinyin correction reads the hotwords the start fetched, which only the helper queue touches.
-        __weak MSIMELocalVoiceRequest *weakSelf = self;
+        __weak LINGYAOLocalVoiceRequest *weakSelf = self;
         dispatch_async(helper.queue, ^{
-            MSIMELocalVoiceRequest *request = weakSelf;
+            LINGYAOLocalVoiceRequest *request = weakSelf;
             if (!request) return;
             NSArray<NSDictionary *> *hotwords = request->_hotwords;
             NSString *corrected = hotwords.count ? CorrectedText(text, hotwords) : text;

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { platformResourceUrls } from "@msime/ui";
+import { platformResourceUrls } from "@lingyao/ui";
 
 test("uses the Linux resources for a Linux host", () => {
   expect(platformResourceUrls({ clientHostedPlatform: true, linux: true })).toEqual({

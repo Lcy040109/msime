@@ -1,9 +1,9 @@
-//! Fixture staging, as the recorder's `prepare_fixture` does it: `english_schema` first, then each database's SQL verbatim, then the files, then an empty `msime-pinyin.db` and a schema-only `msime-english.db` for whichever is still missing.
+//! Fixture staging, as the recorder's `prepare_fixture` does it: `english_schema` first, then each database's SQL verbatim, then the files, then an empty `lingyao-pinyin.db` and a schema-only `lingyao-english.db` for whichever is still missing.
 
 use std::fs;
 use std::path::Path;
 
-use msime_engine::assets::{ENGLISH_DICTIONARY, MAIN_DICTIONARY};
+use lingyao_engine::assets::{ENGLISH_DICTIONARY, MAIN_DICTIONARY};
 use rusqlite::Connection;
 use serde_json::Value;
 
@@ -16,7 +16,7 @@ pub fn stage_fixture(fixture: &Value, resources: &Path) {
     let english = resources.join(ENGLISH_DICTIONARY);
     // Reference tests that call EnglishDictionary::ensure_schema before inserting their English rows set this.
     if fixture["english_schema"].as_bool().unwrap_or(false) {
-        msime_engine::ensure_english_schema(&english)
+        lingyao_engine::ensure_english_schema(&english)
             .unwrap_or_else(|error| panic!("english schema failed: {error}"));
     }
     if let Some(databases) = fixture.get("databases").and_then(Value::as_object) {
@@ -47,7 +47,7 @@ pub fn stage_fixture(fixture: &Value, resources: &Path) {
         );
     }
     if !english.exists() {
-        msime_engine::ensure_english_schema(&english)
+        lingyao_engine::ensure_english_schema(&english)
             .unwrap_or_else(|error| panic!("english schema failed: {error}"));
     }
 }
@@ -110,7 +110,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fixture = json!({
             "english_schema": true,
-            "databases": {"msime-english.db": "INSERT INTO english_words(word, display, weight) VALUES('codex', 'Codex', 10);"},
+            "databases": {"lingyao-english.db": "INSERT INTO english_words(word, display, weight) VALUES('codex', 'Codex', 10);"},
         });
         stage_fixture(&fixture, dir.path());
         assert_eq!(
@@ -142,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "fixture SQL failed on msime-pinyin.db")]
+    #[should_panic(expected = "fixture SQL failed on lingyao-pinyin.db")]
     fn bad_fixture_sql_fails_the_scenario() {
         let dir = tempfile::tempdir().unwrap();
         exec_sql(&dir.path().join(MAIN_DICTIONARY), "CREATE TABLE");

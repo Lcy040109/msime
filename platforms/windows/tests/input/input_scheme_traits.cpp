@@ -1,7 +1,7 @@
 #include "InputSchemeTraits.h"
 #include <cassert>
 
-using namespace msime::windows::scheme;
+using namespace lingyao::windows::scheme;
 
 // The Engine-predicate mirrors are compared against crates/engine/src/types.rs by scripts/test-scheme-traits-parity.py; this covers what that script cannot read: the InputModeChanged codes, the configured-scheme spellings and the languages the modes write.
 int main() {
@@ -85,7 +85,7 @@ int main() {
   // 本次构建的版本提供它自己的默认方案，full 提供全部方案。
   constexpr auto built = edition_schemes();
   assert(built.offers(built.fallback));
-  if constexpr (MSIME_EDITION_IS_FULL != 0)
+  if constexpr (LINGYAO_EDITION_IS_FULL != 0)
     for (int scheme = Quanpin; scheme <= Stroke; ++scheme)
       assert(built.offers(scheme) && built.fallback == Quanpin);
   assert(scheme_from_name("pinyin") == -1 && input_mode("pinyin") == InputMode::Chinese);

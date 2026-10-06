@@ -2,11 +2,11 @@
 //!
 //! The log is off until the user or an agent turns it on; `set` does that the way the settings page does, so an agent can go from the user's description of a problem to the log without the user touching a setting.
 //!
-//! Every desktop host writes the log beside its preferences when the user turns on `diagnostic_log.server` (or, on Windows, `diagnostic_log.tsf`): `diagnostic.log` on macOS and Linux, `logs\server.log` on Windows, each rotated to a `.1` copy once it grows past a few MiB. The hosts keep to event names, counts, timings and error codes, but the Windows TIP's key-trace records (`[msime][issue47]`) name the key that was pressed; those fields are blanked here before a line is returned, so what the user typed does not reach the agent.
+//! Every desktop host writes the log beside its preferences when the user turns on `diagnostic_log.server` (or, on Windows, `diagnostic_log.tsf`): `diagnostic.log` on macOS and Linux, `logs\server.log` on Windows, each rotated to a `.1` copy once it grows past a few MiB. The hosts keep to event names, counts, timings and error codes, but the Windows TIP's key-trace records (`[lingyao][issue47]`) name the key that was pressed; those fields are blanked here before a line is returned, so what the user typed does not reach the agent.
 
 use crate::preferences::{self, PreferencesChange};
-use msime_client_core::edition::Edition;
-use msime_client_core::preferences::PreferencesStore;
+use lingyao_client_core::edition::Edition;
+use lingyao_client_core::preferences::PreferencesStore;
 use rmcp::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Seek, SeekFrom};
@@ -289,10 +289,10 @@ mod tests {
 
     #[test]
     fn a_key_trace_keeps_its_shape_but_not_its_key() {
-        let line = "2026-09-25 10:00:00.123 [p1:t2] [msime][issue47] seq=3 stage=key-down request=9 vk=0x41 wch=U+0061 key=a key_class=letter category=0 composing=1 buffer_len=1 result=0x00000000 process=notepad.exe";
+        let line = "2026-09-25 10:00:00.123 [p1:t2] [lingyao][issue47] seq=3 stage=key-down request=9 vk=0x41 wch=U+0061 key=a key_class=letter category=0 composing=1 buffer_len=1 result=0x00000000 process=notepad.exe";
         assert_eq!(
             redact(line),
-            "2026-09-25 10:00:00.123 [p1:t2] [msime][issue47] seq=3 stage=key-down request=9 vk=- wch=- key=- key_class=letter category=0 composing=1 buffer_len=1 result=0x00000000 process=notepad.exe"
+            "2026-09-25 10:00:00.123 [p1:t2] [lingyao][issue47] seq=3 stage=key-down request=9 vk=- wch=- key=- key_class=letter category=0 composing=1 buffer_len=1 result=0x00000000 process=notepad.exe"
         );
         let plain = "2026-09-25 10:00:00 [p7] focus_in";
         assert_eq!(redact(plain), plain);
@@ -302,8 +302,8 @@ mod tests {
     fn lines_are_filtered_by_time_and_text_and_the_newest_are_kept() {
         let text = "2026-09-25 09:59:59 [p1] focus_in\n\
                     2026-09-25 10:00:00.001 [p1:t1] TSF diagnostics pid=5 records=2\r\n\
-                    [msime][key-latency] side=tsf stage=send elapsed_ms=12.000\r\n\
-                    [msime][composition-recovery] reason=lost\r\n\
+                    [lingyao][key-latency] side=tsf stage=send elapsed_ms=12.000\r\n\
+                    [lingyao][composition-recovery] reason=lost\r\n\
                     \n\
                     2026-09-25 10:00:05 [p1] candidate_window_slow\n\
                     2026-09-25 10:01:00 [p1] focus_out\n";
@@ -311,8 +311,8 @@ mod tests {
             select(text, &request(None, None, Some("2026-09-25 10:00"))),
             [
                 "2026-09-25 10:00:00.001 [p1:t1] TSF diagnostics pid=5 records=2",
-                "[msime][key-latency] side=tsf stage=send elapsed_ms=12.000",
-                "[msime][composition-recovery] reason=lost",
+                "[lingyao][key-latency] side=tsf stage=send elapsed_ms=12.000",
+                "[lingyao][composition-recovery] reason=lost",
                 "2026-09-25 10:00:05 [p1] candidate_window_slow",
                 "2026-09-25 10:01:00 [p1] focus_out",
             ]

@@ -3,16 +3,16 @@
 #import "../../../../shared/apple/TextClient.h"
 #include "../candidate/CandidateSkin.h"
 
-FOUNDATION_EXPORT NSNotificationName const MSIMEAppearanceDidChangeNotification;
-FOUNDATION_EXPORT NSNotificationName const MSIMETranslationPreferencesDidSaveNotification;
-/// Set to @YES in the userInfo of an MSIMEAppearanceDidChangeNotification that only moved the Chinese/English mode. The mode is not part of the shared preferences document, so observers refresh what they show but have nothing to save.
-FOUNDATION_EXPORT NSString *const MSIMEAppearanceInputModeOnlyKey;
+FOUNDATION_EXPORT NSNotificationName const LINGYAOAppearanceDidChangeNotification;
+FOUNDATION_EXPORT NSNotificationName const LINGYAOTranslationPreferencesDidSaveNotification;
+/// Set to @YES in the userInfo of an LINGYAOAppearanceDidChangeNotification that only moved the Chinese/English mode. The mode is not part of the shared preferences document, so observers refresh what they show but have nothing to save.
+FOUNDATION_EXPORT NSString *const LINGYAOAppearanceInputModeOnlyKey;
 
-/// 某个输入源是否已在用户的输入法列表里。输入法进程启动时把它设成 `MSIMEInputSourceIsEnabled`；测试和其它链接了设置窗口的程序不设，「菜单栏入口」提示就不出现，设置窗口也因此不必链接 Carbon。
-extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
+/// 某个输入源是否已在用户的输入法列表里。输入法进程启动时把它设成 `LINGYAOInputSourceIsEnabled`；测试和其它链接了设置窗口的程序不设，「菜单栏入口」提示就不出现，设置窗口也因此不必链接 Carbon。
+extern BOOL (*LINGYAOInputModeEnabledProbe)(NSString *identifier);
 
 // macOS-only presentation settings; never change Engine composition/configuration.
-@interface MSIMEAppearancePreferences : NSWindowController
+@interface LINGYAOAppearancePreferences : NSWindowController
 + (instancetype)sharedPreferences;
 - (instancetype)initWithDefaults:(NSUserDefaults *)defaults;
 - (instancetype)initWithDefaults:(NSUserDefaults *)defaults skinsRoot:(NSURL *)root;
@@ -26,9 +26,9 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 - (void)setTranslationPreferencesDirectory:(NSString *)directory;
 /// Applies only settings owned by this window to an existing shared Preferences object.
 - (NSDictionary<NSString *, id> *)sharedPreferencesByMerging:(NSDictionary<NSString *, id> *)snapshot;
-- (msime::mac::ResolvedSkin)resolvedSkinForDark:(BOOL)dark;
+- (lingyao::mac::ResolvedSkin)resolvedSkinForDark:(BOOL)dark;
 /// The floating toolbar's palette for one mode: the resolved candidate palette (surface, text, hover, border, selected), with the applied package's toolbar stylesheet over it.
-- (msime::mac::SkinTokens)toolbarSkinForDark:(BOOL)dark;
+- (lingyao::mac::SkinTokens)toolbarSkinForDark:(BOOL)dark;
 @property(nonatomic, readonly) NSImage *decorationImage;
 /// The drawn package's background image, read with the decoration when the theme is resolved; the candidate window draws it only in a mode whose resolved skin has a backgroundPath.
 @property(nonatomic, readonly) NSImage *backgroundImage;
@@ -49,7 +49,7 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 /// Allow Pinyin fallback when a Wubi code has no Wubi candidates.
 @property(nonatomic) BOOL wubiMixedPinyinEnabled;
 /// Shared inline composition display: raw keys, formatted pinyin, or hidden.
-@property(nonatomic, readonly) MSIMEInlinePreeditStyle inlinePreeditStyle;
+@property(nonatomic, readonly) LINGYAOInlinePreeditStyle inlinePreeditStyle;
 @property(nonatomic) NSUInteger fontSize;
 @property(nonatomic, copy) NSString *fontFamily;
 /// Optional leading face for Latin glyphs in the candidate cascade.
@@ -63,9 +63,9 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 @property(nonatomic) NSInteger candidateScalePercent;
 @property(nonatomic) NSInteger candidateOpacityPercent;
 @property(nonatomic, copy) NSNumber *candidateCornerRadius;
-- (msime::mac::CandidateWindowStyle)candidateWindowStyle;
+- (lingyao::mac::CandidateWindowStyle)candidateWindowStyle;
 /// -resolvedSkinForDark: with -candidateWindowStyle laid over it, which is what the candidate window draws. The floating toolbar and the colour wells read the skin as resolved.
-- (msime::mac::ResolvedSkin)candidateWindowSkinForDark:(BOOL)dark;
+- (lingyao::mac::ResolvedSkin)candidateWindowSkinForDark:(BOOL)dark;
 /// The 候选字体 preset: 0 默认, 1 宋体, 2 黑体, 3 楷体, 4 圆体, read back from `fontFamily`, or -1 for a family none of them writes. Setting one writes the preset's family for this host into `fontFamily` and puts all of its families, the other platforms' names included, at the front of `fallbackFonts`; 默认 restores the shared default pair.
 @property(nonatomic) NSInteger candidateFontPreset;
 @property(nonatomic, copy) NSString *candidateTextColor;
@@ -81,7 +81,7 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 @property(nonatomic, copy) NSString *themeMode;
 @property(nonatomic, copy) NSString *candidateTheme;
 @property(nonatomic, copy) NSString *toolbarTheme;
-/// The global theme: system, lingyao, light, paper, night, ink or custom (the ids of msime_client_theme_catalog). An id outside the catalog is ignored when set and reads as system.
+/// The global theme: system, lingyao, light, paper, night, ink or custom (the ids of lingyao_client_theme_catalog). An id outside the catalog is ignored when set and reads as system.
 @property(nonatomic, copy) NSString *globalTheme;
 /// `custom_theme.base`: system or a built-in theme id, the palette the custom theme starts from.
 @property(nonatomic, readonly, copy) NSString *customThemeBase;
@@ -92,7 +92,7 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 /// 自定义主题不使用外部皮肤: drops the package and keeps the rest of the custom theme.
 - (void)clearCustomCandidateSkin;
 /// The custom theme as stored here (base, package and the seven pickers), as the host resolver takes it.
-- (msime::mac::CustomTheme)customTheme;
+- (lingyao::mac::CustomTheme)customTheme;
 @property(nonatomic) NSUInteger pageSize;
 // Native routing preferences; English passes keys through without preparing Engine.
 @property(nonatomic) BOOL englishMode;
@@ -110,7 +110,7 @@ extern BOOL (*MSIMEInputModeEnabledProbe)(NSString *identifier);
 @property(nonatomic) BOOL traditionalOutput;
 @property(nonatomic) BOOL fullWidthInput;
 @property(nonatomic) BOOL chinesePunctuation;
-/// The punctuation and width the active application is typing with. They start from the saved `chinesePunctuation` / `fullWidthInput` and the toggles (toolbar, Ctrl+., Ctrl+Shift+Space, Option+Shift+H) change only the active app, in memory: setting them never writes defaults or posts MSIMEAppearanceDidChangeNotification.
+/// The punctuation and width the active application is typing with. They start from the saved `chinesePunctuation` / `fullWidthInput` and the toggles (toolbar, Ctrl+., Ctrl+Shift+Space, Option+Shift+H) change only the active app, in memory: setting them never writes defaults or posts LINGYAOAppearanceDidChangeNotification.
 @property(nonatomic) BOOL runtimeChinesePunctuation;
 @property(nonatomic) BOOL runtimeFullWidthInput;
 /// Drops the active app's punctuation toggle so it follows the saved value again, as a Chinese/English switch does in the reference.

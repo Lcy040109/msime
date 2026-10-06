@@ -1,4 +1,4 @@
-import app.msime.android.KeyboardInputContext;
+import app.lingyao.android.KeyboardInputContext;
 
 public final class KeyboardInputContextSmoke {
     static void check(Boolean actual, Boolean expected) {

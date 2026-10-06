@@ -3,7 +3,7 @@
 
 int main() {
   using namespace FanyImeVoiceController;
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   Request header;
   header.controller_id = (uint64_t{7} << 32) | 1;
   header.request_id = 1;

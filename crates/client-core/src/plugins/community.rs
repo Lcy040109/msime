@@ -582,7 +582,7 @@ pub fn pack(root: &Path, kind: PluginKind, id: &str) -> Result<PackedPlugin, Plu
     }
     let archive = write_archive(&summary.directory, files.keys())?;
     let staging = tempfile::Builder::new()
-        .prefix("msime-share-")
+        .prefix("lingyao-share-")
         .tempdir()
         .map_err(|_| PluginFailure::code(STORAGE))?;
     let path = staging.path().join(ARCHIVE_FILE);
@@ -687,7 +687,7 @@ pub fn install(
         return Err(PluginFailure::code(CHECKSUM));
     }
     let staging = tempfile::Builder::new()
-        .prefix("msime-download-")
+        .prefix("lingyao-download-")
         .tempdir()
         .map_err(|_| PluginFailure::code(STORAGE))?;
     let path = staging.path().join(ARCHIVE_FILE);

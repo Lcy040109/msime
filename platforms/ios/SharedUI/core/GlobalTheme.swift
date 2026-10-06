@@ -1,18 +1,18 @@
 import UIKit
 
-@_silgen_name("msime_client_theme_catalog")
-private func msimeThemeCatalog() -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_theme_catalog")
+private func lingyaoThemeCatalog() -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_resolve_theme")
-private func msimeResolveTheme(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_resolve_theme")
+private func lingyaoResolveTheme(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_string_free")
-private func msimeThemeStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoThemeStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 /// The ABI envelope `{"ok": true, "value": …}`, or nil for an error or a missing reply.
 private func themeReply(_ raw: UnsafeMutablePointer<CChar>?) -> Any? {
   guard let raw else { return nil }
-  defer { msimeThemeStringFree(raw) }
+  defer { lingyaoThemeStringFree(raw) }
   guard let reply = try? JSONSerialization.jsonObject(with: Data(String(cString: raw).utf8)) as? [String: Any],
         reply["ok"] as? Bool == true else { return nil }
   return reply["value"]
@@ -112,7 +112,7 @@ private func themeAppearance(_ value: Any?) -> UIUserInterfaceStyle? {
   }
 }
 
-/// One theme of `msime_client_theme_catalog`, in picker order. The ids, titles and colours come from client-core; the host keeps no copy.
+/// One theme of `lingyao_client_theme_catalog`, in picker order. The ids, titles and colours come from client-core; the host keeps no copy.
 struct GlobalThemeEntry: Equatable {
   struct Preview: Equatable { let background, panel, accent, text: UIColor }
   let id: String
@@ -129,7 +129,7 @@ enum GlobalThemeCatalog {
   static let customId = "custom"
 
   static let entries: [GlobalThemeEntry] = {
-    guard let value = themeReply(msimeThemeCatalog()) as? [String: Any],
+    guard let value = themeReply(lingyaoThemeCatalog()) as? [String: Any],
           let themes = value["themes"] as? [[String: Any]] else { return [] }
     return themes.compactMap { theme in
       guard let id = theme["id"] as? String, let title = theme["title"] as? String else { return nil }
@@ -151,7 +151,7 @@ enum GlobalThemeCatalog {
   static func isBase(_ id: String?) -> Bool { contains(id) && id != customId }
 }
 
-/// `msime_client_resolve_theme`'s answer: the palettes a host draws for a theme in one mode.
+/// `lingyao_client_resolve_theme`'s answer: the palettes a host draws for a theme in one mode.
 struct ResolvedTheme: Equatable {
   let id: String
   let source: String
@@ -188,7 +188,7 @@ struct ResolvedTheme: Equatable {
     lock.unlock()
     if let cached { return cached }
     let raw = body.withUnsafeBytes { bytes in
-      msimeResolveTheme(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(bytes.count))
+      lingyaoResolveTheme(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(bytes.count))
     }
     guard let value = themeReply(raw) as? [String: Any], let id = value["id"] as? String,
           let source = value["source"] as? String else { return nil }

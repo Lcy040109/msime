@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct CandidateWheelSteps {
   int page_up = 0;
   int page_down = 0;
@@ -28,4 +28,4 @@ constexpr CandidateWheelSteps consume_candidate_wheel_delta(int &accumulator,
   }
   return steps;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

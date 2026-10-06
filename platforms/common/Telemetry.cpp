@@ -1,5 +1,5 @@
 #include "Telemetry.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <nlohmann/json.hpp>
 #include <atomic>
 #include <chrono>
@@ -22,15 +22,15 @@
 #include <unistd.h>
 #if __has_include(<execinfo.h>)
 #include <execinfo.h>
-#define MSIME_TELEMETRY_BACKTRACE 1
+#define LINGYAO_TELEMETRY_BACKTRACE 1
 #endif
 #if __has_include(<cxxabi.h>)
 #include <cxxabi.h>
-#define MSIME_TELEMETRY_DEMANGLE 1
+#define LINGYAO_TELEMETRY_DEMANGLE 1
 #endif
 #endif
 
-namespace msime::telemetry {
+namespace lingyao::telemetry {
 namespace {
 using Request = char *(*)(const uint8_t *, size_t);
 
@@ -50,8 +50,8 @@ char record_path[4096];
 std::optional<nlohmann::json> call(Request function, const nlohmann::json &request) {
   try {
     const auto body = request.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> response(
-        function(reinterpret_cast<const uint8_t *>(body.data()), body.size()), msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> response(
+        function(reinterpret_cast<const uint8_t *>(body.data()), body.size()), lingyao_client_string_free);
     if (!response)
       return std::nullopt;
     auto parsed = nlohmann::json::parse(response.get(), nullptr, false);
@@ -101,7 +101,7 @@ void arm(const std::string &path) {
 bool begin_locked(const Host &host) {
   if (host.directory.empty() || !host.directory.is_absolute())
     return false;
-  const auto value = call(msime_client_telemetry_begin, session_request(host));
+  const auto value = call(lingyao_client_telemetry_begin, session_request(host));
   if (!value || !value->is_object() || !value->value("enabled", false)) {
     disarm();
     return false;
@@ -304,7 +304,7 @@ void crash_signal(int number, siginfo_t *info, void *context) {
       }
       summary.text("\n");
       write_all(fd, summary.data, summary.size);
-#ifdef MSIME_TELEMETRY_BACKTRACE
+#ifdef LINGYAO_TELEMETRY_BACKTRACE
       void *frames[64];
       const int count = backtrace(frames, 64);
       // Frame 0 is this handler; the signal trampoline in libc follows, then the code that faulted.
@@ -338,7 +338,7 @@ void crash_signal(int number, siginfo_t *info, void *context) {
 #endif
 
 #ifndef _WIN32
-#ifdef MSIME_TELEMETRY_DEMANGLE
+#ifdef LINGYAO_TELEMETRY_DEMANGLE
 std::string demangle(const char *name) {
   int status = 0;
   std::unique_ptr<char, decltype(&std::free)> readable(abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free);
@@ -359,12 +359,12 @@ std::filesystem::path default_directory() {
   const DWORD length = GetEnvironmentVariableW(L"LOCALAPPDATA", base.data(), static_cast<DWORD>(base.size()));
   if (!length || length >= base.size())
     return {};
-  return std::filesystem::path(std::wstring(base.data(), length)) / "MSIME";
+  return std::filesystem::path(std::wstring(base.data(), length)) / "LINGYAO";
 #else
   if (const char *state = std::getenv("XDG_STATE_HOME"); state && *state == '/')
-    return std::filesystem::path(state) / "msime";
+    return std::filesystem::path(state) / "lingyao";
   if (const char *home = std::getenv("HOME"); home && *home == '/')
-    return std::filesystem::path(home) / ".local/state/msime";
+    return std::filesystem::path(home) / ".local/state/lingyao";
   return {};
 #endif
 }
@@ -381,7 +381,7 @@ void end() {
   if (!configured)
     return;
   disarm();
-  call(msime_client_telemetry_end, nlohmann::json{{"directory", utf8(current.directory)}});
+  call(lingyao_client_telemetry_end, nlohmann::json{{"directory", utf8(current.directory)}});
 }
 
 void flush() {
@@ -392,7 +392,7 @@ void flush() {
       return;
     request = session_request(current);
   }
-  const auto value = call(msime_client_telemetry_flush, request);
+  const auto value = call(lingyao_client_telemetry_flush, request);
   // Reporting was turned off in the shared preferences while this host ran: the flush cleared the queue, marker and records, so a crash from now on writes nothing.
   if (value && value->is_object() && !value->value("enabled", true))
     disarm();
@@ -419,7 +419,7 @@ void set_enabled(bool enabled) {
     begin_locked(current);
   } else {
     disarm();
-    call(msime_client_telemetry_clear, nlohmann::json{{"directory", utf8(current.directory)}});
+    call(lingyao_client_telemetry_clear, nlohmann::json{{"directory", utf8(current.directory)}});
   }
 }
 
@@ -453,7 +453,7 @@ std::string current_stack(int skip) {
     stack.write(line.data, static_cast<std::streamsize>(line.size));
     stack << '\n';
   }
-#elif defined(MSIME_TELEMETRY_BACKTRACE)
+#elif defined(LINGYAO_TELEMETRY_BACKTRACE)
   void *frames[64];
   const int count = backtrace(frames, 64);
   std::unique_ptr<char *, decltype(&std::free)> symbols(backtrace_symbols(frames, count), std::free);
@@ -477,7 +477,7 @@ void record_terminate() {
         return;
       directory = current.directory;
     }
-    call(msime_client_telemetry_record_crash,
+    call(lingyao_client_telemetry_record_crash,
          nlohmann::json{{"directory", utf8(directory)}, {"message", current_exception_summary()}, {"stack", current_stack(1)}});
   } catch (...) {
   }
@@ -492,7 +492,7 @@ void install_crash_handlers() {
 #else
   if (actions_installed)
     return;
-#ifdef MSIME_TELEMETRY_BACKTRACE
+#ifdef LINGYAO_TELEMETRY_BACKTRACE
   // backtrace() loads libgcc on its first call, which allocates; do it here, never first inside a handler.
   void *warm[1];
   backtrace(warm, 1);

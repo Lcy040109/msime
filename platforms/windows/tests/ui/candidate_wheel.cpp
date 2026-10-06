@@ -1,7 +1,7 @@
 #include "CandidateWheel.h"
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 int main() {
   int accumulator = 0;

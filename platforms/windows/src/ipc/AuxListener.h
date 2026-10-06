@@ -8,7 +8,7 @@
 #include <thread>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class PipeListener;
 
 // Counters only. The Aux message may describe where the user clicked, so the
@@ -82,4 +82,4 @@ private:
   AuxStats stats_;
   std::atomic<DWORD> failure_{ERROR_SUCCESS};
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

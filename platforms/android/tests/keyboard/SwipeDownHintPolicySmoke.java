@@ -1,4 +1,4 @@
-import app.msime.android.SwipeDownHintPolicy;
+import app.lingyao.android.SwipeDownHintPolicy;
 
 public final class SwipeDownHintPolicySmoke {
     public static void main(String[] args) {

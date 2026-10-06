@@ -716,7 +716,7 @@ mod tests {
         assert_eq!(words(&session)[0], "或");
     }
 
-    /// 发布布局：`msime-pinyin.db` 没有五笔表，码表单独在只读的 `msime-wubi.db` 里。准备出的代次把码表并回工作主词库，五笔选词学到的权重写得进去、下一次会话读得到，换一个代次（升级）时日志里的五笔行也能回放。
+    /// 发布布局：`lingyao-pinyin.db` 没有五笔表，码表单独在只读的 `lingyao-wubi.db` 里。准备出的代次把码表并回工作主词库，五笔选词学到的权重写得进去、下一次会话读得到，换一个代次（升级）时日志里的五笔行也能回放。
     #[test]
     fn wubi_learning_survives_the_split_dictionary_layout() {
         let root = tempfile::tempdir().unwrap();
@@ -1061,7 +1061,7 @@ mod tests {
         );
     }
 
-    /// 904bd0976: a sentence a neural model picked has no dictionary row to re-rank, so selecting it stores the sentence as a user phrase like a lattice sentence. Needs the keyboard model from `MSIME_EVAL_RESOURCES`.
+    /// 904bd0976: a sentence a neural model picked has no dictionary row to re-rank, so selecting it stores the sentence as a user phrase like a lattice sentence. Needs the keyboard model from `LINGYAO_EVAL_RESOURCES`.
     #[test]
     fn a_neural_sentence_is_learned_as_a_sentence() {
         let model = match crate::lattice::neural::test_model_path(assets::NEURAL_MODEL_KEYBOARD) {

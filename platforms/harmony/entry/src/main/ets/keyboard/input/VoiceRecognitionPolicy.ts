@@ -17,7 +17,7 @@ export class VoiceRecognitionPolicy {
 
   static sessionId(generation: number): string {
     const bounded: number = Math.max(1, Math.floor(generation)) % 1000000000;
-    return `msime-voice-${bounded}`;
+    return `lingyao-voice-${bounded}`;
   }
 
   static result(value: string): string {

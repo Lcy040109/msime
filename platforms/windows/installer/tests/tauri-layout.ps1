@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../msime_setup.iss') -Raw
+$script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../lingyao_setup.iss') -Raw
 $script = $script -replace '\\\r?\n\s*', ' '
 $records = [regex]::Matches($script, '(?m)^Source:[^\r\n]*')
 $data = @($records | Where-Object { $_.Value.Contains('\app_data\*') })
@@ -19,7 +19,7 @@ if (-not $server[0].Value.Contains('Excludes: "*.pdb,*.ilk"')) {
 if (-not $server[0].Value.Contains('ignoreversion')) {
     throw 'Server files, including the voice runtime, can be kept back on upgrade'
 }
-if (-not $script.Contains('#define MySettingsExeName "msime-client-settings.exe"') -or
+if (-not $script.Contains('#define MySettingsExeName "lingyao-client-settings.exe"') -or
     -not $script.Contains('{#MySettingsExeName}')) {
     throw 'Start Menu shortcut does not target the staged WinUI settings executable'
 }

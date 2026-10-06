@@ -4,12 +4,12 @@
 
 ## 范围与固定基线
 
-迁移的范围是 MSIME-Apple 的 macOS 完整功能，而不是设置页或能在某台机器上跑起来的子集。落地形态按四条原则：公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态归 C++ Engine；平台特性按 macOS 自身的机制适配，不照搬来源的实现形态；每一项的等价性由可重跑的比对而不是逐项人工确认来保证。
+迁移的范围是 LINGYAO-Apple 的 macOS 完整功能，而不是设置页或能在某台机器上跑起来的子集。落地形态按四条原则：公共业务放共享层、公共管理界面放 Tauri；输入算法与组合状态归 C++ Engine；平台特性按 macOS 自身的机制适配，不照搬来源的实现形态；每一项的等价性由可重跑的比对而不是逐项人工确认来保证。
 
 2026-09-20 本次对照使用以下不可变对象：
 
-- 来源：`metasequoiaime/MSIME-Apple`，通过 `git ls-remote --symref origin HEAD` 确认默认分支 `develop`，远端 HEAD `663d7db619e45ebf3750db7c216438edd800f696`。实际读取的是本机检出 `63c51eddb5bc82c574ba7f8ca41db453e129db81`，它比默认分支多一个已提交改动（候选行宽适配：`CandidateRowFit.h`、`CandidatePanel.mm`、`CandidatePanelTests.mm`）。该检出 `git status --porcelain -- platforms/macos shared` 为空，未读取未提交内容；多出的那一项已由本仓库 #3029 覆盖。
-- 目标：`Lcy040109/msime` 的 `develop`，固定提交 `17ab45eb4234418faf2635fd6bf960d9c73f68f8`。
+- 来源：`metasequoiaime/LINGYAO-Apple`，通过 `git ls-remote --symref origin HEAD` 确认默认分支 `develop`，远端 HEAD `663d7db619e45ebf3750db7c216438edd800f696`。实际读取的是本机检出 `63c51eddb5bc82c574ba7f8ca41db453e129db81`，它比默认分支多一个已提交改动（候选行宽适配：`CandidateRowFit.h`、`CandidatePanel.mm`、`CandidatePanelTests.mm`）。该检出 `git status --porcelain -- platforms/macos shared` 为空，未读取未提交内容；多出的那一项已由本仓库 #3029 覆盖。
+- 目标：`Lcy040109/lingyao` 的 `develop`，固定提交 `17ab45eb4234418faf2635fd6bf960d9c73f68f8`。
 
 来源功能入口以该检出的 `platforms/macos/src/`（73 个文件）、`shared/apple-bridge/`、`shared/backend/`、`shared/backend-ui/` 交叉核对，并以 `PreferencesWindowController.mm`（3323 行）作为用户可见设置面的索引。索引只是入口，逐字段、逐动作的下钻在后面各节里逐条记录。
 
@@ -60,7 +60,7 @@
 
 第四次按行为核对之后又补了一轮，针对的是「两边都有、但目标这边用户够不着」这一类。找出并修掉两个：
 
-- **#3216** macOS 设置页隐藏了表情、颜文字、临时日语三个本地模式开关，理由写的是「预览包只发 msime-pinyin.db 和 msime-english.db」。但 `msime-others.db` 与 `msime-japanese.dat` 自 `780a9381b`（2026-09-09）就在 `resources/desktop-dictionary.lock.json` 里，比那条过滤早十天，而 `tauri.macos.conf.json` 整目录打包已校验的资源集——三个能用的模式在设置里没有任何办法打开。同样受资源门控的「临时英文」一直显示着，这个不一致本身就说明前提错了。资源真缺时由 `apply_local_mode_resource_gates` 关掉该模式、触发键原样插入大写字母，比隐藏开关更好。
+- **#3216** macOS 设置页隐藏了表情、颜文字、临时日语三个本地模式开关，理由写的是「预览包只发 lingyao-pinyin.db 和 lingyao-english.db」。但 `lingyao-others.db` 与 `lingyao-japanese.dat` 自 `780a9381b`（2026-09-09）就在 `resources/desktop-dictionary.lock.json` 里，比那条过滤早十天，而 `tauri.macos.conf.json` 整目录打包已校验的资源集——三个能用的模式在设置里没有任何办法打开。同样受资源门控的「临时英文」一直显示着，这个不一致本身就说明前提错了。资源真缺时由 `apply_local_mode_resource_gates` 关掉该模式、触发键原样插入大写字母，比隐藏开关更好。
 - **#3212** 本地 Whisper 模型只能手填绝对路径，而来源有 `browseVoiceModel:` 文件选择器。webview 的 file input 给的是内容不是路径，所以共享设置页答不了，改为向宿主要一个可选能力（`pickVoiceModelPath`），原生实现放在 `crates/host-macos/native/`，不引入新依赖；宿主不提供就不显示按钮，手填照旧。
 
 本轮核过且确认等价或目标更强的：来源 12 个共享后端文件目标全有（另有 `BackendAiClient`）；四个原生视图（剪贴板、词库、账号、设置同步）文案差集为空；云词库备份视图逐字一致；输入法菜单条目集合一致；引擎选项写入面一致（来源的嵌套字段对应目标的扁平字段，自动纠错来源是一个总开关、目标拆成换位与邻键两项，覆盖引擎仅有的两个位）；`HostSurface` 各能力位 macOS 均已开启，唯一未开的 `number_row_selection` 来源没有该功能；`platforms/macos/tests/settings/preference_coverage.py` 的「不适用」清单双向校验、无陈旧项。
@@ -80,7 +80,7 @@
 前面那次符号比对做在固定提交上，而两边此后都前进过，所以在来源 `63c51ed`（比之前的固定检出多出候选行宽适配等改动）与目标当时的 `develop` 上重跑了一遍，方法与结论都记下来，便于下次复核而不是重新发明：
 
 - 从来源 `platforms/macos/src/` 抽出 ObjC 方法、C/C++ 函数与 Swift 函数名共 **572 个**，逐个在目标的 `platforms/macos`、`shared`、`crates`、`packages/ui/src`、`apps/desktop/src` 全文检索。
-- 按名未命中 **173 个**。自动消解 `Lingyao*` → `MSIME*` 的改名与 camelCase → snake_case 之后，余 **164 个**。
+- 按名未命中 **173 个**。自动消解 `Lingyao*` → `LINGYAO*` 的改名与 camelCase → snake_case 之后，余 **164 个**。
 - 这 164 个**逐个查出定义它的来源文件**，按文件归属如下（合计 164）：
 
 | 来源文件 | 个数 | 去向 |
@@ -97,10 +97,10 @@
 | `Uninstaller.h` | 2 | 卸载器五条规则已逐条核过 |
 | `VoiceInputService.mm` | 1 | `beginCapture` → 目标的语音采集 |
 
-- 「目标也有同名文件」的那 **28 个**（控制器 15、悬浮工具栏 6、候选面板 7）逐条对照，全部有对应物：`LingyaoTogglePinnedWord` → `MSIMETogglePinnedCandidate`；`availableGlossColumnsPrimary` / `setArmedGlossColumn` → `_armedGlossColumn` 与其夹取；`commitGlossAtVisibleOffset` / `insertGlossForModifiedDigit` → `commitCandidateGlossColumn:` 及其 Option/Control 分支；`handleSolitaryShiftFlags` → `MSIMEModifierTap` 与 #3179 的原样上屏；`translationDictionary` → `candidate_glosses_with_user`；`LocalModeOptionsMatch` → 目标比的是整个 `Preferences` 值；`toolbarWidth` / `visibleButtonCount` / `applyItemVisibility` → `_preferredSize` 与 `_appliedComponentMask`；`LingyaoIsUsableCaretRect` → `MSIMEValidCaret`。
+- 「目标也有同名文件」的那 **28 个**（控制器 15、悬浮工具栏 6、候选面板 7）逐条对照，全部有对应物：`LingyaoTogglePinnedWord` → `LINGYAOTogglePinnedCandidate`；`availableGlossColumnsPrimary` / `setArmedGlossColumn` → `_armedGlossColumn` 与其夹取；`commitGlossAtVisibleOffset` / `insertGlossForModifiedDigit` → `commitCandidateGlossColumn:` 及其 Option/Control 分支；`handleSolitaryShiftFlags` → `LINGYAOModifierTap` 与 #3179 的原样上屏；`translationDictionary` → `candidate_glosses_with_user`；`LocalModeOptionsMatch` → 目标比的是整个 `Preferences` 值；`toolbarWidth` / `visibleButtonCount` / `applyItemVisibility` → `_preferredSize` 与 `_appliedComponentMask`；`LingyaoIsUsableCaretRect` → `LINGYAOValidCaret`。
 - 唯一没有同名对应物且**确实不该有**的是 `rightMouseDown`：目标把候选菜单挂在按钮的 `menu` 属性上，右键由 AppKit 自带的 `menuForEvent:` 接手，而不是覆写鼠标事件——用的是框架自身的契约。
-- 其中不属于上述两类、最像功能的一组逐个核过并都已覆盖：Option/Control + 数字取释义（`CandidateGlossRequestForModifiers` → `commitCandidateGlossColumn:`）、待上屏列（`setArmedGlossColumn` → `_armedGlossColumn` 与其夹取）、候选置顶（`LingyaoTogglePinnedWord` → `MSIMETogglePinnedCandidate` 与 `MSIMECandidatePinCode`）、释义调度（`scheduleCandidateTranslations` → `synchronizeCandidateGloss` / `synchronizeAccountGloss` 与空闲延迟）、反馈诊断（`copyFeedbackReport` → Tauri 反馈页的「复制报告」）、学习数据清除（`ResetLingyaoLearnedData` → Tauri「清除学习数据」→ `resetLearnedData` 能力 → `reset_learned_data` → 引擎）。
-- 单点对照另外确认：`ActionForSolitaryShift` 对应 #3179 之后的单击 Shift 行为，`NextArmedGlossColumn` 对应 `cycleArmedGlossColumnBackwards:`，`browseVoiceModel` 对应 #3212 新增的 `pickVoiceModelPath`，`LingyaoCandidateWantsOnlineGloss` 对应 #3156 的 `MSIMEOnlineGlossCandidates`。
+- 其中不属于上述两类、最像功能的一组逐个核过并都已覆盖：Option/Control + 数字取释义（`CandidateGlossRequestForModifiers` → `commitCandidateGlossColumn:`）、待上屏列（`setArmedGlossColumn` → `_armedGlossColumn` 与其夹取）、候选置顶（`LingyaoTogglePinnedWord` → `LINGYAOTogglePinnedCandidate` 与 `LINGYAOCandidatePinCode`）、释义调度（`scheduleCandidateTranslations` → `synchronizeCandidateGloss` / `synchronizeAccountGloss` 与空闲延迟）、反馈诊断（`copyFeedbackReport` → Tauri 反馈页的「复制报告」）、学习数据清除（`ResetLingyaoLearnedData` → Tauri「清除学习数据」→ `resetLearnedData` 能力 → `reset_learned_data` → 引擎）。
+- 单点对照另外确认：`ActionForSolitaryShift` 对应 #3179 之后的单击 Shift 行为，`NextArmedGlossColumn` 对应 `cycleArmedGlossColumnBackwards:`，`browseVoiceModel` 对应 #3212 新增的 `pickVoiceModelPath`，`LingyaoCandidateWantsOnlineGloss` 对应 #3156 的 `LINGYAOOnlineGlossCandidates`。
 
 ## 结论：macOS 迁移已完成
 
@@ -131,13 +131,13 @@
 曾经挂着的两条跨平台取舍，各自归位如下：
 
 - **语音整理的请求预算**：是 macOS 缺口，已修（#3224）。目标此前沿用 Windows 的 3 秒总预算，而来源实测 3 秒下整理「永远来不及返回」并使用 30 秒；配合 `HTTPVoiceRequest.mm` 吞掉失败的写法，结果是转写已经发给服务商、清理后的答案每次都被丢弃、界面毫无提示。现在预算是带默认值的参数，默认仍是 Windows 的 3 秒，只有 macOS 显式传 30 秒——Windows 行为一字未动。代价也一并写在提交里：整理与转写在同一条路径上，慢的服务会推迟文字上屏本身，这与来源的取舍相同，且好过「发出去再把回答扔掉」。
-- **离线释义的查询顺序**：**不是 macOS 迁移缺口**。`msime_client_candidate_gloss_request` 是所有宿主共用的 C ABI，`candidate_glosses_with_user` 的顺序在 macOS、Windows、Linux、HarmonyOS 上完全一致，macOS 并不落后于本产品的任何宿主。与来源的差异是整个产品层面的一个刻意选择：引擎把顺序设计成构造参数（custom_translations → 随包 → 联网缓存），来源直接用四参数构造，而目标另开 `translation-glosses.db` 先查，并由 `crates/engine/src/host/tests.rs` 的 `unsafe_learned_glosses_fall_back_to_packaged_values`（原在已删除的 `crates/engine-bridge/src/tests.rs`） 明确断言「learned 优先于随包」。
+- **离线释义的查询顺序**：**不是 macOS 迁移缺口**。`lingyao_client_candidate_gloss_request` 是所有宿主共用的 C ABI，`candidate_glosses_with_user` 的顺序在 macOS、Windows、Linux、HarmonyOS 上完全一致，macOS 并不落后于本产品的任何宿主。与来源的差异是整个产品层面的一个刻意选择：引擎把顺序设计成构造参数（custom_translations → 随包 → 联网缓存），来源直接用四参数构造，而目标另开 `translation-glosses.db` 先查，并由 `crates/engine/src/host/tests.rs` 的 `unsafe_learned_glosses_fall_back_to_packaged_values`（原在已删除的 `crates/engine-bridge/src/tests.rs`） 明确断言「learned 优先于随包」。
 
   此处此前记过一条「用户手写的释义会被自动学来的盖过、需要引擎侧改动」——**那是错的**，实测推翻：不改一行桥接代码，用户写的条目就已经排在最前。路径值得写下来：`translation-glosses.db` 与设置页写的 `custom_translations.txt` 同在用户目录下，而 `EnglishDictionary` 在没有显式 translations 路径时会读取数据库旁边的 sidecar，于是 learned 那个对象本身就带着用户手写的条目，`query_*_gloss` 又先查 custom。所以优先级是「两个文件恰好同目录」带来的涌现性质：挪动其中任何一个，或给 learned 传一个显式 translations 路径，都会把用户的释义静默降到最后。`crates/engine/src/host/tests.rs` 的 `hand_written_glosses_outrank_learned_and_packaged_ones`（原在已删除的 `crates/engine-bridge/src/tests.rs`） 现在固定住了这一条。
 
 另有一条记录需要收紧。#3182 把「以词定字占用的键不参与翻页」写成宿主侧要处理的一个可达状态，实际不是：`crates/client-core/src/preferences.rs` 的 `validate()` 在 `word_character.enabled` 与对应翻页键同时为真时返回 `ConflictingKeyBindings`，而保存（`preferences.validate()?`）和读取（`snapshot.preferences.validate()?`）两条路径都会调用它——带着这个组合的偏好文件根本加载不进来，设置页也存不下去，`key_conflict` 就是它在界面上的那句提示。所以宿主里那段排除是防御，不是在修一个用户能走到的状态；两个布尔项看着独立，共享层已经把互斥钉死了。
 
-宿主使用的输入源标识（`app.msime.inputmethod.LingyaoIME`）在系统里已登记，`platforms/macos/scripts/install.sh` 安装后中文模式注册并启用，可以直接从输入菜单选中使用。读注册结果有两个坑：替换 bundle 之后会有分钟级的一段时间查不到、之后自行恢复，按那段时间里的读数下结论会错；另外某个模式已经是 disabled 时，进程启用不了它，这既不是安装失败也不是重新登录能解决的事。判据与测量过程见下面的《输入源注册的读数怎么看》和《模式启用不了不是安装失败》两节。
+宿主使用的输入源标识（`app.lingyao.inputmethod.LingyaoIME`）在系统里已登记，`platforms/macos/scripts/install.sh` 安装后中文模式注册并启用，可以直接从输入菜单选中使用。读注册结果有两个坑：替换 bundle 之后会有分钟级的一段时间查不到、之后自行恢复，按那段时间里的读数下结论会错；另外某个模式已经是 disabled 时，进程启用不了它，这既不是安装失败也不是重新登录能解决的事。判据与测量过程见下面的《输入源注册的读数怎么看》和《模式启用不了不是安装失败》两节。
 
 ## 功能分组与目的地入口
 
@@ -152,10 +152,10 @@
 | 候选释义与翻译 | `TranslationClient.mm`、`CandidateGlossClient.swift`、第二语言、Option/Control 取列上屏 | `platforms/macos/src/core/CustomTranslationBatch.mm`、`platforms/macos/src/cloud/TranslationCache.mm`、`commitCandidateGlossColumn:`、共享 `translation_secondary_language` | 有调用链；目标另有腾讯、NiuTrans、账号释义、离线优先与 macOS 26 系统离线翻译补位 |
 | 智能标点 | `PairedPunctuation.h`、重复标点转中文 | 共享 `punctuation::route` 消费 `direct_digit`/`direct_letter`（#3075）；空格回转 ASCII（#3081） | 有强制检查（`smart-punctuation-space`） |
 | 词库与用户词条 | `DictionaryInstaller.mm`、`PersonalDictionaryStore.mm`、`PersonalDictionaryView.mm` | `dictionary/DictionaryInstaller.mm`、`dictionary/DictionaryWindowController.mm`；词条增删改查与导入导出在 Tauri 词库页；导出文件由 Tauri `save_export` 写进「下载」文件夹，重名时按浏览器的 `name (2).txt` 规则另起，页面提示写入的完整路径（WKWebView 在没有下载处理器时取消下载链接，来源 WebView2 的下载在这里由宿主完成） | 有调用链；`shared/export_file.rs` 单测覆盖文件名校验与重名规则 |
-| 学习数据清除 | `ResetLingyaoLearnedData` 及其标记/恢复协议 | `crates/host-api/src/dictionary.rs` 的 `Operation::Reset`，经 `DictionaryAccess::try_maintenance` 加锁后交 `msime_engine_bridge::reset_learned_data` | 有调用链；按「输入算法与词库归 Engine」下沉，宿主不再自建标记恢复协议 |
+| 学习数据清除 | `ResetLingyaoLearnedData` 及其标记/恢复协议 | `crates/host-api/src/dictionary.rs` 的 `Operation::Reset`，经 `DictionaryAccess::try_maintenance` 加锁后交 `lingyao_engine_bridge::reset_learned_data` | 有调用链；按「输入算法与词库归 Engine」下沉，宿主不再自建标记恢复协议 |
 | 软件更新 | `UpdateController.mm`（Sparkle 2.9.6） | 共享 About 页检查本仓库发行版；`core/UpdateController.mm` 仅在应用 bundle 配置 `SUFeedURL` 时启动 Sparkle，无 feed 的原生降级会说明限制并经用户确认打开固定的官方发布页；非应用进程不显示更新 UI | 有强制检查（`update-controller` 覆盖三种路由、确认、取消与打开失败） |
 | 卸载 | `Uninstaller.mm` | `crates/host-macos/native/uninstaller.mm`，`shared-uninstaller` CTest | 有强制检查 |
-| 输入菜单图标、本地化、TCC 权限 | `LingyaoIMEMenuIcon.tiff`、`render_menu_icon.swift`、`Info.plist` 用途字符串 | `platforms/macos/resources/MSIMEClientInputMethodMenuIcon.{svg,tiff}` 与三个模式带角标的 `MSIMEClientInputMethodMenuIcon{Chinese,Japanese,English}.tiff`、`platforms/macos/scripts/render_menu_icon.swift`（#3021）；语音识别用途字符串及其本地化（#3015、#3052）；输入源名称的本地化键与 bundle id 配对 | 有强制检查（`info-plist-icons`、`info-plist-usage`、`info-plist-names`、`bundle-contents`） |
+| 输入菜单图标、本地化、TCC 权限 | `LingyaoIMEMenuIcon.tiff`、`render_menu_icon.swift`、`Info.plist` 用途字符串 | `platforms/macos/resources/LINGYAOClientInputMethodMenuIcon.{svg,tiff}` 与三个模式带角标的 `LINGYAOClientInputMethodMenuIcon{Chinese,Japanese,English}.tiff`、`platforms/macos/scripts/render_menu_icon.swift`（#3021）；语音识别用途字符串及其本地化（#3015、#3052）；输入源名称的本地化键与 bundle id 配对 | 有强制检查（`info-plist-icons`、`info-plist-usage`、`info-plist-names`、`bundle-contents`） |
 | 账号、云剪贴板、云词库、快照、社区 | `shared/backend/*.swift` | `shared/backend/` 为来源的超集（另有 `BackendAiClient.swift`），并带 Swift 测试 | 有调用链 |
 
 ## 目标具备而来源没有的部分
@@ -186,7 +186,7 @@
 控制项标识和运行时偏好键这两条比对，看的都是「参考的设置窗口摆出了什么」。还有一层它们都看不见：参考在测试里钉住的行为契约。把 `platforms/macos/tests` 下 93 条 `require(...)` 的断言说明逐条读过来，对着目标找对应实现，这是找出真缺口最有效的一条轴——前两条都没有发现的东西，它发现了一个。逐条结果见 [macos-assertion-audit.md](macos-assertion-audit.md)。
 
 - **「The settings footer restore button was not found.」→ 真缺口，已补（#3280）。** 参考每一页底部都有「恢复默认设置」，目标只有「保存设置」。补的时候有一处必须反着做：参考清的那串偏好键里没有翻译和语音服务，因为在那边密钥不在这份文档里；在这边密钥就在文档里，所以 `Preferences::restored_to_defaults` 是从 `Default` 出发把服务配置搬回来，而且 endpoint / provider / model / 本地模型路径跟着密钥一起搬——留一个密钥指着默认 endpoint 比两个都留或都清更糟。Rust 侧的测试不逐字段列密钥，而是把恢复后的文档序列化出来找哨兵串，以后加了新密钥字段却忘了搬会被它挡住。
-- **输入菜单**当时逐项对齐过 Apple 来源（中文输入 / 英文输入 / 简体输出 / 繁体输出 / 表情与符号… / 检查更新… / 灵耀输入法设置… / 开始或结束语音输入 / 语音输入设置…），之后按 MSIME-Windows 的托盘菜单重排：现在是 中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 灵耀表情面板… / 云剪贴板… / 灵耀屏幕键盘… / 手写输入… / 开始/结束语音输入 / 灵耀输入法设置… / 关于灵耀输入法…，其中与 Windows 托盘菜单的七项（悬浮工具栏、表情/符号面板、手写识别板、屏幕键盘、语音输入、设置、关于）一一对应，检查更新与语音设置收进设置窗与悬浮工具栏。现状以 `platforms/macos/tests/input/ShortcutTest.mm` 对 `-[MSIMEInputController menu]` 的断言为准。
+- **输入菜单**当时逐项对齐过 Apple 来源（中文输入 / 英文输入 / 简体输出 / 繁体输出 / 表情与符号… / 检查更新… / 灵耀输入法设置… / 开始或结束语音输入 / 语音输入设置…），之后按 LINGYAO-Windows 的托盘菜单重排：现在是 中文输入 / 英文输入 / 英文候选模式（⌃⇧E）/ 繁体输出 / 全角字符 / 中文标点 / 显示译文 / 输入方案（当前方案）▸ / 主题（当前主题）▸ / 悬浮工具栏 / 灵耀表情面板… / 云剪贴板… / 灵耀屏幕键盘… / 手写输入… / 开始/结束语音输入 / 灵耀输入法设置… / 关于灵耀输入法…，其中与 Windows 托盘菜单的七项（悬浮工具栏、表情/符号面板、手写识别板、屏幕键盘、语音输入、设置、关于）一一对应，检查更新与语音设置收进设置窗与悬浮工具栏。现状以 `platforms/macos/tests/input/ShortcutTest.mm` 对 `-[LINGYAOInputController menu]` 的断言为准。
 - **「New apps must use the default input mode.」** 已实现：`platforms/macos/src/settings/AppearancePreferences.mm` 里没有记忆的应用回落到 `defaultImeMode`。
 - 其余关于卸载、更新控制器、候选面板、五笔自动上屏、学习数据清除确认的断言，逐条都有对应实现。
 
@@ -198,13 +198,13 @@
 
 ## 输入源注册的读数怎么看（2026-09-20 实测）
 
-安装不需要重新登录，原因是 #3270 之后宿主继承了系统已登记的 `app.msime.inputmethod.LingyaoIME`。判据本身仍然成立：**一个在本次登录会话开始时不在输入源列表里的 bundle identifier，无论 bundle 内容如何都进不去**；换句话说，更新同一 identifier 可以原地生效，换一个新 identifier 则要等下次登录。
+安装不需要重新登录，原因是 #3270 之后宿主继承了系统已登记的 `app.lingyao.inputmethod.LingyaoIME`。判据本身仍然成立：**一个在本次登录会话开始时不在输入源列表里的 bundle identifier，无论 bundle 内容如何都进不去**；换句话说，更新同一 identifier 可以原地生效，换一个新 identifier 则要等下次登录。
 
 实测：从 `e215ba7be` 构建、`platforms/macos/scripts/install.sh` 安装之后，`platforms/macos/scripts/check_input_source.swift` 报
 
 ```
-app.msime.inputmethod.LingyaoIME.Hans: enabled
-app.msime.inputmethod.LingyaoIME: enabled
+app.lingyao.inputmethod.LingyaoIME.Hans: enabled
+app.lingyao.inputmethod.LingyaoIME: enabled
 ```
 
 连续 15 次查询全部命中。要注意刚替换 bundle、刚调用 `--register-input-source` 之后有一小段时间查询会时有时无——同一条命令隔几秒跑，会先报 not in the registry 再报 enabled。所以 `install.sh` 只查一次就下结论是不稳的，两个方向的误判都可能出现；判断安装结果时应多查几次再看。

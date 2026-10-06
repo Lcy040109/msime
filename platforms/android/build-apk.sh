@@ -3,10 +3,10 @@ set -euo pipefail
 umask 077
 repo_root=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$repo_root"
-resource_dir=${1:?usage: [MSIME_EDITION=<id>] build-apk.sh <verified-resource-directory>}
+resource_dir=${1:?usage: [LINGYAO_EDITION=<id>] build-apk.sh <verified-resource-directory>}
 resource_dir=$(cd "$resource_dir" && pwd)
-# MSIME_EDITION=<id> 选产品版本（版本表 shared/contracts/editions.json 里有 Android 段的 id，也是 gradle-app 的 flavor 名），缺省是 full。每个版本是一个独立的包：本版本的 applicationId、资源锁里列的词库、本版本要的语言词库，APK 也按版本命名。full 的 applicationId、资源和 APK 名（target/android/msime-client.apk）与引入版本之前相同。
-edition=${MSIME_EDITION:-full}
+# LINGYAO_EDITION=<id> 选产品版本（版本表 shared/contracts/editions.json 里有 Android 段的 id，也是 gradle-app 的 flavor 名），缺省是 full。每个版本是一个独立的包：本版本的 applicationId、资源锁里列的词库、本版本要的语言词库，APK 也按版本命名。full 的 applicationId、资源和 APK 名（target/android/lingyao-client.apk）与引入版本之前相同。
+edition=${LINGYAO_EDITION:-full}
 edition_tool="$repo_root/platforms/android/scripts/edition_android.py"
 apk_name=$(python3 "$edition_tool" field --edition "$edition" apk_name)
 edition_lock=$(python3 "$edition_tool" field --edition "$edition" resource_lock)
@@ -19,14 +19,14 @@ tools_dir="$android_sdk/build-tools/35.0.0"
 # partially installed SDK fails before Gradle starts resolving dependencies.
 android_jar="$android_sdk/platforms/android-36/android.jar"
 [[ -f "$android_jar" && -x "$tools_dir/d8" ]] || { echo "Android API 36 platform and build-tools 35 required" >&2; exit 1; }
-artifacts=$(cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$resource_dir")
-# 默认只构建 arm64-v8a：这个包面向的手机都是 arm64，多带一份 x86_64 原生库会让 APK 大约翻倍。MSIME_ANDROID_ABIS（空格或逗号分隔，例如 "arm64-v8a x86_64"）可以为 x86_64 模拟器加上 x86_64；Gradle 的 abiFilters 经 -PmsimeAbis 收到同一份列表，第三方库（ML Kit）也按它过滤。
-read -r -a abis <<< "$(tr ',' ' ' <<< "${MSIME_ANDROID_ABIS:-arm64-v8a}")"
-[ "${#abis[@]}" -gt 0 ] || { echo "MSIME_ANDROID_ABIS names no ABI" >&2; exit 1; }
+artifacts=$(cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$resource_dir")
+# 默认只构建 arm64-v8a：这个包面向的手机都是 arm64，多带一份 x86_64 原生库会让 APK 大约翻倍。LINGYAO_ANDROID_ABIS（空格或逗号分隔，例如 "arm64-v8a x86_64"）可以为 x86_64 模拟器加上 x86_64；Gradle 的 abiFilters 经 -PlingyaoAbis 收到同一份列表，第三方库（ML Kit）也按它过滤。
+read -r -a abis <<< "$(tr ',' ' ' <<< "${LINGYAO_ANDROID_ABIS:-arm64-v8a}")"
+[ "${#abis[@]}" -gt 0 ] || { echo "LINGYAO_ANDROID_ABIS names no ABI" >&2; exit 1; }
 for abi in "${abis[@]}"; do
   case "$abi" in
     arm64-v8a|x86_64) ;;
-    *) echo "MSIME_ANDROID_ABIS: unsupported ABI $abi (supported: arm64-v8a, x86_64)" >&2; exit 1 ;;
+    *) echo "LINGYAO_ANDROID_ABIS: unsupported ABI $abi (supported: arm64-v8a, x86_64)" >&2; exit 1 ;;
   esac
 done
 for abi in "${abis[@]}"; do bash platforms/android/build-native.sh "$abi"; done
@@ -48,7 +48,7 @@ if [ "$edition" != full ]; then
   edition_flags=(--edition "$edition")
 fi
 while IFS= read -r artifact; do cp "$resource_dir/$artifact" "$assets/dictionary/"; done <<< "$artifacts"
-cargo run --quiet -p msime-client-core --example verify_resources --locked -- ${edition_flags[@]+"${edition_flags[@]}"} "$assets/dictionary" >/dev/null
+cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- ${edition_flags[@]+"${edition_flags[@]}"} "$assets/dictionary" >/dev/null
 mkdir -p "$assets/native-notices"
 cp -R target/android/notices/. "$assets/native-notices/"
 cp LICENSE "$assets/client-LICENSE.txt"
@@ -69,7 +69,7 @@ for pack_dir in resources/sound-packs/*/; do
 done
 [ -f "$assets/sound-packs/default/plugin.toml" ] || { echo "the default key sound pack was not packaged" >&2; exit 1; }
 # Optional non-English candidate glosses (scripts/build_offline_glosses.py). Bootstrap extracts them beside the resources, where the Engine looks for one zh-<lang>.db per target language; without them only English is glossed offline.
-glosses_source=${MSIME_OFFLINE_GLOSSES:-$repo_root/target/offline-glosses}
+glosses_source=${LINGYAO_OFFLINE_GLOSSES:-$repo_root/target/offline-glosses}
 rm -rf "$assets/offline-glosses"
 # 它们按中文候选查释义，不提供中文方案的版本（版本表 features.offline_glosses 为 false：日文、越南文和藏文版）不带。
 if [ "$edition_offline_glosses" != true ]; then
@@ -81,10 +81,10 @@ elif compgen -G "$glosses_source/zh-*.db" >/dev/null && [ -f "$glosses_source/of
 else
   echo "no offline glosses at $glosses_source; candidates are glossed offline in English only"
 fi
-# Optional Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `msime-dict-build languages`), as on macOS, iOS and HarmonyOS. Bootstrap extracts them to language-dictionaries/ beside the resources, where host-api finds them and names them in the runtime options; the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is packaged only with its licence text, which must travel with the data.
-languages_source=${MSIME_LANGUAGE_DICTIONARIES:-$repo_root/target/language-dictionaries}
+# Optional Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `lingyao-dict-build languages`), as on macOS, iOS and HarmonyOS. Bootstrap extracts them to language-dictionaries/ beside the resources, where host-api finds them and names them in the runtime options; the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is packaged only with its licence text, which must travel with the data.
+languages_source=${LINGYAO_LANGUAGE_DICTIONARIES:-$repo_root/target/language-dictionaries}
 # Each dictionary beside the licence file that must travel with it; the staging below and the APK check at the end read the same list.
-language_pairs="msime-cantonese.db:msime-rime_cantonese_LICENSE.txt msime-zhuyin.db:msime-libchewing_data_LICENSE.txt msime-stroke.db:msime-rime_stroke_LICENSE.txt"
+language_pairs="lingyao-cantonese.db:lingyao-rime_cantonese_LICENSE.txt lingyao-zhuyin.db:lingyao-libchewing_data_LICENSE.txt lingyao-stroke.db:lingyao-rime_stroke_LICENSE.txt"
 rm -rf "$assets/language-dictionaries"
 staged_languages=()
 # 只带本版本要的语言词库（版本表的 language_dictionaries）：full 是粤拼、注音和笔画三个，其他版本一个也不带。
@@ -109,16 +109,16 @@ else
   echo "no language dictionaries at $languages_source; Cantonese, Zhuyin and Stroke stay unavailable"
 fi
 # A release requires every dictionary this edition packs (the edition table's language_dictionaries) that resources/language-dictionaries.lock.json pins, not a fixed list: a dictionary that has not been released yet is packaged when present but cannot fail a release, and the lock bump that publishes it makes it required.
-if [ "${MSIME_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
+if [ "${LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
   required_languages=$(python3 "$repo_root/scripts/fetch_language_dictionaries.py" --list-databases)
   if [ -z "$required_languages" ]; then
-    echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
+    echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
     exit 1
   fi
   for database in $required_languages; do
     grep -qxF "$database" <<< "$edition_languages" || continue
     if [[ " ${staged_languages[*]:-} " != *" $database "* ]]; then
-      echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, which edition $edition packs and resources/language-dictionaries.lock.json pins, was not packaged from $languages_source" >&2
+      echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, which edition $edition packs and resources/language-dictionaries.lock.json pins, was not packaged from $languages_source" >&2
       exit 1
     fi
   done
@@ -127,18 +127,18 @@ fi
 gradle_dir="$repo_root/platforms/android/gradle-app"
 tauri_gradlew="$repo_root/apps/desktop/src-tauri/gen/android/gradlew"
 [[ -x "$tauri_gradlew" ]] || { echo "Gradle wrapper required; run the Tauri Android init once" >&2; exit 1; }
-# The APK's versionName comes from version.txt; MSIME_ANDROID_VERSION (the release workflow's version input) overrides it.
+# The APK's versionName comes from version.txt; LINGYAO_ANDROID_VERSION (the release workflow's version input) overrides it.
 version_args=()
-[[ -n "${MSIME_ANDROID_VERSION:-}" ]] && version_args+=("-PmsimeVersion=$MSIME_ANDROID_VERSION")
-ANDROID_HOME="$android_sdk" "$tauri_gradlew" --project-dir "$gradle_dir" --console=plain "-PmsimeAbis=$abi_list" ${version_args[@]+"${version_args[@]}"} "assemble${flavor}Release"
+[[ -n "${LINGYAO_ANDROID_VERSION:-}" ]] && version_args+=("-PlingyaoVersion=$LINGYAO_ANDROID_VERSION")
+ANDROID_HOME="$android_sdk" "$tauri_gradlew" --project-dir "$gradle_dir" --console=plain "-PlingyaoAbis=$abi_list" ${version_args[@]+"${version_args[@]}"} "assemble${flavor}Release"
 
 unsigned="$gradle_dir/app/build/outputs/apk/$edition/release/app-$edition-release-unsigned.apk"
 [[ -f "$unsigned" ]] || { echo "Expected host APK not produced" >&2; exit 1; }
 # 正式包用发布密钥签名：release-android.yml 从仓库 secrets 解出 PKCS12 文件，把路径和口令放进这两个环境变量。发布密钥一旦用于发版就不能更换，否则已安装的用户无法覆盖升级；没有设置时退回所有 worktree 共用的开发密钥。
-if [[ -n "${MSIME_ANDROID_RELEASE_KEYSTORE:-}" ]]; then
-  [[ -f "$MSIME_ANDROID_RELEASE_KEYSTORE" && -n "${MSIME_ANDROID_RELEASE_KEYSTORE_PASSWORD:-}" ]] || { echo "MSIME_ANDROID_RELEASE_KEYSTORE needs an existing file and MSIME_ANDROID_RELEASE_KEYSTORE_PASSWORD" >&2; exit 1; }
-  signing=(--ks "$MSIME_ANDROID_RELEASE_KEYSTORE" --ks-key-alias msime-release
-    --ks-pass env:MSIME_ANDROID_RELEASE_KEYSTORE_PASSWORD --key-pass env:MSIME_ANDROID_RELEASE_KEYSTORE_PASSWORD)
+if [[ -n "${LINGYAO_ANDROID_RELEASE_KEYSTORE:-}" ]]; then
+  [[ -f "$LINGYAO_ANDROID_RELEASE_KEYSTORE" && -n "${LINGYAO_ANDROID_RELEASE_KEYSTORE_PASSWORD:-}" ]] || { echo "LINGYAO_ANDROID_RELEASE_KEYSTORE needs an existing file and LINGYAO_ANDROID_RELEASE_KEYSTORE_PASSWORD" >&2; exit 1; }
+  signing=(--ks "$LINGYAO_ANDROID_RELEASE_KEYSTORE" --ks-key-alias lingyao-release
+    --ks-pass env:LINGYAO_ANDROID_RELEASE_KEYSTORE_PASSWORD --key-pass env:LINGYAO_ANDROID_RELEASE_KEYSTORE_PASSWORD)
   signed_with="release key"
 else
   keystore=$(bash "$repo_root/platforms/android/scripts/dev-keystore.sh")
@@ -151,7 +151,7 @@ aligned="$repo_root/target/android/$apk_name-aligned.apk"
 "$tools_dir/apksigner" sign "${signing[@]}" --out "$output" "$aligned"
 "$tools_dir/apksigner" verify --verbose --print-certs "$output"
 "$tools_dir/zipalign" -c -P 16 4 "$output"
-# The package is only worth shipping if it carries each dictionary staged above, beside its licence (a release, MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1, has already refused to stage fewer than the lock pins for this edition).
+# The package is only worth shipping if it carries each dictionary staged above, beside its licence (a release, LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1, has already refused to stage fewer than the lock pins for this edition).
 apk_entries=$(unzip -Z1 "$output")
 for pair in $language_pairs; do
   [ -f "$assets/language-dictionaries/${pair%%:*}" ] || continue

@@ -5,7 +5,7 @@ import os
 /// Objective-C entry points for native macOS controllers that need to present
 /// the shared SwiftUI backend surfaces. Each window owns its hosting controller
 /// and is rebuilt after closing or when the requesting account changes.
-@MainActor @objc(MSIMEBackendWindowBridge)
+@MainActor @objc(LINGYAOBackendWindowBridge)
 final class BackendWindowBridge: NSObject {
   @objc static let shared = BackendWindowBridge()
   @objc func startClipboardCapture(withOptions options: NSDictionary) {
@@ -89,7 +89,7 @@ final class BackendWindowBridge: NSObject {
   }
 }
 
-// The Swift side of MSIMEPresentWindow (src/core/WindowPresentation.h). The input method is LSBackgroundOnly: a prohibited application cannot become active, so a window it opens lands behind the app the user was typing in. Accessory lets it activate without a Dock icon, and ordering front regardless keeps the window visible when activation is declined, as it may be since macOS 14.
+// The Swift side of LINGYAOPresentWindow (src/core/WindowPresentation.h). The input method is LSBackgroundOnly: a prohibited application cannot become active, so a window it opens lands behind the app the user was typing in. Accessory lets it activate without a Dock icon, and ordering front regardless keeps the window visible when activation is declined, as it may be since macOS 14.
 @MainActor func presentBackendWindow(_ window: NSWindow?, activating: Bool = true) {
   logBackendWindowState("present_begin activating=\(activating)", window)
   guard let window else { return }
@@ -109,7 +109,7 @@ final class BackendWindowBridge: NSObject {
   }
 }
 
-// 子系统、类别和字段都与 WindowPresentationLog.h 相同，一条 `log show --predicate 'subsystem == "app.msime.inputmethod.LingyaoIME" && category == "ui"'` 就能读到两边（子系统是本版本输入法的 bundle id，上面是 full 的）。只记状态：编号、类名、标题和标志。
+// 子系统、类别和字段都与 WindowPresentationLog.h 相同，一条 `log show --predicate 'subsystem == "app.lingyao.inputmethod.LingyaoIME" && category == "ui"'` 就能读到两边（子系统是本版本输入法的 bundle id，上面是 full 的）。只记状态：编号、类名、标题和标志。
 private let backendUILog = Logger(subsystem: BackendEdition.inputMethodBundleIdentifier, category: "ui")
 
 // The window's place among on-screen windows of its own level, 0 being frontmost; -1 when it is not on screen.

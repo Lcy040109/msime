@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include "key_sound_render.h"
 #include <napi/native_api.h>
 #include <zlib.h>
@@ -10,7 +10,7 @@
 
 // Mirrors platforms/android/native/client_jni.cpp. The shared C ABI takes UTF-8 JSON in and returns
 // UTF-8 JSON out, so every binding here is the same three steps: read the arguments, call one
-// msime_client_* entry point, hand the response back and free it.
+// lingyao_client_* entry point, hand the response back and free it.
 
 struct SnapshotReader {
     explicit SnapshotReader(const std::string &path) : input(path, std::ios::in | std::ios::binary) {}
@@ -65,7 +65,7 @@ static napi_value response(napi_env env, char *value) {
     const size_t length = std::strlen(value);
     napi_value output = nullptr;
     const napi_status status = napi_create_string_utf8(env, value, length, &output);
-    msime_client_string_free(value);
+    lingyao_client_string_free(value);
     return status == napi_ok ? output : nullptr;
 }
 
@@ -190,38 +190,38 @@ static napi_value invalid(napi_env env, const char *message) {
             call(reinterpret_cast<const uint8_t *>(text.data()), text.size()));                     \
     }
 
-TEXT_ENTRY(LoadPreferences, msime_client_load_preferences)
-TEXT_ENTRY(SkinCatalog, msime_client_skin_catalog)
-TEXT_ENTRY(ResolveTheme, msime_client_resolve_theme)
-TEXT_ENTRY(DictionaryManifest, msime_client_dictionary_manifest)
-TEXT_ENTRY(SkinResource, msime_client_skin_resource)
-TEXT_ENTRY(SkinToolbarStylesheet, msime_client_skin_toolbar_stylesheet)
-TEXT_ENTRY(CustomSkinLibrary, msime_client_custom_skin_library)
-TEXT_ENTRY(CommunitySkinInstall, msime_client_community_skin_install)
-TEXT_ENTRY(KeyboardSkinTrial, msime_client_keyboard_skin_trial)
-TEXT_ENTRY(CommunityResourceLibrary, msime_client_community_resource_library)
-TEXT_ENTRY(AiSkinPlan, msime_client_ai_skin_plan)
-TEXT_ENTRY(Dictionary, msime_client_dictionary)
-TEXT_ENTRY(TypingStatistics, msime_client_typing_statistics)
-TEXT_ENTRY(VocabularyReview, msime_client_vocabulary_review)
-TEXT_ENTRY(MobileClipboardHistory, msime_client_mobile_clipboard_history)
-TEXT_ENTRY(PersonalDictionarySync, msime_client_personal_dictionary_sync)
-TEXT_ENTRY(PersonalDictionaryRequest, msime_client_personal_dictionary_request)
-TEXT_ENTRY(PrepareHost, msime_client_prepare_host)
-TEXT_ENTRY(SnapshotVersion, msime_client_snapshot_version)
-TEXT_ENTRY(SnapshotInspect, msime_client_snapshot_inspect)
-TEXT_ENTRY(SnapshotQueue, msime_client_snapshot_queue)
-TEXT_ENTRY(CloudRequestUrl, msime_client_cloud_request_url)
-TEXT_ENTRY(KeySoundPack, msime_client_key_sound_pack)
-TEXT_ENTRY(MusicPack, msime_client_music_pack)
-TEXT_ENTRY(Plugins, msime_client_plugins)
-TEXT_ENTRY(Create, msime_client_create)
+TEXT_ENTRY(LoadPreferences, lingyao_client_load_preferences)
+TEXT_ENTRY(SkinCatalog, lingyao_client_skin_catalog)
+TEXT_ENTRY(ResolveTheme, lingyao_client_resolve_theme)
+TEXT_ENTRY(DictionaryManifest, lingyao_client_dictionary_manifest)
+TEXT_ENTRY(SkinResource, lingyao_client_skin_resource)
+TEXT_ENTRY(SkinToolbarStylesheet, lingyao_client_skin_toolbar_stylesheet)
+TEXT_ENTRY(CustomSkinLibrary, lingyao_client_custom_skin_library)
+TEXT_ENTRY(CommunitySkinInstall, lingyao_client_community_skin_install)
+TEXT_ENTRY(KeyboardSkinTrial, lingyao_client_keyboard_skin_trial)
+TEXT_ENTRY(CommunityResourceLibrary, lingyao_client_community_resource_library)
+TEXT_ENTRY(AiSkinPlan, lingyao_client_ai_skin_plan)
+TEXT_ENTRY(Dictionary, lingyao_client_dictionary)
+TEXT_ENTRY(TypingStatistics, lingyao_client_typing_statistics)
+TEXT_ENTRY(VocabularyReview, lingyao_client_vocabulary_review)
+TEXT_ENTRY(MobileClipboardHistory, lingyao_client_mobile_clipboard_history)
+TEXT_ENTRY(PersonalDictionarySync, lingyao_client_personal_dictionary_sync)
+TEXT_ENTRY(PersonalDictionaryRequest, lingyao_client_personal_dictionary_request)
+TEXT_ENTRY(PrepareHost, lingyao_client_prepare_host)
+TEXT_ENTRY(SnapshotVersion, lingyao_client_snapshot_version)
+TEXT_ENTRY(SnapshotInspect, lingyao_client_snapshot_inspect)
+TEXT_ENTRY(SnapshotQueue, lingyao_client_snapshot_queue)
+TEXT_ENTRY(CloudRequestUrl, lingyao_client_cloud_request_url)
+TEXT_ENTRY(KeySoundPack, lingyao_client_key_sound_pack)
+TEXT_ENTRY(MusicPack, lingyao_client_music_pack)
+TEXT_ENTRY(Plugins, lingyao_client_plugins)
+TEXT_ENTRY(Create, lingyao_client_create)
 // Usage reporting without the network: each touches a few small files under the telemetry directory, so the crash observer can call record_crash before the process goes.
-TEXT_ENTRY(TelemetryBegin, msime_client_telemetry_begin)
-TEXT_ENTRY(TelemetryEnd, msime_client_telemetry_end)
-TEXT_ENTRY(TelemetryRecordCrash, msime_client_telemetry_record_crash)
-TEXT_ENTRY(TelemetryClear, msime_client_telemetry_clear)
-TEXT_ENTRY(NoticeDismiss, msime_client_notice_dismiss)
+TEXT_ENTRY(TelemetryBegin, lingyao_client_telemetry_begin)
+TEXT_ENTRY(TelemetryEnd, lingyao_client_telemetry_end)
+TEXT_ENTRY(TelemetryRecordCrash, lingyao_client_telemetry_record_crash)
+TEXT_ENTRY(TelemetryClear, lingyao_client_telemetry_clear)
+TEXT_ENTRY(NoticeDismiss, lingyao_client_notice_dismiss)
 
 struct SnapshotRestoreWork {
     napi_async_work work = nullptr;
@@ -233,7 +233,7 @@ struct SnapshotRestoreWork {
 
 static void executeSnapshotRestore(napi_env, void *data) {
     auto *work = static_cast<SnapshotRestoreWork *>(data);
-    work->result = msime_client_snapshot_restore(
+    work->result = lingyao_client_snapshot_restore(
         reinterpret_cast<const uint8_t *>(work->request.data()), work->request.size(),
         reinterpret_cast<const uint8_t *>(work->file.data()), work->file.size());
 }
@@ -243,7 +243,7 @@ static void completeSnapshotRestore(napi_env env, napi_status status, void *data
     napi_value value = nullptr;
     bool resolved = status == napi_ok && work->result != nullptr
         && napi_create_string_utf8(env, work->result, std::strlen(work->result), &value) == napi_ok;
-    if (work->result) msime_client_string_free(work->result);
+    if (work->result) lingyao_client_string_free(work->result);
     if (resolved) {
         napi_resolve_deferred(env, work->deferred, value);
     } else {
@@ -273,7 +273,7 @@ static napi_value SnapshotRestore(napi_env env, napi_callback_info info) {
     napi_value promise = nullptr;
     napi_value resource = nullptr;
     if (napi_create_promise(env, &work->deferred, &promise) != napi_ok
-            || napi_create_string_utf8(env, "MSIME snapshot restore", NAPI_AUTO_LENGTH,
+            || napi_create_string_utf8(env, "LINGYAO snapshot restore", NAPI_AUTO_LENGTH,
                 &resource) != napi_ok
             || napi_create_async_work(env, nullptr, resource, executeSnapshotRestore,
                 completeSnapshotRestore, work, &work->work) != napi_ok) {
@@ -288,10 +288,10 @@ static napi_value SnapshotRestore(napi_env env, napi_callback_info info) {
     return promise;
 }
 
-TEXT_ENTRY(VoiceHotwordCorrect, msime_client_voice_hotword_correct)
-TEXT_ENTRY(VoiceLocalModels, msime_client_voice_local_models)
-TEXT_ENTRY(VoiceLocalModelCancel, msime_client_voice_local_model_cancel)
-TEXT_ENTRY(VoiceLocalModelRemove, msime_client_voice_local_model_remove)
+TEXT_ENTRY(VoiceHotwordCorrect, lingyao_client_voice_hotword_correct)
+TEXT_ENTRY(VoiceLocalModels, lingyao_client_voice_local_models)
+TEXT_ENTRY(VoiceLocalModelCancel, lingyao_client_voice_local_model_cancel)
+TEXT_ENTRY(VoiceLocalModelRemove, lingyao_client_voice_local_model_remove)
 
 static void rejectWith(napi_env env, napi_deferred deferred, const char *text) {
     napi_value message = nullptr;
@@ -309,7 +309,7 @@ static void settleVoicePromise(napi_env env, napi_status status, napi_deferred d
     napi_value value = nullptr;
     const bool resolved = status == napi_ok && result != nullptr
         && napi_create_string_utf8(env, result, std::strlen(result), &value) == napi_ok;
-    if (result) msime_client_string_free(result);
+    if (result) lingyao_client_string_free(result);
     if (resolved) {
         napi_resolve_deferred(env, deferred, value);
     } else {
@@ -327,7 +327,7 @@ struct VoiceHotwordsWork {
 
 static void executeVoiceHotwords(napi_env, void *data) {
     auto *work = static_cast<VoiceHotwordsWork *>(data);
-    work->result = msime_client_voice_hotwords(
+    work->result = lingyao_client_voice_hotwords(
         reinterpret_cast<const uint8_t *>(work->request.data()), work->request.size());
 }
 
@@ -348,7 +348,7 @@ static napi_value VoiceHotwords(napi_env env, napi_callback_info info) {
     napi_value promise = nullptr;
     napi_value resource = nullptr;
     if (napi_create_promise(env, &work->deferred, &promise) != napi_ok
-            || napi_create_string_utf8(env, "MSIME voice hotwords", NAPI_AUTO_LENGTH,
+            || napi_create_string_utf8(env, "LINGYAO voice hotwords", NAPI_AUTO_LENGTH,
                 &resource) != napi_ok
             || napi_create_async_work(env, nullptr, resource, executeVoiceHotwords,
                 completeVoiceHotwords, work, &work->work) != napi_ok) {
@@ -373,7 +373,7 @@ struct AnonymousAccountWork {
 
 static void executeAnonymousAccount(napi_env, void *data) {
     auto *work = static_cast<AnonymousAccountWork *>(data);
-    work->result = msime_client_ensure_anonymous_account(
+    work->result = lingyao_client_ensure_anonymous_account(
         reinterpret_cast<const uint8_t *>(work->directory.data()), work->directory.size());
 }
 
@@ -394,7 +394,7 @@ static napi_value EnsureAnonymousAccount(napi_env env, napi_callback_info info) 
     napi_value promise = nullptr;
     napi_value resource = nullptr;
     if (napi_create_promise(env, &work->deferred, &promise) != napi_ok
-            || napi_create_string_utf8(env, "MSIME anonymous account", NAPI_AUTO_LENGTH,
+            || napi_create_string_utf8(env, "LINGYAO anonymous account", NAPI_AUTO_LENGTH,
                 &resource) != napi_ok
             || napi_create_async_work(env, nullptr, resource, executeAnonymousAccount,
                 completeAnonymousAccount, work, &work->work) != napi_ok) {
@@ -460,11 +460,11 @@ static napi_value queueNetworkRequest(napi_env env, napi_callback_info info, Req
 }
 
 static napi_value TelemetryFlush(napi_env env, napi_callback_info info) {
-    return queueNetworkRequest(env, info, msime_client_telemetry_flush, "MSIME telemetry flush");
+    return queueNetworkRequest(env, info, lingyao_client_telemetry_flush, "LINGYAO telemetry flush");
 }
 
 static napi_value Notices(napi_env env, napi_callback_info info) {
-    return queueNetworkRequest(env, info, msime_client_notices, "MSIME notices");
+    return queueNetworkRequest(env, info, lingyao_client_notices, "LINGYAO notices");
 }
 
 // A pack import extracts or copies up to a music pack's size and validates it before swapping it into place, which the header says belongs on a worker thread, so it runs as async work and answers through a promise. The small catalog, remove and name-list calls stay on the synchronous `plugins` entry.
@@ -477,7 +477,7 @@ struct PluginsWork {
 
 static void executePlugins(napi_env, void *data) {
     auto *work = static_cast<PluginsWork *>(data);
-    work->result = msime_client_plugins(
+    work->result = lingyao_client_plugins(
         reinterpret_cast<const uint8_t *>(work->request.data()), work->request.size());
 }
 
@@ -498,7 +498,7 @@ static napi_value PluginsAsync(napi_env env, napi_callback_info info) {
     napi_value promise = nullptr;
     napi_value resource = nullptr;
     if (napi_create_promise(env, &work->deferred, &promise) != napi_ok
-            || napi_create_string_utf8(env, "MSIME plugins", NAPI_AUTO_LENGTH, &resource) != napi_ok
+            || napi_create_string_utf8(env, "LINGYAO plugins", NAPI_AUTO_LENGTH, &resource) != napi_ok
             || napi_create_async_work(env, nullptr, resource, executePlugins, completePlugins, work,
                 &work->work) != napi_ok) {
         delete work;
@@ -546,7 +546,7 @@ static void reportVoiceModelProgress(const uint8_t *json, size_t length, void *c
 
 static void executeVoiceModelInstall(napi_env, void *data) {
     auto *work = static_cast<VoiceModelInstallWork *>(data);
-    work->result = msime_client_voice_local_model_install(
+    work->result = lingyao_client_voice_local_model_install(
         reinterpret_cast<const uint8_t *>(work->request.data()), work->request.size(),
         work->progress != nullptr ? reportVoiceModelProgress : nullptr, work);
 }
@@ -574,7 +574,7 @@ static napi_value VoiceLocalModelInstall(napi_env env, napi_callback_info info) 
         return invalid(env, "Expected a voice model install request");
     }
     napi_value resource = nullptr;
-    if (napi_create_string_utf8(env, "MSIME voice model install", NAPI_AUTO_LENGTH, &resource)
+    if (napi_create_string_utf8(env, "LINGYAO voice model install", NAPI_AUTO_LENGTH, &resource)
             != napi_ok) {
         delete work;
         return invalid(env, "Unable to create voice model install worker");
@@ -618,16 +618,16 @@ static napi_value VoiceLocalModelInstall(napi_env env, napi_callback_info info) 
                  reinterpret_cast<const uint8_t *>(second.data()), second.size()));                 \
     }
 
-PAIR_ENTRY(EmojiCatalog, msime_client_emoji_catalog_request)
-PAIR_ENTRY(CandidateGlosses, msime_client_candidate_gloss_request)
-PAIR_ENTRY(EnglishCompletions, msime_client_english_completions_request)
-PAIR_ENTRY(TranslationGlossSave, msime_client_translation_gloss_save)
-TEXT_ENTRY(TranslationPlan, msime_client_custom_translation_plan)
-TEXT_ENTRY(TencentTranslationHttpRequest, msime_client_tencent_translation_http_request)
-TEXT_ENTRY(NiuTransTranslationHttpRequest, msime_client_niutrans_translation_http_request)
-TEXT_ENTRY(CustomTranslationHttpRequest, msime_client_custom_translation_http_request)
-TEXT_ENTRY(ParseNiuTransTranslationResponse, msime_client_parse_niutrans_translation_response)
-TEXT_ENTRY(ParseCustomTranslationResponse, msime_client_parse_custom_translation_response)
+PAIR_ENTRY(EmojiCatalog, lingyao_client_emoji_catalog_request)
+PAIR_ENTRY(CandidateGlosses, lingyao_client_candidate_gloss_request)
+PAIR_ENTRY(EnglishCompletions, lingyao_client_english_completions_request)
+PAIR_ENTRY(TranslationGlossSave, lingyao_client_translation_gloss_save)
+TEXT_ENTRY(TranslationPlan, lingyao_client_custom_translation_plan)
+TEXT_ENTRY(TencentTranslationHttpRequest, lingyao_client_tencent_translation_http_request)
+TEXT_ENTRY(NiuTransTranslationHttpRequest, lingyao_client_niutrans_translation_http_request)
+TEXT_ENTRY(CustomTranslationHttpRequest, lingyao_client_custom_translation_http_request)
+TEXT_ENTRY(ParseNiuTransTranslationResponse, lingyao_client_parse_niutrans_translation_response)
+TEXT_ENTRY(ParseCustomTranslationResponse, lingyao_client_parse_custom_translation_response)
 
 static napi_value ParseTencentTranslationResponse(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
@@ -635,9 +635,9 @@ static napi_value ParseTencentTranslationResponse(napi_env env, napi_callback_in
     size_t expected = 0;
     if (!arguments(env, info, 2, argv) || !argumentText(env, argv[0], body)
             || !argumentIndex(env, argv[1], expected)) {
-        return response(env, msime_client_parse_tencent_translation_response(nullptr, 0, 0));
+        return response(env, lingyao_client_parse_tencent_translation_response(nullptr, 0, 0));
     }
-    return response(env, msime_client_parse_tencent_translation_response(
+    return response(env, lingyao_client_parse_tencent_translation_response(
         reinterpret_cast<const uint8_t *>(body.data()), body.size(), expected));
 }
 
@@ -645,9 +645,9 @@ static napi_value OnlineQuery(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
     uint64_t handle = 0;
     if (!arguments(env, info, 1, argv) || !argumentHandle(env, argv[0], handle)) {
-        return response(env, msime_client_online_query(0));
+        return response(env, lingyao_client_online_query(0));
     }
-    return response(env, msime_client_online_query(handle));
+    return response(env, lingyao_client_online_query(handle));
 }
 
 static napi_value AiRequestForQuery(napi_env env, napi_callback_info info) {
@@ -656,9 +656,9 @@ static napi_value AiRequestForQuery(napi_env env, napi_callback_info info) {
     std::string query;
     if (!arguments(env, info, 2, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentText(env, argv[1], query)) {
-        return response(env, msime_client_ai_request_for_query(0, nullptr, 0));
+        return response(env, lingyao_client_ai_request_for_query(0, nullptr, 0));
     }
-    return response(env, msime_client_ai_request_for_query(
+    return response(env, lingyao_client_ai_request_for_query(
         handle, reinterpret_cast<const uint8_t *>(query.data()), query.size()));
 }
 
@@ -666,9 +666,9 @@ static napi_value AiHttpRequest(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
     std::string request;
     if (!arguments(env, info, 1, argv) || !argumentText(env, argv[0], request)) {
-        return response(env, msime_client_ai_http_request(nullptr, 0));
+        return response(env, lingyao_client_ai_http_request(nullptr, 0));
     }
-    return response(env, msime_client_ai_http_request(
+    return response(env, lingyao_client_ai_http_request(
         reinterpret_cast<const uint8_t *>(request.data()), request.size()));
 }
 
@@ -678,9 +678,9 @@ static napi_value ParseAiResponse(napi_env env, napi_callback_info info) {
     size_t limit = 0;
     if (!arguments(env, info, 2, argv) || !argumentText(env, argv[0], body)
             || !argumentIndex(env, argv[1], limit) || limit > 255) {
-        return response(env, msime_client_parse_ai_response(nullptr, 0, 0));
+        return response(env, lingyao_client_parse_ai_response(nullptr, 0, 0));
     }
-    return response(env, msime_client_parse_ai_response(
+    return response(env, lingyao_client_parse_ai_response(
         reinterpret_cast<const uint8_t *>(body.data()), body.size(), static_cast<uint8_t>(limit)));
 }
 
@@ -691,9 +691,9 @@ static napi_value ApplyCloudResponse(napi_env env, napi_callback_info info) {
     std::string body;
     if (!arguments(env, info, 3, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentText(env, argv[1], query) || !argumentText(env, argv[2], body)) {
-        return response(env, msime_client_apply_cloud_response(0, nullptr, 0, nullptr, 0));
+        return response(env, lingyao_client_apply_cloud_response(0, nullptr, 0, nullptr, 0));
     }
-    return response(env, msime_client_apply_cloud_response(
+    return response(env, lingyao_client_apply_cloud_response(
         handle, reinterpret_cast<const uint8_t *>(query.data()), query.size(),
         reinterpret_cast<const uint8_t *>(body.data()), body.size()));
 }
@@ -707,10 +707,10 @@ static napi_value ApplyOnlineCandidates(napi_env env, napi_callback_info info) {
     if (!arguments(env, info, 4, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentText(env, argv[1], query) || !argumentText(env, argv[2], candidates)
             || !argumentIndex(env, argv[3], source) || source > 1) {
-        return response(env, msime_client_apply_online_candidates(
+        return response(env, lingyao_client_apply_online_candidates(
             0, nullptr, 0, nullptr, 0, 2));
     }
-    return response(env, msime_client_apply_online_candidates(
+    return response(env, lingyao_client_apply_online_candidates(
         handle, reinterpret_cast<const uint8_t *>(query.data()), query.size(),
         reinterpret_cast<const uint8_t *>(candidates.data()), candidates.size(),
         static_cast<uint8_t>(source)));
@@ -726,14 +726,14 @@ static napi_value ApplyOnlineCandidates(napi_env env, napi_callback_info info) {
         return response(env, call(handle));                                                         \
     }
 
-HANDLE_ENTRY(SnapshotDiscard, msime_client_snapshot_discard)
-HANDLE_ENTRY(View, msime_client_view)
-HANDLE_ENTRY(ResetCache, msime_client_reset_cache)
-HANDLE_ENTRY(AllCandidates, msime_client_all_candidates)
-HANDLE_ENTRY(TranslationQuery, msime_client_translation_query)
-HANDLE_ENTRY(Destroy, msime_client_destroy)
-HANDLE_ENTRY(VoiceStart, msime_client_voice_start)
-HANDLE_ENTRY(VoiceCancel, msime_client_voice_cancel)
+HANDLE_ENTRY(SnapshotDiscard, lingyao_client_snapshot_discard)
+HANDLE_ENTRY(View, lingyao_client_view)
+HANDLE_ENTRY(ResetCache, lingyao_client_reset_cache)
+HANDLE_ENTRY(AllCandidates, lingyao_client_all_candidates)
+HANDLE_ENTRY(TranslationQuery, lingyao_client_translation_query)
+HANDLE_ENTRY(Destroy, lingyao_client_destroy)
+HANDLE_ENTRY(VoiceStart, lingyao_client_voice_start)
+HANDLE_ENTRY(VoiceCancel, lingyao_client_voice_cancel)
 
 #define FLAG_ENTRY(name, call)                                                                      \
     static napi_value name(napi_env env, napi_callback_info info) {                                 \
@@ -747,10 +747,10 @@ HANDLE_ENTRY(VoiceCancel, msime_client_voice_cancel)
         return response(env, call(handle, enabled));                                                \
     }
 
-FLAG_ENTRY(Focus, msime_client_focus)
-FLAG_ENTRY(SetNineKeyMode, msime_client_set_nine_key_mode)
-FLAG_ENTRY(SetEnglishMode, msime_client_set_english_mode)
-FLAG_ENTRY(SetCharacterWidth, msime_client_set_character_width)
+FLAG_ENTRY(Focus, lingyao_client_focus)
+FLAG_ENTRY(SetNineKeyMode, lingyao_client_set_nine_key_mode)
+FLAG_ENTRY(SetEnglishMode, lingyao_client_set_english_mode)
+FLAG_ENTRY(SetCharacterWidth, lingyao_client_set_character_width)
 
 // Candidate identity is the generation plus the index, so a stale page cannot act on a fresh one.
 #define CANDIDATE_ENTRY(name, call, message)                                                        \
@@ -767,7 +767,7 @@ FLAG_ENTRY(SetCharacterWidth, msime_client_set_character_width)
         return response(env, call(handle, generation, index));                                      \
     }
 
-CANDIDATE_ENTRY(Select, msime_client_select, "Invalid candidate index")
+CANDIDATE_ENTRY(Select, lingyao_client_select, "Invalid candidate index")
 
 static napi_value SelectEdge(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
@@ -781,16 +781,16 @@ static napi_value SelectEdge(napi_env env, napi_callback_info info) {
         return invalid(env, "Invalid candidate edge");
     }
     if (edge < 0 || edge > 1) return invalid(env, "Invalid candidate edge");
-    return response(env, msime_client_select_edge(
+    return response(env, lingyao_client_select_edge(
         handle, generation, index, static_cast<uint8_t>(edge)));
 }
 
-CANDIDATE_ENTRY(SelectAnyCandidate, msime_client_select_any_candidate, "Invalid candidate index")
-CANDIDATE_ENTRY(PinCandidate, msime_client_pin_candidate, "Invalid candidate index")
-CANDIDATE_ENTRY(ClearCandidatePosition, msime_client_clear_candidate_position,
+CANDIDATE_ENTRY(SelectAnyCandidate, lingyao_client_select_any_candidate, "Invalid candidate index")
+CANDIDATE_ENTRY(PinCandidate, lingyao_client_pin_candidate, "Invalid candidate index")
+CANDIDATE_ENTRY(ClearCandidatePosition, lingyao_client_clear_candidate_position,
                 "Invalid candidate index")
-CANDIDATE_ENTRY(RemoveCandidate, msime_client_remove_candidate, "Invalid candidate index")
-CANDIDATE_ENTRY(ChooseNineKeySpelling, msime_client_choose_nine_key_spelling,
+CANDIDATE_ENTRY(RemoveCandidate, lingyao_client_remove_candidate, "Invalid candidate index")
+CANDIDATE_ENTRY(ChooseNineKeySpelling, lingyao_client_choose_nine_key_spelling,
                 "Invalid nine-key spelling index")
 
 static napi_value SavePreferences(napi_env env, napi_callback_info info) {
@@ -801,9 +801,9 @@ static napi_value SavePreferences(napi_env env, napi_callback_info info) {
     if (!arguments(env, info, 3, argv) || !argumentText(env, argv[0], directory)
             || !argumentHandle(env, argv[1], revision)
             || !argumentText(env, argv[2], snapshot)) {
-        return response(env, msime_client_save_preferences(nullptr, 0, 0, nullptr, 0));
+        return response(env, lingyao_client_save_preferences(nullptr, 0, 0, nullptr, 0));
     }
-    return response(env, msime_client_save_preferences(
+    return response(env, lingyao_client_save_preferences(
         reinterpret_cast<const uint8_t *>(directory.data()), directory.size(), revision,
         reinterpret_cast<const uint8_t *>(snapshot.data()), snapshot.size()));
 }
@@ -814,10 +814,10 @@ static napi_value SnapshotPrepare(napi_env env, napi_callback_info info) {
     std::string file;
     if (!arguments(env, info, 2, argv) || !argumentText(env, argv[0], request)
             || !argumentText(env, argv[1], file)) {
-        return response(env, msime_client_snapshot_prepare(nullptr, 0, nullptr, nullptr));
+        return response(env, lingyao_client_snapshot_prepare(nullptr, 0, nullptr, nullptr));
     }
     SnapshotReader reader(file);
-    return response(env, msime_client_snapshot_prepare(
+    return response(env, lingyao_client_snapshot_prepare(
         reinterpret_cast<const uint8_t *>(request.data()), request.size(), snapshotNext, &reader));
 }
 
@@ -827,9 +827,9 @@ static napi_value SnapshotActivate(napi_env env, napi_callback_info info) {
     std::string expected;
     if (!arguments(env, info, 2, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentText(env, argv[1], expected)) {
-        return response(env, msime_client_snapshot_activate(0, nullptr, 0));
+        return response(env, lingyao_client_snapshot_activate(0, nullptr, 0));
     }
-    return response(env, msime_client_snapshot_activate(
+    return response(env, lingyao_client_snapshot_activate(
         handle, reinterpret_cast<const uint8_t *>(expected.data()), expected.size()));
 }
 
@@ -841,9 +841,9 @@ static napi_value UpdatePreferences(napi_env env, napi_callback_info info) {
         return invalid(env, "Session handle must be a non-negative integer");
     }
     if (!argumentText(env, argv[1], snapshot)) {
-        return response(env, msime_client_update_preferences(handle, nullptr, 0));
+        return response(env, lingyao_client_update_preferences(handle, nullptr, 0));
     }
-    return response(env, msime_client_update_preferences(
+    return response(env, lingyao_client_update_preferences(
         handle, reinterpret_cast<const uint8_t *>(snapshot.data()), snapshot.size()));
 }
 
@@ -859,7 +859,7 @@ static napi_value Character(napi_env env, napi_callback_info info) {
     }
     if (ascii < 0 || ascii > 127) return invalid(env, "Engine character must be ASCII");
     return response(env,
-        msime_client_character(handle, static_cast<uint8_t>(ascii), shift));
+        lingyao_client_character(handle, static_cast<uint8_t>(ascii), shift));
 }
 
 static napi_value PunctuationWithContext(napi_env env, napi_callback_info info) {
@@ -875,7 +875,7 @@ static napi_value PunctuationWithContext(napi_env env, napi_callback_info info) 
     if (ascii < 0 || ascii > 127 || preceding < 0) {
         return invalid(env, "Invalid punctuation context");
     }
-    return response(env, msime_client_punctuation_with_context(
+    return response(env, lingyao_client_punctuation_with_context(
         handle, static_cast<uint8_t>(ascii), static_cast<uint32_t>(preceding)));
 }
 
@@ -888,7 +888,7 @@ static napi_value BalancePairedPunctuationAfterAutoClose(napi_env env, napi_call
         return invalid(env, "Expected a session handle and an ASCII opening mark");
     }
     if (opening < 0 || opening > 127) return invalid(env, "Invalid punctuation opening");
-    return response(env, msime_client_balance_paired_punctuation_after_auto_close(
+    return response(env, lingyao_client_balance_paired_punctuation_after_auto_close(
         handle, static_cast<uint8_t>(opening)));
 }
 
@@ -900,10 +900,10 @@ static napi_value Command(napi_env env, napi_callback_info info) {
             || napi_get_value_uint32(env, argv[1], &command) != napi_ok) {
         return invalid(env, "Expected a session handle and a command code");
     }
-    return response(env, msime_client_command(handle, command));
+    return response(env, lingyao_client_command(handle, command));
 }
 
-// The typing effect of one key or commit: the packed integer msime_client.h documents. Called on the key path, so it allocates nothing beyond the returned number.
+// The typing effect of one key or commit: the packed integer lingyao_client.h documents. Called on the key path, so it allocates nothing beyond the returned number.
 static napi_value TypingEffect(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
     uint64_t handle = 0;
@@ -913,7 +913,7 @@ static napi_value TypingEffect(napi_env env, napi_callback_info info) {
         return invalid(env, "Expected a session handle and a typing effect event");
     }
     napi_value output = nullptr;
-    if (napi_create_uint32(env, msime_client_typing_effect(handle, event), &output) != napi_ok) return nullptr;
+    if (napi_create_uint32(env, lingyao_client_typing_effect(handle, event), &output) != napi_ok) return nullptr;
     return output;
 }
 
@@ -924,7 +924,7 @@ static napi_value TypingEffectSettings(napi_env env, napi_callback_info info) {
     if (!arguments(env, info, 1, argv) || !argumentHandle(env, argv[0], handle)) {
         return invalid(env, "Expected a session handle");
     }
-    return response(env, msime_client_typing_effect_settings(handle));
+    return response(env, lingyao_client_typing_effect_settings(handle));
 }
 
 static napi_value FixCandidatePosition(napi_env env, napi_callback_info info) {
@@ -941,7 +941,7 @@ static napi_value FixCandidatePosition(napi_env env, napi_callback_info info) {
     if (position < 1 || position > 5) {
         return invalid(env, "Candidate position must be between 1 and 5");
     }
-    return response(env, msime_client_fix_candidate_position(
+    return response(env, lingyao_client_fix_candidate_position(
         handle, generation, index, static_cast<uint8_t>(position)));
 }
 
@@ -953,9 +953,9 @@ static napi_value ApplyTranslations(napi_env env, napi_callback_info info) {
     if (!arguments(env, info, 3, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentHandle(env, argv[1], generation)
             || !argumentText(env, argv[2], translations)) {
-        return response(env, msime_client_apply_translations(0, 0, nullptr, 0));
+        return response(env, lingyao_client_apply_translations(0, 0, nullptr, 0));
     }
-    return response(env, msime_client_apply_translations(handle, generation,
+    return response(env, lingyao_client_apply_translations(handle, generation,
         reinterpret_cast<const uint8_t *>(translations.data()), translations.size()));
 }
 
@@ -966,9 +966,9 @@ static napi_value VoiceApply(napi_env env, napi_callback_info info) {
     std::string text;
     if (!arguments(env, info, 3, argv) || !argumentHandle(env, argv[0], handle)
             || !argumentHandle(env, argv[1], generation) || !argumentText(env, argv[2], text)) {
-        return response(env, msime_client_voice_apply(0, 0, nullptr, 0));
+        return response(env, lingyao_client_voice_apply(0, 0, nullptr, 0));
     }
-    return response(env, msime_client_voice_apply(handle, generation,
+    return response(env, lingyao_client_voice_apply(handle, generation,
         reinterpret_cast<const uint8_t *>(text.data()), text.size()));
 }
 
@@ -978,7 +978,7 @@ static napi_value TypingStatisticsEnabled(napi_env env, napi_callback_info info)
     std::string directory;
     int32_t enabled = -1;
     if (arguments(env, info, 1, argv) && argumentText(env, argv[0], directory)) {
-        enabled = msime_client_typing_statistics_enabled(
+        enabled = lingyao_client_typing_statistics_enabled(
             reinterpret_cast<const uint8_t *>(directory.data()), directory.size());
     }
     napi_value output = nullptr;
@@ -988,22 +988,22 @@ static napi_value TypingStatisticsEnabled(napi_env env, napi_callback_info info)
 
 static napi_value AbiVersion(napi_env env, napi_callback_info) {
     napi_value output = nullptr;
-    if (napi_create_uint32(env, msime_client_abi_version(), &output) != napi_ok) return nullptr;
+    if (napi_create_uint32(env, lingyao_client_abi_version(), &output) != napi_ok) return nullptr;
     return output;
 }
 
 // The global theme picker takes no argument: the ids, titles and palettes all come from the shared catalog.
 static napi_value ThemeCatalog(napi_env env, napi_callback_info) {
-    return response(env, msime_client_theme_catalog());
+    return response(env, lingyao_client_theme_catalog());
 }
 
 static napi_value HostCapabilities(napi_env env, napi_callback_info info) {
     std::vector<napi_value> argv;
     std::string platform;
     if (!arguments(env, info, 1, argv) || !argumentText(env, argv[0], platform)) {
-        return response(env, msime_client_host_capabilities(nullptr, 0));
+        return response(env, lingyao_client_host_capabilities(nullptr, 0));
     }
-    return response(env, msime_client_host_capabilities(
+    return response(env, lingyao_client_host_capabilities(
         reinterpret_cast<const uint8_t *>(platform.data()), platform.size()));
 }
 
@@ -1013,7 +1013,7 @@ static napi_value SimplifiedToTraditional(napi_env env, napi_callback_info info)
     std::string text;
     char *converted = nullptr;
     if (arguments(env, info, 1, argv) && argumentText(env, argv[0], text)) {
-        converted = msime_client_simplified_to_traditional(
+        converted = lingyao_client_simplified_to_traditional(
             reinterpret_cast<const uint8_t *>(text.data()), text.size());
     }
     if (!converted) {
@@ -1166,7 +1166,7 @@ static napi_value KeySoundRenderNotes(napi_env env, napi_callback_info info) {
     napi_value promise = nullptr;
     napi_value resource = nullptr;
     if (napi_create_promise(env, &work->deferred, &promise) != napi_ok
-            || napi_create_string_utf8(env, "MSIME key sound render", NAPI_AUTO_LENGTH,
+            || napi_create_string_utf8(env, "LINGYAO key sound render", NAPI_AUTO_LENGTH,
                 &resource) != napi_ok
             || napi_create_async_work(env, nullptr, resource, executeKeySoundRender,
                 completeKeySoundRender, work, &work->work) != napi_ok) {
@@ -1298,7 +1298,7 @@ static napi_module client_module = {
     .nm_flags = 0,
     .nm_filename = nullptr,
     .nm_register_func = Init,
-    .nm_modname = "msimeclient",
+    .nm_modname = "lingyaoclient",
     .nm_priv = nullptr,
     .reserved = { nullptr },
 };

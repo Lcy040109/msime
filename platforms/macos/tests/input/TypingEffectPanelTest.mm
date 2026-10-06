@@ -6,33 +6,33 @@
 namespace {
 void Require(bool condition, const char *message) { if (!condition) throw std::runtime_error(message); }
 
-// msime_client_typing_effect's packing: bits 0-15 the combo, bit 16 tier-up, bits 17-19 the style, bit 20 the tier sound.
-uint32_t Pack(uint32_t combo, bool tierUp, MSIMETypingEffectStyle style) {
-    return combo | (tierUp ? MSIMETypingEffectTierUp : 0) | (uint32_t)style << 17 | (tierUp ? 0x100000u : 0);
+// lingyao_client_typing_effect's packing: bits 0-15 the combo, bit 16 tier-up, bits 17-19 the style, bit 20 the tier sound.
+uint32_t Pack(uint32_t combo, bool tierUp, LINGYAOTypingEffectStyle style) {
+    return combo | (tierUp ? LINGYAOTypingEffectTierUp : 0) | (uint32_t)style << 17 | (tierUp ? 0x100000u : 0);
 }
 }
 
 int main() {
     @autoreleasepool {
         try {
-            const MSIMETypingEffect decoded = MSIMETypingEffectDecode(Pack(25, true, MSIMETypingEffectStylePowerMode));
-            Require(decoded.combo == 25 && decoded.tierUp && decoded.style == MSIMETypingEffectStylePowerMode, "answer not decoded");
-            const MSIMETypingEffect off = MSIMETypingEffectDecode(0);
-            Require(off.combo == 0 && !off.tierUp && off.style == MSIMETypingEffectStyleOff, "zero answer is not off");
-            Require(MSIMETypingEffectDecode(7u << 17).style == MSIMETypingEffectStyleOff, "unknown style code was drawn");
-            Require(MSIMETypingEffectDecode(0xFFFF).combo == 65535, "saturated combo not decoded");
+            const LINGYAOTypingEffect decoded = LINGYAOTypingEffectDecode(Pack(25, true, LINGYAOTypingEffectStylePowerMode));
+            Require(decoded.combo == 25 && decoded.tierUp && decoded.style == LINGYAOTypingEffectStylePowerMode, "answer not decoded");
+            const LINGYAOTypingEffect off = LINGYAOTypingEffectDecode(0);
+            Require(off.combo == 0 && !off.tierUp && off.style == LINGYAOTypingEffectStyleOff, "zero answer is not off");
+            Require(LINGYAOTypingEffectDecode(7u << 17).style == LINGYAOTypingEffectStyleOff, "unknown style code was drawn");
+            Require(LINGYAOTypingEffectDecode(0xFFFF).combo == 65535, "saturated combo not decoded");
 
-            Require(MSIMETypingEffectDrawnStyle(MSIMETypingEffectStyleSparks, NO, NO) == MSIMETypingEffectStyleSparks, "sparks degraded without cause");
-            Require(MSIMETypingEffectDrawnStyle(MSIMETypingEffectStyleSparks, YES, NO) == MSIMETypingEffectStyleFlash, "Reduce Motion did not degrade sparks");
-            Require(MSIMETypingEffectDrawnStyle(MSIMETypingEffectStylePowerMode, NO, YES) == MSIMETypingEffectStyleFlash, "Low Power did not degrade power mode");
-            Require(MSIMETypingEffectDrawnStyle(MSIMETypingEffectStyleFlash, YES, YES) == MSIMETypingEffectStyleFlash, "flash changed under Reduce Motion");
-            Require(MSIMETypingEffectDrawnStyle(MSIMETypingEffectStyleOff, YES, YES) == MSIMETypingEffectStyleOff, "off became visible");
+            Require(LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStyleSparks, NO, NO) == LINGYAOTypingEffectStyleSparks, "sparks degraded without cause");
+            Require(LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStyleSparks, YES, NO) == LINGYAOTypingEffectStyleFlash, "Reduce Motion did not degrade sparks");
+            Require(LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStylePowerMode, NO, YES) == LINGYAOTypingEffectStyleFlash, "Low Power did not degrade power mode");
+            Require(LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStyleFlash, YES, YES) == LINGYAOTypingEffectStyleFlash, "flash changed under Reduce Motion");
+            Require(LINGYAOTypingEffectDrawnStyle(LINGYAOTypingEffectStyleOff, YES, YES) == LINGYAOTypingEffectStyleOff, "off became visible");
 
-            Require(MSIMETypingEffectComboText(0) == nil && MSIMETypingEffectComboText(1) == nil, "a single key showed a combo");
-            Require([MSIMETypingEffectComboText(12) isEqualToString:@"连击 ×12"], "combo text mismatch");
+            Require(LINGYAOTypingEffectComboText(0) == nil && LINGYAOTypingEffectComboText(1) == nil, "a single key showed a combo");
+            Require([LINGYAOTypingEffectComboText(12) isEqualToString:@"连击 ×12"], "combo text mismatch");
 
-            MSIMETypingEffectPanel *panel = MSIMETypingEffectPanel.sharedPanel;
-            Require(panel == MSIMETypingEffectPanel.sharedPanel, "panel is not shared");
+            LINGYAOTypingEffectPanel *panel = LINGYAOTypingEffectPanel.sharedPanel;
+            Require(panel == LINGYAOTypingEffectPanel.sharedPanel, "panel is not shared");
             Require(panel.ignoresMouseEvents && panel.floatingPanel && !panel.opaque && !panel.canBecomeKeyWindow && !panel.canBecomeMainWindow, "panel could take clicks or focus");
             Require((panel.styleMask & NSWindowStyleMaskNonactivatingPanel) != 0, "panel would activate the input method");
             Require(panel.level < NSPopUpMenuWindowLevel, "panel is not under the candidate window");
@@ -48,21 +48,21 @@ int main() {
             [panel applyPreferences:@{@"plugins" : @{@"effect_style" : @"sparks", @"combo_counter" : @YES}}];
 
             const NSRect caret = NSMakeRect(600, 400, 2, 20);
-            [panel presentEffect:Pack(1, false, MSIMETypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
-            Require(panel.emitting && panel.isVisible && panel.drawnStyle == MSIMETypingEffectStyleSparks && panel.displayedCombo == nil, "sparks not drawn at the caret");
+            [panel presentEffect:Pack(1, false, LINGYAOTypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
+            Require(panel.emitting && panel.isVisible && panel.drawnStyle == LINGYAOTypingEffectStyleSparks && panel.displayedCombo == nil, "sparks not drawn at the caret");
             Require(NSPointInRect(NSMakePoint(NSMinX(caret), NSMidY(caret)), panel.frame), "panel does not cover the caret");
 
-            [panel presentEffect:Pack(10, true, MSIMETypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(10, true, LINGYAOTypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
             Require([panel.displayedCombo isEqualToString:@"连击 ×10"], "combo badge missing");
 
             [panel settle];
             Require(!panel.emitting && !panel.isVisible && panel.displayedCombo == nil, "settle left the panel on screen");
 
-            [panel presentEffect:Pack(3, false, MSIMETypingEffectStyleSparks) commit:YES caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:YES lowPower:NO];
-            Require(!panel.emitting && panel.drawnStyle == MSIMETypingEffectStyleFlash, "Reduce Motion still emitted sparks");
+            [panel presentEffect:Pack(3, false, LINGYAOTypingEffectStyleSparks) commit:YES caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:YES lowPower:NO];
+            Require(!panel.emitting && panel.drawnStyle == LINGYAOTypingEffectStyleFlash, "Reduce Motion still emitted sparks");
 
             // A backspace ends the combo: the answer has no count and the style off, and the badge comes down at once.
-            [panel presentEffect:Pack(0, false, MSIMETypingEffectStyleOff) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(0, false, LINGYAOTypingEffectStyleOff) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
             Require(panel.displayedCombo == nil && !panel.isVisible, "an ended combo left the badge");
 
             // The card flash lies over the candidate card, takes no clicks, and leaves with the panel's idle state.
@@ -76,17 +76,17 @@ int main() {
             candidate.contentView = content;
             [candidate orderFrontRegardless];
             [panel applyPreferences:@{@"plugins" : @{@"effect_style" : @"flash", @"combo_counter" : @NO}}];
-            [panel presentEffect:Pack(0, false, MSIMETypingEffectStyleFlash) commit:NO caretRect:caret candidateView:content cardRect:NSMakeRect(0, 0, 240, 72) cornerRadius:8 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(0, false, LINGYAOTypingEffectStyleFlash) commit:NO caretRect:caret candidateView:content cardRect:NSMakeRect(0, 0, 240, 72) cornerRadius:8 reduceMotion:NO lowPower:NO];
             NSView *flash = content.subviews.lastObject;
-            Require([flash isKindOfClass:MSIMETypingEffectFlashView.class] && [flash.identifier isEqualToString:@"candidate-typing-flash"], "card flash not on top of the card");
+            Require([flash isKindOfClass:LINGYAOTypingEffectFlashView.class] && [flash.identifier isEqualToString:@"candidate-typing-flash"], "card flash not on top of the card");
             Require(NSEqualRects(flash.frame, NSMakeRect(0, 0, 240, 72)) && [flash hitTest:NSMakePoint(10, 10)] == nil, "card flash misplaced or takes clicks");
             Require(!panel.isVisible && !panel.emitting, "flash alone put the spark panel on screen");
-            [panel presentEffect:Pack(0, false, MSIMETypingEffectStyleFlash) commit:YES caretRect:caret candidateView:content cardRect:NSMakeRect(0, 0, 240, 72) cornerRadius:8 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(0, false, LINGYAOTypingEffectStyleFlash) commit:YES caretRect:caret candidateView:content cardRect:NSMakeRect(0, 0, 240, 72) cornerRadius:8 reduceMotion:NO lowPower:NO];
             NSUInteger flashes = 0;
-            for (NSView *subview in content.subviews) flashes += [subview isKindOfClass:MSIMETypingEffectFlashView.class] ? 1 : 0;
+            for (NSView *subview in content.subviews) flashes += [subview isKindOfClass:LINGYAOTypingEffectFlashView.class] ? 1 : 0;
             Require(flashes == 1, "a second flash stacked another overlay");
             [panel settle];
-            Require(![content.subviews.lastObject isKindOfClass:MSIMETypingEffectFlashView.class], "settle left the card flash");
+            Require(![content.subviews.lastObject isKindOfClass:LINGYAOTypingEffectFlashView.class], "settle left the card flash");
             [candidate orderOut:nil];
 
             [panel applyPreferences:@{@"plugins" : @{@"effect_style" : @"off", @"combo_counter" : @NO}}];
@@ -95,17 +95,17 @@ int main() {
             // An effect pack selected with the style off still asks the library: the pack's style is the session's to resolve.
             [panel applyPreferences:@{@"plugins" : @{@"effect_style" : @"off", @"effect_pack" : @"neon", @"combo_counter" : @NO}}];
             Require(panel.configured, "a selected effect pack left the effect unconfigured");
-            Require(MSIMETypingEffectColor(@"#FF8800") != nil && MSIMETypingEffectColor(@"FF8800") == nil && MSIMETypingEffectColor(@"#GG8800") == nil &&
-                        MSIMETypingEffectColor(@3) == nil,
+            Require(LINGYAOTypingEffectColor(@"#FF8800") != nil && LINGYAOTypingEffectColor(@"FF8800") == nil && LINGYAOTypingEffectColor(@"#GG8800") == nil &&
+                        LINGYAOTypingEffectColor(@3) == nil,
                     "pack colour parsing");
             [panel applySettings:@{@"pack" : @"neon", @"style" : @"sparks", @"intensity" : @70, @"colors" : @[@"#FF0000", @"bad", @"#00FF00"],
                                    @"duration_ms" : @400, @"particles" : @12, @"combo_counter" : @NO}];
             Require(panel.intensity == 70 && panel.effectColors.count == 2 && panel.effectDuration == 0.4 && panel.effectParticles == 12, "pack settings not applied");
-            [panel presentEffect:Pack(2, false, MSIMETypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(2, false, LINGYAOTypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
             Require(panel.emitting, "pack sparks not drawn");
             [panel settle];
             [panel applySettings:@{@"pack" : @"quiet", @"style" : @"sparks", @"intensity" : @50, @"colors" : @[], @"duration_ms" : [NSNull null], @"particles" : @0, @"combo_counter" : @NO}];
-            [panel presentEffect:Pack(1, false, MSIMETypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
+            [panel presentEffect:Pack(1, false, LINGYAOTypingEffectStyleSparks) commit:NO caretRect:caret candidateView:nil cardRect:NSZeroRect cornerRadius:0 reduceMotion:NO lowPower:NO];
             Require(!panel.emitting && panel.effectDuration == 0 && panel.effectColors.count == 0, "a pack with no particles emitted sparks");
             [panel settle];
             [panel applySettings:@{@"intensity" : @900, @"duration_ms" : @5, @"particles" : @500}];

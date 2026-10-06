@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using msime::tsf::path_to_utf8;
+  using lingyao::tsf::path_to_utf8;
   assert(path_to_utf8({}).empty());
   assert(path_to_utf8(std::filesystem::path("fixture")) == "fixture");
   const auto path = std::filesystem::path(u8"fixture-\u8def\u5f84-\U0001f332");

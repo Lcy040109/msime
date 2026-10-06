@@ -3,7 +3,7 @@
 #include <chrono>
 #include <condition_variable>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct VoiceControllerJob {
   std::shared_ptr<VoiceControllerChannel> channel;
   VoiceControllerRequest request;
@@ -47,4 +47,4 @@ private:
   std::mutex mutex_;
   std::shared_ptr<VoiceControllerJob> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

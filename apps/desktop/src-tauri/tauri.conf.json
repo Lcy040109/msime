@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "MSIME",
+  "productName": "LINGYAO",
   "version": "0.52.0",
-  "identifier": "app.msime.client",
+  "identifier": "app.lingyao.client",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://127.0.0.1:1420",

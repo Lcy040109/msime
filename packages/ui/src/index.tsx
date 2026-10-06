@@ -1635,7 +1635,7 @@ export interface HostCapabilities {
   plugin_triggers: boolean;
   /** The host streams the selected music pack while it is the active input method. */
   music: boolean;
-  /** The host draws the typing effects and the combo count `msime_client_typing_effect` answers with. */
+  /** The host draws the typing effects and the combo count `lingyao_client_typing_effect` answers with. */
   typing_effects: boolean;
   /** 背单词书目列出单词本插件（`pack-<插件 id>` 词书）。 */
   wordbook_packs: boolean;
@@ -1703,7 +1703,7 @@ export type Preferences = {
   translation_target_language?: "en" | "fr" | "ja" | "es" | "ru" | "de" | "ko";
   /** Optional second candidate-translation language; null/absent keeps one gloss row. */
   translation_secondary_language?: "en" | "fr" | "ja" | "es" | "ru" | "de" | "ko" | null;
-  /** The user explicitly chose the MSIME account (api.msime.app) for candidate translations; absent means not chosen. */
+  /** The user explicitly chose the LINGYAO account (api.msime.app) for candidate translations; absent means not chosen. */
   translation_account?: boolean;
   /** Anonymous usage reporting (daily activity, session ends, crash summaries) read by every host; absent means on, the default. */
   usage_reporting?: boolean;
@@ -1898,7 +1898,7 @@ export type VoiceInputPreferences = {
   polish_enabled?: boolean;
   polish_text?: boolean;
   asr_model?: string;
-  /** Absolute path the `local` provider loads: an installed model directory (one holding msime-model.json). */
+  /** Absolute path the `local` provider loads: an installed model directory (one holding lingyao-model.json). */
   asr_model_path?: string;
   /** Optional `https://` prefix put in front of every model download URL (a ghproxy-style mirror); empty downloads from the catalog URLs as-is. */
   asr_model_mirror?: string;
@@ -2050,7 +2050,7 @@ export interface SettingsClient {
   /** Custom helper-code tables found below the host's verified resource directory. */
   listHelpcodeSchemas?: () => Promise<CustomHelpcodeSchema[]>;
   /**
-   * The colours a host draws for a theme, from the same `resolve` the input method runs (`msime_client_resolve_theme`), with the custom theme's package read from the host's own skin directory. Absent on hosts whose bridge has no theme call; the picker and built-in previews read `themeCatalog` and need no host.
+   * The colours a host draws for a theme, from the same `resolve` the input method runs (`lingyao_client_resolve_theme`), with the custom theme's package read from the host's own skin directory. Absent on hosts whose bridge has no theme call; the picker and built-in previews read `themeCatalog` and need no host.
    */
   resolveTheme?: (request: ResolveThemeRequest) => Promise<ResolvedTheme>;
   readSkinImage?: SkinImageReader;
@@ -2096,9 +2096,9 @@ export interface SettingsClient {
   loadMacosWubiAutoCommitUnique?: () => Promise<boolean>;
   saveMacosWubiAutoCommitUnique?: (enabled: boolean) => Promise<void>;
   copyText?: (text: string) => Promise<void>;
-  /** The desktop hosts ship `msime-mcp` beside the settings app and report where it is and the entry an AI assistant runs it with. */
+  /** The desktop hosts ship `lingyao-mcp` beside the settings app and report where it is and the entry an AI assistant runs it with. */
   mcpServerStatus?: () => Promise<McpServerStatus>;
-  /** 把条目（`args` 末尾加上 `flags`）写进助手的配置文件。已有条目只差权限参数时直接更新；其它不同的 `msime` 条目在未设 `replace` 时以 `mcp_entry_exists` 拒绝。 */
+  /** 把条目（`args` 末尾加上 `flags`）写进助手的配置文件。已有条目只差权限参数时直接更新；其它不同的 `lingyao` 条目在未设 `replace` 时以 `mcp_entry_exists` 拒绝。 */
   installMcpClient?: (
     client: McpClientId,
     replace: boolean,
@@ -2154,7 +2154,7 @@ export interface SettingsClient {
     }>;
   };
   /**
-   * Ask the host for an installed local speech model directory (one holding msime-model.json), resolving to null when the user cancels. The model is loaded by path and a file input hands back contents instead, so only the host can answer this.
+   * Ask the host for an installed local speech model directory (one holding lingyao-model.json), resolving to null when the user cancels. The model is loaded by path and a file input hands back contents instead, so only the host can answer this.
    */
   pickVoiceModelPath?: () => Promise<string | null>;
   /** The host's on-device speech model store; hosts that provide it offer the `local` provider with a model manager. */
@@ -2402,7 +2402,7 @@ function useSettingsPageModel({ client, initialPage, route }: SettingsPageProps)
   const restoredMobilePage =
     mobilePlatform &&
     typeof window !== "undefined" &&
-    window.history.state?.msimeSettings === true &&
+    window.history.state?.lingyaoSettings === true &&
     typeof window.history.state.page === "string"
       ? window.history.state.page
       : undefined;
@@ -2663,9 +2663,9 @@ function useSettingsPageModel({ client, initialPage, route }: SettingsPageProps)
     setDraft,
     handwritingScheme: client.host?.edition?.default_scheme,
   });
-  // 每个平台都显示全部快捷模式的开关。macOS 以前以发布包只带 msime-pinyin.db 和 msime-english.db 为由隐藏 Emoji、颜文字和临时日语，但 msime-others.db 早已在 resources/desktop-dictionary.lock.json 里并随包发布，隐藏开关只是藏起了能用的功能；同样依赖 msime-english.db 的临时英文却一直显示，前后并不一致。
+  // 每个平台都显示全部快捷模式的开关。macOS 以前以发布包只带 lingyao-pinyin.db 和 lingyao-english.db 为由隐藏 Emoji、颜文字和临时日语，但 lingyao-others.db 早已在 resources/desktop-dictionary.lock.json 里并随包发布，隐藏开关只是藏起了能用的功能；同样依赖 lingyao-english.db 的临时英文却一直显示，前后并不一致。
   //
-  // 现在 macOS 发布包不再内置 msime-japanese.dat，改为按需下载（输入页「临时日语」开关下方提供下载）。缺资源的情况仍由运行时处理，而且比隐藏开关处理得更好：资源不在时运行时关闭对应模式（临时日语在日文词库下载前不可用），触发键照常输入大写字母而不是被吞掉。
+  // 现在 macOS 发布包不再内置 lingyao-japanese.dat，改为按需下载（输入页「临时日语」开关下方提供下载）。缺资源的情况仍由运行时处理，而且比隐藏开关处理得更好：资源不在时运行时关闭对应模式（临时日语在日文词库下载前不可用），触发键照常输入大写字母而不是被吞掉。
   const clipboardHistory = clipboardHistoryEnabled(iosPlatform, draft);
   const toggleClipboardHistory = useClipboardHistoryToggle({
     draft,

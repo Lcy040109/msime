@@ -18,27 +18,27 @@ import { useAsyncGeneration } from "./use-async-generation";
 /** The assistants the host can write the entry for. */
 export type McpClientId = "claude_desktop" | "cursor";
 
-/** 放宽助手权限的 `msime-mcp` 参数。 */
+/** 放宽助手权限的 `lingyao-mcp` 参数。 */
 export type McpFlag = "--allow-write" | "--allow-dictionary-read";
 
 export type McpClientStatus = {
   id: McpClientId;
   /** The assistant's configuration file. */
   path: string;
-  /** 文件里的 `msime` 条目就是这里的服务器，可能带了 `flags` 里的权限参数。 */
+  /** 文件里的 `lingyao` 条目就是这里的服务器，可能带了 `flags` 里的权限参数。 */
   configured: boolean;
   /** 已写入条目带的权限参数，按固定顺序；未连接时为空。 */
   flags: McpFlag[];
 };
 
 export type McpServerStatus = {
-  /** The absolute path of `msime-mcp` beside the settings app. */
+  /** The absolute path of `lingyao-mcp` beside the settings app. */
   command: string;
   /** Whether that file exists. */
   installed: boolean;
   /** The runtime options the entry points at; absent before the input method is set up. */
   options: string | null;
-  /** `{"mcpServers": {"msime": ...}}` to paste into any assistant. */
+  /** `{"mcpServers": {"lingyao": ...}}` to paste into any assistant. */
   config: string | null;
   clients: McpClientStatus[];
 };
@@ -55,7 +55,7 @@ const code =
 const command =
   "m-0 overflow-x-auto rounded-lg border border-edge bg-raised p-3 text-xs leading-relaxed whitespace-pre-wrap break-all";
 
-/** 放宽助手权限的两个开关，按写进 `args` 的固定顺序排列。`msime-mcp` 不带参数时两项都是关的；设置页默认替用户打开。 */
+/** 放宽助手权限的两个开关，按写进 `args` 的固定顺序排列。`lingyao-mcp` 不带参数时两项都是关的；设置页默认替用户打开。 */
 const permissionFlags = [
   {
     flag: "--allow-write",
@@ -72,7 +72,7 @@ const permissionFlags = [
 const allFlags: McpFlag[] = permissionFlags.map((permission) => permission.flag);
 
 /** 用户上次选的开关，跨次打开设置页保留。 */
-const flagsStorageKey = "msime.mcp.flags";
+const flagsStorageKey = "lingyao.mcp.flags";
 
 function savedFlags(): McpFlag[] {
   try {
@@ -126,7 +126,7 @@ const program = (text: string): SyntaxToken => ({ text, kind: "program" });
 const flag = (text: string): SyntaxToken => ({ text, kind: "flag" });
 const placeholder = (text: string): SyntaxToken => ({ text, kind: "placeholder" });
 
-/** `msime-mcp` with the runtime options and the chosen flags, quoted for the shell. */
+/** `lingyao-mcp` with the runtime options and the chosen flags, quoted for the shell. */
 function serverProgram(server: McpServerStatus, flags: readonly McpFlag[]): SyntaxToken[] {
   const windows = isWindowsPath(server.command);
   const options: SyntaxToken[] = server.options
@@ -147,26 +147,26 @@ function installCommand(
 ): SyntaxToken[] {
   const head =
     assistant === "claude_code"
-      ? [program("claude"), plain(" mcp add "), flag("--scope"), plain(" user msime ")]
-      : [program("codex"), plain(" mcp add msime ")];
+      ? [program("claude"), plain(" mcp add "), flag("--scope"), plain(" user lingyao ")]
+      : [program("codex"), plain(" mcp add lingyao ")];
   return [...head, flag("--"), plain(" "), ...serverProgram(server, flags)];
 }
 
 /** What to tell an assistant that works in a terminal, such as in its AGENTS.md or CLAUDE.md: the same tools without registering a server, one command per tool. */
 function terminalInstructions(server: McpServerStatus, flags: readonly McpFlag[]): SyntaxToken[] {
-  const msime = serverProgram(server, flags);
+  const lingyao = serverProgram(server, flags);
   // Neither cmd nor Windows PowerShell passes a quoted JSON argument intact, so on Windows the arguments go through a file.
   const call = isWindowsPath(server.command)
     ? [
         plain("把 JSON 参数以 UTF-8 写进一个文件，再运行 "),
-        ...msime,
+        ...lingyao,
         plain(" call "),
         placeholder("<工具名>"),
         plain(" "),
         placeholder("@<文件路径>"),
       ]
     : [
-        ...msime,
+        ...lingyao,
         plain(" call "),
         placeholder("<工具名>"),
         plain(" "),
@@ -175,12 +175,12 @@ function terminalInstructions(server: McpServerStatus, flags: readonly McpFlag[]
         placeholder("@<文件路径>"),
       ];
   return [
-    plain("灵耀输入法（MSIME）可以在终端里直接管理：\n- 查看可用的工具和参数："),
-    ...msime,
+    plain("灵耀输入法（LINGYAO）可以在终端里直接管理：\n- 查看可用的工具和参数："),
+    ...lingyao,
     plain(" tools\n- 调用一个工具，参数是 JSON 对象，输出 JSON："),
     ...call,
     plain("\n- 排查输入法问题（卡顿、候选窗口不见了）的步骤："),
-    ...msime,
+    ...lingyao,
     plain(" prompt diagnose"),
   ];
 }
@@ -188,19 +188,19 @@ function terminalInstructions(server: McpServerStatus, flags: readonly McpFlag[]
 /** Removes an earlier registration: both assistants refuse to add a name that is already there, so changing the permissions means removing it first. */
 function removeCommand(assistant: "claude_code" | "codex"): SyntaxToken[] {
   return assistant === "claude_code"
-    ? [program("claude"), plain(" mcp remove "), flag("--scope"), plain(" user msime")]
-    : [program("codex"), plain(" mcp remove msime")];
+    ? [program("claude"), plain(" mcp remove "), flag("--scope"), plain(" user lingyao")]
+    : [program("codex"), plain(" mcp remove lingyao")];
 }
 
 /** The host's JSON entry with the chosen flags added to `args`; the entry as the host wrote it, uncoloured, when no flag is chosen and it is not laid out as `JSON.stringify` would, or when it is not the expected shape. */
 function configWithFlags(config: string, flags: readonly McpFlag[]): SyntaxToken[] {
   try {
-    const parsed = JSON.parse(config) as { mcpServers?: { msime?: { args?: unknown } } };
+    const parsed = JSON.parse(config) as { mcpServers?: { lingyao?: { args?: unknown } } };
     if (flags.length === 0) {
       // The host writes it with serde_json's pretty printer, which lays it out exactly as JSON.stringify does; anything else is shown as written rather than reformatted.
       return JSON.stringify(parsed, null, 2) === config ? jsonTokens(parsed) : [plain(config)];
     }
-    const entry = parsed.mcpServers?.msime;
+    const entry = parsed.mcpServers?.lingyao;
     if (!entry || !Array.isArray(entry.args)) return [plain(config)];
     entry.args = [...entry.args, ...flags];
     return jsonTokens(parsed);
@@ -210,7 +210,7 @@ function configWithFlags(config: string, flags: readonly McpFlag[]): SyntaxToken
 }
 
 /**
- * 「连接 AI 助手」: the `msime-mcp` entry an assistant runs, to copy or to write into Claude Desktop's or Cursor's configuration, or the commands a terminal assistant runs the tools with directly.
+ * 「连接 AI 助手」: the `lingyao-mcp` entry an assistant runs, to copy or to write into Claude Desktop's or Cursor's configuration, or the commands a terminal assistant runs the tools with directly.
  *
  * The callbacks are passed in rather than read from the settings client so that the page decides, at the call site in `index.tsx`, which of them a host offers; that is where the settings action guard looks.
  */
@@ -290,8 +290,8 @@ export function McpConnectSection({
         } catch (error) {
           if (errorCode(error) !== "mcp_entry_exists") throw error;
           const replace = await confirm({
-            title: `替换 ${name} 中的 msime？`,
-            message: `${name} 的配置里已有另一个名为 msime 的服务器。替换后，它原来的命令和参数（包括手动加上的 --allow-write）会被这里的设置覆盖。`,
+            title: `替换 ${name} 中的 lingyao？`,
+            message: `${name} 的配置里已有另一个名为 lingyao 的服务器。替换后，它原来的命令和参数（包括手动加上的 --allow-write）会被这里的设置覆盖。`,
             confirmLabel: "替换",
           });
           if (!replace) return;

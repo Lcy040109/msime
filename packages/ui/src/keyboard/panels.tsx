@@ -382,7 +382,7 @@ export function KeyboardPanel({
     let saved: string | null = null;
     try {
       saved =
-        typeof window !== "undefined" ? window.localStorage.getItem("msime.keyboard.layout") : null;
+        typeof window !== "undefined" ? window.localStorage.getItem("lingyao.keyboard.layout") : null;
     } catch {
       /* restricted webviews may deny storage */
     }
@@ -392,7 +392,7 @@ export function KeyboardPanel({
     const next = activeLayout === "nine_key" ? "twenty_six_key" : "nine_key";
     setActiveLayout(next);
     try {
-      window.localStorage.setItem("msime.keyboard.layout", next);
+      window.localStorage.setItem("lingyao.keyboard.layout", next);
     } catch {
       /* preference is optional */
     }
@@ -861,7 +861,7 @@ export function HandwritingPanel({
   }, [handwritingPack, packs]);
   const [activationMode, setActivationMode] = useState<"copy" | "input">(() => {
     try {
-      return window.localStorage.getItem("msime.handwriting.activation") === "input"
+      return window.localStorage.getItem("lingyao.handwriting.activation") === "input"
         ? "input"
         : "copy";
     } catch {
@@ -878,7 +878,7 @@ export function HandwritingPanel({
     if (!recognitionQueue.current.active || closingRef.current) return;
     setActivationMode(mode);
     try {
-      window.localStorage.setItem("msime.handwriting.activation", mode);
+      window.localStorage.setItem("lingyao.handwriting.activation", mode);
     } catch {
       /* optional preference */
     }
@@ -2503,7 +2503,7 @@ export function CloudDictionaryFilesPanel({ client }: { client: CloudDictionaryP
       const anchor = document.createElement("a");
       const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
       anchor.href = url;
-      anchor.download = result.filename || `msime-${kind}-dictionary.tsv`;
+      anchor.download = result.filename || `lingyao-${kind}-dictionary.tsv`;
       document.body.appendChild(anchor);
       try {
         anchor.click();
@@ -2533,7 +2533,7 @@ export function CloudDictionaryFilesPanel({ client }: { client: CloudDictionaryP
         new Blob([text], { type: "application/x-ndjson;charset=utf-8" }),
       );
       anchor.href = url;
-      anchor.download = result.filename || "msime-dictionary-snapshot.ndjson";
+      anchor.download = result.filename || "lingyao-dictionary-snapshot.ndjson";
       document.body.appendChild(anchor);
       try {
         anchor.click();
@@ -3834,7 +3834,7 @@ export function EmojiPanel({
       const value: unknown =
         typeof window === "undefined"
           ? null
-          : JSON.parse(window.localStorage.getItem("msime.emoji.recent") ?? "null");
+          : JSON.parse(window.localStorage.getItem("lingyao.emoji.recent") ?? "null");
       return Array.isArray(value)
         ? (value
             .filter(
@@ -3902,7 +3902,7 @@ export function EmojiPanel({
 
   useEffect(() => {
     try {
-      window.localStorage.setItem("msime.emoji.recent", JSON.stringify(recent.slice(0, 28)));
+      window.localStorage.setItem("lingyao.emoji.recent", JSON.stringify(recent.slice(0, 28)));
     } catch {
       /* preference is optional */
     }

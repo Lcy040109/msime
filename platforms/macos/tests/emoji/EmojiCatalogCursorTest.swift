@@ -101,15 +101,15 @@ import Foundation
     }
     await midRead.value
     assert(reads == 1)
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-cursor-fixture-" + UUID().uuidString)
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-cursor-fixture-" + UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let database = directory.appendingPathComponent("msime-others.db")
+    let database = directory.appendingPathComponent("lingyao-others.db")
     try Data("synthetic".utf8).write(to: database)
     let original = try MacEmojiCatalogRevision.capture(resources: directory.path)
     let unchanged = try MacEmojiCatalogRevision.capture(resources: directory.path)
     assert(original == unchanged)
-    try Data([0]).write(to: directory.appendingPathComponent("msime-others.db-wal"))
+    try Data([0]).write(to: directory.appendingPathComponent("lingyao-others.db-wal"))
     let withWal = try MacEmojiCatalogRevision.capture(resources: directory.path)
     assert(original != withWal)
     try Data("synthetic replacement".utf8).write(to: database, options: .atomic)

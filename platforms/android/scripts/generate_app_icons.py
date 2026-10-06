@@ -2,7 +2,7 @@
 """Render the launcher icons from the one brand artwork (brew install librsvg).
 
 The artwork lives at `apps/desktop/app-icon.svg` and is the same file the Windows client ships as
-`msime.ico`. The themes differ from the default by exactly one value - the colour of the frame -
+`lingyao.ico`. The themes differ from the default by exactly one value - the colour of the frame -
 so they are derived rather than drawn, and the same table is used on iOS.
 
 `classic` is rendered here alongside the themes rather than left as the Lanczos reduction of the

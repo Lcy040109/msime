@@ -7,7 +7,7 @@
 
 #include "../../../shared/contracts/windows_ipc.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // One decoded batch of TIP diagnostics.
 //
 // The TIP side of this was ported in full - the bounded queue, the 250 ms
@@ -71,4 +71,4 @@ parse_diagnostic_batch(const void *bytes, size_t length) {
       return std::nullopt;
   return batch;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

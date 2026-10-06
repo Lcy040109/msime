@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // How the Server was asked to start. Keeping the decision in one pure function
 // means the Watchdog contract is unit-testable without launching anything.
 enum class ServerLaunchKind { Invalid, Help, Managed, Config };
@@ -34,4 +34,4 @@ inline ServerLaunch parse_server_arguments(int argc, const wchar_t *const *argv)
     return {ServerLaunchKind::Config, std::wstring(argv[2])};
   return {};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

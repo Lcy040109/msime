@@ -3,7 +3,7 @@
 #include <thread>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   // An untouched document is the shipped card: no scale, no fade, the skin's or theme's radius.
   auto defaults = candidate_window_style(nlohmann::json::object());
   assert(defaults && defaults->scale_percent == 100 &&

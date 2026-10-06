@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Transparent space around the composed candidate card. The values cover the
 // two CSS-equivalent shadow passes through the same alpha threshold used by
 // the Windows baseline, so neither the blur nor its right/down offset is cut
@@ -68,4 +68,4 @@ inline CandidateBounds candidate_shadow_bounds(CandidatePlacementInput content,
           content.width + shadow.left + shadow.right,
           content.height + shadow.top + shadow.bottom};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

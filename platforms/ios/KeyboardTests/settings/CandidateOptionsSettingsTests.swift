@@ -14,7 +14,7 @@ final class CandidateOptionsSettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-candidate-options-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-candidate-options-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

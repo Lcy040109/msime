@@ -10,7 +10,7 @@
 // Header-only on purpose: the macOS target lists its sources explicitly and every test executable
 // repeats that list, so a new .mm would have to be added to a dozen of them.
 
-namespace msime::mac::layout {
+namespace lingyao::mac::layout {
 /// The sidebar is draggable between these two, which is why it is a range rather than a width: the system sidebar the window now uses is resizable and the widest item — 帮助与反馈 — has to fit without an ellipsis. The upper bound is also what the window's minimum width is derived from, so that the body column never falls under kContentColumnMin.
 inline constexpr CGFloat kSidebarWidth = 204.0;
 inline constexpr CGFloat kSidebarMaxWidth = 240.0;
@@ -35,20 +35,20 @@ inline constexpr CGFloat kContentColumnMin = 516.0;
 /// another and lets a cluster — a field beside a colour well, a popup beside three buttons — take
 /// the room it actually needs.
 inline constexpr CGFloat kControlMinWidth = 190.0;
-}  // namespace msime::mac::layout
+}  // namespace lingyao::mac::layout
 
 /// The name the settings window saves its position and size under. It lives here because the two
 /// halves of "remember where this window was" are in different files: the window is created and
 /// given the autosave name in AppearancePreferences.mm, and every presentation after that decides
 /// in PreferencesWindowController.mm whether it still has to be centred.
-static inline NSString *MSIMESettingsWindowFrameAutosaveName(void) { return @"MSIMESettingsWindow"; }
+static inline NSString *LINGYAOSettingsWindowFrameAutosaveName(void) { return @"LINGYAOSettingsWindow"; }
 
 /// Whether the user has a saved frame for the settings window. AppKit keys autosaved frames as
 /// "NSWindow Frame <name>" in the standard defaults, which is also the only way to ask the question
 /// before the window exists. Centring a window that has one is how a restored frame gets thrown
 /// away — the window comes back the right size in the wrong place, every single launch.
-static inline BOOL MSIMESettingsWindowHasSavedFrame(void) {
-    NSString *key = [@"NSWindow Frame " stringByAppendingString:MSIMESettingsWindowFrameAutosaveName()];
+static inline BOOL LINGYAOSettingsWindowHasSavedFrame(void) {
+    NSString *key = [@"NSWindow Frame " stringByAppendingString:LINGYAOSettingsWindowFrameAutosaveName()];
     return [NSUserDefaults.standardUserDefaults objectForKey:key] != nil;
 }
 
@@ -61,8 +61,8 @@ static inline BOOL MSIMESettingsWindowHasSavedFrame(void) {
 /// drops away from the card, which is the direction it has to go, since nothing can be lighter than
 /// an Aqua window that is already pure white. Dark Aqua keeps the window colour here and lets the
 /// card carry the lift instead.
-static inline NSColor *MSIMESettingsSurfaceColor(void) {
-    return [NSColor colorWithName:@"MSIMESettingsSurface" dynamicProvider:^NSColor *(NSAppearance *appearance) {
+static inline NSColor *LINGYAOSettingsSurfaceColor(void) {
+    return [NSColor colorWithName:@"LINGYAOSettingsSurface" dynamicProvider:^NSColor *(NSAppearance *appearance) {
         NSAppearanceName match =
             [appearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
         return [match isEqualToString:NSAppearanceNameDarkAqua] ? NSColor.windowBackgroundColor
@@ -70,13 +70,13 @@ static inline NSColor *MSIMESettingsSurfaceColor(void) {
     }];
 }
 
-/// A card is a group of rows lifted off the page it is drawn on — see MSIMESettingsSurfaceColor()
+/// A card is a group of rows lifted off the page it is drawn on — see LINGYAOSettingsSurfaceColor()
 /// for which grey that page is in each appearance. In Aqua the card takes controlBackgroundColor,
 /// pure white above the 0.965 page. In Dark Aqua the page is the window colour and the card is that
 /// colour mixed a tenth of the way towards white, because controlBackgroundColor there is the same
 /// grey as the window and would leave the card with no edge at all.
-static inline NSColor *MSIMECardFillColor(void) {
-    return [NSColor colorWithName:@"MSIMESettingsCardFill" dynamicProvider:^NSColor *(NSAppearance *appearance) {
+static inline NSColor *LINGYAOCardFillColor(void) {
+    return [NSColor colorWithName:@"LINGYAOSettingsCardFill" dynamicProvider:^NSColor *(NSAppearance *appearance) {
         NSAppearanceName match =
             [appearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
         if (![match isEqualToString:NSAppearanceNameDarkAqua]) return NSColor.controlBackgroundColor;
@@ -91,7 +91,7 @@ static inline NSColor *MSIMECardFillColor(void) {
     }];
 }
 
-static inline void MSIMEConfigureCard(NSBox *card) {
+static inline void LINGYAOConfigureCard(NSBox *card) {
     card.boxType = NSBoxCustom;
     card.titlePosition = NSNoTitle;
     // The difference between the card's fill and the page's carries the grouping, so there is no
@@ -99,22 +99,22 @@ static inline void MSIMEConfigureCard(NSBox *card) {
     // rows years ago. borderColor goes with borderWidth — a colour for a stroke that is never drawn
     // is the next reader's five minutes.
     card.borderWidth = 0.0;
-    card.cornerRadius = msime::mac::layout::kCardRadius;
-    card.fillColor = MSIMECardFillColor();
+    card.cornerRadius = lingyao::mac::layout::kCardRadius;
+    card.fillColor = LINGYAOCardFillColor();
     card.translatesAutoresizingMaskIntoConstraints = NO;
 }
 
-static inline NSTextField *MSIMESectionLabel(NSString *title) {
+static inline NSTextField *LINGYAOSectionLabel(NSString *title) {
     NSTextField *label = [NSTextField labelWithString:title];
-    label.font = [NSFont systemFontOfSize:msime::mac::layout::kBodyFontSize weight:NSFontWeightSemibold];
+    label.font = [NSFont systemFontOfSize:lingyao::mac::layout::kBodyFontSize weight:NSFontWeightSemibold];
     label.textColor = [NSColor labelColor];
     return label;
 }
 
 /// A line of explanation in the window's quieter voice: the second line of a row, the sentence under a page title, the note under a group of checkboxes. Wrapping rather than truncating, because these are sentences and the window is resizable.
-static inline NSTextField *MSIMEDetailLabel(NSString *text) {
+static inline NSTextField *LINGYAODetailLabel(NSString *text) {
     NSTextField *label = [NSTextField wrappingLabelWithString:text ?: @""];
-    label.font = [NSFont systemFontOfSize:msime::mac::layout::kDetailFontSize weight:NSFontWeightRegular];
+    label.font = [NSFont systemFontOfSize:lingyao::mac::layout::kDetailFontSize weight:NSFontWeightRegular];
     label.textColor = NSColor.secondaryLabelColor;
     label.selectable = NO;
     label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -131,10 +131,10 @@ static inline NSTextField *MSIMEDetailLabel(NSString *text) {
 /// intrinsic size and a width constraint would stretch its track, so no row pins a control to a
 /// width any more: what a row applies is a floor plus a preference for sitting on it, and the
 /// switch is exempt from both.
-static inline NSView *MSIMEPreferenceRowWithDetailLabelOfWidth(NSString *title, NSTextField *detailLabel,
+static inline NSView *LINGYAOPreferenceRowWithDetailLabelOfWidth(NSString *title, NSTextField *detailLabel,
                                                                NSView *control, CGFloat minimumControlWidth) {
     NSTextField *label = [NSTextField labelWithString:title];
-    label.font = [NSFont systemFontOfSize:msime::mac::layout::kBodyFontSize weight:NSFontWeightRegular];
+    label.font = [NSFont systemFontOfSize:lingyao::mac::layout::kBodyFontSize weight:NSFontWeightRegular];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     NSView *labelColumn = label;
     if (detailLabel != nil) {
@@ -175,8 +175,8 @@ static inline NSView *MSIMEPreferenceRowWithDetailLabelOfWidth(NSString *title, 
         // showing right now: a row whose detail comes and goes — a conflict that is there and then
         // is not — would otherwise resize the card under the pointer every time it changed.
         [row.heightAnchor constraintGreaterThanOrEqualToConstant:detailLabel != nil
-                                                                     ? msime::mac::layout::kDetailRowHeight
-                                                                     : msime::mac::layout::kRowHeight],
+                                                                     ? lingyao::mac::layout::kDetailRowHeight
+                                                                     : lingyao::mac::layout::kRowHeight],
         [labelColumn.leadingAnchor constraintEqualToAnchor:row.leadingAnchor],
         [labelColumn.centerYAnchor constraintEqualToAnchor:row.centerYAnchor],
         [control.trailingAnchor constraintEqualToAnchor:row.trailingAnchor],
@@ -203,32 +203,32 @@ static inline NSView *MSIMEPreferenceRowWithDetailLabelOfWidth(NSString *title, 
     return row;
 }
 
-static inline NSView *MSIMEPreferenceRowOfWidth(NSString *title, NSView *control, CGFloat minimumControlWidth) {
-    return MSIMEPreferenceRowWithDetailLabelOfWidth(title, nil, control, minimumControlWidth);
+static inline NSView *LINGYAOPreferenceRowOfWidth(NSString *title, NSView *control, CGFloat minimumControlWidth) {
+    return LINGYAOPreferenceRowWithDetailLabelOfWidth(title, nil, control, minimumControlWidth);
 }
 
-static inline NSView *MSIMEPreferenceRow(NSString *title, NSView *control) {
-    return MSIMEPreferenceRowWithDetailLabelOfWidth(title, nil, control, msime::mac::layout::kControlMinWidth);
+static inline NSView *LINGYAOPreferenceRow(NSString *title, NSView *control) {
+    return LINGYAOPreferenceRowWithDetailLabelOfWidth(title, nil, control, lingyao::mac::layout::kControlMinWidth);
 }
 
 /// A setting whose name does not say everything the user has to know about it — when it takes
 /// effect, what it sends where, what it is not to be confused with. The sentence is drawn under the
 /// name; it used to be folded into the name itself (启用云候选（将查询发送至 Google 输入工具）) or hung
 /// off the row as a tooltip, which a trackpad user never meets.
-static inline NSView *MSIMEPreferenceRowWithDetail(NSString *title, NSString *detail, NSView *control) {
-    return MSIMEPreferenceRowWithDetailLabelOfWidth(title, detail.length > 0 ? MSIMEDetailLabel(detail) : nil, control,
-                                                    msime::mac::layout::kControlMinWidth);
+static inline NSView *LINGYAOPreferenceRowWithDetail(NSString *title, NSString *detail, NSView *control) {
+    return LINGYAOPreferenceRowWithDetailLabelOfWidth(title, detail.length > 0 ? LINGYAODetailLabel(detail) : nil, control,
+                                                    lingyao::mac::layout::kControlMinWidth);
 }
 
 /// The same row, for a sentence that is written as the window runs rather than as it is built — a conflict naming the binding that already owns a key group, or the note under a menu whose items cannot name the state the setting is in. The caller keeps the label so it can say which.
-static inline NSView *MSIMEPreferenceRowWithDetailLabel(NSString *title, NSTextField *detail, NSView *control) {
-    return MSIMEPreferenceRowWithDetailLabelOfWidth(title, detail, control, msime::mac::layout::kControlMinWidth);
+static inline NSView *LINGYAOPreferenceRowWithDetailLabel(NSString *title, NSTextField *detail, NSView *control) {
+    return LINGYAOPreferenceRowWithDetailLabelOfWidth(title, detail, control, lingyao::mac::layout::kControlMinWidth);
 }
 
 /// A setting whose control is too big to sit in the trailing column: a table of rules, a list with buttons under it. The label and its sentence go on their own line and the control takes the whole card width beneath them. Putting one of these through the two-column row instead strands it in the right half with the label floating vertically centred in the empty left half.
-static inline NSView *MSIMEStackedPreferenceRow(NSString *title, NSTextField *detailLabel, NSView *control) {
+static inline NSView *LINGYAOStackedPreferenceRow(NSString *title, NSTextField *detailLabel, NSView *control) {
     NSTextField *label = [NSTextField labelWithString:title];
-    label.font = [NSFont systemFontOfSize:msime::mac::layout::kBodyFontSize weight:NSFontWeightRegular];
+    label.font = [NSFont systemFontOfSize:lingyao::mac::layout::kBodyFontSize weight:NSFontWeightRegular];
     NSMutableArray<NSView *> *views = [NSMutableArray arrayWithObject:label];
     if (detailLabel != nil) [views addObject:detailLabel];
     [views addObject:control];
@@ -250,7 +250,7 @@ static inline NSView *MSIMEStackedPreferenceRow(NSString *title, NSTextField *de
 /// A setting that takes effect the moment it is flipped, which is what AppKit puts a switch on.
 /// Checkboxes stay where they belong — the multiple-choice groups (fuzzy rules, toolbar
 /// components, extended input modes), where the boxes are peers of one another.
-static inline NSSwitch *MSIMESettingSwitch(id target, SEL action, NSString *accessibilityLabel) {
+static inline NSSwitch *LINGYAOSettingSwitch(id target, SEL action, NSString *accessibilityLabel) {
     NSSwitch *toggle = [[NSSwitch alloc] initWithFrame:NSZeroRect];
     toggle.target = target;
     toggle.action = action;
@@ -262,14 +262,14 @@ static inline NSSwitch *MSIMESettingSwitch(id target, SEL action, NSString *acce
 /// pointer held still over the row to appear at all, which is a gesture a trackpad user does not
 /// make and a keyboard user cannot; the sentence explaining what a switch does is not optional
 /// enough for that.
-static inline NSView *MSIMESwitchRow(NSString *title, NSSwitch *toggle, NSString *detail) {
-    return MSIMEPreferenceRowWithDetail(title, detail, toggle);
+static inline NSView *LINGYAOSwitchRow(NSString *title, NSSwitch *toggle, NSString *detail) {
+    return LINGYAOPreferenceRowWithDetail(title, detail, toggle);
 }
 
 /// Peer checkboxes in columns. Eleven fuzzy-pinyin rules stacked vertically is most of a page of
 /// scrolling for one card, and they are alternatives to one another, so the second column costs
 /// nothing to read.
-static inline NSView *MSIMECheckboxGrid(NSArray<NSButton *> *boxes, NSInteger columns) {
+static inline NSView *LINGYAOCheckboxGrid(NSArray<NSButton *> *boxes, NSInteger columns) {
     NSMutableArray<NSArray<NSView *> *> *rows = [NSMutableArray array];
     for (NSUInteger index = 0; index < boxes.count; index += (NSUInteger)columns) {
         NSMutableArray<NSView *> *row = [NSMutableArray array];
@@ -288,10 +288,10 @@ static inline NSView *MSIMECheckboxGrid(NSArray<NSButton *> *boxes, NSInteger co
     return grid;
 }
 
-static inline NSView *MSIMECardHeader(NSString *title) {
+static inline NSView *LINGYAOCardHeader(NSString *title) {
     NSView *row = [[NSView alloc] initWithFrame:NSZeroRect];
     NSTextField *label = [NSTextField labelWithString:title];
-    label.font = [NSFont systemFontOfSize:msime::mac::layout::kBodyFontSize weight:NSFontWeightSemibold];
+    label.font = [NSFont systemFontOfSize:lingyao::mac::layout::kBodyFontSize weight:NSFontWeightSemibold];
     label.textColor = [NSColor secondaryLabelColor];
     label.accessibilityLabel = [title stringByAppendingString:@"标题"];
     label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -304,7 +304,7 @@ static inline NSView *MSIMECardHeader(NSString *title) {
     return row;
 }
 
-static inline NSBox *MSIMECardSeparator(void) {
+static inline NSBox *LINGYAOCardSeparator(void) {
     NSBox *separator = [[NSBox alloc] initWithFrame:NSZeroRect];
     separator.boxType = NSBoxSeparator;
     separator.translatesAutoresizingMaskIntoConstraints = NO;
@@ -312,9 +312,9 @@ static inline NSBox *MSIMECardSeparator(void) {
     return separator;
 }
 
-static inline NSBox *MSIMECardWithViews(NSArray<NSView *> *views, CGFloat spacing) {
+static inline NSBox *LINGYAOCardWithViews(NSArray<NSView *> *views, CGFloat spacing) {
     NSBox *card = [[NSBox alloc] initWithFrame:NSZeroRect];
-    MSIMEConfigureCard(card);
+    LINGYAOConfigureCard(card);
     NSStackView *stack = [NSStackView stackViewWithViews:views];
     stack.orientation = NSUserInterfaceLayoutOrientationVertical;
     stack.alignment = NSLayoutAttributeLeading;
@@ -324,15 +324,15 @@ static inline NSBox *MSIMECardWithViews(NSArray<NSView *> *views, CGFloat spacin
     for (NSView *view in views) [view.widthAnchor constraintEqualToAnchor:stack.widthAnchor].active = YES;
     [card addSubview:stack];
     [NSLayoutConstraint activateConstraints:@[
-        [stack.leadingAnchor constraintEqualToAnchor:card.leadingAnchor constant:msime::mac::layout::kCardInsetH],
-        [stack.trailingAnchor constraintEqualToAnchor:card.trailingAnchor constant:-msime::mac::layout::kCardInsetH],
-        [stack.topAnchor constraintEqualToAnchor:card.topAnchor constant:msime::mac::layout::kCardInsetV],
-        [stack.bottomAnchor constraintEqualToAnchor:card.bottomAnchor constant:-msime::mac::layout::kCardInsetV],
+        [stack.leadingAnchor constraintEqualToAnchor:card.leadingAnchor constant:lingyao::mac::layout::kCardInsetH],
+        [stack.trailingAnchor constraintEqualToAnchor:card.trailingAnchor constant:-lingyao::mac::layout::kCardInsetH],
+        [stack.topAnchor constraintEqualToAnchor:card.topAnchor constant:lingyao::mac::layout::kCardInsetV],
+        [stack.bottomAnchor constraintEqualToAnchor:card.bottomAnchor constant:-lingyao::mac::layout::kCardInsetV],
     ]];
     return card;
 }
 
-static inline void MSIMELinkifyButton(NSButton *button, NSString *accessibilityLabel) {
+static inline void LINGYAOLinkifyButton(NSButton *button, NSString *accessibilityLabel) {
     button.bezelStyle = NSBezelStyleInline;
     // Inline bezels draw a grey capsule behind the text. These rows are links, not buttons, so the
     // capsule reads as a control that is not there.
@@ -342,7 +342,7 @@ static inline void MSIMELinkifyButton(NSButton *button, NSString *accessibilityL
     button.attributedTitle = [[NSAttributedString alloc]
         initWithString:button.title
             attributes:@{
-                NSFontAttributeName : [NSFont systemFontOfSize:msime::mac::layout::kBodyFontSize weight:NSFontWeightMedium],
+                NSFontAttributeName : [NSFont systemFontOfSize:lingyao::mac::layout::kBodyFontSize weight:NSFontWeightMedium],
                 NSForegroundColorAttributeName : [NSColor linkColor],
             }];
 }
@@ -350,16 +350,16 @@ static inline void MSIMELinkifyButton(NSButton *button, NSString *accessibilityL
 /// Marks the heading above a card, so that a page can space its sections apart without asking what
 /// class the heading happens to be. It stopped being a bare label when the headings grew a trailing
 /// link, and the spacing rule was written against the label.
-static NSString *const MSIMESettingsSectionIdentifier = @"MSIMESettingsSection";
+static NSString *const LINGYAOSettingsSectionIdentifier = @"LINGYAOSettingsSection";
 
 /// A section heading, with the link that puts that section's settings back to their defaults on the
 /// trailing edge. The link is the caller's — it is hidden until the section has something to
 /// restore — and a section with no restorable settings passes nil and gets a heading alone.
-static inline NSView *MSIMESectionHeaderRow(NSString *title, NSButton *link) {
+static inline NSView *LINGYAOSectionHeaderRow(NSString *title, NSButton *link) {
     NSView *row = [[NSView alloc] initWithFrame:NSZeroRect];
-    row.identifier = MSIMESettingsSectionIdentifier;
+    row.identifier = LINGYAOSettingsSectionIdentifier;
     row.translatesAutoresizingMaskIntoConstraints = NO;
-    NSTextField *label = MSIMESectionLabel(title);
+    NSTextField *label = LINGYAOSectionLabel(title);
     label.translatesAutoresizingMaskIntoConstraints = NO;
     [row addSubview:label];
     NSMutableArray<NSLayoutConstraint *> *constraints = [NSMutableArray arrayWithArray:@[

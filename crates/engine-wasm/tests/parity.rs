@@ -1,6 +1,6 @@
-//! WebHost 和桌面宿主的 `msime_input_runtime::Runtime` 必须给出逐行相同的首页（D4）。
+//! WebHost 和桌面宿主的 `lingyao_input_runtime::Runtime` 必须给出逐行相同的首页（D4）。
 //!
-//! 需要真实的词库和句子模型，只在设置了 `MSIME_EVAL_RESOURCES` 时运行，否则打印 skipped 后通过。用 release 跑：四个评测集共两万多例。
+//! 需要真实的词库和句子模型，只在设置了 `LINGYAO_EVAL_RESOURCES` 时运行，否则打印 skipped 后通过。用 release 跑：四个评测集共两万多例。
 //!
 //! Runtime 一侧照 convert_eval 配置（`prepare_options`、关掉学习和所有本地模式、`sentence_alternatives` 打开、挂上 `sentence-model.safetensors`），每例先 `Cancel` + `clear_context` + `seed_context`。WebHost 一侧读同一份暂存出来的工作副本，每例 `reset` + `seed_context_for_eval`。convert_eval 还会在资源里有桌面版的定稿模型时挂上它并在每例末尾 `rerank_settled`；网页不发布那个模型，这里两边都不用它。
 
@@ -10,9 +10,9 @@ mod eval;
 use std::path::Path;
 use std::sync::Arc;
 
-use msime_engine::host::{prepare_options, Command, Session};
-use msime_engine_wasm::host::{Scheme, WebHost};
-use msime_input_runtime::{Action, Reranker, Runtime, SentenceModel};
+use lingyao_engine::host::{prepare_options, Command, Session};
+use lingyao_engine_wasm::host::{Scheme, WebHost};
+use lingyao_input_runtime::{Action, Reranker, Runtime, SentenceModel};
 
 /// 失败时最多打印多少例。
 const SHOWN_MISMATCHES: usize = 20;
@@ -58,7 +58,7 @@ fn runtime(resources: &Path, state: &Path, model: &[u8]) -> (Runtime, String) {
 #[test]
 fn webhost_first_page_matches_runtime() {
     let Some(resources) = eval::resources() else {
-        println!("skipped: MSIME_EVAL_RESOURCES is not set");
+        println!("skipped: LINGYAO_EVAL_RESOURCES is not set");
         return;
     };
     let model = std::fs::read(resources.join("sentence-model.safetensors")).expect("model");

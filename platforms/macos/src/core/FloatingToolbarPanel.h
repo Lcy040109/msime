@@ -69,11 +69,11 @@ FOUNDATION_EXPORT NSMenu *CreateLingyaoFloatingToolbarUtilityMenu(id target);
 - (void)applyThemePreferences:(NSDictionary *)preferences;
 - (void)applySizingPreferences:(NSDictionary *)preferences;
 /// Use the active host's resolved palette without reading another preference store.
-- (void)applyLightSkin:(const msime::mac::SkinTokens &)light darkSkin:(const msime::mac::SkinTokens &)dark;
+- (void)applyLightSkin:(const lingyao::mac::SkinTokens &)light darkSkin:(const lingyao::mac::SkinTokens &)dark;
 /// Use the toolbar's own palette, independent of candidate color overrides.
-- (void)applyLightToolbarSkin:(const msime::mac::SkinTokens &)light darkSkin:(const msime::mac::SkinTokens &)dark;
+- (void)applyLightToolbarSkin:(const lingyao::mac::SkinTokens &)light darkSkin:(const lingyao::mac::SkinTokens &)dark;
 @end
-#define MSIMEFloatingToolbarDelegate LingyaoFloatingToolbarDelegate
-#define MSIMEFloatingToolbarPanel LingyaoFloatingToolbarPanel
-#define MSIMEFloatingToolbarFrame LingyaoFloatingToolbarFrame
-#define CreateMSIMEFloatingToolbarUtilityMenu CreateLingyaoFloatingToolbarUtilityMenu
+#define LINGYAOFloatingToolbarDelegate LingyaoFloatingToolbarDelegate
+#define LINGYAOFloatingToolbarPanel LingyaoFloatingToolbarPanel
+#define LINGYAOFloatingToolbarFrame LingyaoFloatingToolbarFrame
+#define CreateLINGYAOFloatingToolbarUtilityMenu CreateLingyaoFloatingToolbarUtilityMenu

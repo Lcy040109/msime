@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <name>lingyao-linux</name>
+  <description>LINGYAO Linux input method</description>
+  <exec>&quot;@CMAKE_INSTALL_FULL_BINDIR@/lingyao-linux-ibus-launcher&quot; &quot;@CMAKE_INSTALL_FULL_SYSCONFDIR@/lingyao-client/runtime-options.json&quot;</exec>
+  <version>0.1.0</version>
+  <author>LINGYAO contributors</author>
+  <license>GPL-3.0-only</license>
+  <homepage>https://github.com/Lcy040109/msime</homepage>
+  <textdomain>lingyao-client</textdomain>
+  <engines>
+    <engine>
+      <name>lingyao-linux</name>
+      <longname>Lingyao 灵耀输入法</longname>
+      <description>Shared LINGYAO Linux input runtime</description>
+      <language>zh</language>
+      <license>GPL-3.0-only</license>
+      <author>LINGYAO contributors</author>
+      <icon>lingyao-client</icon>
+      <layout>us</layout>
+    </engine>
+  </engines>
+</component>

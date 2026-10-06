@@ -1,4 +1,4 @@
-//! 构建输入的固定记录（`resources/dictionary-sources.lock.json`）：每个文件从哪里来、必须有怎样的 SHA-256。大文件和第三方输入按需下载到缓存目录；没有固定记录的文件一律不下载，缓存里的文件只在大小和摘要仍然一致时复用。msime-dictionary 的 `sources/` 和 `custom/` 不在锁文件里，只从 `--dictionary` checkout 读取；其中的上游数据按该 checkout 的 `upstream.lock.json` 校验。
+//! 构建输入的固定记录（`resources/dictionary-sources.lock.json`）：每个文件从哪里来、必须有怎样的 SHA-256。大文件和第三方输入按需下载到缓存目录；没有固定记录的文件一律不下载，缓存里的文件只在大小和摘要仍然一致时复用。lingyao-dictionary 的 `sources/` 和 `custom/` 不在锁文件里，只从 `--dictionary` checkout 读取；其中的上游数据按该 checkout 的 `upstream.lock.json` 校验。
 
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -11,7 +11,7 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 
 /// Wikimedia refuses anonymous user agents with a 403 that looks like a deleted dump.
-const USER_AGENT: &str = "msime-dictionary-build/1.0 (https://github.com/Lcy040109/msime)";
+const USER_AGENT: &str = "lingyao-dictionary-build/1.0 (https://github.com/Lcy040109/msime)";
 
 #[derive(Debug, Deserialize)]
 pub struct Lock {
@@ -49,9 +49,9 @@ impl Lock {
     }
 }
 
-/// 构建器读取的 msime-dictionary 顶层目录；其下的路径只从 `--dictionary` checkout 读取，锁文件不固定其中任何文件。
+/// 构建器读取的 lingyao-dictionary 顶层目录；其下的路径只从 `--dictionary` checkout 读取，锁文件不固定其中任何文件。
 const DICTIONARY_DIRECTORIES: [&str; 2] = ["sources/", "custom/"];
-/// msime 认定为上游数据的 msime-dictionary 文件：原样复制自某个上游、或由 msime 的生成器从某个上游生成（`hkcancor-counts` 来自 HKCanCor，`english-supplement` 来自 SCOWL），写成精确路径或目录前缀，并配上上游名。manifest 的 references 和 `mozc_revision`、语言词库的 `source_commit` 以及随包许可证都写着这些上游的提交，所以 checkout 的 `upstream.lock.json` 必须用同一个上游名列出这些路径，并固定它们的大小和 SHA-256；记录里每个上游的提交必须等于锁文件的同名 reference（`mozc` 对应 `lock.mozc`）。要换成新版上游，先在 msime 改 reference 和 `resources/licenses`，再改 `upstream.lock.json`。
+/// lingyao 认定为上游数据的 lingyao-dictionary 文件：原样复制自某个上游、或由 lingyao 的生成器从某个上游生成（`hkcancor-counts` 来自 HKCanCor，`english-supplement` 来自 SCOWL），写成精确路径或目录前缀，并配上上游名。manifest 的 references 和 `mozc_revision`、语言词库的 `source_commit` 以及随包许可证都写着这些上游的提交，所以 checkout 的 `upstream.lock.json` 必须用同一个上游名列出这些路径，并固定它们的大小和 SHA-256；记录里每个上游的提交必须等于锁文件的同名 reference（`mozc` 对应 `lock.mozc`）。要换成新版上游，先在 lingyao 改 reference 和 `resources/licenses`，再改 `upstream.lock.json`。
 const UPSTREAM_FILES: [(&str, &str); 15] = [
     ("sources/pinyin/rime-ice.txt", "rime-ice"),
     (
@@ -93,7 +93,7 @@ pub(crate) fn upstream_reference(path: &str) -> Option<&'static str> {
         .map(|(_, reference)| *reference)
 }
 
-/// msime-dictionary checkout 根目录下的上游记录文件。
+/// lingyao-dictionary checkout 根目录下的上游记录文件。
 pub const UPSTREAM_LOCK: &str = "upstream.lock.json";
 
 /// `upstream.lock.json` 的内容：上游名到 repository 与 commit，以及上游数据文件的大小和 SHA-256。
@@ -114,7 +114,7 @@ struct UpstreamFile {
     sha256: String,
 }
 
-/// 构建读取的 msime-dictionary checkout（`--dictionary`），以及它的 `upstream.lock.json`；`open` 已经证明这份记录与锁文件一致。
+/// 构建读取的 lingyao-dictionary checkout（`--dictionary`），以及它的 `upstream.lock.json`；`open` 已经证明这份记录与锁文件一致。
 pub struct Dictionary {
     pub root: PathBuf,
     upstream: UpstreamLock,
@@ -128,12 +128,12 @@ fn is_lowercase_hex(text: &str, length: usize) -> bool {
 }
 
 impl Dictionary {
-    /// 读取 `root/upstream.lock.json` 并与锁文件核对：版本必须是 1；每个上游的提交是 40 位小写十六进制，repository 和 commit 等于锁文件的同名 reference（`mozc` 对应 `lock.mozc`）；每个文件条目的上游名等于 msime 按 `UPSTREAM_FILES` 给它的上游名，并在 upstreams 里有记录；路径不重复。任何一项不符都报错。
+    /// 读取 `root/upstream.lock.json` 并与锁文件核对：版本必须是 1；每个上游的提交是 40 位小写十六进制，repository 和 commit 等于锁文件的同名 reference（`mozc` 对应 `lock.mozc`）；每个文件条目的上游名等于 lingyao 按 `UPSTREAM_FILES` 给它的上游名，并在 upstreams 里有记录；路径不重复。任何一项不符都报错。
     pub fn open(root: PathBuf, lock: &Lock) -> Result<Self> {
         let path = root.join(UPSTREAM_LOCK);
         if !path.is_file() {
             bail!(
-                "{} has no {UPSTREAM_LOCK}; msime's builder needs msime-dictionary at or after the commit that added it",
+                "{} has no {UPSTREAM_LOCK}; lingyao's builder needs lingyao-dictionary at or after the commit that added it",
                 root.display()
             );
         }
@@ -162,11 +162,11 @@ impl Dictionary {
                 lock.references.get(name)
             };
             let Some(expected) = expected else {
-                bail!("{name} is recorded in {UPSTREAM_LOCK} but resources/dictionary-sources.lock.json has no such reference; add it, with the licence texts that name it, in msime first");
+                bail!("{name} is recorded in {UPSTREAM_LOCK} but resources/dictionary-sources.lock.json has no such reference; add it, with the licence texts that name it, in lingyao first");
             };
             if recorded.repository != expected.repository || recorded.commit != expected.commit {
                 bail!(
-                    "{name} is recorded in {UPSTREAM_LOCK} as {} at {}, but resources/dictionary-sources.lock.json has {} at {}; change the reference (the Mozc revision for mozc) and the commits resources/licenses names in msime first, then {UPSTREAM_LOCK}",
+                    "{name} is recorded in {UPSTREAM_LOCK} as {} at {}, but resources/dictionary-sources.lock.json has {} at {}; change the reference (the Mozc revision for mozc) and the commits resources/licenses names in lingyao first, then {UPSTREAM_LOCK}",
                     recorded.repository,
                     recorded.commit,
                     expected.repository,
@@ -182,7 +182,7 @@ impl Dictionary {
             let label = upstream_reference(&file.path);
             if label != Some(file.upstream.as_str()) {
                 bail!(
-                    "{} is listed under {} in {UPSTREAM_LOCK}, but msime treats it as {}",
+                    "{} is listed under {} in {UPSTREAM_LOCK}, but lingyao treats it as {}",
                     file.path,
                     file.upstream,
                     label.unwrap_or("not upstream data")
@@ -211,7 +211,7 @@ impl Dictionary {
     }
 }
 
-/// `path` 是否属于 msime-dictionary（在 `DICTIONARY_DIRECTORIES` 之下）。
+/// `path` 是否属于 lingyao-dictionary（在 `DICTIONARY_DIRECTORIES` 之下）。
 fn is_dictionary_path(path: &str) -> bool {
     DICTIONARY_DIRECTORIES
         .iter()
@@ -224,7 +224,7 @@ pub struct Sources {
     pub repository_inputs: PathBuf,
     pub cache: PathBuf,
     pub offline: bool,
-    /// msime-dictionary checkout，`sources/` 和 `custom/` 只从这里读；内容由它的 Git 提交固定，上游数据另按它的 `upstream.lock.json` 校验。
+    /// lingyao-dictionary checkout，`sources/` 和 `custom/` 只从这里读；内容由它的 Git 提交固定，上游数据另按它的 `upstream.lock.json` 校验。
     pub dictionary: Option<Dictionary>,
 }
 
@@ -238,7 +238,7 @@ impl Sources {
         Ok(resolved)
     }
 
-    /// `path` 在 `--dictionary` checkout 里的位置；没有 checkout，或 `path` 不属于 msime-dictionary 时为 `None`。
+    /// `path` 在 `--dictionary` checkout 里的位置；没有 checkout，或 `path` 不属于 lingyao-dictionary 时为 `None`。
     pub fn checkout_file(&self, path: &str) -> Option<PathBuf> {
         self.dictionary
             .as_ref()
@@ -246,12 +246,12 @@ impl Sources {
             .map(|dictionary| dictionary.root.join(path))
     }
 
-    /// 解析一个输入：msime-dictionary 的路径只从 `--dictionary` checkout 读，其中的上游数据按 checkout 的 `upstream.lock.json` 校验；其他路径按锁文件校验并缓存，必要时下载。
+    /// 解析一个输入：lingyao-dictionary 的路径只从 `--dictionary` checkout 读，其中的上游数据按 checkout 的 `upstream.lock.json` 校验；其他路径按锁文件校验并缓存，必要时下载。
     pub fn pinned(&self, path: &str) -> Result<PathBuf> {
         // 这个分支在查锁文件之前：即使锁文件里重新出现 `sources/` 或 `custom/` 的条目，也不会被读到。
         if is_dictionary_path(path) {
             let Some(dictionary) = self.dictionary.as_ref() else {
-                bail!("{path} is msime-dictionary data, which the sources lock no longer pins; pass --dictionary <msime-dictionary checkout>");
+                bail!("{path} is lingyao-dictionary data, which the sources lock no longer pins; pass --dictionary <lingyao-dictionary checkout>");
             };
             let resolved = dictionary.root.join(path);
             if !resolved.is_file() {
@@ -262,11 +262,11 @@ impl Sources {
             }
             if let Some(label) = upstream_reference(path) {
                 let file = dictionary.file(path).with_context(|| {
-                    format!("{path} is {label} data at an upstream commit msime records, but the checkout's {UPSTREAM_LOCK} does not list it")
+                    format!("{path} is {label} data at an upstream commit lingyao records, but the checkout's {UPSTREAM_LOCK} does not list it")
                 })?;
                 if !matches(&resolved, file.size, &file.sha256)? {
                     bail!(
-                        "{path} in the dictionary checkout at {} differs from the size and SHA-256 the checkout's {UPSTREAM_LOCK} records; it is {label} data at an upstream commit msime records, so to replace it change the {label} reference (the Mozc revision for mozc) and the licence texts in resources/licenses in msime first, then {UPSTREAM_LOCK}",
+                        "{path} in the dictionary checkout at {} differs from the size and SHA-256 the checkout's {UPSTREAM_LOCK} records; it is {label} data at an upstream commit lingyao records, so to replace it change the {label} reference (the Mozc revision for mozc) and the licence texts in resources/licenses in lingyao first, then {UPSTREAM_LOCK}",
                         resolved.display()
                     );
                 }
@@ -379,7 +379,7 @@ mod tests {
     use serde_json::json;
     use std::io::Cursor;
 
-    /// 锁文件曾经固定 msime-dictionary 文件时用的 raw URL 前缀：`<RAW><commit>/<path>`。
+    /// 锁文件曾经固定 lingyao-dictionary 文件时用的 raw URL 前缀：`<RAW><commit>/<path>`。
     const DICTIONARY_RAW: &str =
         "https://raw.githubusercontent.com/metasequoiaime/msime-dictionary/";
     const CANTONESE_REPOSITORY: &str = "https://github.com/rime/rime-cantonese.git";
@@ -484,7 +484,7 @@ mod tests {
         assert!(error.contains("--offline"), "{error}");
     }
 
-    /// 有 `--dictionary` 时，msime-dictionary 的路径只从 checkout 读：锁文件里即使还留着一条摘要不符的 `custom/words.txt` 也不看，也不下载；其他仓库的文件照常走缓存。
+    /// 有 `--dictionary` 时，lingyao-dictionary 的路径只从 checkout 读：锁文件里即使还留着一条摘要不符的 `custom/words.txt` 也不看，也不下载；其他仓库的文件照常走缓存。
     #[test]
     fn a_checkout_serves_dictionary_paths_and_other_inputs_use_the_cache() {
         let cache = tempfile::tempdir().unwrap();
@@ -728,11 +728,11 @@ mod tests {
                 },
             ),
             (
-                "sources/zhuyin/tsi.csv is listed under McBopomofo in upstream.lock.json, but msime treats it as libchewing-data",
+                "sources/zhuyin/tsi.csv is listed under McBopomofo in upstream.lock.json, but lingyao treats it as libchewing-data",
                 |record| record["files"][2]["upstream"] = json!("McBopomofo"),
             ),
             (
-                "custom/words.txt is listed under rime-cantonese in upstream.lock.json, but msime treats it as not upstream data",
+                "custom/words.txt is listed under rime-cantonese in upstream.lock.json, but lingyao treats it as not upstream data",
                 |record| {
                     let mut file = record["files"][0].clone();
                     file["path"] = json!("custom/words.txt");
@@ -803,7 +803,7 @@ mod tests {
         .unwrap()
     }
 
-    /// 锁文件每个路径只固定一次，并且不再固定 msime-dictionary 的任何文件，也没有 `msime-dictionary` reference。
+    /// 锁文件每个路径只固定一次，并且不再固定 lingyao-dictionary 的任何文件，也没有 `lingyao-dictionary` reference。
     #[test]
     fn the_repository_lock_parses_and_pins_every_file_once() {
         let lock = repository_lock();
@@ -818,7 +818,7 @@ mod tests {
             assert!(!file.url.starts_with(DICTIONARY_RAW), "{}", file.url);
             assert!(!is_dictionary_path(&file.path), "{}", file.path);
         }
-        assert!(!lock.references.contains_key("msime-dictionary"));
+        assert!(!lock.references.contains_key("lingyao-dictionary"));
     }
 
     /// `UPSTREAM_FILES` 的每个上游名都是锁文件的 reference（`mozc` 对应 `lock.mozc`），提交是完整的小写十六进制，所以按真实锁文件写出的 `upstream.lock.json` 能通过 `Dictionary::open`。

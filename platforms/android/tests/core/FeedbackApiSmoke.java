@@ -1,7 +1,7 @@
-import app.msime.android.CloudClipboardApi;
-import app.msime.android.DownloadLinkApi;
-import app.msime.android.FeedbackApi;
-import app.msime.android.CloudApi;
+import app.lingyao.android.CloudClipboardApi;
+import app.lingyao.android.DownloadLinkApi;
+import app.lingyao.android.FeedbackApi;
+import app.lingyao.android.CloudApi;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

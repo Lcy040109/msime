@@ -2,7 +2,7 @@
 #include <array>
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Transport registration generations, not Engine candidate/focus epochs.
 struct PipeTicket {
   uint64_t client = 0;
@@ -11,4 +11,4 @@ struct PipeTicket {
 inline bool same_ticket(const PipeTicket &a, const PipeTicket &b) {
   return a.client == b.client && a.generations == b.generations;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

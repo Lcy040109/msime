@@ -4,7 +4,7 @@
 
 // One-shot handoff to the exact IMK client which opened a tool window.
 // No input is persisted; stale windows and other clients cannot consume it.
-struct MSIMEToolTextReturn {
+struct LINGYAOToolTextReturn {
     __weak id target = nil;
     NSString *pending = nil;
     double deadline = 0;

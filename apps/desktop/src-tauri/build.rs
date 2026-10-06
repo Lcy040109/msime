@@ -8,7 +8,7 @@ fn link_ios_swift_runtime_exports() {
     let Some(products) = env::var_os("CONFIGURATION_BUILD_DIR").map(PathBuf::from) else {
         return;
     };
-    let archive = products.join("libMSIMESwiftRsRuntimeExports.a");
+    let archive = products.join("libLINGYAOSwiftRsRuntimeExports.a");
     if !archive.is_file() {
         panic!(
             "missing Xcode 27 SwiftRs runtime export archive: {}",
@@ -16,7 +16,7 @@ fn link_ios_swift_runtime_exports() {
         );
     }
     println!("cargo:rustc-link-search=native={}", products.display());
-    println!("cargo:rustc-link-lib=static=MSIMESwiftRsRuntimeExports");
+    println!("cargo:rustc-link-lib=static=LINGYAOSwiftRsRuntimeExports");
 }
 
 fn main() {

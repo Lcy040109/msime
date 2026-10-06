@@ -539,7 +539,7 @@ fn responses_are_validated() {
     effect.kind = PluginKind::Effect;
     let mut builtin = item();
     builtin.kind = PluginKind::Music;
-    builtin.plugin_id = "msime-music-lofi".into();
+    builtin.plugin_id = "lingyao-music-lofi".into();
     let mut oversized = item();
     oversized.size = MAX_COMMUNITY_ARCHIVE_BYTES as u64 + 1;
     let mut empty = item();

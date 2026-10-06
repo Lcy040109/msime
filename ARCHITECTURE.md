@@ -34,7 +34,7 @@ crates/engine                  输入算法与组合状态（纯 Rust）
 
 ## 上游 Engine
 
-输入引擎是本仓库里的 `crates/engine`（`msime-engine`），随 workspace 一起构建和测试，没有锁文件，也不再从外部拉取源码归档。它由 C++ 版 MSIME-Engine 移植而来：移植时用参考实现（固定 commit 加当时的 overlay）录下了行为基准，提交在 `crates/engine/tests/golden/`，由 `crates/engine/tests/golden.rs` 对照；录制方法和参考实现的来源记在 `tools/engine-golden/README.md`，只在需要从归档的参考构建重新录制时才用得上。引擎行为的改动直接改 `crates/engine` 并更新对应的基准，不再有 overlay 这一层。
+输入引擎是本仓库里的 `crates/engine`（`lingyao-engine`），随 workspace 一起构建和测试，没有锁文件，也不再从外部拉取源码归档。它由 C++ 版 LINGYAO-Engine 移植而来：移植时用参考实现（固定 commit 加当时的 overlay）录下了行为基准，提交在 `crates/engine/tests/golden/`，由 `crates/engine/tests/golden.rs` 对照；录制方法和参考实现的来源记在 `tools/engine-golden/README.md`，只在需要从归档的参考构建重新录制时才用得上。引擎行为的改动直接改 `crates/engine` 并更新对应的基准，不再有 overlay 这一层。
 
 平台仍要用到的非引擎文件已随仓库提交：Windows 与各宿主共用的 IPC 契约头文件在 `shared/contracts/`，辅助码表在 `resources/helpcodes/`，Windows 提示音用的 miniaudio 在 `platforms/windows/third_party/miniaudio/`。
 
@@ -51,9 +51,9 @@ bash scripts/verify-local.sh --quick   # 只编译，合并前的门禁
 bash scripts/verify-local.sh           # 全量
 ```
 
-Windows 的编译门禁不需要 Windows 机器。装好 MinGW（`x86_64-w64-mingw32-g++`）后，在主工作区跑一次 `platforms/windows/build-cross.sh x64` 把 vcpkg 引导到清单基线，整台机器就位了：之后 `verify-local.sh` 在任何一个 worktree 里都会自动接管这条路径，把 host DLL、TSF DLL、Server 与全部原生测试链接一遍（vcpkg 树从 `MSIME_VCPKG_ROOT`、本工作区的 `target/tooling/vcpkg`、主工作区的同名目录依次查找；编译好的依赖放在该 vcpkg 树旁边共用，不必每个 worktree 各自把 curl 再编一遍）。没有这套环境时该阶段仍然跳过，但会把这行命令打出来——它曾经在每台机器上都只打印「skipped」，而背后的原生构建同时坏了六处。
+Windows 的编译门禁不需要 Windows 机器。装好 MinGW（`x86_64-w64-mingw32-g++`）后，在主工作区跑一次 `platforms/windows/build-cross.sh x64` 把 vcpkg 引导到清单基线，整台机器就位了：之后 `verify-local.sh` 在任何一个 worktree 里都会自动接管这条路径，把 host DLL、TSF DLL、Server 与全部原生测试链接一遍（vcpkg 树从 `LINGYAO_VCPKG_ROOT`、本工作区的 `target/tooling/vcpkg`、主工作区的同名目录依次查找；编译好的依赖放在该 vcpkg 树旁边共用，不必每个 worktree 各自把 curl 再编一遍）。没有这套环境时该阶段仍然跳过，但会把这行命令打出来——它曾经在每台机器上都只打印「skipped」，而背后的原生构建同时坏了六处。
 
-Linux 的 Tauri 外壳同理，只要机器上有 Docker 就不需要 Linux 机器：`verify-local.sh` 会在 `platforms/linux/tests/tools/Dockerfile.desktop-check` 构建的镜像（固定摘要的 `rust:1.97.1-bookworm` 预装 webkit2gtk/gtk3/libsoup，按 checkout 打 tag）里 `cargo check -p msime-desktop --all-targets`。这一阶段的由来和 Windows 那条一样——`cargo check --workspace` 只看宿主 target，而 macOS 上 `msime-desktop` 因为缺少它当资源列出的 app bundle 被整包排除，于是 Tauri 外壳里所有 `#[cfg(target_os = "linux")]` 分支从来没被任何东西编译过，攒到 36 个编译错误：Linux 的设置窗口、全部共享面板和账号界面根本构建不出来。没有 Docker 时该阶段跳过并打印命令。
+Linux 的 Tauri 外壳同理，只要机器上有 Docker 就不需要 Linux 机器：`verify-local.sh` 会在 `platforms/linux/tests/tools/Dockerfile.desktop-check` 构建的镜像（固定摘要的 `rust:1.97.1-bookworm` 预装 webkit2gtk/gtk3/libsoup，按 checkout 打 tag）里 `cargo check -p lingyao-desktop --all-targets`。这一阶段的由来和 Windows 那条一样——`cargo check --workspace` 只看宿主 target，而 macOS 上 `lingyao-desktop` 因为缺少它当资源列出的 app bundle 被整包排除，于是 Tauri 外壳里所有 `#[cfg(target_os = "linux")]` 分支从来没被任何东西编译过，攒到 36 个编译错误：Linux 的设置窗口、全部共享面板和账号界面根本构建不出来。没有 Docker 时该阶段跳过并打印命令。
 
 Linux 的原生宿主也一样，由 `platforms/linux/build-container.sh` 在同一个容器里编译 IBus engine、Fcitx5 插件、全部 provider 入口和单测并跑 `ctest`。这一条同样是补洞：此前没有任何阶段构建过 `platforms/linux`，而它已经不能配置了——三个测试的相对 include 比源码移动后的层级少一级，其中一个连自己的 fixture 都引不到。这不是单元测试的覆盖问题，是这个平台的产品本体构建不出来。Linux 主机上直接用系统的 ibus 开发包跑，其它主机走容器；两者都没有时跳过并打印命令。这一阶段只编译并跑单测，`platforms/linux/tests/tools/check-container.sh` 仍是需要已验证词库和真实 IBus daemon 的验收运行。
 
@@ -65,7 +65,7 @@ Linux 的原生宿主也一样，由 `platforms/linux/build-container.sh` 在同
 git config core.hooksPath .githooks
 ```
 
-三个钩子分工明确。`pre-commit` 是亚秒级的，只检查冲突标记和暂存 Rust 文件的格式——编译得起来的检查放在后面两个里，因为耗时一分钟的提交钩子会被关掉，然后一个都不剩。`pre-merge-commit` 在合并提交产生的那一刻跑 `--quick`，`pre-push` 作为没走合并路径的提交的兜底。`--quick` 会按改动范围跳过碰不到的平台阶段（依据是整个分支相对 `origin/develop` 的改动加上工作区，合并时进来的文件也在其中），并为每个跳过的阶段打印原因；`MSIME_VERIFY_ALL=1` 强制全部运行。曾有六次编译中断因为「合并了但没构建合并结果」进入 `develop`，`--quick` 正是为此存在。
+三个钩子分工明确。`pre-commit` 是亚秒级的，只检查冲突标记和暂存 Rust 文件的格式——编译得起来的检查放在后面两个里，因为耗时一分钟的提交钩子会被关掉，然后一个都不剩。`pre-merge-commit` 在合并提交产生的那一刻跑 `--quick`，`pre-push` 作为没走合并路径的提交的兜底。`--quick` 会按改动范围跳过碰不到的平台阶段（依据是整个分支相对 `origin/develop` 的改动加上工作区，合并时进来的文件也在其中），并为每个跳过的阶段打印原因；`LINGYAO_VERIFY_ALL=1` 强制全部运行。曾有六次编译中断因为「合并了但没构建合并结果」进入 `develop`，`--quick` 正是为此存在。
 
 Rust 改动另需 `cargo fmt` 与 `cargo clippy`；UI 改动另需类型检查和构建。
 
@@ -74,7 +74,7 @@ Rust 改动另需 `cargo fmt` 与 `cargo clippy`；UI 改动另需类型检查�
 六个宿主各有自己的自动化套件和自己的装机路径，入口不同但结构一致：先在不需要目标系统的层面跑通编译与单测，再在目标系统里跑需要真实输入法框架的那一层。报告验证结果时说清楚跑的是哪一层——交叉编译通过和系统输入法里真的出了候选不是同一件事。
 
 - **macOS**：`platforms/macos` 的 CMake 工程注册了一百多项 ctest，覆盖候选面板、皮肤、语音、表情与剪贴板面板、词库安装与偏好持久化；`platforms/macos/scripts/install.sh` 用 Developer ID 重签后原子替换到 `~/Library/Input Methods`，`platforms/macos/scripts/check_input_source.swift` 核对输入源注册。
-- **iOS**：工程由 XcodeGen 从 `platforms/ios/project.yml` 生成，`MSIMEClientTests` 聚合键盘、服务与共享三个单测 target，`MSIMEClientUITests` 跑引导流程和键盘扩展在编辑器里的界面用例；`platforms/ios/build-app.sh` 出模拟器或真机构建。
+- **iOS**：工程由 XcodeGen 从 `platforms/ios/project.yml` 生成，`LINGYAOClientTests` 聚合键盘、服务与共享三个单测 target，`LINGYAOClientUITests` 跑引导流程和键盘扩展在编辑器里的界面用例；`platforms/ios/build-app.sh` 出模拟器或真机构建。
 - **Android**：`platforms/android/check-host.sh` 在没有 Android 运行时的机器上校验 JNI 契约并跑 JVM 冒烟；`platforms/android/tests/device/smoke.sh` 在专用 AVD 上跑设备套件，设置、打字统计和手写各有开关；`platforms/android/build-apk.sh` 出原生 IME 包。
 - **HarmonyOS**：`platforms/harmony/tests/run.sh` 做类型检查并跑键盘逻辑测试；HAP 由 DevEco 的 `hvigorw assembleHap` 打出，`ohpm install` 和真打包缺一不可——ArkTS 对 `@Builder` 体内声明、对象字面量类型的一批限制只有 `.ets` 真正编译时才报出来。
 - **Linux**：`platforms/linux/build-container.sh` 在固定容器里构建 IBus engine、Fcitx5 插件和全部 provider 入口并跑 ctest；`platforms/linux/tests/tools/check-container.sh` 起独立 D-Bus 与 IBus/Fcitx5 daemon 做隔离验收。

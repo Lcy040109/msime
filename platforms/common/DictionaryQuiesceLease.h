@@ -13,10 +13,10 @@
 #include <system_error>
 #include <unistd.h>
 
-namespace msime::dictionary_lease {
+namespace lingyao::dictionary_lease {
 
 // Dictionary maintenance (import, edit, clearing learned data) needs the Engine's exclusive lock, and every open input session holds it shared. Windows asks its server to drop the sessions for the duration (DictionaryQuiesce/DictionaryResume); on Linux and macOS the settings window writes this lease beside the lock instead, and the input hosts (IBus, Fcitx5 and the macOS input method) close their sessions and open no new ones while it is live. The lease carries its own expiry, in Unix milliseconds, so a settings process that dies mid-import cannot leave input off: past the expiry, or with an expiry further out than any real lease, it is ignored. The name, the expiry on the first line (readers stop at the newline; every writer puts an owner line after it) and the bound are shared with crates/client-core/src/dictionary/quiesce.rs.
-inline constexpr std::string_view kDictionaryQuiesceLeaseName = ".msime-dictionary-quiesce";
+inline constexpr std::string_view kDictionaryQuiesceLeaseName = ".lingyao-dictionary-quiesce";
 inline constexpr std::int64_t kDictionaryQuiesceLeaseMaxMs = 30'000;
 inline constexpr std::size_t kDictionaryQuiesceLeaseMaxBytes = 256;
 
@@ -148,4 +148,4 @@ inline void lower_dictionary_quiesce_lease(const std::string &user_data, const s
   std::filesystem::remove(lease, ignored);
 }
 
-}  // namespace msime::dictionary_lease
+}  // namespace lingyao::dictionary_lease

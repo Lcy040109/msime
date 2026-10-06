@@ -36,7 +36,7 @@ https://inputtools.google.com/request?text=ni%20hao&itc=zh-t-i0-pinyin&num=1&ie=
 
 防抖间隔**由各宿主自己决定**，不是共享常量：共享层的 `spawn_with_debounce` 接受调用方给的时长，`spawn` 默认为零。已在代码中固定取值的是 Android（`OnlineCandidatePolicy.QUIET_INTERVAL_MILLIS = 350`）和 HarmonyOS（`OnlineCandidatePolicy.QUIET_INTERVAL_MS = 350`），两者都是组字停顿 350 ms 后才发一次，并用请求身份保证同一组合只问一次。其余宿主的取值请以各自代码为准。
 
-**默认关闭，桌面平台首次使用时会问**：新装时 `cloud_candidates` 是 `false`（`crates/client-core/src/preferences.rs` 的 `Default`），六个平台都一样。三个桌面平台在第一次使用时先说明这项功能再让你选，默认选项都是不启用：Windows 安装器在全新安装时显示「联网功能」页（`platforms/windows/installer/msime_setup.iss`），勾选框默认不勾，勾上时把选择记在数据目录的 `installer-choices.json`，Server 首次启动准备状态时写进共享偏好（`platforms/windows/src/system/FirstRun.h`），之后删掉这个文件；Linux 的首次配置页（`packages/ui/src/account/linux-setup-page.tsx`）在同一处说明并提供同样默认不勾的选择；macOS 在全新配置下由输入法第一次激活时弹出「联网功能」对话框（`platforms/macos/src/settings/AppearancePreferences.mm` 的 `MSIMEClientCloudCandidatesConsent`），回车对应「不启用」，回答之前不发任何云候选请求。Android、HarmonyOS 与 iOS 不弹询问，在设置里打开（iOS 另有自己的开关，见 `platforms/ios/SharedUI/candidate/CloudCandidatePreference.swift`）。升级都不问，沿用配置文件里已存的值。
+**默认关闭，桌面平台首次使用时会问**：新装时 `cloud_candidates` 是 `false`（`crates/client-core/src/preferences.rs` 的 `Default`），六个平台都一样。三个桌面平台在第一次使用时先说明这项功能再让你选，默认选项都是不启用：Windows 安装器在全新安装时显示「联网功能」页（`platforms/windows/installer/lingyao_setup.iss`），勾选框默认不勾，勾上时把选择记在数据目录的 `installer-choices.json`，Server 首次启动准备状态时写进共享偏好（`platforms/windows/src/system/FirstRun.h`），之后删掉这个文件；Linux 的首次配置页（`packages/ui/src/account/linux-setup-page.tsx`）在同一处说明并提供同样默认不勾的选择；macOS 在全新配置下由输入法第一次激活时弹出「联网功能」对话框（`platforms/macos/src/settings/AppearancePreferences.mm` 的 `LINGYAOClientCloudCandidatesConsent`），回车对应「不启用」，回答之前不发任何云候选请求。Android、HarmonyOS 与 iOS 不弹询问，在设置里打开（iOS 另有自己的开关，见 `platforms/ios/SharedUI/candidate/CloudCandidatePreference.swift`）。升级都不问，沿用配置文件里已存的值。
 
 **打开或关掉它**：设置页「云联想」开关，或把配置里的 `cloud_candidates` 设为 `true` / `false`。关闭后宿主不再发起云候选请求，并拒绝任何返回的云来源候选。
 
@@ -54,19 +54,19 @@ macOS 26 及以上在没有选择任何服务时（候选翻译开启，小牛�
 
 `voice_input.enabled` 默认 `true`，但这只表示功能可用，录音要你主动触发。默认识别服务是豆包（`wss://openspeech.bytedance.com/...`），**`asr_token` 默认为空字符串**，不填就无法使用。可选的识别服务还有 SiliconFlow、OpenAI、Groq、EveryAPI、Mistral Voxtral，以及两种不出设备的选项：
 
-- `local`：设备上的识别模型，`asr_model_path` 是一个绝对路径，指向设置页下载的 sherpa-onnx 模型目录（包含 `msime-model.json`）。不需要 Token，也没有端点。
+- `local`：设备上的识别模型，`asr_model_path` 是一个绝对路径，指向设置页下载的 sherpa-onnx 模型目录（包含 `lingyao-model.json`）。不需要 Token，也没有端点。
 - `system`：调用操作系统自带的识别（macOS / iOS / HarmonyOS），数据流向由操作系统决定。macOS 与 iOS 26 起使用 SpeechAnalyzer（设备端）；更早的系统在识别器支持时设置 `requiresOnDeviceRecognition`，不支持时由系统决定是否上传。
 
 选择云端服务时，发送的是录制的音频。代码在 `crates/client-core/src/credential/asr.rs`，服务选择逻辑在 `crates/client-core/src/preferences.rs`。
 
-**本地模型**全程在设备上运行：录音、识别结果和热词都不离开设备，识别期间不发出任何网络请求。macOS 与 Linux 的输入法进程不自己加载模型，而是拉起本机的 `msime-voice-local` 辅助进程，经标准输入输出交换音频和文本（协议见 `shared/voice/README.md`），不经过网络套接字；Windows 在本机的 `msime-client-server` 进程内识别，Android、iOS 与 HarmonyOS 在应用进程内识别。热词取自你的个人词库（只取用户自己添加的拼音词条），在本机交给识别器，或在识别后于本机做近音替换（`crates/client-core/src/voice/hotwords.rs`）。
+**本地模型**全程在设备上运行：录音、识别结果和热词都不离开设备，识别期间不发出任何网络请求。macOS 与 Linux 的输入法进程不自己加载模型，而是拉起本机的 `lingyao-voice-local` 辅助进程，经标准输入输出交换音频和文本（协议见 `shared/voice/README.md`），不经过网络套接字；Windows 在本机的 `lingyao-client-server` 进程内识别，Android、iOS 与 HarmonyOS 在应用进程内识别。热词取自你的个人词库（只取用户自己添加的拼音词条），在本机交给识别器，或在识别后于本机做近音替换（`crates/client-core/src/voice/hotwords.rs`）。
 
 唯一的联网发生在**下载模型**时，且只在你在设置页点「下载」后发生：
 
 | | |
 | --- | --- |
 | 目的地 | GitHub Releases（`https://github.com/k2-fsa/sherpa-onnx/releases/download/...`，下载时会被重定向到 GitHub 的文件存储域名）；配置了镜像时改为镜像地址 |
-| 发送内容 | 对模型归档的 HTTPS GET 请求，User-Agent 为 `msime/<版本号>`，不携带任何输入内容、音频、账号或设备标识 |
+| 发送内容 | 对模型归档的 HTTPS GET 请求，User-Agent 为 `lingyao/<版本号>`，不携带任何输入内容、音频、账号或设备标识 |
 | 需要凭据 | 否 |
 | 偏好字段 | `voice_input.asr_model_mirror`，默认空字符串，表示直接访问 GitHub |
 | 代码 | `crates/client-core/src/voice/local_models.rs`；地址、长度和 SHA-256 固定在 `resources/local-asr-models.json` |
@@ -85,15 +85,15 @@ macOS 26 及以上在没有选择任何服务时（候选翻译开启，小牛�
 
 `https://api.msime.app`，定义在 `crates/client-core/src/account.rs` 的 `ACCOUNT_ORIGIN`。普通账号不登录不发生。
 
-匿名账号在六个平台上都是安装后自动注册的：本机随机生成一个标识（`msime-` 加 16 位）和一个 48 位口令，先保存在本机，再向 `/v1/auth/challenges` 与 `/v1/auth/login` 换取令牌。只发送这两个随机值，不含输入内容、设备信息或系统账号。网络失败不影响输入，下次启动重试；已有登录或匿名会话时只读本机文件，不再发请求。各平台的时机：
+匿名账号在六个平台上都是安装后自动注册的：本机随机生成一个标识（`lingyao-` 加 16 位）和一个 48 位口令，先保存在本机，再向 `/v1/auth/challenges` 与 `/v1/auth/login` 换取令牌。只发送这两个随机值，不含输入内容、设备信息或系统账号。网络失败不影响输入，下次启动重试；已有登录或匿名会话时只读本机文件，不再发请求。各平台的时机：
 
-- Linux：Debian `postinst` 为可联系的登录用户注册；手工安装或当时网络不可用时，`msime-linux-setup` 会在首次配置时重试。身份和令牌由 `msime-linux-online-provider` 保存在用户配置目录的 `anonymous-account.json` 与 `anonymous-session.json`，两个文件均为当前用户专用权限，不进入设置页或输入法进程。
-- Windows：Server 首次以 `--production` 启动时（安装程序完成页会拉起它），按 Windows 用户分别保存在 `%LOCALAPPDATA%\MSIME\account`，不放进全机共用、所有用户都可写的数据目录。
-- macOS：输入法首次激活时（`MSIMEEnsureAnonymousAccount`）；iOS：应用首次启动时，已存有登录或匿名会话（即使已过期）就不发请求。两者都存于 App Group 容器，键盘与应用共用。
+- Linux：Debian `postinst` 为可联系的登录用户注册；手工安装或当时网络不可用时，`lingyao-linux-setup` 会在首次配置时重试。身份和令牌由 `lingyao-linux-online-provider` 保存在用户配置目录的 `anonymous-account.json` 与 `anonymous-session.json`，两个文件均为当前用户专用权限，不进入设置页或输入法进程。
+- Windows：Server 首次以 `--production` 启动时（安装程序完成页会拉起它），按 Windows 用户分别保存在 `%LOCALAPPDATA%\LINGYAO\account`，不放进全机共用、所有用户都可写的数据目录。
+- macOS：输入法首次激活时（`LINGYAOEnsureAnonymousAccount`）；iOS：应用首次启动时，已存有登录或匿名会话（即使已过期）就不发请求。两者都存于 App Group 容器，键盘与应用共用。
 - Android：应用首次打开时（`AccountIdentity.register`），已存有匿名会话（即使已过期）就不发请求，存于应用私有存储。
 - HarmonyOS：应用首次启动或键盘首次加载时，存于应用的 `files/state` 目录。
 
-Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审核)之外，不用这个账号发送任何内容。候选翻译在你选择了「灵耀账号」时才发送，见[候选翻译](#候选翻译默认不联网)；Android 浏览社区皮肤与词库目录时，也会带上匿名账号的令牌（`platforms/android/java/app/msime/android/community/CommunityCatalog.java`），取不到照常列出目录。凭据的存放：iOS 用 Keychain（`crates/tauri-mobile-platform/ios/Sources/MobilePlatformPlugin.swift`），Android 用 Keystore 加密后落盘；macOS、Windows 与 Linux 桌面端存在当前用户私有的 `account-session.json` 里（`crates/client-core/src/account/file_storage.rs`），只有本人可读写，不加密。
+Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审核)之外，不用这个账号发送任何内容。候选翻译在你选择了「灵耀账号」时才发送，见[候选翻译](#候选翻译默认不联网)；Android 浏览社区皮肤与词库目录时，也会带上匿名账号的令牌（`platforms/android/java/app/lingyao/android/community/CommunityCatalog.java`），取不到照常列出目录。凭据的存放：iOS 用 Keychain（`crates/tauri-mobile-platform/ios/Sources/MobilePlatformPlugin.swift`），Android 用 Keystore 加密后落盘；macOS、Windows 与 Linux 桌面端存在当前用户私有的 `account-session.json` 里（`crates/client-core/src/account/file_storage.rs`），只有本人可读写，不加密。
 
 ### 云剪贴板（需要登录）
 
@@ -103,7 +103,7 @@ Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审
 - **只在打开面板时读取**：设置页、键盘里的「云端」栏和 macOS 输入法菜单里的「云剪贴板…」在打开和点刷新时各拉取一次列表，没有轮询或推送。
 - **密码框里不出现**：Android、iOS、HarmonyOS 键盘和 Linux Fcitx5 在密码类输入框里不显示云端条目，也不发请求；macOS 在安全输入期间不打开云剪贴板面板。
 - **关闭即删除**：把云剪贴板关掉会删除云端全部条目，共享设置页在关闭前会先请你确认。
-- **键盘怎么拿到账号**：键盘和设置应用是不同的进程，账号令牌不会被复制成明文文件。Android 键盘向主进程里一个不导出的 ContentProvider 取令牌，只有主进程会刷新令牌；iOS 的会话存放在 App 与键盘扩展共有的 App Group 钥匙串访问组里，键盘需要「允许完全访问」才会联网；HarmonyOS 键盘读取设置应用在应用私有目录里保存的同一份会话；macOS 的输入法与设置应用读写同一个 `~/Library/Application Support/app.msime.macos/account-session.json`。iOS、HarmonyOS 与 macOS 刷新令牌时持有跨进程文件锁，防止两个进程用同一个刷新令牌而让会话被服务端吊销。
+- **键盘怎么拿到账号**：键盘和设置应用是不同的进程，账号令牌不会被复制成明文文件。Android 键盘向主进程里一个不导出的 ContentProvider 取令牌，只有主进程会刷新令牌；iOS 的会话存放在 App 与键盘扩展共有的 App Group 钥匙串访问组里，键盘需要「允许完全访问」才会联网；HarmonyOS 键盘读取设置应用在应用私有目录里保存的同一份会话；macOS 的输入法与设置应用读写同一个 `~/Library/Application Support/app.lingyao.macos/account-session.json`。iOS、HarmonyOS 与 macOS 刷新令牌时持有跨进程文件锁，防止两个进程用同一个刷新令牌而让会话被服务端吊销。
 - **从电脑上屏**：Windows 与 Linux 的设置窗口里，云剪贴板面板只有在这次打开时记下了另一个应用的输入窗口才能直接上屏，否则只能复制；它不会沿用以前记下的窗口。
 
 ### 资源与更新下载
@@ -123,7 +123,7 @@ Windows 与 HarmonyOS 除了你主动提交的[社区举报](#社区举报与审
 | 发送内容 | 对固定文件的 HTTPS GET 请求，不携带任何输入内容、账号或设备标识 |
 | 需要凭据 | 否 |
 | 偏好字段 | 沿用 `voice_input.asr_model_mirror`，默认空字符串，表示直接访问 GitHub；下载失败时资源包那一行和手写面板都提供「设置下载镜像」 |
-| 存放位置 | 偏好目录下的 `resource-packs/<资源包>/`：macOS 是 `~/Library/Application Support/app.msime.macos/resource-packs/`，Windows 是输入法服务的数据目录，Linux 是运行时选项记录的状态目录；许可证文本放在数据旁边 |
+| 存放位置 | 偏好目录下的 `resource-packs/<资源包>/`：macOS 是 `~/Library/Application Support/app.lingyao.macos/resource-packs/`，Windows 是输入法服务的数据目录，Linux 是运行时选项记录的状态目录；许可证文本放在数据旁边 |
 | 代码 | `crates/client-core/src/resource_packs.rs`、`apps/desktop/src-tauri/src/platform/desktop/desktop_resource_packs.rs`；地址、长度和 SHA-256 固定在 `resources/desktop-dictionary.lock.json`、`resources/language-dictionaries.lock.json`、`resources/handwriting-model.lock.json` 和 `resources/settled-model.lock.json` |
 
 镜像规则和下面本地语音模型的相同：必须是 `https://` 地址，镜像运营方能看到你的 IP 和你下载的是哪个资源包，但下载内容按固定的 SHA-256 校验，镜像无法替换文件。不需要这些功能就不会发生这些请求；缺少资源包时对应的方案或手写面板显示为不可用，桌面神经联想保持现有候选。
@@ -132,7 +132,7 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 
 ### 使用统计与崩溃上报（默认开启，可关闭）
 
-六个平台都通过同一份共享实现向 `https://api.msime.app/v1/telemetry/events` POST 事件：`crates/client-core/src/telemetry.rs`（队列、安装 id、事件规则、发送与重试），原生宿主经 `crates/host-api` 的 `msime_client_telemetry_{begin,end,record_crash,flush,clear}`（`crates/host-api/src/ffi/reporting.rs`，声明在 `crates/host-api/include/msime_client.h`）调用它。**事件里没有任何输入内容、候选、剪贴板、账号标识或硬件信息**。
+六个平台都通过同一份共享实现向 `https://api.msime.app/v1/telemetry/events` POST 事件：`crates/client-core/src/telemetry.rs`（队列、安装 id、事件规则、发送与重试），原生宿主经 `crates/host-api` 的 `lingyao_client_telemetry_{begin,end,record_crash,flush,clear}`（`crates/host-api/src/ffi/reporting.rs`，声明在 `crates/host-api/include/lingyao_client.h`）调用它。**事件里没有任何输入内容、候选、剪贴板、账号标识或硬件信息**。
 
 | | |
 | --- | --- |
@@ -153,11 +153,11 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 
 各平台的会话边界、崩溃来源和文件位置：
 
-- **Windows**（`platforms/windows/src/entrypoints/server_main.cpp`，包装层 `platforms/common/Telemetry.cpp`）：会话是 Server 进程从启动到消息循环结束；开关读自偏好里的 `usage_reporting`（`platforms/windows/src/system/TelemetryConsent.h`：缺省算开启，显式 `false` 算关闭，读不出来的值或文件算关闭），设置页保存后立即生效。启动时发送一次，之后每 30 分钟一次。崩溃来源：`std::terminate` 记录异常类型和 `what()` 的第一行（JSON 解析异常只记类型和编号，因为其文本可能引用用户文件的内容）；未处理的结构化异常由 `SetUnhandledExceptionFilter` 记录异常名与代码、出错模块文件名+偏移和逐帧的模块+偏移（例如 `EXCEPTION_ACCESS_VIOLATION (0xc0000005) in module.dll+0x…`）。文件在 `%LOCALAPPDATA%\MSIME\` 下：`telemetry.json`、`telemetry-state.json`、`telemetry-session.json`、`telemetry-crashes\`。安装器的「联网功能」页说明了这项统计默认开启（`platforms/windows/installer/msime_setup.iss`）。
-- **Linux**：IBus 宿主（`platforms/linux/src/entrypoints/ibus_main.cpp`）的会话是 `msime-linux-ibus` 从启动到主循环返回，崩溃守护以 `--recovered` 重启的进程同样如此；Fcitx5 插件（`platforms/linux/fcitx5/FcitxEngine.cpp`）的会话是插件实例的生存期，发送在后台任务里进行，不占用事件循环。崩溃来源：`std::terminate`（规则同 Windows），以及 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT 的信号处理程序，写下 `SIGSEGV: segmentation fault (code N)` 这样的摘要和 `backtrace_symbols_fd` 的栈帧，然后交回原先的处理程序（Fcitx5 自己的崩溃日志照常工作）。启动时发送一次，之后每 30 分钟一次。开关是共享偏好 `preferences.json` 里的 `usage_reporting`。文件在 `$XDG_STATE_HOME/msime/`（未设时为 `~/.local/state/msime/`）下，文件名同 Windows；Fcitx5 用自己的子目录 `$XDG_STATE_HOME/msime/fcitx5/`，因此有自己的 `install_id`，同一台机器上两种框架都用会被算成两个安装。
-- **macOS**（`platforms/macos/src/core/UsageReporting.mm`，由 `input_method_main.mm` 调用）：会话是输入法进程的生存期，单独打开的设置窗口不算。崩溃来源：`NSSetUncaughtExceptionHandler`（异常名、原因和 `callStackSymbols`）和 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT、SIGTRAP 的信号处理程序（`backtrace_symbols_fd`：二进制文件名、地址、符号+偏移）。启动时发送一次，之后每 3 小时一次。开关是共享设置页的「匿名使用统计」。文件在 `~/Library/Application Support/MSIME/telemetry/`；灵耀五笔、灵耀拼音等其他版本各用 `~/Library/Application Support/MSIME/<版本 id>/telemetry/`，同时安装的版本互不共享 `install_id`。
-- **iOS**（`platforms/ios/SharedUI/core/UsageReporting.swift`）：会话是键盘的一次弹出到收起（`KeyboardExtension/Sources/core/KeyboardUsageReporting.swift`），App 本身不产生会话。崩溃来源：键盘里的信号处理程序（`CrashSignalRecorder.c`，信号名和 `backtrace_symbols_fd` 的栈帧）和未捕获异常处理程序（异常名、原因和 `callStackSymbols`）；App 的崩溃来自系统的 MetricKit 诊断（`CrashDiagnostics.swift`），只取异常类型、代码、信号、ObjC 异常名、系统给出的终止原因和「二进制名+偏移」形式的栈帧，从不取 ObjC 的 `composedMessage`。键盘只有在「允许完全访问」打开时才发送，最多每 15 分钟一次；否则由 App 在回到前台时发送。文件在 App Group 容器的 `MSIME/telemetry/` 下，App 与键盘共用一个 `install_id`。`PrivacyInfo.xcprivacy` 声明了 CrashData、ProductInteraction 与 DeviceID（随机安装 id），均为不关联身份、不用于跟踪。
-- **Android**（`platforms/android/java/app/msime/android/core/Telemetry.java`，经 `platforms/android/native/client_jni.cpp` 调用共享层）：会话只在 `:ime` 进程里，是 `MSIMEInputService` 从 `onCreate` 到 `onDestroy`。崩溃来源：两个进程的未捕获异常处理程序，记录 `Throwable.toString()` 的第一行（**可能包含异常自带的消息文本**）和 Java 栈帧（类、方法、源文件名与行号，最多 4 层 Caused by）；App 进程的崩溃在键盘下次启动时作为单独的 `crash` 发送。原生（信号）崩溃目前不捕获。App 打开时发送，键盘弹出时最多每 6 小时发送一次。文件在应用私有目录 `files/telemetry/`。
+- **Windows**（`platforms/windows/src/entrypoints/server_main.cpp`，包装层 `platforms/common/Telemetry.cpp`）：会话是 Server 进程从启动到消息循环结束；开关读自偏好里的 `usage_reporting`（`platforms/windows/src/system/TelemetryConsent.h`：缺省算开启，显式 `false` 算关闭，读不出来的值或文件算关闭），设置页保存后立即生效。启动时发送一次，之后每 30 分钟一次。崩溃来源：`std::terminate` 记录异常类型和 `what()` 的第一行（JSON 解析异常只记类型和编号，因为其文本可能引用用户文件的内容）；未处理的结构化异常由 `SetUnhandledExceptionFilter` 记录异常名与代码、出错模块文件名+偏移和逐帧的模块+偏移（例如 `EXCEPTION_ACCESS_VIOLATION (0xc0000005) in module.dll+0x…`）。文件在 `%LOCALAPPDATA%\LINGYAO\` 下：`telemetry.json`、`telemetry-state.json`、`telemetry-session.json`、`telemetry-crashes\`。安装器的「联网功能」页说明了这项统计默认开启（`platforms/windows/installer/lingyao_setup.iss`）。
+- **Linux**：IBus 宿主（`platforms/linux/src/entrypoints/ibus_main.cpp`）的会话是 `lingyao-linux-ibus` 从启动到主循环返回，崩溃守护以 `--recovered` 重启的进程同样如此；Fcitx5 插件（`platforms/linux/fcitx5/FcitxEngine.cpp`）的会话是插件实例的生存期，发送在后台任务里进行，不占用事件循环。崩溃来源：`std::terminate`（规则同 Windows），以及 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT 的信号处理程序，写下 `SIGSEGV: segmentation fault (code N)` 这样的摘要和 `backtrace_symbols_fd` 的栈帧，然后交回原先的处理程序（Fcitx5 自己的崩溃日志照常工作）。启动时发送一次，之后每 30 分钟一次。开关是共享偏好 `preferences.json` 里的 `usage_reporting`。文件在 `$XDG_STATE_HOME/lingyao/`（未设时为 `~/.local/state/lingyao/`）下，文件名同 Windows；Fcitx5 用自己的子目录 `$XDG_STATE_HOME/lingyao/fcitx5/`，因此有自己的 `install_id`，同一台机器上两种框架都用会被算成两个安装。
+- **macOS**（`platforms/macos/src/core/UsageReporting.mm`，由 `input_method_main.mm` 调用）：会话是输入法进程的生存期，单独打开的设置窗口不算。崩溃来源：`NSSetUncaughtExceptionHandler`（异常名、原因和 `callStackSymbols`）和 SIGSEGV、SIGBUS、SIGILL、SIGFPE、SIGABRT、SIGTRAP 的信号处理程序（`backtrace_symbols_fd`：二进制文件名、地址、符号+偏移）。启动时发送一次，之后每 3 小时一次。开关是共享设置页的「匿名使用统计」。文件在 `~/Library/Application Support/LINGYAO/telemetry/`；灵耀五笔、灵耀拼音等其他版本各用 `~/Library/Application Support/LINGYAO/<版本 id>/telemetry/`，同时安装的版本互不共享 `install_id`。
+- **iOS**（`platforms/ios/SharedUI/core/UsageReporting.swift`）：会话是键盘的一次弹出到收起（`KeyboardExtension/Sources/core/KeyboardUsageReporting.swift`），App 本身不产生会话。崩溃来源：键盘里的信号处理程序（`CrashSignalRecorder.c`，信号名和 `backtrace_symbols_fd` 的栈帧）和未捕获异常处理程序（异常名、原因和 `callStackSymbols`）；App 的崩溃来自系统的 MetricKit 诊断（`CrashDiagnostics.swift`），只取异常类型、代码、信号、ObjC 异常名、系统给出的终止原因和「二进制名+偏移」形式的栈帧，从不取 ObjC 的 `composedMessage`。键盘只有在「允许完全访问」打开时才发送，最多每 15 分钟一次；否则由 App 在回到前台时发送。文件在 App Group 容器的 `LINGYAO/telemetry/` 下，App 与键盘共用一个 `install_id`。`PrivacyInfo.xcprivacy` 声明了 CrashData、ProductInteraction 与 DeviceID（随机安装 id），均为不关联身份、不用于跟踪。
+- **Android**（`platforms/android/java/app/lingyao/android/core/Telemetry.java`，经 `platforms/android/native/client_jni.cpp` 调用共享层）：会话只在 `:ime` 进程里，是 `LINGYAOInputService` 从 `onCreate` 到 `onDestroy`。崩溃来源：两个进程的未捕获异常处理程序，记录 `Throwable.toString()` 的第一行（**可能包含异常自带的消息文本**）和 Java 栈帧（类、方法、源文件名与行号，最多 4 层 Caused by）；App 进程的崩溃在键盘下次启动时作为单独的 `crash` 发送。原生（信号）崩溃目前不捕获。App 打开时发送，键盘弹出时最多每 6 小时发送一次。文件在应用私有目录 `files/telemetry/`。
 - **HarmonyOS**（`platforms/harmony/entry/src/main/ets/telemetry/Telemetry.ets`，经 `platforms/harmony/native/client_napi.cpp` 调用共享层）：会话是键盘进程从 `KeyboardExtensionAbility.onCreate` 到 `onDestroy`，设置应用只发送不产生会话。崩溃来源只有系统在下次启动时投递的 HiAppEvent `APP_CRASH`：JS 崩溃取错误名、消息第一行和引擎调用栈；原生崩溃取信号名与代码和「文件名+pc+符号」形式的栈帧，不含故障地址和目录。键盘启动时与之后每 6 小时（打字时检查）发送一次，设置应用打开时也发送。文件在 `files/state/telemetry/` 下，另有只存键盘进程号的 `harmony-keyboard-process.json`。
 
 ### 服务公告
@@ -165,8 +165,8 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 设置窗口或 App 首页打开时，向 `GET https://api.msime.app/v1/notices?channel=app&platform=<平台>` 拉取一次公告列表，不带凭据，也不带安装 id；服务端缓存一分钟，客户端最快一分钟问一次，输入法进程从不在后台拉取。共享实现在 `crates/client-core/src/notices.rs`。拉取的地方：
 
 - Windows、macOS、Linux 的共享设置窗口，以及 Tauri 版 Android/iOS 设置（`apps/desktop/src-tauri/src/notices.rs`，在设置页挂载时读取一次）；缓存与已关闭的 id（最多 200 个）存在共享状态目录的 `notices.json`。
-- iOS App 的「设置」首页打开或回到前台时（`platforms/ios/SharedUI/core/AppNotices.swift`），存在 `Application Support/MSIME/notices`；键盘不拉取。
-- Android App 的「设置」页出现时（`platforms/android/java/app/msime/android/home/NoticeBanner.java`），存在 `files/notices`；`:ime` 进程不拉取。
+- iOS App 的「设置」首页打开或回到前台时（`platforms/ios/SharedUI/core/AppNotices.swift`），存在 `Application Support/LINGYAO/notices`；键盘不拉取。
+- Android App 的「设置」页出现时（`platforms/android/java/app/lingyao/android/home/NoticeBanner.java`），存在 `files/notices`；`:ime` 进程不拉取。
 - HarmonyOS 设置窗口打开或回到前台时（`platforms/harmony/entry/src/main/ets/pages/Settings.ets`），存在 `files/state/notices`；键盘不拉取。
 
 公告正文是简单 Markdown，在本机渲染，原始 HTML 不执行，不加载图片；正文里的链接只有在你点击时才用系统浏览器（或邮件应用）打开，且只接受 `http`、`https` 和 `mailto`。关闭某条公告只记在本机。
@@ -182,17 +182,17 @@ Android 的手写识别使用 ML Kit，**首次使用需要联网下载识别模
 - **输入历史与学习数据**由 C++ Engine 管理，写在宿主提供的用户目录里，不上传。
 - **剪贴板历史默认关闭**（`clipboard_history` 默认 `false`）。开启后写入状态目录下的 `clipboard_history.json`，仅本地；关闭时会清空该文件。
 - **@ 名单**：用户在设置页「插件」里手动添加的名字和地点写在状态目录下的 `plugins/mentions.json`，仅本地，不读取通讯录或位置。它不在 `preferences.json` 里，所以宿主拷贝偏好和账号同步都不会带上它。「@ 名字与地点」模式默认关闭（`local_modes.mention` 默认 `false`）；从这个模式以及 V、/ 模式上屏的文字不进学习数据，也不计入打字统计。
-- **设置**保存在应用数据目录的 `preferences.json`，可用绝对路径环境变量 `MSIME_CLIENT_STATE_DIR` 指向隔离目录。
+- **设置**保存在应用数据目录的 `preferences.json`，可用绝对路径环境变量 `LINGYAO_CLIENT_STATE_DIR` 指向隔离目录。
 
 ## 没有的东西
 
 没有第三方统计、用户行为分析或崩溃上报 SDK：Sentry、Mixpanel、Amplitude、Crashlytics、Google Analytics 及其等价物既不在依赖里，也不在代码里。全仓库唯一的上报路径是上面那条自己实现的[使用统计与崩溃上报](#使用统计与崩溃上报默认开启可关闭)。下面的命令命中的文件应当只有这几类：
 
-- 共享实现与 C ABI：`crates/client-core/src/telemetry.rs`、`crates/client-core/src/telemetry/tests.rs`、`crates/client-core/src/lib.rs`、`crates/client-core/src/account/client.rs`（发送用的 HTTP 客户端）、`crates/client-core/src/notices.rs`（文档注释里提到它）、`crates/client-core/src/preferences.rs`（`usage_reporting` 开关）、`crates/host-api/include/msime_client.h`、`crates/host-api/src/ffi/reporting.rs`、`crates/host-api/src/tests.rs`。
+- 共享实现与 C ABI：`crates/client-core/src/telemetry.rs`、`crates/client-core/src/telemetry/tests.rs`、`crates/client-core/src/lib.rs`、`crates/client-core/src/account/client.rs`（发送用的 HTTP 客户端）、`crates/client-core/src/notices.rs`（文档注释里提到它）、`crates/client-core/src/preferences.rs`（`usage_reporting` 开关）、`crates/host-api/include/lingyao_client.h`、`crates/host-api/src/ffi/reporting.rs`、`crates/host-api/src/tests.rs`。
 - 设置页开关：`packages/ui/src/index.tsx`、`packages/ui/src/settings/telemetry-section.tsx`、`packages/ui/src/settings/about-settings-actions.ts`、`packages/ui/src/settings/pages/about-page.tsx`、`apps/desktop/tests/settings/settings.test.tsx`。
 - Windows 与 Linux：`platforms/common/Telemetry.{h,cpp}`、`platforms/common/tests/telemetry.cpp`、`platforms/windows/CMakeLists.txt`、`platforms/windows/settings/main.cpp`、`platforms/windows/src/entrypoints/server_main.cpp`、`platforms/linux/CMakeLists.txt`、`platforms/linux/README.md`、`platforms/linux/fcitx5/CMakeLists.txt`、`platforms/linux/fcitx5/FcitxEngine.cpp`、`platforms/linux/src/entrypoints/ibus_main.cpp`、`platforms/linux/tests/core/ibus_startup_telemetry.py`。
 - Apple：`platforms/macos/src/core/UsageReporting.{h,mm}`、`platforms/ios/SharedUI/core/UsageReporting.swift`、`platforms/ios/tests/core/UsageReportingTests.swift`。
-- Android：`platforms/android/README.md`、`platforms/android/java/app/msime/android/core/{Telemetry,MSIMEInputService}.java`、`platforms/android/java/app/msime/android/home/{HomeActivity,KeyboardSheets}.java`、`platforms/android/tests/core/TelemetryHandlerSmoke.java`。
+- Android：`platforms/android/README.md`、`platforms/android/java/app/lingyao/android/core/{Telemetry,LINGYAOInputService}.java`、`platforms/android/java/app/lingyao/android/home/{HomeActivity,KeyboardSheets}.java`、`platforms/android/tests/core/TelemetryHandlerSmoke.java`。
 - HarmonyOS：`platforms/harmony/README.md`、`platforms/harmony/native/client_napi.cpp`、`platforms/harmony/entry/src/main/ets/telemetry/Telemetry.ets`、`platforms/harmony/entry/src/main/ets/entryability/EntryAbility.ets`、`platforms/harmony/entry/src/main/ets/inputmethodextability/KeyboardExtensionAbility.ets`、`platforms/harmony/entry/src/main/ets/pages/Settings.ets`、`platforms/harmony/tests/keyboard-logic.test.ts`、`platforms/harmony/tests/tsconfig.json`。
 
 ```sh

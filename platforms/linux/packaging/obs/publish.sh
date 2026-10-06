@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# 把一个已发布的 linux-vVERSION 提交到 openSUSE OBS，由 OBS 按发行版构建、签名并托管软件源，用户添加源之后就能 apt/dnf/zypper/pacman 安装 msime。publish-linux-obs.yml 在每次发布后调用它，也可以手动运行。
+# 把一个已发布的 linux-vVERSION 提交到 openSUSE OBS，由 OBS 按发行版构建、签名并托管软件源，用户添加源之后就能 apt/dnf/zypper/pacman 安装 lingyao。publish-linux-obs.yml 在每次发布后调用它，也可以手动运行。
 #
 # 用法：platforms/linux/packaging/obs/publish.sh VERSION DEFS RELEASE
-#   DEFS 是 render-definitions.sh 的输出目录（MSIME_DEFINITIONS=rpm,debian,arch），里面要有 rpm/、debian/ 与 arch/msime-bin/。
-#   RELEASE 是放发布资产的目录，里面要有 msime-VERSION.tar.xz、msime-VERSION-vendor.tar.xz 与 msime-linux-VERSION-1.x86_64.rpm；把它作为 MSIME_RELEASE_DIR 交给 render-definitions.sh，它会先对着同目录的 SHA256SUMS 核对，这里不再重复核对。
+#   DEFS 是 render-definitions.sh 的输出目录（LINGYAO_DEFINITIONS=rpm,debian,arch），里面要有 rpm/、debian/ 与 arch/lingyao-bin/。
+#   RELEASE 是放发布资产的目录，里面要有 lingyao-VERSION.tar.xz、lingyao-VERSION-vendor.tar.xz 与 lingyao-linux-VERSION-1.x86_64.rpm；把它作为 LINGYAO_RELEASE_DIR 交给 render-definitions.sh，它会先对着同目录的 SHA256SUMS 核对，这里不再重复核对。
 #   需要已经登录的 osc（~/.config/osc/oscrc，或 OSC_CONFIG 指向的配置）。
 #
 # 环境变量：
 #   OBS_PROJECT  默认 home:<osc 配置里的用户名>
-#   OBS_PACKAGE  默认 msime
+#   OBS_PACKAGE  默认 lingyao
 #
-# 每次运行都会：按 repositories.txt 和 OBS 的发行版列表重写项目配置（仓库、架构），写入 prjconf，确保包存在，再把包里的文件整体换成这次发布的（RPM 用 spec、rpmlintrc 与两个 tarball；Debian/Ubuntu 用 .dsc、.debian.tar.xz 与按 .dsc 要求改名的两个 orig tarball；Arch 用 msime-bin 的 PKGBUILD、msime.install 与它重新打包的那个发布的 .rpm；加上 _constraints），提交后 OBS 按仓库类型各取所需的构建文件，自动开始构建。重复运行同一版本不会产生新的构建。
+# 每次运行都会：按 repositories.txt 和 OBS 的发行版列表重写项目配置（仓库、架构），写入 prjconf，确保包存在，再把包里的文件整体换成这次发布的（RPM 用 spec、rpmlintrc 与两个 tarball；Debian/Ubuntu 用 .dsc、.debian.tar.xz 与按 .dsc 要求改名的两个 orig tarball；Arch 用 lingyao-bin 的 PKGBUILD、lingyao.install 与它重新打包的那个发布的 .rpm；加上 _constraints），提交后 OBS 按仓库类型各取所需的构建文件，自动开始构建。重复运行同一版本不会产生新的构建。
 set -euo pipefail
 
 if [ $# -ne 3 ]; then
@@ -29,19 +29,19 @@ user=$("${osc[@]}" whois | awk '{print $1; exit}')
 user=${user%:}
 [ -n "$user" ] || { echo "osc is not logged in" >&2; exit 1; }
 project=${OBS_PROJECT:-home:$user}
-package=${OBS_PACKAGE:-msime}
+package=${OBS_PACKAGE:-lingyao}
 
-need() { [ -f "$1" ] || { echo "missing $1 (run render-definitions.sh $version with MSIME_DEFINITIONS=rpm,debian,arch and MSIME_RELEASE_DIR=RELEASE first)" >&2; exit 1; }; }
-spec=$defs/rpm/msime.spec
-rpmlintrc=$defs/rpm/msime-rpmlintrc
-dsc=$defs/debian/msime_$version-1.dsc
-debian_tar=$defs/debian/msime_$version-1.debian.tar.xz
-source_tar=$release/msime-$version.tar.xz
-vendor_tar=$release/msime-$version-vendor.tar.xz
+need() { [ -f "$1" ] || { echo "missing $1 (run render-definitions.sh $version with LINGYAO_DEFINITIONS=rpm,debian,arch and LINGYAO_RELEASE_DIR=RELEASE first)" >&2; exit 1; }; }
+spec=$defs/rpm/lingyao.spec
+rpmlintrc=$defs/rpm/lingyao-rpmlintrc
+dsc=$defs/debian/lingyao_$version-1.dsc
+debian_tar=$defs/debian/lingyao_$version-1.debian.tar.xz
+source_tar=$release/lingyao-$version.tar.xz
+vendor_tar=$release/lingyao-$version-vendor.tar.xz
 # Arch 仓库不联网，PKGBUILD 的 source 写的是发布页地址，makepkg 在包目录里找到同名文件就不再下载，所以把那个 .rpm 原名放进包里。
-pkgbuild=$defs/arch/msime-bin/PKGBUILD
-arch_install=$defs/arch/msime-bin/msime.install
-arch_rpm=$release/msime-linux-$version-1.x86_64.rpm
+pkgbuild=$defs/arch/lingyao-bin/PKGBUILD
+arch_install=$defs/arch/lingyao-bin/lingyao.install
+arch_rpm=$release/lingyao-linux-$version-1.x86_64.rpm
 for f in "$spec" "$rpmlintrc" "$dsc" "$debian_tar" "$source_tar" "$vendor_tar" "$pkgbuild" "$arch_install" "$arch_rpm"; do need "$f"; done
 
 work=$(mktemp -d)
@@ -62,8 +62,8 @@ for d in ET.parse(dists_path).getroot().findall("distribution"):
     by_name[d.findtext("reponame")] = d
 lines = [
     f"<project name={quoteattr(project)}>",
-    "  <title>灵耀输入法 MSIME</title>",
-    "  <description>灵耀输入法（MSIME）的 Linux 包，含 Fcitx5 与 IBus 输入法。由 https://github.com/Lcy040109/msime 的发布流程在每次发布后自动提交。</description>",
+    "  <title>灵耀输入法 LINGYAO</title>",
+    "  <description>灵耀输入法（LINGYAO）的 Linux 包，含 Fcitx5 与 IBus 输入法。由 https://github.com/Lcy040109/msime 的发布流程在每次发布后自动提交。</description>",
     f"  <person userid={quoteattr(user)} role=\"maintainer\"/>",
     "  <build><enable/></build>",
     "  <publish><enable/></publish>",
@@ -91,8 +91,8 @@ PY
 echo "== package $project/$package"
 cat > "$work/package.xml" <<EOF
 <package name="$package" project="$project">
-  <title>灵耀输入法 MSIME</title>
-  <description>开源中文输入法，Fcitx5 与 IBus 输入法引擎，支持全拼、双拼与五笔。装好后每个用户运行一次 msime-linux-setup --download 完成首次配置。</description>
+  <title>灵耀输入法 LINGYAO</title>
+  <description>开源中文输入法，Fcitx5 与 IBus 输入法引擎，支持全拼、双拼与五笔。装好后每个用户运行一次 lingyao-linux-setup --download 完成首次配置。</description>
   <url>https://msime.app</url>
 </package>
 EOF
@@ -107,8 +107,8 @@ echo "== upload $version"
   find . -maxdepth 1 -type f ! -name '.*' -delete
   cp "$spec" "$rpmlintrc" "$dsc" "$debian_tar" "$source_tar" "$vendor_tar" "$pkgbuild" "$arch_install" "$arch_rpm" "$here/_constraints" .
   # .dsc 里写的是 Debian 的 orig 名字，按它改名的副本供 Debian/Ubuntu 仓库使用；RPM 仓库用原名的那两个。
-  cp "$source_tar" "msime_$version.orig.tar.xz"
-  cp "$vendor_tar" "msime_$version.orig-vendor.tar.xz"
+  cp "$source_tar" "lingyao_$version.orig.tar.xz"
+  cp "$vendor_tar" "lingyao_$version.orig-vendor.tar.xz"
   "${osc[@]}" addremove >/dev/null
   if "${osc[@]}" status | grep -q .; then
     "${osc[@]}" commit -m "Update to $version (linux-v$version)"

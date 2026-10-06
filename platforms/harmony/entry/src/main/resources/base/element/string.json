@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "MSIME input method"
+      "value": "LINGYAO input method"
     },
     {
       "name": "keyboard_ability_desc",
-      "value": "MSIME keyboard"
+      "value": "LINGYAO keyboard"
     },
     {
       "name": "keyboard_ability_label",
-      "value": "MSIME"
+      "value": "LINGYAO"
     },
     {
       "name": "internet_permission_reason",

@@ -6,7 +6,7 @@
 #include <string>
 #include <initializer_list>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 // Delegate native layout composition to the system Compose table. No IME
 // spelling or candidate logic lives here; that remains in Engine.
 class NativeCompose {
@@ -51,4 +51,4 @@ public:
     return std::nullopt;
   }
 };
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""msime-linux-setup --unregister puts back the desktop candidate panel settings the hosts took over, the Linux side of the Windows uninstaller removing everything MSIME left: Fcitx5 classicui's Theme, DarkTheme, Font and WheelForPaging, and the IBus panel's custom-font and use-custom-font. A setting is restored only while it still holds what MSIME wrote; one the user changed since is kept. The theme MSIME generated for Fcitx5 is removed.
+"""lingyao-linux-setup --unregister puts back the desktop candidate panel settings the hosts took over, the Linux side of the Windows uninstaller removing everything LINGYAO left: Fcitx5 classicui's Theme, DarkTheme, Font and WheelForPaging, and the IBus panel's custom-font and use-custom-font. A setting is restored only while it still holds what LINGYAO wrote; one the user changed since is kept. The theme LINGYAO generated for Fcitx5 is removed.
 
 A stub stands in for gdbus and gsettings: it logs each call and keeps Fcitx5's bus state and the IBus panel keys in a JSON file. Each case runs against a scratch HOME holding a classicui.conf and a restore record, with the record written in the shape the hosts write it (src/candidates/PanelRestoreRecord.h).
 """
@@ -15,12 +15,12 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/msime-linux-setup"
+SCRIPT = ROOT / "scripts/lingyao-linux-setup"
 PANEL = "org.freedesktop.ibus.panel"
 SET_CONFIG = "org.fcitx.Fcitx.Controller1.SetConfig"
 
-_setup_loader = SourceFileLoader("msime_linux_setup", str(SCRIPT))
-_setup_spec = importlib.util.spec_from_loader("msime_linux_setup", _setup_loader)
+_setup_loader = SourceFileLoader("lingyao_linux_setup", str(SCRIPT))
+_setup_spec = importlib.util.spec_from_loader("lingyao_linux_setup", _setup_loader)
 assert _setup_spec and _setup_spec.loader
 _setup_module = importlib.util.module_from_spec(_setup_spec)
 _setup_spec.loader.exec_module(_setup_module)
@@ -60,7 +60,7 @@ if name == "gdbus":
         save()
         # A host still running records a change while Fcitx5 applies the restored options.
         if "record_during_set_config" in state:
-            Path(os.environ["HOME"], ".local/state/msime-client/panel-restore.json").write_text(state["record_during_set_config"])
+            Path(os.environ["HOME"], ".local/state/lingyao-client/panel-restore.json").write_text(state["record_during_set_config"])
         print("()")
     else:
         sys.exit(2)
@@ -87,8 +87,8 @@ Vertical Candidate List=False
 WheelForPaging=False
 Font="Noto Sans SC, Microsoft YaHei 18px"
 MenuFont="Sans 10"
-Theme=msime
-DarkTheme=msime
+Theme=lingyao
+DarkTheme=lingyao
 UseDarkTheme=False
 
 [Extra]
@@ -97,10 +97,10 @@ Theme=kept
 
 RECORD = {
     "fcitx5": {
-        "Theme": {"prior": "default", "written": "msime"},
-        "DarkTheme": {"prior": "default-dark", "written": "msime"},
+        "Theme": {"prior": "default", "written": "lingyao"},
+        "DarkTheme": {"prior": "default-dark", "written": "lingyao"},
         "Font": {"prior": "Sans 10", "written": "Noto Sans SC, Microsoft YaHei 18px"},
-        # Turned off again in fcitx5-configtool after MSIME turned it on.
+        # Turned off again in fcitx5-configtool after LINGYAO turned it on.
         "WheelForPaging": {"prior": "False", "written": "True"},
     },
     "ibus": {
@@ -114,7 +114,7 @@ class Harness:
     def __init__(self, scratch: Path):
         self.scratch = scratch
         self.home = scratch / "home"
-        self.setup = scratch / "prefix/bin/msime-linux-setup"
+        self.setup = scratch / "prefix/bin/lingyao-linux-setup"
         self.setup.parent.mkdir(parents=True)
         self.setup.write_text(SCRIPT.read_text())
         self.setup.chmod(0o755)
@@ -127,14 +127,14 @@ class Harness:
         self.state_file = scratch / "stub-state.json"
         self.log = scratch / "calls.log"
         self.environment = {key: value for key, value in os.environ.items()
-                            if not key.startswith(("MSIME_", "XDG_", "DBUS_"))}
+                            if not key.startswith(("LINGYAO_", "XDG_", "DBUS_"))}
         self.environment.update(
             PATH=f"{tools}:{os.environ.get('PATH', '/usr/bin:/bin')}", HOME=str(self.home),
             STUB_STATE=str(self.state_file), STUB_LOG=str(self.log),
         )
         self.classicui = self.home / ".config/fcitx5/conf/classicui.conf"
-        self.record = self.home / ".local/state/msime-client/panel-restore.json"
-        self.theme = self.home / ".local/share/fcitx5/themes/msime"
+        self.record = self.home / ".local/state/lingyao-client/panel-restore.json"
+        self.theme = self.home / ".local/share/fcitx5/themes/lingyao"
 
     def world(self, record=RECORD, classicui=CLASSICUI, fcitx5_running=False, panel_user=None, **extra) -> None:
         for path in (self.classicui, self.record, self.theme / "theme.conf"):
@@ -144,7 +144,7 @@ class Harness:
             self.record.unlink(missing_ok=True)
         else:
             self.record.write_text(json.dumps(record))
-        (self.theme / "theme.conf").write_text("[Metadata]\nName=MSIME\n")
+        (self.theme / "theme.conf").write_text("[Metadata]\nName=LINGYAO\n")
         (self.theme / "decoration-0123.png").write_bytes(b"\x89PNG")
         self.state_file.write_text(json.dumps({
             "fcitx5_running": fcitx5_running,
@@ -180,7 +180,7 @@ def restored_file(**values: str) -> str:
 
 
 def main() -> int:
-    with tempfile.TemporaryDirectory(prefix="msime-panel-lock-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="lingyao-panel-lock-") as temporary:
         root = Path(temporary)
         target = root / "outside.lock"
         target.write_text("synthetic-lock-target")
@@ -196,7 +196,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as name:
         harness = Harness(Path(name))
 
-        # Fcitx5 not running: classicui.conf is edited in place. The options still holding MSIME's values go back, WheelForPaging, which the user turned off again, is left, and every other line, including a same-named key in a later section, is untouched.
+        # Fcitx5 not running: classicui.conf is edited in place. The options still holding LINGYAO's values go back, WheelForPaging, which the user turned off again, is left, and every other line, including a same-named key in a later section, is untouched.
         harness.world()
         result = harness.unregister()
         assert harness.classicui.read_text() == restored_file(Theme="default", DarkTheme="default-dark", Font='"Sans 10"'), harness.classicui.read_text()
@@ -235,7 +235,7 @@ def main() -> int:
         assert "未能经 D-Bus 恢复 Fcitx5 候选面板设置" in result.stderr, result.stderr
         assert harness.classicui.read_text() == restored_file(Theme="default", DarkTheme="default-dark", Font='"Sans 10"')
 
-        # The user picked other settings after MSIME wrote its own: all of them stay.
+        # The user picked other settings after LINGYAO wrote its own: all of them stay.
         changed = restored_file(Theme="nord", DarkTheme="nord-dark", Font='"Serif 12"')
         harness.world(classicui=changed, panel_user={"custom-font": "Monospace 9", "use-custom-font": False})
         result = harness.unregister()
@@ -251,13 +251,13 @@ def main() -> int:
             panel_user={},
         )
         harness.unregister()
-        # The theme options, which the record does not mention, still name MSIME's theme and go back to the stock ones (see below).
+        # The theme options, which the record does not mention, still name LINGYAO's theme and go back to the stock ones (see below).
         assert harness.classicui.read_text() == restored_file(
             Theme="default", DarkTheme="default-dark", Font='"Odd \\"Face\\" \\\\ 9"'
         ), harness.classicui.read_text()
 
-        # MSIME's theme is removed, so no theme option is left naming it. A record from before the hosts mapped it kept "msime" as the value replaced: the stock theme goes back instead, over D-Bus as well as in the file.
-        own = {"fcitx5": {"Theme": {"prior": "msime", "written": "msime"}, "DarkTheme": {"prior": "msime", "written": "msime"}}}
+        # LINGYAO's theme is removed, so no theme option is left naming it. A record from before the hosts mapped it kept "lingyao" as the value replaced: the stock theme goes back instead, over D-Bus as well as in the file.
+        own = {"fcitx5": {"Theme": {"prior": "lingyao", "written": "lingyao"}, "DarkTheme": {"prior": "lingyao", "written": "lingyao"}}}
         harness.world(record=own, panel_user={})
         result = harness.unregister()
         assert harness.classicui.read_text() == restored_file(Theme="default", DarkTheme="default-dark"), harness.classicui.read_text()
@@ -306,7 +306,7 @@ def main() -> int:
 
         # A concurrent host may replace the record with an oversized document between the first
         # read and the locked compare. Keep that record and finish uninstall cleanly.
-        later = json.dumps({"fcitx5": {"Font": {"prior": "x" * (64 * 1024), "written": "msime"}}})
+        later = json.dumps({"fcitx5": {"Font": {"prior": "x" * (64 * 1024), "written": "lingyao"}}})
         harness.world(fcitx5_running=True, record_during_set_config=later)
         result = harness.unregister()
         assert "Traceback" not in result.stderr, result.stderr
@@ -328,7 +328,7 @@ def main() -> int:
 
         # The hosts cap the restore record at 64 KiB. An oversized record is kept for a later
         # repair instead of being loaded without a bound or treated as a valid restore document.
-        huge = {"fcitx5": {"Font": {"prior": "x" * (64 * 1024), "written": "msime"}}}
+        huge = {"fcitx5": {"Font": {"prior": "x" * (64 * 1024), "written": "lingyao"}}}
         harness.world(record=huge)
         result = harness.unregister()
         assert "无法读取候选面板设置的恢复记录" in result.stderr, result.stderr
@@ -337,16 +337,16 @@ def main() -> int:
         # XDG_STATE_HOME, XDG_CONFIG_HOME and XDG_DATA_HOME are honoured when absolute, as the hosts resolve them.
         harness.world()
         state, config, data = (Path(name) / part for part in ("xdg-state", "xdg-config", "xdg-data"))
-        (state / "msime-client").mkdir(parents=True)
-        harness.record.rename(state / "msime-client/panel-restore.json")
+        (state / "lingyao-client").mkdir(parents=True)
+        harness.record.rename(state / "lingyao-client/panel-restore.json")
         (config / "fcitx5/conf").mkdir(parents=True)
         harness.classicui.rename(config / "fcitx5/conf/classicui.conf")
         (data / "fcitx5/themes").mkdir(parents=True)
-        harness.theme.rename(data / "fcitx5/themes/msime")
+        harness.theme.rename(data / "fcitx5/themes/lingyao")
         harness.environment.update(XDG_STATE_HOME=str(state), XDG_CONFIG_HOME=str(config), XDG_DATA_HOME=str(data))
         harness.unregister()
         assert (config / "fcitx5/conf/classicui.conf").read_text() == restored_file(Theme="default", DarkTheme="default-dark", Font='"Sans 10"')
-        assert not (state / "msime-client/panel-restore.json").exists() and not (data / "fcitx5/themes/msime").exists()
+        assert not (state / "lingyao-client/panel-restore.json").exists() and not (data / "fcitx5/themes/lingyao").exists()
 
     print("setup --unregister restores the candidate panel settings the hosts replaced")
     return 0

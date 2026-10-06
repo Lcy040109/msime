@@ -1,6 +1,6 @@
 #include "WindowsServer.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 WindowsServer::WindowsServer(WindowsServerOptions options,
                              std::string host_options,
                              SessionPump::KeyHandler key,
@@ -33,4 +33,4 @@ WindowsServer::WindowsServer(WindowsServerOptions options,
       std::move(options.preferences_published));
 }
 WindowsServer::~WindowsServer() { stop(); }
-} // namespace msime::windows
+} // namespace lingyao::windows

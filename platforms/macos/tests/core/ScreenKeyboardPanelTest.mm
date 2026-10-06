@@ -25,7 +25,7 @@ static void AssertPixel(NSView *view, unsigned rgb) {
 }
 
 static NSButton *Key(NSPanel *panel, NSUInteger index) {
-    NSString *identifier = [NSString stringWithFormat:@"MSIMEScreenKeyboardKey%lu", (unsigned long)index];
+    NSString *identifier = [NSString stringWithFormat:@"LINGYAOScreenKeyboardKey%lu", (unsigned long)index];
     for (NSView *view in panel.contentView.subviews)
         if ([view.accessibilityIdentifier isEqualToString:identifier]) return (NSButton *)view;
     assert(false);
@@ -37,19 +37,19 @@ static void Press(NSPanel *panel, NSUInteger index) {
 }
 int main() {
     @autoreleasepool {
-        assert(msime::mac::CapturedScreenKeyboardTarget(4321, 100) == 4321);
-        assert(msime::mac::CapturedScreenKeyboardTarget(100, 100) == 0);
-        assert(msime::mac::CapturedScreenKeyboardTarget(0, 100) == 0);
-        assert(msime::mac::CapturedScreenKeyboardTarget(-1, 100) == 0);
-        assert(msime::mac::LiveScreenKeyboardTarget(4321, 100) == 4321);
-        assert(msime::mac::LiveScreenKeyboardTarget(9876, 100) == 9876);
-        assert(msime::mac::LiveScreenKeyboardTarget(100, 100) == 0);
+        assert(lingyao::mac::CapturedScreenKeyboardTarget(4321, 100) == 4321);
+        assert(lingyao::mac::CapturedScreenKeyboardTarget(100, 100) == 0);
+        assert(lingyao::mac::CapturedScreenKeyboardTarget(0, 100) == 0);
+        assert(lingyao::mac::CapturedScreenKeyboardTarget(-1, 100) == 0);
+        assert(lingyao::mac::LiveScreenKeyboardTarget(4321, 100) == 4321);
+        assert(lingyao::mac::LiveScreenKeyboardTarget(9876, 100) == 9876);
+        assert(lingyao::mac::LiveScreenKeyboardTarget(100, 100) == 0);
         [NSApplication sharedApplication];
         __block unsigned short lastCode = 65535;
         __block NSEventModifierFlags lastFlags = 0;
         __block NSUInteger sends = 0;
         __block BOOL accepted = YES;
-        MSIMEScreenKeyboardPanel *panel = [[MSIMEScreenKeyboardPanel alloc] initWithKeySender:^BOOL(unsigned short code, NSEventModifierFlags flags) {
+        LINGYAOScreenKeyboardPanel *panel = [[LINGYAOScreenKeyboardPanel alloc] initWithKeySender:^BOOL(unsigned short code, NSEventModifierFlags flags) {
             ++sends; lastCode = code; lastFlags = flags; return accepted;
         }];
         assert(!panel.canBecomeKeyWindow && !panel.canBecomeMainWindow);

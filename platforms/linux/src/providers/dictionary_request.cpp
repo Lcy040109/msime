@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <iostream>
 #include <array>
 #include <memory>
@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "--help") {
-    std::cout << "Usage: msime-linux-dictionary < request.json\n";
+    std::cout << "Usage: lingyao-linux-dictionary < request.json\n";
     return 0;
   }
   if (argc != 1)
@@ -17,10 +17,10 @@ int main(int argc, char **argv) {
   const auto length = static_cast<size_t>(std::cin.gcount());
   if (std::cin.bad() || length == 0 || length > 65536)
     return 2;
-  std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-      msime_client_dictionary(reinterpret_cast<const uint8_t *>(buffer.data()),
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+      lingyao_client_dictionary(reinterpret_cast<const uint8_t *>(buffer.data()),
                               length),
-      msime_client_string_free);
+      lingyao_client_string_free);
   if (!result)
     return 1;
   try {

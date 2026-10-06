@@ -1,12 +1,12 @@
-#import "MSIMEClientSession.h"
-#include "msime_client.h"
+#import "LINGYAOClientSession.h"
+#include "lingyao_client.h"
 #include <cassert>
 #include <initializer_list>
 
 static BOOL gSnapshotIntegerProbeCalled;
 static uint64_t gSnapshotIntegerProbeHandle;
 
-@interface SnapshotIntegerProbe : MSIMEClientSession
+@interface SnapshotIntegerProbe : LINGYAOClientSession
 @end
 
 @implementation SnapshotIntegerProbe
@@ -27,7 +27,7 @@ static uint64_t gSnapshotIntegerProbeHandle;
 }
 @end
 
-static NSDictionary *reload(MSIMEClientSession *session, NSString *directory, BOOL expectError) {
+static NSDictionary *reload(LINGYAOClientSession *session, NSString *directory, BOOL expectError) {
     __block BOOL done = NO;
     __block NSDictionary *loaded = nil;
     [session reloadPreferencesDirectory:directory completion:^(NSDictionary *result, NSError *error) {
@@ -79,49 +79,49 @@ int main() {
             options[name] = path;
         }
         NSError *error = nil;
-        MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+        LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
         assert(session && !error);
-        NSDictionary *activeOptions = [MSIMEClientSession activeHostOptions];
+        NSDictionary *activeOptions = [LINGYAOClientSession activeHostOptions];
         assert([activeOptions[@"api_version"] isEqual:@1]);
         error = nil;
-        assert(![MSIMEClientSession applySnapshotHandle:UINT64_MAX expectedVersion:[@"0" stringByPaddingToLength:64 withString:@"0" startingAtIndex:0] error:&error]);
+        assert(![LINGYAOClientSession applySnapshotHandle:UINT64_MAX expectedVersion:[@"0" stringByPaddingToLength:64 withString:@"0" startingAtIndex:0] error:&error]);
         assert(error);
         error = nil;
-        NSDictionary *initialPreferences = [MSIMEClientSession loadPreferencesInDirectory:root error:&error];
+        NSDictionary *initialPreferences = [LINGYAOClientSession loadPreferencesInDirectory:root error:&error];
         assert(initialPreferences && !error && [initialPreferences[@"revision"] isEqual:@0]);
         error = nil;
-        assert(![MSIMEClientSession prepareHostWithResourcesDirectory:@"relative/resources" stateRoot:root error:&error] && error);
+        assert(![LINGYAOClientSession prepareHostWithResourcesDirectory:@"relative/resources" stateRoot:root error:&error] && error);
         error = nil;
-        assert(![MSIMEClientSession prepareHostWithResourcesDirectory:@"" stateRoot:root error:&error] && error);
+        assert(![LINGYAOClientSession prepareHostWithResourcesDirectory:@"" stateRoot:root error:&error] && error);
         error = nil;
-        NSDictionary *saved = [MSIMEClientSession savePreferencesInDirectory:root expectedRevision:0 snapshot:@{@"format_version": @1, @"revision": @0, @"preferences": options[@"preferences"]} error:&error];
+        NSDictionary *saved = [LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:0 snapshot:@{@"format_version": @1, @"revision": @0, @"preferences": options[@"preferences"]} error:&error];
         assert(saved && !error && [saved[@"revision"] isEqual:@1]);
         error = nil;
         NSDictionary *stale = @{ @"format_version": @1, @"revision": @0, @"preferences": options[@"preferences"] };
-        assert(![MSIMEClientSession savePreferencesInDirectory:root expectedRevision:0 snapshot:stale error:&error] && error);
+        assert(![LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:0 snapshot:stale error:&error] && error);
         error = nil;
         NSDictionary *unsupported = @{ @"format_version": @2, @"revision": @1, @"preferences": options[@"preferences"] };
-        assert(![MSIMEClientSession savePreferencesInDirectory:root expectedRevision:1 snapshot:unsupported error:&error] && error);
-        NSDictionary *invalidDictionary = [MSIMEClientSession dictionaryRequest:@{@"options": options, @"action": @{@"operation": @"unknown"}} error:&error];
+        assert(![LINGYAOClientSession savePreferencesInDirectory:root expectedRevision:1 snapshot:unsupported error:&error] && error);
+        NSDictionary *invalidDictionary = [LINGYAOClientSession dictionaryRequest:@{@"options": options, @"action": @{@"operation": @"unknown"}} error:&error];
         assert(!invalidDictionary && error);
         error = nil;
-        NSDictionary *invalidHandwriting = [MSIMEClientSession handwritingProviderRequest:@{@"language": @"zh-CN", @"socket_path": @"relative/provider", @"strokes": @[]} error:&error];
+        NSDictionary *invalidHandwriting = [LINGYAOClientSession handwritingProviderRequest:@{@"language": @"zh-CN", @"socket_path": @"relative/provider", @"strokes": @[]} error:&error];
         assert(!invalidHandwriting && error);
         error = nil;
         NSString *oversizedPath = [@"/tmp/" stringByPaddingToLength:4100 withString:@"x" startingAtIndex:0];
-        NSDictionary *oversizedHandwriting = [MSIMEClientSession handwritingProviderRequest:@{@"language": @"zh-CN", @"socket_path": oversizedPath, @"strokes": @[]} error:&error];
+        NSDictionary *oversizedHandwriting = [LINGYAOClientSession handwritingProviderRequest:@{@"language": @"zh-CN", @"socket_path": oversizedPath, @"strokes": @[]} error:&error];
         assert((!oversizedHandwriting && error));
         error = nil;
         NSMutableDictionary *oversized = [@{} mutableCopy];
         oversized[@"padding"] = [@"x" stringByPaddingToLength:70000 withString:@"x" startingAtIndex:0];
-        assert(![MSIMEClientSession dictionaryRequest:oversized error:&error] && error);
+        assert(![LINGYAOClientSession dictionaryRequest:oversized error:&error] && error);
         assert([session setFocused:YES error:&error]);
         assert([session typeASCII:'U' shift:YES error:&error]);
         for (uint8_t key : {'4', 'e', '2', 'd'}) assert([session typeASCII:key shift:NO error:&error]);
         NSDictionary *snapshot = @{@"format_version": @1, @"revision": @1, @"preferences": @{@"scheme": @"quanpin", @"candidate_page_size": @2, @"learning": @NO, @"chinese_punctuation": @NO}};
         NSDictionary *queued = [session updatePreferencesSnapshot:snapshot error:&error];
         assert([queued[@"deferred"] isEqual:@YES]);
-        NSDictionary *result = [session command:MSIME_COMMIT_CANDIDATE error:&error];
+        NSDictionary *result = [session command:LINGYAO_COMMIT_CANDIDATE error:&error];
         assert([result[@"commit"] isEqual:@"中"]);
         assert([[session updatePreferencesSnapshot:snapshot error:&error][@"deferred"] isEqual:@NO]);
         assert([[session typeASCII:',' shift:NO error:&error][@"handled"] isEqual:@NO]);
@@ -131,7 +131,7 @@ int main() {
         assert([session typeASCII:'U' shift:YES error:&error]);
         for (uint8_t key : {'4', 'e', '2', 'd'}) assert([session typeASCII:key shift:NO error:&error]);
         assert([reload(session, root, NO)[@"deferred"] isEqual:@YES]);
-        assert([[session command:MSIME_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"中"]);
+        assert([[session command:LINGYAO_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"中"]);
         assert([[session typeASCII:',' shift:NO error:&error][@"commit"] isEqual:@"，"]);
         assert([[@"broken" dataUsingEncoding:NSUTF8StringEncoding] writeToFile:preferencesPath atomically:YES]);
         assert(!reload(session, root, YES));
@@ -179,12 +179,12 @@ int main() {
             assert(created);
             localOptions[name] = path;
         }
-        for (NSString *name in @[@"msime-english.db", @"msime-japanese.dat"]) {
+        for (NSString *name in @[@"lingyao-english.db", @"lingyao-japanese.dat"]) {
             BOOL written = [[@"fixture" dataUsingEncoding:NSUTF8StringEncoding] writeToFile:[localOptions[@"resources"] stringByAppendingPathComponent:name] atomically:YES];
             assert(written);
         }
         error = nil;
-        MSIMEClientSession *local = [[MSIMEClientSession alloc] initWithOptions:localOptions error:&error];
+        LINGYAOClientSession *local = [[LINGYAOClientSession alloc] initWithOptions:localOptions error:&error];
         assert(local && !error);
         assert([local setFocused:YES error:&error]);
         const auto showsOnlyFallback = [](NSDictionary *transition, NSString *text) {
@@ -193,15 +193,15 @@ int main() {
                    [candidates[0][@"text"] isEqual:text] && [candidates[0][@"source"] isEqual:@9];
         };
         assert(showsOnlyFallback([local typeASCII:'Y' shift:YES error:&error], @"Y"));
-        NSDictionary *bareEnglish = [local command:MSIME_COMMIT_CANDIDATE error:&error];
+        NSDictionary *bareEnglish = [local command:LINGYAO_COMMIT_CANDIDATE error:&error];
         assert([bareEnglish[@"commit"] isEqual:@"Y"] && [bareEnglish[@"view"][@"candidates"] count] == 0);
         NSDictionary *unmatched = nil;
         assert([local typeASCII:'T' shift:YES error:&error]);
         for (uint8_t key : {'x', 'i', 'n'}) unmatched = [local typeASCII:key shift:NO error:&error];
         assert(showsOnlyFallback(unmatched, @"Txin"));
-        assert([[local command:MSIME_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"Txin"]);
+        assert([[local command:LINGYAO_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"Txin"]);
         assert(showsOnlyFallback([local typeASCII:'R' shift:YES error:&error], @"R"));
-        assert([[local command:MSIME_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"R"]);
+        assert([[local command:LINGYAO_COMMIT_CANDIDATE error:&error][@"commit"] isEqual:@"R"]);
         assert([local closeWithError:&error]);
         [[NSFileManager defaultManager] removeItemAtPath:localRoot error:nil];
         puts("Apple Foundation consumer: input, commit, thread and lifetime checks passed");

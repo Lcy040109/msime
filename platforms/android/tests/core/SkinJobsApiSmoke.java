@@ -1,5 +1,5 @@
-import app.msime.android.CloudApi;
-import app.msime.android.SkinJobsApi;
+import app.lingyao.android.CloudApi;
+import app.lingyao.android.SkinJobsApi;
 
 /** AI 设计皮肤的失败分类与提示文案；请求本身走 org.json，在 check-host 的桩 classpath 下跑不了，留给设备上验证。 */
 public final class SkinJobsApiSmoke {

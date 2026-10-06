@@ -34,7 +34,7 @@ export function DataDirectorySection({
         <SettingsGroupNote>
           词库、学习记录、皮肤、剪贴板历史和设置共用此位置。可移动到其他磁盘。
           {linux &&
-            "输入法入口配置和在线服务、语音服务的凭据固定保存在 ~/.config/msime-client，不随数据移动。"}
+            "输入法入口配置和在线服务、语音服务的凭据固定保存在 ~/.config/lingyao-client，不随数据移动。"}
         </SettingsGroupNote>
         <ActionRow
           title="当前目录"

@@ -6,7 +6,7 @@
 #include <optional>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct FloatingToolbarSettings {
   unsigned scale_percent = 100;
   unsigned font_size = 24;
@@ -83,4 +83,4 @@ private:
   std::optional<uint64_t> revision_;
   std::optional<FloatingToolbarSettings> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -14,7 +14,7 @@ final class DictionarySnapshotWorkerTests: XCTestCase {
     let queue = DictionarySnapshotQueue(directory: root)
     try queue.publishLocalVersion(originalVersion)
     let entry = #"{"id":"worker-fixture","kind":"quick","code":"workerfixture","word":"后台应用合成词条","weight":100000,"revision":1,"updated_at":"2026-09-08T00:00:00Z"}"#
-    let lines = [#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":1}"#,
+    let lines = [#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":1}"#,
       "{\"type\":\"entry\",\"data\":\(entry)}", "{\"type\":\"overlay\",\"deleted\":false,\"data\":\(entry)}"]
     let body = Data((lines.joined(separator: "\n") + "\n").utf8)
     let digest = SHA256.hash(data: body).map { String(format: "%02x", $0) }.joined()

@@ -4,15 +4,15 @@
 
 #import "../../src/core/EditionIdentity.h"
 
-extern "C" void msime_macos_notify_typing_statistics_enabled(const char *notification, bool enabled);
+extern "C" void lingyao_macos_notify_typing_statistics_enabled(const char *notification, bool enabled);
 
 // 设置应用发出的通知只到同一个版本的输入法：通知名随版本而变，full 不变。这里用一个只为测试存在的版本名收发，不会改动本机正在运行的输入法。
 int main() {
     @autoreleasepool {
         NSString *const base = @"LingyaoTypingStatisticsEnabledChangedNotification";
-        assert([MSIMEEditionNotificationNameIn(@{}, base) isEqualToString:base]);
-        assert([MSIMEEditionNotificationNameIn(@{@"MSIMEEdition": @"full"}, base) isEqualToString:base]);
-        NSString *const name = MSIMEEditionNotificationNameIn(@{@"MSIMEEdition": @"ctestedition"}, base);
+        assert([LINGYAOEditionNotificationNameIn(@{}, base) isEqualToString:base]);
+        assert([LINGYAOEditionNotificationNameIn(@{@"LINGYAOEdition": @"full"}, base) isEqualToString:base]);
+        NSString *const name = LINGYAOEditionNotificationNameIn(@{@"LINGYAOEdition": @"ctestedition"}, base);
         assert([name isEqualToString:[base stringByAppendingString:@".ctestedition"]]);
 
         NSDistributedNotificationCenter *center = NSDistributedNotificationCenter.defaultCenter;
@@ -29,7 +29,7 @@ int main() {
             fullReceived = YES;
         }];
 
-        msime_macos_notify_typing_statistics_enabled(name.UTF8String, true);
+        lingyao_macos_notify_typing_statistics_enabled(name.UTF8String, true);
         NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:2.0];
         while (!received && deadline.timeIntervalSinceNow > 0) {
             [NSRunLoop.currentRunLoop runMode:NSDefaultRunLoopMode
@@ -39,7 +39,7 @@ int main() {
         assert(received.boolValue);
 
         received = nil;
-        msime_macos_notify_typing_statistics_enabled(name.UTF8String, false);
+        lingyao_macos_notify_typing_statistics_enabled(name.UTF8String, false);
         deadline = [NSDate dateWithTimeIntervalSinceNow:2.0];
         while (!received && deadline.timeIntervalSinceNow > 0) {
             [NSRunLoop.currentRunLoop runMode:NSDefaultRunLoopMode

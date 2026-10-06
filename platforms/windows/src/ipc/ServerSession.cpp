@@ -9,11 +9,11 @@
 #include <memory>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 nlohmann::json response(char *raw) {
-  std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-      raw, msime_client_string_free);
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+      raw, lingyao_client_string_free);
   if (!raw)
     throw std::runtime_error("Missing shared host response");
   auto document = nlohmann::json::parse(raw);
@@ -26,12 +26,12 @@ nlohmann::json response(char *raw) {
 } // namespace
 ServerSession::ServerSession(uint64_t client_id, const std::string &options)
     : client_(client_id) {
-  if (!client_ || options.size() > 16384 || msime_client_abi_version() != 3)
+  if (!client_ || options.size() > 16384 || lingyao_client_abi_version() != 3)
     throw std::invalid_argument("Invalid Windows session configuration");
   const auto document = nlohmann::json::parse(options);
   traditional_output_ = document.value("preferences", nlohmann::json::object())
                             .value("traditional_chinese_output", false);
-  auto created = response(msime_client_create(
+  auto created = response(lingyao_client_create(
       reinterpret_cast<const uint8_t *>(options.data()), options.size()));
   session_ = created.at("session").get<uint64_t>();
 }
@@ -42,8 +42,8 @@ ServerSession::~ServerSession() {
     std::terminate();
   // The player outlives every session, so music this session let play would otherwise go on with no input method in front of it.
   if (music_active_)
-    (void)msime_client_music_set_active(session_, false);
-  msime_client_string_free(msime_client_destroy(session_));
+    (void)lingyao_client_music_set_active(session_, false);
+  lingyao_client_string_free(lingyao_client_destroy(session_));
 }
 void ServerSession::check_thread() const {
   if (std::this_thread::get_id() != thread_)
@@ -59,8 +59,8 @@ nlohmann::json ServerSession::activate(uint64_t epoch) {
   if (!epoch || epoch < epoch_ || (epoch == epoch_ && !active_))
     throw std::logic_error("Expired Windows activation");
   if (active_ && epoch != epoch_)
-    response(msime_client_focus(session_, false));
-  auto result = response(msime_client_focus(session_, input_enabled_));
+    response(lingyao_client_focus(session_, false));
+  auto result = response(lingyao_client_focus(session_, input_enabled_));
   epoch_ = epoch;
   active_ = true;
   refresh_typing_effect_settings();
@@ -68,28 +68,28 @@ nlohmann::json ServerSession::activate(uint64_t epoch) {
 }
 nlohmann::json ServerSession::deactivate(uint64_t epoch) {
   check_active(epoch);
-  auto result = response(msime_client_focus(session_, false));
+  auto result = response(lingyao_client_focus(session_, false));
   active_ = false;
   return result;
 }
 void ServerSession::set_input_enabled(uint64_t epoch, bool enabled) {
   check_active(epoch);
   if (input_enabled_ != enabled) {
-    response(msime_client_focus(session_, enabled));
+    response(lingyao_client_focus(session_, enabled));
     input_enabled_ = enabled;
   }
 }
 nlohmann::json ServerSession::cancel_again(nlohmann::json result) {
-  // 韩文汉字列表或注音列表打开时，MSIME_CANCEL 只关闭列表、组字保留（msime_client.h）；越南文词和藏文音节串上的第一次只把原文重新显示出来；第二次才丢弃它。
+  // 韩文汉字列表或注音列表打开时，LINGYAO_CANCEL 只关闭列表、组字保留（lingyao_client.h）；越南文词和藏文音节串上的第一次只把原文重新显示出来；第二次才丢弃它。
   if (result.at("commit").is_null() &&
       scheme::AlwaysInlinePreedit(static_cast<int>(result.at("view").value("scheme", 0u))) &&
       !result.at("view").at("editing_text").get<std::string>().empty())
-    return response(msime_client_command(session_, MSIME_CANCEL));
+    return response(lingyao_client_command(session_, LINGYAO_CANCEL));
   return result;
 }
 void ServerSession::cancel_composition(uint64_t epoch) {
   check_active(epoch);
-  auto result = response(msime_client_command(session_, MSIME_CANCEL));
+  auto result = response(lingyao_client_command(session_, LINGYAO_CANCEL));
   result = cancel_again(std::move(result));
   if (!result.at("commit").is_null() ||
       !result.at("view").at("editing_text").get<std::string>().empty() ||
@@ -98,26 +98,26 @@ void ServerSession::cancel_composition(uint64_t epoch) {
 }
 nlohmann::json ServerSession::finish_composition(uint64_t epoch) {
   check_active(epoch);
-  return response(msime_client_command(session_, MSIME_FINISH_COMPOSITION));
+  return response(lingyao_client_command(session_, LINGYAO_FINISH_COMPOSITION));
 }
 nlohmann::json ServerSession::command(uint64_t epoch, uint32_t command) {
   check_active(epoch);
   if (!input_enabled_)
     throw std::logic_error("Session command while input disabled");
-  return response(msime_client_command(session_, command));
+  return response(lingyao_client_command(session_, command));
 }
 void ServerSession::reset_cache() {
   check_thread();
-  (void)response(msime_client_reset_cache(session_));
+  (void)response(lingyao_client_reset_cache(session_));
 }
 void ServerSession::set_chinese_punctuation(uint64_t epoch, bool enabled) {
   check_active(epoch);
-  response(msime_client_set_chinese_punctuation(session_, enabled));
+  response(lingyao_client_set_chinese_punctuation(session_, enabled));
 }
 void ServerSession::balance_paired_punctuation(uint64_t epoch,
                                                uint8_t opening) {
   check_active(epoch);
-  response(msime_client_balance_paired_punctuation_after_auto_close(session_,
+  response(lingyao_client_balance_paired_punctuation_after_auto_close(session_,
                                                                    opening));
 }
 nlohmann::json ServerSession::toggle_traditional_output(uint64_t epoch) {
@@ -131,13 +131,13 @@ nlohmann::json ServerSession::dedicated_english(uint64_t epoch, bool exit) {
   if (!exit || !current.at("dedicated_english").get<bool>())
     return current;
   cancel_composition(epoch);
-  return response(msime_client_set_english_mode(session_, false));
+  return response(lingyao_client_set_english_mode(session_, false));
 }
 nlohmann::json ServerSession::toggle_dedicated_english(uint64_t epoch) {
   check_active(epoch);
   const bool enabled = view().at("dedicated_english").get<bool>();
   cancel_composition(epoch);
-  return response(msime_client_set_english_mode(session_, !enabled));
+  return response(lingyao_client_set_english_mode(session_, !enabled));
 }
 KeyResult ServerSession::key(const FanyImeNamedpipeData &packet,
                              uint64_t epoch) {
@@ -202,15 +202,15 @@ KeyResult ServerSession::key(const FanyImeNamedpipeData &packet,
               {"diagnostic", nullptr},
               {"view", view()}};
   } else if (action.kind == KeyKind::Character) {
-    result = response(msime_client_character(
+    result = response(lingyao_client_character(
         session_, static_cast<uint8_t>(action.value), action.shift));
   } else {
-    if ((action.value == MSIME_BACKSPACE_SEGMENT || action.value == MSIME_MOVE_LEFT_SEGMENT ||
-         action.value == MSIME_MOVE_RIGHT_SEGMENT) && current.at("editing_text").get<std::string>().empty()) {
+    if ((action.value == LINGYAO_BACKSPACE_SEGMENT || action.value == LINGYAO_MOVE_LEFT_SEGMENT ||
+         action.value == LINGYAO_MOVE_RIGHT_SEGMENT) && current.at("editing_text").get<std::string>().empty()) {
       result = {{"handled", false}, {"commit", nullptr}, {"diagnostic", nullptr}, {"view", current}};
       return {client_, epoch_, packet.request_id, false, std::move(result)};
     }
-    result = response(msime_client_command(session_, action.value));
+    result = response(lingyao_client_command(session_, action.value));
     // A reset discards the composition, as the TIP discards it from its own host session. Escape on a word whose first cancel only shows its raw keys again stops there, as the TIP does (scheme::CancelRestoresRaw).
     if (action.kind == KeyKind::LocalReset &&
         !(packet.keycode == kVirtualKeyEscape &&
@@ -234,7 +234,7 @@ KeyResult ServerSession::restore_raw(uint64_t epoch, uint64_t request,
   for (const unsigned char value : raw) {
     if (value < 0x21 || value > 0x7e)
       throw std::invalid_argument("Invalid Windows segment restoration text");
-    result = response(msime_client_character(session_, value, false));
+    result = response(lingyao_client_character(session_, value, false));
   }
   return {client_, epoch_, request, true, std::move(result)};
 }
@@ -264,7 +264,7 @@ ServerSession::navigate(const FanyImeNamedpipeData &packet, uint64_t epoch,
   if (!action)
     return std::nullopt;
   auto result = action->command
-                    ? response(msime_client_command(session_, *action->command))
+                    ? response(lingyao_client_command(session_, *action->command))
                     : nlohmann::json{{"handled", true},
                                      {"commit", nullptr},
                                      {"diagnostic", nullptr},
@@ -294,9 +294,9 @@ nlohmann::json ServerSession::select(uint64_t epoch, uint64_t generation,
       }
     }
   }
-  auto result = response(msime_client_select(session_, generation, index));
+  auto result = response(lingyao_client_select(session_, generation, index));
   if (completes_composition && !result.at("commit").is_null()) {
-    const auto cleared = response(msime_client_command(session_, MSIME_CANCEL));
+    const auto cleared = response(lingyao_client_command(session_, LINGYAO_CANCEL));
     result["view"] = cleared.at("view");
   }
   return result;
@@ -312,19 +312,19 @@ nlohmann::json ServerSession::candidate_action(uint64_t epoch,
   char *raw = nullptr;
   switch (action) {
   case CandidateAction::Pin:
-    raw = msime_client_pin_candidate(session_, generation, index);
+    raw = lingyao_client_pin_candidate(session_, generation, index);
     break;
   case CandidateAction::Remove:
-    raw = msime_client_remove_candidate(session_, generation, index);
+    raw = lingyao_client_remove_candidate(session_, generation, index);
     break;
   case CandidateAction::FixPosition:
     if (position < 1 || position > 5)
       throw std::invalid_argument("Candidate position outside 1-5");
-    raw = msime_client_fix_candidate_position(session_, generation, index,
+    raw = lingyao_client_fix_candidate_position(session_, generation, index,
                                                position);
     break;
   case CandidateAction::ClearPosition:
-    raw = msime_client_clear_candidate_position(session_, generation, index);
+    raw = lingyao_client_clear_candidate_position(session_, generation, index);
     break;
   case CandidateAction::Select:
     throw std::invalid_argument("Selection is not a candidate action");
@@ -337,7 +337,7 @@ nlohmann::json ServerSession::candidate_action(uint64_t epoch,
 std::optional<std::string> ServerSession::online_query(uint64_t epoch) {
   check_active(epoch);
   try {
-    const auto value = response(msime_client_online_query(session_));
+    const auto value = response(lingyao_client_online_query(session_));
     if (value.is_null() || !value.is_object())
       return std::nullopt;
     auto serialized = value.dump();
@@ -356,7 +356,7 @@ std::optional<std::string> ServerSession::ai_request(uint64_t epoch,
   if (query.empty() || query.size() > 16384)
     return std::nullopt;
   try {
-    const auto value = response(msime_client_ai_request_for_query(
+    const auto value = response(lingyao_client_ai_request_for_query(
         session_, reinterpret_cast<const uint8_t *>(query.data()),
         query.size()));
     if (value.is_null() || !value.is_object())
@@ -375,7 +375,7 @@ std::optional<nlohmann::json>
 ServerSession::rerank_settled(uint64_t epoch) {
   check_active(epoch);
   try {
-    const auto value = response(msime_client_rerank_settled(session_));
+    const auto value = response(lingyao_client_rerank_settled(session_));
     // Nothing moved is the common answer and is not a result: redrawing an
     // identical candidate list on every pause is a flicker with no cause the
     // user can see. It is also what an installation with no settled model
@@ -397,7 +397,7 @@ ServerSession::apply_cloud_response(uint64_t epoch, const std::string &query,
       body.size() > 256 * 1024)
     return std::nullopt;
   try {
-    const auto value = response(msime_client_apply_cloud_response(
+    const auto value = response(lingyao_client_apply_cloud_response(
         session_, reinterpret_cast<const uint8_t *>(query.data()),
         query.size(), reinterpret_cast<const uint8_t *>(body.data()),
         body.size()));
@@ -420,7 +420,7 @@ ServerSession::apply_ai_candidates(uint64_t epoch, const std::string &query,
   try {
     // Source 1 is AI, so the candidates land in their own slot rather than
     // displacing the cloud ones.
-    const auto value = response(msime_client_apply_online_candidates(
+    const auto value = response(lingyao_client_apply_online_candidates(
         session_, reinterpret_cast<const uint8_t *>(query.data()), query.size(),
         reinterpret_cast<const uint8_t *>(candidates.data()),
         candidates.size(), 1));
@@ -436,7 +436,7 @@ ServerSession::apply_ai_candidates(uint64_t epoch, const std::string &query,
 std::optional<std::string> ServerSession::translation_query(uint64_t epoch) {
   check_active(epoch);
   try {
-    const auto value = response(msime_client_translation_query(session_));
+    const auto value = response(lingyao_client_translation_query(session_));
     if (value.is_null() || !value.is_object())
       return std::nullopt;
     auto serialized = value.dump();
@@ -454,7 +454,7 @@ ServerSession::apply_translations(uint64_t epoch, uint64_t generation,
   if (translations.empty() || translations.size() > 1024 * 1024)
     return std::nullopt;
   try {
-    const auto value = response(msime_client_apply_translations(
+    const auto value = response(lingyao_client_apply_translations(
         session_, generation, reinterpret_cast<const uint8_t *>(translations.data()),
         translations.size()));
     if (!value.is_object() || !value.value("applied", false) ||
@@ -468,7 +468,7 @@ ServerSession::apply_translations(uint64_t epoch, uint64_t generation,
 nlohmann::json ServerSession::update_preferences(uint64_t epoch,
                                                  const std::string &snapshot) {
   check_active(epoch);
-  auto result = response(msime_client_update_preferences(
+  auto result = response(lingyao_client_update_preferences(
       session_, reinterpret_cast<const uint8_t *>(snapshot.data()),
       snapshot.size()));
   const auto document = nlohmann::json::parse(snapshot);
@@ -476,7 +476,7 @@ nlohmann::json ServerSession::update_preferences(uint64_t epoch,
       "traditional_chinese_output", false);
   // With nothing switched on the library starts no player, so it has not kept the earlier "active". Say it again, so music switched on while this client holds the focus starts now rather than at the next focus change.
   if (music_active_)
-    (void)msime_client_music_set_active(session_, true);
+    (void)lingyao_client_music_set_active(session_, true);
   refresh_typing_effect_settings();
   return result;
 }
@@ -492,10 +492,10 @@ nlohmann::json ServerSession::page_candidate(uint64_t epoch, uint64_t session,
       current.at("generation").get<uint64_t>() != generation ||
       current.at("editing_text").get<std::string>().empty())
     throw std::invalid_argument("Stale Windows candidate paging request");
-  const auto command = previous ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE;
+  const auto command = previous ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE;
   nlohmann::json result = std::move(current);
   for (unsigned step = 0; step < steps; ++step) {
-    result = response(msime_client_command(session_, command));
+    result = response(lingyao_client_command(session_, command));
     if (!result.at("commit").is_null())
       throw std::logic_error("Candidate paging unexpectedly committed text");
   }
@@ -503,25 +503,25 @@ nlohmann::json ServerSession::page_candidate(uint64_t epoch, uint64_t session,
 }
 nlohmann::json ServerSession::view() const {
   check_thread();
-  return response(msime_client_view(session_));
+  return response(lingyao_client_view(session_));
 }
 bool ServerSession::key_sound(uint32_t key_class) {
   check_thread();
-  return msime_client_key_sound(session_, key_class);
+  return lingyao_client_key_sound(session_, key_class);
 }
 bool ServerSession::commit_sound() {
   check_thread();
-  return msime_client_commit_sound(session_);
+  return lingyao_client_commit_sound(session_);
 }
 uint32_t ServerSession::typing_effect(uint32_t event) {
   check_thread();
-  return msime_client_typing_effect(session_, event);
+  return lingyao_client_typing_effect(session_, event);
 }
 void ServerSession::refresh_typing_effect_settings() {
   // A settings answer that cannot be read leaves the effect as the preferences alone describe it rather than failing the focus change or the preference update it follows.
   TypingEffectSettings settings;
   try {
-    const auto value = response(msime_client_typing_effect_settings(session_));
+    const auto value = response(lingyao_client_typing_effect_settings(session_));
     const auto intensity = value.value("intensity", 50.0);
     std::optional<uint32_t> duration;
     if (value.contains("duration_ms") && value.at("duration_ms").is_number())
@@ -538,7 +538,7 @@ void ServerSession::refresh_typing_effect_settings() {
 }
 void ServerSession::set_music_active(bool active) {
   check_thread();
-  (void)msime_client_music_set_active(session_, active);
+  (void)lingyao_client_music_set_active(session_, active);
   music_active_ = active;
 }
 KeyResult ServerSession::punctuation(const FanyImeNamedpipeData &packet,
@@ -557,10 +557,10 @@ KeyResult ServerSession::punctuation(const FanyImeNamedpipeData &packet,
   const char literal = literal_candidate_punctuation(packet);
   if (literal && !view().at("editing_text").get<std::string>().empty())
     return {client_, epoch_, packet.request_id, true,
-            response(msime_client_punctuation_ascii(
+            response(lingyao_client_punctuation_ascii(
                 session_, static_cast<uint8_t>(literal)))};
   auto result = response(
-      msime_client_punctuation(session_, static_cast<uint8_t>(action.value)));
+      lingyao_client_punctuation(session_, static_cast<uint8_t>(action.value)));
   return {client_, epoch_, packet.request_id, true, std::move(result)};
 }
 std::optional<WordCharacterResult>
@@ -593,7 +593,7 @@ ServerSession::word_character(const FanyImeNamedpipeData &packet,
     fallback = candidate.at("text").get<std::string>();
     const auto &id = candidate.at("id");
     auto selected = response(
-        msime_client_select_edge(session_, id.at("generation").get<uint64_t>(),
+        lingyao_client_select_edge(session_, id.at("generation").get<uint64_t>(),
                                  id.at("index").get<size_t>(), *edge));
     if (selected.at("handled").get<bool>())
       return WordCharacterResult{
@@ -602,12 +602,12 @@ ServerSession::word_character(const FanyImeNamedpipeData &packet,
     break;
   }
   if (const auto character = extract_han_character(
-          fallback, *edge == MSIME_FIRST_HAN ? HanCharacterEdge::First
+          fallback, *edge == LINGYAO_FIRST_HAN ? HanCharacterEdge::First
                                              : HanCharacterEdge::Last))
     fallback = *character;
   // Legacy Normal delegates smart punctuation to TSF. Do not finish remaining
   // segments or translate punctuation here; only the highlighted text is sent.
-  auto cancelled = response(msime_client_command(session_, MSIME_CANCEL));
+  auto cancelled = response(lingyao_client_command(session_, LINGYAO_CANCEL));
   if (!cancelled.at("commit").is_null() ||
       !cancelled.at("view").at("editing_text").get<std::string>().empty())
     throw std::logic_error("Engine did not cancel word-to-character fallback");
@@ -616,4 +616,4 @@ ServerSession::word_character(const FanyImeNamedpipeData &packet,
   return WordCharacterResult{
       {client_, epoch_, packet.request_id, true, std::move(cancelled)}, false};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

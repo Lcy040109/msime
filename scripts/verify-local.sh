@@ -18,7 +18,7 @@
 #   scripts/verify-local.sh           everything
 #   scripts/verify-local.sh --update-baseline   append newly observed failures to known-failures.txt
 #
-# --quick skips the platform phases this change cannot reach; see "scope" below for how the change is worked out and what counts as reaching a phase. MSIME_VERIFY_ALL=1 runs every phase regardless. The full run never skips for scope.
+# --quick skips the platform phases this change cannot reach; see "scope" below for how the change is worked out and what counts as reaching a phase. LINGYAO_VERIFY_ALL=1 runs every phase regardless. The full run never skips for scope.
 #
 # --update-baseline appends what one run observed and removes nothing. Several
 # desktop tests are flaky, so a single run under-reports: the committed baseline
@@ -38,22 +38,22 @@ for argument in "$@"; do
   esac
 done
 
-# vcpkg supplies curl, fmt, nlohmann-json and utfcpp, the native dependencies the Windows host links. Derived from VCPKG_ROOT when that is set; export MSIME_VCPKG_PREFIX directly for an installed tree somewhere else. Without one of the two the Windows CMake build fails in a way that looks like a code error but is not, so the Windows branch below says so out loud rather than leaving it to be guessed from a compiler message.
-: "${MSIME_VCPKG_PREFIX:=${VCPKG_ROOT:+$VCPKG_ROOT/installed/x64-windows-static-md}}"
-: "${MSIME_NATIVE_BUILD:=target/win-full}"
+# vcpkg supplies curl, fmt, nlohmann-json and utfcpp, the native dependencies the Windows host links. Derived from VCPKG_ROOT when that is set; export LINGYAO_VCPKG_PREFIX directly for an installed tree somewhere else. Without one of the two the Windows CMake build fails in a way that looks like a code error but is not, so the Windows branch below says so out loud rather than leaving it to be guessed from a compiler message.
+: "${LINGYAO_VCPKG_PREFIX:=${VCPKG_ROOT:+$VCPKG_ROOT/installed/x64-windows-static-md}}"
+: "${LINGYAO_NATIVE_BUILD:=target/win-full}"
 # The pipe-only configuration builds the protocol tests without the Rust host
 # library. It is a separate CMake configuration, so nothing in the ordinary
 # build covers it - and a configuration nobody runs is one that rots.
-: "${MSIME_PIPE_BUILD:=target/windows-pipe}"
+: "${LINGYAO_PIPE_BUILD:=target/windows-pipe}"
 # platforms/macos was covered by nothing. It stopped compiling at some point and nobody found out, and the 103 tests behind that break had never reported at all. Configured directories only: the build needs a pinned Sparkle, so a machine without it skips this the way it already skips the Windows phases.
-: "${MSIME_MACOS_BUILD:=target/macos-isolated}"
+: "${LINGYAO_MACOS_BUILD:=target/macos-isolated}"
 # The Foundation-only part of shared/apple-bridge. It costs two translation units and no
 # dependency at all, so unlike the phase above it configures itself: the bridges shared with
 # the Apple client are the ones a broken merge silently takes out of both the iOS keyboard
 # and the macOS host at once.
-: "${MSIME_APPLE_BRIDGE_BUILD:=target/apple-bridge}"
+: "${LINGYAO_APPLE_BRIDGE_BUILD:=target/apple-bridge}"
 # 不带数字的 `cmake --build --parallel` 在 Makefile 生成器下就是不限并发的 `make -j`，macOS 一次构建就能同时起几百个编译进程。2026-10-06 几个同时跑的门禁在编译机上起了八百多个 clang，负载冲到九百多，把 Docker 和模拟器服务一起拖死。所以下面每次 cmake 构建都带上这个数：先取 `CMAKE_BUILD_PARALLEL_LEVEL`，没有就跟 `CARGO_BUILD_JOBS`（rbuild 在编译机上设为 6，给 CI runner 留核），再没有才用本机核数。
-: "${MSIME_BUILD_JOBS:=${CMAKE_BUILD_PARALLEL_LEVEL:-${CARGO_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}}}"
+: "${LINGYAO_BUILD_JOBS:=${CMAKE_BUILD_PARALLEL_LEVEL:-${CARGO_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}}}"
 export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'
 
 windows_host=0
@@ -71,7 +71,7 @@ case "$(uname -s 2>/dev/null)" in MINGW*|MSYS*|CYGWIN*) windows_host=1 ;; esac
 cross_vcpkg=""
 if [ "$windows_host" -eq 0 ] && command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1; then
   main_worktree="$(dirname "$(git rev-parse --git-common-dir 2>/dev/null || echo .)")"
-  for candidate in "${MSIME_VCPKG_ROOT:-}" "$root/target/tooling/vcpkg" \
+  for candidate in "${LINGYAO_VCPKG_ROOT:-}" "$root/target/tooling/vcpkg" \
     "$main_worktree/target/tooling/vcpkg"; do
     [ -n "$candidate" ] && [ -x "$candidate/vcpkg" ] && cross_vcpkg="$candidate" && break
   done
@@ -81,11 +81,11 @@ case "$(uname -s 2>/dev/null)" in Darwin) apple_host=1 ;; esac
 
 # Only the Windows host gets its CMake search path from vcpkg. This used to be exported unconditionally from a hardcoded prefix, which meant a macOS run overwrote the CMAKE_PREFIX_PATH the README asks for - `$(brew --prefix)`, the one thing that lets CMake find the Homebrew libraries there - with a path that does not exist on the machine.
 if [ "$windows_host" -eq 1 ]; then
-  if [ -n "$MSIME_VCPKG_PREFIX" ]; then
-    export CMAKE_PREFIX_PATH="$MSIME_VCPKG_PREFIX"
-    export CXXFLAGS="-I$MSIME_VCPKG_PREFIX/include"
+  if [ -n "$LINGYAO_VCPKG_PREFIX" ]; then
+    export CMAKE_PREFIX_PATH="$LINGYAO_VCPKG_PREFIX"
+    export CXXFLAGS="-I$LINGYAO_VCPKG_PREFIX/include"
   else
-    echo "note: neither MSIME_VCPKG_PREFIX nor VCPKG_ROOT is set; the Windows build will not find its vcpkg dependencies"
+    echo "note: neither LINGYAO_VCPKG_PREFIX nor VCPKG_ROOT is set; the Windows build will not find its vcpkg dependencies"
   fi
 fi
 
@@ -250,8 +250,8 @@ scope_changes() {
   git ls-files --others --exclude-standard | awk '{ print "A\t" $0 }'
 }
 
-if [ "$quick" -eq 1 ] && [ "${MSIME_VERIFY_ALL:-0}" = 1 ]; then
-  scope_why="MSIME_VERIFY_ALL=1"
+if [ "$quick" -eq 1 ] && [ "${LINGYAO_VERIFY_ALL:-0}" = 1 ]; then
+  scope_why="LINGYAO_VERIFY_ALL=1"
 elif [ "$quick" -eq 1 ]; then
   if ! scope_list="$(scope_changes)"; then
     scope_why="the change could not be worked out from git"
@@ -307,7 +307,7 @@ if [ "$quick" -eq 1 ]; then
   else
     scope_reached="${scope_areas# }"
     scope_reached="${scope_reached% }"
-    echo "scope: $scope_count changed files reach: ${scope_reached:-no platform phase}; the others are skipped (MSIME_VERIFY_ALL=1 runs them)"
+    echo "scope: $scope_count changed files reach: ${scope_reached:-no platform phase}; the others are skipped (LINGYAO_VERIFY_ALL=1 runs them)"
   fi
 fi
 
@@ -318,7 +318,7 @@ scoped() {
   for area in "$@"; do
     case "$scope_areas" in *" $area "*) return 0 ;; esac
   done
-  echo "skipped (scope): this change touches none of its inputs ($*); MSIME_VERIFY_ALL=1 runs it"
+  echo "skipped (scope): this change touches none of its inputs ($*); LINGYAO_VERIFY_ALL=1 runs it"
   return 1
 }
 
@@ -401,7 +401,7 @@ note "compile: rust workspace"
 #
 # The name has to be the bundle tauri.macos.conf.json lists, not the CMake
 # target that produces it: platforms/macos names the target
-# MSIMEClientInputMethod and then sets OUTPUT_NAME to 灵耀输入法, so the
+# LINGYAOClientInputMethod and then sets OUTPUT_NAME to 灵耀输入法, so the
 # guard below matched on no machine and the desktop crate was excluded from
 # every run anyone has made. Three compile errors reached develop behind that.
 desktop_resource="target/macos/灵耀输入法.app"
@@ -416,14 +416,14 @@ if [ -e "$desktop_resource" ] && [ -e "$desktop_companion" ]; then
 else
   missing="$desktop_resource"
   [ -e "$desktop_resource" ] && missing="$desktop_companion"
-  echo "msime-desktop: skipped ($missing not built yet)"
-  cargo check --workspace --all-targets --exclude msime-desktop 2>&1 | tail -3
+  echo "lingyao-desktop: skipped ($missing not built yet)"
+  cargo check --workspace --all-targets --exclude lingyao-desktop 2>&1 | tail -3
   [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check"
 fi
 
 note "compile: android target"
 # cargo check --workspace above only ever sees the host target, so every
-# `#[cfg(target_os = "android")]` branch in msime-desktop is invisible to it.
+# `#[cfg(target_os = "android")]` branch in lingyao-desktop is invisible to it.
 # Ten compile errors accumulated behind that and only surfaced when someone
 # tried to build the APK: a duplicated block, a moved value, a missing match
 # arm, three private types the generated command handler could not name, and
@@ -436,7 +436,7 @@ android_sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
 if [ -z "$android_sdk" ] && [ -d "$HOME/Library/Android/sdk" ]; then
   android_sdk="$HOME/Library/Android/sdk"
 fi
-android_ndk=${MSIME_ANDROID_NDK:-$android_sdk/ndk/28.2.13676358}
+android_ndk=${LINGYAO_ANDROID_NDK:-$android_sdk/ndk/28.2.13676358}
 case $(uname -s) in
   Darwin) android_host_tag=darwin-x86_64 ;;
   Linux) android_host_tag=linux-x86_64 ;;
@@ -451,15 +451,15 @@ elif [ -n "$android_host_tag" ] && [ -x "$android_clang" ] \
     "CXX_aarch64_linux_android=${android_clang}++" \
     "AR_aarch64_linux_android=$android_ndk/toolchains/llvm/prebuilt/$android_host_tag/bin/llvm-ar" \
     "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$android_clang" \
-    "ANDROID_NDK_HOME=$android_ndk" "MSIME_ANDROID_NDK=$android_ndk" \
-    cargo check -p msime-desktop --target aarch64-linux-android --lib --locked 2>&1 | tail -3
+    "ANDROID_NDK_HOME=$android_ndk" "LINGYAO_ANDROID_NDK=$android_ndk" \
+    cargo check -p lingyao-desktop --target aarch64-linux-android --lib --locked 2>&1 | tail -3
   [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check --target aarch64-linux-android"
 else
   echo "skipped: pinned NDK or aarch64-linux-android target not present"
 fi
 
 note "compile: wasm target"
-# 网页内置输入法的引擎（msime-engine-wasm）只在 wasm32-unknown-unknown 上编译 `bindings.rs`，上面主机目标的 `cargo check --workspace` 看不到它，clippy 也只有在这里才会检查到它。和 android 一样，缺目标或缺工具链时跳过而不是失败：需要 Rust 的 wasm32-unknown-unknown 目标，以及能编 wasm 的 LLVM clang 和 llvm-ar（SQLite 是 C 代码；Apple 的 ar 会产出空的 libwsqlite3.a，Apple clang 不认 wasm32）。
+# 网页内置输入法的引擎（lingyao-engine-wasm）只在 wasm32-unknown-unknown 上编译 `bindings.rs`，上面主机目标的 `cargo check --workspace` 看不到它，clippy 也只有在这里才会检查到它。和 android 一样，缺目标或缺工具链时跳过而不是失败：需要 Rust 的 wasm32-unknown-unknown 目标，以及能编 wasm 的 LLVM clang 和 llvm-ar（SQLite 是 C 代码；Apple 的 ar 会产出空的 libwsqlite3.a，Apple clang 不认 wasm32）。
 wasm_cc="${CC_wasm32_unknown_unknown:-}"
 wasm_ar="${AR_wasm32_unknown_unknown:-}"
 if [ -z "$wasm_cc" ] || [ -z "$wasm_ar" ]; then
@@ -479,10 +479,10 @@ elif [ -n "$wasm_cc" ] && [ -n "$wasm_ar" ] \
   && printf 'int x;\n' | "$wasm_cc" --target=wasm32-unknown-unknown -x c -c -o /dev/null - >/dev/null 2>&1 \
   && rustup target list --installed 2>/dev/null | grep -q '^wasm32-unknown-unknown$'; then
   env "CC_wasm32_unknown_unknown=$wasm_cc" "AR_wasm32_unknown_unknown=$wasm_ar" \
-    cargo check --locked -p msime-engine-wasm --target wasm32-unknown-unknown 2>&1 | tail -3
+    cargo check --locked -p lingyao-engine-wasm --target wasm32-unknown-unknown 2>&1 | tail -3
   [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check --target wasm32-unknown-unknown"
   env "CC_wasm32_unknown_unknown=$wasm_cc" "AR_wasm32_unknown_unknown=$wasm_ar" \
-    cargo clippy --locked -p msime-engine-wasm --target wasm32-unknown-unknown -- -D warnings 2>&1 | tail -3
+    cargo clippy --locked -p lingyao-engine-wasm --target wasm32-unknown-unknown -- -D warnings 2>&1 | tail -3
   [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo clippy --target wasm32-unknown-unknown"
 else
   echo "skipped: wasm32-unknown-unknown target or an LLVM clang/llvm-ar that can build wasm not present"
@@ -516,8 +516,8 @@ fi
 # libraries and the staged engine resources, both of which are build products, and the DevEco
 # command line tools. Seven seconds once they are.
 note "harmony arkts compile"
-if [ -n "${MSIME_HVIGOR:-}" ]; then
-  harmony_hvigor="$MSIME_HVIGOR"
+if [ -n "${LINGYAO_HVIGOR:-}" ]; then
+  harmony_hvigor="$LINGYAO_HVIGOR"
 else
   harmony_hvigor=""
   for candidate in \
@@ -552,7 +552,7 @@ fi
 note "compile: linux desktop shell"
 # Same hole the android phase above exists to close, for the other target nobody
 # here compiles. `cargo check --workspace` sees one target, and the macOS run
-# excludes msime-desktop outright because the bundle it lists as a resource is
+# excludes lingyao-desktop outright because the bundle it lists as a resource is
 # not built - so every `#[cfg(target_os = "linux")]` branch in the Tauri shell
 # was compiled by nothing at all. Thirty-six errors had collected behind that:
 # the refactor that moved panel delivery out of the crate root left the crate
@@ -570,15 +570,15 @@ note "compile: linux desktop shell"
 # the host's own and the two would rebuild each other on every run.
 #
 # The build dependencies live in an image (platforms/linux/tests/tools/Dockerfile.desktop-check) rather than being installed with apt in a throwaway container: that reinstall of the whole webkit2gtk closure ran on every --quick and so on every push, and it is the part of this phase that does not change. The image is tagged per checkout the same way platforms/linux/build-container.sh tags its gate image, so concurrent worktrees never run each other's Dockerfile; the README says how to prune the tags old worktrees leave behind.
-linux_desktop_note="image=msime-linux-desktop-check:\$(printf %s \"\$PWD\" | shasum | cut -c1-12); docker build -t \"\$image\" -f platforms/linux/tests/tools/Dockerfile.desktop-check platforms/linux/tests && docker run --rm -v \"\$PWD\":/source -w /source \"\$image\" cargo check -p msime-desktop --locked --all-targets"
+linux_desktop_note="image=lingyao-linux-desktop-check:\$(printf %s \"\$PWD\" | shasum | cut -c1-12); docker build -t \"\$image\" -f platforms/linux/tests/tools/Dockerfile.desktop-check platforms/linux/tests && docker run --rm -v \"\$PWD\":/source -w /source \"\$image\" cargo check -p lingyao-desktop --locked --all-targets"
 if ! scoped desktop linux; then
   :
 elif [ "$(uname -s 2>/dev/null)" = "Linux" ]; then
-  cargo check -p msime-desktop --locked --all-targets 2>&1 | tail -3
-  [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check -p msime-desktop (linux)"
+  cargo check -p lingyao-desktop --locked --all-targets 2>&1 | tail -3
+  [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check -p lingyao-desktop (linux)"
 elif command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   mkdir -p "$root/target/linux-desktop-check"
-  linux_desktop_image="msime-linux-desktop-check:$(printf %s "$root" | shasum | cut -c1-12)"
+  linux_desktop_image="lingyao-linux-desktop-check:$(printf %s "$root" | shasum | cut -c1-12)"
   # The build log is kept rather than discarded, so an apt failure shows apt's own message instead of only an exit code; once the image is cached the build is a few lines of CACHED.
   if docker build -t "$linux_desktop_image" \
     -f platforms/linux/tests/tools/Dockerfile.desktop-check platforms/linux/tests \
@@ -589,11 +589,11 @@ elif command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
       -w /source \
       -e CARGO_TARGET_DIR=/ctarget \
       "$linux_desktop_image" \
-      cargo check -p msime-desktop --locked --all-targets --message-format short \
+      cargo check -p lingyao-desktop --locked --all-targets --message-format short \
       > "$root/target/linux-desktop-check/check.log" 2>&1
     status=$?
     grep -E ': error' "$root/target/linux-desktop-check/check.log" | head -5
-    [ "$status" -eq 0 ] || fail "cargo check -p msime-desktop (linux container)"
+    [ "$status" -eq 0 ] || fail "cargo check -p lingyao-desktop (linux container)"
     tail -1 "$root/target/linux-desktop-check/check.log"
   else
     tail -20 "$root/target/linux-desktop-check/image.log"
@@ -619,9 +619,9 @@ note "compile: linux native host"
 if ! scoped linux; then
   :
 elif [ "$(uname -s 2>/dev/null)" = "Linux" ] && pkg-config --exists ibus-1.0 2>/dev/null; then
-  # CMake 链接的是 target/debug 下的 Host API，而上面的 Rust 阶段只做 cargo check，不产出它；与 build-container.sh 一样先构建，否则配置阶段就报「Build msime-host-api for Linux first」。
-  cargo build -p msime-host-api --locked >/dev/null 2>&1 &&
-    cmake -S platforms/linux -B "$root/target/linux-gate" -DMSIME_ENABLE_FCITX5=ON >/dev/null 2>&1 &&
+  # CMake 链接的是 target/debug 下的 Host API，而上面的 Rust 阶段只做 cargo check，不产出它；与 build-container.sh 一样先构建，否则配置阶段就报「Build lingyao-host-api for Linux first」。
+  cargo build -p lingyao-host-api --locked >/dev/null 2>&1 &&
+    cmake -S platforms/linux -B "$root/target/linux-gate" -DLINGYAO_ENABLE_FCITX5=ON >/dev/null 2>&1 &&
     cmake --build "$root/target/linux-gate" >/dev/null 2>&1 &&
     ctest --test-dir "$root/target/linux-gate" --output-on-failure >/dev/null 2>&1 &&
     echo "linux native host: builds and its tests pass" ||
@@ -642,16 +642,16 @@ fi
 note "compile: native host"
 if ! scoped windows desktop; then
   :
-elif [ -d "$MSIME_NATIVE_BUILD" ]; then
+elif [ -d "$LINGYAO_NATIVE_BUILD" ]; then
   # The native tests link the Rust library, so it has to be current or they
   # fail to start with an entry-point error that looks like a test failure.
-  cargo build -p msime-host-api 2>&1 | tail -2
-  [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo build -p msime-host-api"
-  for built in target/debug/msime_host_api.dll target/debug/libmsime_host_api.so; do
-    [ -f "$built" ] && cp -f "$built" "$MSIME_NATIVE_BUILD/Debug/" 2>/dev/null
+  cargo build -p lingyao-host-api 2>&1 | tail -2
+  [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo build -p lingyao-host-api"
+  for built in target/debug/lingyao_host_api.dll target/debug/liblingyao_host_api.so; do
+    [ -f "$built" ] && cp -f "$built" "$LINGYAO_NATIVE_BUILD/Debug/" 2>/dev/null
   done
-  cmake --build "$MSIME_NATIVE_BUILD" --config Debug 2>&1 | grep -Ei "error C[0-9]|error LNK" | head -5
-  cmake --build "$MSIME_NATIVE_BUILD" --config Debug >/dev/null 2>&1 || fail "native build"
+  cmake --build "$LINGYAO_NATIVE_BUILD" --config Debug 2>&1 | grep -Ei "error C[0-9]|error LNK" | head -5
+  cmake --build "$LINGYAO_NATIVE_BUILD" --config Debug >/dev/null 2>&1 || fail "native build"
 elif [ -n "$cross_vcpkg" ]; then
   # Not a Windows host, but the MinGW toolchain and a bootstrapped vcpkg are
   # both here, so the Windows compile gate can run anyway.
@@ -686,7 +686,7 @@ elif [ -n "$cross_vcpkg" ]; then
     cross_build_ok=0
     held_lock="$cross_lock"
     cross_log="$(mktemp)"
-    if MSIME_VCPKG_ROOT="$cross_vcpkg" MSIME_WINDOWS_DEPS_ROOT="$cross_deps" \
+    if LINGYAO_VCPKG_ROOT="$cross_vcpkg" LINGYAO_WINDOWS_DEPS_ROOT="$cross_deps" \
       bash platforms/windows/build-cross.sh x64 >"$cross_log" 2>&1; then
       echo "windows cross build (x64): links"
       cross_build_ok=1
@@ -709,12 +709,12 @@ elif [ -n "$cross_vcpkg" ]; then
   # before a Windows packaging attempt, while still avoiding a second native
   # host build.
   if [ "${cross_build_ok:-0}" -eq 1 ]; then
-    cargo check -p msime-desktop --target x86_64-pc-windows-gnu --lib --locked 2>&1 | tail -3
-    [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check -p msime-desktop (windows GNU)"
-    echo "msime-desktop (windows GNU): checks"
+    cargo check -p lingyao-desktop --target x86_64-pc-windows-gnu --lib --locked 2>&1 | tail -3
+    [ "${PIPESTATUS[0]}" -eq 0 ] || fail "cargo check -p lingyao-desktop (windows GNU)"
+    echo "lingyao-desktop (windows GNU): checks"
   fi
 else
-  echo "skipped: $MSIME_NATIVE_BUILD not configured, and no MinGW cross toolchain"
+  echo "skipped: $LINGYAO_NATIVE_BUILD not configured, and no MinGW cross toolchain"
   echo "  run platforms/windows/build-cross.sh x64 once to enable this gate here"
 fi
 
@@ -740,15 +740,15 @@ fi
 # behind, so testing for either turns a skip into two failing stages on a machine that never had
 # the dependency. The generated build system is the thing that only a finished configure writes.
 macos_configured() {
-  [ -f "$MSIME_MACOS_BUILD/build.ninja" ] || [ -f "$MSIME_MACOS_BUILD/Makefile" ]
+  [ -f "$LINGYAO_MACOS_BUILD/build.ninja" ] || [ -f "$LINGYAO_MACOS_BUILD/Makefile" ]
 }
 
-# Rebuild the Rust host library the configured macOS build actually links, which is MSIME_HOST_LIBRARY in its cache and not necessarily target/debug: platforms/macos/README.md configures target/macos-isolated against target/macos-cargo. Nothing else in this script builds that copy, so without this a host-api ABI change failed the macOS compile with undefined symbols until someone rebuilt it by hand. A library outside target/ is built the way the README builds it, with the same deployment flags, because the cc build scripts fingerprint CFLAGS and CXXFLAGS and a different set would rebuild the C objects there on every alternation between the two. The README's CMAKE_PREFIX_PATH is left out: nothing in msime-host-api's build graph reads it. One inside target/ is built without them, like every other cargo step here that writes there, for the same reason.
+# Rebuild the Rust host library the configured macOS build actually links, which is LINGYAO_HOST_LIBRARY in its cache and not necessarily target/debug: platforms/macos/README.md configures target/macos-isolated against target/macos-cargo. Nothing else in this script builds that copy, so without this a host-api ABI change failed the macOS compile with undefined symbols until someone rebuilt it by hand. A library outside target/ is built the way the README builds it, with the same deployment flags, because the cc build scripts fingerprint CFLAGS and CXXFLAGS and a different set would rebuild the C objects there on every alternation between the two. The README's CMAKE_PREFIX_PATH is left out: nothing in lingyao-host-api's build graph reads it. One inside target/ is built without them, like every other cargo step here that writes there, for the same reason.
 build_macos_host_library() {
   local library profile_dir cargo_dir profile
-  library=$(sed -n 's/^MSIME_HOST_LIBRARY:[A-Z]*=//p' "$MSIME_MACOS_BUILD/CMakeCache.txt" 2>/dev/null | head -1)
+  library=$(sed -n 's/^LINGYAO_HOST_LIBRARY:[A-Z]*=//p' "$LINGYAO_MACOS_BUILD/CMakeCache.txt" 2>/dev/null | head -1)
   if [ -z "$library" ]; then
-    echo "macos: $MSIME_MACOS_BUILD/CMakeCache.txt names no MSIME_HOST_LIBRARY"
+    echo "macos: $LINGYAO_MACOS_BUILD/CMakeCache.txt names no LINGYAO_HOST_LIBRARY"
     return 1
   fi
   profile_dir=$(dirname "$library")
@@ -761,10 +761,10 @@ build_macos_host_library() {
   profile=$(basename "$profile_dir")
   [ "$profile" = debug ] && profile=dev
   if [ "$cargo_dir" = "$(cd target 2>/dev/null && pwd -P)" ]; then
-    cargo build -p msime-host-api --locked --profile "$profile" 2>&1 | tail -2
+    cargo build -p lingyao-host-api --locked --profile "$profile" 2>&1 | tail -2
   else
     CFLAGS="-mmacosx-version-min=13.0" CXXFLAGS="-mmacosx-version-min=13.0" CMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
-      CARGO_TARGET_DIR="$cargo_dir" cargo build -p msime-host-api --locked --profile "$profile" 2>&1 | tail -2
+      CARGO_TARGET_DIR="$cargo_dir" cargo build -p lingyao-host-api --locked --profile "$profile" 2>&1 | tail -2
   fi
 }
 
@@ -775,11 +775,11 @@ build_macos_host_library() {
 # host library Cargo already built in this run is the other half, and both are cheap next to the
 # platform going unbuilt.
 macos_sparkle_root() {
-  if [ -n "${MSIME_SPARKLE_ROOT:-}" ]; then
-    printf '%s\n' "$MSIME_SPARKLE_ROOT"
+  if [ -n "${LINGYAO_SPARKLE_ROOT:-}" ]; then
+    printf '%s\n' "$LINGYAO_SPARKLE_ROOT"
     return 0
   fi
-  for candidate in "$HOME/deps/Sparkle-2.9.6" "$HOME/msime-shared/sparkle"; do
+  for candidate in "$HOME/deps/Sparkle-2.9.6" "$HOME/lingyao-shared/sparkle"; do
     [ -d "$candidate/Sparkle.framework" ] && printf '%s\n' "$candidate" && return 0
   done
   return 1
@@ -790,11 +790,11 @@ if [ "$apple_host" -eq 1 ] && ! macos_configured && scoped macos >/dev/null; the
   if sparkle_root=$(macos_sparkle_root); then
     note "configure: macos"
     # The workspace stage above checks rather than builds, so the static library configure insists on may not exist yet even though everything needed to produce it does. This only has to make it exist; the compile stage below rebuilds whichever library the configured build links.
-    [ -f target/debug/libmsime_host_api.a ] ||
-      cargo build -p msime-host-api >/dev/null 2>&1 ||
-      echo "macos: could not build msime-host-api"
-    if cmake -S platforms/macos -B "$MSIME_MACOS_BUILD" \
-      -DMSIME_SPARKLE_ROOT="$sparkle_root" -DCMAKE_BUILD_TYPE=Debug >/dev/null 2>&1; then
+    [ -f target/debug/liblingyao_host_api.a ] ||
+      cargo build -p lingyao-host-api >/dev/null 2>&1 ||
+      echo "macos: could not build lingyao-host-api"
+    if cmake -S platforms/macos -B "$LINGYAO_MACOS_BUILD" \
+      -DLINGYAO_SPARKLE_ROOT="$sparkle_root" -DCMAKE_BUILD_TYPE=Debug >/dev/null 2>&1; then
       echo "macos: configured against Sparkle at $sparkle_root"
     else
       echo "macos: configure failed against Sparkle at $sparkle_root, leaving the stage skipped"
@@ -807,25 +807,25 @@ if ! scoped macos; then
   :
 elif macos_configured; then
   if build_macos_host_library; then
-    cmake --build "$MSIME_MACOS_BUILD" --parallel "$MSIME_BUILD_JOBS" 2>&1 | grep -E "error:|symbol\(s\) not found" | head -5
-    cmake --build "$MSIME_MACOS_BUILD" --parallel "$MSIME_BUILD_JOBS" >/dev/null 2>&1 || fail "macos build"
+    cmake --build "$LINGYAO_MACOS_BUILD" --parallel "$LINGYAO_BUILD_JOBS" 2>&1 | grep -E "error:|symbol\(s\) not found" | head -5
+    cmake --build "$LINGYAO_MACOS_BUILD" --parallel "$LINGYAO_BUILD_JOBS" >/dev/null 2>&1 || fail "macos build"
   else
     # Linking against the stale copy would only report its missing symbols as a macOS break.
-    fail "cargo build -p msime-host-api (macos host library)"
+    fail "cargo build -p lingyao-host-api (macos host library)"
   fi
 else
-  echo "skipped: $MSIME_MACOS_BUILD not configured"
+  echo "skipped: $LINGYAO_MACOS_BUILD not configured"
 fi
 
 note "compile: shared apple bridge"
 if [ "$apple_host" -eq 0 ]; then
   echo "apple bridge: skipped (needs an Apple host)"
-elif cmake -S shared/apple-bridge -B "$MSIME_APPLE_BRIDGE_BUILD" >/dev/null 2>&1 &&
-  cmake --build "$MSIME_APPLE_BRIDGE_BUILD" --parallel "$MSIME_BUILD_JOBS" >/dev/null 2>&1; then
+elif cmake -S shared/apple-bridge -B "$LINGYAO_APPLE_BRIDGE_BUILD" >/dev/null 2>&1 &&
+  cmake --build "$LINGYAO_APPLE_BRIDGE_BUILD" --parallel "$LINGYAO_BUILD_JOBS" >/dev/null 2>&1; then
   echo "apple bridge: builds"
 else
   fail "apple bridge build"
-  cmake --build "$MSIME_APPLE_BRIDGE_BUILD" --parallel "$MSIME_BUILD_JOBS" 2>&1 |
+  cmake --build "$LINGYAO_APPLE_BRIDGE_BUILD" --parallel "$LINGYAO_BUILD_JOBS" 2>&1 |
     grep -E "error:|symbol\(s\) not found" | head -5
 fi
 
@@ -833,12 +833,12 @@ note "compile: pipe-only configuration"
 # Cheap: no Rust library, no vcpkg dependencies, just the protocol tests.
 if ! scoped windows; then
   :
-elif cmake -S platforms/windows -B "$MSIME_PIPE_BUILD" -DMSIME_WINDOWS_PIPE_ONLY=ON      >/dev/null 2>&1; then
-  if cmake --build "$MSIME_PIPE_BUILD" --config Debug >/dev/null 2>&1; then
+elif cmake -S platforms/windows -B "$LINGYAO_PIPE_BUILD" -DLINGYAO_WINDOWS_PIPE_ONLY=ON      >/dev/null 2>&1; then
+  if cmake --build "$LINGYAO_PIPE_BUILD" --config Debug >/dev/null 2>&1; then
     echo "pipe-only: builds"
   else
     fail "pipe-only build"
-    cmake --build "$MSIME_PIPE_BUILD" --config Debug 2>&1 |
+    cmake --build "$LINGYAO_PIPE_BUILD" --config Debug 2>&1 |
       grep -Ei "error C[0-9]|error LNK" | head -5
   fi
 elif [ "$windows_host" -eq 0 ] && command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1; then
@@ -857,14 +857,14 @@ elif [ "$windows_host" -eq 0 ] && command -v x86_64-w64-mingw32-g++ >/dev/null 2
   # protocol gets checked here either way.
   for cross_arch in x86_64 i686; do
     command -v "$cross_arch-w64-mingw32-g++" >/dev/null 2>&1 || continue
-    cross_dir="${MSIME_PIPE_BUILD}-cross-$cross_arch"
-    if cmake -S platforms/windows -B "$cross_dir" -DMSIME_WINDOWS_PIPE_ONLY=ON \
+    cross_dir="${LINGYAO_PIPE_BUILD}-cross-$cross_arch"
+    if cmake -S platforms/windows -B "$cross_dir" -DLINGYAO_WINDOWS_PIPE_ONLY=ON \
       -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CXX_COMPILER="$cross_arch-w64-mingw32-g++" \
       -DCMAKE_BUILD_TYPE=Debug >/dev/null 2>&1 &&
-      cmake --build "$cross_dir" --parallel "$MSIME_BUILD_JOBS" >/dev/null 2>&1; then
+      cmake --build "$cross_dir" --parallel "$LINGYAO_BUILD_JOBS" >/dev/null 2>&1; then
       echo "pipe-only: cross-builds ($cross_arch)"
     else
-      cmake --build "$cross_dir" --parallel "$MSIME_BUILD_JOBS" 2>&1 |
+      cmake --build "$cross_dir" --parallel "$LINGYAO_BUILD_JOBS" 2>&1 |
         grep -Ei "error:|Error [0-9]" | head -5
       fail "pipe-only cross build ($cross_arch)"
     fi
@@ -892,21 +892,21 @@ fi
 
 note "rust tests"
 : > "$collected.rust"
-# The neural sentence model tests (msime-engine's lattice::neural and settling tests, msime-input-runtime's settle test) skip without the shipped models, and neither model is in the repository. Fetch the pinned pair so they run here; the path is absolute because cargo runs each test binary from its own crate directory. A failed fetch is not a test failure: the tests skip and say why.
+# The neural sentence model tests (lingyao-engine's lattice::neural and settling tests, lingyao-input-runtime's settle test) skip without the shipped models, and neither model is in the repository. Fetch the pinned pair so they run here; the path is absolute because cargo runs each test binary from its own crate directory. A failed fetch is not a test failure: the tests skip and say why.
 if python3 scripts/fetch_neural_model.py --out "$root/target/neural-model" > "$collected.neural-model" 2>&1; then
-  export MSIME_NEURAL_MODEL_DIR="$root/target/neural-model"
+  export LINGYAO_NEURAL_MODEL_DIR="$root/target/neural-model"
 else
   echo "neural model tests: skipped ($(tail -1 "$collected.neural-model"))"
 fi
-# msime-host-macos and msime-desktop were missing from this list, and a crate nobody tests is not the
+# lingyao-host-macos and lingyao-desktop were missing from this list, and a crate nobody tests is not the
 # worst of it: cargo's exit status is not the verdict here (known failures make it non-zero), so a crate that does not build at
-# all collects no failing names and is reported as being at baseline. msime-desktop did not link on macOS
-# for that reason, and its 86 tests had never run. msime-engine and msime-tauri-mobile-platform
+# all collects no failing names and is reported as being at baseline. lingyao-desktop did not link on macOS
+# for that reason, and its 86 tests had never run. lingyao-engine and lingyao-tauri-mobile-platform
 # were missing too, and nothing else runs their tests on the host target.
-for package in msime-client-core msime-engine msime-engine-wasm msime-host-api msime-input-runtime msime-host-windows \
-  msime-host-macos msime-mcp-server msime-tauri-mobile-platform msime-desktop; do
+for package in lingyao-client-core lingyao-engine lingyao-engine-wasm lingyao-host-api lingyao-input-runtime lingyao-host-windows \
+  lingyao-host-macos lingyao-mcp-server lingyao-tauri-mobile-platform lingyao-desktop; do
   # A package that does not build produces no failing test names, which reads as "at baseline" - which is
-  # how msime-desktop went unbuildable on macOS without anything noticing. Say so instead.
+  # how lingyao-desktop went unbuildable on macOS without anything noticing. Say so instead.
   status=0 build_failed=0
   cargo test -p "$package" --no-fail-fast > "$collected.$package" 2>&1 || status=$?
   if grep -qE "^error: (could not compile|linking with)" "$collected.$package"; then
@@ -955,8 +955,8 @@ note "clippy: first-party crates"
 # before its Tauri build script will run, which makes "clippy failed" and
 # "frontend not built" indistinguishable on a developer machine.
 clippy_failed=""
-for crate in msime-client-core msime-engine msime-engine-wasm msime-host-api msime-host-macos \
-             msime-host-windows msime-input-runtime msime-mcp-server msime-tauri-mobile-platform; do
+for crate in lingyao-client-core lingyao-engine lingyao-engine-wasm lingyao-host-api lingyao-host-macos \
+             lingyao-host-windows lingyao-input-runtime lingyao-mcp-server lingyao-tauri-mobile-platform; do
   cargo clippy -p "$crate" --all-targets -- -D warnings >/dev/null 2>&1 ||
     clippy_failed="$clippy_failed  $crate"$'\n'
 done
@@ -1015,7 +1015,7 @@ note "sentence conversion eval"
 # change helped. This compares against a committed baseline; resources/eval/README.md explains what
 # each set can and cannot measure. Skipped where no verified dictionary is present, like the native
 # phases - the directory is a 181 MB download this script must not require.
-if [ -n "${MSIME_EVAL_RESOURCES:-}" ] && [ -d "${MSIME_EVAL_RESOURCES:-}" ]; then
+if [ -n "${LINGYAO_EVAL_RESOURCES:-}" ] && [ -d "${LINGYAO_EVAL_RESOURCES:-}" ]; then
   # `harvested` is the failure set: cases picked because the product gets them wrong, so its
   # top-1 is near zero by construction and its top-5 is the number that means something. It is
   # gated the same way regardless, because a regression moves it just as visibly.
@@ -1035,8 +1035,8 @@ if [ -n "${MSIME_EVAL_RESOURCES:-}" ] && [ -d "${MSIME_EVAL_RESOURCES:-}" ]; the
       nine-key) args="--set resources/eval/quanpin-words-v1.tsv --limit 3000 --nine-key" ;;
     esac
     # shellcheck disable=SC2086
-    if cargo run --release -q -p msime-input-runtime --example convert_eval --locked -- \
-        --resources "$MSIME_EVAL_RESOURCES" $args \
+    if cargo run --release -q -p lingyao-input-runtime --example convert_eval --locked -- \
+        --resources "$LINGYAO_EVAL_RESOURCES" $args \
         --baseline "resources/eval/baseline-$set.json" >/dev/null 2>&1; then
       echo "eval $set: at baseline"
     else
@@ -1045,70 +1045,70 @@ if [ -n "${MSIME_EVAL_RESOURCES:-}" ] && [ -d "${MSIME_EVAL_RESOURCES:-}" ]; the
     fi
   done
 else
-  echo "skipped: set MSIME_EVAL_RESOURCES to a verified dictionary directory to run the eval"
+  echo "skipped: set LINGYAO_EVAL_RESOURCES to a verified dictionary directory to run the eval"
 fi
 
 note "reranker keystroke latency"
 # convert_eval answers whether reranking ranks correctly. This answers what it costs, and the two move independently: a model swap, a wider lattice or a larger candidate page all change the number. The benchmark has existed since 418b4fb78 and nothing ever ran it, so the frame budget it checks was never actually enforced, and it was over it when this stage was added: p95 20.64ms against 16.00ms, 9.8% of keystrokes past a frame. Resuming candidate scoring across keystrokes in chinese-ime-lm brought that under the budget, so this now gates rather than records; with the Rust engine the last run was p95 9.50ms, with 2 of 1320 keystrokes (0.2%) over 16ms. The measurement is machine-dependent, which is why it is compared as a pass/fail name against known-failures.txt rather than as a committed millisecond figure. It needs the sentence model, which the resource lock ships, so the eval's own guard covers it too.
-if [ -n "${MSIME_EVAL_RESOURCES:-}" ] && [ -d "${MSIME_EVAL_RESOURCES:-}" ]; then
-  if [ -f "$MSIME_EVAL_RESOURCES/sentence-model.safetensors" ]; then
+if [ -n "${LINGYAO_EVAL_RESOURCES:-}" ] && [ -d "${LINGYAO_EVAL_RESOURCES:-}" ]; then
+  if [ -f "$LINGYAO_EVAL_RESOURCES/sentence-model.safetensors" ]; then
     : > "$collected".latency
-    if ! cargo run --release -q -p msime-input-runtime --example rerank_latency --locked -- \
-        --resources "$MSIME_EVAL_RESOURCES" --set resources/eval/sentences-v1.tsv \
+    if ! cargo run --release -q -p lingyao-input-runtime --example rerank_latency --locked -- \
+        --resources "$LINGYAO_EVAL_RESOURCES" --set resources/eval/sentences-v1.tsv \
         > "$collected".latency.log 2>&1; then
       echo "rerank-latency sentences" > "$collected".latency
     fi
     grep -E "with model|over the .*budget:" "$collected".latency.log | sed 's#^ *#  #'
     compare "reranker latency" "$collected".latency
   else
-    echo "skipped: no sentence-model.safetensors in $MSIME_EVAL_RESOURCES"
+    echo "skipped: no sentence-model.safetensors in $LINGYAO_EVAL_RESOURCES"
   fi
 else
-  echo "skipped: set MSIME_EVAL_RESOURCES to a verified dictionary directory to run the latency gate"
+  echo "skipped: set LINGYAO_EVAL_RESOURCES to a verified dictionary directory to run the latency gate"
 fi
 
 note "native tests"
-if [ -d "$MSIME_NATIVE_BUILD" ]; then
-  (cd "$MSIME_NATIVE_BUILD" && ctest -C Debug 2>&1) |
+if [ -d "$LINGYAO_NATIVE_BUILD" ]; then
+  (cd "$LINGYAO_NATIVE_BUILD" && ctest -C Debug 2>&1) |
     grep -E "\*\*\*(Failed|Not Run|Timeout)" |
     sed 's/.*Test *#[0-9]*: *//' | sed 's/[. ]*\*\*\*.*//' | sed 's#^#native #' > "$collected.native" || true
   compare "native tests" "$collected.native"
 else
-  echo "skipped: $MSIME_NATIVE_BUILD not configured"
+  echo "skipped: $LINGYAO_NATIVE_BUILD not configured"
 fi
 
 note "macos tests"
 if macos_configured; then
   # The per-test lines put the reason between the dots and the ***, so this reads
   # the summary block instead: "\t 52 - local-mode-preferences (Subprocess aborted)".
-  ctest --test-dir "$MSIME_MACOS_BUILD" 2>&1 |
+  ctest --test-dir "$LINGYAO_MACOS_BUILD" 2>&1 |
     sed -n '/The following tests FAILED:/,$p' |
     sed -n 's/^[[:space:]]*[0-9][0-9]* - \([^ ]*\).*/macos \1/p' > "$collected.macos" || true
   compare "macos tests" "$collected.macos"
 else
-  echo "skipped: $MSIME_MACOS_BUILD not configured"
+  echo "skipped: $LINGYAO_MACOS_BUILD not configured"
 fi
 
 note "shared apple bridge tests"
-if [ -d "$MSIME_APPLE_BRIDGE_BUILD" ]; then
-  ctest --test-dir "$MSIME_APPLE_BRIDGE_BUILD" 2>&1 |
+if [ -d "$LINGYAO_APPLE_BRIDGE_BUILD" ]; then
+  ctest --test-dir "$LINGYAO_APPLE_BRIDGE_BUILD" 2>&1 |
     grep -E "\*\*\*(Failed|Not Run|Timeout)" |
     sed 's/.*Test *#[0-9]*: *//' | sed 's/[. ]*\*\*\*.*//' |
     sed 's#^#apple-bridge #' > "$collected.apple_bridge" || true
   compare "shared apple bridge tests" "$collected.apple_bridge"
 else
-  echo "skipped: $MSIME_APPLE_BRIDGE_BUILD not configured"
+  echo "skipped: $LINGYAO_APPLE_BRIDGE_BUILD not configured"
 fi
 
 note "pipe-only tests"
-if [ -d "$MSIME_PIPE_BUILD" ]; then
-  ctest --test-dir "$MSIME_PIPE_BUILD" -C Debug 2>&1 |
+if [ -d "$LINGYAO_PIPE_BUILD" ]; then
+  ctest --test-dir "$LINGYAO_PIPE_BUILD" -C Debug 2>&1 |
     grep -E "\*\*\*(Failed|Not Run|Timeout)" |
     sed 's/.*Test *#[0-9]*: *//' | sed 's/[. ]*\*\*\*.*//' |
     sed 's#^#pipe #' > "$collected.pipe" || true
   compare "pipe-only tests" "$collected.pipe"
 else
-  echo "skipped: $MSIME_PIPE_BUILD not configured"
+  echo "skipped: $LINGYAO_PIPE_BUILD not configured"
 fi
 
 note "typescript"

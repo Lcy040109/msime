@@ -2,7 +2,7 @@
 import { testHost } from "../support/host";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { KeyboardPanel } from "@msime/ui";
+import { KeyboardPanel } from "@lingyao/ui";
 import { DesktopKeyboard } from "../../src/input/desktop-keyboard";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 

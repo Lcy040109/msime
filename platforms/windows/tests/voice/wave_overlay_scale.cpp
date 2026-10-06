@@ -2,9 +2,9 @@
 #include <cassert>
 
 int main() {
-  using msime::windows::kWaveOverlayBaselineDpi;
-  using msime::windows::wave_overlay_dpi;
-  using msime::windows::wave_overlay_scale;
+  using lingyao::windows::kWaveOverlayBaselineDpi;
+  using lingyao::windows::wave_overlay_dpi;
+  using lingyao::windows::wave_overlay_scale;
 
   // The monitor's own answer wins whenever there is one.
   assert(wave_overlay_dpi(144, 96) == 144);

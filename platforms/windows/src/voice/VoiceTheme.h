@@ -2,7 +2,7 @@
 #include "../candidate/CandidatePalette.h"
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class SurfaceThemeMode { Dark, Light, System };
 
 inline SurfaceThemeMode surface_theme_mode(std::string_view surface,
@@ -51,4 +51,4 @@ inline VoiceOverlayColors voice_overlay_colors(const CandidatePalette &palette) 
           palette.text,
           {palette.text.r, palette.text.g, palette.text.b, palette.text.a * 0.12f}};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

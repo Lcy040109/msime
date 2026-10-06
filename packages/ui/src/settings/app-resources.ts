@@ -1,4 +1,4 @@
-export const logo = new URL("../assets/msime.svg", import.meta.url).href;
+export const logo = new URL("../assets/lingyao.svg", import.meta.url).href;
 
 export const windowIcons = {
   minimize: new URL("../assets/minimize.svg", import.meta.url).href,

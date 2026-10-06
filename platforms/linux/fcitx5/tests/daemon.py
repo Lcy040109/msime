@@ -33,19 +33,19 @@ def main():
     if "--page-number" in sys.argv[4:]:
         # The fixture has no desktop portal; prevent a theme probe from starting one.
         bus.request_name("org.freedesktop.portal.Desktop")
-    with tempfile.TemporaryDirectory(prefix="msime-fcitx-daemon-") as directory:
+    with tempfile.TemporaryDirectory(prefix="lingyao-fcitx-daemon-") as directory:
         root = Path(directory)
         host = ctypes.CDLL(str(library))
-        host.msime_client_prepare_host.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
-        host.msime_client_prepare_host.restype = ctypes.c_void_p
-        host.msime_client_string_free.argtypes = [ctypes.c_void_p]
+        host.lingyao_client_prepare_host.argtypes = [ctypes.c_char_p, ctypes.c_size_t]
+        host.lingyao_client_prepare_host.restype = ctypes.c_void_p
+        host.lingyao_client_string_free.argtypes = [ctypes.c_void_p]
         request = json.dumps({"resources": str(resources), "state_root": str(root / "state")}).encode()
-        raw = host.msime_client_prepare_host(request, len(request))
+        raw = host.lingyao_client_prepare_host(request, len(request))
         assert raw, "Host preparation returned no result"
         try:
             result = json.loads(ctypes.string_at(raw))
         finally:
-            host.msime_client_string_free(raw)
+            host.lingyao_client_string_free(raw)
         assert result["ok"], "Host preparation failed"
         options = result["value"]
         options["preferences"].update(learning=False, cloud_candidates=False)
@@ -55,27 +55,27 @@ def main():
         config = root / "config" / "fcitx5"
         config.mkdir(parents=True)
         (config / "profile").write_text(
-            "[Groups/0]\nName=Default\nDefault Layout=us\nDefaultIM=msime\n"
+            "[Groups/0]\nName=Default\nDefault Layout=us\nDefaultIM=lingyao\n"
             "[Groups/0/Items/0]\nName=keyboard-us\nLayout=\n"
-            "[Groups/0/Items/1]\nName=msime\nLayout=\n[GroupOrder]\n0=Default\n")
+            "[Groups/0/Items/1]\nName=lingyao\nLayout=\n[GroupOrder]\n0=Default\n")
         runtime = root / "run"
         runtime.mkdir(mode=0o700)
         data = root / "data" / "fcitx5"
         (data / "addon").mkdir(parents=True)
         (data / "inputmethod").mkdir()
         source = Path(__file__).resolve().parents[1]
-        (data / "addon" / "msime.conf").write_bytes((source / "msime.conf").read_bytes())
-        (data / "inputmethod" / "msime.conf").write_bytes((source / "msime-inputmethod.conf").read_bytes())
+        (data / "addon" / "lingyao.conf").write_bytes((source / "lingyao.conf").read_bytes())
+        (data / "inputmethod" / "lingyao.conf").write_bytes((source / "lingyao-inputmethod.conf").read_bytes())
         system_lib = subprocess.check_output(
             ["pkg-config", "--variable=libdir", "Fcitx5Core"], text=True).strip()
         env = dict(os.environ, XDG_CONFIG_HOME=str(root / "config"),
                    XDG_DATA_HOME=str(root / "data"), XDG_RUNTIME_DIR=str(runtime),
-                   MSIME_FCITX5_OPTIONS=str(root / "options.json"),
+                   LINGYAO_FCITX5_OPTIONS=str(root / "options.json"),
                    FCITX_ADDON_DIRS=f"{addon.parent}:{system_lib}/fcitx5")
         if "--page-number" in sys.argv[4:]:
             env["FCITX_X11_USE_CLIENT_SIDE_UI"] = "1"
         if "--wayland-punctuation" in sys.argv[4:]:
-            assert env.get("MSIME_ISOLATED_LINUX_TEST") == "1"
+            assert env.get("LINGYAO_ISOLATED_LINUX_TEST") == "1"
             assert Path(env.get("WAYLAND_DISPLAY", "")).is_absolute(), "需要独立合成器的绝对 socket 路径"
             env.pop("DISPLAY", None)
         with (root / "daemon.log").open("w") as log:
@@ -95,7 +95,7 @@ def main():
                     return
                 frontend = dbus.Interface(bus.get_object(service, "/org/freedesktop/portal/inputmethod"),
                                           "org.fcitx.Fcitx.InputMethod1")
-                path, _ = frontend.CreateInputContext([("program", "msime-synthetic-editor")])
+                path, _ = frontend.CreateInputContext([("program", "lingyao-synthetic-editor")])
                 context = dbus.Interface(bus.get_object(service, path), "org.fcitx.Fcitx.InputContext1")
                 commits = []
                 preedits = []
@@ -104,9 +104,9 @@ def main():
                                           lambda parts, cursor: preedits.append("".join(str(p[0]) for p in parts)))
                 context.SetCapability(dbus.UInt64(2 | 16 | 64))
                 context.FocusIn()
-                control.SetCurrentIM("msime")
+                control.SetCurrentIM("lingyao")
                 control.Activate()
-                wait(lambda: str(control.CurrentInputMethod()) == "msime")
+                wait(lambda: str(control.CurrentInputMethod()) == "lingyao")
                 for character in "nihao":
                     assert context.ProcessKeyEvent(ord(character), 0, 0, False, 0), "Composition key rejected"
                 wait(lambda: "nihao" in preedits)
@@ -129,7 +129,7 @@ def main():
                         else:
                             options["preferences"]["show_candidate_page_number"] = show_page
                         (root / "options.json").write_text(json.dumps(options))
-                        control.ReloadAddonConfig("msime")
+                        control.ReloadAddonConfig("lingyao")
                         panels.clear()
                         for character in "nihao":
                             assert context.ProcessKeyEvent(ord(character), 0, 0, False, 0)
@@ -161,10 +161,10 @@ def main():
                     assert daemon.wait(timeout=10) == 0, "Daemon failed on shutdown"
                     print("Fcitx5 page-number visibility, paging and selection passed")
                     return
-                # Screen keyboard keys come over panel-input.sock and go through MSIME before the editor, the way SendInput passes through the IME on Windows. Keycodes are evdev codes, as the panel sends them.
+                # Screen keyboard keys come over panel-input.sock and go through LINGYAO before the editor, the way SendInput passes through the IME on Windows. Keycodes are evdev codes, as the panel sends them.
                 forwarded = []
                 context.connect_to_signal("ForwardKey", lambda sym, states, release: forwarded.append((int(sym), bool(release))))
-                panel_socket = runtime / "msime-client" / "panel-input.sock"
+                panel_socket = runtime / "lingyao-client" / "panel-input.sock"
                 wait(panel_socket.exists)
 
                 def panel(request):
@@ -232,7 +232,7 @@ def main():
                 context.ProcessKeyEvent(0x20, 65, 4 | 8, True, 0)
                 context.FocusOut()
                 context.DestroyIC()
-                if os.environ.get("MSIME_TEST_GTK") == "1":
+                if os.environ.get("LINGYAO_TEST_GTK") == "1":
                     subprocess.run([sys.executable, str(source / "tests" / "gtk_editor.py")],
                                    env=dict(env, GTK_IM_MODULE="fcitx", GDK_BACKEND="x11"),
                                    check=True, timeout=30)

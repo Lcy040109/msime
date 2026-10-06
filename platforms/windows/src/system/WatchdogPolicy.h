@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Supervision rules ported from the shipped watchdog. The decision is pure so
 // the backoff can be exercised without starting processes; the supervisor only
 // supplies what actually happened.
@@ -68,4 +68,4 @@ inline WatchdogDecision watchdog_after_failed_start(uint32_t previous_delay) {
           : previous_delay * 2;
   return {true, (std::max)(doubled, watchdog::initial_restart_delay_milliseconds)};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -8,44 +8,44 @@
 // the workspace adds later.
 #![allow(unsafe_code)]
 
-use msime_client_core::ai::AiSuggestionRequest;
-use msime_client_core::dictionary::access::DictionaryAccess;
-use msime_client_core::edition::Edition;
-use msime_client_core::host_surface::{
+use lingyao_client_core::ai::AiSuggestionRequest;
+use lingyao_client_core::dictionary::access::DictionaryAccess;
+use lingyao_client_core::edition::Edition;
+use lingyao_client_core::host_surface::{
     offered_input_schemes, HostCapabilities, HostPlatform, SurfaceRoute,
 };
 pub mod cloud_clipboard;
 pub mod cloud_dictionary;
 pub mod mcp_clients;
 pub mod system_fonts;
-use msime_client_core::preferences::{
+use lingyao_client_core::preferences::{
     InputScheme, Preferences, PreferencesSnapshot, PreferencesStore, ShuangpinProfile,
     TouchKeyboardLayout, TouchKeyboardScheme, VietnameseInputMethod, VietnamesePreferences,
     VietnameseToneStyle, WubiProfile,
 };
-use msime_client_core::punctuation::{
+use lingyao_client_core::punctuation::{
     route as punctuation_route, PunctuationContext, PunctuationRoute,
 };
-use msime_client_core::resource_packs::{self, ResourcePack};
-use msime_client_core::resources::{ResourceSet, ResourceStore, VerifiedMarker};
-use msime_client_core::typing_statistics::{
+use lingyao_client_core::resource_packs::{self, ResourcePack};
+use lingyao_client_core::resources::{ResourceSet, ResourceStore, VerifiedMarker};
+use lingyao_client_core::typing_statistics::{
     CommitEfficiency, TypingSource, TypingStatisticsStore, RANKS,
 };
-use msime_client_core::voice::doubao_frame::{
+use lingyao_client_core::voice::doubao_frame::{
     audio_frame, decode_error_code, decode_json_frame, start_frame,
 };
-use msime_client_core::voice::VoiceSessionState;
-use msime_engine::host::{CandidateEdge, Command, EngineOptions, Session};
-use msime_engine::{SchemeSet, SchemeType};
-use msime_input_runtime::HandwritingQuery;
+use lingyao_client_core::voice::VoiceSessionState;
+use lingyao_engine::host::{CandidateEdge, Command, EngineOptions, Session};
+use lingyao_engine::{SchemeSet, SchemeType};
+use lingyao_input_runtime::HandwritingQuery;
 #[cfg(unix)]
-use msime_input_runtime::UnixSocketProvider;
-use msime_input_runtime::{
+use lingyao_input_runtime::UnixSocketProvider;
+use lingyao_input_runtime::{
     Action, AiAssistantProviderConfig, CandidateId, CharacterWidth, NineKeySpellingId,
     OnlineCandidate, OnlineQuery, Reranker, Runtime, SentenceModel, Transition, TranslationService,
 };
 #[cfg(unix)]
-use msime_input_runtime::{EmojiPanelQuery, TranslationQuery};
+use lingyao_input_runtime::{EmojiPanelQuery, TranslationQuery};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::cell::RefCell;
@@ -75,7 +75,7 @@ pub(crate) const HOST_OPTIONS_DOCUMENT_LIMIT: usize = PREFERENCES_DOCUMENT_LIMIT
 pub(crate) const DICTIONARY_REQUEST_LIMIT: usize = HOST_OPTIONS_DOCUMENT_LIMIT + 1_200_000;
 
 pub(crate) fn valid_sha256(value: &str) -> bool {
-    msime_client_core::is_ascii_hex(value, 64)
+    lingyao_client_core::is_ascii_hex(value, 64)
 }
 
 pub(crate) fn valid_uuid_string(value: &str) -> bool {
@@ -94,15 +94,15 @@ pub use ffi::*;
 mod doubao_auth;
 #[cfg(not(any(target_os = "android", target_env = "ohos")))]
 mod handwriting_cells;
-pub use doubao_auth::msime_client_doubao_auth_headers;
+pub use doubao_auth::lingyao_client_doubao_auth_headers;
 mod learned_translation;
 mod niutrans_translation;
 mod tencent_translation;
 pub use dictionary::{
     dictionary_request_json, dictionary_words, edit_dictionary_word, edit_user_quick_phrase,
-    import_dictionary_words, lookup_candidates, msime_client_dictionary,
-    msime_client_dictionary_import_entries, msime_client_dictionary_validate,
-    msime_client_personal_dictionary_request, msime_client_personal_dictionary_sync,
+    import_dictionary_words, lookup_candidates, lingyao_client_dictionary,
+    lingyao_client_dictionary_import_entries, lingyao_client_dictionary_validate,
+    lingyao_client_personal_dictionary_request, lingyao_client_personal_dictionary_sync,
     personal_dictionary_request_json, user_quick_phrases, CandidateOrigin, DictionaryOptions,
     LookupCandidate, LookupScheme, NewWord, QuickPhrase, QuickPhraseEdit, QuickPhrasePage, Word,
     WordEdit, WordImport, WordKind, WordPage,
@@ -112,8 +112,8 @@ mod key_sound;
 mod plugin_tables;
 mod voice_capture;
 pub use dictionary_snapshot::{
-    msime_client_snapshot_discard, msime_client_snapshot_inspect, msime_client_snapshot_prepare,
-    msime_client_snapshot_queue, msime_client_snapshot_restore, msime_client_snapshot_version,
+    lingyao_client_snapshot_discard, lingyao_client_snapshot_inspect, lingyao_client_snapshot_prepare,
+    lingyao_client_snapshot_queue, lingyao_client_snapshot_restore, lingyao_client_snapshot_version,
 };
 
 /// Capture endpoint identities paired with labels. Neither belongs in logs.
@@ -158,7 +158,7 @@ fn engine_handwriting_candidates(
         points
     }));
     let recognize = |strokes: &[Vec<(f32, f32)>]| {
-        msime_engine::handwriting_recognize(model_path, strokes, width, height)
+        lingyao_engine::handwriting_recognize(model_path, strokes, width, height)
             .map_err(|_| "local handwriting recognizer unavailable")
     };
     // The Engine classifies one character per call and normalises each call's own bounding box, so a written line is split into character cells and each cell is classified on its own, as the Windows Ink recognizer segments a line into a multi-character candidate.
@@ -210,7 +210,7 @@ struct HostSession {
     english_mode: bool,
     page_size_override: Option<u8>,
     nine_key_override: Option<bool>,
-    /// 宿主经 `msime_client_set_private_session` 标出的隐私会话（Android 的隐私模式和不允许学习的输入框）：不记选词位置和上屏效率。与用户自己关掉的「学习」无关。
+    /// 宿主经 `lingyao_client_set_private_session` 标出的隐私会话（Android 的隐私模式和不允许学习的输入框）：不记选词位置和上屏效率。与用户自己关掉的「学习」无关。
     statistics_private: bool,
     /// An AI provider credential the host keeps outside the preferences (the iOS Keychain), handed over for this session only and never written back.
     ai_credential: Option<String>,
@@ -250,11 +250,11 @@ struct HostSession {
 /// 版本不提供的功能同样当作资源不在：五笔版的资源锁不带日文词典和键盘神经模型，临时日文和键盘神经联想无论偏好怎么写都是关的。资源目录按版本的锁校验，本来就放不进日文词典，这里再按版本表关一次，是为了状态目录里留有下载来的日文资源包时也不会打开它。
 fn apply_local_mode_resource_gates(options: &mut EngineOptions, edition: &Edition) {
     let resources = std::path::Path::new(&options.resources);
-    let has_emoji_catalog = resources.join("msime-others.db").is_file();
-    let has_english_dictionary = resources.join("msime-english.db").is_file();
+    let has_emoji_catalog = resources.join("lingyao-others.db").is_file();
+    let has_english_dictionary = resources.join("lingyao-english.db").is_file();
     // 下载的日文词典写在 `japanese_dictionary` 里；为空时 Engine 读资源目录里的那份。
     let has_japanese_model = if options.japanese_dictionary.is_empty() {
-        resources.join("msime-japanese.dat").is_file()
+        resources.join("lingyao-japanese.dat").is_file()
     } else {
         Path::new(&options.japanese_dictionary).is_file()
     };
@@ -266,19 +266,19 @@ fn apply_local_mode_resource_gates(options: &mut EngineOptions, edition: &Editio
     options.sentence_association.neural_keyboard &= edition.features.neural_keyboard;
 }
 
-fn punctuation_lock_code(lock: msime_client_core::preferences::PunctuationLock) -> u8 {
+fn punctuation_lock_code(lock: lingyao_client_core::preferences::PunctuationLock) -> u8 {
     match lock {
-        msime_client_core::preferences::PunctuationLock::Follow => 0,
-        msime_client_core::preferences::PunctuationLock::Chinese => 1,
-        msime_client_core::preferences::PunctuationLock::English => 2,
+        lingyao_client_core::preferences::PunctuationLock::Follow => 0,
+        lingyao_client_core::preferences::PunctuationLock::Chinese => 1,
+        lingyao_client_core::preferences::PunctuationLock::English => 2,
     }
 }
 
 /// The Engine's sentence association switches. The desktop model switch is not among them: it gates the runtime's settled reranker (`Runtime::set_settled_rerank_enabled`), the only place that model runs.
 fn engine_sentence_association(
-    preferences: &msime_client_core::preferences::SentenceAssociationPreferences,
-) -> msime_engine::host::SentenceAssociationOptions {
-    msime_engine::host::SentenceAssociationOptions {
+    preferences: &lingyao_client_core::preferences::SentenceAssociationPreferences,
+) -> lingyao_engine::host::SentenceAssociationOptions {
+    lingyao_engine::host::SentenceAssociationOptions {
         word_lattice: preferences.word_lattice,
         neural_keyboard: preferences.neural_keyboard,
         show_next_on_duplicate: preferences.show_next_on_duplicate,
@@ -330,7 +330,7 @@ impl HostSession {
                 snapshot.preferences.cloud_candidates
             })
     }
-    /// Android 会话是否不记统计：只看宿主经 `msime_client_set_private_session` 标出的隐私会话。用户在设置里关掉学习不算，统计开着就照常计数。只在 [`PRIVATE_SESSIONS_SKIP_STATISTICS`] 时成立，其他宿主照旧计数。
+    /// Android 会话是否不记统计：只看宿主经 `lingyao_client_set_private_session` 标出的隐私会话。用户在设置里关掉学习不算，统计开着就照常计数。只在 [`PRIVATE_SESSIONS_SKIP_STATISTICS`] 时成立，其他宿主照旧计数。
     fn private_session(&self) -> bool {
         PRIVATE_SESSIONS_SKIP_STATISTICS && self.statistics_private
     }
@@ -371,8 +371,8 @@ impl HostSession {
             .find(|candidate| candidate.id == id)?;
         Some(EfficiencyCandidate {
             prediction: candidate.code.is_empty() && view.preedit.is_empty(),
-            sentence: msime_engine::CandidateSource::from_u8(candidate.source)
-                .is_some_and(msime_engine::CandidateSource::is_sentence_learning),
+            sentence: lingyao_engine::CandidateSource::from_u8(candidate.source)
+                .is_some_and(lingyao_engine::CandidateSource::is_sentence_learning),
             typed_keys: candidate
                 .code
                 .chars()
@@ -616,7 +616,7 @@ impl HostSession {
             // 辅助码表换不上不算聚焦失败：报错会让这次和之后每一次聚焦都失败（戳没更新，下次又会重试）。记下来，保留当前的表，照常更新戳。
             match self.runtime.set_helpcode_table(table.clone()) {
                 Ok(()) => self.options.helpcode_table = table,
-                Err(error) => eprintln!("msime: helpcode table not replaced: {error}"),
+                Err(error) => eprintln!("lingyao: helpcode table not replaced: {error}"),
             }
         }
         self.plugin_tables = tables;
@@ -686,7 +686,7 @@ impl HostSession {
                 *c = c
                     .chars()
                     .map(|x| {
-                        if url_commit && x.is_ascii() && msime_engine::url::accepts(x as u8) {
+                        if url_commit && x.is_ascii() && lingyao_engine::url::accepts(x as u8) {
                             x
                         } else if x == ' ' {
                             '\u{3000}'
@@ -825,22 +825,22 @@ impl LanguageDictionaries {
                 })
         };
         LanguageDictionaries {
-            cantonese: find("msime-cantonese.db"),
-            zhuyin: find("msime-zhuyin.db"),
-            stroke: find("msime-stroke.db"),
+            cantonese: find("lingyao-cantonese.db"),
+            zhuyin: find("lingyao-zhuyin.db"),
+            stroke: find("lingyao-stroke.db"),
         }
     }
 
-    /// `msime-cantonese.db`, `msime-zhuyin.db` and `msime-stroke.db` in `directory`, each when it is a file.
+    /// `lingyao-cantonese.db`, `lingyao-zhuyin.db` and `lingyao-stroke.db` in `directory`, each when it is a file.
     fn in_directory(directory: &std::path::Path) -> Self {
         let present = |name: &str| {
             let path = directory.join(name);
             path.is_file().then_some(path)
         };
         LanguageDictionaries {
-            cantonese: present("msime-cantonese.db"),
-            zhuyin: present("msime-zhuyin.db"),
-            stroke: present("msime-stroke.db"),
+            cantonese: present("lingyao-cantonese.db"),
+            zhuyin: present("lingyao-zhuyin.db"),
+            stroke: present("lingyao-stroke.db"),
         }
     }
 
@@ -869,9 +869,9 @@ impl LanguageDictionaries {
     }
 }
 
-/// 已下载的日文资源包里的 `msime-japanese.dat`。`None` 时 Engine 读资源目录里的那份（完整发布包或开发环境内置的）。
+/// 已下载的日文资源包里的 `lingyao-japanese.dat`。`None` 时 Engine 读资源目录里的那份（完整发布包或开发环境内置的）。
 fn japanese_dictionary(state_root: Option<&Path>) -> Option<PathBuf> {
-    resource_packs::installed_file(state_root?, ResourcePack::Japanese, "msime-japanese.dat")
+    resource_packs::installed_file(state_root?, ResourcePack::Japanese, "lingyao-japanese.dat")
 }
 
 /// EngineOptions 里的路径文本，没有路径（或路径不是 UTF-8）时为空。
@@ -923,7 +923,7 @@ pub(crate) fn effective_scheme(
 fn helpcode_for_scheme(
     preferences: &Preferences,
     scheme: InputScheme,
-) -> msime_client_core::preferences::HelpcodePreferences {
+) -> lingyao_client_core::preferences::HelpcodePreferences {
     if scheme == preferences.scheme {
         preferences.active_helpcode()
     } else {
@@ -986,7 +986,7 @@ struct HostOptions {
     /// Absolute path to the bundle's built-in sound packs (`resources/sound-packs` in the repository), for a host whose bundle does not put them in `sound-packs` beside `resources`, the directory used when this is absent. Installed packs, command tables and the `@` name list are read from `plugins` under `preferences_directory`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     sound_packs: Option<String>,
-    /// Absolute path to the directory holding `msime-cantonese.db`, `msime-zhuyin.db` and `msime-stroke.db`, for a host that installs any of them. Absent, or a directory missing one of them, means that scheme falls back as `effective_scheme` describes.
+    /// Absolute path to the directory holding `lingyao-cantonese.db`, `lingyao-zhuyin.db` and `lingyao-stroke.db`, for a host that installs any of them. Absent, or a directory missing one of them, means that scheme falls back as `effective_scheme` describes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     language_dictionaries: Option<String>,
     /// 产品版本（`Edition::HOST_OPTIONS_KEY`）。只有不是 full 的版本才写：full 的文档因此与引入版本之前逐字节相同，旧版输入法（本结构拒绝未知键）照样能读。缺省就是 full；不是版本表里的 id 时整份文档被拒，而不是猜成 full。
@@ -996,7 +996,7 @@ struct HostOptions {
 
 /// HostOptions 的 `edition` 键与版本表条目之间的转换。
 mod edition_id {
-    use msime_client_core::edition::Edition;
+    use lingyao_client_core::edition::Edition;
     use serde::{Deserialize, Deserializer, Serializer};
 
     pub(super) fn serialize<S: Serializer>(
@@ -1156,7 +1156,7 @@ fn load_settled_model(resources: &str, path: Option<PathBuf>) -> SettledModelSlo
     let resources = resources.to_owned();
     let loading = Arc::clone(&slot);
     let spawned = std::thread::Builder::new()
-        .name("msime-settled-model".into())
+        .name("lingyao-settled-model".into())
         .spawn(move || {
             let _ = loading.set(sentence_model_settled(&resources, path.to_str()));
         });
@@ -1221,7 +1221,7 @@ pub(crate) fn offline_glosses_beside(
     path.is_file().then_some(path)
 }
 
-/// The Cantonese, Zhuyin and Stroke dictionaries installed beside a resource bundle: `language-dictionaries/msime-cantonese.db`, `language-dictionaries/msime-zhuyin.db` and `language-dictionaries/msime-stroke.db`, built by `msime-dict-builder`. A sibling of `resources` for the same reason as `settled_model_beside`: the resource directory must match the shared dictionary lock exactly, and only the hosts that offer these schemes ship them. Absence is the normal case.
+/// The Cantonese, Zhuyin and Stroke dictionaries installed beside a resource bundle: `language-dictionaries/lingyao-cantonese.db`, `language-dictionaries/lingyao-zhuyin.db` and `language-dictionaries/lingyao-stroke.db`, built by `lingyao-dict-builder`. A sibling of `resources` for the same reason as `settled_model_beside`: the resource directory must match the shared dictionary lock exactly, and only the hosts that offer these schemes ship them. Absence is the normal case.
 pub(crate) fn language_dictionaries_beside(resources: &std::path::Path) -> LanguageDictionaries {
     language_dictionaries_directory(resources)
         .map(|directory| LanguageDictionaries::in_directory(&directory))
@@ -1241,7 +1241,7 @@ pub fn installed_language_dictionaries(resources: &std::path::Path) -> Option<St
         .and_then(|directory| directory.to_str().map(str::to_owned))
 }
 
-/// The target languages an offline gloss dictionary can exist for; English is glossed from the packaged msime-english.db instead.
+/// The target languages an offline gloss dictionary can exist for; English is glossed from the packaged lingyao-english.db instead.
 pub(crate) const OFFLINE_GLOSS_LANGUAGES: [&str; 6] = ["fr", "ja", "es", "ru", "de", "ko"];
 
 /// Drop the `\\?\` prefix Windows canonicalisation adds.
@@ -1279,7 +1279,7 @@ fn without_verbatim_prefix(path: std::path::PathBuf) -> std::path::PathBuf {
 /// Failing to write the marker is not failing to start. The next launch hashes again, which is the
 /// behaviour this function replaces, so the cost of that miss is the cost of doing nothing here.
 fn reject_symlinked_state_root(path: &Path) -> Result<(), std::io::Error> {
-    msime_path_trust::reject_symlinked_components(path).map_err(|error| {
+    lingyao_path_trust::reject_symlinked_components(path).map_err(|error| {
         if error.kind() == std::io::ErrorKind::InvalidInput {
             std::io::Error::new(error.kind(), "state root contains a symbolic link")
         } else {
@@ -1290,7 +1290,7 @@ fn reject_symlinked_state_root(path: &Path) -> Result<(), std::io::Error> {
 
 /// 当前平台发布包不内置、改为按需下载的资源文件：macOS 是日文词典与它的两份 Mozc 许可文本，其余平台照旧全部内置。
 pub(crate) const ON_DEMAND_ARTIFACTS: &[&str] = if cfg!(target_os = "macos") {
-    &msime_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS
+    &lingyao_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS
 } else {
     &[]
 };
@@ -1355,7 +1355,7 @@ pub fn prepare_host_configuration(
 
 /// 为 `edition` 准备宿主：[`prepare_host_configuration`] 就是 full 的这一个。
 ///
-/// 不是 full 的版本在文档里记下 `edition`，之后的会话、[`refresh_host_options`] 和 `msime-mcp` 都从文档里读它；full 的文档不写这个键，与以前完全相同。状态目录也记下它属于哪个版本（[`Edition::record_in`]，full 不写）：各平台宿主经 C 接口、设置应用经自己的存储都只按目录读写偏好，并不知道版本，偏好文件不见了或被修复时靠这份记录回到本版本的默认偏好。状态目录里还没有偏好文件时，不是 full 的版本还会把本版本的默认偏好写成第一份偏好文件，不经偏好存储直接读文件的一方第一次读到的也是本版本的默认值。
+/// 不是 full 的版本在文档里记下 `edition`，之后的会话、[`refresh_host_options`] 和 `lingyao-mcp` 都从文档里读它；full 的文档不写这个键，与以前完全相同。状态目录也记下它属于哪个版本（[`Edition::record_in`]，full 不写）：各平台宿主经 C 接口、设置应用经自己的存储都只按目录读写偏好，并不知道版本，偏好文件不见了或被修复时靠这份记录回到本版本的默认偏好。状态目录里还没有偏好文件时，不是 full 的版本还会把本版本的默认偏好写成第一份偏好文件，不经偏好存储直接读文件的一方第一次读到的也是本版本的默认值。
 pub fn prepare_host_configuration_for_edition(
     resources: &std::path::Path,
     state_root: &std::path::Path,
@@ -1385,7 +1385,7 @@ fn edition_preferences(
     match store.save(0, snapshot.preferences) {
         Ok(saved) => Ok(saved.preferences),
         // 设置应用恰好在这期间写下了第一份偏好，以它为准。
-        Err(msime_client_core::preferences::PreferencesError::Conflict) => {
+        Err(lingyao_client_core::preferences::PreferencesError::Conflict) => {
             Ok(store.load()?.preferences)
         }
         Err(error) => Err(error.into()),
@@ -1403,8 +1403,8 @@ fn prepare_shipped_host_configuration(
     let resources = without_verbatim_prefix(std::fs::canonicalize(resources)?);
     let state_root = std::path::absolute(state_root)?;
     verify_resources_once(&resources, specification, &state_root, on_demand)?;
-    // 代次按本版本的方案准备：不含全拼、双拼、五笔的版本（日文、越南文、藏文）随包不带 msime-pinyin.db，代次里也没有它；full 的方案是全部，与以前相同。
-    let prepared = msime_engine::host::prepare_options_for(
+    // 代次按本版本的方案准备：不含全拼、双拼、五笔的版本（日文、越南文、藏文）随包不带 lingyao-pinyin.db，代次里也没有它；full 的方案是全部，与以前相同。
+    let prepared = lingyao_engine::host::prepare_options_for(
         resources.to_str().ok_or("non-UTF-8 resource path")?,
         state_root
             .join("user")
@@ -1453,9 +1453,9 @@ fn prepare_shipped_host_configuration(
 
 /// A runtime options refresh found that the recorded resource directory does not hold the resource set this build pins.
 ///
-/// This is the state a user who downloaded the dictionaries (rather than getting them from the package) is left in after an upgrade that raised the dictionary version: the package replaced the lock but nothing replaced the files. It is told apart from every other refresh failure because only this one has a fix the user can run, `msime-linux-setup --update --download`. The C ABI passes errors through as their `Display` text, so the stable part of the contract is the `dictionary_outdated:` prefix; what follows it is diagnostic and may name private paths.
+/// This is the state a user who downloaded the dictionaries (rather than getting them from the package) is left in after an upgrade that raised the dictionary version: the package replaced the lock but nothing replaced the files. It is told apart from every other refresh failure because only this one has a fix the user can run, `lingyao-linux-setup --update --download`. The C ABI passes errors through as their `Display` text, so the stable part of the contract is the `dictionary_outdated:` prefix; what follows it is diagnostic and may name private paths.
 #[derive(Debug)]
-pub struct DictionaryOutdated(msime_client_core::resources::ResourceError);
+pub struct DictionaryOutdated(lingyao_client_core::resources::ResourceError);
 
 impl std::fmt::Display for DictionaryOutdated {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1474,7 +1474,7 @@ pub const DICTIONARY_OUTDATED_PREFIX: &str = "dictionary_outdated:";
 
 /// Turn a verification failure out of `prepare_host_configuration` into [`DictionaryOutdated`], leaving every other error as it was. Only a length, digest or directory-content mismatch counts: an unreadable file or an invalid compiled lock is not something a download fixes.
 fn outdated_resources(error: Box<dyn std::error::Error>) -> Box<dyn std::error::Error> {
-    use msime_client_core::resources::ResourceError;
+    use lingyao_client_core::resources::ResourceError;
     match error.downcast::<ResourceError>() {
         Ok(resource) => match *resource {
             outdated @ (ResourceError::Integrity | ResourceError::ExistingGeneration(_)) => {
@@ -1491,7 +1491,7 @@ fn reject_symlinked_options_parent(path: &Path) -> std::io::Result<()> {
     while let Some(candidate) = current {
         match std::fs::symlink_metadata(candidate) {
             Ok(metadata) if metadata.file_type().is_symlink() => {
-                if msime_path_trust::is_trusted_system_alias(candidate) {
+                if lingyao_path_trust::is_trusted_system_alias(candidate) {
                     current = candidate.parent();
                     continue;
                 }
@@ -1737,12 +1737,12 @@ pub(crate) fn invalid_dictionary_entry(reason: &str) -> String {
 pub(crate) const NO_CHINESE_DICTIONARY: &str =
     "this edition of the input method has no Chinese dictionary; only English words can be edited";
 
-/// `kind` 的词能不能在 `options` 的版本里编辑。不含全拼、双拼、五笔的版本（日文、越南文、藏文）随包不带 msime-pinyin.db，拼音、五笔和快捷短语都无处可存，只有英文词能编辑（`SchemeSet::reads_main_dictionary`）。在加锁之前就拒绝，把原因告诉调用方，而不是让 Engine 拒绝后报成笼统的「dictionary edit rejected」。
+/// `kind` 的词能不能在 `options` 的版本里编辑。不含全拼、双拼、五笔的版本（日文、越南文、藏文）随包不带 lingyao-pinyin.db，拼音、五笔和快捷短语都无处可存，只有英文词能编辑（`SchemeSet::reads_main_dictionary`）。在加锁之前就拒绝，把原因告诉调用方，而不是让 Engine 拒绝后报成笼统的「dictionary edit rejected」。
 pub(crate) fn require_dictionary_kind(
     options: &EngineOptions,
-    kind: msime_engine::host::DictionaryKind,
+    kind: lingyao_engine::host::DictionaryKind,
 ) -> Result<(), String> {
-    if kind == msime_engine::host::DictionaryKind::English
+    if kind == lingyao_engine::host::DictionaryKind::English
         || options.enabled_schemes.reads_main_dictionary()
     {
         Ok(())
@@ -1758,8 +1758,8 @@ pub(crate) fn require_dictionary_kind(
 /// An entry the Engine refuses is reported as `invalid dictionary entry: <reason>` with the Engine's reason, checked before anything is locked. Those reasons are fixed sentences in `validate_personal_dictionary_entry` that never repeat the submitted entry; collapsing them into one generic "rejected" left the settings page telling the user to retry an entry that could never be saved. Every other Engine diagnostic is still withheld, since it may include user text.
 pub fn edit_personal_dictionary(
     options: &EngineOptions,
-    previous: Option<&msime_engine::host::DictionaryEntry>,
-    replacement: Option<&msime_engine::host::DictionaryEntry>,
+    previous: Option<&lingyao_engine::host::DictionaryEntry>,
+    replacement: Option<&lingyao_engine::host::DictionaryEntry>,
     request_id: &str,
 ) -> Result<(), String> {
     for entry in previous.iter().chain(replacement.iter()) {
@@ -1767,11 +1767,11 @@ pub fn edit_personal_dictionary(
     }
     // The previous row is one the list returned, whose weight learning may have lifted past the ceiling a new entry is held to.
     for entry in previous.iter() {
-        msime_engine::host::dictionary_validate_previous(entry)
+        lingyao_engine::host::dictionary_validate_previous(entry)
             .map_err(|error| invalid_dictionary_entry(&error.to_string()))?;
     }
     for entry in replacement.iter() {
-        msime_engine::host::dictionary_validate(entry)
+        lingyao_engine::host::dictionary_validate(entry)
             .map_err(|error| invalid_dictionary_entry(&error.to_string()))?;
     }
     let _access = DictionaryAccess::try_maintenance(
@@ -1783,7 +1783,7 @@ pub fn edit_personal_dictionary(
     if request_id.is_empty() {
         return Err("dictionary request id required".into());
     }
-    msime_engine::host::dictionary_edit(options, previous, replacement, request_id)
+    lingyao_engine::host::dictionary_edit(options, previous, replacement, request_id)
         .map_err(|_| "dictionary edit rejected".into())
 }
 
@@ -1803,7 +1803,7 @@ pub struct LocalEmojiCatalogSlice {
 }
 
 /// Read catalog rows without collapsing equal text from distinct categories.
-// Not unix-gated: the bodies only call the engine, which builds on Windows too. The gate was a porting gap, and it left the Windows desktop falling back to the compact built-in catalog - 97 emoji against the several thousand rows in msime-others.db - behind a permanent "catalog failed to load" banner.
+// Not unix-gated: the bodies only call the engine, which builds on Windows too. The gate was a porting gap, and it left the Windows desktop falling back to the compact built-in catalog - 97 emoji against the several thousand rows in lingyao-others.db - behind a permanent "catalog failed to load" banner.
 pub fn local_emoji_catalog_slice(
     resources: &str,
     category: &str,
@@ -1816,7 +1816,7 @@ pub fn local_emoji_catalog_slice(
     if limit == 0 || limit > 4096 {
         return Err("invalid local emoji page size");
     }
-    msime_engine::host::emoji_catalog_slice(resources, "", category, "", offset, limit, "")
+    lingyao_engine::host::emoji_catalog_slice(resources, "", category, "", offset, limit, "")
         .map(|page| LocalEmojiCatalogSlice {
             items: page
                 .items
@@ -1833,11 +1833,11 @@ pub fn local_emoji_catalog_slice(
         .map_err(|_| "local emoji catalog unavailable")
 }
 
-pub use msime_client_core::plugins::symbol_set::PluginSymbolGroup;
+pub use lingyao_client_core::plugins::symbol_set::PluginSymbolGroup;
 
 /// 插件目录 `root` 下已安装的符号集的全部组，供宿主追加到内置符号目录之后：`symbols` 组放在以 `pack_name` 为上级分类的分组下，`kaomoji` 组放在颜文字的 All 之后。读几个小清单：不要在按键路径上调用。
 pub fn plugin_symbol_groups(root: &std::path::Path) -> Vec<PluginSymbolGroup> {
-    msime_client_core::plugins::symbol_set::plugin_symbol_groups(root)
+    lingyao_client_core::plugins::symbol_set::plugin_symbol_groups(root)
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -1852,7 +1852,7 @@ pub fn local_symbol_catalog(resources: &str) -> Result<Vec<LocalSymbolCatalogGro
     if !std::path::Path::new(resources).is_absolute() {
         return Err("resources path must be absolute");
     }
-    let groups = msime_engine::host::emoji_symbol_groups(resources)
+    let groups = lingyao_engine::host::emoji_symbol_groups(resources)
         .map_err(|_| "local symbol catalog unavailable")?;
     let mut result = Vec::with_capacity(groups.len());
     let mut remaining_pages = 256usize;
@@ -1865,7 +1865,7 @@ pub fn local_symbol_catalog(resources: &str) -> Result<Vec<LocalSymbolCatalogGro
                 return Err("local symbol catalog exceeds limit");
             }
             remaining_pages -= 1;
-            let page = msime_engine::host::emoji_catalog_slice(
+            let page = lingyao_engine::host::emoji_catalog_slice(
                 resources,
                 "",
                 "symbols",
@@ -1913,12 +1913,12 @@ pub fn local_symbol_catalog(resources: &str) -> Result<Vec<LocalSymbolCatalogGro
 /// unreadable `helpcodes/custom` directory is a valid empty catalog.
 pub fn list_custom_helpcode_schemas(
     resources: &str,
-) -> Result<Vec<msime_client_core::helpcode::CustomHelpcodeSchema>, &'static str> {
+) -> Result<Vec<lingyao_client_core::helpcode::CustomHelpcodeSchema>, &'static str> {
     let path = std::path::Path::new(resources);
     if !path.is_absolute() {
         return Err("resources path must be absolute");
     }
-    Ok(msime_client_core::helpcode::list_custom_helpcode_schemas(
+    Ok(lingyao_client_core::helpcode::list_custom_helpcode_schemas(
         path,
     ))
 }
@@ -2002,7 +2002,7 @@ fn selected_position(action: &Action) -> Option<usize> {
 /// 上屏效率（少按键、联想、整句）只在 Android 上计：只有 Android 的统计页显示它，其他宿主不为它多查读音。测试里也打开，好覆盖计法。
 const COUNTS_COMMIT_EFFICIENCY: bool = cfg!(any(target_os = "android", test));
 
-/// Android 宿主在隐私模式和不学习的输入框里经 `msime_client_set_private_session` 标出隐私会话；这时选词位置和上屏效率都不计。其他宿主不变。
+/// Android 宿主在隐私模式和不学习的输入框里经 `lingyao_client_set_private_session` 标出隐私会话；这时选词位置和上屏效率都不计。其他宿主不变。
 const PRIVATE_SESSIONS_SKIP_STATISTICS: bool = cfg!(any(target_os = "android", test));
 
 /// 一个会话在两次写统计之间最多记下多少次上屏。正常情况下 `SELECTION_BATCH` 次选词就会写一次，这只是兜底。
@@ -2061,7 +2061,7 @@ fn record_efficiency_in_background(options: EngineOptions, commits: Vec<Efficien
         }
     };
     if std::thread::Builder::new()
-        .name("msime-typing-efficiency".into())
+        .name("lingyao-typing-efficiency".into())
         .spawn(worker)
         .is_err()
     {
@@ -2095,7 +2095,7 @@ fn spelling_keys(options: &EngineOptions, text: &str) -> Option<u64> {
         SchemeType::Quanpin | SchemeType::Shuangpin => {}
         _ => return None,
     }
-    let reading = msime_engine::host::hanzi_to_pinyin(options, text);
+    let reading = lingyao_engine::host::hanzi_to_pinyin(options, text);
     if reading.is_empty() {
         return None;
     }
@@ -2123,7 +2123,7 @@ const SELECTION_BATCH: u64 = 32;
 #[cfg(test)]
 mod tests;
 
-/// 只看偏好时，运行 `scheme` 的会话是否以引擎的九键模式开始（宿主的 `msime_client_set_nine_key_mode` 仍可覆盖，但覆盖只对设下它时的方案有效）。全拼看 `touch_keyboard_layout`。注音还要选了「注音 9 键」触屏方案，这个方案只有 Android 键盘会写：`touch_keyboard_layout` 是所有方案共用的一个字段，桌面宿主为全拼九宫格设它（Linux 的九键开关），那里的注音会话必须留在大千键位，不能继承九宫格。
+/// 只看偏好时，运行 `scheme` 的会话是否以引擎的九键模式开始（宿主的 `lingyao_client_set_nine_key_mode` 仍可覆盖，但覆盖只对设下它时的方案有效）。全拼看 `touch_keyboard_layout`。注音还要选了「注音 9 键」触屏方案，这个方案只有 Android 键盘会写：`touch_keyboard_layout` 是所有方案共用的一个字段，桌面宿主为全拼九宫格设它（Linux 的九键开关），那里的注音会话必须留在大千键位，不能继承九宫格。
 pub(crate) fn layout_starts_nine_key(
     scheme: Option<SchemeType>,
     preferences: &Preferences,

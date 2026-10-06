@@ -1,6 +1,6 @@
 # 回退整句：一个被缺失文件掩盖了的排序缺陷
 
-> 历史记录：这里讨论的 Google 整句解码器（读 `dict_pinyin.dat`、以 `Fallback` 来源给出整句的那一条）已随 C++ Engine 移植到 `crates/engine` 一起退役，整句候选现在只来自词格。文中的 `vendor/`、`MSIME_SKIP_ENGINE_FETCH` 与 `crates/engine-bridge` 都是当时的构建方式。
+> 历史记录：这里讨论的 Google 整句解码器（读 `dict_pinyin.dat`、以 `Fallback` 来源给出整句的那一条）已随 C++ Engine 移植到 `crates/engine` 一起退役，整句候选现在只来自词格。文中的 `vendor/`、`LINGYAO_SKIP_ENGINE_FETCH` 与 `crates/engine-bridge` 都是当时的构建方式。
 
 ## 定位
 
@@ -15,7 +15,7 @@ decoder_(paths_.resource(lingyao::assets::pinyin_model),
          paths_.user(lingyao::assets::pinyin_user_dictionary)),
 ```
 
-`assets::pinyin_model` 是 `dict_pinyin.dat`（`contracts/assets/assets.h`）。**该文件当时不在锁定的词库发布里**——发布只有 `msime-pinyin.db`、`msime-english.db`、`msime-others.db`、`msime-japanese.dat` 和两个说明文件。
+`assets::pinyin_model` 是 `dict_pinyin.dat`（`contracts/assets/assets.h`）。**该文件当时不在锁定的词库发布里**——发布只有 `lingyao-pinyin.db`、`lingyao-english.db`、`lingyao-others.db`、`lingyao-japanese.dat` 和两个说明文件。
 
 `core/pinyin_decoder.cpp` 的 `im_open_decoder` 失败时静默 `return {}`，所以没有任何征兆。文件只有 1.1 MB，一直躺在 Engine 仓库的 `googlepinyinime-rev/data/` 下。
 
@@ -70,7 +70,7 @@ if (google != result.end() && google != result.begin())
 
 ## 结局
 
-排序修复是 msime-engine PR #154，`dict_pinyin.dat` 现在由 `resources/desktop-dictionary.lock.json` 锁定并随资源安装取回。两者一起落地后，用真实 Engine 与真实资源跑出来的数字：
+排序修复是 lingyao-engine PR #154，`dict_pinyin.dat` 现在由 `resources/desktop-dictionary.lock.json` 锁定并随资源安装取回。两者一起落地后，用真实 Engine 与真实资源跑出来的数字：
 
 | | 修复前 | 现在 |
 |---|---|---|
@@ -86,7 +86,7 @@ if (google != result.end() && google != result.begin())
 
 ## 复现修复效果时的陷阱
 
-本地验证这个修复时，第一次测出来的数字和没改一样，看着像修法无效。原因是 `MSIME_SKIP_ENGINE_FETCH=1` 只跳过 fetch，CMake 不会察觉 `vendor/` 下的文件变了。改完 Engine 源码要 `touch crates/engine-bridge/build.rs` 才会重编。
+本地验证这个修复时，第一次测出来的数字和没改一样，看着像修法无效。原因是 `LINGYAO_SKIP_ENGINE_FETCH=1` 只跳过 fetch，CMake 不会察觉 `vendor/` 下的文件变了。改完 Engine 源码要 `touch crates/engine-bridge/build.rs` 才会重编。
 
 回归测试也写了三遍才写对，两次踩的坑正是这个缺陷能活这么久的原因：
 
@@ -105,9 +105,9 @@ if (google != result.end() && google != result.begin())
 ## 复现
 
 ```sh
-cargo run --release -p msime-input-runtime --example convert_eval -- \
+cargo run --release -p lingyao-input-runtime --example convert_eval -- \
   --resources <资源目录> --set resources/eval/sentences-v1.tsv
-cargo run --release -p msime-input-runtime --example convert_eval -- \
+cargo run --release -p lingyao-input-runtime --example convert_eval -- \
   --resources <资源目录> --set resources/eval/quanpin-words-v1.tsv --limit 3000
 ```
 

@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class ArtworkStorage: BackendSessionStorage, @unchecked Sendable {
   func load() throws -> BackendSavedSession? {

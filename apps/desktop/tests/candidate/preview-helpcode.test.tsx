@@ -2,7 +2,7 @@
 import { afterEach, expect, test } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 import { AppearanceCandidatePreview } from "../../../../packages/ui/src/candidate/appearance-candidate-preview";
-import type { Preferences, SkinCatalog } from "@msime/ui";
+import type { Preferences, SkinCatalog } from "@lingyao/ui";
 
 afterEach(cleanup);
 const preferences: Preferences = {

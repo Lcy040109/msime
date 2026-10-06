@@ -1,7 +1,7 @@
 #include "InputQueue.h"
 #include <vector>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Input queue test failed");

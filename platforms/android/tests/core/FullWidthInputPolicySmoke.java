@@ -1,4 +1,4 @@
-import app.msime.android.FullWidthInputPolicy;
+import app.lingyao.android.FullWidthInputPolicy;
 
 public final class FullWidthInputPolicySmoke {
     static void check(boolean condition, String message) {

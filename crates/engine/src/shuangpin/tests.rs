@@ -1,4 +1,4 @@
-//! Engine-level tests over throwaway dictionaries: `test_shuangpin.cpp`, the shuangpin cases of `test_input_session.cpp` and `test_runtime_isolation.cpp` that exercise the engine itself, the double-helpcode cache overlay, online rows, initial expansion and the candidate lookup. A real-dictionary smoke test runs when `MSIME_EVAL_RESOURCES` names the dict-v2.0.1 resource directory.
+//! Engine-level tests over throwaway dictionaries: `test_shuangpin.cpp`, the shuangpin cases of `test_input_session.cpp` and `test_runtime_isolation.cpp` that exercise the engine itself, the double-helpcode cache overlay, online rows, initial expansion and the candidate lookup. A real-dictionary smoke test runs when `LINGYAO_EVAL_RESOURCES` names the dict-v2.0.1 resource directory.
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -427,8 +427,8 @@ fn missing_dictionary_answers_empty() {
 /// The shipped dictionary answers the common readings; skipped without the resource bundle.
 #[test]
 fn real_dictionary_answers_common_readings() {
-    let Some(resources) = std::env::var_os("MSIME_EVAL_RESOURCES") else {
-        eprintln!("skipped: MSIME_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory");
+    let Some(resources) = std::env::var_os("LINGYAO_EVAL_RESOURCES") else {
+        eprintln!("skipped: LINGYAO_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory");
         return;
     };
     let user = tempfile::tempdir().expect("user directory");
@@ -467,7 +467,7 @@ fn context_changes_keep_the_caches_without_a_model() {
     assert!(words(&engine.query(&typed, None)).contains(&"甲"));
 }
 
-/// With a sentence model loaded the trimmed context joins the series key (overlays.md §1.6.2): an answer cached under one context is not read under another, and it is read again when that context comes back. Needs the keyboard model in `MSIME_EVAL_RESOURCES`.
+/// With a sentence model loaded the trimmed context joins the series key (overlays.md §1.6.2): an answer cached under one context is not read under another, and it is read again when that context comes back. Needs the keyboard model in `LINGYAO_EVAL_RESOURCES`.
 #[test]
 fn a_loaded_model_keys_the_series_cache_by_context() {
     let model = match crate::lattice::neural::test_model_path(assets::NEURAL_MODEL_KEYBOARD) {

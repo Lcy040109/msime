@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { DoubaoResourceIdSection } from "@msime/ui";
+import { DoubaoResourceIdSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

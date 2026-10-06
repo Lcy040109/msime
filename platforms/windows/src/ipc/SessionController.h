@@ -14,7 +14,7 @@
 #include <optional>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class ModeRequestResult { Rejected, Sent, WriteFailed };
 enum class SelectionRequestResult { Rejected, Busy, Sent, Failed };
 enum class CandidateActionRequestResult { Rejected, Busy, Sent, Failed };
@@ -149,4 +149,4 @@ private:
   std::mutex stop_mutex_;
   std::thread control_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

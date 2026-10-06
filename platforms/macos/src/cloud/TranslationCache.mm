@@ -1,13 +1,13 @@
 #import "TranslationCache.h"
 
-@implementation MSIMETranslationCache {
+@implementation LINGYAOTranslationCache {
     NSMutableDictionary<NSArray<NSString *> *, NSString *> *_positive;
     NSMutableDictionary<NSArray<NSString *> *, NSNumber *> *_negative;
 }
 + (instancetype)sharedCache {
-    static MSIMETranslationCache *cache;
+    static LINGYAOTranslationCache *cache;
     static dispatch_once_t once;
-    dispatch_once(&once, ^{ cache = [MSIMETranslationCache new]; });
+    dispatch_once(&once, ^{ cache = [LINGYAOTranslationCache new]; });
     return cache;
 }
 - (instancetype)init {

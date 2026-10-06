@@ -36,10 +36,10 @@ int main()
     @autoreleasepool
     {
         [NSApplication sharedApplication];
-        char temporary[] = "/tmp/msime-candidate-panel-XXXXXX";
+        char temporary[] = "/tmp/lingyao-candidate-panel-XXXXXX";
         Require(mkdtemp(temporary) != nullptr, "Failed to create candidate panel fixture directory.");
         const std::filesystem::path fixtureRoot = std::filesystem::path(temporary) / "Library" / "Application Support" /
-                                                   "app.msime.macos" / "skins" / "wide-card";
+                                                   "app.lingyao.macos" / "skins" / "wide-card";
         std::filesystem::create_directories(fixtureRoot);
         std::ofstream manifest(fixtureRoot / "skin.toml");
         manifest << R"toml(schema_version = 1
@@ -136,13 +136,13 @@ width_dip = 0
                 annotatedButton = (NSButton *)view;
         Require(annotatedButton != nil, "The annotated candidate was not rendered.");
         NSFont *numberFont = [annotatedButton valueForKey:@"numberFont"];
-        Require(numberFont != nil && fabs(numberFont.pointSize - annotatedButton.font.pointSize * MSIMECandidateNumberScale) < 0.01,
+        Require(numberFont != nil && fabs(numberFont.pointSize - annotatedButton.font.pointSize * LINGYAOCandidateNumberScale) < 0.01,
                 "Candidate number font did not use the Windows 80% scale.");
         NSDictionary *measure = @{NSFontAttributeName : annotatedButton.font};
         NSDictionary *numberMeasure = @{NSFontAttributeName : numberFont};
         // The 6pt accent-bar gutter exists only for a palette that draws the bar; the native system theme does not.
         const CGFloat barGutter = LingyaoResolveStoredTheme(NO, NO).tokens.showSelectedBar ? 6.0 : 0.0;
-        const CGFloat needed = 8.0 + barGutter + [@"1" sizeWithAttributes:numberMeasure].width + MSIMECandidateNumberGap +
+        const CGFloat needed = 8.0 + barGutter + [@"1" sizeWithAttributes:numberMeasure].width + LINGYAOCandidateNumberGap +
                                [@"灵耀(Ss)" sizeWithAttributes:measure].width + 8.0;
         Require(annotatedButton.frame.size.width + 0.5 >= needed, "Horizontal layout truncated helpcode annotations.");
         [panel setCandidateData:[candidates subarrayWithRange:NSMakeRange(0, 5)]];
@@ -176,7 +176,7 @@ width_dip = 0
         [panel setCandidateData:@[]];
         Require(!panel.isVisible && panel.selectedCandidate == NSNotFound, "Empty data retained a visible selection.");
         // A package is drawn as the custom theme's candidate skin.
-        [NSUserDefaults.standardUserDefaults setObject:@"wide-card" forKey:@"MSIMEClientCustomCandidateSkin"];
+        [NSUserDefaults.standardUserDefaults setObject:@"wide-card" forKey:@"LINGYAOClientCustomCandidateSkin"];
         LingyaoSetStoredGlobalTheme(@"custom");
         panel.panelType = kIMKSingleColumnScrollingCandidatePanel;
         [panel setCandidateData:@[ [[NSAttributedString alloc] initWithString:@"短"] ,
@@ -196,7 +196,7 @@ width_dip = 0
                     LingyaoResolveStoredTheme(NO, NO).candidateSkin.empty(),
                 "A vertical-only package was not drawn in exactly the vertical layout.");
         [panel hide];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientCustomCandidateSkin"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"LINGYAOClientCustomCandidateSkin"];
         LingyaoSetStoredGlobalTheme(@"system");
         if (savedHome.empty()) unsetenv("HOME");
         else setenv("HOME", savedHome.c_str(), 1);

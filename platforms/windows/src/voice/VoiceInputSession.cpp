@@ -9,7 +9,7 @@
 #include "SystemAudioMuter.h"
 #include "../../../../shared/voice/VoiceProviders.h"
 #include "VoiceSessionPolicy.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <algorithm>
 #include <chrono>
@@ -20,10 +20,10 @@
 #include <nlohmann/json.hpp>
 #include <type_traits>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 constexpr std::size_t kSampleRate = 16000;
-// MSIME-Windows keeps its message boxes until they are dismissed. The overlay cannot take focus, so it holds a failure long enough to read a provider's sentence and then steps aside.
+// LINGYAO-Windows keeps its message boxes until they are dismissed. The overlay cannot take focus, so it holds a failure long enough to read a provider's sentence and then steps aside.
 constexpr DWORD kFailureDisplayMs = 4000;
 constexpr DWORD kFailurePollMs = 100;
 // How long a loaded local model is kept without a dictation: the same two minutes the macOS and Linux recognizer process waits (shared/voice/LocalAsrHelper.cpp).
@@ -35,8 +35,8 @@ bool is_local_asr_provider(std::string_view provider) {
 
 // The value of a host-api response, or nothing when the call failed. Frees the returned string.
 std::optional<nlohmann::json> host_value(char *raw) {
-  const std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-      raw, msime_client_string_free);
+  const std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+      raw, lingyao_client_string_free);
   if (!owned)
     return std::nullopt;
   auto document = nlohmann::json::parse(owned.get(), nullptr, false);
@@ -53,7 +53,7 @@ nlohmann::json local_hotwords(const VoiceInputConfig &config) {
     return none;
   // host_options is already a serialized JSON object, so it is spliced in rather than parsed and dumped again for every dictation.
   const auto request = "{\"options\":" + *config.host_options + "}";
-  const auto value = host_value(msime_client_voice_hotwords(
+  const auto value = host_value(lingyao_client_voice_hotwords(
       reinterpret_cast<const uint8_t *>(request.data()), request.size()));
   if (!value || !value->is_object())
     return none;
@@ -69,7 +69,7 @@ std::string correct_with_hotwords(const std::string &text,
   const auto request =
       nlohmann::json{{"text", text}, {"hotwords", hotwords}}.dump(
           -1, ' ', false, nlohmann::json::error_handler_t::replace);
-  const auto value = host_value(msime_client_voice_hotword_correct(
+  const auto value = host_value(lingyao_client_voice_hotword_correct(
       reinterpret_cast<const uint8_t *>(request.data()), request.size()));
   if (!value || !value->is_object())
     return text;
@@ -227,7 +227,7 @@ static_assert(
 // One on-device dictation fed while it is recorded, so its text appears as the person speaks, the way Doubao's does. The capture thread appends to a bounded queue: loading a model takes seconds and decoding a finished speech segment can take longer than a capture buffer, neither of which the audio callback may wait on. run() does both on a recognition task and finish() collects the transcript from it.
 class LocalAsrStream {
 public:
-  using Partial = msime::voice::LocalAsrSession::PartialCallback;
+  using Partial = lingyao::voice::LocalAsrSession::PartialCallback;
 
   // Capture thread. Audio arriving after the end, a cancellation or a failed load is dropped rather than queued for a worker that will never read it. An over-budget queue is reported to the session so it can fail visibly.
   bool push(const float *samples, std::size_t count) {
@@ -263,11 +263,11 @@ public:
     std::exception_ptr error;
     try {
       const auto hotwords = local_hotwords(config);
-      msime::voice::LocalAsrOptions options;
+      lingyao::voice::LocalAsrOptions options;
       options.model_dir = config.asr_model_path;
       options.language = config.language;
       options.hotwords = hotword_texts(hotwords);
-      msime::voice::LocalAsrSession session(options, on_partial, cancelled_);
+      lingyao::voice::LocalAsrSession session(options, on_partial, cancelled_);
       std::vector<float> batch;
       for (;;) {
         bool last = false;
@@ -286,7 +286,7 @@ public:
         }
       }
       if (!cancelled_->load() && !text.empty() && !hotwords.empty() &&
-          msime::voice::local_model_uses_pinyin_hotwords(config.asr_model_path))
+          lingyao::voice::local_model_uses_pinyin_hotwords(config.asr_model_path))
         text = correct_with_hotwords(text, hotwords);
     } catch (...) {
       error = std::current_exception();
@@ -419,11 +419,11 @@ bool VoiceInputSession::start(std::shared_ptr<VoiceReviewResult> review,
   const bool local = is_local_asr_provider(config.asr_provider);
   // An installed catalog model decodes as the audio arrives and reports partial text like Doubao. Any other path, such as a Whisper model file the setting held before the catalog, goes through the batch recognizer, which refuses it after the recording.
   const bool local_stream =
-      local && msime::voice::is_local_model_dir(config.asr_model_path);
+      local && lingyao::voice::is_local_model_dir(config.asr_model_path);
   const bool stream_inline = voice_inline_allowed(
       review, config.stream_inline_preedit, doubao || local_stream,
       config.commit_mode);
-  // Without a focused input context there is nothing to dictate into, and MSIME-Windows says nothing either.
+  // Without a focused input context there is nothing to dictate into, and LINGYAO-Windows says nothing either.
   const auto lease = lease_provider_();
   if (!lease || !lease->epoch || !lease->token)
     return false;
@@ -633,7 +633,7 @@ void VoiceInputSession::stop() {
       report_failure(voice_capture_interrupted_message, session_.load());
     return;
   }
-  // A callback that threw stopped delivering audio part-way, so what was captured is not the recording the person made. MSIME-Windows StopRecording discards it and says so.
+  // A callback that threw stopped delivering audio part-way, so what was captured is not the recording the person made. LINGYAO-Windows StopRecording discards it and says so.
   if (capture_ && capture_->callback_failed()) {
     const bool native = !review_;
     cancel_session(true);
@@ -833,7 +833,7 @@ void VoiceInputSession::finish(std::vector<float> samples, FocusLease lease,
       report_failure(
           local ? std::string(voice_local_failure(
                       local_asr_available(),
-                      msime::voice::is_local_model_dir(config.asr_model_path)))
+                      lingyao::voice::is_local_model_dir(config.asr_model_path)))
                 : voice_recognition_failure(error),
           session);
     return;
@@ -941,7 +941,7 @@ std::string VoiceInputSession::recognize_local(
                                   config.language, cancelled,
                                   hotword_texts(hotwords));
   if (!text.empty() && !hotwords.empty() &&
-      msime::voice::local_model_uses_pinyin_hotwords(config.asr_model_path))
+      lingyao::voice::local_model_uses_pinyin_hotwords(config.asr_model_path))
     text = correct_with_hotwords(text, hotwords);
   return text;
 }
@@ -973,7 +973,7 @@ void VoiceInputSession::release_idle_local_model() {
   }
   // The recognizer keeps a model a live dictation is using, whatever its age.
   idle_release_ = std::async(std::launch::async, [] {
-    (void)msime::voice::release_idle_local_models(kLocalModelIdle);
+    (void)lingyao::voice::release_idle_local_models(kLocalModelIdle);
   });
 }
 
@@ -1098,4 +1098,4 @@ void VoiceInputSession::clear_overlay() {
   overlay_.set_transcript(L"");
   overlay_.hide();
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

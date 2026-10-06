@@ -1,5 +1,5 @@
-import app.msime.android.SyncSignals;
-import app.msime.android.SyncSwitch;
+import app.lingyao.android.SyncSignals;
+import app.lingyao.android.SyncSwitch;
 import java.lang.reflect.Method;
 
 public final class SyncSignalsSmoke {

@@ -11,7 +11,7 @@ final class KoreanDubeolsikTests: XCTestCase {
     super.setUp()
     enableAllInputSchemes()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-korean-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-korean-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {
@@ -374,7 +374,7 @@ final class KoreanDubeolsikTests: XCTestCase {
     for expected in ["과", "고", "ㄱ"] { XCTAssertEqual(bridge.handleBackspace().preedit, expected) }
   }
 
-  /// The Hanja list as the bridge carries it: MSIME_CONVERT_HANJA opens and closes it over a syllable that keeps composing, the candidate commands and digits choose from it, Cancel closes it, Finish writes the Hangul, and a lone jamo has none.
+  /// The Hanja list as the bridge carries it: LINGYAO_CONVERT_HANJA opens and closes it over a syllable that keeps composing, the candidate commands and digits choose from it, Cancel closes it, Finish writes the Hangul, and a lone jamo has none.
   func testHanjaListThroughTheBridge() {
     let bridge = koreanBridge()
     XCTAssertEqual(type("gks", into: bridge).preedit, "한")

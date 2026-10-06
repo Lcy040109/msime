@@ -2,7 +2,7 @@
 //!
 //! These are what the user types, so every tool here is offered only when the user started the server with --allow-dictionary-read, and the ones that change words need --allow-write as well.
 
-use msime_host_api::{
+use lingyao_host_api::{
     CandidateOrigin, LookupCandidate, LookupScheme, NewWord, Word, WordEdit, WordImport, WordKind,
 };
 use rmcp::schemars::JsonSchema;

@@ -103,7 +103,7 @@ final class KeyboardFormFactorTests: XCTestCase {
   /// The App's iPad switch writes `navigation.tab` and leaves the other paging keys where they were.
   func testTheIPadSwitchWritesOnlyTheTabPagingKey() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-tab-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-tab-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     _ = LingyaoInputSessionBridge(stateRoot: state)
     let before = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["navigation"] as? [String: Any])

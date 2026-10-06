@@ -1,7 +1,7 @@
 import android.text.InputType;
-import app.msime.android.CloudClipboardPanelPolicy;
-import app.msime.android.CloudClipboardPanelPolicy.Status;
-import app.msime.android.CloudClipboardPanelPolicy.Tab;
+import app.lingyao.android.CloudClipboardPanelPolicy;
+import app.lingyao.android.CloudClipboardPanelPolicy.Status;
+import app.lingyao.android.CloudClipboardPanelPolicy.Tab;
 
 public final class CloudClipboardPanelPolicySmoke {
     public static void main(String[] args) {

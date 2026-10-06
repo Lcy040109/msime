@@ -1,5 +1,5 @@
-use msime_client_core::account::AccountPreferenceValue;
-use msime_client_core::preferences::FrequencyPreferences;
+use lingyao_client_core::account::AccountPreferenceValue;
+use lingyao_client_core::preferences::FrequencyPreferences;
 use std::collections::BTreeMap;
 
 pub(crate) fn valid_mobile_haptic_strength(value: &str) -> bool {

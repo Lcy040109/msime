@@ -7,7 +7,7 @@ final class CompositionCaretTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-composition-caret-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-composition-caret-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

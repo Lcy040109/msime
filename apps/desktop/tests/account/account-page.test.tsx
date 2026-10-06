@@ -12,7 +12,7 @@ import {
   type AccountProfile,
   type AccountUser,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -184,7 +184,7 @@ test("a desktop profile rename response from a replaced client is ignored", asyn
 });
 
 test("mobile accounts keep profile editing and session actions on the pushed profile page", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "account" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "account" }, "");
   const client = account({ status: vi.fn().mockResolvedValue({ user }) });
   render(<AccountPage client={client} platform="ios" />);
   const profileCard = await screen.findByRole("button", { name: "编辑个人资料" });
@@ -241,7 +241,7 @@ test("a mobile profile rename response from a replaced client is ignored", async
 });
 
 test("Harmony uses the mobile account flow instead of desktop account controls", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "account" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "account" }, "");
   const client = account({ status: vi.fn().mockResolvedValue({ user }) });
   render(<AccountPage client={client} platform="harmony" />);
 
@@ -253,7 +253,7 @@ test("Harmony uses the mobile account flow instead of desktop account controls",
 });
 
 test("Harmony 2-in-1 uses desktop account controls even though its platform is Harmony", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "account" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "account" }, "");
   const client = account({ status: vi.fn().mockResolvedValue({ user }) });
   render(<AccountPage client={client} platform="harmony" mobile={false} />);
 
@@ -290,7 +290,7 @@ test("the mobile login sheet exposes its caller's cancel action", async () => {
 });
 
 test("Harmony chat login focuses the tryout and cancel returns to it", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "chat" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "chat" }, "");
   render(
     <SettingsPage
       initialPage="chat"
@@ -321,7 +321,7 @@ test("Harmony chat login focuses the tryout and cancel returns to it", async () 
 // itself the copy button. The desktop editor had a case for that; the mobile
 // page it pushes did not, so the parity was only true by inspection.
 test("the mobile profile page copies the account ID and shows the join date", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "account" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "account" }, "");
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
   const client = account({ status: vi.fn().mockResolvedValue({ user }) });
@@ -529,7 +529,7 @@ test("a pending Google sign-in can be abandoned without waiting for the browser"
 });
 
 test("mobile profile card opens a back-stack page with account actions", async () => {
-  window.history.replaceState({ msimeSettings: true, page: "account" }, "");
+  window.history.replaceState({ lingyaoSettings: true, page: "account" }, "");
   const client = account({ status: vi.fn().mockResolvedValue({ user }) });
   render(<AccountPage client={client} platform="android" />);
   fireEvent.click(await screen.findByRole("button", { name: "编辑个人资料" }));

@@ -69,7 +69,7 @@ void SealPendingLocked()
 
 bool SendBatch(const KeyBatch &batch)
 {
-    for (const auto &message : msime::windows::aux_typing_keys_messages(batch.day, batch.counts))
+    for (const auto &message : lingyao::windows::aux_typing_keys_messages(batch.day, batch.counts))
     {
         if (!SendToAuxNamedpipe(message, true))
         {
@@ -99,7 +99,7 @@ void CALLBACK DrainKeyPressStatistics(PTP_CALLBACK_INSTANCE instance, void *cont
         }
         ReleaseSRWLockExclusive(&g_queueLock);
 
-        bool accepted = !probe || SendToAuxNamedpipe(msime::windows::aux_typing_keys_probe(LocalDay()), true);
+        bool accepted = !probe || SendToAuxNamedpipe(lingyao::windows::aux_typing_keys_probe(LocalDay()), true);
         for (const auto &batch : batches)
         {
             if (!accepted)

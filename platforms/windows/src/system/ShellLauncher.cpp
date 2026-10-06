@@ -2,7 +2,7 @@
 #include <memory>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 struct ForegroundWindow { DWORD pid; HWND window = nullptr; };
 BOOL CALLBACK find_process_window(HWND window, LPARAM data) {
@@ -75,4 +75,4 @@ bool launch_shell_surface(const std::filesystem::path &executable,
                           const ShellLaunchContext &context) {
   return launch_shell_surface_impl(executable, request, &context);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

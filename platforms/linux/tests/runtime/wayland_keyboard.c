@@ -39,7 +39,7 @@ int main(void) {
   if (wl_display_roundtrip(display) < 0 || !seat || !manager) return 3;
   struct zwp_virtual_keyboard_v1 *keyboard =
     zwp_virtual_keyboard_manager_v1_create_virtual_keyboard(manager, seat);
-  char path[] = "/tmp/msime-test-keymap.XXXXXX";
+  char path[] = "/tmp/lingyao-test-keymap.XXXXXX";
   int fd = mkstemp(path);
   if (fd < 0) return 4;
   unlink(path);

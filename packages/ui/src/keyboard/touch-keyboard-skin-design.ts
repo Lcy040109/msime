@@ -1,4 +1,4 @@
-// Fixed source: MSIME-Apple@11c950a63ec57656cd78b3f75aa621c293bfe453,
+// Fixed source: LINGYAO-Apple@11c950a63ec57656cd78b3f75aa621c293bfe453,
 // platforms/ios/SharedUI/CustomKeyboardSkin.swift and KeyboardSkinCollection.swift.
 import { boundedGraphemes } from "../core/text";
 import { clamp as clampNumber } from "../core/number";

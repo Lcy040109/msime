@@ -1,7 +1,7 @@
 #pragma once
 #import <Foundation/Foundation.h>
-typedef void (^MSIMECloudClipboardCompletion)(NSData *data, NSInteger status, NSError *error);
-FOUNDATION_EXPORT void MSIMEFetchCloudClipboard(NSString *search, NSString *token, MSIMECloudClipboardCompletion completion);
-FOUNDATION_EXPORT void MSIMESetCloudClipboardEnabled(BOOL enabled, NSString *token, MSIMECloudClipboardCompletion completion);
-FOUNDATION_EXPORT void MSIMEAddCloudClipboard(NSString *text, NSString *token, MSIMECloudClipboardCompletion completion);
-FOUNDATION_EXPORT void MSIMERemoveCloudClipboard(NSString *itemID, NSString *token, MSIMECloudClipboardCompletion completion);
+typedef void (^LINGYAOCloudClipboardCompletion)(NSData *data, NSInteger status, NSError *error);
+FOUNDATION_EXPORT void LINGYAOFetchCloudClipboard(NSString *search, NSString *token, LINGYAOCloudClipboardCompletion completion);
+FOUNDATION_EXPORT void LINGYAOSetCloudClipboardEnabled(BOOL enabled, NSString *token, LINGYAOCloudClipboardCompletion completion);
+FOUNDATION_EXPORT void LINGYAOAddCloudClipboard(NSString *text, NSString *token, LINGYAOCloudClipboardCompletion completion);
+FOUNDATION_EXPORT void LINGYAORemoveCloudClipboard(NSString *itemID, NSString *token, LINGYAOCloudClipboardCompletion completion);

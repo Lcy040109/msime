@@ -3,14 +3,14 @@
 #include "EmojiPanelIcons.h"
 #include "ClipboardHistory.h"
 #include "NativeTextInput.h"
-#include "msimeui/Controls.h"
+#include "lingyaoui/Controls.h"
 
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace msimeui
+namespace lingyaoui
 {
 class EmojiPanel final : public Visual
 {
@@ -162,7 +162,7 @@ class EmojiPanel final : public Visual
     std::vector<SymbolTab> symbolTabs_;
     std::vector<Item> recentItems_;
     std::vector<Item> clipboardItems_;
-    std::unique_ptr<msime::windows::ClipboardHistory> clipboardHistory_;
+    std::unique_ptr<lingyao::windows::ClipboardHistory> clipboardHistory_;
     std::filesystem::path stateRoot_;
     std::wstring searchText_;
     std::wstring toastText_;
@@ -207,4 +207,4 @@ class EmojiPanel final : public Visual
     mutable bool flowLayoutDirty_ = true;
     mutable bool idleKaomojiLayoutValid_ = false;
 };
-} // namespace msimeui
+} // namespace lingyaoui

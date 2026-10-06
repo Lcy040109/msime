@@ -21,7 +21,7 @@ void apply_value(GVariant *value) {
     current = inner;
   }
   if (g_variant_is_of_type(current, G_VARIANT_TYPE_UINT32))
-    msime_ibus_set_system_dark(g_variant_get_uint32(current) == 1);
+    lingyao_ibus_set_system_dark(g_variant_get_uint32(current) == 1);
   g_variant_unref(current);
 }
 void disconnect() {
@@ -72,14 +72,14 @@ void appeared(GDBusConnection *bus, const gchar *, const gchar *, gpointer) {
 }
 }
 
-guint msime_watch_system_theme() {
+guint lingyao_watch_system_theme() {
   return g_bus_watch_name(G_BUS_TYPE_SESSION, service, G_BUS_NAME_WATCHER_FLAGS_AUTO_START,
       appeared, +[](GDBusConnection *, const gchar *, gpointer) {
         disconnect();
-        msime_ibus_set_system_dark(false);
+        lingyao_ibus_set_system_dark(false);
       }, nullptr, nullptr);
 }
-void msime_unwatch_system_theme(guint watch) {
+void lingyao_unwatch_system_theme(guint watch) {
   g_bus_unwatch_name(watch);
   disconnect();
 }

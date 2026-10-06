@@ -12,7 +12,7 @@ import {
   statisticsOverviewMetrics,
   usualHours,
   type TypingStatistics,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 function statistics(overrides: Partial<TypingStatistics> = {}): TypingStatistics {
   return { enabled: true, total: 0, days: {}, ...overrides };

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // 只有名称代理（name surrogate）类的重解析点——符号链接、目录联接、挂载点——会把路径重定向到别处，与 Rust 在 Windows 上 `symlink_metadata().file_type().is_symlink()` 的判定一致。OneDrive 云文件等其它重解析点不改变路径指向，Rust 宿主照常接受，这里也必须接受，否则两个宿主对同一个状态根给出不同结论。规则以 `crates/path-trust/src/lib.rs` 为准，Windows 没有受信任的系统链接。
 inline bool is_name_surrogate_reparse_point(DWORD attributes, DWORD tag) {
   return (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
@@ -67,7 +67,7 @@ public:
   explicit StateRootLease(const std::filesystem::path &root) {
     reject_reparse_ancestors(root);
     std::filesystem::create_directories(root);
-    handle_ = CreateFileW((root / L".msime-client-server.lock").c_str(),
+    handle_ = CreateFileW((root / L".lingyao-client-server.lock").c_str(),
                           GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS,
                           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT,
                           nullptr);
@@ -86,4 +86,4 @@ public:
 private:
   HANDLE handle_ = INVALID_HANDLE_VALUE;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

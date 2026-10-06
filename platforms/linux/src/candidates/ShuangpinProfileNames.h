@@ -2,7 +2,7 @@
 
 #include <array>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 struct ShuangpinProfileName {
   const char *value;
   const char *label;
@@ -14,4 +14,4 @@ inline constexpr std::array<ShuangpinProfileName, 4> kShuangpinProfileNames{{
     {"shoudao", "首道"},
     {"microsoft", "微软"},
 }};
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

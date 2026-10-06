@@ -1,4 +1,4 @@
-import app.msime.android.AccountSessionRoutingPolicy;
+import app.lingyao.android.AccountSessionRoutingPolicy;
 
 public final class AccountSessionRoutingPolicySmoke {
     public static void main(String[] arguments) {

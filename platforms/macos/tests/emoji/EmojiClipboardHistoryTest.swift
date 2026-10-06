@@ -1,6 +1,6 @@
 import Foundation
 
-@objc(MSIMEClientSession) final class HistorySessionStub: NSObject {
+@objc(LINGYAOClientSession) final class HistorySessionStub: NSObject {
   @objc class func clipboardCaptureEnabledRequest(_ directory: String) -> NSDictionary {
     switch directory {
     case "/synthetic-state": return ["enabled": true]

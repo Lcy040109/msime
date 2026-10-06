@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """选中输入法却还没做首次配置时的引导：IBus 启动器与共享的引导脚本；以及升级后下载的词库落后于当前版本时的通知。
 
-用桩代替 msime-linux-settings、notify-send 和 msime-linux-ibus，只看谁被调用了几次，不联网、不需要词库，也不起任何桌面进程。
+用桩代替 lingyao-linux-settings、notify-send 和 lingyao-linux-ibus，只看谁被调用了几次，不联网、不需要词库，也不起任何桌面进程。
 """
 import os
 import re
@@ -47,12 +47,12 @@ def main() -> int:
         bin_dir = scratch / "bin"
         bin_dir.mkdir()
         log = scratch / "calls.log"
-        for script in ("msime-linux-ibus-launcher", "msime-linux-first-run-guide"):
+        for script in ("lingyao-linux-ibus-launcher", "lingyao-linux-first-run-guide"):
             target = bin_dir / script
             target.write_text((SCRIPTS / script).read_text())
             target.chmod(0o755)
-        stub(bin_dir / "msime-linux-settings", log, "settings")
-        stub(bin_dir / "msime-linux-ibus", log, "ibus")
+        stub(bin_dir / "lingyao-linux-settings", log, "settings")
+        stub(bin_dir / "lingyao-linux-ibus", log, "ibus")
         tools = scratch / "tools"
         tools.mkdir()
         stub(tools / "notify-send", log, "notify")
@@ -64,7 +64,7 @@ def main() -> int:
         base = {
             key: value
             for key, value in os.environ.items()
-            if not key.startswith("MSIME_") and key not in ("DISPLAY", "WAYLAND_DISPLAY")
+            if not key.startswith("LINGYAO_") and key not in ("DISPLAY", "WAYLAND_DISPLAY")
         }
         base.update(
             PATH=f"{tools}:{os.environ.get('PATH', '/usr/bin:/bin')}",
@@ -76,39 +76,39 @@ def main() -> int:
 
         def launch(environment: dict) -> subprocess.CompletedProcess:
             return subprocess.run(
-                [str(bin_dir / "msime-linux-ibus-launcher"), str(system_options)],
+                [str(bin_dir / "lingyao-linux-ibus-launcher"), str(system_options)],
                 env=environment, capture_output=True, text=True, timeout=10,
             )
 
         # 没有图形会话：只留 stderr，不开窗口、不发通知，也不占用冷却期，登录桌面后照样能引导。
         result = launch(base)
         assert result.returncode == 1, result
-        assert "MSIME runtime options not found" in result.stderr, result.stderr
+        assert "LINGYAO runtime options not found" in result.stderr, result.stderr
         settle()
         assert calls(log, "settings") == [] and calls(log, "notify") == [], log.read_text() if log.exists() else ""
-        assert not (runtime / "msime-client/first-run-guide.stamp").exists()
+        assert not (runtime / "lingyao-client/first-run-guide.stamp").exists()
 
         # 有图形会话：退出码语义不变，设置窗口与通知各一次，窗口不带任何面板参数（由首次配置页接管）。
         result = launch(graphical)
         assert result.returncode == 1, result
-        assert "MSIME runtime options not found" in result.stderr, result.stderr
+        assert "LINGYAO runtime options not found" in result.stderr, result.stderr
         wait_for(lambda: len(calls(log, "settings")) == 1 and len(calls(log, "notify")) == 1,
                  "settings window and notification were not both launched once")
         assert calls(log, "settings") == ["settings "], calls(log, "settings")
         assert "尚未完成首次配置" in calls(log, "notify")[0], calls(log, "notify")
         # IBus 组件已经退出，恢复步骤是切走再切回，必要时 ibus restart。
         assert "切换到其他输入法" in calls(log, "notify")[0] and "ibus restart" in calls(log, "notify")[0], calls(log, "notify")
-        # 切回时要找的名字就是 IBus 输入源列表里显示的 longname：组件 XML 与 msime-linux-ibus 自报的描述都得是这一个。
-        longname = re.search(r"<longname>([^<]+)</longname>", (ROOT / "data/msime-linux.xml.in").read_text()).group(1)
+        # 切回时要找的名字就是 IBus 输入源列表里显示的 longname：组件 XML 与 lingyao-linux-ibus 自报的描述都得是这一个。
+        longname = re.search(r"<longname>([^<]+)</longname>", (ROOT / "data/lingyao-linux.xml.in").read_text()).group(1)
         assert longname == "Lingyao 灵耀输入法", longname
-        # msime-linux-ibus 自报的显示名是 LinuxEdition.h 里本版本的 MSIME_EDITION_IBUS_LONGNAME，full 的那一个就是这个 longname。
-        assert "MSIME_EDITION_IBUS_LONGNAME" in (ROOT / "src/entrypoints/ibus_main.cpp").read_text()
-        full_longname = re.search(r'#if defined\(MSIME_EDITION_FULL\).*?#define MSIME_EDITION_IBUS_LONGNAME ("[^"]*")', (ROOT / "src/core/LinuxEdition.h").read_text(), re.S).group(1)
+        # lingyao-linux-ibus 自报的显示名是 LinuxEdition.h 里本版本的 LINGYAO_EDITION_IBUS_LONGNAME，full 的那一个就是这个 longname。
+        assert "LINGYAO_EDITION_IBUS_LONGNAME" in (ROOT / "src/entrypoints/ibus_main.cpp").read_text()
+        full_longname = re.search(r'#if defined\(LINGYAO_EDITION_FULL\).*?#define LINGYAO_EDITION_IBUS_LONGNAME ("[^"]*")', (ROOT / "src/core/LinuxEdition.h").read_text(), re.S).group(1)
         assert full_longname.encode().decode("unicode_escape").encode("latin-1").decode() == f'"{longname}"', full_longname
         assert f"切回「{longname}」" in calls(log, "notify")[0], calls(log, "notify")
         assert calls(log, "ibus") == []
-        # 状态目录必须仍不存在：msime-linux-setup 拒绝准备一个已存在的目录。
-        assert not (config_home / "msime-client").exists()
+        # 状态目录必须仍不存在：lingyao-linux-setup 拒绝准备一个已存在的目录。
+        assert not (config_home / "lingyao-client").exists()
 
         # ibus-daemon 每次选中都会再起一次启动器；同一登录会话内不再弹窗、不再通知。
         for _ in range(3):
@@ -117,7 +117,7 @@ def main() -> int:
         assert len(calls(log, "settings")) == 1 and len(calls(log, "notify")) == 1, log.read_text()
 
         # 会话目录里的记录不按时间过期：用户关掉窗口继续打字，过多久都不会再被打断。
-        stamp = runtime / "msime-client/first-run-guide.stamp"
+        stamp = runtime / "lingyao-client/first-run-guide.stamp"
         stamp.write_text(f"{int(time.time()) - 86400} 1\n")
         assert launch(graphical).returncode == 1
         settle()
@@ -125,7 +125,7 @@ def main() -> int:
 
         # Fcitx5 下次按键或聚焦就会重读配置，通知不要求重新选择输入法。
         stamp.unlink()
-        guide = [str(bin_dir / "msime-linux-first-run-guide"), "--host", "fcitx5"]
+        guide = [str(bin_dir / "lingyao-linux-first-run-guide"), "--host", "fcitx5"]
         assert subprocess.run(guide, env=graphical, timeout=10).returncode == 0
         wait_for(lambda: len(calls(log, "settings")) == 2 and len(calls(log, "notify")) == 2,
                  "Fcitx5 guidance was not launched")
@@ -142,40 +142,40 @@ def main() -> int:
 
         # 显式指定的配置无效是配置错误，不是首次使用：照旧报错退出，不引导。
         stamp.unlink()
-        result = launch(dict(graphical, MSIME_IBUS_OPTIONS=str(scratch / "missing.json")))
+        result = launch(dict(graphical, LINGYAO_IBUS_OPTIONS=str(scratch / "missing.json")))
         assert result.returncode == 1 and "not found" in result.stderr, result
         settle()
         assert len(calls(log, "settings")) == 3, log.read_text()
         assert not stamp.exists()
 
         # 用户配置是悬空符号链接同样属于配置损坏。
-        (config_home / "msime-client").mkdir(parents=True)
-        (config_home / "msime-client/runtime-options.json").symlink_to(scratch / "nowhere.json")
+        (config_home / "lingyao-client").mkdir(parents=True)
+        (config_home / "lingyao-client/runtime-options.json").symlink_to(scratch / "nowhere.json")
         result = launch(graphical)
         assert result.returncode == 1, result
         settle()
         assert len(calls(log, "settings")) == 3, log.read_text()
-        (config_home / "msime-client/runtime-options.json").unlink()
-        (config_home / "msime-client").rmdir()
+        (config_home / "lingyao-client/runtime-options.json").unlink()
+        (config_home / "lingyao-client").rmdir()
 
         # 没装设置窗口（只装输入法的最小安装）：仍然通知，改为指向终端命令。
-        (bin_dir / "msime-linux-settings").unlink()
+        (bin_dir / "lingyao-linux-settings").unlink()
         # 最小安装这一例不能被测试机真实 PATH 里装着的设置启动器干扰：只去掉含有它的目录，
         # 其余保留，脚本用到的 mkdir、date 等不必在 /usr/bin 或 /bin（Nix 构建沙箱里没有）。
         real_path = [
             directory for directory in os.environ.get("PATH", "/usr/bin:/bin").split(os.pathsep)
-            if directory and not (Path(directory) / "msime-linux-settings").exists()
+            if directory and not (Path(directory) / "lingyao-linux-settings").exists()
         ]
         environment = dict(
             graphical,
             PATH=os.pathsep.join([str(tools), *real_path]),
-            MSIME_CLIENT_SETTINGS_COMMAND=str(scratch / "missing-settings"),
+            LINGYAO_CLIENT_SETTINGS_COMMAND=str(scratch / "missing-settings"),
         )
         assert launch(environment).returncode == 1
-        wait_for(lambda: any("msime-linux-setup" in line for line in calls(log, "notify")), "notification missing without a settings window")
-        assert any("msime-linux-setup" in line for line in calls(log, "notify")), calls(log, "notify")
+        wait_for(lambda: any("lingyao-linux-setup" in line for line in calls(log, "notify")), "notification missing without a settings window")
+        assert any("lingyao-linux-setup" in line for line in calls(log, "notify")), calls(log, "notify")
         assert len(calls(log, "settings")) == 3
-        stub(bin_dir / "msime-linux-settings", log, "settings")
+        stub(bin_dir / "lingyao-linux-settings", log, "settings")
 
         # 没有 XDG_RUNTIME_DIR 时记录落在缓存目录，缓存跨会话保留，所以只在冷却期内压住重复引导。
         stamp.unlink()
@@ -186,7 +186,7 @@ def main() -> int:
         wait_for(lambda: len(calls(log, "settings")) == 4, "guidance missing without XDG_RUNTIME_DIR")
         settle()
         assert len(calls(log, "settings")) == 4, log.read_text()
-        cache_stamp = scratch / "cache/msime-client/first-run-guide.stamp"
+        cache_stamp = scratch / "cache/lingyao-client/first-run-guide.stamp"
         assert cache_stamp.exists()
 
         # 冷却期过去之后再引导一次。
@@ -199,10 +199,10 @@ def main() -> int:
         assert launch(no_runtime).returncode == 1
         wait_for(lambda: len(calls(log, "settings")) == 6, "a future stamp suppressed the guidance")
 
-        # 配置已就绪：直接交给 msime-linux-ibus，不引导。
+        # 配置已就绪：直接交给 lingyao-linux-ibus，不引导。
         system_options.parent.mkdir(parents=True)
         system_options.write_text("{}")
-        (runtime / "msime-client/first-run-guide.stamp").unlink(missing_ok=True)
+        (runtime / "lingyao-client/first-run-guide.stamp").unlink(missing_ok=True)
         result = launch(graphical)
         assert result.returncode == 0, result
         wait_for(lambda: len(calls(log, "ibus")) == 1, "prepared configuration did not reach the engine")
@@ -211,9 +211,9 @@ def main() -> int:
         assert len(calls(log, "settings")) == 6, log.read_text()
 
         # 升级后下载的词库落后于当前版本：宿主以 --reason dictionary-outdated 调用，只发通知、不开设置窗口，通知里给出取回新词库的命令。
-        outdated = [str(bin_dir / "msime-linux-first-run-guide"), "--reason", "dictionary-outdated"]
-        outdated_stamp = runtime / "msime-client/dictionary-outdated.stamp"
-        first_run_stamp = runtime / "msime-client/first-run-guide.stamp"
+        outdated = [str(bin_dir / "lingyao-linux-first-run-guide"), "--reason", "dictionary-outdated"]
+        outdated_stamp = runtime / "lingyao-client/dictionary-outdated.stamp"
+        first_run_stamp = runtime / "lingyao-client/first-run-guide.stamp"
         notified = len(calls(log, "notify"))
 
         # 没有图形会话：不通知，也不写标记。
@@ -226,7 +226,7 @@ def main() -> int:
         assert subprocess.run(outdated, env=graphical, timeout=10).returncode == 0
         wait_for(lambda: len(calls(log, "notify")) == notified + 1, "outdated dictionary notification missing")
         message = calls(log, "notify")[-1]
-        assert "词库需要更新" in message and "msime-linux-setup --update --download" in message, message
+        assert "词库需要更新" in message and "lingyao-linux-setup --update --download" in message, message
         assert "尚未完成首次配置" not in message, message
         assert outdated_stamp.exists()
         settle()
@@ -241,7 +241,7 @@ def main() -> int:
             assert subprocess.run(arguments, env=graphical, timeout=10).returncode == 0, arguments
             wait_for(lambda: len(calls(log, "notify")) == count + 1, f"outdated dictionary notification missing for {arguments}")
             message = calls(log, "notify")[-1]
-            assert "msime-linux-setup --update --download" in message and "尚未完成首次配置" not in message, message
+            assert "lingyao-linux-setup --update --download" in message and "尚未完成首次配置" not in message, message
         notified += len(orders)
         settle()
         assert len(calls(log, "settings")) == 6, log.read_text()
@@ -267,19 +267,19 @@ def main() -> int:
         settle()
         assert len(calls(log, "notify")) == notified + 2 and not outdated_stamp.exists() and not first_run_stamp.exists()
 
-    # 引导脚本本身不发起任何下载：msime-linux-setup 和 --download 只出现在注释和这几条通知文案里，从不作为命令执行。文案按原样去掉，剩下的非注释行里一处都不许有。
-    guide = (SCRIPTS / "msime-linux-first-run-guide").read_text()
+    # 引导脚本本身不发起任何下载：lingyao-linux-setup 和 --download 只出现在注释和这几条通知文案里，从不作为命令执行。文案按原样去掉，剩下的非注释行里一处都不许有。
+    guide = (SCRIPTS / "lingyao-linux-first-run-guide").read_text()
     for forbidden in ("curl", "wget"):
         assert forbidden not in guide, forbidden
     for body in (
-        '"已安装的词库早于当前版本，输入法暂时继续使用旧词库。在终端运行 msime-linux-setup --update --download 取回新词库并切换，用户词库会一并迁移。"',
-        'body="请在终端运行 msime-linux-setup 完成首次配置。$resume"',
+        '"已安装的词库早于当前版本，输入法暂时继续使用旧词库。在终端运行 lingyao-linux-setup --update --download 取回新词库并切换，用户词库会一并迁移。"',
+        'body="请在终端运行 lingyao-linux-setup 完成首次配置。$resume"',
     ):
         assert guide.count(body) == 1, body
         guide = guide.replace(body, "")
     for line in guide.splitlines():
         if not line.strip().startswith("#"):
-            assert "msime-linux-setup" not in line and "--download" not in line, line
+            assert "lingyao-linux-setup" not in line and "--download" not in line, line
 
     print("first-run guide tests passed")
     return 0

@@ -7,10 +7,10 @@ use crate::shared::account_dto::{
     ChallengeResponse, ChatModelsResponse, ChatResponse, PreferenceSchemaResponse, ProfileResponse,
     StatusResponse,
 };
-use msime_client_core::account::AccountError;
-use msime_client_core::account::AccountPreferences;
-use msime_client_core::account::{AccountCandidateQuery, AccountChatMessage};
-use msime_client_core::cloud::dictionary::DictionaryKind;
+use lingyao_client_core::account::AccountError;
+use lingyao_client_core::account::AccountPreferences;
+use lingyao_client_core::account::{AccountCandidateQuery, AccountChatMessage};
+use lingyao_client_core::cloud::dictionary::DictionaryKind;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -103,11 +103,11 @@ pub(crate) fn clear_snapshot_previews_after<T>(
 
 pub(crate) fn parse_cloud_dictionary_request(
     action: &Value,
-) -> Result<msime_host_api::cloud_dictionary::CloudDictionaryRequest, crate::CommandError> {
+) -> Result<lingyao_host_api::cloud_dictionary::CloudDictionaryRequest, crate::CommandError> {
     let request = serde_json::from_value(action.clone()).map_err(|_| crate::CommandError {
         code: "invalid_cloud_dictionary",
     })?;
-    msime_host_api::cloud_dictionary::validate_cloud_request(&request).map_err(|_| {
+    lingyao_host_api::cloud_dictionary::validate_cloud_request(&request).map_err(|_| {
         crate::CommandError {
             code: "invalid_cloud_dictionary",
         }
@@ -135,9 +135,9 @@ pub(crate) fn dictionary_kind(value: &str) -> Result<DictionaryKind, crate::Comm
 /// branches to the caller.
 pub(crate) async fn cloud_dictionary_account_request(
     state: &tauri::State<'_, crate::platform::mobile::MobileAccountState>,
-    request: &msime_host_api::cloud_dictionary::CloudDictionaryRequest,
+    request: &lingyao_host_api::cloud_dictionary::CloudDictionaryRequest,
 ) -> Option<Result<Value, crate::CommandError>> {
-    use msime_host_api::cloud_dictionary::CloudDictionaryRequest;
+    use lingyao_host_api::cloud_dictionary::CloudDictionaryRequest;
 
     match request {
         CloudDictionaryRequest::List {

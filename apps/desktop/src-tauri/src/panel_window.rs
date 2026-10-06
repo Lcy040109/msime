@@ -18,7 +18,7 @@ use crate::platform::macos::macos_keyboard;
 use crate::platform::macos::macos_panel_session;
 use crate::voice::cancel_voice;
 use crate::{DictionaryHostOptions, HostActionError, PanelInputState};
-use msime_client_core::host_surface::{PanelPlacement, PanelSurface, SurfaceRoute};
+use lingyao_client_core::host_surface::{PanelPlacement, PanelSurface, SurfaceRoute};
 use tauri::Manager;
 #[cfg(not(mobile))]
 use tauri::{WebviewUrl, WebviewWindowBuilder};
@@ -39,7 +39,7 @@ pub(crate) fn windows_panel_height(app: &tauri::AppHandle, label: &str, height: 
     if label != "keyboard-panel" {
         return height;
     }
-    app.try_state::<std::sync::Arc<msime_client_core::preferences::PreferencesStore>>()
+    app.try_state::<std::sync::Arc<lingyao_client_core::preferences::PreferencesStore>>()
         .and_then(|store| store.load().ok())
         .map_or(height, |snapshot| {
             keyboard_panel_height(

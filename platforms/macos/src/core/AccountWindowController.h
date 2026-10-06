@@ -1,6 +1,6 @@
 #pragma once
 #import <AppKit/AppKit.h>
-@interface MSIMEAccountWindowController : NSWindowController
+@interface LINGYAOAccountWindowController : NSWindowController
 + (instancetype)sharedController;
 - (void)showForAccountID:(NSString *)accountID;
 @end

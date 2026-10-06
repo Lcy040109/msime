@@ -12,7 +12,7 @@
 
 #include "../core/SafePath.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Create a private same-directory temporary file and publish it with rename.
 // mkstemp uses O_EXCL, so a pre-existing symlink cannot redirect the write.
@@ -66,4 +66,4 @@ inline bool write_candidate_file_atomically(const std::filesystem::path &file,
   return true;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

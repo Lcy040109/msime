@@ -2,7 +2,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useRef, useState } from "react";
 import { afterEach, expect, test, vi } from "vitest";
-import type { Preferences, Snapshot, SettingsClient } from "@msime/ui";
+import type { Preferences, Snapshot, SettingsClient } from "@lingyao/ui";
 import { useSettingsPersistence } from "../../../../packages/ui/src/settings/use-settings-persistence";
 
 afterEach(() => {

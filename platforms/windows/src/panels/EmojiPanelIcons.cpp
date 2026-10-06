@@ -1,15 +1,15 @@
 #include "EmojiPanelIcons.h"
 
-#include "msimeui/DeviceResources.h"
-#include "msimeui/Fonts.h"
-#include "msimeui/Types.h"
+#include "lingyaoui/DeviceResources.h"
+#include "lingyaoui/Fonts.h"
+#include "lingyaoui/Types.h"
 
 #include <cwchar>
 #include <d2d1.h>
 #include <dwrite.h>
 #include <wrl/client.h>
 
-namespace msimeui
+namespace lingyaoui
 {
 namespace
 {
@@ -81,5 +81,5 @@ bool EmojiPanelIcons::DrawTabIcon(DeviceResources &resources, Tab tab, const Rec
     target->DrawTextLayout(D2D1::Point2F(designRect.x, designRect.y), layout.Get(), brush, D2D1_DRAW_TEXT_OPTIONS_CLIP);
     return true;
 }
-} // namespace msimeui
+} // namespace lingyaoui
 

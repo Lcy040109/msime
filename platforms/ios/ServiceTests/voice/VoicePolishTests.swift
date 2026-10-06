@@ -99,7 +99,7 @@ final class VoicePolishTests: XCTestCase {
   }
 
   func testThePolishServiceFollowsAISettingsUntilOneIsSavedForIt() throws {
-    let suite = "msime-polish-service-tests-\(UUID().uuidString)"
+    let suite = "lingyao-polish-service-tests-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     var keys: [String: String] = [:]

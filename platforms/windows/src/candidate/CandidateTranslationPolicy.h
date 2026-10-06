@@ -9,11 +9,11 @@
 #include <utility>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // English dictionary glosses use ';' while Chinese glosses use the full-width semicolon. Ctrl+Enter commits the first non-empty sense, without leaking joined display text. The rule is shared with every other host - see shared/input/GlossSenses.h.
 inline std::vector<std::string> translation_senses(std::string_view value) {
-  return msime::input::gloss_senses(value);
+  return lingyao::input::gloss_senses(value);
 }
 
 inline std::string first_translation_sense(std::string value) {
@@ -93,4 +93,4 @@ command_translation_item(bool sentence, const std::vector<std::string> &texts,
                                 std::string(target_language)};
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -2,7 +2,7 @@
 #include <initializer_list>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Is the foreground window a full-screen application?
 //
 // The toolbar sits topmost, so without this it floats over full-screen video
@@ -35,4 +35,4 @@ inline bool foreground_is_fullscreen(HWND foreground) {
   return window.left <= screen.left && window.top <= screen.top &&
          window.right >= screen.right && window.bottom >= screen.bottom;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

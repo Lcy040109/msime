@@ -44,7 +44,7 @@ function serve() {
 
 /** 起一个无头 Chrome，经 DevTools 协议（Node 自带的 WebSocket）打开 url，等页面在 body 上写出 data-result，返回结果和 #log 的内容。浏览器在自己的临时 profile 里运行，结束、失败或超时都会被关掉，profile 随后删除。 */
 async function runPage(chrome, url) {
-  const profile = mkdtempSync(join(tmpdir(), "msime-candidates-browser-"));
+  const profile = mkdtempSync(join(tmpdir(), "lingyao-candidates-browser-"));
   const args = ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank"];
   if (process.getuid?.() === 0) args.unshift("--no-sandbox");
   const child = spawn(chrome, args, { stdio: ["ignore", "ignore", "pipe"], detached: process.platform !== "win32" });

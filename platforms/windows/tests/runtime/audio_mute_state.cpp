@@ -10,7 +10,7 @@
 int main() {
   namespace fs = std::filesystem;
   const auto root = fs::temp_directory_path() /
-                    ("msime-audio-mute-state-" +
+                    ("lingyao-audio-mute-state-" +
                      std::to_string(std::chrono::steady_clock::now()
                                         .time_since_epoch()
                                         .count()));
@@ -21,20 +21,20 @@ int main() {
   std::string contents;
 #ifndef _WIN32
   fs::create_symlink(outside, path);
-  assert(!msime::windows::read_audio_mute_state(path, contents));
+  assert(!lingyao::windows::read_audio_mute_state(path, contents));
 #else
   std::ofstream(path) << "old";
 #endif
-  assert(msime::windows::write_audio_mute_state(path, "0\tsynthetic-endpoint\n"));
+  assert(lingyao::windows::write_audio_mute_state(path, "0\tsynthetic-endpoint\n"));
   {
     std::ifstream input(outside);
     assert(std::string(std::istreambuf_iterator<char>(input),
                        std::istreambuf_iterator<char>()) == "keep");
   }
-  assert(msime::windows::read_audio_mute_state(path, contents));
+  assert(lingyao::windows::read_audio_mute_state(path, contents));
   assert(contents == "0\tsynthetic-endpoint\n");
-  assert(!msime::windows::write_audio_mute_state(
-      path, std::string(msime::windows::kAudioMuteStateMaxBytes + 1, 'x')));
+  assert(!lingyao::windows::write_audio_mute_state(
+      path, std::string(lingyao::windows::kAudioMuteStateMaxBytes + 1, 'x')));
   fs::remove_all(root);
   return 0;
 }

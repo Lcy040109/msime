@@ -10,8 +10,8 @@
 //!
 //! usage: online_slots <verified-dictionary-directory>
 
-use msime_engine::host::{prepare_options, Session};
-use msime_input_runtime::{Action, Runtime};
+use lingyao_engine::host::{prepare_options, Session};
+use lingyao_input_runtime::{Action, Runtime};
 
 fn candidates(runtime: &Runtime<Session>) -> Vec<String> {
     runtime

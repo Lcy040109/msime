@@ -8,7 +8,7 @@
 #include <string>
 #include <thread>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct KeyResult {
   uint64_t client_id;
   uint64_t activation_epoch;
@@ -38,9 +38,9 @@ public:
   nlohmann::json activate(uint64_t epoch);
   nlohmann::json deactivate(uint64_t epoch);
   void cancel_composition(uint64_t epoch);
-  // MSIME_FINISH_COMPOSITION：当前组字成为上屏内容。韩文、注音、越南文和藏文用它处理那些结束组字但自身不带字符的按键。
+  // LINGYAO_FINISH_COMPOSITION：当前组字成为上屏内容。韩文、注音、越南文和藏文用它处理那些结束组字但自身不带字符的按键。
   nlohmann::json finish_composition(uint64_t epoch);
-  // One MsimeCommand, for a key whose command does not follow from translate_key: the keys of the Korean Hanja and Zhuyin lists (KoreanHanjaKey.h). Requires input enabled.
+  // One LingyaoCommand, for a key whose command does not follow from translate_key: the keys of the Korean Hanja and Zhuyin lists (KoreanHanjaKey.h). Requires input enabled.
   nlohmann::json command(uint64_t epoch, uint32_t command);
   // Clear the Engine candidate-provider cache without requiring focus.
   void reset_cache();
@@ -106,9 +106,9 @@ public:
   // Effect sounds, played by the shared library from this session's preferences. Each is a bounded queue post that never blocks and answers whether a sound was queued. Only the Server calls them: the TSF DLL links the same library into every process it is loaded into, and never starts its player.
   bool key_sound(uint32_t key_class);
   bool commit_sound();
-  // The typing effect of one key or commit (msime_client_typing_effect): the packed combo count, tier-up bit and effect style the candidate window draws, 0 when effects and the combo counter are both off.
+  // The typing effect of one key or commit (lingyao_client_typing_effect): the packed combo count, tier-up bit and effect style the candidate window draws, 0 when effects and the combo counter are both off.
   uint32_t typing_effect(uint32_t event);
-  // The resolved typing effect (msime_client_typing_effect_settings) as Windows draws it: read when the session gains the focus and after each preference update, never per key, so the packed word the key path publishes is ready.
+  // The resolved typing effect (lingyao_client_typing_effect_settings) as Windows draws it: read when the session gains the focus and after each preference update, never per key, so the packed word the key path publishes is ready.
   const TypingEffectSettings &typing_effect_settings() const {
     check_thread();
     return typing_effect_settings_;
@@ -119,7 +119,7 @@ public:
 private:
   void check_thread() const;
   void check_active(uint64_t epoch) const;
-  // 取消结果让韩文、注音、越南文或藏文的组字仍然打开时（列表关闭、原文重新显示），再发第二次 MSIME_CANCEL 丢弃它；其他结果不变。
+  // 取消结果让韩文、注音、越南文或藏文的组字仍然打开时（列表关闭、原文重新显示），再发第二次 LINGYAO_CANCEL 丢弃它；其他结果不变。
   nlohmann::json cancel_again(nlohmann::json result);
   const std::thread::id thread_ = std::this_thread::get_id();
   uint64_t client_;
@@ -132,4 +132,4 @@ private:
   TypingEffectSettings typing_effect_settings_{};
   void refresh_typing_effect_settings();
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

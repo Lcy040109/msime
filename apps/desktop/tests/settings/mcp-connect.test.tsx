@@ -11,7 +11,7 @@ import {
   type McpServerStatus,
   type SettingsClient,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -24,7 +24,7 @@ afterEach(() => {
 
 /** 记住的选择是两项都关，用于只关心只读条目本身的用例。 */
 function readOnly() {
-  window.localStorage.setItem("msime.mcp.flags", "[]");
+  window.localStorage.setItem("lingyao.mcp.flags", "[]");
 }
 
 const snapshot: Snapshot = {
@@ -41,8 +41,8 @@ const snapshot: Snapshot = {
 
 const config = `{
   "mcpServers": {
-    "msime": {
-      "command": "/opt/msime/msime-mcp",
+    "lingyao": {
+      "command": "/opt/lingyao/lingyao-mcp",
       "args": ["--options", "/state/runtime-options.json"]
     }
   }
@@ -50,7 +50,7 @@ const config = `{
 
 function status(configured = false, flags: McpFlag[] = []): McpServerStatus {
   return {
-    command: "/opt/msime/msime-mcp",
+    command: "/opt/lingyao/lingyao-mcp",
     installed: true,
     options: "/state/runtime-options.json",
     config,
@@ -116,7 +116,7 @@ test("both permissions are on by default and the commands carry them", async () 
   for (const name of ["允许修改设置", "允许读取词库"])
     expect((within(group).getByRole("switch", { name }) as HTMLInputElement).checked).toBe(true);
   expect(within(group).getByLabelText("Claude Code 安装命令").textContent).toBe(
-    "claude mcp add --scope user msime -- /opt/msime/msime-mcp --options /state/runtime-options.json --allow-write --allow-dictionary-read",
+    "claude mcp add --scope user lingyao -- /opt/lingyao/lingyao-mcp --options /state/runtime-options.json --allow-write --allow-dictionary-read",
   );
 });
 
@@ -124,7 +124,7 @@ test("the switches are remembered across visits", async () => {
   const view = render(<McpConnectSection status={() => Promise.resolve(status())} />);
   fireEvent.click(await screen.findByRole("switch", { name: "允许读取词库" }));
   view.unmount();
-  expect(JSON.parse(window.localStorage.getItem("msime.mcp.flags")!)).toEqual(["--allow-write"]);
+  expect(JSON.parse(window.localStorage.getItem("lingyao.mcp.flags")!)).toEqual(["--allow-write"]);
 
   render(<McpConnectSection status={() => Promise.resolve(status())} />);
   expect(
@@ -142,12 +142,12 @@ test("the install commands are built from the host's paths and follow the permis
   await openDeveloper({ mcpServerStatus: async () => status(), copyText });
   const group = await screen.findByRole("group", { name: "连接 AI 助手" });
   expect(within(group).getByLabelText("Claude Code 安装命令").textContent).toBe(
-    "claude mcp add --scope user msime -- /opt/msime/msime-mcp --options /state/runtime-options.json",
+    "claude mcp add --scope user lingyao -- /opt/lingyao/lingyao-mcp --options /state/runtime-options.json",
   );
   fireEvent.click(within(group).getByRole("button", { name: "复制命令" }));
   await waitFor(() =>
     expect(copyText).toHaveBeenCalledWith(
-      "claude mcp add --scope user msime -- /opt/msime/msime-mcp --options /state/runtime-options.json",
+      "claude mcp add --scope user lingyao -- /opt/lingyao/lingyao-mcp --options /state/runtime-options.json",
     ),
   );
 
@@ -156,14 +156,14 @@ test("the install commands are built from the host's paths and follow the permis
   fireEvent.click(within(group).getByRole("switch", { name: "允许修改设置" }));
   fireEvent.click(within(group).getByRole("radio", { name: "Codex" }));
   expect(within(group).getByLabelText("Codex 安装命令").textContent).toBe(
-    "codex mcp add msime -- /opt/msime/msime-mcp --options /state/runtime-options.json --allow-write --allow-dictionary-read",
+    "codex mcp add lingyao -- /opt/lingyao/lingyao-mcp --options /state/runtime-options.json --allow-write --allow-dictionary-read",
   );
 
   fireEvent.click(within(group).getByRole("radio", { name: "其他" }));
   expect(JSON.parse(within(group).getByLabelText("MCP 配置").textContent!)).toEqual({
     mcpServers: {
-      msime: {
-        command: "/opt/msime/msime-mcp",
+      lingyao: {
+        command: "/opt/lingyao/lingyao-mcp",
         args: [
           "--options",
           "/state/runtime-options.json",
@@ -180,40 +180,40 @@ test("each assistant tab offers the command that removes an earlier registration
   await openDeveloper({ mcpServerStatus: async () => status(), copyText });
   const group = await screen.findByRole("group", { name: "连接 AI 助手" });
   expect(within(group).getByLabelText("Claude Code 移除命令").textContent).toBe(
-    "claude mcp remove --scope user msime",
+    "claude mcp remove --scope user lingyao",
   );
   fireEvent.click(within(group).getByRole("button", { name: "复制移除命令" }));
   await waitFor(() =>
-    expect(copyText).toHaveBeenCalledWith("claude mcp remove --scope user msime"),
+    expect(copyText).toHaveBeenCalledWith("claude mcp remove --scope user lingyao"),
   );
   // Only the button that was pressed reads as copied.
   expect(within(group).getByRole("button", { name: "复制命令" })).toBeTruthy();
 
   fireEvent.click(within(group).getByRole("radio", { name: "Codex" }));
-  expect(within(group).getByLabelText("Codex 移除命令").textContent).toBe("codex mcp remove msime");
+  expect(within(group).getByLabelText("Codex 移除命令").textContent).toBe("codex mcp remove lingyao");
 });
 
 test("paths with spaces are quoted for the shell they are pasted into", async () => {
   readOnly();
   const posix = {
     ...status(),
-    command: "/Applications/灵耀 输入法.app/msime-mcp",
+    command: "/Applications/灵耀 输入法.app/lingyao-mcp",
     options: "/it's/options.json",
   };
   const view = render(<McpConnectSection status={() => Promise.resolve(posix)} />);
   expect((await screen.findByLabelText("Claude Code 安装命令")).textContent).toBe(
-    "claude mcp add --scope user msime -- '/Applications/灵耀 输入法.app/msime-mcp' --options '/it'\\''s/options.json'",
+    "claude mcp add --scope user lingyao -- '/Applications/灵耀 输入法.app/lingyao-mcp' --options '/it'\\''s/options.json'",
   );
   view.unmount();
 
   const windows = {
     ...status(),
-    command: "C:\\Program Files\\MSIME\\msime-mcp.exe",
+    command: "C:\\Program Files\\LINGYAO\\lingyao-mcp.exe",
     options: "C:\\Users\\someone\\options.json",
   };
   render(<McpConnectSection status={() => Promise.resolve(windows)} />);
   expect((await screen.findByLabelText("Claude Code 安装命令")).textContent).toBe(
-    'claude mcp add --scope user msime -- "C:\\Program Files\\MSIME\\msime-mcp.exe" --options "C:\\Users\\someone\\options.json"',
+    'claude mcp add --scope user lingyao -- "C:\\Program Files\\LINGYAO\\lingyao-mcp.exe" --options "C:\\Users\\someone\\options.json"',
   );
 });
 
@@ -434,10 +434,10 @@ test("the terminal tab tells an assistant how to run the tools directly, with th
   await openDeveloper({ mcpServerStatus: async () => status(), copyText });
   const group = await screen.findByRole("group", { name: "连接 AI 助手" });
   fireEvent.click(within(group).getByRole("radio", { name: "命令行" }));
-  const program = "/opt/msime/msime-mcp --options /state/runtime-options.json";
+  const program = "/opt/lingyao/lingyao-mcp --options /state/runtime-options.json";
   expect(within(group).getByLabelText("命令行用法").textContent).toBe(
     [
-      "灵耀输入法（MSIME）可以在终端里直接管理：",
+      "灵耀输入法（LINGYAO）可以在终端里直接管理：",
       `- 查看可用的工具和参数：${program} tools`,
       `- 调用一个工具，参数是 JSON 对象，输出 JSON：${program} call <工具名> '<JSON 参数>'，参数中有单引号时改为写进 UTF-8 文件并传 @<文件路径>`,
       `- 排查输入法问题（卡顿、候选窗口不见了）的步骤：${program} prompt diagnose`,
@@ -455,8 +455,8 @@ test("on Windows the terminal instructions pass the arguments through a file", a
   await openDeveloper({
     mcpServerStatus: async () => ({
       ...status(),
-      command: "C:\\Program Files\\MSIME\\msime-mcp.exe",
-      options: "C:\\ProgramData\\MSIME\\runtime-options.json",
+      command: "C:\\Program Files\\LINGYAO\\lingyao-mcp.exe",
+      options: "C:\\ProgramData\\LINGYAO\\runtime-options.json",
     }),
     copyText: vi.fn(async () => {}),
   });
@@ -464,7 +464,7 @@ test("on Windows the terminal instructions pass the arguments through a file", a
   fireEvent.click(within(group).getByRole("radio", { name: "命令行" }));
   const usage = within(group).getByLabelText("命令行用法").textContent!;
   expect(usage).toContain(
-    '"C:\\Program Files\\MSIME\\msime-mcp.exe" --options "C:\\ProgramData\\MSIME\\runtime-options.json" call <工具名> @<文件路径>',
+    '"C:\\Program Files\\LINGYAO\\lingyao-mcp.exe" --options "C:\\ProgramData\\LINGYAO\\runtime-options.json" call <工具名> @<文件路径>',
   );
   expect(usage).not.toContain("'<JSON 参数>'");
 });
@@ -481,7 +481,7 @@ test("commands are coloured by program, flag, quoted argument and placeholder", 
   });
   const group = await screen.findByRole("group", { name: "连接 AI 助手" });
   const install = within(group).getByLabelText("Claude Code 安装命令");
-  expect(coloured(install, "text-syntax-program")).toEqual(["claude", "/opt/msime/msime-mcp"]);
+  expect(coloured(install, "text-syntax-program")).toEqual(["claude", "/opt/lingyao/lingyao-mcp"]);
   expect(coloured(install, "text-syntax-flag")).toEqual(["--scope", "--", "--options"]);
   expect(coloured(install, "text-syntax-string")).toEqual([
     "'/Library/Application Support/o.json'",
@@ -506,12 +506,12 @@ test("the configuration is coloured when it is laid out as the host's pretty pri
   expect(block.textContent).toBe(pretty);
   expect(coloured(block, "text-syntax-key")).toEqual([
     '"mcpServers"',
-    '"msime"',
+    '"lingyao"',
     '"command"',
     '"args"',
   ]);
   expect(coloured(block, "text-syntax-string")).toEqual([
-    '"/opt/msime/msime-mcp"',
+    '"/opt/lingyao/lingyao-mcp"',
     '"--options"',
     '"/state/runtime-options.json"',
   ]);

@@ -9,7 +9,7 @@
 //! Ranks are counted among dictionary candidates only. The list interleaves others - an English
 //! candidate sits at display position 1 for this input - and those do not take part in frequency
 //! adjustment, so counting display positions would make the rules look inconsistent.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 const KEYS: &[u8] = b"shi";
 /// `CandidateSource::Database`, the only source frequency adjustment applies to.

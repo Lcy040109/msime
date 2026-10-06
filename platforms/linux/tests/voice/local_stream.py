@@ -13,10 +13,10 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-import msime_voice_local as local  # noqa: E402
+import lingyao_voice_local as local  # noqa: E402
 
 loader = importlib.machinery.SourceFileLoader(
-    "local_voice_provider", str(ROOT / "scripts" / "msime-linux-voice-provider"))
+    "local_voice_provider", str(ROOT / "scripts" / "lingyao-linux-voice-provider"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 voice = importlib.util.module_from_spec(spec)
 loader.exec_module(voice)
@@ -26,10 +26,10 @@ FAKE_HELPER = Path(__file__).resolve().parent / "local_fake_helper.py"
 
 class LocalFixture(unittest.TestCase):
     def setUp(self):
-        self.directory = tempfile.TemporaryDirectory(prefix="msime-local-")
+        self.directory = tempfile.TemporaryDirectory(prefix="lingyao-local-")
         self.root = Path(self.directory.name)
         self.log = self.root / "helper.log"
-        self.helper = self.root / "msime-voice-local"
+        self.helper = self.root / "lingyao-voice-local"
         self.helper.write_text('#!/bin/sh\nexec "%s" "%s" "$@"\n' % (sys.executable, FAKE_HELPER))
         self.helper.chmod(0o755)
         self.environment = dict(os.environ)
@@ -192,7 +192,7 @@ class ModelAndHotwords(LocalFixture):
     def test_correction_without_the_host_library_keeps_the_text(self):
         hotwords = [{"text": "灵耀", "pinyin": "shui shan"}]
         self.assertEqual(local.HotwordCorrector(None).correct("谁删", hotwords), "谁删")
-        corrector = local.HotwordCorrector(self.root / "libmsime_host_api.so")
+        corrector = local.HotwordCorrector(self.root / "liblingyao_host_api.so")
         self.assertEqual(corrector.correct("谁删", hotwords), "谁删")
         self.assertTrue(corrector.failed)
         self.assertEqual(corrector.correct("", hotwords), "")
@@ -200,7 +200,7 @@ class ModelAndHotwords(LocalFixture):
 
 class PrivateFile(unittest.TestCase):
     def load(self, document):
-        with tempfile.TemporaryDirectory(prefix="msime-voice-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-voice-") as directory:
             path = Path(directory) / "voice.json"
             path.write_text(json.dumps(document), encoding="utf-8")
             path.chmod(0o600)

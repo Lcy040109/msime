@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ ${MSIME_ISOLATED_LINUX_TEST:-} == 1 ]] || { echo "Run only inside the dedicated Linux test container" >&2; exit 1; }
+[[ ${LINGYAO_ISOLATED_LINUX_TEST:-} == 1 ]] || { echo "Run only inside the dedicated Linux test container" >&2; exit 1; }
 binary=${1:?host executable required}
 options=${2:?runtime options required}
-test_root=$(mktemp -d /tmp/msime-ibus-daemon.XXXXXX)
+test_root=$(mktemp -d /tmp/lingyao-ibus-daemon.XXXXXX)
 daemon_pid=
 host_pid=
 cleanup() {
@@ -28,11 +28,11 @@ for attempt in $(seq 1 100); do
   sleep 0.05
 done
 # Start the host the way ibus-daemon does, through the launcher installed beside it and that launcher's crash supervisor. daemon_smoke.py crashes the supervised host and stops the supervisor, so it needs the supervisor's PID and a way to start another.
-launcher="$(dirname -- "$binary")/msime-linux-ibus-launcher"
+launcher="$(dirname -- "$binary")/lingyao-linux-ibus-launcher"
 if [[ -x "$launcher" ]]; then
-  MSIME_IBUS_OPTIONS="$options" "$launcher" &
+  LINGYAO_IBUS_OPTIONS="$options" "$launcher" &
   host_pid=$!
-  export MSIME_SMOKE_SUPERVISOR_PID=$host_pid MSIME_SMOKE_LAUNCHER=$launcher MSIME_SMOKE_OPTIONS=$options
+  export LINGYAO_SMOKE_SUPERVISOR_PID=$host_pid LINGYAO_SMOKE_LAUNCHER=$launcher LINGYAO_SMOKE_OPTIONS=$options
 else
   "$binary" "$options" &
   host_pid=$!

@@ -1,7 +1,7 @@
 # Exercise real entry scripts with synthetic stages: never build/sign/install.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$root = Join-Path ([IO.Path]::GetTempPath()) ('msime-local-entry-' + [Guid]::NewGuid())
+$root = Join-Path ([IO.Path]::GetTempPath()) ('lingyao-local-entry-' + [Guid]::NewGuid())
 $original = (Get-Location).Path
 try {
     $installer = Join-Path $root 'platforms/windows/installer'

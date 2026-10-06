@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { SettingsFormFrame } from "@msime/ui";
+import { SettingsFormFrame } from "@lingyao/ui";
 
 test("provides the shared form boundary and reload control", () => {
   const onReload = vi.fn();

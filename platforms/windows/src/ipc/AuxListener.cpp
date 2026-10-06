@@ -3,7 +3,7 @@
 #include "PipeListener.h"
 #include "PipePeer.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // One message per connection, read with a short deadline so a client that
 // connects and never writes cannot hold the single instance.
@@ -258,4 +258,4 @@ void AuxListener::run() {
     }
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -4,9 +4,9 @@
 #include <initializer_list>
 #include <utility>
 
-using msime::tsf::KoreanKeyAction;
-using msime::tsf::korean_key_action;
-using msime::tsf::korean_letter;
+using lingyao::tsf::KoreanKeyAction;
+using lingyao::tsf::korean_key_action;
+using lingyao::tsf::korean_letter;
 
 namespace {
 int failures = 0;
@@ -57,11 +57,11 @@ int main() {
     check(korean_key_action(0x0D, L'\r', false) == KoreanKeyAction::Default, "idle Enter is ordinary");
 
     // The Hanja key converts the open syllable and closes an open list; with nothing composing it is the application's.
-    check(korean_key_action(msime::tsf::kVirtualKeyHanja, L'\0', true) == KoreanKeyAction::ConvertHanja,
+    check(korean_key_action(lingyao::tsf::kVirtualKeyHanja, L'\0', true) == KoreanKeyAction::ConvertHanja,
           "Hanja converts the syllable");
-    check(korean_key_action(msime::tsf::kVirtualKeyHanja, L'\0', true, true) == KoreanKeyAction::ConvertHanja,
+    check(korean_key_action(lingyao::tsf::kVirtualKeyHanja, L'\0', true, true) == KoreanKeyAction::ConvertHanja,
           "Hanja closes an open list");
-    check(korean_key_action(msime::tsf::kVirtualKeyHanja, L'\0', false) == KoreanKeyAction::Pass, "idle Hanja passes");
+    check(korean_key_action(lingyao::tsf::kVirtualKeyHanja, L'\0', false) == KoreanKeyAction::Pass, "idle Hanja passes");
 
     // With the Hanja list open, the list takes digits, Space, Enter, the arrows, paging, Home/End, Escape and Backspace.
     for (const auto &[vk, wch] : {std::pair<unsigned, wchar_t>{'1', L'1'}, {'9', L'9'}, {0x61, L'1'}, {0x20, L' '},
@@ -80,29 +80,29 @@ int main() {
     check(korean_key_action(0x70, L'\0', true, true) == KoreanKeyAction::Default, "F1 is ordinary with the list open");
 
     // The list maps its keys to the same commands on the TIP and the Server.
-    using msime::windows::KoreanHanjaKeyKind;
-    using msime::windows::korean_hanja_key;
-    check(korean_hanja_key(msime::tsf::kVirtualKeyHanja, 0).kind == KoreanHanjaKeyKind::Command &&
-              korean_hanja_key(msime::tsf::kVirtualKeyHanja, 0).value == MSIME_CONVERT_HANJA,
-          "Hanja sends MSIME_CONVERT_HANJA");
+    using lingyao::windows::KoreanHanjaKeyKind;
+    using lingyao::windows::korean_hanja_key;
+    check(korean_hanja_key(lingyao::tsf::kVirtualKeyHanja, 0).kind == KoreanHanjaKeyKind::Command &&
+              korean_hanja_key(lingyao::tsf::kVirtualKeyHanja, 0).value == LINGYAO_CONVERT_HANJA,
+          "Hanja sends LINGYAO_CONVERT_HANJA");
     check(korean_hanja_key('3', L'3').kind == KoreanHanjaKeyKind::Select && korean_hanja_key('3', L'3').value == 2,
           "3 chooses the third slot");
     check(korean_hanja_key(0x63, L'3').value == 2, "numpad 3 chooses the third slot");
-    check(korean_hanja_key(0x0D, L'\r').value == MSIME_COMMIT_CANDIDATE, "Enter chooses the highlighted Hanja");
-    check(korean_hanja_key(0x20, L' ').value == MSIME_COMMIT_CANDIDATE, "Space chooses the highlighted Hanja");
-    check(korean_hanja_key(0x1B, 0x1B).value == MSIME_CANCEL, "Escape closes the list");
-    check(korean_hanja_key(0x08, L'\b').value == MSIME_BACKSPACE, "Backspace closes the list");
-    check(korean_hanja_key(0x28, 0).value == MSIME_NEXT_CANDIDATE, "Down moves the highlight");
-    check(korean_hanja_key(0x22, 0).value == MSIME_NEXT_PAGE, "Page Down turns the page");
+    check(korean_hanja_key(0x0D, L'\r').value == LINGYAO_COMMIT_CANDIDATE, "Enter chooses the highlighted Hanja");
+    check(korean_hanja_key(0x20, L' ').value == LINGYAO_COMMIT_CANDIDATE, "Space chooses the highlighted Hanja");
+    check(korean_hanja_key(0x1B, 0x1B).value == LINGYAO_CANCEL, "Escape closes the list");
+    check(korean_hanja_key(0x08, L'\b').value == LINGYAO_BACKSPACE, "Backspace closes the list");
+    check(korean_hanja_key(0x28, 0).value == LINGYAO_NEXT_CANDIDATE, "Down moves the highlight");
+    check(korean_hanja_key(0x22, 0).value == LINGYAO_NEXT_PAGE, "Page Down turns the page");
     check(korean_hanja_key(0xBC, L',').kind == KoreanHanjaKeyKind::None, "comma is not a list key");
 
     // Behind the deferred-key barrier the list is projected through the queue. The Hanja key opens a closed list and closes an open one, and the syllable keeps composing either way.
-    using msime::tsf::project_korean_hanja_key;
+    using lingyao::tsf::project_korean_hanja_key;
     const auto projects = [](unsigned vk, wchar_t wch, bool open, bool listOpen, bool syllableEnds) {
-        const auto projected = project_korean_hanja_key(msime::windows::scheme::Korean, vk, wch, open);
+        const auto projected = project_korean_hanja_key(lingyao::windows::scheme::Korean, vk, wch, open);
         return projected.listOpen == listOpen && projected.syllableEnds == syllableEnds;
     };
-    const unsigned hanja = msime::tsf::kVirtualKeyHanja;
+    const unsigned hanja = lingyao::tsf::kVirtualKeyHanja;
     check(projects(hanja, L'\0', false, true, false), "a queued Hanja key opens the projected list");
     check(projects(hanja, L'\0', true, false, false), "a second Hanja key closes it and keeps the syllable");
     // Escape and Backspace queued behind the Hanja key close the list and keep the syllable, as the Server's session does with them, rather than cancelling or editing it.

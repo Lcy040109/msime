@@ -38,7 +38,7 @@ export class StrokeLayout {
   }
 
   /**
-   * 点了这个键是否要发给引擎。空组合时引擎不接通配键（按 msime_client.h 的约定交回宿主插入），而触屏上把一个 x 插进文档不是用户想要的，所以通配键只在组字中才发送。
+   * 点了这个键是否要发给引擎。空组合时引擎不接通配键（按 lingyao_client.h 的约定交回宿主插入），而触屏上把一个 x 插进文档不是用户想要的，所以通配键只在组字中才发送。
    */
   static sends(input: string, composing: boolean): boolean {
     return composing

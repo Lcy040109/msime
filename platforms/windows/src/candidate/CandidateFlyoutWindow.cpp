@@ -1,11 +1,11 @@
 #include "CandidateFlyoutWindow.h"
 
 #include <stdexcept>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
-constexpr wchar_t class_name[] = L"MSIME.Client.Preview.CandidateFlyout" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t class_name[] = L"LINGYAO.Client.Preview.CandidateFlyout" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr size_t no_row = static_cast<size_t>(-1);
 // Affect only this UI operation; restore the caller's thread context even on
 // failure.
@@ -448,4 +448,4 @@ LRESULT CALLBACK CandidateFlyoutWindow::procedure(HWND window, UINT message,
   }
   return DefWindowProcW(window, message, wparam, lparam);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

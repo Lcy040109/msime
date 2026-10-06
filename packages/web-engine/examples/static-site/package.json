@@ -1,12 +1,12 @@
 {
-  "name": "msime-web-engine-static-site",
+  "name": "lingyao-web-engine-static-site",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "msime-web-engine copy site/msime --clean",
+    "build": "lingyao-web-engine copy site/lingyao --clean",
     "preview": "npm run build && npx --yes serve site"
   },
   "dependencies": {
-    "@msime/web-engine": "^0.2.0"
+    "@lingyao/web-engine": "^0.2.0"
   }
 }

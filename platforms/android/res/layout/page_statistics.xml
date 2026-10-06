@@ -46,7 +46,7 @@
                 app:iconTint="?attr/colorOnSurface" />
         </LinearLayout>
 
-        <app.msime.android.home.SegmentedControl
+        <app.lingyao.android.home.SegmentedControl
             android:id="@+id/statistics_sections"
             android:layout_width="match_parent"
             android:layout_height="40dp" />

@@ -5,31 +5,31 @@
 static NSMutableArray *pending;
 static NSMutableArray *pendingAdds;
 static NSString *removedID;
-void MSIMEFetchCloudClipboard(NSString *, NSString *, MSIMECloudClipboardCompletion completion) {
+void LINGYAOFetchCloudClipboard(NSString *, NSString *, LINGYAOCloudClipboardCompletion completion) {
     [pending addObject:[completion copy]];
 }
-void MSIMEAddCloudClipboard(NSString *, NSString *, MSIMECloudClipboardCompletion completion) {
+void LINGYAOAddCloudClipboard(NSString *, NSString *, LINGYAOCloudClipboardCompletion completion) {
     [pendingAdds addObject:[completion copy]];
 }
-void MSIMERemoveCloudClipboard(NSString *itemID, NSString *, MSIMECloudClipboardCompletion) {
+void LINGYAORemoveCloudClipboard(NSString *itemID, NSString *, LINGYAOCloudClipboardCompletion) {
     removedID = itemID;
 }
-@interface MSIMECloudClipboardWindowController (Testing)
+@interface LINGYAOCloudClipboardWindowController (Testing)
 - (void)deleteItem:(id)sender;
 - (void)upload:(id)sender;
 - (void)refresh:(id)sender;
 @end
-@interface HiddenClipboardController : MSIMECloudClipboardWindowController
+@interface HiddenClipboardController : LINGYAOCloudClipboardWindowController
 @end
 @implementation HiddenClipboardController
 - (void)showWindow:(id)sender { (void)sender; }
 @end
 static void Complete(NSUInteger index, NSArray *items) {
-    MSIMECloudClipboardCompletion completion = pending[index];
+    LINGYAOCloudClipboardCompletion completion = pending[index];
     completion([NSJSONSerialization dataWithJSONObject:@{@"items":items} options:0 error:nil], 200, nil);
 }
 static void CompleteAdd(NSUInteger index, NSInteger status) {
-    MSIMECloudClipboardCompletion completion = pendingAdds[index];
+    LINGYAOCloudClipboardCompletion completion = pendingAdds[index];
     completion(nil, status, nil);
 }
 int main() {
@@ -75,7 +75,7 @@ int main() {
         [controller deleteItem:nil];
         assert(removedID == nil);
         [controller refresh:nil];
-        MSIMECloudClipboardCompletion failed = pending[4];
+        LINGYAOCloudClipboardCompletion failed = pending[4];
         failed(nil, 200, nil);
         assert(items.string.length == 0);
         assert([[[controller valueForKey:@"status"] stringValue] isEqualToString:@"刷新失败"]);

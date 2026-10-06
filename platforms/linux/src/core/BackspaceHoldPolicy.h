@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // A physical Backspace hold that started while the IME owned a composition
 // keeps belonging to the IME after its repeats erase the last preedit byte.
@@ -24,4 +24,4 @@ class BackspaceHoldPolicy {
   bool armed_ = false;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

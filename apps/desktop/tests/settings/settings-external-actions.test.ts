@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsExternalActions } from "@msime/ui";
+import { createSettingsExternalActions } from "@lingyao/ui";
 
 test("creates fixed documentation, system-settings, issue, and Telegram actions", () => {
   const openExternalUrl = vi.fn().mockResolvedValue(undefined);

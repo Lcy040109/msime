@@ -1,11 +1,11 @@
 #pragma once
 
-// From MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// From LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 
 #import <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
 
-namespace msime::mac
+namespace lingyao::mac
 {
 inline bool IsFullWidthInputToggle(unsigned short keyCode, NSEventModifierFlags modifiers)
 {
@@ -34,4 +34,4 @@ inline unichar FullWidthCharacter(unichar character)
 {
     return character == ' ' ? 0x3000 : static_cast<unichar>(character + 0xFEE0);
 }
-} // namespace msime::mac
+} // namespace lingyao::mac

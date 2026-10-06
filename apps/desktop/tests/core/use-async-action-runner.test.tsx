@@ -2,7 +2,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useAsyncActionRunner } from "@msime/ui";
+import { useAsyncActionRunner } from "@lingyao/ui";
 
 test("serializes actions and ignores stale owner results", async () => {
   const owner = {};

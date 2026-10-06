@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class CandidateAction : uint8_t {
   Select,
   Pin,
@@ -10,4 +10,4 @@ enum class CandidateAction : uint8_t {
   FixPosition,
   ClearPosition,
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

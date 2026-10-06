@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createDictionaryPanelActions } from "@msime/ui";
+import { createDictionaryPanelActions } from "@lingyao/ui";
 
 test("creates dictionary panel callbacks with the current kind and defaults", async () => {
   const setPhraseForm = vi.fn();

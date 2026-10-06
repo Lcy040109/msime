@@ -5,7 +5,7 @@
 #include <vector>
 
 // Keep device selection testable without enumerating or opening real hardware.
-struct MSIMEVoiceCaptureDeviceAPI {
+struct LINGYAOVoiceCaptureDeviceAPI {
     decltype(&AudioObjectGetPropertyData) get = AudioObjectGetPropertyData;
     decltype(&AudioObjectGetPropertyDataSize) size = AudioObjectGetPropertyDataSize;
     decltype(&AudioUnitSetProperty) setUnit = AudioUnitSetProperty;
@@ -15,13 +15,13 @@ struct MSIMEVoiceCaptureDeviceAPI {
 /// A stable CoreAudio capture-device identity suitable for preferences.  The
 /// UID is intentionally kept separate from the display name: names can be
 /// shared by two interfaces and can change when a device is renamed.
-struct MSIMEVoiceCaptureDeviceInfo {
+struct LINGYAOVoiceCaptureDeviceInfo {
     NSString *uid;
     NSString *name;
     BOOL isDefault;
 };
 
-struct MSIMEVoiceCaptureDeviceListAPI {
+struct LINGYAOVoiceCaptureDeviceListAPI {
     decltype(&AudioObjectGetPropertyData) get = AudioObjectGetPropertyData;
     decltype(&AudioObjectGetPropertyDataSize) size = AudioObjectGetPropertyDataSize;
 };
@@ -29,8 +29,8 @@ struct MSIMEVoiceCaptureDeviceListAPI {
 /// Enumerate input-capable devices without opening them.  The first item is
 /// always the current system default, followed by a deterministic name/UID
 /// order so a popup does not jump when CoreAudio returns devices differently.
-static inline NSArray<NSDictionary *> *MSIMEListVoiceCaptureDevices(
-    const MSIMEVoiceCaptureDeviceListAPI &api = {}) {
+static inline NSArray<NSDictionary *> *LINGYAOListVoiceCaptureDevices(
+    const LINGYAOVoiceCaptureDeviceListAPI &api = {}) {
     AudioObjectPropertyAddress devicesAddress = { kAudioHardwarePropertyDevices,
         kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
     UInt32 bytes = 0;
@@ -82,12 +82,12 @@ static inline NSArray<NSDictionary *> *MSIMEListVoiceCaptureDevices(
     return devices;
 }
 
-static inline BOOL MSIMEConfigureVoiceCaptureDevice(NSString *uid, AudioUnit unit,
-    NSError **error, const MSIMEVoiceCaptureDeviceAPI &api = {}) {
+static inline BOOL LINGYAOConfigureVoiceCaptureDevice(NSString *uid, AudioUnit unit,
+    NSError **error, const LINGYAOVoiceCaptureDeviceAPI &api = {}) {
     // Only the absence of an explicit selection opts into the system default.
     if (!uid.length) return YES;
     auto fail = [&](NSInteger code) {
-        if (error) *error = [NSError errorWithDomain:@"app.msime.client.voice" code:code
+        if (error) *error = [NSError errorWithDomain:@"app.lingyao.client.voice" code:code
             userInfo:@{NSLocalizedDescriptionKey:@"所选麦克风不可用，请重新选择录音设备"}];
         return NO;
     };

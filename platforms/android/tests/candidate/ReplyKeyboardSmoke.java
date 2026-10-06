@@ -1,5 +1,5 @@
-import app.msime.android.CommunityReplyLibrary;
-import app.msime.android.ReplyKeyboardModel;
+import app.lingyao.android.CommunityReplyLibrary;
+import app.lingyao.android.ReplyKeyboardModel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -61,7 +61,7 @@ public final class ReplyKeyboardSmoke {
         model.setSource("a".repeat(10_001));
         check(model.source().isEmpty() && model.status().contains("一万字"));
 
-        Path directory = Files.createTempDirectory("msime-community-test");
+        Path directory = Files.createTempDirectory("lingyao-community-test");
         Path outside = null;
         try {
             Path file = directory.resolve("CommunityLibrary.json");
@@ -86,7 +86,7 @@ public final class ReplyKeyboardSmoke {
             try { CommunityReplyLibrary.read(file); throw new AssertionError(); }
             catch (java.io.IOException expected) { check(expected.getMessage().contains("Invalid")); }
 
-            outside = Files.createTempDirectory("msime-community-outside");
+            outside = Files.createTempDirectory("lingyao-community-outside");
             Path linkedParent = directory.resolve("linked-parent");
             Files.createSymbolicLink(linkedParent, outside);
             Files.writeString(outside.resolve("CommunityLibrary.json"), "[]");

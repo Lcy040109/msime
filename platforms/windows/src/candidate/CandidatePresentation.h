@@ -6,7 +6,7 @@
 #include "ReplyComposer.h"
 #include "WubiCodeHintPolicy.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // TSF can report the candidate show event before it has a usable text extent.
 // Keep this sentinel aligned with the native Windows host contract.
 inline constexpr int invalid_candidate_anchor_y = -100000;
@@ -30,7 +30,7 @@ struct PresentationCandidate {
   // A Korean Hanja's 훈음 (나라 이름 한), which the Engine sends as the row's annotation. It is drawn on the smaller secondary line whatever the translation preferences say, above the translation when there is one, and it is display only: nothing commits it, and `translation` keeps only what the Engine applied as a translation.
   std::string gloss{};
 };
-// Whether this view's candidates are a Korean Hanja list: the Korean scheme under its own rules, outside the dedicated English mode and every local mode, where the Engine lists candidates only after MSIME_CONVERT_HANJA. ReplyComposer::korean_hanja reads the same three fields.
+// Whether this view's candidates are a Korean Hanja list: the Korean scheme under its own rules, outside the dedicated English mode and every local mode, where the Engine lists candidates only after LINGYAO_CONVERT_HANJA. ReplyComposer::korean_hanja reads the same three fields.
 inline bool korean_hanja_view(const nlohmann::json &view) {
   return view.value("scheme", 0u) == candidate_scheme_korean &&
          !view.value("dedicated_english", false) &&
@@ -229,4 +229,4 @@ candidate_presentation(const FocusLease &lease, const PendingReply &reply,
   output.visible = true;
   return output;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

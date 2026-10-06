@@ -286,7 +286,7 @@ enum ServiceTokenStore {
 
   private static func query(_ scope: String, _ url: URL) -> [String: Any] {
     [kSecClass as String: kSecClassGenericPassword,
-     kSecAttrService as String: "app.msime.ios.custom-services",
+     kSecAttrService as String: "app.lingyao.ios.custom-services",
      kSecAttrAccount as String: "\(scope)|\(url.scheme ?? "")://\(url.host?.lowercased() ?? ""):\(url.port ?? 443)"]
   }
   static func read(_ kind: CustomServiceKind, url: URL) throws -> String { try read(scope: kind.rawValue, url: url) }

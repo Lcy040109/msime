@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <nlohmann/json.hpp>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -20,8 +20,8 @@ void require(bool value, const char *message) {
   if (!value) throw std::runtime_error(message);
 }
 Json response(char *raw) {
-  std::unique_ptr<char, decltype(&msime_client_string_free)> owned(
-      raw, msime_client_string_free);
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(
+      raw, lingyao_client_string_free);
   require(raw != nullptr, "provider response missing");
   return Json::parse(raw);
 }
@@ -31,7 +31,7 @@ int main() {
   // Use a unique private subdirectory so CTest and direct invocations work
   // even when the source tree is mounted read-only.
   const auto directory = std::filesystem::temp_directory_path() /
-                         ("msime-provider-contract-" + std::to_string(getpid()) + "-" +
+                         ("lingyao-provider-contract-" + std::to_string(getpid()) + "-" +
                           std::to_string(std::chrono::steady_clock::now()
                                              .time_since_epoch()
                                              .count()));
@@ -86,7 +86,7 @@ int main() {
                        {"cloud_eligible", true}, {"ai_eligible", false},
                        {"session_id", 1} };
   const auto encoded = query.dump();
-  auto result = response(msime_client_online_provider_request(
+  auto result = response(lingyao_client_online_provider_request(
       reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size(),
       reinterpret_cast<const uint8_t *>(socket_path.data()), socket_path.size()));
   require(result.at("ok").get<bool>() && result.at("value").at("candidates").at(0).at("text") == "candidate",
@@ -95,7 +95,7 @@ int main() {
   unlink(socket_path.c_str());
   std::filesystem::remove(directory, directory_error);
   require(!directory_error, "private provider directory cleanup failed");
-  auto invalid = response(msime_client_online_provider_request(
+  auto invalid = response(lingyao_client_online_provider_request(
       reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size(),
       reinterpret_cast<const uint8_t *>("relative.sock"), 13));
   require(!invalid.at("ok").get<bool>(), "relative socket path was accepted");

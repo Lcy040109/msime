@@ -2,13 +2,13 @@
 #import "../../src/cloud/CloudCandidateRequest.h"
 #include <cassert>
 
-@interface MSIMECustomTranslationBatch (TestSeams)
+@interface LINGYAOCustomTranslationBatch (TestSeams)
 - (NSTimeInterval)currentTime;
-- (MSIMECloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion;
-- (MSIMECloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion;
+- (LINGYAOCloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion;
+- (LINGYAOCloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion;
 @end
 
-@interface SyntheticTranslationRequest : MSIMECloudCandidateRequest
+@interface SyntheticTranslationRequest : LINGYAOCloudCandidateRequest
 @property(nonatomic, copy) void (^reply)(NSData *);
 @property(nonatomic) BOOL started;
 @property(nonatomic) BOOL cancelled;
@@ -20,7 +20,7 @@
 - (void)cancel { _cancelled = YES; }
 @end
 
-@interface SyntheticTranslationBatch : MSIMECustomTranslationBatch
+@interface SyntheticTranslationBatch : LINGYAOCustomTranslationBatch
 @property(nonatomic) NSTimeInterval now;
 @property(nonatomic) NSTimeInterval wallTime;
 @property(nonatomic, strong) NSMutableArray<SyntheticTranslationRequest *> *requests;
@@ -29,13 +29,13 @@
 @implementation SyntheticTranslationBatch
 - (NSTimeInterval)currentTime { return _now; }
 - (NSTimeInterval)unixTime { return _wallTime; }
-- (MSIMECloudCandidateRequest *)tencentRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+- (LINGYAOCloudCandidateRequest *)tencentRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
     return [self requestForDescriptor:descriptor completion:completion];
 }
-- (MSIMECloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+- (LINGYAOCloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
     return [self requestForDescriptor:descriptor completion:completion];
 }
-- (MSIMECloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+- (LINGYAOCloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
     if (!_requests) _requests = [NSMutableArray array];
     if (!_descriptors) _descriptors = [NSMutableArray array];
     SyntheticTranslationRequest *request = [SyntheticTranslationRequest new];
@@ -57,7 +57,7 @@ static NSDictionary *Item(NSString *text) {
 static SyntheticTranslationBatch *Batch(NSArray *items, void (^completion)(NSArray *)) {
     return [[SyntheticTranslationBatch alloc] initWithItems:items configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:completion];
 }
-static void AssertReleased(MSIMECustomTranslationBatch *batch) {
+static void AssertReleased(LINGYAOCustomTranslationBatch *batch) {
     for (NSString *key in @[@"items", @"request", @"session", @"timer", @"configuration", @"results", @"completion", @"onReply"])
         assert(![batch valueForKey:key]);
 }
@@ -189,7 +189,7 @@ static void TestBoundsAndEmptyResults() {
     // Real transport rejects invalid descriptors synchronously; bounded recursion
     // must finish exactly once without ever creating a network session.
     __block NSUInteger calls = 0;
-    MSIMECustomTranslationBatch *invalidTransport = [[MSIMECustomTranslationBatch alloc]
+    LINGYAOCustomTranslationBatch *invalidTransport = [[LINGYAOCustomTranslationBatch alloc]
         initWithItems:@[@{@"text":@"one", @"request":@{}}, @{@"text":@"two", @"request":@{}}]
         configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSArray *results) {
             assert(++calls == 1 && results.count == 0);

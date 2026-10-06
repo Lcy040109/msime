@@ -4,7 +4,7 @@
 #include <ibus.h>
 #include <string>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 std::string wave_overlay_feedback_text(const WaveOverlayModel &model);
 
@@ -23,4 +23,4 @@ class WaveOverlayIbusSurface final : public WaveOverlaySurface {
   bool visible_ = false;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

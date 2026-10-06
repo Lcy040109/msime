@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-case "$MSIME_TEST_VARIANT" in
+case "$LINGYAO_TEST_VARIANT" in
   device) sdk=iphoneos ;;
   simulator) sdk=iphonesimulator ;;
 esac

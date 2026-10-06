@@ -9,9 +9,9 @@
 #include "WindowShadow.h"
 #include <algorithm>
 #include <iterator>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // A named CALLBACK rather than a lambda, as ShellLauncher's EnumWindows proc
 // already is. FONTENUMPROCW is __stdcall; a captureless lambda converts to a
@@ -34,7 +34,7 @@ bool installed_font(const std::wstring &family) {
   ReleaseDC(nullptr, dc);
   return found;
 }
-constexpr wchar_t class_name[] = L"MSIME.Client.Preview.Candidates" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t class_name[] = L"LINGYAO.Client.Preview.Candidates" LINGYAO_EDITION_NAME_SUFFIX;
 // The typing flash repaints at about 30 frames a second while it fades, then its timer is killed; the combo timer fires once, when the count it shows goes stale.
 constexpr UINT_PTR typing_flash_timer = 0x4501;
 constexpr UINT_PTR typing_combo_timer = 0x4502;
@@ -92,7 +92,7 @@ std::wstring wide(const std::string &text) {
   return result;
 }
 // Text width in device independent pixels. DirectWrite is the same engine the renderer draws with, so the card cannot be sized for a different shaping. `weight` is the weight the text is drawn at: the preedit is semibold.
-double measured_width(msimeui::DeviceResources &device, const std::wstring &text,
+double measured_width(lingyaoui::DeviceResources &device, const std::wstring &text,
                       const std::wstring &family, float size,
                       IDWriteFontFallback *fallback,
                       DWRITE_FONT_WEIGHT weight = DWRITE_FONT_WEIGHT_NORMAL) {
@@ -124,7 +124,7 @@ std::wstring pager_label(const CandidatePresentation &value) {
          std::to_wstring(value.page_count);
 }
 // Height of text wrapped to `width` DIPs, with the same top aligned, wrapping format paint() draws a run below the first line with.
-double wrapped_height(msimeui::DeviceResources &device, const std::wstring &text,
+double wrapped_height(lingyaoui::DeviceResources &device, const std::wstring &text,
                       const std::wstring &family, float size, double width,
                       IDWriteFontFallback *fallback) {
   if (text.empty() || size <= 0.0f || !(width > 0.0))
@@ -290,7 +290,7 @@ ID2D1Bitmap *CandidateWindow::logo_bitmap(int pixels) {
   if (!logo_ || logo_pixels_ != pixels) {
     // Loaded at the drawn size rather than LR_SHARED's cached standard size, as the floating toolbar does, so the mark is not resampled.
     const HANDLE loaded =
-        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_MSIME_LOGO),
+        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_LINGYAO_LOGO),
                    IMAGE_ICON, pixels, pixels, LR_DEFAULTCOLOR);
     if (!loaded)
       return nullptr;
@@ -1261,4 +1261,4 @@ LRESULT CALLBACK CandidateWindow::procedure(HWND window, UINT message,
   }
   return DefWindowProcW(window, message, wparam, lparam);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

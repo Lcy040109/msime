@@ -81,7 +81,7 @@ function Add-CertificateTrust {
     }
 
     $temporaryFile = Join-Path ([System.IO.Path]::GetTempPath()) `
-        ('msime-local-test-{0}.cer' -f $Certificate.Thumbprint)
+        ('lingyao-local-test-{0}.cer' -f $Certificate.Thumbprint)
     try {
         Export-Certificate -Cert $Certificate -FilePath $temporaryFile -Type CERT -Force | Out-Null
         foreach ($store in $missing) {

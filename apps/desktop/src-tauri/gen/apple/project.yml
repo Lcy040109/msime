@@ -1,4 +1,4 @@
-name: msime-desktop
+name: lingyao-desktop
 options:
   bundleIdPrefix: com.lingyaoime.client
   deploymentTarget:
@@ -28,7 +28,7 @@ targetTemplates:
     settings:
       groups: [app]
 targets:
-  msime-desktop_iOS:
+  lingyao-desktop_iOS:
     type: application
     platform: iOS
     sources:
@@ -52,7 +52,7 @@ targets:
       - path: Externals
         excludes:
           - "**/libapp.a"
-      - path: msime-desktop_iOS
+      - path: lingyao-desktop_iOS
       - path: ../../../../../target/ios/EngineResources
         buildPhase: resources
         type: folder
@@ -74,7 +74,7 @@ targets:
         type: folder
       - path: LaunchScreen.storyboard
     info:
-      path: msime-desktop_iOS/Info.plist
+      path: lingyao-desktop_iOS/Info.plist
       properties:
         ITSAppUsesNonExemptEncryption: false
         LSRequiresIPhoneOS: true
@@ -93,10 +93,10 @@ targets:
         CFBundleShortVersionString: 0.1.0
         CFBundleVersion: "0.1.0"
     entitlements:
-      path: msime-desktop_iOS/msime-desktop_iOS.entitlements
+      path: lingyao-desktop_iOS/lingyao-desktop_iOS.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.app.msime.ios
+          - group.app.lingyao.ios
     scheme:
       environmentVariables:
         RUST_BACKTRACE: full
@@ -133,10 +133,10 @@ targets:
       - sdk: Security.framework
       - sdk: UIKit.framework
       - sdk: WebKit.framework
-      - target: MSIMESwiftRsRuntimeExports
+      - target: LINGYAOSwiftRsRuntimeExports
         embed: false
         link: false
-      - target: MSIMEKeyboardExtension
+      - target: LINGYAOKeyboardExtension
     preBuildScripts:
       - script: pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}
         name: Build Rust Code
@@ -144,11 +144,11 @@ targets:
         outputFiles:
           - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a
           - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a
-  MSIMEKeyboardExtension:
+  LINGYAOKeyboardExtension:
     type: app-extension
     platform: iOS
     info:
-      path: MSIMEKeyboardExtension/Info.plist
+      path: LINGYAOKeyboardExtension/Info.plist
       properties:
         CFBundleDisplayName: 灵耀输入法
         CFBundleShortVersionString: 0.1.0
@@ -190,14 +190,14 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.keyboard
-        PRODUCT_NAME: MSIMEKeyboardExtension
+        PRODUCT_NAME: LINGYAOKeyboardExtension
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         SWIFT_VERSION: 5.0
-        CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements
+        CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements
         # The Tauri CLI applies APPLE_DEVELOPMENT_TEAM to its own app target only, so the
         # embedded targets have to pick it up themselves or a signed device build stops at
-        # "Signing for MSIMEKeyboardExtension requires a development team". Xcode falls back
+        # "Signing for LINGYAOKeyboardExtension requires a development team". Xcode falls back
         # to the process environment for a setting the project leaves empty, so unsigned
         # simulator builds are unaffected.
         DEVELOPMENT_TEAM: LXCL4Z68GU
@@ -209,19 +209,19 @@ targets:
         EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]: HandwritingInputView.swift HandwritingDownloadSession.m
         OTHER_LDFLAGS:
           - "$(inherited)"
-          - "-lmsime_host_api"
+          - "-llingyao_host_api"
           - "-lc++"
           - "-lsqlite3"
         LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: "$(SRCROOT)/../../../../../target/ios/device"
         LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: "$(SRCROOT)/../../../../../target/ios/simulator"
-  MSIMESwiftRsRuntimeExports:
+  LINGYAOSwiftRsRuntimeExports:
     type: library.static
     platform: iOS
     sources:
       - path: SwiftRsRuntimeExports
     settings:
       base:
-        PRODUCT_NAME: MSIMESwiftRsRuntimeExports
+        PRODUCT_NAME: LINGYAOSwiftRsRuntimeExports
         PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.swift-rs-runtime-exports
         SKIP_INSTALL: true
         SWIFT_VERSION: 5.0

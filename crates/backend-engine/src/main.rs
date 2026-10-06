@@ -1,4 +1,4 @@
-//! `msime-backend-engine <resources> <scratch>`: read one request from stdin, write one response line to stdout, exit. msime-cloud starts one process per request (`internal/engine/client.go` there), so nothing is shared between requests or users; the protocol itself is `msime_engine::backend`.
+//! `lingyao-backend-engine <resources> <scratch>`: read one request from stdin, write one response line to stdout, exit. lingyao-cloud starts one process per request (`internal/engine/client.go` there), so nothing is shared between requests or users; the protocol itself is `lingyao_engine::backend`.
 //!
 //! Every outcome, a failure included, is a JSON line on stdout and exit status 0. Nothing goes to stderr: a panic message could carry a path or the user's input, and the server must never forward either.
 
@@ -6,8 +6,8 @@ use std::io::{Read, Write};
 use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 
-use msime_client_core::chinese_conversion::simplified_to_traditional;
-use msime_engine::backend::{execute_raw, BackendError, MAXIMUM_REQUEST_BYTES};
+use lingyao_client_core::chinese_conversion::simplified_to_traditional;
+use lingyao_engine::backend::{execute_raw, BackendError, MAXIMUM_REQUEST_BYTES};
 
 fn main() {
     panic::set_hook(Box::new(|_| {}));

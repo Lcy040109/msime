@@ -15,13 +15,13 @@ void require(bool condition, int line) {
 
 int main() {
   try {
-    msime::windows::LocalAsrAudioQueue queue(4);
+    lingyao::windows::LocalAsrAudioQueue queue(4);
     const float samples[] = {0.1f, 0.2f, 0.3f, 0.4f};
     REQUIRE(queue.push(samples, 4) ==
-            msime::windows::LocalAsrAudioQueue::PushResult::accepted);
+            lingyao::windows::LocalAsrAudioQueue::PushResult::accepted);
     REQUIRE(queue.size() == 4);
     REQUIRE(queue.push(samples, 1) ==
-            msime::windows::LocalAsrAudioQueue::PushResult::overflowed);
+            lingyao::windows::LocalAsrAudioQueue::PushResult::overflowed);
     REQUIRE(queue.size() == 4);
     REQUIRE(queue.overflowed());
     REQUIRE(queue.closed());
@@ -32,9 +32,9 @@ int main() {
     REQUIRE(batch.size() == 4);
     REQUIRE(batch[0] == samples[0] && batch[3] == samples[3]);
 
-    msime::windows::LocalAsrAudioQueue cancelled(4);
+    lingyao::windows::LocalAsrAudioQueue cancelled(4);
     REQUIRE(cancelled.push(samples, 2) ==
-            msime::windows::LocalAsrAudioQueue::PushResult::accepted);
+            lingyao::windows::LocalAsrAudioQueue::PushResult::accepted);
     cancelled.cancel();
     REQUIRE(cancelled.cancelled());
     REQUIRE(cancelled.closed());
@@ -42,13 +42,13 @@ int main() {
 
     // The bounded queue reserves its full budget before the first capture
     // callback, so a short first batch does not leave later inserts growing it.
-    msime::windows::LocalAsrAudioQueue reserved(4);
+    lingyao::windows::LocalAsrAudioQueue reserved(4);
     REQUIRE(reserved.push(samples, 1) ==
-            msime::windows::LocalAsrAudioQueue::PushResult::accepted);
+            lingyao::windows::LocalAsrAudioQueue::PushResult::accepted);
     const auto short_batch = reserved.wait_and_take(ended);
     REQUIRE(short_batch.capacity() >= 4);
     REQUIRE(reserved.push(samples, 1) ==
-            msime::windows::LocalAsrAudioQueue::PushResult::accepted);
+            lingyao::windows::LocalAsrAudioQueue::PushResult::accepted);
     const auto second_batch = reserved.wait_and_take(ended);
     REQUIRE(second_batch.capacity() >= 4);
   } catch (const std::exception &error) {

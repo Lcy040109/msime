@@ -12,7 +12,7 @@ enum WubiMixedPinyinPreference {
 
   /// 没存过时的值随版本：full 是关，五笔版是开。键盘每次重载都把它写回共享文档，所以不能按 `bool(forKey:)` 的缺省 false 读，否则五笔版首次启动就把混拼关掉了。
   static var isEnabled: Bool {
-    get { defaults.object(forKey: enabledKey) as? Bool ?? MSIMEAppEdition.wubiMixedPinyinDefault }
+    get { defaults.object(forKey: enabledKey) as? Bool ?? LINGYAOAppEdition.wubiMixedPinyinDefault }
     set { defaults.set(newValue, forKey: enabledKey) }
   }
 }

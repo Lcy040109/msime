@@ -6,11 +6,11 @@
 #include <vector>
 
 int main() {
-  using msime::linux_host::key_press_sounds;
-  using msime::linux_host::key_sound_class;
-  using msime::linux_host::MusicActivity;
+  using lingyao::linux_host::key_press_sounds;
+  using lingyao::linux_host::key_sound_class;
+  using lingyao::linux_host::MusicActivity;
 
-  // The classes msime_client_key_sound takes, for the keysyms IBus and Fcitx5 report.
+  // The classes lingyao_client_key_sound takes, for the keysyms IBus and Fcitx5 report.
   assert(key_sound_class(0x0020) == 1);
   assert(key_sound_class(0xff80) == 1);
   assert(key_sound_class(0xff0d) == 2);
@@ -27,11 +27,11 @@ int main() {
   assert(!key_press_sounds(false, false, true));
 
   // The typing effect: the combo is the answer's low 16 bits, shown from two keys on.
-  using msime::linux_host::KeyRepeat;
-  using msime::linux_host::typing_combo_label;
-  using msime::linux_host::typing_effect_combo;
-  assert(msime::linux_host::kTypingEffectCommit == 4);
-  assert(msime::linux_host::kTypingEffectRepeat == 0x100);
+  using lingyao::linux_host::KeyRepeat;
+  using lingyao::linux_host::typing_combo_label;
+  using lingyao::linux_host::typing_effect_combo;
+  assert(lingyao::linux_host::kTypingEffectCommit == 4);
+  assert(lingyao::linux_host::kTypingEffectRepeat == 0x100);
   assert(typing_effect_combo(0) == 0);
   assert(typing_effect_combo(0x0010000c) == 12);
   assert(typing_effect_combo(0x0005ffff) == 65535);

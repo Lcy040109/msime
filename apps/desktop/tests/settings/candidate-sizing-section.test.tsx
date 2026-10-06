@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { CandidateSizingSection, type CandidateSizingPreferences } from "@msime/ui";
+import { CandidateSizingSection, type CandidateSizingPreferences } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

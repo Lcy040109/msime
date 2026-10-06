@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 int main() {
   const auto sent = decide_tsf_key_dispatch(KeyEventSendResult::Sent, true, true);

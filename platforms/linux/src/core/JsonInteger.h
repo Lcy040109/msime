@@ -8,7 +8,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // JSON numbers are allowed to be floating point values, and nlohmann::json's
 // arithmetic get<T>() performs a C++ cast for them. Host state uses integers
@@ -59,4 +59,4 @@ T strict_json_required_integer(const nlohmann::json &value) {
   throw std::invalid_argument("expected an in-range JSON integer");
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

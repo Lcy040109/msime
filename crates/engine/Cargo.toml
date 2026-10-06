@@ -1,6 +1,6 @@
 [package]
-name = "msime-engine"
-description = "Pure Rust input engine: composition state, schemes, dictionaries and learning. Replaces the C++ MSIME-Engine."
+name = "lingyao-engine"
+description = "Pure Rust input engine: composition state, schemes, dictionaries and learning. Replaces the C++ LINGYAO-Engine."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-msime-path-trust = { path = "../path-trust" }
+lingyao-path-trust = { path = "../path-trust" }
 chinese-ime-lm = { git = "https://github.com/metasequoiaime/chinese-ime-lm", rev = "7e02487323ee5047a07a36b6e20d766d7c2f381d" }
 chinese-number = { version = "0.8", default-features = false, features = ["std", "number-to-chinese"] }
 # 藏文方案的 EWTS（扩展威利转写）到 Unicode 藏文的转换。MIT OR Apache-2.0，无依赖。

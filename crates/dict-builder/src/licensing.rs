@@ -1,6 +1,6 @@
-//! Which inputs carry no redistribution grant. By default the build leaves them out, so a release holds only data the project may redistribute; `--include-unlicensed` (or `MSIME_DICT_INCLUDE_UNLICENSED=1`) builds the complete dictionary for local evaluation, never for a release. When an upstream grants permission in writing, remove its entry here and update `resources/licenses/msime-engine-dictionary-NOTICE.md` in the same change.
+//! Which inputs carry no redistribution grant. By default the build leaves them out, so a release holds only data the project may redistribute; `--include-unlicensed` (or `LINGYAO_DICT_INCLUDE_UNLICENSED=1`) builds the complete dictionary for local evaluation, never for a release. When an upstream grants permission in writing, remove its entry here and update `resources/licenses/lingyao-engine-dictionary-NOTICE.md` in the same change.
 
-pub const ENV_FLAG: &str = "MSIME_DICT_INCLUDE_UNLICENSED";
+pub const ENV_FLAG: &str = "LINGYAO_DICT_INCLUDE_UNLICENSED";
 
 pub const BASE_DICT_PART1: &str = "sources/unlicensed/custom-pinyin-dictionary-part1.txt";
 pub const BASE_DICT_PART2: &str = "sources/unlicensed/custom-pinyin-dictionary-part2.txt";

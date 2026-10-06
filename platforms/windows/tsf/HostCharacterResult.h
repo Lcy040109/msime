@@ -1,7 +1,7 @@
 #pragma once
 #include "EngineSessionAdapter.h"
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 enum class CharacterResultStatus { Applied, Unhandled, Failed };
 template<class Insert, class Cleanup, class Refresh>
 CharacterResultStatus ApplyHostCharacterResult(const EngineResult &result,

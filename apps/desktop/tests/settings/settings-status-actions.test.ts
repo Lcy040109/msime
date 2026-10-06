@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsStatusActions } from "@msime/ui";
+import { createSettingsStatusActions } from "@lingyao/ui";
 
 test("creates recovery and startup notice actions", async () => {
   const recoverPreferences = vi.fn().mockResolvedValue(undefined);

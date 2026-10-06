@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // The TSF adapter must distinguish a confirmed write from an ambiguous write.
 // Only DefinitelyNotSent may be handed to the local fallback path; replaying an
@@ -15,4 +15,4 @@ constexpr bool definitely_not_sent(KeyEventSendResult result) noexcept {
   return result == KeyEventSendResult::DefinitelyNotSent;
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -68,15 +68,15 @@ pub enum SchemeType {
     JapaneseRomaji = 3,
     /// Korean Hangul on the Dubeolsik layout: syllables compose in the preedit and commit themselves; the only candidates are the composing syllable's Hanja, after `Command::ConvertHanja`.
     Korean = 4,
-    /// Cantonese in toneless Jyutping read against `msime-cantonese.db`: candidates are Traditional as stored, a candidate covering the leading syllables commits at once and leaves the rest composing, and nothing is learned.
+    /// Cantonese in toneless Jyutping read against `lingyao-cantonese.db`: candidates are Traditional as stored, a candidate covering the leading syllables commits at once and leaves the rest composing, and nothing is learned.
     Cantonese = 5,
-    /// Zhuyin (bopomofo) on the Dachen layout read against `msime-zhuyin.db`: keys compose syllables that convert to Traditional text as typed, a list the user opens pins a span's text without committing, Enter or any key outside the layout commits the conversion, and nothing is learned.
+    /// Zhuyin (bopomofo) on the Dachen layout read against `lingyao-zhuyin.db`: keys compose syllables that convert to Traditional text as typed, a list the user opens pins a span's text without committing, Enter or any key outside the layout commits the conversion, and nothing is learned.
     Zhuyin = 6,
     /// Vietnamese through Telex or VNI: the keystrokes compose into one word in the preedit, which any key outside the spelling commits; there are no candidates.
     Vietnamese = 7,
     /// 藏文，在拉丁键盘上按 EWTS（扩展威利转写）拼写：威利原文在组字里组成一个音节串，显示为转换出的藏文；空格带音节点上屏，`/` 带垂符上屏，回车只上屏藏文；没有候选。
     Tibetan = 8,
-    /// Stroke (笔画) read against `msime-stroke.db`: the keys h s p n z type the five strokes 横竖撇点折 in writing order and x stands for any one stroke; the preedit draws the strokes, candidates are single characters whose stroke code starts with the typed strokes, and nothing is learned.
+    /// Stroke (笔画) read against `lingyao-stroke.db`: the keys h s p n z type the five strokes 横竖撇点折 in writing order and x stands for any one stroke; the preedit draws the strokes, candidates are single characters whose stroke code starts with the typed strokes, and nothing is learned.
     Stroke = 9,
 }
 
@@ -529,7 +529,7 @@ impl SchemeSet {
             .fold(Self::EMPTY, |set, scheme| set.with(*scheme))
     }
 
-    /// 集合里是否有读 `msime-pinyin.db` 的方案：全拼、双拼和五笔的候选、学习和用户词都在它里面（五笔混拼的拼音行也是）。没有这三个方案的集合（例如只有日文、越南文或藏文的版本）随包不带 `msime-pinyin.db`：代次里没有它的工作副本，用户词库只剩英文词。
+    /// 集合里是否有读 `lingyao-pinyin.db` 的方案：全拼、双拼和五笔的候选、学习和用户词都在它里面（五笔混拼的拼音行也是）。没有这三个方案的集合（例如只有日文、越南文或藏文的版本）随包不带 `lingyao-pinyin.db`：代次里没有它的工作副本，用户词库只剩英文词。
     pub const fn reads_main_dictionary(self) -> bool {
         self.contains(SchemeType::Quanpin)
             || self.contains(SchemeType::Shuangpin)
@@ -619,7 +619,7 @@ impl WubiProfileKind {
         }
     }
 
-    /// `msime-pinyin.db` 里这一版的码表，表名与 `name` 相同。
+    /// `lingyao-pinyin.db` 里这一版的码表，表名与 `name` 相同。
     pub fn table(self) -> &'static str {
         self.name()
     }
@@ -1180,7 +1180,7 @@ impl PersonalDictionaryKind {
         matches!(self, Self::Wubi | Self::Wubi98)
     }
 
-    /// 五笔种类对应的 `msime-pinyin.db` 码表。
+    /// 五笔种类对应的 `lingyao-pinyin.db` 码表。
     pub fn wubi_table(self) -> Option<&'static str> {
         match self {
             Self::Wubi => Some(WubiProfileKind::Wubi86.table()),

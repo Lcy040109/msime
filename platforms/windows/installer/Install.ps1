@@ -4,11 +4,11 @@ param([switch]$Light)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$issPath = Join-Path $PSScriptRoot 'msime_setup.iss'
+$issPath = Join-Path $PSScriptRoot 'lingyao_setup.iss'
 if (-not (Test-Path -LiteralPath $issPath -PathType Leaf)) { throw "Installer script not found: $issPath" }
 $issContent = Get-Content -LiteralPath $issPath -Raw
 if ($issContent -notmatch '(?m)^#define\s+MyAppVersion\s+"(?<version>[0-9][0-9A-Za-z.+-]*)"') {
-    throw 'Could not find MyAppVersion in msime_setup.iss.'
+    throw 'Could not find MyAppVersion in lingyao_setup.iss.'
 }
 
 $suffix = if ($Light) { '_light' } else { '' }

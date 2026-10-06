@@ -1,4 +1,4 @@
-import app.msime.android.policy.FeedbackBodyPolicy;
+import app.lingyao.android.policy.FeedbackBodyPolicy;
 
 public final class FeedbackBodyPolicySmoke {
     private static void check(boolean condition) {

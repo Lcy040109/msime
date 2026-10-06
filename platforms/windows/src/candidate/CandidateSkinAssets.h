@@ -2,7 +2,7 @@
 #include "CandidateSkin.h"
 #include <algorithm>
 
-namespace msime::windows {
+namespace lingyao::windows {
 inline bool valid_candidate_skin_id(const std::string &id) {
   const auto alnum = [](unsigned char c) {
     return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
@@ -30,4 +30,4 @@ candidate_skin_assets(const nlohmann::json &catalog, const std::string &id,
           candidate_skin_background(catalog, id, root),
           candidate_skin_toolbar(catalog, id)};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

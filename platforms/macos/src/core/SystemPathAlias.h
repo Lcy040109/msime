@@ -7,7 +7,7 @@
 #include <vector>
 
 // 存储路径的符号链接检查。规则与 `crates/path-trust/src/lib.rs` 完全一致，宿主各处（诊断日志、资源包、语音静音日志、词典安装）都只问这里，不要再各写一份按名字放行 `/tmp`、`/var` 的逐层检查。
-namespace msime::mac
+namespace lingyao::mac
 {
 // macOS 自带、存储路径可以经过的系统符号链接，以及每条链接唯一受信任的目标。对应 `crates/path-trust/src/lib.rs` 里 macOS 的 `SYSTEM_ALIASES`，两边必须保持相同。
 inline bool IsTrustedSystemAliasTarget(const std::filesystem::path &path, const std::filesystem::path &target)
@@ -57,4 +57,4 @@ inline bool StoragePathIsSafe(const std::filesystem::path &path, bool existingCo
     }
     return true;
 }
-} // namespace msime::mac
+} // namespace lingyao::mac

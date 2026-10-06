@@ -60,7 +60,7 @@ function Get-OrCreateCert {
 }
 
 function Add-CertificateTrust($cert) {
-    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("msime-{0}.cer" -f $cert.Thumbprint)
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("lingyao-{0}.cer" -f $cert.Thumbprint)
     Export-Certificate -Cert $cert -FilePath $tmp -Type CERT -Force | Out-Null
     try {
         foreach ($store in $TrustStores) {

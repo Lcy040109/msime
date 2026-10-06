@@ -3,7 +3,7 @@
 #import "VoiceCaptureDevice.h"
 #import "VoiceSettings.h"
 #import "../settings/SettingsLayout.h"
-NSNotificationName const MSIMEVoiceProviderSettingsDidChangeNotification = @"MSIMEClientVoiceProviderSettingsDidChange";
+NSNotificationName const LINGYAOVoiceProviderSettingsDidChangeNotification = @"LINGYAOClientVoiceProviderSettingsDidChange";
 #import <Security/Security.h>
 #import "../core/WindowPresentation.h"
 #import "../core/EditionIdentity.h"
@@ -59,54 +59,54 @@ NSString *ProviderValue(NSString *provider, NSString *key)
 }
 } // namespace
 
-NSArray<NSString *> *MSIMEVoiceASRProviderIDs(void)
+NSArray<NSString *> *LINGYAOVoiceASRProviderIDs(void)
 {
     return ProviderValues(@"id");
 }
 
-NSArray<NSString *> *MSIMEVoiceASRProviderTitles(void)
+NSArray<NSString *> *LINGYAOVoiceASRProviderTitles(void)
 {
     return ProviderValues(@"title");
 }
 
-NSString *MSIMEVoiceASRProviderDefaultEndpoint(NSString *provider)
+NSString *LINGYAOVoiceASRProviderDefaultEndpoint(NSString *provider)
 {
     return ProviderValue(provider, @"endpoint");
 }
 
-NSString *MSIMEVoiceASRProviderDefaultModel(NSString *provider)
+NSString *LINGYAOVoiceASRProviderDefaultModel(NSString *provider)
 {
     return ProviderValue(provider, @"model");
 }
 
-BOOL MSIMEVoiceASRProviderUsesService(NSString *provider)
+BOOL LINGYAOVoiceASRProviderUsesService(NSString *provider)
 {
     NSString *identifier = provider.lowercaseString ?: @"";
-    return [MSIMEVoiceASRProviderIDs() containsObject:identifier] &&
+    return [LINGYAOVoiceASRProviderIDs() containsObject:identifier] &&
            ![@[ @"system", @"local" ] containsObject:identifier];
 }
 
 /// Which of the form's two cards a message is about. A message is only useful next to the field it is about, and this form has two groups of fields with two independent sets of failures — an unreachable recognition endpoint and an unconfigured polish service are separate problems and used to be reported by the same red line under both cards, so neither said which one it meant.
-static NSErrorUserInfoKey const MSIMEVoiceProviderErrorScopeKey = @"MSIMEVoiceProviderErrorScope";
-static NSString *const MSIMEVoiceProviderRecognitionScope = @"recognition";
-static NSString *const MSIMEVoiceProviderPolishScope = @"polish";
+static NSErrorUserInfoKey const LINGYAOVoiceProviderErrorScopeKey = @"LINGYAOVoiceProviderErrorScope";
+static NSString *const LINGYAOVoiceProviderRecognitionScope = @"recognition";
+static NSString *const LINGYAOVoiceProviderPolishScope = @"polish";
 
 namespace
 {
-// 错误域不随版本而变：VoiceFailureMessages 按 app.msime.client.voice 前缀认出语音错误。钥匙串服务名随版本而变，见 MSIMEVoiceProviderKeychainService。
-NSString *const errorDomain = @"app.msime.client.voice.providers";
+// 错误域不随版本而变：VoiceFailureMessages 按 app.lingyao.client.voice 前缀认出语音错误。钥匙串服务名随版本而变，见 LINGYAOVoiceProviderKeychainService。
+NSString *const errorDomain = @"app.lingyao.client.voice.providers";
 NSError *Error(NSString *message, NSString *scope)
 {
     return [NSError errorWithDomain:errorDomain
                                code:1
-                           userInfo:@{NSLocalizedDescriptionKey : message, MSIMEVoiceProviderErrorScopeKey : scope}];
+                           userInfo:@{NSLocalizedDescriptionKey : message, LINGYAOVoiceProviderErrorScopeKey : scope}];
 }
 NSDictionary *Key(NSString *kind, NSString *provider, NSString *endpoint)
 {
     return @{
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
-        (__bridge id)kSecAttrService : MSIMEVoiceProviderKeychainService(),
-        (__bridge id)kSecAttrAccount : MSIMEVoiceProviderCredentialAccount(kind, provider, endpoint)
+        (__bridge id)kSecAttrService : LINGYAOVoiceProviderKeychainService(),
+        (__bridge id)kSecAttrAccount : LINGYAOVoiceProviderCredentialAccount(kind, provider, endpoint)
     };
 }
 NSString *ReadKey(NSDictionary *key)
@@ -154,8 +154,8 @@ BOOL WriteToken(NSString *kind, NSString *provider, NSString *endpoint, NSString
     if (error)
         // The kind is the card: an ASR key belongs to the recognition card, a polish key to the text card.
         *error = Error(@"无法保存到系统钥匙串，请解锁钥匙串后重试。",
-                       [kind isEqualToString:@"polish"] ? MSIMEVoiceProviderPolishScope
-                                                        : MSIMEVoiceProviderRecognitionScope);
+                       [kind isEqualToString:@"polish"] ? LINGYAOVoiceProviderPolishScope
+                                                        : LINGYAOVoiceProviderRecognitionScope);
     return NO;
 }
 void DeleteToken(NSString *kind, NSString *provider, NSString *endpoint)
@@ -189,8 +189,8 @@ static NSString *StringSetting(NSDictionary *saved, NSString *key, NSString *fal
 
 static NSString *SharedSetting(NSString *key, NSString *fallback)
 {
-    NSString *sharedKey = MSIMEVoiceProviderSharedKeys()[key];
-    return MSIMEVoiceProviderSharedSetting(
+    NSString *sharedKey = LINGYAOVoiceProviderSharedKeys()[key];
+    return LINGYAOVoiceProviderSharedSetting(
         sharedKey ? [NSUserDefaults.standardUserDefaults objectForKey:sharedKey] : nil, fallback);
 }
 
@@ -203,35 +203,35 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
         saved = @{};
     NSString *rawProvider =
         SharedSetting(@"provider", @"doubao").lowercaseString;
-    if (![MSIMEVoiceASRProviderIDs() containsObject:rawProvider])
+    if (![LINGYAOVoiceASRProviderIDs() containsObject:rawProvider])
         rawProvider = @"doubao";
     value.provider = rawProvider;
     value.endpoint = SharedSetting(@"endpoint", @"");
     value.model = SharedSetting(@"model", @"");
     if (value.endpoint.length == 0)
-        value.endpoint = MSIMEVoiceASRProviderDefaultEndpoint(rawProvider);
+        value.endpoint = LINGYAOVoiceASRProviderDefaultEndpoint(rawProvider);
     if (value.model.length == 0)
-        value.model = MSIMEVoiceASRProviderDefaultModel(rawProvider);
+        value.model = LINGYAOVoiceASRProviderDefaultModel(rawProvider);
     value.modelPath = SharedSetting(@"modelPath", @"");
     id polishEnabled = saved[@"polishEnabled"];
     value.polishEnabled =
         [polishEnabled isKindOfClass:[NSNumber class]] || [polishEnabled isKindOfClass:[NSString class]]
             ? [polishEnabled boolValue]
             : NO;
-    value.polishEndpoint = SharedSetting(@"polishEndpoint", MSIMEVoicePolishDefaultEndpoint);
-    value.polishModel = SharedSetting(@"polishModel", MSIMEVoicePolishDefaultModel);
-    value.polishPromptID = MSIMEPolishPromptIdentifierOrDefault(SharedSetting(@"polishPromptID", @""));
+    value.polishEndpoint = SharedSetting(@"polishEndpoint", LINGYAOVoicePolishDefaultEndpoint);
+    value.polishModel = SharedSetting(@"polishModel", LINGYAOVoicePolishDefaultModel);
+    value.polishPromptID = LINGYAOPolishPromptIdentifierOrDefault(SharedSetting(@"polishPromptID", @""));
     value.polishPromptCustom1 = SharedSetting(@"polishPromptCustom1", @"");
     value.polishPromptCustom2 = SharedSetting(@"polishPromptCustom2", @"");
     value.polishPromptCustom3 = SharedSetting(@"polishPromptCustom3", @"");
-    id sharedCaptureDevice = [defaults objectForKey:@"MSIMEClientVoiceCaptureDevice"];
+    id sharedCaptureDevice = [defaults objectForKey:@"LINGYAOClientVoiceCaptureDevice"];
     value.captureDevice = [sharedCaptureDevice isKindOfClass:NSString.class]
         ? sharedCaptureDevice : StringSetting(saved, @"captureDevice", @"");
-    value.tokenSlots = MSIMEValidVoiceTokenSlots([defaults objectForKey:@"MSIMEClientVoiceASRTokens"]) ?: @{};
-    const BOOL serviceProvider = MSIMEVoiceASRProviderUsesService(rawProvider);
+    value.tokenSlots = LINGYAOValidVoiceTokenSlots([defaults objectForKey:@"LINGYAOClientVoiceASRTokens"]) ?: @{};
+    const BOOL serviceProvider = LINGYAOVoiceASRProviderUsesService(rawProvider);
     NSString *sharedToken = serviceProvider
-        ? MSIMEVoiceTokenForProvider(defaults, @"MSIMEClientVoiceASRTokens", rawProvider,
-                                     [defaults stringForKey:@"MSIMEClientVoiceASRToken"])
+        ? LINGYAOVoiceTokenForProvider(defaults, @"LINGYAOClientVoiceASRTokens", rawProvider,
+                                     [defaults stringForKey:@"LINGYAOClientVoiceASRToken"])
         : @"";
     value.token = sharedToken.length ? sharedToken
         : (serviceProvider ? ReadToken(@"asr", rawProvider, value.endpoint) : @"");
@@ -240,30 +240,30 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
         slots[rawProvider] = value.token;
         value.tokenSlots = slots;
     }
-    NSString *polishProvider = [defaults stringForKey:@"MSIMEClientVoicePolishProvider"] ?: MSIMEVoicePolishDefaultProvider;
-    NSString *sharedPolishToken = MSIMEVoiceTokenForProvider(
-        defaults, @"MSIMEClientVoicePolishTokens", polishProvider,
-        [defaults stringForKey:@"MSIMEClientVoicePolishToken"]);
+    NSString *polishProvider = [defaults stringForKey:@"LINGYAOClientVoicePolishProvider"] ?: LINGYAOVoicePolishDefaultProvider;
+    NSString *sharedPolishToken = LINGYAOVoiceTokenForProvider(
+        defaults, @"LINGYAOClientVoicePolishTokens", polishProvider,
+        [defaults stringForKey:@"LINGYAOClientVoicePolishToken"]);
     value.polishToken = sharedPolishToken.length
         ? sharedPolishToken : ReadToken(@"polish", polishProvider, value.polishEndpoint);
     return value;
 }
 - (BOOL)validate:(NSError **)error
 {
-    NSString *message = nil, *scope = MSIMEVoiceProviderRecognitionScope;
+    NSString *message = nil, *scope = LINGYAOVoiceProviderRecognitionScope;
     if ([self.provider isEqualToString:@"local"])
     {
-        // An installed model directory, which the model installer marks complete by writing msime-model.json last and which runs in the msime-voice-local helper.
-        NSString *manifest = [self.modelPath stringByAppendingPathComponent:@"msime-model.json"];
+        // An installed model directory, which the model installer marks complete by writing lingyao-model.json last and which runs in the lingyao-voice-local helper.
+        NSString *manifest = [self.modelPath stringByAppendingPathComponent:@"lingyao-model.json"];
         if (!IsRegularDirectory(self.modelPath) || !IsRegularFile(manifest))
             message = @"请选择已下载的本地语音模型目录。";
     }
-    else if (![MSIMEVoiceASRProviderIDs() containsObject:self.provider])
+    else if (![LINGYAOVoiceASRProviderIDs() containsObject:self.provider])
         message = @"请选择识别方式。";
     else if ([self.provider isEqualToString:@"doubao"] &&
              (!IsWebSocketEndpoint(self.endpoint) || self.token.length == 0))
         message = @"请填写 WSS 识别地址和 API 密钥。";
-    else if (![self.provider isEqualToString:@"doubao"] && MSIMEVoiceASRProviderUsesService(self.provider) &&
+    else if (![self.provider isEqualToString:@"doubao"] && LINGYAOVoiceASRProviderUsesService(self.provider) &&
              (!IsEndpoint(self.endpoint) || self.model.length == 0 || self.token.length == 0))
         message = @"请填写 HTTPS 识别地址、模型名称和 API 密钥。";
     // The polish check comes last and wins, as it always has; what is new is that the message carries the card it belongs on, so a polish failure no longer prints under the recognition fields as well.
@@ -271,7 +271,7 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
         (!IsEndpoint(self.polishEndpoint) || self.polishModel.length == 0 || self.polishToken.length == 0))
     {
         message = @"启用文本整理需要 HTTPS 服务地址、模型名称和 API 密钥。";
-        scope = MSIMEVoiceProviderPolishScope;
+        scope = LINGYAOVoiceProviderPolishScope;
     }
     if (message)
     {
@@ -286,16 +286,16 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
     if (![self validate:error])
         return NO;
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
-    NSString *previousProvider = [defaults stringForKey:@"MSIMEClientVoiceASRProvider"] ?: @"";
-    NSString *previousEndpoint = [defaults stringForKey:@"MSIMEClientVoiceASREndpoint"] ?: @"";
-    NSString *polishProvider = [defaults stringForKey:@"MSIMEClientVoicePolishProvider"] ?: MSIMEVoicePolishDefaultProvider;
-    NSString *previousPolishEndpoint = [defaults stringForKey:@"MSIMEClientVoicePolishEndpoint"] ?: @"";
-    const BOOL serviceProvider = MSIMEVoiceASRProviderUsesService(self.provider);
+    NSString *previousProvider = [defaults stringForKey:@"LINGYAOClientVoiceASRProvider"] ?: @"";
+    NSString *previousEndpoint = [defaults stringForKey:@"LINGYAOClientVoiceASREndpoint"] ?: @"";
+    NSString *polishProvider = [defaults stringForKey:@"LINGYAOClientVoicePolishProvider"] ?: LINGYAOVoicePolishDefaultProvider;
+    NSString *previousPolishEndpoint = [defaults stringForKey:@"LINGYAOClientVoicePolishEndpoint"] ?: @"";
+    const BOOL serviceProvider = LINGYAOVoiceASRProviderUsesService(self.provider);
     const BOOL changedProvider = previousProvider.length &&
         ![previousProvider.lowercaseString isEqual:self.provider.lowercaseString];
     NSString *previousToken = [self.tokenSlots[previousProvider] isKindOfClass:NSString.class]
         ? self.tokenSlots[previousProvider] : @"";
-    const BOOL migratePrevious = changedProvider && MSIMEVoiceASRProviderUsesService(previousProvider) &&
+    const BOOL migratePrevious = changedProvider && LINGYAOVoiceASRProviderUsesService(previousProvider) &&
         previousEndpoint.length && previousToken.length;
     if ((migratePrevious && !WriteToken(@"asr", previousProvider, previousEndpoint, previousToken, error)) ||
         (serviceProvider && !WriteToken(@"asr", self.provider, self.endpoint, self.token, error)) ||
@@ -303,12 +303,12 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
         return NO;
     // An endpoint edit for the same provider retires that provider's old
     // credential. Switching providers preserves the provider being left.
-    if (MSIMEVoiceProviderShouldDeletePreviousCredential(previousProvider, previousEndpoint,
+    if (LINGYAOVoiceProviderShouldDeletePreviousCredential(previousProvider, previousEndpoint,
                                                          self.provider, self.endpoint))
         DeleteToken(@"asr", previousProvider, previousEndpoint);
     if (previousPolishEndpoint.length &&
-        ![MSIMEVoiceProviderCredentialAccount(@"polish", polishProvider, previousPolishEndpoint)
-            isEqual:MSIMEVoiceProviderCredentialAccount(@"polish", polishProvider, self.polishEndpoint)])
+        ![LINGYAOVoiceProviderCredentialAccount(@"polish", polishProvider, previousPolishEndpoint)
+            isEqual:LINGYAOVoiceProviderCredentialAccount(@"polish", polishProvider, self.polishEndpoint)])
         DeleteToken(@"polish", polishProvider, previousPolishEndpoint);
     [defaults setObject:@{
         @"provider" : self.provider,
@@ -332,25 +332,25 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
         @"polishEndpoint" : self.polishEndpoint,
         @"polishModel" : self.polishModel,
         @"polishToken" : self.polishToken,
-        @"polishPromptID" : self.polishPromptID ?: MSIMEPolishPromptIdentifiers().firstObject,
+        @"polishPromptID" : self.polishPromptID ?: LINGYAOPolishPromptIdentifiers().firstObject,
         @"polishPromptCustom1" : self.polishPromptCustom1 ?: @"",
         @"polishPromptCustom2" : self.polishPromptCustom2 ?: @"",
         @"polishPromptCustom3" : self.polishPromptCustom3 ?: @"",
         @"captureDevice" : self.captureDevice ?: @""
     };
-    NSDictionary<NSString *, NSString *> *sharedKeys = MSIMEVoiceProviderSharedKeys();
+    NSDictionary<NSString *, NSString *> *sharedKeys = LINGYAOVoiceProviderSharedKeys();
     for (NSString *field in values)
         [defaults setObject:values[field] forKey:sharedKeys[field]];
-    [defaults setObject:MSIMEVoiceProviderTokenSlotsByUpdating(
-                            self.tokenSlots ?: [defaults objectForKey:@"MSIMEClientVoiceASRTokens"], self.provider,
+    [defaults setObject:LINGYAOVoiceProviderTokenSlotsByUpdating(
+                            self.tokenSlots ?: [defaults objectForKey:@"LINGYAOClientVoiceASRTokens"], self.provider,
                             self.token, serviceProvider)
-                 forKey:@"MSIMEClientVoiceASRTokens"];
-    [defaults setObject:MSIMEVoiceProviderTokenSlotsByUpdating(
-                            [defaults objectForKey:@"MSIMEClientVoicePolishTokens"], polishProvider,
+                 forKey:@"LINGYAOClientVoiceASRTokens"];
+    [defaults setObject:LINGYAOVoiceProviderTokenSlotsByUpdating(
+                            [defaults objectForKey:@"LINGYAOClientVoicePolishTokens"], polishProvider,
                             self.polishToken, YES)
-                 forKey:@"MSIMEClientVoicePolishTokens"];
-    [defaults setBool:self.polishEnabled forKey:@"MSIMEClientVoicePolish"];
-    [[NSNotificationCenter defaultCenter] postNotificationName:MSIMEVoiceProviderSettingsDidChangeNotification object:self];
+                 forKey:@"LINGYAOClientVoicePolishTokens"];
+    [defaults setBool:self.polishEnabled forKey:@"LINGYAOClientVoicePolish"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:LINGYAOVoiceProviderSettingsDidChangeNotification object:self];
     return YES;
 }
 @end
@@ -384,7 +384,7 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
     BOOL _loading;
 }
 
-/// A message on the card it belongs to, or nothing at all. The window has no separate error style — MSIMEDetailLabel is the one quieter line under a row, and what distinguishes a failure from an aside is its colour.
+/// A message on the card it belongs to, or nothing at all. The window has no separate error style — LINGYAODetailLabel is the one quieter line under a row, and what distinguishes a failure from an aside is its colour.
 static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 {
     label.stringValue = message ?: @"";
@@ -413,7 +413,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 
     _provider = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
     _provider.accessibilityLabel = @"识别方式";
-    [_provider addItemsWithTitles:MSIMEVoiceASRProviderTitles()];
+    [_provider addItemsWithTitles:LINGYAOVoiceASRProviderTitles()];
     _provider.target = self;
     _provider.action = @selector(providerChanged:);
     _endpoint = [self fieldLabelled:@"识别服务地址" secure:NO];
@@ -428,45 +428,45 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     _captureDevice.accessibilityLabel = @"录音设备";
     _captureDevice.target = self;
     _captureDevice.action = @selector(commit:);
-    _polish = MSIMESettingSwitch(self, @selector(polishChanged:), @"识别后整理文本");
+    _polish = LINGYAOSettingSwitch(self, @selector(polishChanged:), @"识别后整理文本");
     _polishEndpoint = [self fieldLabelled:@"整理服务地址" secure:NO];
     _polishModel = [self fieldLabelled:@"整理模型" secure:NO];
     _polishToken = (NSSecureTextField *)[self fieldLabelled:@"整理 API 密钥" secure:YES];
     _polishPromptID = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
     _polishPromptID.accessibilityLabel = @"整理方案";
-    [_polishPromptID addItemsWithTitles:MSIMEPolishPromptTitles()];
+    [_polishPromptID addItemsWithTitles:LINGYAOPolishPromptTitles()];
     _polishPromptID.target = self;
     _polishPromptID.action = @selector(polishPromptIDChanged:);
     _polishPrompt = [self fieldLabelled:@"整理提示词" secure:NO];
 
-    _recognitionNotice = MSIMEDetailLabel(@"");
+    _recognitionNotice = LINGYAODetailLabel(@"");
     _recognitionNotice.accessibilityLabel = @"语音设置状态";
     _recognitionNotice.hidden = YES;
-    _polishNotice = MSIMEDetailLabel(@"");
+    _polishNotice = LINGYAODetailLabel(@"");
     _polishNotice.accessibilityLabel = @"文本整理状态";
     _polishNotice.hidden = YES;
 
-    _endpointRow = MSIMEPreferenceRow(@"服务地址", _endpoint);
-    _modelRow = MSIMEPreferenceRow(@"识别模型", _model);
-    _tokenRow = MSIMEPreferenceRow(@"API 密钥", _token);
-    _modelPathRow = MSIMEPreferenceRow(@"本地模型", modelPathRow);
-    NSBox *recognitionCard = MSIMECardWithViews(@[
-        MSIMEPreferenceRow(@"识别方式", _provider),
+    _endpointRow = LINGYAOPreferenceRow(@"服务地址", _endpoint);
+    _modelRow = LINGYAOPreferenceRow(@"识别模型", _model);
+    _tokenRow = LINGYAOPreferenceRow(@"API 密钥", _token);
+    _modelPathRow = LINGYAOPreferenceRow(@"本地模型", modelPathRow);
+    NSBox *recognitionCard = LINGYAOCardWithViews(@[
+        LINGYAOPreferenceRow(@"识别方式", _provider),
         _endpointRow,
         _modelRow,
         _tokenRow,
         _modelPathRow,
-        MSIMEPreferenceRow(@"录音设备", _captureDevice),
+        LINGYAOPreferenceRow(@"录音设备", _captureDevice),
         _recognitionNotice,
     ], 0.0);
     recognitionCard.accessibilityLabel = @"语音识别卡片";
-    NSBox *polishCard = MSIMECardWithViews(@[
-        MSIMESwitchRow(@"识别后整理文本", _polish, @"会把本次转写的文本发送到下面的服务"),
-        MSIMEPreferenceRow(@"服务地址", _polishEndpoint),
-        MSIMEPreferenceRow(@"整理模型", _polishModel),
-        MSIMEPreferenceRow(@"API 密钥", _polishToken),
-        MSIMEPreferenceRow(@"整理方案", _polishPromptID),
-        MSIMEPreferenceRowWithDetail(@"整理提示词", @"留空使用所选方案自带的提示词；选中自定义方案时，这里写的内容保存在该方案里。",
+    NSBox *polishCard = LINGYAOCardWithViews(@[
+        LINGYAOSwitchRow(@"识别后整理文本", _polish, @"会把本次转写的文本发送到下面的服务"),
+        LINGYAOPreferenceRow(@"服务地址", _polishEndpoint),
+        LINGYAOPreferenceRow(@"整理模型", _polishModel),
+        LINGYAOPreferenceRow(@"API 密钥", _polishToken),
+        LINGYAOPreferenceRow(@"整理方案", _polishPromptID),
+        LINGYAOPreferenceRowWithDetail(@"整理提示词", @"留空使用所选方案自带的提示词；选中自定义方案时，这里写的内容保存在该方案里。",
                                      _polishPrompt),
         _polishNotice,
     ], 0.0);
@@ -479,8 +479,8 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     hint.textColor = NSColor.secondaryLabelColor;
 
     NSStackView *stack = [NSStackView stackViewWithViews:@[
-        MSIMESectionLabel(@"语音识别"), recognitionCard,
-        MSIMESectionLabel(@"文本整理"), polishCard,
+        LINGYAOSectionLabel(@"语音识别"), recognitionCard,
+        LINGYAOSectionLabel(@"文本整理"), polishCard,
         hint,
     ]];
     stack.orientation = NSUserInterfaceLayoutOrientationVertical;
@@ -507,7 +507,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 {
     _loading = YES;
     LingyaoVoiceProviderSettings *value = [LingyaoVoiceProviderSettings loadSettings];
-    NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
+    NSArray *providerIDs = LINGYAOVoiceASRProviderIDs();
     NSUInteger providerIndex = [providerIDs indexOfObject:value.provider];
     [_provider selectItemAtIndex:providerIndex == NSNotFound ? 0 : providerIndex];
     _endpoint.stringValue = value.endpoint;
@@ -517,7 +517,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     _tokenEndpoint = [value.endpoint copy];
     _polishTokenEndpoint = [value.polishEndpoint copy];
     _tokenDrafts = [value.tokenSlots mutableCopy] ?: [NSMutableDictionary dictionary];
-    if (MSIMEVoiceASRProviderUsesService(_loadedProvider))
+    if (LINGYAOVoiceASRProviderUsesService(_loadedProvider))
     {
         _tokenDrafts[_loadedProvider] = value.token ?: @"";
     }
@@ -527,7 +527,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     automatic.representedObject = @"";
     [_captureDevice.menu addItem:automatic];
     BOOL foundCaptureDevice = value.captureDevice.length == 0;
-    for (NSDictionary *device in MSIMEListVoiceCaptureDevices())
+    for (NSDictionary *device in LINGYAOListVoiceCaptureDevices())
     {
         NSString *uid = device[@"uid"], *name = device[@"name"];
         NSString *title =
@@ -557,7 +557,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     _polishEndpoint.stringValue = value.polishEndpoint;
     _polishModel.stringValue = value.polishModel;
     _polishToken.stringValue = value.polishToken;
-    [_polishPromptID selectItemAtIndex:(NSInteger)[MSIMEPolishPromptIdentifiers() indexOfObject:value.polishPromptID]];
+    [_polishPromptID selectItemAtIndex:(NSInteger)[LINGYAOPolishPromptIdentifiers() indexOfObject:value.polishPromptID]];
     _polishPromptDrafts = [@{
         @"custom_1" : value.polishPromptCustom1 ?: @"",
         @"custom_2" : value.polishPromptCustom2 ?: @"",
@@ -582,7 +582,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 {
     (void)sender;
     [self retainEditedPolishPrompt];
-    NSString *identifier = MSIMEPolishPromptIdentifierForIndex(_polishPromptID.indexOfSelectedItem);
+    NSString *identifier = LINGYAOPolishPromptIdentifierForIndex(_polishPromptID.indexOfSelectedItem);
     _polishPrompt.stringValue = [self polishPromptForPreset:identifier];
     _polishPromptSelection = [identifier copy];
     [self updateEnabled:nil];
@@ -599,19 +599,19 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 - (void)providerChanged:(id)sender
 {
     (void)sender;
-    if (MSIMEVoiceASRProviderUsesService(_loadedProvider))
+    if (LINGYAOVoiceASRProviderUsesService(_loadedProvider))
     {
         _tokenDrafts[_loadedProvider] = _token.stringValue ?: @"";
     }
-    NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
+    NSArray *providerIDs = LINGYAOVoiceASRProviderIDs();
     NSUInteger index = MIN((NSUInteger)_provider.indexOfSelectedItem, providerIDs.count - 1);
     NSString *provider = providerIDs[index];
-    _endpoint.stringValue = MSIMEVoiceProviderValueAfterSelection(
-        _endpoint.stringValue, MSIMEVoiceASRProviderDefaultEndpoint(provider), ProviderValues(@"endpoint"));
-    _model.stringValue = MSIMEVoiceProviderValueAfterSelection(
-        _model.stringValue, MSIMEVoiceASRProviderDefaultModel(provider), ProviderValues(@"model"));
+    _endpoint.stringValue = LINGYAOVoiceProviderValueAfterSelection(
+        _endpoint.stringValue, LINGYAOVoiceASRProviderDefaultEndpoint(provider), ProviderValues(@"endpoint"));
+    _model.stringValue = LINGYAOVoiceProviderValueAfterSelection(
+        _model.stringValue, LINGYAOVoiceASRProviderDefaultModel(provider), ProviderValues(@"model"));
     id draft = _tokenDrafts[provider];
-    _token.stringValue = MSIMEVoiceASRProviderUsesService(provider)
+    _token.stringValue = LINGYAOVoiceASRProviderUsesService(provider)
         ? ([draft isKindOfClass:NSString.class] ? draft : ReadToken(@"asr", provider, _endpoint.stringValue))
         : @"";
     _loadedProvider = provider;
@@ -632,9 +632,9 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 - (void)updateEnabled:(id)sender
 {
     (void)sender;
-    NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
+    NSArray *providerIDs = LINGYAOVoiceASRProviderIDs();
     NSString *provider = providerIDs[MIN((NSUInteger)_provider.indexOfSelectedItem, providerIDs.count - 1)];
-    BOOL service = MSIMEVoiceASRProviderUsesService(provider);
+    BOOL service = LINGYAOVoiceASRProviderUsesService(provider);
     _endpointRow.hidden = !service;
     // Doubao's model is fixed by the endpoint it is reached through, so there is nothing to name.
     _modelRow.hidden = !service || [provider isEqualToString:@"doubao"];
@@ -678,13 +678,13 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
         ShowNotice(_polishNotice, @"服务地址已更改，原 API 密钥已清除，请重新填写。", NSColor.secondaryLabelColor);
 }
 
-/// Clears the recognition key when the address it was entered for no longer names the same service, and says whether it did. A path is not part of a credential's origin — see MSIMEVoiceProviderCredentialAccount — so moving between two paths of one host keeps the key.
+/// Clears the recognition key when the address it was entered for no longer names the same service, and says whether it did. A path is not part of a credential's origin — see LINGYAOVoiceProviderCredentialAccount — so moving between two paths of one host keeps the key.
 - (BOOL)clearTokenForMovedEndpoint
 {
-    NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
+    NSArray *providerIDs = LINGYAOVoiceASRProviderIDs();
     NSString *provider = providerIDs[MIN((NSUInteger)_provider.indexOfSelectedItem, providerIDs.count - 1)];
-    const BOOL moved = ![MSIMEVoiceProviderCredentialAccount(@"asr", provider, _tokenEndpoint ?: @"")
-        isEqual:MSIMEVoiceProviderCredentialAccount(@"asr", provider, _endpoint.stringValue)];
+    const BOOL moved = ![LINGYAOVoiceProviderCredentialAccount(@"asr", provider, _tokenEndpoint ?: @"")
+        isEqual:LINGYAOVoiceProviderCredentialAccount(@"asr", provider, _endpoint.stringValue)];
     _tokenEndpoint = [_endpoint.stringValue copy];
     if (!moved || _token.stringValue.length == 0) return NO;
     _token.stringValue = @"";
@@ -696,9 +696,9 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 - (BOOL)clearPolishTokenForMovedEndpoint
 {
     NSString *provider =
-        [NSUserDefaults.standardUserDefaults stringForKey:@"MSIMEClientVoicePolishProvider"] ?: MSIMEVoicePolishDefaultProvider;
-    const BOOL moved = ![MSIMEVoiceProviderCredentialAccount(@"polish", provider, _polishTokenEndpoint ?: @"")
-        isEqual:MSIMEVoiceProviderCredentialAccount(@"polish", provider, _polishEndpoint.stringValue)];
+        [NSUserDefaults.standardUserDefaults stringForKey:@"LINGYAOClientVoicePolishProvider"] ?: LINGYAOVoicePolishDefaultProvider;
+    const BOOL moved = ![LINGYAOVoiceProviderCredentialAccount(@"polish", provider, _polishTokenEndpoint ?: @"")
+        isEqual:LINGYAOVoiceProviderCredentialAccount(@"polish", provider, _polishEndpoint.stringValue)];
     _polishTokenEndpoint = [_polishEndpoint.stringValue copy];
     if (!moved || _polishToken.stringValue.length == 0) return NO;
     _polishToken.stringValue = @"";
@@ -713,12 +713,12 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
         return;
     }
     LingyaoVoiceProviderSettings *value = [LingyaoVoiceProviderSettings new];
-    NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
+    NSArray *providerIDs = LINGYAOVoiceASRProviderIDs();
     value.provider = providerIDs[MIN((NSUInteger)_provider.indexOfSelectedItem, providerIDs.count - 1)];
     value.endpoint = _endpoint.stringValue;
     value.model = _model.stringValue;
     value.token = _token.stringValue;
-    if (MSIMEVoiceASRProviderUsesService(value.provider))
+    if (LINGYAOVoiceASRProviderUsesService(value.provider))
     {
         _tokenDrafts[value.provider] = value.token ?: @"";
     }
@@ -733,7 +733,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     value.polishModel = _polishModel.stringValue;
     value.polishToken = _polishToken.stringValue;
     [self retainEditedPolishPrompt];
-    value.polishPromptID = MSIMEPolishPromptIdentifierForIndex(_polishPromptID.indexOfSelectedItem);
+    value.polishPromptID = LINGYAOPolishPromptIdentifierForIndex(_polishPromptID.indexOfSelectedItem);
     value.polishPromptCustom1 = _polishPromptDrafts[@"custom_1"] ?: @"";
     value.polishPromptCustom2 = _polishPromptDrafts[@"custom_2"] ?: @"";
     value.polishPromptCustom3 = _polishPromptDrafts[@"custom_3"] ?: @"";
@@ -742,10 +742,10 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     NSError *error = nil;
     const BOOL saved = [value save:&error];
     NSString *message = saved ? nil : (error.localizedDescription ?: @"设置未能保存。");
-    NSString *scope = error.userInfo[MSIMEVoiceProviderErrorScopeKey] ?: MSIMEVoiceProviderRecognitionScope;
-    ShowNotice(_recognitionNotice, [scope isEqual:MSIMEVoiceProviderRecognitionScope] ? message : nil,
+    NSString *scope = error.userInfo[LINGYAOVoiceProviderErrorScopeKey] ?: LINGYAOVoiceProviderRecognitionScope;
+    ShowNotice(_recognitionNotice, [scope isEqual:LINGYAOVoiceProviderRecognitionScope] ? message : nil,
                NSColor.systemRedColor);
-    ShowNotice(_polishNotice, [scope isEqual:MSIMEVoiceProviderPolishScope] ? message : nil, NSColor.systemRedColor);
+    ShowNotice(_polishNotice, [scope isEqual:LINGYAOVoiceProviderPolishScope] ? message : nil, NSColor.systemRedColor);
 }
 
 - (void)browse:(id)sender
@@ -807,6 +807,6 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 {
     [_form reloadSettings];
     [self showWindow:nil];
-    MSIMEPresentWindow(self.window);
+    LINGYAOPresentWindow(self.window);
 }
 @end

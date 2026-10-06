@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { settingsInputPreferences } from "@msime/ui";
+import { settingsInputPreferences } from "@lingyao/ui";
 
 test("fills absent input preferences with the shared defaults", () => {
   const values = settingsInputPreferences();

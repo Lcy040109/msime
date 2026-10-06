@@ -1,7 +1,7 @@
 #include "../../src/system/TranslationDisplay.h"
 #include <cassert>
 
-using msime::windows::append_translation_display;
+using lingyao::windows::append_translation_display;
 
 int main() {
   const auto joined = append_translation_display("synthetic primary", "合成次译");

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Windows the macOS input method opens for the user go through MSIMEPresentWindow, or presentBackendWindow on the Swift side.
+"""Windows the macOS input method opens for the user go through LINGYAOPresentWindow, or presentBackendWindow on the Swift side.
 
-The input method is LSBackgroundOnly. Its activation policy is Prohibited, so `[NSApp activateIgnoringOtherApps:YES]` does nothing, and since macOS 14 activation is only a request anyway. A window shown that way opens behind the app the user was typing in, and the button that opened it looks dead: the floating toolbar gear did exactly that (#1035), and #1036 then found five more windows with the same two lines. MSIMEPresentWindow (src/core/WindowPresentation.h) lifts the policy to Accessory and orders the window front regardless.
+The input method is LSBackgroundOnly. Its activation policy is Prohibited, so `[NSApp activateIgnoringOtherApps:YES]` does nothing, and since macOS 14 activation is only a request anyway. A window shown that way opens behind the app the user was typing in, and the button that opened it looks dead: the floating toolbar gear did exactly that (#1035), and #1036 then found five more windows with the same two lines. LINGYAOPresentWindow (src/core/WindowPresentation.h) lifts the policy to Accessory and orders the window front regardless.
 
 So a direct activation request anywhere else in platforms/macos/src is the old pattern coming back. The exceptions are the two helpers themselves and the update controller, which sets Accessory before activating and has no window of its own to present.
 """
@@ -34,7 +34,7 @@ def main() -> int:
             continue
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if ACTIVATION.search(line):
-                failures.append(f"{relative}:{number}: present the window with MSIMEPresentWindow (presentBackendWindow in Swift) instead of activating directly")
+                failures.append(f"{relative}:{number}: present the window with LINGYAOPresentWindow (presentBackendWindow in Swift) instead of activating directly")
 
     if failures:
         print("\n".join(failures))

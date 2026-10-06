@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 inline constexpr std::size_t kMaxCandidateSkins = 32;
 
@@ -34,7 +34,7 @@ inline bool safe_skin_id(std::string_view id) {
   return true;
 }
 
-// 运行配置里 candidate_skin_catalog.packages 的那些外部皮肤。条目原样交给 msime_client_resolve_theme 的 package，而共享层按清单严格读取它（ThemePackage::from_host_catalog_entry），所以这里只收它会接受的条目：安全的 id、非空的 title、字符串 base、只含 horizontal / vertical 的 layouts。base 是否为 system 或某个内置主题由 theme_choices 对照共享层的主题目录再筛一次，宿主不另存主题 id 表。调色板不在这里读——只声明了模式而没有任何颜色的 `{}` 同样是合法条目，由共享层决定画什么。
+// 运行配置里 candidate_skin_catalog.packages 的那些外部皮肤。条目原样交给 lingyao_client_resolve_theme 的 package，而共享层按清单严格读取它（ThemePackage::from_host_catalog_entry），所以这里只收它会接受的条目：安全的 id、非空的 title、字符串 base、只含 horizontal / vertical 的 layouts。base 是否为 system 或某个内置主题由 theme_choices 对照共享层的主题目录再筛一次，宿主不另存主题 id 表。调色板不在这里读——只声明了模式而没有任何颜色的 `{}` 同样是合法条目，由共享层决定画什么。
 inline std::vector<CandidateSkin> parse_configured_skins(const nlohmann::json &options) {
   std::vector<CandidateSkin> skins;
   skins.reserve(kMaxCandidateSkins);
@@ -72,7 +72,7 @@ inline std::vector<CandidateSkin> parse_configured_skins(const nlohmann::json &o
   return skins;
 }
 
-// The catalogue entry for one installed skin, unchanged, as msime_client_resolve_theme takes it for `package`. Null when the catalogue does not list it.
+// The catalogue entry for one installed skin, unchanged, as lingyao_client_resolve_theme takes it for `package`. Null when the catalogue does not list it.
 inline const nlohmann::json *candidate_skin_package(const nlohmann::json &catalog, std::string_view id) {
   if (id.empty() || !catalog.is_object()) return nullptr;
   const auto packages = catalog.find("packages");
@@ -153,4 +153,4 @@ inline std::optional<double> candidate_corner_radius(const nlohmann::json &prefe
   return candidate_skin_corner_radius(catalog, drawn);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

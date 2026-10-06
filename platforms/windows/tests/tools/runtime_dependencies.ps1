@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot 'pe_fixture.ps1')
-$root = Join-Path ([IO.Path]::GetTempPath()) ('msime-runtime-deps-' + [Guid]::NewGuid())
+$root = Join-Path ([IO.Path]::GetTempPath()) ('lingyao-runtime-deps-' + [Guid]::NewGuid())
 $prefix = Join-Path $root 'dependency prefix'
 $destination = Join-Path $root 'output'
 $copy = Join-Path $PSScriptRoot '../../Copy-RuntimeDependencies.ps1'

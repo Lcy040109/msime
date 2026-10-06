@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$IsccPath,
-    [string]$IssPath = (Join-Path $PSScriptRoot 'msime_setup.iss'),
+    [string]$IssPath = (Join-Path $PSScriptRoot 'lingyao_setup.iss'),
     # 产品版本，交给 ISCC 的 /DEdition（editions.iss 按它选出 AppId、安装目录、注册表键和安装包名）。full 不传这个定义，编译命令与引入版本之前相同。
     [ValidatePattern('^[a-z][a-z0-9]*$')][string]$Edition = 'full',
     [switch]$Light

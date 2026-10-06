@@ -12,15 +12,15 @@
 #include <string_view>
 #include <system_error>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Every preferences scheme id in Engine order: the index is the number a view reports as `scheme`.
 inline constexpr std::array<std::string_view, 10> kInputSchemeIds = {
     "quanpin", "shuangpin", "wubi", "japanese", "korean", "cantonese", "zhuyin", "vietnamese", "tibetan", "stroke"};
 
 // 本版本提供的方案（版本表的 input_schemes）和回退到的默认方案。不在列表里的方案在本版本中不存在：菜单不列它，偏好里写着它时与宿主库的 effective_scheme 一样回退。
-inline constexpr std::string_view kEditionInputSchemes[] = {MSIME_EDITION_INPUT_SCHEMES};
-inline constexpr std::string_view kEditionDefaultScheme = MSIME_EDITION_DEFAULT_SCHEME;
+inline constexpr std::string_view kEditionInputSchemes[] = {LINGYAO_EDITION_INPUT_SCHEMES};
+inline constexpr std::string_view kEditionDefaultScheme = LINGYAO_EDITION_DEFAULT_SCHEME;
 
 inline bool edition_offers_scheme(std::string_view id) {
   for (const auto scheme : kEditionInputSchemes)
@@ -42,7 +42,7 @@ inline int view_scheme(const nlohmann::json &view) {
   return scheme != view.end() && scheme->is_number_integer() ? static_cast<int>(scheme->get<int64_t>()) : -1;
 }
 
-// The view's own scheme rules hold: outside the dedicated English mode and outside every local mode, which keep their own rules in every scheme (msime_client.h). Returns the scheme number then, -1 otherwise.
+// The view's own scheme rules hold: outside the dedicated English mode and outside every local mode, which keep their own rules in every scheme (lingyao_client.h). Returns the scheme number then, -1 otherwise.
 inline int scheme_rules(const nlohmann::json &view) {
   const int scheme = view_scheme(view);
   if (scheme < 0) return -1;
@@ -61,7 +61,7 @@ inline bool candidate_list_composition(const nlohmann::json &view) {
   return editing != view.end() && editing->is_string() && !editing->get_ref<const std::string &>().empty();
 }
 
-// That list is open: the Engine offers candidates under these rules only once it is, so a non-empty list is that list (msime_client.h). Return then chooses the highlighted row, and a digit past the end of the page is swallowed rather than typed beside the composition.
+// That list is open: the Engine offers candidates under these rules only once it is, so a non-empty list is that list (lingyao_client.h). Return then chooses the highlighted row, and a digit past the end of the page is swallowed rather than typed beside the composition.
 inline bool opened_candidate_list(const nlohmann::json &view) {
   if (!candidate_list_composition(view)) return false;
   const auto candidates = view.find("candidates");
@@ -86,9 +86,9 @@ inline LanguageDictionaryAvailability language_dictionary_availability(const nlo
   if (directory == options.end() || !directory->is_string() || directory->get_ref<const std::string &>().empty()) return {};
   const std::filesystem::path root = directory->get<std::string>();
   std::error_code error;
-  const bool cantonese = std::filesystem::is_regular_file(root / "msime-cantonese.db", error);
-  const bool zhuyin = std::filesystem::is_regular_file(root / "msime-zhuyin.db", error);
-  const bool stroke = std::filesystem::is_regular_file(root / "msime-stroke.db", error);
+  const bool cantonese = std::filesystem::is_regular_file(root / "lingyao-cantonese.db", error);
+  const bool zhuyin = std::filesystem::is_regular_file(root / "lingyao-zhuyin.db", error);
+  const bool stroke = std::filesystem::is_regular_file(root / "lingyao-stroke.db", error);
   return {cantonese, zhuyin, stroke};
 }
 
@@ -111,4 +111,4 @@ inline std::string effective_input_scheme(std::string_view id, std::string_view 
   return std::string(kEditionDefaultScheme);
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

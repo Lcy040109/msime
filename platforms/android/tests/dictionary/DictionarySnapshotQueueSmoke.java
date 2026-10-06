@@ -1,6 +1,6 @@
-import app.msime.android.DictionarySnapshotQueue;
-import app.msime.android.DictionarySnapshotWorker;
-import app.msime.android.DictionarySnapshotPolicy;
+import app.lingyao.android.DictionarySnapshotQueue;
+import app.lingyao.android.DictionarySnapshotWorker;
+import app.lingyao.android.DictionarySnapshotPolicy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -26,7 +26,7 @@ public final class DictionarySnapshotQueueSmoke {
         check(DictionarySnapshotPolicy.handle(42.5, -1) == -1);
         check(DictionarySnapshotPolicy.handle(true, -1) == -1);
         check(DictionarySnapshotPolicy.handle(0L, -1) == -1);
-        Path root = Files.createTempDirectory("msime-snapshot-queue-");
+        Path root = Files.createTempDirectory("lingyao-snapshot-queue-");
         try {
             Path outside = Files.createDirectory(root.resolve("outside"));
             Path linkedParent = root.resolve("linked-parent");
@@ -53,7 +53,7 @@ public final class DictionarySnapshotQueueSmoke {
             boolean sourceRejected = false;
             try {
                 java.lang.reflect.Method policy = Class.forName(
-                    "app.msime.android.DictionarySnapshotPathPolicy")
+                    "app.lingyao.android.DictionarySnapshotPathPolicy")
                     .getDeclaredMethod("privateSource", Path.class, Path.class, String.class);
                 policy.setAccessible(true);
                 policy.invoke(null, sourceRoot, sourceQueue, sourcePath.toString());

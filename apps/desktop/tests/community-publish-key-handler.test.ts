@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from "vitest";
 import type { KeyboardEvent } from "react";
-import { handleCommunityPublishKeyDown } from "@msime/ui";
+import { handleCommunityPublishKeyDown } from "@lingyao/ui";
 
 function eventFor(target: HTMLInputElement, key = "Enter") {
   return {

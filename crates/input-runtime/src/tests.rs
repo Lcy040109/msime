@@ -61,7 +61,7 @@ fn provider_connect_rejects_untrusted_filesystem_endpoints() {
     let target = root.path().join("target.sock");
     let listener = UnixListener::bind(&target).unwrap();
     let alias = root.path().join("alias.sock");
-    msime_path_trust::untrusted_symlink(&target, &alias).unwrap();
+    lingyao_path_trust::untrusted_symlink(&target, &alias).unwrap();
     assert!(UnixSocketProvider::new(&alias).connect().is_none());
     drop(listener);
 
@@ -74,7 +74,7 @@ fn provider_connect_rejects_untrusted_filesystem_endpoints() {
     let listener = UnixListener::bind(&outside_socket).unwrap();
     let inside = root.path().join("inside");
     std::fs::create_dir(&inside).unwrap();
-    msime_path_trust::untrusted_symlink(&outside, inside.join("linked")).unwrap();
+    lingyao_path_trust::untrusted_symlink(&outside, inside.join("linked")).unwrap();
     assert!(
         UnixSocketProvider::new(inside.join("linked/nested/provider.sock"))
             .connect()
@@ -1576,7 +1576,7 @@ fn phrase_runtime(reading: &str, consumes: Vec<usize>) -> Runtime<PhraseEngine> 
     runtime
 }
 
-// A Ctrl+Backspace that empties the reading does not end the phrase: the chosen piece stays in the composition with its selection, as the reference's `keep_creating_word_after_empty_raw` keeps it (MSIME-Windows server/src/ipc/event_listener.cpp, pinned by `ShouldRetreatCreatingWordSelection(true, false, true, 0, 0, 1)` and `ShouldDropCreatingWordSegment(true, false, true, 0, 1)` in test_input_key_policy.cpp). Every follow-up key then acts on that phrase.
+// A Ctrl+Backspace that empties the reading does not end the phrase: the chosen piece stays in the composition with its selection, as the reference's `keep_creating_word_after_empty_raw` keeps it (LINGYAO-Windows server/src/ipc/event_listener.cpp, pinned by `ShouldRetreatCreatingWordSelection(true, false, true, 0, 0, 1)` and `ShouldDropCreatingWordSegment(true, false, true, 0, 1)` in test_input_key_policy.cpp). Every follow-up key then acts on that phrase.
 #[test]
 fn a_segment_backspace_that_empties_the_reading_keeps_the_phrase() {
     let emptied = || {
@@ -2433,7 +2433,7 @@ fn punctuation_host_context_uses_the_applied_runtime_state() {
 fn switching_the_language_drops_the_composition_being_spelled() {
     // The source pairs `SetEnglishInputMode` with `ClearState`, and the engine does the same inside
     // `set_dedicated_english_mode`: letters spelled for Chinese are not what the user wants sitting
-    // in an English composition. The hosts reach this through `msime_client_set_english_mode`, which
+    // in an English composition. The hosts reach this through `lingyao_client_set_english_mode`, which
     // is what every mode-switch chord ends up calling -- Shift, a Ctrl tap, Ctrl+Alt+Space and
     // Ctrl+Shift+E alike.
     let mut runtime = runtime();
@@ -2881,19 +2881,19 @@ fn a_replacement_engine_inherits_the_committed_text() {
 // falls through to selection for a digit the Engine refused. A regression in
 // either one silently turns "U4e2d" into a candidate pick, and the Windows and
 // macOS suites that would notice both need their own host to run.
-fn real_engine_options(root: &std::path::Path) -> msime_engine::host::EngineOptions {
+fn real_engine_options(root: &std::path::Path) -> lingyao_engine::host::EngineOptions {
     let path = |name: &str| {
         let path = root.join(name);
         std::fs::create_dir_all(&path).unwrap();
         path.to_str().unwrap().to_owned()
     };
-    msime_engine::host::EngineOptions {
+    lingyao_engine::host::EngineOptions {
         resources: path("resources"),
         user_data: path("user"),
         cache: path("cache"),
         dictionaries: path("dictionaries"),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: false,
@@ -2930,7 +2930,7 @@ fn real_engine_options(root: &std::path::Path) -> msime_engine::host::EngineOpti
         mention_entries: Vec::new(),
         quick_phrase_table: Vec::new(),
         helpcode_table: None,
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -2949,7 +2949,7 @@ fn real_engine_options(root: &std::path::Path) -> msime_engine::host::EngineOpti
 #[test]
 fn unicode_mode_digits_compose_a_code_point_rather_than_picking_a_candidate() {
     let directory = tempfile::tempdir().unwrap();
-    let session = msime_engine::host::Session::new(&real_engine_options(directory.path())).unwrap();
+    let session = lingyao_engine::host::Session::new(&real_engine_options(directory.path())).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
 
@@ -2990,7 +2990,7 @@ fn korean_syllables_commit_through_the_runtime_without_candidates() {
     let directory = tempfile::tempdir().unwrap();
     let mut options = real_engine_options(directory.path());
     options.scheme = KOREAN_SCHEME;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     let character = |runtime: &mut Runtime, value: u8| {
@@ -3133,7 +3133,7 @@ fn korean_syllables_are_never_held_as_a_phrase_prefix() {
     let directory = tempfile::tempdir().unwrap();
     let mut options = real_engine_options(directory.path());
     options.scheme = KOREAN_SCHEME;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     assert_eq!(runtime.set_phrase_preedit(true), None);
     runtime.focus(true).unwrap();
@@ -3156,7 +3156,7 @@ fn korean_syllables_are_never_held_as_a_phrase_prefix() {
 fn korean_runtime(directory: &std::path::Path) -> Runtime {
     let mut options = real_engine_options(directory);
     options.scheme = KOREAN_SCHEME;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -3549,11 +3549,11 @@ fn generated_mode_runtime(directory: &std::path::Path) -> Runtime {
     options.local_expression = true;
     options.local_command = true;
     options.local_mention = true;
-    options.mention_entries = vec![msime_engine::host::MentionEntry {
+    options.mention_entries = vec![lingyao_engine::host::MentionEntry {
         text: "张三".into(),
         key: "zhang'san".into(),
     }];
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -3878,10 +3878,10 @@ fn settling_while_idle_is_inert() {
     assert!(!runtime.rerank_settled());
 }
 
-/// The desktop sentence model switch gates the settled rerank without detaching the model: off, a settle leaves the list and its generation alone; back on, the same attached model reorders. Needs a shipped sentence model in `MSIME_NEURAL_MODEL_DIR` or `MSIME_EVAL_RESOURCES` (the desktop one, else the keyboard one standing in).
+/// The desktop sentence model switch gates the settled rerank without detaching the model: off, a settle leaves the list and its generation alone; back on, the same attached model reorders. Needs a shipped sentence model in `LINGYAO_NEURAL_MODEL_DIR` or `LINGYAO_EVAL_RESOURCES` (the desktop one, else the keyboard one standing in).
 #[test]
 fn the_desktop_switch_gates_the_settled_rerank() {
-    let directories: Vec<std::path::PathBuf> = ["MSIME_NEURAL_MODEL_DIR", "MSIME_EVAL_RESOURCES"]
+    let directories: Vec<std::path::PathBuf> = ["LINGYAO_NEURAL_MODEL_DIR", "LINGYAO_EVAL_RESOURCES"]
         .into_iter()
         .filter_map(std::env::var_os)
         .map(Into::into)
@@ -3897,7 +3897,7 @@ fn the_desktop_switch_gates_the_settled_rerank() {
             .map(move |directory| directory.join(name))
     })
     .find(|path| path.is_file()) else {
-        eprintln!("skipping the_desktop_switch_gates_the_settled_rerank: no sentence model in MSIME_NEURAL_MODEL_DIR or MSIME_EVAL_RESOURCES");
+        eprintln!("skipping the_desktop_switch_gates_the_settled_rerank: no sentence model in LINGYAO_NEURAL_MODEL_DIR or LINGYAO_EVAL_RESOURCES");
         return;
     };
     let model = SentenceModel::load(&std::fs::read(&model).unwrap()).unwrap();
@@ -4650,7 +4650,7 @@ fn a_busy_provider_keeps_only_the_newest_completed_result() {
 #[test]
 fn scheme_predicates_reproduce_the_ordinal_rules_they_replace() {
     use super::runtime::{runtime_reorders_candidates, script_conversion};
-    use msime_engine::SchemeType;
+    use lingyao_engine::SchemeType;
     for ordinal in 0..=4u8 {
         let scheme = SchemeType::from_u8(ordinal).unwrap();
         // Smart punctuation: neither Japanese nor Korean.
@@ -4946,7 +4946,7 @@ fn vietnamese_runtime(directory: &std::path::Path, input_method: u8) -> Runtime 
     let mut options = real_engine_options(directory);
     options.scheme = VIETNAMESE_SCHEME;
     options.vietnamese_input_method = input_method;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -5104,7 +5104,7 @@ const TIBETAN_SCHEME: u8 = 8;
 fn tibetan_runtime(directory: &std::path::Path) -> Runtime {
     let mut options = real_engine_options(directory);
     options.scheme = TIBETAN_SCHEME;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -5280,10 +5280,10 @@ fn tibetan_backspace_blur_and_escape() {
 
 const CANTONESE_SCHEME: u8 = 5;
 
-/// A `msime-cantonese.db` with a few Jyutping rows, written with the shipped schema.
+/// A `lingyao-cantonese.db` with a few Jyutping rows, written with the shipped schema.
 fn cantonese_dictionary(directory: &std::path::Path) -> String {
-    use msime_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
-    let path = directory.join("msime-cantonese.db");
+    use lingyao_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
+    let path = directory.join("lingyao-cantonese.db");
     let connection = rusqlite::Connection::open(&path).unwrap();
     connection.execute_batch(SCHEMA).unwrap();
     connection
@@ -5307,7 +5307,7 @@ fn cantonese_runtime(directory: &std::path::Path) -> Runtime {
     options.scheme = CANTONESE_SCHEME;
     options.learning = true;
     options.cantonese_dictionary = cantonese_dictionary(directory);
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -5432,7 +5432,7 @@ fn a_cantonese_partial_selection_commits_at_once_and_learns_nothing() {
     let directory = tempfile::tempdir().unwrap();
     let dictionaries = directory.path().join("dictionaries");
     std::fs::create_dir_all(&dictionaries).unwrap();
-    rusqlite::Connection::open(dictionaries.join(msime_engine::assets::MAIN_DICTIONARY))
+    rusqlite::Connection::open(dictionaries.join(lingyao_engine::assets::MAIN_DICTIONARY))
         .unwrap()
         .execute_batch(
             "CREATE TABLE tbl_2_n(key TEXT, jp TEXT, value TEXT, weight INTEGER);\
@@ -5443,7 +5443,7 @@ fn a_cantonese_partial_selection_commits_at_once_and_learns_nothing() {
     // The control: the same pick under Quanpin with the same options writes the journal, so the comparison below would see a Cantonese write. The baseline is taken after composing, because reading candidates can already create the journal with empty tables, so only the pick itself can change the counts.
     let mut options = real_engine_options(directory.path());
     options.learning = true;
-    let mut quanpin = Runtime::new(msime_engine::host::Session::new(&options).unwrap(), 5).unwrap();
+    let mut quanpin = Runtime::new(lingyao_engine::host::Session::new(&options).unwrap(), 5).unwrap();
     quanpin.focus(true).unwrap();
     for value in *b"nihao" {
         character(&mut quanpin, value);
@@ -5454,7 +5454,7 @@ fn a_cantonese_partial_selection_commits_at_once_and_learns_nothing() {
         Some("拟好")
     );
     drop(quanpin);
-    msime_engine::flush_personal_learning();
+    lingyao_engine::flush_personal_learning();
     // Some table must gain rows; a journal created with empty tables does not count as a write.
     let learned = database_rows(directory.path());
     assert!(
@@ -5497,7 +5497,7 @@ fn a_cantonese_partial_selection_commits_at_once_and_learns_nothing() {
     runtime.dispatch(Action::Command(Command::Cancel)).unwrap();
 
     drop(runtime);
-    msime_engine::flush_personal_learning();
+    lingyao_engine::flush_personal_learning();
     assert_eq!(database_rows(directory.path()), before);
 }
 
@@ -5540,7 +5540,7 @@ fn cantonese_lists_are_never_reranked_or_demoted() {
         reordered(CANTONESE_SCHEME, &rows, vec![LATTICE_SOURCE; 3], favours()),
         rows
     );
-    // Stroke lists come from msime-stroke.db in its own order as well.
+    // Stroke lists come from lingyao-stroke.db in its own order as well.
     assert_eq!(
         reordered(STROKE_SCHEME, &rows, vec![LATTICE_SOURCE; 3], favours()),
         rows
@@ -5563,10 +5563,10 @@ fn cantonese_lists_are_never_reranked_or_demoted() {
 
 const ZHUYIN_SCHEME: u8 = 6;
 
-/// A `msime-zhuyin.db` with a few bopomofo rows, written with the shipped schema.
+/// A `lingyao-zhuyin.db` with a few bopomofo rows, written with the shipped schema.
 fn zhuyin_dictionary(directory: &std::path::Path) -> String {
-    use msime_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
-    let path = directory.join("msime-zhuyin.db");
+    use lingyao_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
+    let path = directory.join("lingyao-zhuyin.db");
     let connection = rusqlite::Connection::open(&path).unwrap();
     connection.execute_batch(SCHEMA).unwrap();
     connection
@@ -5589,7 +5589,7 @@ fn zhuyin_runtime(directory: &std::path::Path) -> Runtime {
     let mut options = real_engine_options(directory);
     options.scheme = ZHUYIN_SCHEME;
     options.zhuyin_dictionary = zhuyin_dictionary(directory);
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -5936,10 +5936,10 @@ fn zhuyin_spelling_symbols_stay_visible_with_phrase_preedit() {
 
 const STROKE_SCHEME: u8 = 9;
 
-/// A `msime-stroke.db` with a few single characters keyed by their stroke letters, written with the shipped schema. `土` has two codes, as characters with variant stroke orders do in the real data. The weights are made up.
+/// A `lingyao-stroke.db` with a few single characters keyed by their stroke letters, written with the shipped schema. `土` has two codes, as characters with variant stroke orders do in the real data. The weights are made up.
 fn stroke_dictionary(directory: &std::path::Path) -> String {
-    use msime_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
-    let path = directory.join("msime-stroke.db");
+    use lingyao_engine::language_dictionary::{FORMAT_VERSION, METADATA_FORMAT_VERSION, SCHEMA};
+    let path = directory.join("lingyao-stroke.db");
     let connection = rusqlite::Connection::open(&path).unwrap();
     connection.execute_batch(SCHEMA).unwrap();
     connection
@@ -5963,7 +5963,7 @@ fn stroke_runtime(directory: &std::path::Path) -> Runtime {
     options.scheme = STROKE_SCHEME;
     options.learning = true;
     options.stroke_dictionary = stroke_dictionary(directory);
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime
@@ -6164,7 +6164,7 @@ fn stroke_selections_learn_nothing() {
     runtime.dispatch(Action::Command(Command::Cancel)).unwrap();
 
     drop(runtime);
-    msime_engine::flush_personal_learning();
+    lingyao_engine::flush_personal_learning();
     assert_eq!(database_rows(directory.path()), before);
 }
 
@@ -6174,7 +6174,7 @@ fn stroke_selections_learn_nothing() {
 fn url_runtime(directory: &std::path::Path, scheme: u8) -> Runtime {
     let mut options = real_engine_options(directory);
     options.scheme = scheme;
-    let session = msime_engine::host::Session::new(&options).unwrap();
+    let session = lingyao_engine::host::Session::new(&options).unwrap();
     let mut runtime = Runtime::new(session, 5).unwrap();
     runtime.focus(true).unwrap();
     runtime

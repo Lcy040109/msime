@@ -10,7 +10,7 @@ int main() {
       {{"pinyin", "missing text"}},
   });
 
-  const auto texts = msime::windows::hotword_texts(hotwords);
+  const auto texts = lingyao::windows::hotword_texts(hotwords);
   assert((texts == std::vector<std::string>{"灵耀", "输入法"}));
   assert(texts.capacity() >= hotwords.size());
 }

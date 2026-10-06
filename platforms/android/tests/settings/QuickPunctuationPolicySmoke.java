@@ -1,4 +1,4 @@
-import app.msime.android.QuickPunctuationPolicy;
+import app.lingyao.android.QuickPunctuationPolicy;
 
 public final class QuickPunctuationPolicySmoke {
     private static void check(boolean condition, String message) {

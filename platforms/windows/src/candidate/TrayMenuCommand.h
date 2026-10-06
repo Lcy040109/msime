@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::windows {
+namespace lingyao::windows {
 // What a tray menu row asks the Server to do. Kept apart from the menu model so the mode command mapping can name these without pulling in the menu's labels, which are UTF-8 text that only the menu targets compile with /utf-8.
 enum class TrayMenuCommand {
   ToggleFloatingToolbar,
@@ -31,4 +31,4 @@ enum class TrayMenuCommand {
   OpenTheme,
   OpenDictionary,
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

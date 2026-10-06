@@ -4,10 +4,10 @@
 #include <fstream>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   const auto root =
       std::filesystem::temp_directory_path() /
-      ("msime-skin-revision-" +
+      ("lingyao-skin-revision-" +
        std::to_string(
            std::chrono::steady_clock::now().time_since_epoch().count()));
   const auto directory = root / "sample";

@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,8 +8,8 @@ import android.util.AtomicFile;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import app.msime.android.TypingStatisticsDocument;
-import app.msime.android.TypingStatisticsModel;
+import app.lingyao.android.TypingStatisticsDocument;
+import app.lingyao.android.TypingStatisticsModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -72,10 +72,10 @@ public final class TypingStatisticsDeviceSmoke extends DeviceSmoke {
             stage = "controlled statistics baseline";
             publish(preferences, preferenceSnapshot.toString().getBytes(StandardCharsets.UTF_8));
             Files.deleteIfExists(statistics.toPath());
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
-            shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-            shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-            shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
+            shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+            shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+            shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
             SystemClock.sleep(1000);
 
             stage = "IME aggregate write";
@@ -131,7 +131,7 @@ public final class TypingStatisticsDeviceSmoke extends DeviceSmoke {
             js("(" + REFRESH + ").click(); true");
             awaitJs("(" + RANGE_TOTAL + ")?.textContent === '2'");
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             SystemClock.sleep(500);
             restore(preferences, originalPreferences);
             restore(statistics, originalStatistics);
@@ -139,12 +139,12 @@ public final class TypingStatisticsDeviceSmoke extends DeviceSmoke {
     }
 
     private void typeSyntheticPhrase() throws Exception {
-        shell("am force-stop app.msime.android.test");
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
-        tap(field("msime-test-plain"));
+        shell("am force-stop app.lingyao.android.test");
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
+        tap(field("lingyao-test-plain"));
         for (String key : new String[] {"n", "i", "h", "a", "o"}) tap(key(key));
         tap(key("空格"));
-        await(field("msime-test-plain").and(node -> equalsText("你好", node.getText())));
+        await(field("lingyao-test-plain").and(node -> equalsText("你好", node.getText())));
     }
 
     private void assertAggregate(JSONObject value, boolean enabled, long total) throws Exception {
@@ -173,11 +173,11 @@ public final class TypingStatisticsDeviceSmoke extends DeviceSmoke {
 
     private void openSettings() throws Exception {
         if (settingsActivity == null) {
-            Intent intent = new Intent().setClassName(getTargetContext(), "app.msime.android.MainActivity")
+            Intent intent = new Intent().setClassName(getTargetContext(), "app.lingyao.android.MainActivity")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             settingsActivity = startActivitySync(intent);
         } else {
-            shell("am start -W -n app.msime.android/.MainActivity");
+            shell("am start -W -n app.lingyao.android/.MainActivity");
         }
         long deadline = SystemClock.uptimeMillis() + 15000;
         do {

@@ -9,9 +9,9 @@
 #include <optional>
 // windows.h first: its DrawText macro has to reach the Direct2D declarations.
 #include <windows.h>
-#include <msimeui/DeviceResources.h>
+#include <lingyaoui/DeviceResources.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Null toggles the stored value for the toolbar. A value is the Server
 // session's explicit target, so a delayed preference write cannot invert a
 // newer state that was already persisted by another surface.
@@ -108,7 +108,7 @@ private:
     Apartment &operator=(const Apartment &) = delete;
     bool owned = false;
   } apartment_;
-  msimeui::DeviceResources device_;
+  lingyaoui::DeviceResources device_;
   CandidatePalette palette_;
   Reader reader_;
   Click click_;
@@ -152,4 +152,4 @@ private:
   // Whether the 中/英 button is drawn; the shared `english_mode` toolbar item.
   bool language_button_ = true;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -4,7 +4,7 @@
 #include <thread>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   using namespace FanyImeVoiceController;
   auto owner = std::make_shared<VoiceControllerChannel>();
   auto stranger = std::make_shared<VoiceControllerChannel>();

@@ -33,7 +33,7 @@ import {
   type Snapshot,
   type TouchKeyboardSkinDesign,
   themeEntry,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import {
   describeInstallerTrust,
   selectPlatformRelease,
@@ -1854,7 +1854,7 @@ test("Linux appearance and service copy names both hosts and the Fcitx5 reload",
   fireEvent.click(screen.getByRole("button", { name: "主题" }));
   expect(await screen.findByRole("combobox", { name: "候选窗口主题" })).toBeDefined();
   expect(candidateThemeNote()).toBe("覆盖颜色模式；IBus 候选窗口与 Fcitx5 经典界面按此明暗着色");
-  // 重启输入法服务在「维护与诊断」页；Fcitx5 hosts MSIME in process, so its half reads as a plugin reload rather than a restart.
+  // 重启输入法服务在「维护与诊断」页；Fcitx5 hosts LINGYAO in process, so its half reads as a plugin reload rather than a restart.
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
   const service = screen.getByRole("region", { name: "输入法服务" }).textContent ?? "";
   expect(service).toContain("重启 IBus 输入法服务");
@@ -1910,7 +1910,7 @@ test("the macOS shortcuts page omits the maintenance chords and 维护与诊断 
 });
 
 test("Linux restart copy covers both input method frameworks", async () => {
-  // The page cannot tell whether IBus or Fcitx5 is running, so the copy has to be true for both: IBus restarts its service, Fcitx5 resets the MSIME addon in process.
+  // The page cannot tell whether IBus or Fcitx5 is running, so the copy has to be true for both: IBus restarts its service, Fcitx5 resets the LINGYAO addon in process.
   const restartInputMethod = vi.fn().mockResolvedValue(undefined);
   render(
     <SettingsPage
@@ -2284,13 +2284,13 @@ test("macOS developer page moves the shared data root only after an explicit con
 test("Linux developer page moves the data root and says the fixed configuration stays behind", async () => {
   const status = vi
     .fn()
-    .mockResolvedValue({ path: "/synthetic/home/.config/msime-client", isDefault: true });
+    .mockResolvedValue({ path: "/synthetic/home/.config/lingyao-client", isDefault: true });
   const pick = vi
     .fn()
-    .mockResolvedValueOnce("/synthetic/data/msime")
+    .mockResolvedValueOnce("/synthetic/data/lingyao")
     .mockRejectedValueOnce({ code: "data_directory_picker_unavailable" });
   const move = vi.fn().mockResolvedValue({
-    path: "/synthetic/data/msime",
+    path: "/synthetic/data/lingyao",
     isDefault: false,
     retainedOldData: false,
   });
@@ -2305,9 +2305,9 @@ test("Linux developer page moves the data root and says the fixed configuration 
     />,
   );
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
-  expect(await screen.findByText("/synthetic/home/.config/msime-client")).toBeDefined();
+  expect(await screen.findByText("/synthetic/home/.config/lingyao-client")).toBeDefined();
   expect(screen.getByRole("group", { name: "数据目录" }).textContent).toContain(
-    "凭据固定保存在 ~/.config/msime-client",
+    "凭据固定保存在 ~/.config/lingyao-client",
   );
   fireEvent.click(screen.getByRole("button", { name: "选择位置…" }));
   await answerConfirm("confirm");
@@ -2321,13 +2321,13 @@ test("Linux developer page moves the data root and says the fixed configuration 
 test("Linux data move reports busy input sessions and a restart it could not do", async () => {
   const status = vi
     .fn()
-    .mockResolvedValue({ path: "/synthetic/home/.config/msime-client", isDefault: true });
-  const pick = vi.fn().mockResolvedValue("/synthetic/data/msime");
+    .mockResolvedValue({ path: "/synthetic/home/.config/lingyao-client", isDefault: true });
+  const pick = vi.fn().mockResolvedValue("/synthetic/data/lingyao");
   const move = vi
     .fn()
     .mockRejectedValueOnce({ code: "data_directory_busy" })
     .mockResolvedValueOnce({
-      path: "/synthetic/data/msime",
+      path: "/synthetic/data/lingyao",
       isDefault: false,
       retainedOldData: false,
       inputMethodRestarted: false,
@@ -2343,11 +2343,11 @@ test("Linux data move reports busy input sessions and a restart it could not do"
     />,
   );
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
-  expect(await screen.findByText("/synthetic/home/.config/msime-client")).toBeDefined();
+  expect(await screen.findByText("/synthetic/home/.config/lingyao-client")).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "选择位置…" }));
   await answerConfirm("confirm");
   expect(await screen.findByText("输入法仍在使用数据目录，请稍后重试。")).toBeDefined();
-  expect(screen.getByText("/synthetic/home/.config/msime-client")).toBeDefined();
+  expect(screen.getByText("/synthetic/home/.config/lingyao-client")).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "选择位置…" }));
   await answerConfirm("confirm");
   expect(
@@ -2439,7 +2439,7 @@ test("macOS offers every local mode switch, downloaded catalogs included", async
   expect(screen.getByRole("switch", { name: /^Unicode/ })).toBeDefined();
   expect(screen.getByRole("switch", { name: /^超级简拼/ })).toBeDefined();
   expect(screen.getByRole("switch", { name: /^临时英文/ })).toBeDefined();
-  // msime-others.db 随 macOS 发布包内置，Emoji 和颜文字一直可用；msime-japanese.dat 改为按需下载，临时日语的开关照常显示，词库下载前由运行时关闭这个模式，输入页另有下载入口。同样依赖 msime-english.db 的临时英文从未隐藏过。
+  // lingyao-others.db 随 macOS 发布包内置，Emoji 和颜文字一直可用；lingyao-japanese.dat 改为按需下载，临时日语的开关照常显示，词库下载前由运行时关闭这个模式，输入页另有下载入口。同样依赖 lingyao-english.db 的临时英文从未隐藏过。
   expect(screen.getByRole("switch", { name: /^Emoji/ })).toBeDefined();
   // 颜文字混输 sits on the same page under 候选与联想, so match the local mode alone.
   expect(screen.getByRole("switch", { name: /^颜文字(?!混输)/ })).toBeDefined();
@@ -3786,10 +3786,10 @@ test("mobile settings pages follow the WebView back stack", async () => {
     const rows = [...screen.getByRole("region", { name: "全部设置" }).querySelectorAll("button")];
     fireEvent.click(rows.find((row) => row.querySelector("strong")?.textContent === "输入")!);
     expect(window.history.state).toEqual(
-      expect.objectContaining({ msimeSettings: true, page: "input" }),
+      expect.objectContaining({ lingyaoSettings: true, page: "input" }),
     );
     act(() => {
-      const state = { msimeSettings: true, page: "appearance" };
+      const state = { lingyaoSettings: true, page: "appearance" };
       window.history.replaceState(state, "");
       window.dispatchEvent(new PopStateEvent("popstate", { state }));
     });
@@ -3854,10 +3854,10 @@ test("mobile account deep links participate in the back stack", async () => {
     expect(screen.queryByRole("button", { name: "帮助与反馈" })).toBeNull();
     fireEvent.click(await screen.findByRole("button", { name: "关于" }));
     expect(window.history.state).toEqual(
-      expect.objectContaining({ msimeSettings: true, page: "about" }),
+      expect.objectContaining({ lingyaoSettings: true, page: "about" }),
     );
     act(() => {
-      const state = { msimeSettings: true, page: "account" };
+      const state = { lingyaoSettings: true, page: "account" };
       window.history.replaceState(state, "");
       window.dispatchEvent(new PopStateEvent("popstate", { state }));
     });
@@ -5495,11 +5495,11 @@ test("Linux help quick start covers both Fcitx5 and IBus", async () => {
   // First-run setup adds the input method on its own; the manual steps are the fallback.
   expect(quickStart.textContent).toContain("自动加入正在运行的 Fcitx5 或 IBus 的输入法列表");
   expect(quickStart.textContent).toContain(
-    "「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组",
+    "「灵耀输入法」（英文界面显示为「LINGYAO」）加入当前输入法组",
   );
   // The name IBus lists is the component's longname.
   expect(quickStart.textContent).toContain("「Lingyao 灵耀输入法」");
-  expect(quickStart.textContent).not.toContain("MSIME Client");
+  expect(quickStart.textContent).not.toContain("LINGYAO Client");
   expect(screen.queryByText(/Win \+ Space/)).toBeNull();
 });
 
@@ -5519,8 +5519,8 @@ test("Linux help network section says what goes online and where credentials liv
   // 云候选新装默认关闭，首次配置时勾选才打开；开启时发送的是正在输入的拼写。
   expect(text).toContain("云候选默认关闭");
   expect(text).toContain("Google input-tools");
-  expect(text).toContain("msime-linux-online-provider");
-  expect(text).toContain("msime-linux-voice-provider");
+  expect(text).toContain("lingyao-linux-online-provider");
+  expect(text).toContain("lingyao-linux-voice-provider");
   // 候选翻译新装不联网，灵耀账号要用户显式选择，文案说明选了它会发送什么；语音和 AI 仍要等配置好服务。
   expect(text).toContain("候选词翻译默认不联网");
   expect(text).toContain("选择灵耀账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求");
@@ -6444,7 +6444,7 @@ test.each([
   // The addresses themselves, not just the headings: a card with the wrong group number is worse
   // than no card.
   expect(within(page).getByText("群号：829919142")).toBeTruthy();
-  expect(within(page).getByText("t.me/msimegroup")).toBeTruthy();
+  expect(within(page).getByText("t.me/lingyaogroup")).toBeTruthy();
   // 报告组说明提交报告时要附上什么。
   expect(within(page).getByText(/提交问题时建议附上/)).toBeTruthy();
 });
@@ -6984,7 +6984,7 @@ test("Linux checks the client release feed and treats no release as a normal res
   expect(await screen.findByText("暂无可用发行版")).toBeDefined();
   expect(fetch).toHaveBeenCalledWith(
     expect.stringMatching(
-      /^https:\/\/api\.github\.com\/repos\/lingyaoime\/msime\/releases\?per_page=100&t=\d+$/,
+      /^https:\/\/api\.github\.com\/repos\/lingyaoime\/lingyao\/releases\?per_page=100&t=\d+$/,
     ),
     expect.objectContaining({ cache: "no-store", signal: expect.any(AbortSignal) }),
   );
@@ -7055,13 +7055,13 @@ test("Linux update notice shows the .deb digest GitHub computed and the sha256su
           html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0",
           assets: [
             {
-              name: "msime-linux-1.2.0-linux-x86_64.tar.gz",
+              name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz",
               digest: `sha256:${"f".repeat(64)}`,
               browser_download_url:
                 "https://github.com/Lcy040109/msime/releases/download/linux-v1.2.0/msime-linux-1.2.0-linux-x86_64.tar.gz",
             },
             {
-              name: "msime-linux_1.2.0_amd64.deb",
+              name: "lingyao-linux_1.2.0_amd64.deb",
               digest: `sha256:${digest}`,
               browser_download_url:
                 "https://github.com/Lcy040109/msime/releases/download/linux-v1.2.0/msime-linux_1.2.0_amd64.deb",
@@ -7086,7 +7086,7 @@ test("Linux update notice shows the .deb digest GitHub computed and the sha256su
   expect(await screen.findByText("发现新版本 v1.2.0")).toBeDefined();
   expect(screen.getByText("该软件包未签名，请务必核对下面的校验值。")).toBeDefined();
   expect(screen.getByText(digest)).toBeDefined();
-  expect(screen.getByText("sha256sum msime-linux_1.2.0_amd64.deb")).toBeDefined();
+  expect(screen.getByText("sha256sum lingyao-linux_1.2.0_amd64.deb")).toBeDefined();
   expect(screen.queryByText(/Get-FileHash/)).toBeNull();
   vi.unstubAllGlobals();
 });
@@ -7107,15 +7107,15 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
       }
     );
   };
-  expect(pick([{ name: "msime-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` }])).toEqual({
-    name: "msime-linux_1.2.0_amd64.deb",
+  expect(pick([{ name: "lingyao-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` }])).toEqual({
+    name: "lingyao-linux_1.2.0_amd64.deb",
     sha256: digest,
     signed: false,
   });
   // The tarball is the fallback when no .deb was uploaded.
   expect(
-    pick([{ name: "msime-linux-1.2.0-linux-x86_64.tar.gz", digest: `sha256:${digest}` }]),
-  ).toEqual({ name: "msime-linux-1.2.0-linux-x86_64.tar.gz", sha256: digest, signed: false });
+    pick([{ name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz", digest: `sha256:${digest}` }]),
+  ).toEqual({ name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz", sha256: digest, signed: false });
   // Older API responses omit the digest or return null; a wrong algorithm, uppercase hex or a short value is not trusted either.
   for (const bad of [
     undefined,
@@ -7126,20 +7126,20 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
     digest,
     42,
   ]) {
-    expect(pick([{ name: "msime-linux_1.2.0_amd64.deb", digest: bad }])).toEqual({
-      name: "msime-linux_1.2.0_amd64.deb",
+    expect(pick([{ name: "lingyao-linux_1.2.0_amd64.deb", digest: bad }])).toEqual({
+      name: "lingyao-linux_1.2.0_amd64.deb",
       sha256: null,
       signed: false,
     });
   }
   // Without the host's architecture, two architectures would make any single digest wrong for someone.
   const bothArchitectures = [
-    { name: "msime-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` },
-    { name: "msime-linux_1.2.0_arm64.deb", digest: `sha256:${"b".repeat(64)}` },
-    { name: "msime-linux-1.2.0-1.x86_64.rpm", digest: `sha256:${"c".repeat(64)}` },
-    { name: "msime-linux-1.2.0-1.aarch64.rpm", digest: `sha256:${"d".repeat(64)}` },
-    { name: "msime-linux-1.2.0-linux-x86_64.tar.gz", digest: `sha256:${"e".repeat(64)}` },
-    { name: "msime-linux-1.2.0-linux-aarch64.tar.gz", digest: `sha256:${"f".repeat(64)}` },
+    { name: "lingyao-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` },
+    { name: "lingyao-linux_1.2.0_arm64.deb", digest: `sha256:${"b".repeat(64)}` },
+    { name: "lingyao-linux-1.2.0-1.x86_64.rpm", digest: `sha256:${"c".repeat(64)}` },
+    { name: "lingyao-linux-1.2.0-1.aarch64.rpm", digest: `sha256:${"d".repeat(64)}` },
+    { name: "lingyao-linux-1.2.0-linux-x86_64.tar.gz", digest: `sha256:${"e".repeat(64)}` },
+    { name: "lingyao-linux-1.2.0-linux-aarch64.tar.gz", digest: `sha256:${"f".repeat(64)}` },
   ];
   expect(pick(bothArchitectures)).toEqual({ name: null, sha256: null, signed: false });
   // The host reports its architecture (`HostCapabilities.arch`, Rust's name), and only that architecture's package is offered: dpkg names it in the .deb and CMake in the tarball.
@@ -7148,17 +7148,17 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
     return update && { name: update.installerName, sha256: update.installerSha256 };
   };
   expect(pickFor(bothArchitectures, "x86_64")).toEqual({
-    name: "msime-linux_1.2.0_amd64.deb",
+    name: "lingyao-linux_1.2.0_amd64.deb",
     sha256: digest,
   });
   expect(pickFor(bothArchitectures, "aarch64")).toEqual({
-    name: "msime-linux_1.2.0_arm64.deb",
+    name: "lingyao-linux_1.2.0_arm64.deb",
     sha256: "b".repeat(64),
   });
   // Each architecture falls back to its own tarball, never another architecture's .deb.
   const tarballsOnly = bothArchitectures.filter((asset) => asset.name.endsWith(".tar.gz"));
   expect(pickFor([...tarballsOnly, bothArchitectures[0]], "aarch64")).toEqual({
-    name: "msime-linux-1.2.0-linux-aarch64.tar.gz",
+    name: "lingyao-linux-1.2.0-linux-aarch64.tar.gz",
     sha256: "f".repeat(64),
   });
   // A release from before aarch64 packages offers an aarch64 host nothing rather than the x86_64 package.
@@ -7169,7 +7169,7 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
   // An architecture no package is built for keeps every asset, and two of them still offer nothing.
   expect(pickFor(bothArchitectures, "riscv64")).toEqual({ name: null, sha256: null });
   expect(pickFor([bothArchitectures[0]], "riscv64")).toEqual({
-    name: "msime-linux_1.2.0_amd64.deb",
+    name: "lingyao-linux_1.2.0_amd64.deb",
     sha256: digest,
   });
   // A name that would need shell quoting is never put into the copyable command.
@@ -7188,7 +7188,7 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
         {
           tag_name: "windows-v1.2.0",
           html_url: `${page}/tag/windows-v1.2.0`,
-          assets: [{ name: "msime-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` }],
+          assets: [{ name: "lingyao-linux_1.2.0_amd64.deb", digest: `sha256:${digest}` }],
         },
       ],
       "windows",
@@ -7265,7 +7265,7 @@ test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows"
       {
         version,
         releaseUrl,
-        installerName: "msime-linux_1.2.0_amd64.deb",
+        installerName: "lingyao-linux_1.2.0_amd64.deb",
         installerSha256: digest,
         signed: false,
       },
@@ -7273,7 +7273,7 @@ test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows"
     ),
   ).toEqual({
     warning: "该软件包未签名，请务必核对下面的校验值。",
-    verify: { command: "sha256sum msime-linux_1.2.0_amd64.deb", sha256: digest },
+    verify: { command: "sha256sum lingyao-linux_1.2.0_amd64.deb", sha256: digest },
   });
   expect(
     describeInstallerTrust(
@@ -7347,7 +7347,7 @@ test("Windows checks this repository's Windows releases rather than the referenc
     screen.getByText("Get-FileHash .\\LingyaoIME_Setup_v1.2.0.exe -Algorithm SHA256"),
   ).toBeDefined();
   expect(fetch).toHaveBeenCalledWith(
-    expect.stringMatching(/^https:\/\/api\.github\.com\/repos\/lingyaoime\/msime\/releases\?/),
+    expect.stringMatching(/^https:\/\/api\.github\.com\/repos\/lingyaoime\/lingyao\/releases\?/),
     expect.objectContaining({ cache: "no-store", signal: expect.any(AbortSignal) }),
   );
   fireEvent.click(screen.getByRole("button", { name: "前往下载" }));
@@ -8813,7 +8813,7 @@ test("an unreadable preferences document offers a repair that backs it up first"
   };
   const recoverPreferences = vi.fn().mockResolvedValue({
     snapshot: recovered,
-    backupPath: "/Users/synthetic/Library/MSIME/preferences.json.corrupt-20260923-101500",
+    backupPath: "/Users/synthetic/Library/LINGYAO/preferences.json.corrupt-20260923-101500",
     salvaged: true,
   });
   const openPreferencesDirectory = vi.fn().mockResolvedValue(undefined);

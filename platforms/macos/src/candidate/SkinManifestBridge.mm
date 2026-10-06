@@ -3,7 +3,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <string>
 #include <utility>
@@ -12,13 +12,13 @@
 #error "SkinManifestBridge.mm must be compiled with -fobjc-arc"
 #endif
 
-namespace msime::mac
+namespace lingyao::mac
 {
 namespace
 {
 using HostCall = char *(*)(const uint8_t *, size_t);
 
-// The {ok,value} / {ok:false,error} envelope every msime_client_* JSON call answers with.
+// The {ok,value} / {ok:false,error} envelope every lingyao_client_* JSON call answers with.
 struct HostReply
 {
     id value = nil;
@@ -35,7 +35,7 @@ HostReply CallHost(HostCall call, NSData *request)
         return reply;
     }
     NSData *data = [NSData dataWithBytes:raw length:std::char_traits<char>::length(raw)];
-    msime_client_string_free(raw);
+    lingyao_client_string_free(raw);
     NSDictionary *envelope = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     if (![envelope isKindOfClass:NSDictionary.class])
     {
@@ -368,7 +368,7 @@ std::optional<SkinPackage> LoadSkinPackage(const std::filesystem::path &skinsRoo
         NSData *request = [NSJSONSerialization dataWithJSONObject:@{@"directory" : root, @"id" : identifier}
                                                           options:0
                                                             error:nil];
-        const HostReply reply = CallHost(msime_client_skin_package, request);
+        const HostReply reply = CallHost(lingyao_client_skin_package, request);
         if (reply.value == nil)
         {
             SetError(error, LocalizedReason(reply.error));
@@ -394,7 +394,7 @@ SkinCatalog ScanSkinCatalog(const std::filesystem::path &skinsRoot)
             return result;
         }
         NSData *request = [root dataUsingEncoding:NSUTF8StringEncoding];
-        const HostReply reply = CallHost(msime_client_skin_catalog, request);
+        const HostReply reply = CallHost(lingyao_client_skin_catalog, request);
         NSDictionary *catalog = reply.value;
         if (![catalog isKindOfClass:NSDictionary.class])
         {
@@ -435,13 +435,13 @@ const std::vector<ThemeCatalogEntry> &ThemeCatalog()
         std::vector<ThemeCatalogEntry> result;
         @autoreleasepool
         {
-            char *raw = msime_client_theme_catalog();
+            char *raw = lingyao_client_theme_catalog();
             if (raw == nullptr)
             {
                 return result;
             }
             NSData *data = [NSData dataWithBytes:raw length:std::char_traits<char>::length(raw)];
-            msime_client_string_free(raw);
+            lingyao_client_string_free(raw);
             NSDictionary *envelope = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             NSDictionary *value = [envelope isKindOfClass:NSDictionary.class] && [envelope[@"ok"] isEqual:@YES]
                                       ? envelope[@"value"]
@@ -563,7 +563,7 @@ ResolvedSkin ResolveSkin(std::string_view globalTheme, const CustomTheme &custom
             requestObject[@"skins_directory"] = root;
         }
         NSData *request = [NSJSONSerialization dataWithJSONObject:requestObject options:0 error:nil];
-        const HostReply reply = CallHost(msime_client_resolve_theme, request);
+        const HostReply reply = CallHost(lingyao_client_resolve_theme, request);
         NSDictionary *value = reply.value;
         if (![value isKindOfClass:NSDictionary.class])
         {
@@ -638,4 +638,4 @@ ResolvedSkin ResolveSkin(std::string_view globalTheme, const CustomTheme &custom
         return resolved;
     }
 }
-} // namespace msime::mac
+} // namespace lingyao::mac

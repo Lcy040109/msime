@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { useSettingsDestinationActions } from "@msime/ui";
+import { useSettingsDestinationActions } from "@lingyao/ui";
 
 test("creates shared about and community destinations", () => {
   const selectPage = vi.fn();

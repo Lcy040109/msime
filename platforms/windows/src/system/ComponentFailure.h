@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // 一个界面组件放弃工作的位置：固定的阶段标签，或出错时正在处理的窗口消息号，再加上捕获当时的 Win32 错误码。诊断日志只能写固定标签和数字，所以这里不收异常文本，按键、上屏文字和候选都没有路径进入日志。
 struct ComponentFailureSite {
   // 字符串字面量，例如 "refresh"；为空表示出错在窗口消息里，看 message。
@@ -52,4 +52,4 @@ inline std::string server_stop_line(const std::vector<std::string> &failures) {
   }
   return line;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

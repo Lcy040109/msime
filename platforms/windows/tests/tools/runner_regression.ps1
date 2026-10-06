@@ -6,9 +6,9 @@ $tokens = $null
 $parseErrors = $null
 $null = [System.Management.Automation.Language.Parser]::ParseFile($runner, [ref]$tokens, [ref]$parseErrors)
 if ($parseErrors.Count -ne 0) { throw 'Runner parse failed' }
-$root = Join-Path ([System.IO.Path]::GetTempPath()) ('msime-runner-' + [guid]::NewGuid().ToString('N'))
+$root = Join-Path ([System.IO.Path]::GetTempPath()) ('lingyao-runner-' + [guid]::NewGuid().ToString('N'))
 $null = New-Item -ItemType Directory -Path $root
-$previousMode = $env:MSIME_RUNNER_PROBE_MODE
+$previousMode = $env:LINGYAO_RUNNER_PROBE_MODE
 try {
     Copy-Item -LiteralPath $runner -Destination (Join-Path $root 'run-smoke.ps1')
     $copy = Join-Path $root 'run-smoke.ps1'
@@ -21,7 +21,7 @@ try {
         'windows-preview-config.exe', 'LingyaoImeServer.exe'
     )
     foreach ($name in $names) { Copy-Item -LiteralPath $probePath -Destination (Join-Path $root $name) }
-    $env:MSIME_RUNNER_PROBE_MODE = 'pass'
+    $env:LINGYAO_RUNNER_PROBE_MODE = 'pass'
     $output = @(& $copy 6>&1 | ForEach-Object { $_.ToString() })
     if (@($output | Where-Object { $_ -like 'PASS *' }).Count -ne 12 -or
         @($output | Where-Object { $_ -like 'SKIP locked-dictionary*' }).Count -ne 1) {
@@ -43,15 +43,15 @@ try {
         if (-not $caught) { throw 'Expected runner rejection' }
     }
     Expect-Failure { & $copy -ResourcesDirectory '' } '*must not be empty*'
-    $env:MSIME_RUNNER_PROBE_MODE = 'fail'
+    $env:LINGYAO_RUNNER_PROBE_MODE = 'fail'
     Expect-Failure { & $copy } '*exit 7*'
-    $env:MSIME_RUNNER_PROBE_MODE = 'timeout'
+    $env:LINGYAO_RUNNER_PROBE_MODE = 'timeout'
     Expect-Failure { & $copy -TimeoutSeconds 1 } '*timed out*'
-    $env:MSIME_RUNNER_PROBE_MODE = 'pass'
+    $env:LINGYAO_RUNNER_PROBE_MODE = 'pass'
     Remove-Item -LiteralPath (Join-Path $root 'LingyaoImeServer.exe')
     Expect-Failure { & $copy } '*Missing test: LingyaoImeServer.exe*'
     Write-Host 'Runner process-control regressions passed; no Windows IME binary was tested.'
 } finally {
-    $env:MSIME_RUNNER_PROBE_MODE = $previousMode
+    $env:LINGYAO_RUNNER_PROBE_MODE = $previousMode
     Remove-Item -LiteralPath $root -Recurse -Force
 }

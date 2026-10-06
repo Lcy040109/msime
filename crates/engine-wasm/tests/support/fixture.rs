@@ -1,4 +1,4 @@
-//! 最小的 msime.db：表结构和发布的主库一致（`tbl_<长度>_<首字母>` 加 `idx_key_*`/`idx_jp_*` 索引，`wubi86`/`wubi98`/`quick_parases` 加各自的索引），行只有路由测试用到的那些。`make_fixture` 示例和 `tests/routing.rs` 共用这一份。
+//! 最小的 lingyao.db：表结构和发布的主库一致（`tbl_<长度>_<首字母>` 加 `idx_key_*`/`idx_jp_*` 索引，`wubi86`/`wubi98`/`quick_parases` 加各自的索引），行只有路由测试用到的那些。`make_fixture` 示例和 `tests/routing.rs` 共用这一份。
 
 use std::path::Path;
 

@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 
-using msime::windows::VoiceSessionEpoch;
+using lingyao::windows::VoiceSessionEpoch;
 static void require(bool value) {
   if (!value)
     std::abort();

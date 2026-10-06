@@ -11,7 +11,7 @@ final class SchemeDocumentSettingsTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-scheme-document-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-scheme-document-\(UUID().uuidString)", isDirectory: true)
     previousEnabled = InputSchemePreference.enabledSchemes
     previousScheme = InputSchemePreference.scheme
     previousTraditional = ChineseOutputPreference.usesTraditional

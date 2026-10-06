@@ -16,7 +16,7 @@
 #![allow(unsafe_code)]
 #![cfg(windows)]
 
-use msime_client_core::{is_bounded_text, is_bounded_utf16};
+use lingyao_client_core::{is_bounded_text, is_bounded_utf16};
 
 pub mod ink;
 pub mod voice_controller;
@@ -25,7 +25,7 @@ use std::path::Path;
 use std::time::Duration;
 
 /// Server 发布剪贴板历史变化的命名事件，不带版本后缀；与 `platforms/windows/src/clipboard/ClipboardHistory.h` 一致。
-const CLIPBOARD_HISTORY_CHANGE_EVENT: &str = r"Local\MSIME.Client.ClipboardHistoryChanged";
+const CLIPBOARD_HISTORY_CHANGE_EVENT: &str = r"Local\LINGYAO.Client.ClipboardHistoryChanged";
 
 /// 以 NUL 结尾的 UTF-16 名字，供 Win32 调用。
 fn wide(text: &str) -> Vec<u16> {
@@ -34,7 +34,7 @@ fn wide(text: &str) -> Vec<u16> {
 
 /// 本安装包所属版本的命名对象名：`base` 加上版本后缀（full 没有后缀）。安装包的版本声明坏了时为 `None`，调用方当作 Server 不在，不去碰 full 的对象。
 fn edition_named(base: &str) -> Option<Vec<u16>> {
-    msime_client_core::edition::Edition::windows_package_identity()
+    lingyao_client_core::edition::Edition::windows_package_identity()
         .ok()
         .map(|identity| wide(&identity.named(base)))
 }
@@ -450,7 +450,7 @@ where
     F: FnMut(String) + Send + 'static,
 {
     std::thread::Builder::new()
-        .name("msime-windows-clipboard-monitor".to_owned())
+        .name("lingyao-windows-clipboard-monitor".to_owned())
         .spawn(move || {
             use windows_sys::Win32::System::DataExchange::AddClipboardFormatListener;
             use windows_sys::Win32::UI::WindowsAndMessaging::{
@@ -459,7 +459,7 @@ where
             };
 
             // 窗口类名带版本后缀，与 Server 的窗口类一样按版本区分。
-            let Some(class_name) = edition_named("MSIMEClipboardListener") else {
+            let Some(class_name) = edition_named("LINGYAOClipboardListener") else {
                 return;
             };
             let class_name: &[u16] = &class_name;
@@ -624,12 +624,12 @@ fn shell_open(target: &[u16]) -> bool {
 
 use std::os::windows::ffi::OsStrExt;
 
-/// The state directory the managed Server uses, resolved the same way `production_state_directory` in `server_main.cpp` does (`platforms/windows/common/StateDirectory.h`): an absolute value of this edition's data-directory variable (`LINGYAO_IME_DATA_DIR` in full), then the `DataDir` the installer records under this edition's key in the 64-bit machine view, then `%LOCALAPPDATA%\<this edition's state directory>` (`MSIME-Client` in full). The Server hands this directory to the shell it launches; a shell started any other way, such as from the Start Menu, needs it to find the same runtime options and preferences.
+/// The state directory the managed Server uses, resolved the same way `production_state_directory` in `server_main.cpp` does (`platforms/windows/common/StateDirectory.h`): an absolute value of this edition's data-directory variable (`LINGYAO_IME_DATA_DIR` in full), then the `DataDir` the installer records under this edition's key in the 64-bit machine view, then `%LOCALAPPDATA%\<this edition's state directory>` (`LINGYAO-Client` in full). The Server hands this directory to the shell it launches; a shell started any other way, such as from the Start Menu, needs it to find the same runtime options and preferences.
 ///
-/// 名字都按本安装包所属的版本取（版本表 `platforms.windows`），与 C++ 侧的 `msime_edition.h` 同源；几个版本同时安装时各找各的状态根。安装包的版本声明坏了时返回 `None`，而不是落到 full 的目录上。
+/// 名字都按本安装包所属的版本取（版本表 `platforms.windows`），与 C++ 侧的 `lingyao_edition.h` 同源；几个版本同时安装时各找各的状态根。安装包的版本声明坏了时返回 `None`，而不是落到 full 的目录上。
 pub fn server_state_directory() -> Option<std::path::PathBuf> {
     use std::path::PathBuf;
-    let identity = msime_client_core::edition::Edition::windows_package_identity().ok()?;
+    let identity = lingyao_client_core::edition::Edition::windows_package_identity().ok()?;
     if let Some(value) = std::env::var_os(&identity.data_dir_environment_variable) {
         let path = PathBuf::from(value);
         if path.is_absolute() {
@@ -740,7 +740,7 @@ mod tests {
     fn directories_must_be_absolute_and_exist() {
         assert!(!open_directory(Path::new("relative")));
         assert!(!open_directory(Path::new(
-            "C:\\definitely-missing-msime-path"
+            "C:\\definitely-missing-lingyao-path"
         )));
     }
 

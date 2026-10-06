@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 final class SafePathTests: XCTestCase {
   func testAliasesRequireTheExactSystemTarget() {
@@ -21,7 +21,7 @@ final class SafePathTests: XCTestCase {
     // `/etc` 也是指向 `/private` 的系统链接，但它不在清单里。
     XCTAssertFalse(SafePath.isTrustedSystemAlias("/etc"))
     XCTAssertFalse(SafePath.isTrustedSystemAlias("/private/var"))
-    XCTAssertFalse(SafePath.hasRefusedSymbolicLink(URL(fileURLWithPath: "/tmp/msime-safe-path-missing-\(UUID().uuidString)/below")))
+    XCTAssertFalse(SafePath.hasRefusedSymbolicLink(URL(fileURLWithPath: "/tmp/lingyao-safe-path-missing-\(UUID().uuidString)/below")))
     XCTAssertFalse(SafePath.hasRefusedSymbolicLink(FileManager.default.temporaryDirectory.appendingPathComponent("missing")))
     // 别名本身作为最后一级时要拒绝，与 `reject_symlinked_components` 一致。
     XCTAssertTrue(SafePath.hasRefusedSymbolicLink(URL(fileURLWithPath: "/tmp")))
@@ -31,8 +31,8 @@ final class SafePathTests: XCTestCase {
   }
 
   func testRefusesAPlantedLinkAndAcceptsARealPath() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-safe-path-\(UUID().uuidString)", isDirectory: true)
-    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("msime-safe-path-outside-\(UUID().uuidString)", isDirectory: true)
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-safe-path-\(UUID().uuidString)", isDirectory: true)
+    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-safe-path-outside-\(UUID().uuidString)", isDirectory: true)
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outside)

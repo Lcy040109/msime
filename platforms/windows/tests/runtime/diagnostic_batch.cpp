@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("Diagnostic batch test failed at line " +

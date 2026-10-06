@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import { useInputSourceUninstall } from "@msime/ui";
+import { useInputSourceUninstall } from "@lingyao/ui";
 
 afterEach(cleanup);
 

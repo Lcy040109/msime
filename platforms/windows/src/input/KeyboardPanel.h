@@ -1,11 +1,11 @@
 #pragma once
 
-#include "msimeui/Layout.h"
+#include "lingyaoui/Layout.h"
 
 #include <string>
 #include <vector>
 
-namespace msimeui
+namespace lingyaoui
 {
 class KeyboardPanel final : public Visual
 {
@@ -55,5 +55,5 @@ class KeyboardPanel final : public Visual
     bool winActive_ = false;
     bool lightTheme_ = false;
 };
-} // namespace msimeui
+} // namespace lingyaoui
 

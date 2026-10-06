@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 // GetModuleFileNameW reports the buffer size when truncated. Never use a
 // truncated filename to derive a resource root, even on legacy Windows.
 template<class Reader>

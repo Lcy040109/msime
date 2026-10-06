@@ -2,7 +2,7 @@
 #include <chrono>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The HideCandidateWnd the TIP sends when a Wubi auto-commit ends its composition must not clear the composition the Server continues with (the letter that triggered a top-commit). A delivered continuation arms this mark and the next hide consumes it, but only within a second, the reference's limit: a continuation the TIP dropped (focus or composition epoch changed) never produces that hide, and a stale mark must not later spare a composition the user really closed.
 class ContinuationHide {
 public:
@@ -20,4 +20,4 @@ public:
 private:
   std::optional<Clock::time_point> armed_at_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

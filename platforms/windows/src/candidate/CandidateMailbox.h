@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <functional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Single latest value, not an unbounded per-key UI event queue. Publish only
 // from the input queue's confirmed-delivery callback under the focus gate.
 class CandidateMailbox final {
@@ -245,4 +245,4 @@ private:
   uint64_t render_serial_ = 0;
   std::condition_variable rendered_ready_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

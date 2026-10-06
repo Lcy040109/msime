@@ -1,7 +1,7 @@
 #include "PipePeer.h"
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 struct Handle {
   HANDLE value = nullptr;
@@ -194,4 +194,4 @@ bool PipePeer::matches(HANDLE pipe, uint64_t client_id, DWORD &error) const {
   }
   return true;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

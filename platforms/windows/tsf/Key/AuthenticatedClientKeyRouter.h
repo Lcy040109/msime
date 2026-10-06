@@ -18,9 +18,9 @@ public:
         authenticator_.update(client, epoch, token);
     }
 
-    bool dispatch(const msime::windows::TsfFocusLeaseFrame &frame,
+    bool dispatch(const lingyao::windows::TsfFocusLeaseFrame &frame,
                   const ClientKeyEvent &event) {
-        const auto request = msime::windows::decode_tsf_focus_lease(frame);
+        const auto request = lingyao::windows::decode_tsf_focus_lease(frame);
         if (!authenticator_.authenticate(frame) ||
             request.client != event.lease.client ||
             request.epoch != event.lease.epoch ||
@@ -30,9 +30,9 @@ public:
         return router_.dispatch(event);
     }
 
-    bool cancel(const msime::windows::TsfFocusLeaseFrame &frame,
+    bool cancel(const lingyao::windows::TsfFocusLeaseFrame &frame,
                 const ClientFocusLease &lease) {
-        const auto request = msime::windows::decode_tsf_focus_lease(frame);
+        const auto request = lingyao::windows::decode_tsf_focus_lease(frame);
         const ClientFocusLease requested{request.client, request.epoch, request.token};
         if (!authenticator_.authenticate(frame) ||
             !valid_client_focus_lease(lease) ||
@@ -44,5 +44,5 @@ public:
 
 private:
     IClientKeyRouter &router_;
-    msime::windows::TsfFocusLeaseAuthenticator authenticator_;
+    lingyao::windows::TsfFocusLeaseAuthenticator authenticator_;
 };

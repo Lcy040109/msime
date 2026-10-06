@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <string>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // X keysyms, which IBus key values and Fcitx5 symbols both are. Hangul_Hanja is the Hanja key of a Korean keyboard; F9 is the second key ibus-hangul and fcitx5-hangul convert with by default, for keyboards without one. Ctrl+F9 stays the voice toggle: only the bare key converts.
 inline constexpr uint32_t kKeysymHangulHanja = 0xff34;
@@ -15,7 +15,7 @@ inline bool korean_hanja_key(uint32_t keysym) {
   return keysym == kKeysymHangulHanja || keysym == kKeysymF9;
 }
 
-// The Korean rules hold for the view: scheme 4 outside the dedicated English mode and outside every local mode, which keep their own rules in that scheme (msime_client.h). Shared by the IBus and Fcitx5 hosts so both read "Korean" the same way.
+// The Korean rules hold for the view: scheme 4 outside the dedicated English mode and outside every local mode, which keep their own rules in that scheme (lingyao_client.h). Shared by the IBus and Fcitx5 hosts so both read "Korean" the same way.
 inline bool korean_rules(const nlohmann::json &view) {
   if (!view.is_object()) return false;
   const auto scheme = view.find("scheme");
@@ -33,7 +33,7 @@ inline bool korean_composition(const nlohmann::json &view) {
   return editing != view.end() && editing->is_string() && !editing->get_ref<const std::string &>().empty();
 }
 
-// The Hanja list of the composing syllable is open. Under the Korean rules the Engine offers candidates only after MSIME_CONVERT_HANJA, so a non-empty list is that list (msime_client.h).
+// The Hanja list of the composing syllable is open. Under the Korean rules the Engine offers candidates only after LINGYAO_CONVERT_HANJA, so a non-empty list is that list (lingyao_client.h).
 inline bool korean_hanja_list_open(const nlohmann::json &view) {
   if (!korean_composition(view)) return false;
   const auto candidates = view.find("candidates");
@@ -56,4 +56,4 @@ inline bool korean_hanja_punctuation_key(uint32_t keysym) {
   }
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

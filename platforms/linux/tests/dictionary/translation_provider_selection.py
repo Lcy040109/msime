@@ -17,7 +17,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-loader = importlib.machinery.SourceFileLoader("online_provider", str(ROOT / "scripts" / "msime-linux-online-provider"))
+loader = importlib.machinery.SourceFileLoader("online_provider", str(ROOT / "scripts" / "lingyao-linux-online-provider"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 provider = importlib.util.module_from_spec(spec)
 loader.exec_module(provider)
@@ -39,7 +39,7 @@ def respond(url, timeout, body=None, token=None, extra_headers=None):
 
 class TranslationProviderSelection(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix="msime-translation-selection-")
+        directory = tempfile.TemporaryDirectory(prefix="lingyao-translation-selection-")
         self.addCleanup(directory.cleanup)
         path = Path(directory.name) / "tencent-provider.json"
         path.write_text(json.dumps({"secret_id": "synthetic-local-id", "secret_key": "synthetic-local-key"}))
@@ -143,7 +143,7 @@ class TranslationProviderSelection(unittest.TestCase):
         worker = threading.Thread(target=http.serve_forever, kwargs={"poll_interval": 0.01})
         worker.start()
         try:
-            with tempfile.TemporaryDirectory(prefix="msime-account-http-") as directory:
+            with tempfile.TemporaryDirectory(prefix="lingyao-account-http-") as directory:
                 server = provider.anonymous_server(Path(directory))
                 origin = "http://127.0.0.1:" + str(http.server_port)
                 with mock.patch.object(provider, "ANONYMOUS_ACCOUNT_ORIGIN", origin):
@@ -168,7 +168,7 @@ class TranslationProviderSelection(unittest.TestCase):
         }
         for malformed in (None, [], ["synthetic"], "synthetic", 7, True):
             with self.subTest(tokens=malformed):
-                with tempfile.TemporaryDirectory(prefix="msime-malformed-session-") as directory:
+                with tempfile.TemporaryDirectory(prefix="lingyao-malformed-session-") as directory:
                     server = provider.anonymous_server(Path(directory))
                     identity = provider._anonymous_identity(server)
                     self.assertTrue(provider._write_anonymous_private(
@@ -191,18 +191,18 @@ class TranslationProviderSelection(unittest.TestCase):
                     self.assertGreater(saved["expires_at_unix_ms"], 0)
 
     def test_account_identity_is_generated_owner_only_and_stable(self):
-        with tempfile.TemporaryDirectory(prefix="msime-anonymous-account-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-anonymous-account-") as directory:
             path = Path(directory) / "anonymous-account.json"
             server = SimpleNamespace(anonymous_account_path=path)
             first = provider._anonymous_identity(server)
             self.assertIsNotNone(first)
-            self.assertRegex(first[0], r"^msime-[a-z0-9]{16}$")
+            self.assertRegex(first[0], r"^lingyao-[a-z0-9]{16}$")
             self.assertRegex(first[1], r"^[a-z0-9]{48}$")
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
             self.assertEqual(provider._anonymous_identity(server), first)
 
     def test_account_token_is_created_and_cached_without_exposing_the_secret(self):
-        with tempfile.TemporaryDirectory(prefix="msime-anonymous-session-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-anonymous-session-") as directory:
             root = Path(directory)
             server = SimpleNamespace(
                 anonymous_account_path=root / "anonymous-account.json",

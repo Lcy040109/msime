@@ -14,7 +14,7 @@ bool read_clipboard(Display *display) {
   const Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 1, 1, 0, 0, 0);
   XSelectInput(display, window, PropertyChangeMask);
   const Atom clipboard = XInternAtom(display, "CLIPBOARD", False);
-  const Atom property = XInternAtom(display, "MSIME_CLIPBOARD_READ", False);
+  const Atom property = XInternAtom(display, "LINGYAO_CLIPBOARD_READ", False);
   const Atom utf8 = XInternAtom(display, "UTF8_STRING", False);
   const Atom incr = XInternAtom(display, "INCR", False);
   Atom target = utf8, encoding = None;

@@ -22,7 +22,7 @@ from gi.repository import Gdk, GLib, Gtk
 READER = Path(sys.argv.pop(1)).resolve()
 STRING_OWNER = Path(sys.argv.pop(1)).resolve()
 ROOT = Path(__file__).resolve().parents[2]
-loader = importlib.machinery.SourceFileLoader("monitor", str(ROOT / "scripts" / "msime-linux-clipboard-monitor"))
+loader = importlib.machinery.SourceFileLoader("monitor", str(ROOT / "scripts" / "lingyao-linux-clipboard-monitor"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 monitor = importlib.util.module_from_spec(spec)
 loader.exec_module(monitor)
@@ -100,9 +100,9 @@ class NativeRead(unittest.TestCase):
     def test_monitor_reads_without_external_clipboard_tools(self):
         text = "synthetic native-only clipboard"
         self.clipboard.set_text(text, -1)
-        with tempfile.TemporaryDirectory(prefix="msime-native-reader-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-native-reader-") as directory:
             root = Path(directory)
-            (root / "msime-linux-clipboard-watch-x11").symlink_to(READER)
+            (root / "lingyao-linux-clipboard-watch-x11").symlink_to(READER)
             with mock.patch.object(monitor, "__file__", str(root / "monitor.py")), \
                  mock.patch.dict(os.environ, {"PATH": "", "WAYLAND_DISPLAY": ""}), \
                  concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:

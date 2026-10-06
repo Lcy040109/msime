@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createShortcutsSettingsActions, type Preferences } from "@msime/ui";
+import { createShortcutsSettingsActions, type Preferences } from "@lingyao/ui";
 
 const draft: Preferences = {
   scheme: "quanpin",

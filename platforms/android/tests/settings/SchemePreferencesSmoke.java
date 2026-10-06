@@ -1,6 +1,6 @@
-import app.msime.android.AppEdition;
-import app.msime.android.KeyboardScheme;
-import app.msime.android.SchemePreferences;
+import app.lingyao.android.AppEdition;
+import app.lingyao.android.KeyboardScheme;
+import app.lingyao.android.SchemePreferences;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
   if (argc != 2) throw std::runtime_error("Isolated Compose fixture required");
   setenv("XCOMPOSEFILE", argv[1], 1);
   setenv("LC_ALL", "C.UTF-8", 1);
-  msime::linux_host::NativeCompose compose;
+  lingyao::linux_host::NativeCompose compose;
   auto require = [](bool value) {
     if (!value) throw std::runtime_error("System Compose boundary contract failed");
   };
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   require(compose.feed(XKB_KEY_F1).has_value());
   require(!compose.feed(XKB_KEY_e));
   // Native contexts must never share an in-progress sequence.
-  msime::linux_host::NativeCompose other;
+  lingyao::linux_host::NativeCompose other;
   require(compose.feed(XKB_KEY_dead_circumflex).has_value());
   require(!other.feed(XKB_KEY_e));
   require(compose.feed(XKB_KEY_e) == "ê");

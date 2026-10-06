@@ -4,7 +4,7 @@
 #
 # The artifacts land in resfile rather than rawfile because OpenHarmony extracts resfile to
 # context.resourceDir at install time, which gives the Engine a real filesystem path. Nothing writes
-# back into it: msime_client_prepare_host only verifies this directory and puts its state elsewhere,
+# back into it: lingyao_client_prepare_host only verifies this directory and puts its state elsewhere,
 # so the read-only extraction is enough and the 180MB first-run copy Android needs is avoided.
 set -euo pipefail
 repo_root=$(cd "$(dirname "$0")/../.." && pwd)
@@ -13,7 +13,7 @@ resource_dir=${1:?usage: stage-resources.sh <verified-resource-directory> [offli
 resource_dir=$(cd "$resource_dir" && pwd)
 # The directory has to match the lock exactly, down to containing no extra file, because the same
 # check runs again on the device inside prepare_host. Failing here is far cheaper than failing there.
-artifacts=$(cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$resource_dir")
+artifacts=$(cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$resource_dir")
 staged="$repo_root/platforms/harmony/entry/src/main/resources/resfile/engine"
 rm -rf "$staged"
 mkdir -p "$staged"
@@ -25,7 +25,7 @@ for table in helpcode.txt zrm_helpcode_big_unique.txt shouyou2_0_helpcode.txt sh
 done
 cp resources/helpcodes/ENGINE-NOTICE.md "$staged/helpcodes/NOTICE.md"
 cp resources/helpcodes/NOTICE.md "$staged/helpcodes/NOTICE-jiajia.md"
-cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$staged" >/dev/null
+cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$staged" >/dev/null
 echo "Staged for the HAP: $staged"
 
 # Licences of what the native library carries that its own notices do not cover: the input engine embeds the Korean Hanja table from libhangul's data/hanja/hanja.txt, whose BSD-3-Clause licence requires the notice in binary distributions, its Cantonese and Zhuyin schemes take their syllables and words from data derived from rime-cantonese (CC BY 4.0) and libchewing-data (LGPL-2.1-or-later), and its Stroke scheme takes its stroke orders from rime-stroke (LGPL-3.0, with the CNS11643 attribution), whose notices travel with every engine build even where those schemes are not offered. Beside the engine directory rather than in it, which the lock check above would reject; resfile extracts it to context.resourceDir/licenses.
@@ -57,12 +57,12 @@ else
   echo "no offline glosses at $glosses_source; candidates are glossed offline in English only"
 fi
 
-# Optional: the Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `msime-dict-build languages`), as on macOS and iOS. Beside the engine directory rather than in it, which the lock check above would reject; resfile extracts them to context.resourceDir/language-dictionaries, the keyboard copies them to language-dictionaries/ beside its copy of the resources, where host-api finds them and names them in the runtime options, and the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is staged only with its licence text, which must travel with the data.
+# Optional: the Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `lingyao-dict-build languages`), as on macOS and iOS. Beside the engine directory rather than in it, which the lock check above would reject; resfile extracts them to context.resourceDir/language-dictionaries, the keyboard copies them to language-dictionaries/ beside its copy of the resources, where host-api finds them and names them in the runtime options, and the keyboard and the settings page leave a scheme whose dictionary is missing out. Each dictionary is staged only with its licence text, which must travel with the data.
 languages_source=${3:-$repo_root/target/language-dictionaries}
 languages_staged="$repo_root/platforms/harmony/entry/src/main/resources/resfile/language-dictionaries"
 rm -rf "$languages_staged"
 staged_languages=()
-for pair in msime-cantonese.db:msime-rime_cantonese_LICENSE.txt msime-zhuyin.db:msime-libchewing_data_LICENSE.txt msime-stroke.db:msime-rime_stroke_LICENSE.txt; do
+for pair in lingyao-cantonese.db:lingyao-rime_cantonese_LICENSE.txt lingyao-zhuyin.db:lingyao-libchewing_data_LICENSE.txt lingyao-stroke.db:lingyao-rime_stroke_LICENSE.txt; do
   database=${pair%%:*}
   license=${pair#*:}
   [ -f "$languages_source/$database" ] || continue
@@ -80,15 +80,15 @@ else
   echo "no language dictionaries at $languages_source; Cantonese, Zhuyin and Stroke stay unavailable"
 fi
 # A release requires every dictionary resources/language-dictionaries.lock.json pins, not a fixed list: a dictionary that has not been released yet is staged when present but cannot fail a release, and the lock bump that publishes it makes it required.
-if [ "${MSIME_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
+if [ "${LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
   required_languages=$(python3 "$repo_root/scripts/fetch_language_dictionaries.py" --list-databases)
   if [ -z "$required_languages" ]; then
-    echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
+    echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
     exit 1
   fi
   for database in $required_languages; do
     if [[ " ${staged_languages[*]:-} " != *" $database "* ]]; then
-      echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, pinned by resources/language-dictionaries.lock.json, was not staged from $languages_source" >&2
+      echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, pinned by resources/language-dictionaries.lock.json, was not staged from $languages_source" >&2
       exit 1
     fi
   done

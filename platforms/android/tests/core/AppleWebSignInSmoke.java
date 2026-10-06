@@ -1,4 +1,4 @@
-import app.msime.android.AppleWebSignIn;
+import app.lingyao.android.AppleWebSignIn;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +43,7 @@ public final class AppleWebSignInSmoke {
             Matcher matcher = Pattern.compile("\"id\"\\s*:\\s*\"([a-z]+)\"").matcher(Files.readString(editions));
             while (matcher.find()) ids.add(matcher.group(1));
             List<String> apps = new ArrayList<>();
-            for (String id : ids) apps.add("full".equals(id) ? "app.msime.android" : "app.msime.android." + id);
+            for (String id : ids) apps.add("full".equals(id) ? "app.lingyao.android" : "app.lingyao.android." + id);
             check(apps.size() == AppleWebSignIn.APPS.size() && AppleWebSignIn.APPS.containsAll(apps),
                 "the app allowlist must name every edition in editions.json");
         }

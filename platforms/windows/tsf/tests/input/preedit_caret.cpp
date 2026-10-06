@@ -1,7 +1,7 @@
 #include "../../Composition/PreeditCaret.h"
 #include <cstdlib>
 #include <limits>
-using msime::tsf::MapPreeditCaret;
+using lingyao::tsf::MapPreeditCaret;
 int main() {
     if (MapPreeditCaret(L"nihao", 3, L"ni'hao", 0) != 4 ||
         MapPreeditCaret(L"ni'hao", 3, L"ni'hao", 0) != 3 ||

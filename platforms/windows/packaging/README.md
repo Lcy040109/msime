@@ -9,15 +9,15 @@
 | 路径 | 内容 |
 | --- | --- |
 | `winget/` | 多文件清单（ManifestVersion 1.12.0）：`version`、`installer`、`defaultLocale`（en-US）和 `locale`（zh-CN） |
-| `scoop/msime.json` | Scoop 清单（不带 `checkver` 与 `autoupdate`，原因见「签名」） |
-| `chocolatey/` | `msime.nuspec` 与 `tools/chocolateyinstall.ps1`、`tools/chocolateyuninstall.ps1` |
+| `scoop/lingyao.json` | Scoop 清单（不带 `checkver` 与 `autoupdate`，原因见「签名」） |
+| `chocolatey/` | `lingyao.nuspec` 与 `tools/chocolateyinstall.ps1`、`tools/chocolateyuninstall.ps1` |
 | `render.py` | 核对安装包的签名，再用一个发布的版本号、安装包地址、SHA-256、日期和发布说明地址填模板 |
 
 模板里的 `@VERSION@`、`@INSTALLER_URL@`、`@SHA256@`、`@SHA256_UPPER@`、`@RELEASE_DATE@`、`@RELEASE_NOTES_URL@` 由 `render.py` 填写；其余内容在发布之间不变。
 
 ## 三个包共同依据的安装包事实
 
-这些都取自 `../installer/msime_setup.iss`、它包含的 `../installer/editions.iss`（由版本表 `shared/contracts/editions.json` 生成）与 `release-windows.yml`，`scripts/test-windows-package-managers.py` 核对两边一致。安装包按版本（edition）各打一个，包管理器只发 full：AppId、显示名和安装包名都取 full 那一份。
+这些都取自 `../installer/lingyao_setup.iss`、它包含的 `../installer/editions.iss`（由版本表 `shared/contracts/editions.json` 生成）与 `release-windows.yml`，`scripts/test-windows-package-managers.py` 核对两边一致。安装包按版本（edition）各打一个，包管理器只发 full：AppId、显示名和安装包名都取 full 那一份。
 
 - **一个安装包，x64 与 Windows on Arm 通用**：`ArchitecturesAllowed=x64compatible`。在 ARM64 的 Windows 11 上，Server 等程序以 x64 模拟运行，64 位 TIP 换成随包的 Arm64X 版，原生 ARM64 应用和模拟的 x64 应用都能加载它（`../Build-Client.md`）。包定义里只声明 x64，winget 在 ARM64 上会选用它。
 - **按机器安装**：`PrivilegesRequired=admin`，程序装到 `%ProgramFiles%\lingyaoime`，安装包自己请求提权（winget 的 `ElevationRequirement: elevatesSelf`）。输入法要注册 TSF DLL、COM 类和登录任务，没有按用户安装的形态。
@@ -35,7 +35,7 @@ Scoop 的惯例是便携应用：解压到 `scoop\apps\<名字>`，不写系统�
 
 ## 签名
 
-包管理器只能指向签过名的安装包。`release-windows.yml` 在 CI 上打出并先行发布的 `LingyaoIME_Setup_v<版本>.exe` 没有签名（签名证书是只在发布机上的 Certum SimplySign 卡）；它里面的 x64 Server 以 `MSIME_SERVER_UIACCESS=ON` 构建，未签名的 uiAccess 程序系统拒绝启动，装上之后只能打英文（见 `../installer/Sign-InstalledServer-Local.ps1`）。能用的是维护者用 `../installer/Package-SimplySign.ps1` 签名后、连同新的 `.sha256` 和同一次构建的 `msime-windows-<edition>-<version>-symbols.zip` 替换到同一个发布上的那一份。替换会改变摘要，所以包定义必须在替换之后渲染。
+包管理器只能指向签过名的安装包。`release-windows.yml` 在 CI 上打出并先行发布的 `LingyaoIME_Setup_v<版本>.exe` 没有签名（签名证书是只在发布机上的 Certum SimplySign 卡）；它里面的 x64 Server 以 `LINGYAO_SERVER_UIACCESS=ON` 构建，未签名的 uiAccess 程序系统拒绝启动，装上之后只能打英文（见 `../installer/Sign-InstalledServer-Local.ps1`）。能用的是维护者用 `../installer/Package-SimplySign.ps1` 签名后、连同新的 `.sha256` 和同一次构建的 `lingyao-windows-<edition>-<version>-symbols.zip` 替换到同一个发布上的那一份。替换会改变摘要，所以包定义必须在替换之后渲染。
 
 因此：
 
@@ -62,9 +62,9 @@ python3 platforms/windows/packaging/render.py --version 0.1.0 --installer dist/L
 
 ```
 winget/manifests/m/Lingyao/LingyaoIME/<版本>/Lingyao.LingyaoIME*.yaml
-scoop/msime.json
-chocolatey/msime/msime.nuspec
-chocolatey/msime/tools/chocolateyinstall.ps1、chocolateyuninstall.ps1
+scoop/lingyao.json
+chocolatey/lingyao/lingyao.nuspec
+chocolatey/lingyao/tools/chocolateyinstall.ps1、chocolateyuninstall.ps1
 ```
 
 发布页上的安装包被替换之后摘要随之改变，所以只在签名的安装包就位之后渲染（见上文「签名」）。
@@ -104,18 +104,18 @@ python platforms/windows/packaging/render.py --tag windows-v<版本> --output ou
 
 ### Scoop
 
-1. 建一个 bucket 仓库（例如 `metasequoiaime/scoop-bucket`），把渲染出的 `scoop/msime.json` 放到 `bucket/msime.json`。
-2. 用户安装：`scoop bucket add msime https://github.com/metasequoiaime/scoop-bucket`，然后 `scoop install msime`。不建 bucket 也可以直接 `scoop install <msime.json 的 raw 地址>`。
-3. 后续版本：签名的安装包替换上去之后重新渲染，把新的 `msime.json` 提交到 bucket。不要给 bucket 配 Excavator 自动更新，原因见上文「签名」。
-4. 在 Windows 上验证：`scoop install .\out\package-managers\scoop\msime.json`、`scoop update msime`（数据目录应保留）、`scoop uninstall msime`。
+1. 建一个 bucket 仓库（例如 `metasequoiaime/scoop-bucket`），把渲染出的 `scoop/lingyao.json` 放到 `bucket/lingyao.json`。
+2. 用户安装：`scoop bucket add lingyao https://github.com/metasequoiaime/scoop-bucket`，然后 `scoop install lingyao`。不建 bucket 也可以直接 `scoop install <lingyao.json 的 raw 地址>`。
+3. 后续版本：签名的安装包替换上去之后重新渲染，把新的 `lingyao.json` 提交到 bucket。不要给 bucket 配 Excavator 自动更新，原因见上文「签名」。
+4. 在 Windows 上验证：`scoop install .\out\package-managers\scoop\lingyao.json`、`scoop update lingyao`（数据目录应保留）、`scoop uninstall lingyao`。
 
 ### Chocolatey
 
-1. 在 Windows 上打包并本地安装：`cd out\package-managers\chocolatey\msime`，`choco pack`，然后以管理员身份 `choco install msime --source . -y`；可选 `--params "'/DataDir:D:\msime-data'"`。验证后 `choco uninstall msime -y`。
+1. 在 Windows 上打包并本地安装：`cd out\package-managers\chocolatey\lingyao`，`choco pack`，然后以管理员身份 `choco install lingyao --source . -y`；可选 `--params "'/DataDir:D:\lingyao-data'"`。验证后 `choco uninstall lingyao -y`。
 2. 在 community.chocolatey.org 注册账号，取 API key：`choco apikey --key <key> --source https://push.chocolatey.org/`。
-3. `choco push msime.<版本>.nupkg --source https://push.chocolatey.org/`。社区仓库会先跑自动校验（validator）、在测试机上安装卸载（verifier），再进人工审核；首个版本审核时间最长。包从发布页下载安装包并按 `checksum64` 校验，没有内嵌二进制，所以不需要 `VERIFICATION.txt`。
+3. `choco push lingyao.<版本>.nupkg --source https://push.chocolatey.org/`。社区仓库会先跑自动校验（validator）、在测试机上安装卸载（verifier），再进人工审核；首个版本审核时间最长。包从发布页下载安装包并按 `checksum64` 校验，没有内嵌二进制，所以不需要 `VERIFICATION.txt`。
 4. 首次审核通过前，`owners` 里的 `Lingyao` 要换成实际的 Chocolatey 账号名。
 
 ## 工作流
 
-`package-definitions-windows.yml` 只能手动触发（`gh workflow run package-definitions-windows.yml -f version=<版本>`，预发布加 `-f prerelease=true`），在签名的安装包替换到 `windows-v<版本>` 之后运行。它在 Windows runner 上跑 `render.py --tag windows-v<版本> --output target/package-managers`：下载发布页上的安装包，核对摘要，要求 `Get-AuthenticodeSignature` 报告 `Valid`；再用 `choco pack` 打出 `chocolatey/msime.<版本>.nupkg`，整个目录作为构建产物 `msime-package-definitions-windows-<版本>` 上传。发布页上还是 CI 打的未签名安装包时它失败，不产出任何定义。它不向任何外部仓库推送；上面的发布步骤可以直接用这个产物，跳过自己渲染。`release-windows.yml` 不渲染包定义，因为它发布的正是那份未签名的安装包。
+`package-definitions-windows.yml` 只能手动触发（`gh workflow run package-definitions-windows.yml -f version=<版本>`，预发布加 `-f prerelease=true`），在签名的安装包替换到 `windows-v<版本>` 之后运行。它在 Windows runner 上跑 `render.py --tag windows-v<版本> --output target/package-managers`：下载发布页上的安装包，核对摘要，要求 `Get-AuthenticodeSignature` 报告 `Valid`；再用 `choco pack` 打出 `chocolatey/lingyao.<版本>.nupkg`，整个目录作为构建产物 `lingyao-package-definitions-windows-<版本>` 上传。发布页上还是 CI 打的未签名安装包时它失败，不产出任何定义。它不向任何外部仓库推送；上面的发布步骤可以直接用这个产物，跳过自己渲染。`release-windows.yml` 不渲染包定义，因为它发布的正是那份未签名的安装包。

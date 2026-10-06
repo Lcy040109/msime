@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 bool near(double a, double b) { return std::fabs(a - b) < 1e-9; }

@@ -20,7 +20,7 @@ final class MacPreparedLocalSnapshot: @unchecked Sendable {
     }
   }
   static func invoke(_ selector: String, _ parameters: NSDictionary? = nil) throws -> NSDictionary {
-    guard let type = NSClassFromString("MSIMEClientSession") as? NSObject.Type,
+    guard let type = NSClassFromString("LINGYAOClientSession") as? NSObject.Type,
           let result = type.perform(NSSelectorFromString(selector), with: parameters)?.takeUnretainedValue() as? NSDictionary else {
       throw BackendAccountClient.Failure(status: 503)
     }
@@ -35,7 +35,7 @@ final class MacPreparedLocalSnapshot: @unchecked Sendable {
     }
     let versionResult = try Self.invoke("snapshotVersion:", context)
     guard let version = versionResult["version"] as? String else { throw BackendAccountClient.Failure(status: 409) }
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-snapshot-stage-" + identifier, isDirectory: true)
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-snapshot-stage-" + identifier, isDirectory: true)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false)
     stagingRoot = root
     let request: NSDictionary = ["options": context, "staging_root": root.path,

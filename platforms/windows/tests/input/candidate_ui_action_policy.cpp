@@ -9,11 +9,11 @@ struct Candidate {
 };
 
 int main() {
-  using msime::windows::valid_candidate_ui_index;
+  using lingyao::windows::valid_candidate_ui_index;
   assert(valid_candidate_ui_index(0));
   assert(valid_candidate_ui_index(9));
   assert(!valid_candidate_ui_index(10));
-  using msime::windows::candidate_ui_action_matches;
+  using lingyao::windows::candidate_ui_action_matches;
   // Third page: visible slots 0..5 carry Engine IDs 12..17.
   std::vector<Candidate> page;
   for (size_t index = 12; index < 18; ++index)

@@ -11,12 +11,12 @@
 #### 共享层与宿主接口
 
 - 不依赖 Tauri、React 或任何平台宿主的 Rust 共享层，覆盖偏好设置、资源安装与校验、输入运行时、账号与云服务、语音、翻译、皮肤、社区资源、剪贴板、个人词库、打字统计和候选释义。
-- 输入引擎 `crates/engine`（`msime-engine`）是纯 Rust 实现，由 C++ MSIME-Engine 移植而来，输入算法、组合状态和学习数据归它管理，共享层只做编排；已有的用户词库日志、个人词库与学习数据按原格式读写，无需迁移。
+- 输入引擎 `crates/engine`（`lingyao-engine`）是纯 Rust 实现，由 C++ LINGYAO-Engine 移植而来，输入算法、组合状态和学习数据归它管理，共享层只做编排；已有的用户词库日志、个人词库与学习数据按原格式读写，无需迁移。
 - 版本化 C ABI（`crates/host-api`）作为所有原生宿主的唯一入口，以 `cdylib`/`staticlib`/`rlib` 三种形态提供，覆盖会话生命周期、候选与代次选择、词库快照、云词典、云剪贴板、系统字体目录、翻译提供方、语音提供方与打字统计。
 - 输入运行时统一处理焦点、候选翻页、代次选择与全半角转换，并接入固定版本的整句重排模型。
 - macOS 与 Windows 各有一层宿主支持 crate：macOS 提供面板会话、云剪贴板与云词典桥接；Windows 提供语音控制器、语音上屏策略与 Windows Ink 手写。桌面 shell 禁用 `unsafe`，平台 API 调用集中在这两个 crate 里做安全封装。
 - Rust workspace 统一 GPL-3.0-only、`edition 2021` 与 `unsafe_code = "deny"`，工具链由 `rust-toolchain.toml` 钉死。
-- 韩语（Dubeolsik）方案可以把正在组字的那一个音节转换成汉字：宿主接口新增 `MSIME_CONVERT_HANJA`（16），打开后候选是该音节的汉字，按 libhangul 表的顺序排列、不重排，有训音（훈음）的附在注释里；选择后提交汉字，Esc 和退格只关闭列表、保留音节，输入字母关闭列表并继续组字，标点、失焦和结束组字提交的是韩文。已经上屏的音节和词级转换不在本次范围内。汉字表由 `msime-dict-build hanja` 从 libhangul 的 `data/hanja/hanja.txt`（BSD-3-Clause，固定提交）生成，只收单音节，编进引擎；它的 BSD-3-Clause 声明随六个平台的安装包一起分发，位置见[第三方组件清单](docs/third-party.md#编译进共享库的数据)。汉字选择不学习，候选没有置顶、固定排位和删除菜单。
+- 韩语（Dubeolsik）方案可以把正在组字的那一个音节转换成汉字：宿主接口新增 `LINGYAO_CONVERT_HANJA`（16），打开后候选是该音节的汉字，按 libhangul 表的顺序排列、不重排，有训音（훈음）的附在注释里；选择后提交汉字，Esc 和退格只关闭列表、保留音节，输入字母关闭列表并继续组字，标点、失焦和结束组字提交的是韩文。已经上屏的音节和词级转换不在本次范围内。汉字表由 `lingyao-dict-build hanja` 从 libhangul 的 `data/hanja/hanja.txt`（BSD-3-Clause，固定提交）生成，只收单音节，编进引擎；它的 BSD-3-Clause 声明随六个平台的安装包一起分发，位置见[第三方组件清单](docs/third-party.md#编译进共享库的数据)。汉字选择不学习，候选没有置顶、固定排位和删除菜单。
 - 汉字候选的显示：主行只显示汉字，训音（훈음）不再跟在汉字后面占一整格，而是画在候选下方的小字释义行，不受「显示译文」和英文释义开关影响；macOS、Windows、Android、iOS 与 HarmonyOS 横排都为这一行预留高度，打开列表时候选窗不再变高。IBus 与 Fcitx5 的候选只有一行，训音放在译文的位置（IBus 用译文颜色，Fcitx5 用斜体）。训音只用于显示，Ctrl+Enter 等「上屏译文」的操作不会提交它。汉字候选同时开放候选释义与译文：共享的翻译查询不再跳过韩语，释义查询在原文查不到时按简体字再查一次（`韓` 按 `韩` 查），繁体输出下的中文候选同样受益；随包的英文释义表只收二到六字的词，单个汉字的英文释义需要在线翻译、自定义或学习到的条目，其他语言的离线释义可以命中单字。
 - 网址输入模式（默认开启，没有设置开关）：全拼、双拼、五笔组字中原文恰好是 `www` 时按 `.`，`http`、`https` 时按 `:`，`ftp` 时按 `.` 或 `:`，就切换到网址输入，后续按键原样作为半角 ASCII 网址输入，不再转成中文；五笔码长只有 4，在 `http` 后按 `s` 就直接进入。网址里能输入字母（保留大小写）、数字和 `-._~:/?#[]@!$&'()*+,;=%^`，最长 512 个字符；`"` `<` `>` `\` `{` `}` `|` 和反引号不属于网址，按下时先上屏网址再按标点处理。模式只有一行显示整段网址的候选，空格或回车上屏网址，全角模式下网址仍是半角，Esc 取消；退格删掉触发键（以及五笔进入用的 `s`）后回到原来的组字，误触发时还能选回原来的字（如五笔 `www` 的「众」）。网址不进英文词库也不参与学习，计入打字统计。宿主接口 View.local_mode 新增 `url`，网址模式和触发键经 `spelling_symbols` 发布；Linux（IBus / Fcitx5，候选标注「网址」）、HarmonyOS（硬件键盘与触屏符号键）、Windows（TSF 键击缓冲最长 64 个字符，超出部分输入不进去）、Android 实体键盘与 iOS 符号面板已适配。
 
@@ -52,7 +52,7 @@
 - 候选调色板、Fcitx 主题、字体策略、滚轮翻页、候选动作（固定、取消固定、删除）、翻译策略、成对标点与双拼方案名；九键、九键歧义拼音、本地输入模式、数字选词、小键盘标点映射、繁简与日文转换、辅助码、模糊音、默认开启且不在设置页或输入法菜单显示的全拼纠错、全角半角、智能标点空格与退格长按。
 - 模式徽章与语音波形浮层各自提供 X11 与 Wayland（layer-shell）后端，缺少依赖时退回面板文字。
 - 在线候选（含 AI 与翻译）、语音、剪贴板、手写、表情、词库、云词典与云剪贴板各有独立的 provider 入口；在线候选与语音配套 socket 激活的 systemd 用户单元，剪贴板配套常驻用户单元。云词典与云剪贴板目前只有请求入口，仓库没有附带应答它们的 provider 服务，Fcitx5 菜单里的云剪贴板条目需要用户自备 provider；设置窗口里的云剪贴板直接使用已登录账号。桌面入口提供九个 Desktop Action。
-- `msime-linux-setup` 按随装的词库锁校验或取回词库、准备用户状态目录，并按当前运行的是 fcitx5 还是 ibus 说明下一步；缺少运行时配置时图形设置页会直接进入同一套首次配置流程。卸载时先停用并禁用 setup 启用过的用户单元。
+- `lingyao-linux-setup` 按随装的词库锁校验或取回词库、准备用户状态目录，并按当前运行的是 fcitx5 还是 ibus 说明下一步；缺少运行时配置时图形设置页会直接进入同一套首次配置流程。卸载时先停用并禁用 setup 启用过的用户单元。
 - 升级后由宿主在建立会话前比对词库锁代次，原子替换运行时配置中的资源与词库路径。
 - IBus 与 Fcitx5 在韩语组字时按 `Hangul_Hanja` 或单独的 F9 把正在组合的音节转换成汉字，与 ibus-hangul、fcitx5-hangul 的默认键一致；Ctrl+F9 仍是语音开关。
 - CPack 提供 TGZ 与 DEB 打包，Debian 包声明 IBus、Python 与（启用时）Fcitx5 依赖，并随包携带许可证与平台 README。
@@ -91,13 +91,13 @@
 #### 本地语音识别
 
 - 语音服务 `local` 改为基于 sherpa-onnx 的设备端识别，六个平台共用同一份模型目录与设置页。运行时 sherpa-onnx v1.13.8 按平台由 `resources/voice-runtime.lock.json` 固定 SHA-256，`scripts/fetch_voice_runtime.py` 校验后取回，宿主在首次识别时动态加载，缺少运行时的包照常启动、只把本地识别标为不可用。
-- 模型目录 `resources/local-asr-models.json` 提供三个模型：默认的中英流式 X-ASR（边说边出字，自带标点），支持中英日韩粤的 SenseVoice-Small，以及仅桌面提供、约 1 GB 的 Fun-ASR-Nano。模型不随包分发，在设置页按需下载，逐文件校验长度与 SHA-256，完整就位后才写入 `msime-model.json`，下载可取消，也可配置 HTTPS 镜像（`voice_input.asr_model_mirror`）。
+- 模型目录 `resources/local-asr-models.json` 提供三个模型：默认的中英流式 X-ASR（边说边出字，自带标点），支持中英日韩粤的 SenseVoice-Small，以及仅桌面提供、约 1 GB 的 Fun-ASR-Nano。模型不随包分发，在设置页按需下载，逐文件校验长度与 SHA-256，完整就位后才写入 `lingyao-model.json`，下载可取消，也可配置 HTTPS 镜像（`voice_input.asr_model_mirror`）。
 - 用户词库里自己添加的拼音词条作为热词：X-ASR 与 Fun-ASR-Nano 原生使用，SenseVoice 在识别后按拼音做近音替换（`client-core::voice::hotwords`，含 zh/z、n/l、an/ang 等模糊对）。
 - `voice_input.asr_model_path` 接受已安装的模型目录，Unix、Windows 盘符、UNC 等绝对路径写法在任何系统上都能通过校验，同一份偏好文件跨平台读取不再被拒。
-- 宿主接口新增 `msime_client_voice_hotwords`、`msime_client_voice_hotword_correct`、`msime_client_voice_local_models`、`msime_client_voice_local_model_install`、`msime_client_voice_local_model_cancel` 与 `msime_client_voice_local_model_remove`。
-- `msime-voice-local` 辅助进程通过标准输入输出上的 JSON 行协议识别，macOS 与 Linux 的输入法进程由它加载模型，自身不常驻数百 MB 的模型；空闲 120 秒释放模型，空闲 10 分钟退出。协议见 `shared/voice/README.md`，许可证见[第三方组件清单](docs/third-party.md)。
+- 宿主接口新增 `lingyao_client_voice_hotwords`、`lingyao_client_voice_hotword_correct`、`lingyao_client_voice_local_models`、`lingyao_client_voice_local_model_install`、`lingyao_client_voice_local_model_cancel` 与 `lingyao_client_voice_local_model_remove`。
+- `lingyao-voice-local` 辅助进程通过标准输入输出上的 JSON 行协议识别，macOS 与 Linux 的输入法进程由它加载模型，自身不常驻数百 MB 的模型；空闲 120 秒释放模型，空闲 10 分钟退出。协议见 `shared/voice/README.md`，许可证见[第三方组件清单](docs/third-party.md)。
 - 识别全程不联网，只有下载模型时访问 GitHub Releases 或所配置的镜像，见[网络请求与数据流向](PRIVACY.md)。
-- 各平台接入：Windows 在 `msime-client-server` 内边录边识别，浮窗与豆包一样显示实时文本；macOS 输入法经辅助进程识别；Linux 由用户级语音服务调用辅助进程，本地识别不再要求保存任何云端凭据，安装模型时顺带启用语音服务；Android 与 HarmonyOS（arm64）在应用内识别，HarmonyOS 设置页可下载与删除模型；iOS 主应用内识别（键盘扩展受内存上限所限不加载模型）。HarmonyOS 的 armeabi-v7a 包没有本地识别。
+- 各平台接入：Windows 在 `lingyao-client-server` 内边录边识别，浮窗与豆包一样显示实时文本；macOS 输入法经辅助进程识别；Linux 由用户级语音服务调用辅助进程，本地识别不再要求保存任何云端凭据，安装模型时顺带启用语音服务；Android 与 HarmonyOS（arm64）在应用内识别，HarmonyOS 设置页可下载与删除模型；iOS 主应用内识别（键盘扩展受内存上限所限不加载模型）。HarmonyOS 的 armeabi-v7a 包没有本地识别。
 - 系统识别：macOS 26 与 iOS 26 起使用 SpeechAnalyzer，更早的系统在支持时要求 SFSpeechRecognizer 设备端识别；HarmonyOS 的 Core Speech Kit 改为写音频模式（`recognitionMode: 0`），识别器只听输入法写入的音频，末尾不足一帧的音频补静音后写入。
 - 修正 macOS CMake 用 `FORCE` 覆盖用户缓存变量的问题。
 
@@ -108,13 +108,13 @@
 - Android 原生安装包的候选翻译改用已登录账号的令牌：此前它读取的是 Tauri 合包才写入的会话存储，原生包登录后仍一直使用匿名账号。合包照旧使用其 Rust 会话的令牌。
 - 新装时没有任何功能会把输入内容发出设备（#3817）：云联想把正在组的拼音发给 Google 输入工具，六个平台新装默认关闭，Windows、Linux 与 macOS 在首次使用时询问且默认选项是不启用，已存配置升级沿用原值；语音识别、语音润色、AI 联想默认凭据为空，不填就不发请求；候选翻译在所有平台新装时都不联网，要在设置里选择一个翻译服务才发请求。
 - 在线候选释义走灵耀账号（`https://api.msime.app/v1/translate`）改为显式选择：新增偏好 `translation_account`（所有平台新装及恢复默认时都为 `false`；配置文件里缺这个字段按 `false` 读，未选时不写入配置文件），只有在翻译服务里选了「灵耀账号」、候选翻译开着、且没有启用你自己的小牛、自定义或凭据可用的腾讯服务时，macOS、iOS、Android 才把当前页的中文候选词发给它。此前这三个平台在没有配置自己的服务时会默认走这条路径。升级影响：没选过翻译服务的用户，包括已登录账号的用户，升级后都不再收到在线释义，要重新在设置里选择「灵耀账号」或填入自己的服务；在此之前，非英语目标语言没有释义，英文释义只来自离线词典，iOS 上非英语的释义行（主语言和第二语言都算）会收起。细节见[网络请求与数据流向](PRIVACY.md#候选翻译默认不联网)。
-- 六个平台均在安装后首次启动时注册本机匿名灵耀账号：Linux 在 `postinst` / `msime-linux-setup`，Windows 在 Server 首次以 `--production` 启动时，macOS 在输入法首次激活时，iOS 与 Android 在应用首次打开时，HarmonyOS 在应用或键盘首次启动时。只发送本机随机生成的标识与口令，不含输入内容，失败时下次启动重试。Windows 与 HarmonyOS 经新的 host C ABI `msime_client_ensure_anonymous_account`，由共享层 `client-core` 实现，与其他平台使用相同的文件名与协议。
+- 六个平台均在安装后首次启动时注册本机匿名灵耀账号：Linux 在 `postinst` / `lingyao-linux-setup`，Windows 在 Server 首次以 `--production` 启动时，macOS 在输入法首次激活时，iOS 与 Android 在应用首次打开时，HarmonyOS 在应用或键盘首次启动时。只发送本机随机生成的标识与口令，不含输入内容，失败时下次启动重试。Windows 与 HarmonyOS 经新的 host C ABI `lingyao_client_ensure_anonymous_account`，由共享层 `client-core` 实现，与其他平台使用相同的文件名与协议。
 - 六个平台均在启动时上报一次安装事件；Android、iOS、macOS、Linux、Windows 还会在崩溃时上报（HarmonyOS 暂无崩溃上报）。字段、去重与离线重试行为按平台不同，逐条见[网络请求与数据流向](PRIVACY.md)，那里同时记录发送内容、目的地、代码位置和关闭方式。
 - 按需下载的资源包扩展到三个桌面平台：Windows 和 macOS 的安装包不再内置桌面神经联想模型（约 25 MB），打开「桌面神经联想」时由设置应用下载，Linux 在安装布局里没有它时同样下载；Windows 只在系统没有中文 Windows Ink 识别器时才下载手写模型，Ink 可用时手写面板照常识别、不等下载；我们自己发布的 Linux deb/rpm 不再带手写模型，第一次打开手写面板时下载，发行版仓库的包继续内置。下载失败时资源包行和手写面板都提供「设置下载镜像」。已下载的资源包只在文件字节（名字、SHA-256、长度）变了时才算过期：此前每次发布新的词库版本，即使日文词典没变也会因下载地址变化被当成过期而停用。细节见[资源与更新下载](PRIVACY.md#资源与更新下载)。
 
 #### 工程与文档
 
-- 输入引擎从取回并打 overlay 的 C++ 归档改为仓库内的 Rust crate：`engine-lock.json`、`scripts/fetch_engine.py`、`scripts/relock_engine.py`、全部 `scripts/apply_engine_*.py` 与 `scripts/engine-overlays/`、每周重锁与自动合并的两个工作流、`crates/engine-bridge` 及其 Boost／fmt／spdlog 构建依赖一并删除，构建不再需要 C++ 工具链或 `vendor/MSIME-Engine`。行为基准从 C++ 参考实现录制在 `crates/engine/tests/golden/`，录制方法见 `tools/engine-golden/README.md`；平台仍用的 IPC 契约头文件、辅助码表与 miniaudio 改为随仓库提交（`shared/contracts/`、`resources/helpcodes/`、`platforms/windows/third_party/miniaudio/`）。Google 整句解码器及其 `dict_pinyin.dat`、Whisper 本地文件识别随之去掉。
+- 输入引擎从取回并打 overlay 的 C++ 归档改为仓库内的 Rust crate：`engine-lock.json`、`scripts/fetch_engine.py`、`scripts/relock_engine.py`、全部 `scripts/apply_engine_*.py` 与 `scripts/engine-overlays/`、每周重锁与自动合并的两个工作流、`crates/engine-bridge` 及其 Boost／fmt／spdlog 构建依赖一并删除，构建不再需要 C++ 工具链或 `vendor/LINGYAO-Engine`。行为基准从 C++ 参考实现录制在 `crates/engine/tests/golden/`，录制方法见 `tools/engine-golden/README.md`；平台仍用的 IPC 契约头文件、辅助码表与 miniaudio 改为随仓库提交（`shared/contracts/`、`resources/helpcodes/`、`platforms/windows/third_party/miniaudio/`）。Google 整句解码器及其 `dict_pinyin.dat`、Whisper 本地文件识别随之去掉。
 - `resources/*.lock.json` 固定随包词库与模型的 URL、长度与 SHA-256。
 - `scripts/verify-local.sh` 提供本地统一验证，分快速门禁与完整两档；长期失败集中记在 `scripts/known-failures.txt`，每条附完整取证记录，比对只对不在清单里的失败名报错。
 - 静态与契约门禁以独立脚本形式进入本地验证，覆盖配置键覆盖率、界面动作覆盖率、源码清单与设置页产物一致性。

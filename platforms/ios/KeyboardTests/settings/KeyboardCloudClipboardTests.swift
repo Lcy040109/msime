@@ -282,8 +282,8 @@ final class KeyboardCloudClipboardTests: XCTestCase {
 
   /// The keyboard can only read the signed-in session if the app stores it in the App Group's keychain access group, which both already hold as an entitlement.
   func testAccountSessionUsesTheAppGroupKeychainGroupOnIOS() throws {
-    XCTAssertEqual(BackendKeychain.defaultAccessGroup, "group.app.msime.ios")
-    let keychain = BackendKeychain(service: "app.msime.backend.account.test-\(UUID().uuidString)")
+    XCTAssertEqual(BackendKeychain.defaultAccessGroup, "group.app.lingyao.ios")
+    let keychain = BackendKeychain(service: "app.lingyao.backend.account.test-\(UUID().uuidString)")
     let tokens = BackendAccountClient.Tokens(access_token: String(repeating: "a", count: 64),
       refresh_token: String(repeating: "f", count: 64), token_type: "Bearer", expires_in: 900,
       user: .init(id: "synthetic-user", display_name: "测试", created_at: "2026-09-08"))

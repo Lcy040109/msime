@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
@@ -37,7 +37,7 @@ public final class FuzzyPinyinDeviceSmoke extends DeviceSmoke {
             publish(preferences, enabled.toString().getBytes(StandardCharsets.UTF_8));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             stage = "fuzzy candidate generation";
             for (String key : new String[] {"z", "o", "n", "g", "g", "u", "o"}) tap(key(key));
             await(candidate("中国"));
@@ -49,7 +49,7 @@ public final class FuzzyPinyinDeviceSmoke extends DeviceSmoke {
             publish(preferences, disabled.toString().getBytes(StandardCharsets.UTF_8));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             for (String key : new String[] {"z", "o", "n", "g", "g", "u", "o"}) tap(key(key));
             if (findVisible(candidate("中国")) != null) throw new AssertionError("disabled fuzzy rule remained active");
             JSONObject persisted = new JSONObject(new String(Files.readAllBytes(preferences.toPath()), StandardCharsets.UTF_8));
@@ -58,13 +58,13 @@ public final class FuzzyPinyinDeviceSmoke extends DeviceSmoke {
                 throw new AssertionError("disabled fuzzy rule was not retained");
             }
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath()); else publish(preferences, original);
         }
     }
 
     private Predicate<android.view.accessibility.AccessibilityNodeInfo> candidate(String text) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.getContentDescription() != null
             && node.getContentDescription().toString().startsWith("候选 1：" + text);
     }
@@ -79,14 +79,14 @@ public final class FuzzyPinyinDeviceSmoke extends DeviceSmoke {
     }
 
     private void restartIme() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
     private void openEditor() throws Exception {
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
     }
 
     private void shell(String command) throws Exception {

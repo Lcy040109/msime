@@ -4,7 +4,7 @@
 //! parser splits syllables but says nothing about whether a scheme reaches real entries: an empty
 //! table answers "no candidates" for correct and incorrect spellings alike. This probe therefore
 //! takes a resource directory staged from `resources/desktop-dictionary.lock.json`.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 const QUANPIN: u8 = 0;
 const SHUANGPIN: u8 = 1;

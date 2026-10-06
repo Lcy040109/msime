@@ -7,7 +7,7 @@ final class CharacterWidthPreferenceTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-character-width-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-character-width-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

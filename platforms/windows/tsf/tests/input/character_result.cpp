@@ -1,13 +1,13 @@
 #include "../../HostCharacterResult.h"
 #include <cstdlib>
 #include <vector>
-using msime::tsf::CharacterResultStatus;
+using lingyao::tsf::CharacterResultStatus;
 int main() {
-    msime::tsf::EngineResult result;
+    lingyao::tsf::EngineResult result;
     std::vector<std::string> events;
     bool writeOK = true, cleanupOK = true, refreshOK = true;
     auto apply = [&] {
-        return msime::tsf::ApplyHostCharacterResult(result,
+        return lingyao::tsf::ApplyHostCharacterResult(result,
             [&](const std::string &text) { events.push_back(text); return writeOK; },
             [&] { events.push_back("cleanup"); return cleanupOK; },
             [&] { events.push_back("refresh"); return refreshOK; });

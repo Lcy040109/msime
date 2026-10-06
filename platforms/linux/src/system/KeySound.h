@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <string>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
-// The key class msime_client_key_sound takes for a key press: 1 Space, 2 Enter, 3 Backspace, 0 any other key. IBus and Fcitx5 both report X11 keysyms, so one table serves both hosts.
+// The key class lingyao_client_key_sound takes for a key press: 1 Space, 2 Enter, 3 Backspace, 0 any other key. IBus and Fcitx5 both report X11 keysyms, so one table serves both hosts.
 constexpr std::uint32_t key_sound_class(std::uint32_t keysym) {
   switch (keysym) {
   case 0x0020: // space
@@ -26,11 +26,11 @@ constexpr bool key_press_sounds(bool release, bool modifier_key, bool shortcut) 
   return !release && !modifier_key && !shortcut;
 }
 
-// msime_client_typing_effect's events beyond the key classes above, and its flag for an auto-repeated key, which is drawn but not counted (msime_client.h).
+// lingyao_client_typing_effect's events beyond the key classes above, and its flag for an auto-repeated key, which is drawn but not counted (lingyao_client.h).
 constexpr std::uint32_t kTypingEffectCommit = 4;
 constexpr std::uint32_t kTypingEffectRepeat = 0x100;
 
-// The combo count in a msime_client_typing_effect answer: its low 16 bits, zero while the combo counter is off or the call was refused.
+// The combo count in a lingyao_client_typing_effect answer: its low 16 bits, zero while the combo counter is off or the call was refused.
 constexpr std::uint32_t typing_effect_combo(std::uint32_t answer) { return answer & 0xffffu; }
 
 // The combo as the Linux hosts show it, as one more segment of the candidate aux line; empty below two, as on the other hosts, so a single key is not called a combo. Linux draws no flash or sparks: neither IBus nor Fcitx5 gives an input method a reliable place on screen for an overlay under Wayland, so the count in the text the panel already shows is the whole effect.
@@ -55,7 +55,7 @@ private:
   std::uint32_t held_ = 0;
 };
 
-// The host's half of msime_client_music_set_active. The player keeps the answer it was told last for the whole process, whichever session told it, so a host tells it only when the answer changes, and counts it told only once a call was accepted: a call made while no sound is switched on starts no player and is not remembered, so the next one repeats it once music is switched on.
+// The host's half of lingyao_client_music_set_active. The player keeps the answer it was told last for the whole process, whichever session told it, so a host tells it only when the answer changes, and counts it told only once a call was accepted: a call made while no sound is switched on starts no player and is not remembered, so the next one repeats it once music is switched on.
 class MusicActivity {
 public:
   // Tell the player whether music may play now: the input method is active in a field that is not a secure one. Nothing is sent without a session.
@@ -74,4 +74,4 @@ private:
   bool told_ = false;
 };
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

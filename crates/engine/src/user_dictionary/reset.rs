@@ -32,7 +32,7 @@ pub fn reset_learned_data(paths: &RuntimePaths) -> Result<()> {
     reset_learned_data_with(paths, true)
 }
 
-/// [`reset_learned_data`]，`main_dictionary` 为假（代次里没有 `msime-pinyin.db`，见 `SchemeSet::reads_main_dictionary`）时只换回 `msime-english.db` 和清空日志，不要求也不复制 `msime-pinyin.db`。
+/// [`reset_learned_data`]，`main_dictionary` 为假（代次里没有 `lingyao-pinyin.db`，见 `SchemeSet::reads_main_dictionary`）时只换回 `lingyao-english.db` 和清空日志，不要求也不复制 `lingyao-pinyin.db`。
 pub fn reset_learned_data_with(paths: &RuntimePaths, main_dictionary: bool) -> Result<()> {
     paths.validate()?;
     if weakly_canonical(&paths.resources)? == weakly_canonical(&paths.dictionaries)? {
@@ -238,7 +238,7 @@ mod tests {
         }
     }
 
-    /// 拆分发布布局：`msime-pinyin.db` 没有五笔表，重置后的工作主词库要把 `msime-wubi.db` 的码表并回来，五笔学习与删词才有表可写。
+    /// 拆分发布布局：`lingyao-pinyin.db` 没有五笔表，重置后的工作主词库要把 `lingyao-wubi.db` 的码表并回来，五笔学习与删词才有表可写。
     #[test]
     fn reset_merges_the_split_wubi_tables_into_the_fresh_working_copy() {
         let temporary = tempfile::tempdir().unwrap();
@@ -367,7 +367,7 @@ mod tests {
         assert_eq!(error.to_string(), diagnostics::RESET_IN_PLACE);
     }
 
-    /// 没有 `msime-pinyin.db` 的代次：重置只换回 `msime-english.db`、清空日志，不要求资源目录里有 `msime-pinyin.db`，也不在代次里留下它；同一个资源目录按有 `msime-pinyin.db` 重置仍然被拒。
+    /// 没有 `lingyao-pinyin.db` 的代次：重置只换回 `lingyao-english.db`、清空日志，不要求资源目录里有 `lingyao-pinyin.db`，也不在代次里留下它；同一个资源目录按有 `lingyao-pinyin.db` 重置仍然被拒。
     #[test]
     fn reset_without_the_main_dictionary_restores_only_english() {
         let root = tempfile::tempdir().unwrap();
@@ -432,7 +432,7 @@ mod tests {
             &paths.resource(assets::ENGLISH_DICTIONARY),
             "CREATE TABLE english_words(word TEXT,display TEXT,weight INTEGER);",
         );
-        let external = root.path().join("external-msime-pinyin.db");
+        let external = root.path().join("external-lingyao-pinyin.db");
         sql(
             &external,
             "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);",

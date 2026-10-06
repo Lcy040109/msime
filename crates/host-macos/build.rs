@@ -24,7 +24,7 @@ fn main() {
         .file("native/process.mm")
         .flag("-fobjc-arc")
         .std("c++17")
-        .compile("msime_macos_keyboard");
+        .compile("lingyao_macos_keyboard");
     println!("cargo:rustc-link-lib=framework=AppKit");
     println!("cargo:rustc-link-lib=framework=CoreGraphics");
     println!("cargo:rustc-link-lib=framework=CoreAudio");

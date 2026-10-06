@@ -1,13 +1,13 @@
 import Foundation
 
-@_silgen_name("msime_ios_crash_record_path_set")
-private func msimeIOSCrashRecordPathSet(_ path: UnsafePointer<CChar>?)
-@_silgen_name("msime_ios_crash_handlers_install")
-private func msimeIOSCrashHandlersInstall()
+@_silgen_name("lingyao_ios_crash_record_path_set")
+private func lingyaoIOSCrashRecordPathSet(_ path: UnsafePointer<CChar>?)
+@_silgen_name("lingyao_ios_crash_handlers_install")
+private func lingyaoIOSCrashHandlersInstall()
 
 /// One usage-reporting session per keyboard presentation (UsageReporting). The file work runs on a utility queue so it never delays the keyboard appearing.
 enum KeyboardUsageReporting {
-  private static let queue = DispatchQueue(label: "app.msime.ios.keyboard.usage-reporting", qos: .utility)
+  private static let queue = DispatchQueue(label: "app.lingyao.ios.keyboard.usage-reporting", qos: .utility)
   /// Read and written on `queue` only.
   private static var lastFlush: Date?
   private static var exceptionHandlerInstalled = false
@@ -16,7 +16,7 @@ enum KeyboardUsageReporting {
 
   /// viewWillAppear. Sending needs Full Access; without it the app sends the queue the next time it opens.
   static func presented(fullAccess: Bool) {
-    msimeIOSCrashHandlersInstall()
+    lingyaoIOSCrashHandlersInstall()
     if !exceptionHandlerInstalled {
       exceptionHandlerInstalled = true
       NSSetUncaughtExceptionHandler { exception in
@@ -25,8 +25,8 @@ enum KeyboardUsageReporting {
       }
     }
     queue.async {
-      guard let path = UsageReporting.begin() else { msimeIOSCrashRecordPathSet(nil); return }
-      path.withCString { msimeIOSCrashRecordPathSet($0) }
+      guard let path = UsageReporting.begin() else { lingyaoIOSCrashRecordPathSet(nil); return }
+      path.withCString { lingyaoIOSCrashRecordPathSet($0) }
       guard fullAccess, lastFlush.map({ Date().timeIntervalSince($0) >= flushInterval }) ?? true else { return }
       lastFlush = Date()
       UsageReporting.flush()
@@ -36,7 +36,7 @@ enum KeyboardUsageReporting {
   /// viewWillDisappear: the presentation ended normally.
   static func dismissed() {
     queue.async {
-      msimeIOSCrashRecordPathSet(nil)
+      lingyaoIOSCrashRecordPathSet(nil)
       UsageReporting.end()
     }
   }

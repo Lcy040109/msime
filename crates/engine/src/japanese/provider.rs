@@ -369,9 +369,9 @@ mod tests {
     /// The shipped model through the provider: a sentence reading and a pending tail.
     #[test]
     fn real_model_answers_common_readings() {
-        let Some(resources) = std::env::var_os("MSIME_EVAL_RESOURCES") else {
+        let Some(resources) = std::env::var_os("LINGYAO_EVAL_RESOURCES") else {
             eprintln!(
-                "skipped: MSIME_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory"
+                "skipped: LINGYAO_EVAL_RESOURCES is not set to the dict-v2.0.1 resource directory"
             );
             return;
         };

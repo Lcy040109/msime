@@ -10,7 +10,7 @@ full 是现有产品本身：对 full，这里的每个输出都与输入逐字�
 - `CFBundleIdentifier`、`CFBundleExecutable`、`CFBundleName`、`CFBundleDisplayName` 换成版本表里的值，`InputMethodConnectionName` 是新 bundle id 加 `_Connection`（imklaunchagent 只认这种形式，见 Info.plist.in）；
 - 输入模式只留下本版本的方案对应的模式，再加上「英」（Roman）。主模式 `.Hans` 总是在：输入控制器把它当作任何方案都能退回的模式，安装时它总被启用（粤、注、越、藏、笔这些按需模式安装时不启用）。版本不含全拼时，`.Hans` 换上默认方案的图标和名字，默认方案自己的模式不再单列，所以五笔版的菜单里只有「五」和「英」，日文版只有「日」和「英」；
 - 默认方案不是中文方案时（日文、越南文、藏文版），`.Hans` 还换上默认方案模式的语言、字符集和脚本（`TISIntendedLanguage` 是 ja、vi 或 bo），「英」的 `TISIntendedLanguage` 也随之改成这个语言，系统设置的「添加」对话框把整个输入法列在这个语言下，而不是「简体中文」；
-- 加上 `MSIMEEdition`、`MSIMEInputSchemes`、`MSIMEDefaultScheme`、`MSIMESettingsBundleIdentifier`、`MSIMEKeychainService`，版本表 `preference_defaults` 里的 `MSIMEWubiMixedPinyinDefault`，以及不提供手写（`features.handwriting` 为 false）时的 `MSIMEHandwriting` = false：输入法据此不在菜单和悬浮工具栏上放手写入口（`EditionIdentity.h` 的 `MSIMEEditionOffersHandwritingIn`），没有这个键就是有手写；
+- 加上 `LINGYAOEdition`、`LINGYAOInputSchemes`、`LINGYAODefaultScheme`、`LINGYAOSettingsBundleIdentifier`、`LINGYAOKeychainService`，版本表 `preference_defaults` 里的 `LINGYAOWubiMixedPinyinDefault`，以及不提供手写（`features.handwriting` 为 false）时的 `LINGYAOHandwriting` = false：输入法据此不在菜单和悬浮工具栏上放手写入口（`EditionIdentity.h` 的 `LINGYAOEditionOffersHandwritingIn`），没有这个键就是有手写；
 - 去掉模板里的 XML 注释：它们描述的是 full 的十个模式。
 
 用法：
@@ -22,7 +22,7 @@ full 是现有产品本身：对 full，这里的每个输出都与输入逐字�
     edition_bundle.py field   --edition ID KEY                        # 打印 macOS 段的字段、display_name.zh-Hans/en、bundle_name 或 features.<功能>（true/false）
     edition_bundle.py marker  --edition ID --output edition.json      # 设置应用 Resources 里的版本声明；full 不写
     edition_bundle.py tauri-config --edition ID --version VERSION     # 设置应用按版本打包时传给 tauri bundle --config 的配置
-    edition_bundle.py cask    --edition ID --version V --sha256 S --template msime.rb.in
+    edition_bundle.py cask    --edition ID --version V --sha256 S --template lingyao.rb.in
 """
 
 from __future__ import annotations
@@ -118,18 +118,18 @@ def edition_keys(entry: dict) -> str:
     macos = entry["platforms"]["macos"]
     schemes = "".join(f"<string>{scheme}</string>" for scheme in entry["input_schemes"])
     lines = [
-        f"<key>MSIMEEdition</key><string>{entry['id']}</string>",
-        f"<key>MSIMEInputSchemes</key><array>{schemes}</array>",
-        f"<key>MSIMEDefaultScheme</key><string>{entry['default_scheme']}</string>",
-        f"<key>MSIMESettingsBundleIdentifier</key><string>{macos['settings_bundle_id']}</string>",
-        f"<key>MSIMEKeychainService</key><string>{escape(macos['keychain_service'])}</string>",
+        f"<key>LINGYAOEdition</key><string>{entry['id']}</string>",
+        f"<key>LINGYAOInputSchemes</key><array>{schemes}</array>",
+        f"<key>LINGYAODefaultScheme</key><string>{entry['default_scheme']}</string>",
+        f"<key>LINGYAOSettingsBundleIdentifier</key><string>{macos['settings_bundle_id']}</string>",
+        f"<key>LINGYAOKeychainService</key><string>{escape(macos['keychain_service'])}</string>",
     ]
     mixed = entry["preference_defaults"].get("wubi_mixed_pinyin")
     if mixed is not None:
-        lines.append(f"<key>MSIMEWubiMixedPinyinDefault</key><{'true' if mixed else 'false'}/>")
+        lines.append(f"<key>LINGYAOWubiMixedPinyinDefault</key><{'true' if mixed else 'false'}/>")
     # 只写 false：有手写的版本的 plist 与加入这个键之前相同。
     if not entry["features"]["handwriting"]:
-        lines.append("<key>MSIMEHandwriting</key><false/>")
+        lines.append("<key>LINGYAOHandwriting</key><false/>")
     return "".join(line + "\n" for line in lines)
 
 
@@ -322,7 +322,7 @@ def marker(edition_id: str) -> str | None:
 
 
 def tauri_config(edition_id: str, version: str) -> dict:
-    """设置应用按版本打包（`tauri bundle --config`）时合并进去的配置，决定包的 Info.plist 和 .app 的文件名。所有版本共用同一个 `msime-desktop` 可执行文件，它在运行时按 `Contents/Resources/edition.json` 把同样的 identifier 和 productName 写进自己的配置（`apply_edition_to_config`）。full 只带版本号，与引入版本之前相同。"""
+    """设置应用按版本打包（`tauri bundle --config`）时合并进去的配置，决定包的 Info.plist 和 .app 的文件名。所有版本共用同一个 `lingyao-desktop` 可执行文件，它在运行时按 `Contents/Resources/edition.json` 把同样的 identifier 和 productName 写进自己的配置（`apply_edition_to_config`）。full 只带版本号，与引入版本之前相同。"""
     config: dict = {"version": version}
     if edition_id == FULL:
         return config
@@ -333,7 +333,7 @@ def tauri_config(edition_id: str, version: str) -> dict:
 
 
 def cask(template: str, edition_id: str, version: str, sha256: str) -> str:
-    """Homebrew cask。full 等于原来的 `sed` 替换结果；其他版本换掉名字、标识和路径，并且不把 msime-mcp 放上 PATH：同名的命令只能有一个，留给 full。"""
+    """Homebrew cask。full 等于原来的 `sed` 替换结果；其他版本换掉名字、标识和路径，并且不把 lingyao-mcp 放上 PATH：同名的命令只能有一个，留给 full。"""
     text = template.replace("@VERSION@", version).replace("@SHA256@", sha256)
     if edition_id == FULL:
         return text
@@ -344,7 +344,7 @@ def cask(template: str, edition_id: str, version: str, sha256: str) -> str:
     lines = text.splitlines(keepends=True)
     output = []
     for line in lines:
-        if line.lstrip().startswith("binary ") and "msime-mcp" in line:
+        if line.lstrip().startswith("binary ") and "lingyao-mcp" in line:
             # 连同它上面那行说明一起去掉。
             if output and output[-1].lstrip().startswith("#"):
                 output.pop()

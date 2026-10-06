@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class SkinResourceRevision {
 public:
   bool changed(const std::filesystem::path &root, const std::string &id) {
@@ -55,4 +55,4 @@ private:
                          std::pair<std::filesystem::file_time_type, uintmax_t>>>
       previous_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

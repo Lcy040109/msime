@@ -12,8 +12,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ACCOUNT = ROOT / "platforms/harmony/entry/src/main/ets/account/HarmonyAccountCloudBridge.ets"
 NATIVE = ROOT / "platforms/harmony/native/client_napi.cpp"
-TYPES = ROOT / "platforms/harmony/entry/src/main/cpp/types/libmsimeclient/index.d.ts"
-HEADER = ROOT / "crates/host-api/include/msime_client.h"
+TYPES = ROOT / "platforms/harmony/entry/src/main/cpp/types/liblingyaoclient/index.d.ts"
+HEADER = ROOT / "crates/host-api/include/lingyao_client.h"
 APP = ROOT / "apps/harmony/src/main.tsx"
 
 
@@ -32,12 +32,12 @@ def main() -> int:
         encoding="utf-8"
     )
     required = {
-        "C ABI declaration": "msime_client_snapshot_inspect" in header,
-        "queue C ABI declaration": "msime_client_snapshot_queue" in header,
-        "restore C ABI declaration": "msime_client_snapshot_restore" in header,
-        "NAPI call": "TEXT_ENTRY(SnapshotInspect, msime_client_snapshot_inspect)" in native,
+        "C ABI declaration": "lingyao_client_snapshot_inspect" in header,
+        "queue C ABI declaration": "lingyao_client_snapshot_queue" in header,
+        "restore C ABI declaration": "lingyao_client_snapshot_restore" in header,
+        "NAPI call": "TEXT_ENTRY(SnapshotInspect, lingyao_client_snapshot_inspect)" in native,
         "NAPI export": 'ENTRY("snapshotInspect", SnapshotInspect)' in native,
-        "queue NAPI call": "TEXT_ENTRY(SnapshotQueue, msime_client_snapshot_queue)" in native,
+        "queue NAPI call": "TEXT_ENTRY(SnapshotQueue, lingyao_client_snapshot_queue)" in native,
         "queue NAPI export": 'ENTRY("snapshotQueue", SnapshotQueue)' in native,
         "restore async NAPI export": 'ENTRY("snapshotRestore", SnapshotRestore)' in native
         and "napi_create_async_work" in native,

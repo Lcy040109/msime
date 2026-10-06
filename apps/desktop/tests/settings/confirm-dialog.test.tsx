@@ -2,7 +2,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { useConfirm } from "@msime/ui";
+import { useConfirm } from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Fetch the Cantonese and Zhuyin dictionaries the macOS and Windows hosts ship beside their resource set.
 
-``resources/language-dictionaries.lock.json`` pins ``msime-cantonese.db`` and ``msime-zhuyin.db``, built by ``msime-dict-build languages`` and published by ``msime-dictionary/.github/workflows/release-built-dictionaries.yml``, together with their licence texts (``msime-rime_cantonese_LICENSE.txt``, ``msime-libchewing_data_LICENSE.txt``), which must travel with them. ``platforms/macos/stage-resources.sh`` and ``platforms/windows/installer/Prepare-PackageFiles.ps1`` read ``target/language-dictionaries`` and stage nothing when it is absent; without the dictionaries Cantonese and Zhuyin are shown as unavailable and fall back, while Vietnamese needs no data.
+``resources/language-dictionaries.lock.json`` pins ``lingyao-cantonese.db`` and ``lingyao-zhuyin.db``, built by ``lingyao-dict-build languages`` and published by ``lingyao-dictionary/.github/workflows/release-built-dictionaries.yml``, together with their licence texts (``lingyao-rime_cantonese_LICENSE.txt``, ``lingyao-libchewing_data_LICENSE.txt``), which must travel with them. ``platforms/macos/stage-resources.sh`` and ``platforms/windows/installer/Prepare-PackageFiles.ps1`` read ``target/language-dictionaries`` and stage nothing when it is absent; without the dictionaries Cantonese and Zhuyin are shown as unavailable and fall back, while Vietnamese needs no data.
 
 Until a release is pinned the lock does not exist; this prints a "skipped" line and exits 0, so packaging can call it unconditionally. The lock pins a SHA-256 and a size for every file, and a download that does not match them is discarded rather than installed. Idempotent: a file already present and matching is left alone.
 
-``--list-databases`` prints the dictionary databases (``*.db``) the lock pins, one per line, and fetches nothing. Release staging under ``MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1`` requires exactly these, so a scheme whose dictionary has not been released yet (its database is staged when present, but not pinned) does not fail a release, and becomes required by the same lock bump that publishes it.
+``--list-databases`` prints the dictionary databases (``*.db``) the lock pins, one per line, and fetches nothing. Release staging under ``LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1`` requires exactly these, so a scheme whose dictionary has not been released yet (its database is staged when present, but not pinned) does not fail a release, and becomes required by the same lock bump that publishes it.
 
 usage: fetch_language_dictionaries.py [--out <directory>]   (default: target/language-dictionaries)
        fetch_language_dictionaries.py --list-databases
@@ -79,7 +79,7 @@ def main() -> None:
     parser.add_argument("--list-databases", action="store_true")
     arguments = parser.parse_args()
     if arguments.list_databases:
-        # No lock means nothing is pinned, so nothing is printed; the staging scripts treat an empty list under MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 as an error.
+        # No lock means nothing is pinned, so nothing is printed; the staging scripts treat an empty list under LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 as an error.
         if LOCK.is_file():
             for name in pinned_databases(json.loads(LOCK.read_text(encoding="utf-8"))):
                 print(name)

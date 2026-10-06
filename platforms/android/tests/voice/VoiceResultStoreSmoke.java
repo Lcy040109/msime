@@ -1,4 +1,4 @@
-import app.msime.android.VoiceResultStore;
+import app.lingyao.android.VoiceResultStore;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ public final class VoiceResultStoreSmoke {
     }
 
     public static void main(String[] args) throws Exception {
-        Path directory = Files.createTempDirectory("msime-voice-result-");
+        Path directory = Files.createTempDirectory("lingyao-voice-result-");
         try {
             VoiceResultStore store = new VoiceResultStore(directory);
             long now = 1_000_000L;
@@ -33,7 +33,7 @@ public final class VoiceResultStoreSmoke {
             fails(VoiceResultStore.Reason.UNAVAILABLE, () -> linkedStore.save("synthetic", now));
             check(!Files.exists(outside.resolve("middle/nested/result.bin")));
             Files.delete(linkedParent);
-            Path outsideLock = Files.createTempFile("msime-voice-lock-target-", ".lock");
+            Path outsideLock = Files.createTempFile("lingyao-voice-lock-target-", ".lock");
             Files.writeString(outsideLock, "synthetic-lock-target");
             Path linkedLock = directory.resolve("transfer.lock");
             Files.createSymbolicLink(linkedLock, outsideLock);

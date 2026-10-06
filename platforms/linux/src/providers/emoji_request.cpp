@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include "../core/LocalResourcePaths.h"
 #include "provider_socket_cli.h"
 
@@ -11,18 +11,18 @@
 std::string local_resources(int argc, char **argv, bool *local) {
   *local = argc >= 2 && std::string(argv[1]) == "--local";
   if (!*local)
-    return msime_cli_provider_socket(argc, argv, "MSIME_EMOJI_PROVIDER_SOCKET", "emoji.sock");
+    return lingyao_cli_provider_socket(argc, argv, "LINGYAO_EMOJI_PROVIDER_SOCKET", "emoji.sock");
   if (argc == 3)
     return argv[2];
   if (argc != 2)
     return {};
-  return msime_linux::local_resource(
-      "MSIME_EMOJI_RESOURCES", MSIME_EDITION_CLIENT_DIRECTORY "/emoji/msime-others.db", true);
+  return lingyao_linux::local_resource(
+      "LINGYAO_EMOJI_RESOURCES", LINGYAO_EDITION_CLIENT_DIRECTORY "/emoji/lingyao-others.db", true);
 }
 
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "--help") {
-    std::cout << "Usage: msime-linux-emoji [provider-socket] | --local [resources]\n";
+    std::cout << "Usage: lingyao-linux-emoji [provider-socket] | --local [resources]\n";
     return 0;
   }
   bool local = false;
@@ -34,14 +34,14 @@ int main(int argc, char **argv) {
   const auto length = static_cast<size_t>(std::cin.gcount());
   if (std::cin.bad() || length == 0 || length > 16384)
     return 2;
-  std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-      local ? msime_client_emoji_catalog_request(
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+      local ? lingyao_client_emoji_catalog_request(
                   reinterpret_cast<const uint8_t *>(buffer.data()), length,
                   reinterpret_cast<const uint8_t *>(target.data()), target.size())
-            : msime_client_emoji_provider_request(
+            : lingyao_client_emoji_provider_request(
                   reinterpret_cast<const uint8_t *>(buffer.data()), length,
                   reinterpret_cast<const uint8_t *>(target.data()), target.size()),
-      msime_client_string_free);
+      lingyao_client_string_free);
   if (!result)
     return 1;
   try {

@@ -8,7 +8,7 @@
 #include <string_view>
 #include <nlohmann/json.hpp>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct PreviewConfig {
   std::filesystem::path resources;
   std::filesystem::path state_root;
@@ -231,15 +231,15 @@ struct PreviewConfig {
   // same namespace so two Servers on one machine never collide.
   std::wstring aux_pipe_name() const {
     const std::wstring token(pipe_namespace.begin(), pipe_namespace.end());
-    return L"\\\\.\\pipe\\msime-client-preview-" + token + L"-aux";
+    return L"\\\\.\\pipe\\lingyao-client-preview-" + token + L"-aux";
   }
   std::array<std::wstring, 3> pipe_names() const {
     std::array<std::wstring, 3> names;
     const std::wstring token(pipe_namespace.begin(), pipe_namespace.end());
     for (size_t role = 0; role < names.size(); ++role)
-      names[role] = L"\\\\.\\pipe\\msime-client-preview-" + token + L"-" +
+      names[role] = L"\\\\.\\pipe\\lingyao-client-preview-" + token + L"-" +
                     std::to_wstring(role);
     return names;
   }
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

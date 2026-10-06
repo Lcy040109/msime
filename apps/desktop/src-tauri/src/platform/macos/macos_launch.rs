@@ -112,7 +112,7 @@ pub(crate) fn native_locator_root() -> Result<PathBuf, &'static str> {
     if !home.is_absolute() {
         return Err("Cannot resolve native HostOptions locator");
     }
-    // 设置应用的 bundle identifier（full 是 tauri.macos.conf.json 里的 app.msime.macos），也就是 `app_data_dir` 解析出的默认状态目录；随版本而变，同时安装的版本各用各的目录。
+    // 设置应用的 bundle identifier（full 是 tauri.macos.conf.json 里的 app.lingyao.macos），也就是 `app_data_dir` 解析出的默认状态目录；随版本而变，同时安装的版本各用各的目录。
     Ok(home
         .join("Library/Application Support")
         .join(&crate::platform::macos::macos_identity().settings_bundle_id))
@@ -141,8 +141,8 @@ pub(crate) fn publish_native_options(document: &Value) -> Result<PathBuf, &'stat
 /// 打包的应用传入 bundle 内的 `EngineResources`：记录的资源目录是没有安装包会升级的副本（手工暂存到 Application Support，或在输入法「准备词库」里选的目录）且已与词库锁不符时，改从 bundle 准备代次，此后配置指向 bundle，bundle 里的 `language-dictionaries` 也就成了记录的资源目录的同级目录，由输入法自己的刷新记入 `language_dictionaries`。开发运行的资源目录是随时可能被清掉的 cargo 产物，不会这样记录。
 fn refresh_options(options_path: &Path, bundled_resources: Option<&Path>) {
     let refreshed = match packaged_resources(bundled_resources) {
-        Some(bundled) => msime_host_api::refresh_host_options_from(options_path, bundled),
-        None => msime_host_api::refresh_host_options(options_path),
+        Some(bundled) => lingyao_host_api::refresh_host_options_from(options_path, bundled),
+        None => lingyao_host_api::refresh_host_options(options_path),
     };
     if refreshed.is_err() {
         eprintln!(
@@ -168,9 +168,9 @@ fn prepare_default_options(
     crate::shared::atomic_file::create_directory_and_check(state_root)
         .map_err(|_| "Cannot prepare default HostOptions JSON")?;
     // 还没有 HostOptions 文档时，版本取自状态目录里留下的记录（例如定位文件被删掉而状态还在）；没有记录时是本设置应用所属的版本（安装包的版本声明，full 的包没有声明）。
-    let edition = msime_client_core::edition::Edition::recorded_in(state_root)
+    let edition = lingyao_client_core::edition::Edition::recorded_in(state_root)
         .unwrap_or_else(crate::platform::macos::macos_edition);
-    let document = msime_host_api::prepare_host_configuration_for_edition(
+    let document = lingyao_host_api::prepare_host_configuration_for_edition(
         resources_directory,
         state_root,
         edition,
@@ -228,7 +228,7 @@ pub(crate) fn replace_options(options_path: &Path, document: &Value) -> Result<(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::preferences::PreferencesStore;
+    use lingyao_client_core::preferences::PreferencesStore;
     use serde_json::json;
 
     #[test]
@@ -449,7 +449,7 @@ mod tests {
     fn options_already_on_the_installed_generation_are_not_rewritten() {
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join("runtime-options.json");
-        let specification: msime_client_core::resources::ResourceSet = serde_json::from_str(
+        let specification: lingyao_client_core::resources::ResourceSet = serde_json::from_str(
             include_str!("../../../../../../resources/desktop-dictionary.lock.json"),
         )
         .unwrap();

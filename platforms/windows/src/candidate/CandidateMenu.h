@@ -8,7 +8,7 @@
 #include <vector>
 #include "CandidateActionAvailability.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The candidate right-click menu, mirroring the rows the IBus host already
 // offers (platforms/linux/src/ClientEngine.cpp:1701-1725). This header decides what
 // the menu offers for a given candidate; drawing and routing stay outside, so
@@ -106,4 +106,4 @@ candidate_menu_hit(double x, double y,
   }
   return std::nullopt;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

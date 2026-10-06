@@ -3,14 +3,14 @@
 
 // Pure merge: no window controller/defaults reads on the persistence worker.
 // Nested overrides own only their named fields; preserve other host settings.
-static inline NSDictionary *MSIMEMergePreferenceSnapshot(NSDictionary *base, NSDictionary *overrides) {
+static inline NSDictionary *LINGYAOMergePreferenceSnapshot(NSDictionary *base, NSDictionary *overrides) {
     if (![base isKindOfClass:NSDictionary.class] || ![overrides isKindOfClass:NSDictionary.class]) return nil;
     NSMutableDictionary *merged = [base mutableCopy];
     for (NSString *key in overrides) {
         id value = overrides[key];
         if ([value isKindOfClass:NSDictionary.class]) {
             id original = base[key] ?: @{};
-            NSDictionary *nested = MSIMEMergePreferenceSnapshot(original, value);
+            NSDictionary *nested = LINGYAOMergePreferenceSnapshot(original, value);
             if (!nested) return nil;
             merged[key] = nested;
         } else {

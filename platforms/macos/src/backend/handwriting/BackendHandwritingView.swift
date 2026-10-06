@@ -70,7 +70,7 @@ enum MacHandwritingProvider {
   }
 
   static func recognizeLocal(_ strokes: [MacInkStroke]) throws -> [String] {
-    guard let image = localImage(for: strokes) else { throw NSError(domain: "MSIMEHandwriting", code: 400) }
+    guard let image = localImage(for: strokes) else { throw NSError(domain: "LINGYAOHandwriting", code: 400) }
     let request = VNRecognizeTextRequest()
     request.recognitionLevel = .accurate
     request.usesLanguageCorrection = false
@@ -93,8 +93,8 @@ enum MacHandwritingProvider {
     if socketPath.isEmpty { return try recognizeLocal(strokes) }
     let payload = strokes.map { $0.points.map { ["x": Float($0.x), "y": Float($0.y)] } }
     let request: NSDictionary = ["language": language, "strokes": payload, "socket_path": socketPath]
-    guard let type = NSClassFromString("MSIMEClientSession") as? NSObject.Type,
-          let result = type.perform(NSSelectorFromString("handwritingProviderRequest:"), with: request)?.takeUnretainedValue() as? NSDictionary else { throw NSError(domain: "MSIMEHandwriting", code: 503) }
+    guard let type = NSClassFromString("LINGYAOClientSession") as? NSObject.Type,
+          let result = type.perform(NSSelectorFromString("handwritingProviderRequest:"), with: request)?.takeUnretainedValue() as? NSDictionary else { throw NSError(domain: "LINGYAOHandwriting", code: 503) }
     if let error = result["error"] as? NSError { throw error }
     return (result["candidates"] as? [String]) ?? []
   }
@@ -157,7 +157,7 @@ struct MacHandwritingCanvasView: View {
   var candidateAction = "复制"
   var paletteLight: Bool?
   var snapshotCanvas = false
-  var onCandidate: (String) -> Void = { text in NotificationCenter.default.post(name: .msimeHandwritingCandidateSelected, object: nil, userInfo: ["text": text]) }
+  var onCandidate: (String) -> Void = { text in NotificationCenter.default.post(name: .lingyaoHandwritingCandidateSelected, object: nil, userInfo: ["text": text]) }
   var body: some View {
     let light = paletteLight ?? (colorScheme == .light)
     HStack(alignment: .top, spacing: 16) {
@@ -308,7 +308,7 @@ private struct MacHandwritingCandidateButton: View {
   }
 }
 
-extension Notification.Name { static let msimeHandwritingCandidateSelected = Notification.Name("MSIMEHandwritingCandidateSelected") }
+extension Notification.Name { static let lingyaoHandwritingCandidateSelected = Notification.Name("LINGYAOHandwritingCandidateSelected") }
 
 /// Own the window's presentation state separately from the reusable ink canvas.
 struct MacHandwritingToolView: View {

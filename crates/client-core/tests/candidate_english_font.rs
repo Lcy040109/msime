@@ -1,4 +1,4 @@
-use msime_client_core::preferences::{Preferences, PreferencesStore};
+use lingyao_client_core::preferences::{Preferences, PreferencesStore};
 
 #[test]
 fn old_documents_and_roundtrip_preserve_host_neutral_defaults() {

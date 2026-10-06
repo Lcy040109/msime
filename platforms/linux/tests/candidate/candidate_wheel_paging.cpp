@@ -3,8 +3,8 @@
 #include <cassert>
 
 int main() {
-  using msime::linux_host::CandidateWheelPagingSync;
-  using msime::linux_host::read_candidate_wheel_paging;
+  using lingyao::linux_host::CandidateWheelPagingSync;
+  using lingyao::linux_host::read_candidate_wheel_paging;
   using Json = nlohmann::json;
 
   assert(!read_candidate_wheel_paging(Json()));

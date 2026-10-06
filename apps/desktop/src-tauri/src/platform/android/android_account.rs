@@ -18,23 +18,23 @@ use crate::shared::account_dto::{
     providers_response_without_apple, ChallengeResponse, ChatModelsResponse, ChatResponse,
     PreferenceSchemaResponse, ProfileResponse, ProvidersResponse, StatusResponse,
 };
-use msime_client_core::account::settings_sync::{
+use lingyao_client_core::account::settings_sync::{
     apply_android_settings, export_android_settings, needs_host_feedback, HostKeyboardFeedback,
 };
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     merge_account_preferences, AccountChatMessage, AccountError, AccountPreferenceSchema,
     AccountPreferenceValue, AccountPreferences, AccountSessionStorage, BackendAccountClient,
     BackendAccountSession, SavedAccountSession,
 };
-use msime_client_core::cloud::dictionary::DictionaryKind;
-use msime_client_core::cloud::snapshot_validation::{
+use lingyao_client_core::cloud::dictionary::DictionaryKind;
+use lingyao_client_core::cloud::snapshot_validation::{
     has_keys as snapshot_has_keys, parse_strict_object, required_integer as snapshot_integer,
     required_text as snapshot_text, valid_timestamp as snapshot_timestamp,
 };
-use msime_client_core::edition::{
+use lingyao_client_core::edition::{
     filter_downloaded_account_settings, filter_uploaded_account_settings,
 };
-use msime_client_core::preferences::{Preferences, PreferencesSnapshot, PreferencesStore};
+use lingyao_client_core::preferences::{Preferences, PreferencesSnapshot, PreferencesStore};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -154,7 +154,7 @@ impl AccountState {
 pub fn init() -> TauriPlugin<Wry> {
     Builder::new("account-storage")
         .setup(|app, api| {
-            let handle = api.register_android_plugin("app.msime.android", "AccountPlugin")?;
+            let handle = api.register_android_plugin("app.lingyao.android", "AccountPlugin")?;
             let platform = handle.clone();
             let feedback = handle.clone();
             let client = BackendAccountClient::new()?;
@@ -403,7 +403,7 @@ fn inspect_snapshot(path: &std::path::Path) -> Result<SnapshotMetadata, AccountE
                     || revision.is_some()
                     || !snapshot_has_keys(&map, &["type", "format", "version", "revision"])
                     || map.get("format").and_then(Value::as_str)
-                        != Some("msime-dictionary-snapshot")
+                        != Some("lingyao-dictionary-snapshot")
                     || map.get("version").and_then(Value::as_i64) != Some(1)
                 {
                     return Err(AccountError::Invalid);
@@ -465,7 +465,7 @@ fn inspect_snapshot(path: &std::path::Path) -> Result<SnapshotMetadata, AccountE
                 let expected_sha = map
                     .get("sha256")
                     .and_then(Value::as_str)
-                    .filter(|value| msime_client_core::is_ascii_hex(value, 64))
+                    .filter(|value| lingyao_client_core::is_ascii_hex(value, 64))
                     .ok_or(AccountError::Invalid)?;
                 // Cloned, not consumed: the loop keeps reading after the footer
                 // so that trailing data is rejected, and those iterations still
@@ -632,7 +632,7 @@ async fn dictionary_snapshot_export(
                 let text = fs::read_to_string(&path).map_err(|_| AccountError::Unavailable)?;
                 Ok(serde_json::json!({
                     "text": text,
-                    "filename": "msime-dictionary-snapshot.ndjson",
+                    "filename": "lingyao-dictionary-snapshot.ndjson",
                     "snapshot": metadata,
                 }))
             });
@@ -1021,9 +1021,9 @@ pub async fn account_forget(state: State<'_, AccountState>) -> Result<(), crate:
 
 pub async fn cloud_dictionary_request(
     state: State<'_, AccountState>,
-    request: msime_host_api::cloud_dictionary::CloudDictionaryRequest,
+    request: lingyao_host_api::cloud_dictionary::CloudDictionaryRequest,
 ) -> Result<Value, crate::CommandError> {
-    use msime_host_api::cloud_dictionary::CloudDictionaryRequest;
+    use lingyao_host_api::cloud_dictionary::CloudDictionaryRequest;
 
     if let Some(result) = cloud_dictionary_account_request(&state, &request).await {
         return result;
@@ -1074,7 +1074,7 @@ pub async fn app_icon_set(
     state: State<'_, AccountState>,
     style: String,
 ) -> Result<AppIconResponse, crate::CommandError> {
-    if !msime_tauri_mobile_platform::is_supported_app_icon_style(&style) {
+    if !lingyao_tauri_mobile_platform::is_supported_app_icon_style(&style) {
         return Err(crate::CommandError {
             code: "invalid_app_icon",
         });

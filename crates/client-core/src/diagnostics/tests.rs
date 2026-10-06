@@ -86,7 +86,7 @@ fn crash_records_keep_the_exception_type_and_frames_but_not_the_reason() {
     let line = serde_json::json!({
         "at": "2026-10-05T00:00:00Z",
         "message": "java.lang.IllegalStateException: 合成文字 typed text",
-        "stack": "java.lang.IllegalStateException: 合成文字 typed text\n\tat app.msime.android.Foo.bar(Foo.java:12)\nCaused by: org.json.JSONException: Unterminated string at 合成\n\t... 3 more\n#00 pc 0001 /data/app/abc/lib/arm64/libmsime_host_api.so (crash+4)",
+        "stack": "java.lang.IllegalStateException: 合成文字 typed text\n\tat app.lingyao.android.Foo.bar(Foo.java:12)\nCaused by: org.json.JSONException: Unterminated string at 合成\n\t... 3 more\n#00 pc 0001 /data/app/abc/lib/arm64/liblingyao_host_api.so (crash+4)",
     })
     .to_string();
     let record = crash_record(line.as_bytes()).unwrap();
@@ -97,7 +97,7 @@ fn crash_records_keep_the_exception_type_and_frames_but_not_the_reason() {
         "{stack}"
     );
     assert!(
-        stack.contains("at app.msime.android.Foo.bar(Foo.java:12)"),
+        stack.contains("at app.lingyao.android.Foo.bar(Foo.java:12)"),
         "{stack}"
     );
     assert!(
@@ -105,7 +105,7 @@ fn crash_records_keep_the_exception_type_and_frames_but_not_the_reason() {
         "{stack}"
     );
     assert!(
-        stack.contains("libmsime_host_api.so (crash+4)") && !stack.contains("/data/app"),
+        stack.contains("liblingyao_host_api.so (crash+4)") && !stack.contains("/data/app"),
         "{stack}"
     );
 }

@@ -1,14 +1,14 @@
 {
  "name": "personal_dictionary_lifecycle",
  "source": "tests/src/test_personal_dictionary.cpp:53-60; cases :101-163",
- "note": "Reference ctest personal_dictionary fails against this build (test_personal_dictionary.cpp:67-76): overlay apply_engine_english_display.py lets an English code differ from its display, so {English, hello, different} is accepted. Recorded as-is. The invalid-UTF-8 and kind-99 entries of that loop cannot be expressed in JSON and are left to a Rust unit test. The journal-failure trigger (:145-150) is not recorded (msime_user.db lives in the user directory), so the failure-retry request id is applied on its first attempt. Each candidate check reopens the Session, as the ctest's has() builds a new one.",
+ "note": "Reference ctest personal_dictionary fails against this build (test_personal_dictionary.cpp:67-76): overlay apply_engine_english_display.py lets an English code differ from its display, so {English, hello, different} is accepted. Recorded as-is. The invalid-UTF-8 and kind-99 entries of that loop cannot be expressed in JSON and are left to a Rust unit test. The journal-failure trigger (:145-150) is not recorded (lingyao_user.db lives in the user directory), so the failure-retry request id is applied on its first attempt. Each candidate check reopens the Session, as the ctest's has() builds a new one.",
  "covers": [
   "personal dictionary"
  ],
  "fixture": {
   "english_schema": true,
   "databases": {
-   "msime-pinyin.db": "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE tbl_7_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE tbl_others_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE wubi86(key TEXT,value TEXT,weight INTEGER);CREATE TABLE quick_parases(key TEXT,value TEXT,weight INTEGER);"
+   "lingyao-pinyin.db": "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE tbl_7_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE tbl_others_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);CREATE TABLE wubi86(key TEXT,value TEXT,weight INTEGER);CREATE TABLE quick_parases(key TEXT,value TEXT,weight INTEGER);"
   }
  },
  "options": {

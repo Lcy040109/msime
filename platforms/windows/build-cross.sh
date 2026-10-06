@@ -30,34 +30,34 @@ case "$(uname -s)-$(uname -m)" in
 esac
 # Check compiler/host compatibility before any network preparation.
 rustup target add "$triple"
-if [[ -z ${MSIME_VCPKG_ROOT:-} ]]; then
+if [[ -z ${LINGYAO_VCPKG_ROOT:-} ]]; then
   bash "$repo_root/platforms/windows/bootstrap-vcpkg.sh"
 fi
-vcpkg_root=${MSIME_VCPKG_ROOT:-$repo_root/target/tooling/vcpkg}
-[[ "$vcpkg_root" = /* && -x "$vcpkg_root/vcpkg" ]] || { echo "Provide an absolute bootstrapped MSIME_VCPKG_ROOT" >&2; exit 1; }
+vcpkg_root=${LINGYAO_VCPKG_ROOT:-$repo_root/target/tooling/vcpkg}
+[[ "$vcpkg_root" = /* && -x "$vcpkg_root/vcpkg" ]] || { echo "Provide an absolute bootstrapped LINGYAO_VCPKG_ROOT" >&2; exit 1; }
 [[ $(git -C "$vcpkg_root" rev-parse HEAD) = ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0 ]] || { echo "vcpkg must match the manifest baseline" >&2; exit 1; }
 git -C "$vcpkg_root" diff --quiet HEAD -- || { echo "vcpkg has tracked changes" >&2; exit 1; }
 # Separate manifest install roots: vcpkg removes other target triplets when a
 # manifest is reinstalled in the same root. Do not run this script concurrently
 # against the same vcpkg checkout (it holds a filesystem lock).
 #
-# MSIME_WINDOWS_DEPS_ROOT shares the built dependencies across checkouts. This repository is worked in one short-lived worktree per task, and each would otherwise rebuild curl from source before it could compile a line of this project - minutes of work per worktree, for an identical answer every time. The manifest is the same file in every worktree, so one tree per architecture serves all of them; the per-arch split above is unchanged.
-deps_root="${MSIME_WINDOWS_DEPS_ROOT:-$repo_root/target/windows-native-deps}/$arch"
+# LINGYAO_WINDOWS_DEPS_ROOT shares the built dependencies across checkouts. This repository is worked in one short-lived worktree per task, and each would otherwise rebuild curl from source before it could compile a line of this project - minutes of work per worktree, for an identical answer every time. The manifest is the same file in every worktree, so one tree per architecture serves all of them; the per-arch split above is unchanged.
+deps_root="${LINGYAO_WINDOWS_DEPS_ROOT:-$repo_root/target/windows-native-deps}/$arch"
 prefix="$deps_root/$arch-mingw-static"
 VCPKG_DISABLE_METRICS=1 "$vcpkg_root/vcpkg" install \
   --triplet "$arch-mingw-static" --host-triplet "$host_triplet" \
   --x-manifest-root="$repo_root/platforms/windows" --x-install-root="$deps_root"
 env "$linker_var=$compiler-gcc" \
-  cargo build --locked -p msime-host-api --target "$triple"
+  cargo build --locked -p lingyao-host-api --target "$triple"
 output="$repo_root/target/windows-$edition/$arch"
-host_dll=msime_host_api.dll
-host_library="$repo_root/target/$triple/debug/libmsime_host_api.dll.a"
+host_dll=lingyao_host_api.dll
+host_library="$repo_root/target/$triple/debug/liblingyao_host_api.dll.a"
 if [[ "$edition" != full ]]; then
   # 两个版本的 TIP 被同一个应用加载时，按导入表找 DLL 会拿到先加载的那一个，所以不是 full 的版本换一个 DLL 名，再用 dlltool 按原 DLL 的导出表生成同名的导入库。
   host_dll=$(python3 platforms/windows/scripts/edition_windows.py field --edition "$edition" host_dll)
   mkdir -p "$output"
   python3 platforms/windows/scripts/edition_windows.py host-def --edition "$edition" \
-    --dll "$repo_root/target/$triple/debug/msime_host_api.dll" --output "$output/${host_dll%.dll}.def"
+    --dll "$repo_root/target/$triple/debug/lingyao_host_api.dll" --output "$output/${host_dll%.dll}.def"
   host_library="$output/lib$host_dll.a"
   "$compiler-dlltool" -d "$output/${host_dll%.dll}.def" -D "$host_dll" -l "$host_library"
 fi
@@ -69,10 +69,10 @@ cmake -S platforms/windows -B "$output" \
   -DCMAKE_C_COMPILER="$compiler-gcc" \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH="$prefix" \
-  -DMSIME_WINDOWS_PIPE_ONLY=OFF \
-  -DMSIMEUI_BUILD_HANDWRITING_DEMO=OFF \
-  -DMSIME_EDITION="$edition" \
-  -DMSIME_HOST_LIBRARY="$host_library"
+  -DLINGYAO_WINDOWS_PIPE_ONLY=OFF \
+  -DLINGYAOUI_BUILD_HANDWRITING_DEMO=OFF \
+  -DLINGYAO_EDITION="$edition" \
+  -DLINGYAO_HOST_LIBRARY="$host_library"
 cmake --build "$output" --parallel 4
-cmake -E copy_if_different "$repo_root/target/$triple/debug/msime_host_api.dll" "$output/$host_dll"
+cmake -E copy_if_different "$repo_root/target/$triple/debug/lingyao_host_api.dll" "$output/$host_dll"
 echo "$arch $edition Windows GNU host/TSF DLLs, Server and native tests linked; SDK C++/WinRT handwriting demo excluded; Windows execution not performed; MinGW runtime DLLs are not bundled."

@@ -1,8 +1,8 @@
-//! Registering `msime-mcp` with the AI assistants that read a local MCP configuration file.
+//! Registering `lingyao-mcp` with the AI assistants that read a local MCP configuration file.
 //!
-//! Both settings hosts use this: the shared settings page in the desktop shell, and on Windows the WinUI settings window through `msime_client_mcp_status` and `msime_client_mcp_install`. The page shows the server entry so it can be copied into any assistant, and for Claude Desktop and Cursor writes it into their configuration file. Only `mcpServers.msime` is touched: every other key the user has is kept, a file that is not a JSON object is refused rather than replaced, and the write is atomic so a crash leaves the old file or the new one, never half of either.
+//! Both settings hosts use this: the shared settings page in the desktop shell, and on Windows the WinUI settings window through `lingyao_client_mcp_status` and `lingyao_client_mcp_install`. The page shows the server entry so it can be copied into any assistant, and for Claude Desktop and Cursor writes it into their configuration file. Only `mcpServers.lingyao` is touched: every other key the user has is kept, a file that is not a JSON object is refused rather than replaced, and the write is atomic so a crash leaves the old file or the new one, never half of either.
 //!
-//! 条目默认只读：只带运行时选项。允许助手修改快捷短语、设置和词、制作候选窗口皮肤（`--allow-write`），或读取用户词库（`--allow-dictionary-read`），由用户在设置页里打开对应开关后写进 `args`；已写入的条目带了哪些开关，状态里会如实报告，好让设置页显示出来。`msime-mcp` 自己不带这些参数时仍然只读。
+//! 条目默认只读：只带运行时选项。允许助手修改快捷短语、设置和词、制作候选窗口皮肤（`--allow-write`），或读取用户词库（`--allow-dictionary-read`），由用户在设置页里打开对应开关后写进 `args`；已写入的条目带了哪些开关，状态里会如实报告，好让设置页显示出来。`lingyao-mcp` 自己不带这些参数时仍然只读。
 
 use serde::Serialize;
 use serde_json::{json, Map, Value};
@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 /// The key the entry is stored under in `mcpServers`.
 ///
 /// 这是 full 版本的键；其他版本用 `Edition::mcp_server_name`，由 [`server_name`] 按运行时选项里记录的版本选出。
-pub const SERVER_NAME: &str = "msime";
+pub const SERVER_NAME: &str = "lingyao";
 /// A configuration file larger than this is not one an assistant wrote; refuse it rather than read it whole.
 const CONFIG_READ_LIMIT: u64 = 4 << 20;
 
@@ -23,7 +23,7 @@ pub enum McpClient {
     Cursor,
 }
 
-/// 放宽助手权限的 `msime-mcp` 参数。序列化成参数原文，设置页和条目的 `args` 用同一套字符串。
+/// 放宽助手权限的 `lingyao-mcp` 参数。序列化成参数原文，设置页和条目的 `args` 用同一套字符串。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, Serialize)]
 pub enum McpFlag {
     /// 修改快捷短语、设置和词，制作候选窗口皮肤。
@@ -66,7 +66,7 @@ pub struct McpClientStatus {
     pub id: McpClient,
     /// Where the configuration file is, for the page to show.
     pub path: String,
-    /// 文件里的 `msime` 条目就是这里的服务器和运行时选项，只可能多了 `flags` 里的权限参数。
+    /// 文件里的 `lingyao` 条目就是这里的服务器和运行时选项，只可能多了 `flags` 里的权限参数。
     pub configured: bool,
     /// 已写入条目带的权限参数，按固定顺序；未连接时为空。
     pub flags: Vec<McpFlag>,
@@ -74,13 +74,13 @@ pub struct McpClientStatus {
 
 #[derive(Debug, Serialize)]
 pub struct McpServerStatus {
-    /// The absolute path of `msime-mcp` beside this executable.
+    /// The absolute path of `lingyao-mcp` beside this executable.
     pub command: String,
     /// Whether that file exists; a development build may not have built it.
     pub installed: bool,
     /// The runtime-options document the entry points the server at.
     pub options: Option<String>,
-    /// `{"mcpServers": {"msime": ...}}`, ready to paste into any assistant's configuration.
+    /// `{"mcpServers": {"lingyao": ...}}`, ready to paste into any assistant's configuration.
     pub config: Option<String>,
     pub clients: Vec<McpClientStatus>,
 }
@@ -88,21 +88,21 @@ pub struct McpServerStatus {
 #[derive(Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InstallOutcome {
-    /// The file had no `msime` entry, or had no file at all.
+    /// The file had no `lingyao` entry, or had no file at all.
     Added,
-    /// 已有的 `msime` 条目是这里的服务器，只是权限参数不同；改成了这次要的那组，不需要 `replace`。
+    /// 已有的 `lingyao` 条目是这里的服务器，只是权限参数不同；改成了这次要的那组，不需要 `replace`。
     Updated,
-    /// An `msime` entry that differed was replaced, as the caller allowed.
+    /// An `lingyao` entry that differed was replaced, as the caller allowed.
     Replaced,
     /// The file already held this entry; nothing was written.
     Unchanged,
 }
 
-/// `msime-mcp` as it is packaged: beside the settings executable in `Contents/MacOS` on macOS, in the same `bin` directory on Linux, and in the `server` directory on Windows.
+/// `lingyao-mcp` as it is packaged: beside the settings executable in `Contents/MacOS` on macOS, in the same `bin` directory on Linux, and in the `server` directory on Windows.
 pub fn server_command(executable: &Path) -> Option<PathBuf> {
     executable
         .parent()
-        .map(|directory| directory.join(format!("msime-mcp{}", std::env::consts::EXE_SUFFIX)))
+        .map(|directory| directory.join(format!("lingyao-mcp{}", std::env::consts::EXE_SUFFIX)))
 }
 
 /// The entry an assistant runs: the server and the runtime options, and no flags.
@@ -135,7 +135,7 @@ fn split_entry_args(args: &[Value]) -> (Vec<McpFlag>, Vec<Value>) {
     (flags, rest)
 }
 
-/// `existing` 是 `base` 加上若干权限参数时，返回这些参数（去重、按固定顺序）；命令、运行时选项或其它参数不同的条目不是这里写的，返回 `None`。命令指向的是同一个程序时（比如 Homebrew 放上 PATH 的 `msime-mcp`、手动链接的 `~/.local/bin/msime`，都是指向安装包里 `msime-mcp` 的符号链接），算作同一个命令。
+/// `existing` 是 `base` 加上若干权限参数时，返回这些参数（去重、按固定顺序）；命令、运行时选项或其它参数不同的条目不是这里写的，返回 `None`。命令指向的是同一个程序时（比如 Homebrew 放上 PATH 的 `lingyao-mcp`、手动链接的 `~/.local/bin/lingyao`，都是指向安装包里 `lingyao-mcp` 的符号链接），算作同一个命令。
 pub fn entry_flags(existing: &Value, base: &Value) -> Option<Vec<McpFlag>> {
     let args = existing.get("args")?.as_array()?;
     let (flags, rest) = split_entry_args(args);
@@ -152,7 +152,7 @@ pub fn entry_flags(existing: &Value, base: &Value) -> Option<Vec<McpFlag>> {
     (Value::Object(stripped) == *base).then(|| canonical(&flags))
 }
 
-/// 两个绝对路径解析掉符号链接后是不是同一个文件。相对路径（比如只写了 `msime-mcp`、靠 PATH 找）不去猜：按当前目录解析可能碰巧对上一个不相干的文件。
+/// 两个绝对路径解析掉符号链接后是不是同一个文件。相对路径（比如只写了 `lingyao-mcp`、靠 PATH 找）不去猜：按当前目录解析可能碰巧对上一个不相干的文件。
 fn same_program(command: &str, expected: &str) -> bool {
     let resolve = |path: &str| {
         Some(Path::new(path))
@@ -162,13 +162,13 @@ fn same_program(command: &str, expected: &str) -> bool {
     matches!((resolve(command), resolve(expected)), (Some(a), Some(b)) if a == b)
 }
 
-/// `options` 这份运行时选项所属版本登记用的键（`Edition::mcp_server_name`）：full 的文档没有 `edition` 键，得到 [`SERVER_NAME`]。文档读不了或记录了不认识的版本时同样用 [`SERVER_NAME`]：这里只决定条目的名字，文档本身有没有问题由 `msime-mcp` 启动后去报告。
+/// `options` 这份运行时选项所属版本登记用的键（`Edition::mcp_server_name`）：full 的文档没有 `edition` 键，得到 [`SERVER_NAME`]。文档读不了或记录了不认识的版本时同样用 [`SERVER_NAME`]：这里只决定条目的名字，文档本身有没有问题由 `lingyao-mcp` 启动后去报告。
 pub fn server_name(options: &Path) -> String {
     std::fs::File::open(options)
         .ok()
         .and_then(|file| crate::bounded_file::read(file, CONFIG_READ_LIMIT).ok())
         .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
-        .and_then(|document| msime_client_core::edition::Edition::of_host_options(&document))
+        .and_then(|document| lingyao_client_core::edition::Edition::of_host_options(&document))
         .map_or_else(
             || SERVER_NAME.to_owned(),
             |edition| edition.mcp_server_name(),
@@ -219,7 +219,7 @@ pub fn client_paths(env: impl Fn(&str) -> Option<std::ffi::OsString>) -> Vec<(Mc
     clients
 }
 
-/// `msime-mcp` beside `executable`, the entry pointing it at `options`, and whether each assistant offered here already has it. Without `options` the input method is not set up yet, so there is no entry to show or compare.
+/// `lingyao-mcp` beside `executable`, the entry pointing it at `options`, and whether each assistant offered here already has it. Without `options` the input method is not set up yet, so there is no entry to show or compare.
 pub fn status(
     executable: &Path,
     options: Option<&Path>,
@@ -252,7 +252,7 @@ pub fn status(
     })
 }
 
-/// 把 `executable` 旁边 `msime-mcp` 的条目（`args` 末尾加上 `flags`）写进 `client` 的配置文件；保留什么、什么时候替换见 `install`。
+/// 把 `executable` 旁边 `lingyao-mcp` 的条目（`args` 末尾加上 `flags`）写进 `client` 的配置文件；保留什么、什么时候替换见 `install`。
 pub fn install_client(
     executable: &Path,
     options: Option<&Path>,
@@ -302,15 +302,15 @@ fn read_config(path: &Path) -> Result<Map<String, Value>, &'static str> {
     }
 }
 
-/// 文件里 `name`（full 是 `msime`）条目是 `base` 加上若干权限参数时，返回这些参数；没有条目、条目不是这里写的、或文件读不了时返回 `None`。
+/// 文件里 `name`（full 是 `lingyao`）条目是 `base` 加上若干权限参数时，返回这些参数；没有条目、条目不是这里写的、或文件读不了时返回 `None`。
 pub fn configured_flags(path: &Path, name: &str, base: &Value) -> Option<Vec<McpFlag>> {
     let document = read_config(path).ok()?;
     entry_flags(document.get("mcpServers")?.get(name)?, base)
 }
 
-/// 把 `base`（`args` 末尾加上 `flags`）写到 `path` 文件的 `mcpServers.<name>` 下（full 是 `mcpServers.msime`），保留其它所有内容；多个版本各写各的键，互不覆盖。
+/// 把 `base`（`args` 末尾加上 `flags`）写到 `path` 文件的 `mcpServers.<name>` 下（full 是 `mcpServers.lingyao`），保留其它所有内容；多个版本各写各的键，互不覆盖。
 ///
-/// 所在目录必须已经存在：它由助手自己创建，不存在说明没装这个助手，替用户建出来只会留下一个不存在的应用的目录。已有条目就是 `base` 只差权限参数时直接改成这次的参数（`Updated`）；其它不同的 `msime` 条目只在 `replace` 时替换，否则以 `mcp_entry_exists` 失败，让设置页先问。符号链接（比如放在 dotfiles 仓库里的配置）会写穿到目标文件，而不是被替换掉。
+/// 所在目录必须已经存在：它由助手自己创建，不存在说明没装这个助手，替用户建出来只会留下一个不存在的应用的目录。已有条目就是 `base` 只差权限参数时直接改成这次的参数（`Updated`）；其它不同的 `lingyao` 条目只在 `replace` 时替换，否则以 `mcp_entry_exists` 失败，让设置页先问。符号链接（比如放在 dotfiles 仓库里的配置）会写穿到目标文件，而不是被替换掉。
 pub fn install(
     path: &Path,
     name: &str,
@@ -382,7 +382,7 @@ mod tests {
 
     fn entry() -> Value {
         server_entry(
-            Path::new("/opt/msime/msime-mcp"),
+            Path::new("/opt/lingyao/lingyao-mcp"),
             Path::new("/state/runtime-options.json"),
         )
     }
@@ -391,14 +391,14 @@ mod tests {
     fn the_entry_names_the_options_and_no_flags() {
         assert_eq!(
             entry(),
-            json!({ "command": "/opt/msime/msime-mcp", "args": ["--options", "/state/runtime-options.json"] })
+            json!({ "command": "/opt/lingyao/lingyao-mcp", "args": ["--options", "/state/runtime-options.json"] })
         );
         let snippet: Value = serde_json::from_str(&config_snippet(SERVER_NAME, &entry())).unwrap();
-        assert_eq!(snippet, json!({ "mcpServers": { "msime": entry() } }));
+        assert_eq!(snippet, json!({ "mcpServers": { "lingyao": entry() } }));
         assert_eq!(
-            server_command(Path::new("/opt/msime/msime-desktop")).unwrap(),
+            server_command(Path::new("/opt/lingyao/lingyao-desktop")).unwrap(),
             PathBuf::from(format!(
-                "/opt/msime/msime-mcp{}",
+                "/opt/lingyao/lingyao-mcp{}",
                 std::env::consts::EXE_SUFFIX
             ))
         );
@@ -413,7 +413,7 @@ mod tests {
             Ok(InstallOutcome::Added)
         );
         let written: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
-        assert_eq!(written, json!({ "mcpServers": { "msime": entry() } }));
+        assert_eq!(written, json!({ "mcpServers": { "lingyao": entry() } }));
         assert_eq!(configured_flags(&path, SERVER_NAME, &entry()), Some(vec![]));
         assert_eq!(
             install(&path, SERVER_NAME, &entry(), &[], false),
@@ -441,7 +441,7 @@ mod tests {
                 "globalShortcut": "Ctrl+Space",
                 "mcpServers": {
                     "other": { "command": "/usr/bin/other", "args": [] },
-                    "msime": entry(),
+                    "lingyao": entry(),
                 },
             })
         );
@@ -451,7 +451,7 @@ mod tests {
     fn a_different_entry_is_replaced_only_when_allowed() {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("mcp.json");
-        let before = json!({ "mcpServers": { "msime": { "command": "/old/msime-mcp", "args": ["--allow-write"] } } });
+        let before = json!({ "mcpServers": { "lingyao": { "command": "/old/lingyao-mcp", "args": ["--allow-write"] } } });
         std::fs::write(&path, serde_json::to_vec(&before).unwrap()).unwrap();
         assert_eq!(
             install(&path, SERVER_NAME, &entry(), &[], false),
@@ -478,7 +478,7 @@ mod tests {
         );
         let written: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         assert_eq!(
-            written["mcpServers"]["msime"]["args"],
+            written["mcpServers"]["lingyao"]["args"],
             json!([
                 "--options",
                 "/state/runtime-options.json",
@@ -526,9 +526,9 @@ mod tests {
     #[cfg(unix)]
     fn a_command_linked_to_the_packaged_server_is_this_server() {
         let directory = tempfile::tempdir().unwrap();
-        let server = directory.path().join("msime-mcp");
+        let server = directory.path().join("lingyao-mcp");
         std::fs::write(&server, b"").unwrap();
-        let link = directory.path().join("msime");
+        let link = directory.path().join("lingyao");
         std::os::unix::fs::symlink(&server, &link).unwrap();
         let copy = directory.path().join("copy");
         std::fs::write(&copy, b"").unwrap();
@@ -536,13 +536,13 @@ mod tests {
         let base = server_entry(&server, options);
         let path = directory.path().join("mcp.json");
         let write = |command: &Path| {
-            let document = json!({ "mcpServers": { "msime": {
+            let document = json!({ "mcpServers": { "lingyao": {
                 "command": command.to_string_lossy(),
                 "args": ["--options", "/state/runtime-options.json", "--allow-write"],
             } } });
             std::fs::write(&path, serde_json::to_vec(&document).unwrap()).unwrap();
         };
-        // 指向安装包里 msime-mcp 的符号链接就是这里的服务器：设置页显示已连接，改权限时直接改，不必先确认替换。
+        // 指向安装包里 lingyao-mcp 的符号链接就是这里的服务器：设置页显示已连接，改权限时直接改，不必先确认替换。
         write(&link);
         assert_eq!(
             configured_flags(&path, SERVER_NAME, &base),
@@ -564,14 +564,14 @@ mod tests {
         );
         let document: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         assert_eq!(
-            document["mcpServers"]["msime"]["command"],
+            document["mcpServers"]["lingyao"]["command"],
             link.to_string_lossy().as_ref()
         );
         // 另一份同样内容的副本是另一个程序，可能是别的版本，不当作这里的。
         write(&copy);
         assert_eq!(configured_flags(&path, SERVER_NAME, &base), None);
         // 相对路径不按当前目录去解析。
-        write(Path::new("msime-mcp"));
+        write(Path::new("lingyao-mcp"));
         assert_eq!(configured_flags(&path, SERVER_NAME, &base), None);
     }
 
@@ -580,8 +580,8 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("mcp.json");
         let write = |args: Value| {
-            let document = json!({ "mcpServers": { "msime": {
-                "command": "/opt/msime/msime-mcp",
+            let document = json!({ "mcpServers": { "lingyao": {
+                "command": "/opt/lingyao/lingyao-mcp",
                 "args": args,
             } } });
             std::fs::write(&path, serde_json::to_vec(&document).unwrap()).unwrap();
@@ -628,7 +628,7 @@ mod tests {
     fn the_status_reports_the_flags_a_configured_client_has() {
         let home = tempfile::tempdir().unwrap();
         std::fs::create_dir(home.path().join(".cursor")).unwrap();
-        let executable = home.path().join("msime-desktop");
+        let executable = home.path().join("lingyao-desktop");
         let options = Path::new("/state/runtime-options.json");
         let env = |name: &str| {
             matches!(name, "HOME" | "USERPROFILE").then(|| home.path().as_os_str().to_owned())
@@ -666,12 +666,12 @@ mod tests {
         assert_eq!(serialized["flags"], json!(["--allow-dictionary-read"]));
     }
 
-    /// 五笔版的运行时选项记录了版本，条目登记在 `msime-wubi` 下，旁边 full 的 `msime` 条目不受影响；full 的运行时选项仍用 `msime`。
+    /// 五笔版的运行时选项记录了版本，条目登记在 `lingyao-wubi` 下，旁边 full 的 `lingyao` 条目不受影响；full 的运行时选项仍用 `lingyao`。
     #[test]
     fn each_edition_registers_under_its_own_name() {
         let home = tempfile::tempdir().unwrap();
         std::fs::create_dir(home.path().join(".cursor")).unwrap();
-        let executable = home.path().join("msime-desktop");
+        let executable = home.path().join("lingyao-desktop");
         let command = server_command(&executable).unwrap();
         std::fs::write(&command, b"").unwrap();
         let env = |name: &str| {
@@ -682,7 +682,7 @@ mod tests {
         let wubi_options = home.path().join("wubi-runtime-options.json");
         std::fs::write(&wubi_options, br#"{"api_version":1,"edition":"wubi"}"#).unwrap();
         assert_eq!(server_name(&full_options), SERVER_NAME);
-        assert_eq!(server_name(&wubi_options), "msime-wubi");
+        assert_eq!(server_name(&wubi_options), "lingyao-wubi");
         assert_eq!(server_name(&home.path().join("missing.json")), SERVER_NAME);
 
         let install = |options: &Path| {
@@ -702,17 +702,17 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            document["mcpServers"]["msime"],
+            document["mcpServers"]["lingyao"],
             server_entry(&command, &full_options)
         );
         assert_eq!(
-            document["mcpServers"]["msime-wubi"],
+            document["mcpServers"]["lingyao-wubi"],
             server_entry(&command, &wubi_options)
         );
 
         let status = status(&executable, Some(&wubi_options), env).unwrap();
         let snippet: Value = serde_json::from_str(status.config.as_deref().unwrap()).unwrap();
-        assert!(snippet["mcpServers"].get("msime-wubi").is_some());
+        assert!(snippet["mcpServers"].get("lingyao-wubi").is_some());
         assert!(status
             .clients
             .iter()

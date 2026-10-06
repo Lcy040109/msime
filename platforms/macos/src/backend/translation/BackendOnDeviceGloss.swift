@@ -1,4 +1,4 @@
-// The macOS 26 SDK is the first with TranslationSession(installedSource:target:), the only way to get a session outside a SwiftUI view, and Swift 6.2 is the first compiler that ships with it. An older toolchain builds MSIMEBackend without this file, and InputController.mm finds the weak-imported entry point null.
+// The macOS 26 SDK is the first with TranslationSession(installedSource:target:), the only way to get a session outside a SwiftUI view, and Swift 6.2 is the first compiler that ships with it. An older toolchain builds LINGYAOBackend without this file, and InputController.mm finds the weak-imported entry point null.
 #if compiler(>=6.2) && canImport(Translation)
 import Foundation
 import Translation
@@ -8,7 +8,7 @@ import os
 @available(macOS 26, *)
 @MainActor
 private enum BackendOnDeviceGloss {
-  static let notification = Notification.Name("MSIMEBackendOnDeviceTranslationsDidArrive")
+  static let notification = Notification.Name("LINGYAOBackendOnDeviceTranslationsDidArrive")
   private static let source = Locale.Language(identifier: "zh-Hans")
   // Asking whether a pair is installed is a round trip to the translation service, so a pair found missing is not asked about again for this long. Downloading one in System Settings takes effect within it.
   private static let recheck: Duration = .seconds(30)
@@ -86,7 +86,7 @@ private enum BackendOnDeviceGloss {
   }
 
   // The settings app runs in another process and cannot ask the translation service on this one's behalf, so the pairs found downloadable but not downloaded are left in this input method's defaults domain for it to read with `defaults read`. A comma-separated string rather than an array, so that reader prints the value verbatim.
-  static let downloadableDefaultsKey = "MSIMEOnDeviceTranslationDownloadableLanguages"
+  static let downloadableDefaultsKey = "LINGYAOOnDeviceTranslationDownloadableLanguages"
 
   private static func recordDownloadable(_ code: String, _ downloadable: Bool) {
     let defaults = UserDefaults.standard
@@ -101,9 +101,9 @@ private enum BackendOnDeviceGloss {
   }
 }
 
-// Called on the main thread by InputController.mm with at most one page of Chinese candidates and the user's target languages. Results arrive as MSIMEBackendOnDeviceTranslationsDidArrive on the main thread, one notification per language.
-@_cdecl("MSIMEFetchOnDeviceCandidateGlosses")
-public func msimeFetchOnDeviceCandidateGlosses(_ wordsJSON: UnsafePointer<CChar>, _ targetsJSON: UnsafePointer<CChar>) {
+// Called on the main thread by InputController.mm with at most one page of Chinese candidates and the user's target languages. Results arrive as LINGYAOBackendOnDeviceTranslationsDidArrive on the main thread, one notification per language.
+@_cdecl("LINGYAOFetchOnDeviceCandidateGlosses")
+public func lingyaoFetchOnDeviceCandidateGlosses(_ wordsJSON: UnsafePointer<CChar>, _ targetsJSON: UnsafePointer<CChar>) {
   guard #available(macOS 26, *) else { return }
   guard let words = try? JSONDecoder().decode([String].self, from: Data(String(cString: wordsJSON).utf8)),
         let targets = try? JSONDecoder().decode([String].self, from: Data(String(cString: targetsJSON).utf8)),

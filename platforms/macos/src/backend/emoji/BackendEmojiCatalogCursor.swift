@@ -9,7 +9,7 @@ struct MacEmojiCatalogSlice {
 
 enum MacEmojiCatalogCursor {
   static let batchSize = 255
-  static func invalid() -> NSError { NSError(domain: "MSIMEEmojiCatalogCursor", code: 1) }
+  static func invalid() -> NSError { NSError(domain: "LINGYAOEmojiCatalogCursor", code: 1) }
 
   static func decode(_ response: NSDictionary, offset: Int, limit: Int) throws -> MacEmojiCatalogSlice {
     guard offset >= 0, (1...batchSize).contains(limit),
@@ -63,7 +63,7 @@ struct MacEmojiCatalogRevision: Equatable {
   let wal: File?
   static func capture(resources: String) throws -> Self {
     guard NSString(string: resources).isAbsolutePath else { throw MacEmojiCatalogCursor.invalid() }
-    let path = URL(fileURLWithPath: resources).appendingPathComponent("msime-others.db").resolvingSymlinksInPath().path
+    let path = URL(fileURLWithPath: resources).appendingPathComponent("lingyao-others.db").resolvingSymlinksInPath().path
     func mark(_ path: String) throws -> File {
       let attributes = try FileManager.default.attributesOfItem(atPath: path)
       guard let device = attributes[.systemNumber] as? NSNumber,

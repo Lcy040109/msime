@@ -1,10 +1,10 @@
-//! 需要真实资源（`MSIME_EVAL_RESOURCES`）的测试共用的部分：读评测集、把资源目录暂存成一份工作副本、把按键串转成 `Key`。
+//! 需要真实资源（`LINGYAO_EVAL_RESOURCES`）的测试共用的部分：读评测集、把资源目录暂存成一份工作副本、把按键串转成 `Key`。
 
 #![allow(dead_code, reason = "parity.rs 和 rerank_routing.rs 各用其中一部分")]
 
 use std::path::{Path, PathBuf};
 
-use msime_engine_wasm::host::Key;
+use lingyao_engine_wasm::host::Key;
 
 /// `resources/eval` 下的四个评测集，和 convert_eval 门禁用的一样。
 pub const SETS: [&str; 4] = [
@@ -20,9 +20,9 @@ pub struct Case {
     pub context: String,
 }
 
-/// 没有设置 `MSIME_EVAL_RESOURCES` 时返回 None，调用方打印 skipped 后直接通过。
+/// 没有设置 `LINGYAO_EVAL_RESOURCES` 时返回 None，调用方打印 skipped 后直接通过。
 pub fn resources() -> Option<PathBuf> {
-    std::env::var_os("MSIME_EVAL_RESOURCES")
+    std::env::var_os("LINGYAO_EVAL_RESOURCES")
         .filter(|value| !value.is_empty())
         .map(PathBuf::from)
 }
@@ -56,7 +56,7 @@ pub fn load(path: &Path) -> Vec<Case> {
 
 /// 把资源目录暂存成 `state/user/dictionaries/<id>` 下的工作副本（`prepare_runtime_paths`，convert_eval 经 `prepare_options` 做的同一件事），返回那个目录。资源目录本身只读，从不写入。
 pub fn stage(resources: &Path, state: &Path) -> PathBuf {
-    msime_engine::prepare_runtime_paths(
+    lingyao_engine::prepare_runtime_paths(
         resources,
         &state.join("user"),
         &state.join("cache"),

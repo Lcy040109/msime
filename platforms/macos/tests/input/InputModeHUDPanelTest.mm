@@ -12,21 +12,21 @@ void Require(bool condition, const char *message) { if (!condition) throw std::r
 int main() {
     @autoreleasepool {
         try {
-            Require([MSIMEInputModeHUDText(YES) isEqualToString:@"英"] && [MSIMEInputModeHUDText(NO) isEqualToString:@"中"], "HUD text mismatch");
+            Require([LINGYAOInputModeHUDText(YES) isEqualToString:@"英"] && [LINGYAOInputModeHUDText(NO) isEqualToString:@"中"], "HUD text mismatch");
             const NSRect screen = NSMakeRect(0, 0, 1440, 900);
             const NSSize panel = NSMakeSize(100, 56);
             const NSRect caret = NSMakeRect(700, 500, 2, 20);
-            const NSRect under = MSIMEInputModeHUDFrame(caret, panel, screen);
+            const NSRect under = LINGYAOInputModeHUDFrame(caret, panel, screen);
             Require(NSMaxY(under) < NSMinY(caret) && std::abs(NSMidX(under) - NSMidX(caret)) < 0.5, "HUD did not stay below caret");
-            const NSRect low = MSIMEInputModeHUDFrame(NSMakeRect(700, 12, 2, 20), panel, screen);
+            const NSRect low = LINGYAOInputModeHUDFrame(NSMakeRect(700, 12, 2, 20), panel, screen);
             Require(NSMinY(low) > NSMaxY(NSMakeRect(700, 12, 2, 20)), "HUD did not move above low caret");
             for (const NSRect edge : {NSMakeRect(-40, 500, 2, 20), NSMakeRect(1480, 500, 2, 20), NSMakeRect(700, 1200, 2, 20)}) {
-                NSRect frame = MSIMEInputModeHUDFrame(edge, panel, screen);
+                NSRect frame = LINGYAOInputModeHUDFrame(edge, panel, screen);
                 Require(NSMinX(frame) >= NSMinX(screen) && NSMaxX(frame) <= NSMaxX(screen) && NSMinY(frame) >= NSMinY(screen) && NSMaxY(frame) <= NSMaxY(screen), "HUD escaped screen");
             }
-            Require(!MSIMEInputModeHUDUsableCaretRect(NSZeroRect) && !MSIMEInputModeHUDUsableCaretRect(NSMakeRect(0, 0, 1, 0)) && MSIMEInputModeHUDUsableCaretRect(caret), "caret validation mismatch");
-            MSIMEInputModeHUDPanel *hud = MSIMEInputModeHUDPanel.sharedPanel;
-            Require(hud == MSIMEInputModeHUDPanel.sharedPanel && hud.ignoresMouseEvents && hud.floatingPanel && !hud.opaque, "HUD panel contract mismatch");
+            Require(!LINGYAOInputModeHUDUsableCaretRect(NSZeroRect) && !LINGYAOInputModeHUDUsableCaretRect(NSMakeRect(0, 0, 1, 0)) && LINGYAOInputModeHUDUsableCaretRect(caret), "caret validation mismatch");
+            LINGYAOInputModeHUDPanel *hud = LINGYAOInputModeHUDPanel.sharedPanel;
+            Require(hud == LINGYAOInputModeHUDPanel.sharedPanel && hud.ignoresMouseEvents && hud.floatingPanel && !hud.opaque, "HUD panel contract mismatch");
             Require(hud.displayedText == nil, "HUD was visible before use");
             // The badge is the floating toolbar's height, (font + 20) x scale: 44pt at the toolbar's default 24pt and 100%.
             Require(hud.panelSize.height == 44.0 && hud.panelSize.width < 100.0, "HUD default size is not the toolbar's");

@@ -1,4 +1,4 @@
-// Adapted from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Adapted from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 #pragma once
 
 #include <filesystem>
@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::mac
+namespace lingyao::mac
 {
 struct Rgba
 {
@@ -275,7 +275,7 @@ struct CustomTheme
     SkinColors candidateColors;
 };
 
-// One entry of msime_client_theme_catalog: the theme picker's order, ids, titles and swatches. `appearance` is "light", "dark" or empty for system and custom, which also have no preview.
+// One entry of lingyao_client_theme_catalog: the theme picker's order, ids, titles and swatches. `appearance` is "light", "dark" or empty for system and custom, which also have no preview.
 struct ThemeCatalogEntry
 {
     std::string id;
@@ -322,13 +322,13 @@ void DeriveSelectedForegrounds(SkinTokens &tokens, bool text, bool number);
 //
 // The radius goes user value, then the package's corner_radius_dip (already in tokens.radius), then the native card radius, and a row is never rounder than the card it sits in. The opacity reaches the card surface, its border and the package background image and nothing else, so text, numbers and the selected fill stay as legible as the theme made them. The scale multiplies every length the skin carries, the radii, the inset and the package's decoration and minimum width, so the card keeps its proportions at any size; the hairline border keeps its width.
 ResolvedSkin StyledCandidateSkin(ResolvedSkin skin, const CandidateWindowStyle &style);
-// The seven global themes in picker order, read once from msime_client_theme_catalog.
+// The seven global themes in picker order, read once from lingyao_client_theme_catalog.
 const std::vector<ThemeCatalogEntry> &ThemeCatalog();
 bool IsGlobalThemeId(std::string_view id);
 // `system` or a built-in theme: what a custom theme may be drawn over.
 bool IsThemeBaseId(std::string_view id);
 std::string ThemeTitle(std::string_view id);
-// Resolve the candidate palette of a global theme through msime_client_resolve_theme, over NativeCandidateTokens for every null slot. This reads the package from disk, so callers resolve when the theme, the mode, the layout or the skin root changes, never while drawing. `layout` is "horizontal" or "vertical".
+// Resolve the candidate palette of a global theme through lingyao_client_resolve_theme, over NativeCandidateTokens for every null slot. This reads the package from disk, so callers resolve when the theme, the mode, the layout or the skin root changes, never while drawing. `layout` is "horizontal" or "vertical".
 ResolvedSkin ResolveSkin(std::string_view globalTheme, const CustomTheme &custom, bool dark, std::string_view layout,
                          const std::filesystem::path &skinsRoot);
 /// The floating toolbar's palette: the candidate palette it derives from (surface, text, hover, selected with selected text, border) at the native toolbar radius, never the package's card radius; then the drawn package's `[toolbar]` radius and colours for the resolved mode (background, border, divider, icon, hover; handle has no macOS target); then the safe color/geometry subset of the package's toolbar stylesheet when there is one, which wins over both. Unsupported CSS (layout, scripts, images, effects) is intentionally ignored because the macOS toolbar is an AppKit view rather than a WebView.
@@ -341,9 +341,9 @@ SkinCatalog ScanSkinCatalog(const std::filesystem::path &skinsRoot);
 std::vector<SkinListEntry> ListSkins(const std::filesystem::path &skinsRoot);
 std::filesystem::path DefaultSkinsRoot();
 void SetDefaultSkinsRoot(std::filesystem::path root);
-} // namespace msime::mac
+} // namespace lingyao::mac
 
 namespace lingyao
 {
-namespace mac = ::msime::mac;
+namespace mac = ::lingyao::mac;
 }

@@ -4,7 +4,7 @@
 
 use crate::platform::desktop::desktop_account;
 use crate::platform::macos::macos_launch;
-use msime_client_core::account::{AccountSessionFileLayout, FileAccountSessionStorage};
+use lingyao_client_core::account::{AccountSessionFileLayout, FileAccountSessionStorage};
 
 /// Registers the shared desktop account state around the session file the input method also uses.
 pub fn setup(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {

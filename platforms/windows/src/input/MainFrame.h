@@ -1,7 +1,7 @@
 #pragma once
 #include "windows_ipc.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Established Main stream only. Registration/negotiation remains separate.
 // This validates shape and the pinned identity, NOT foreground ownership.
 inline bool valid_main_frame(const FanyImeNamedpipeData &packet,
@@ -39,4 +39,4 @@ inline bool valid_main_frame(const FanyImeNamedpipeData &packet,
     return false;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

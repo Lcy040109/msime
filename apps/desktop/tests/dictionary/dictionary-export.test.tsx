@@ -7,7 +7,7 @@ import {
   loadAllPersonalDictionaryEntries,
   personalDictionaryExportName,
   personalDictionaryExportPayload,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 test("each dictionary kind exports under its own shipped name", () => {
   expect(dictionaryExportName("pinyin")).toBe("灵耀IME-拼音用户词库.txt");

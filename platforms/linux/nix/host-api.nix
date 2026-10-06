@@ -1,4 +1,4 @@
-# msime-host-api 的 Release cdylib，即 Fcitx5 插件链接的 libmsime_host_api.so。
+# lingyao-host-api 的 Release cdylib，即 Fcitx5 插件链接的 liblingyao_host_api.so。
 {
   lib,
   root,
@@ -32,10 +32,10 @@ let
   };
   commonArgs = {
     inherit src version;
-    pname = "msime-host-api";
+    pname = "lingyao-host-api";
     strictDeps = true;
     # 不带 -p 时会构建 default-members，其中 tauri-mobile-platform 要拉起整套 Tauri 依赖。
-    cargoExtraArgs = "--locked -p msime-host-api";
+    cargoExtraArgs = "--locked -p lingyao-host-api";
     nativeBuildInputs = [ pkg-config ];
     # cpal 在 Linux 上经 ALSA 采集麦克风。
     buildInputs = [ alsa-lib ];
@@ -50,7 +50,7 @@ craneLib.buildPackage (
     doCheck = false;
     # crate 同时产出 staticlib，crane 默认会把 .a 也装进去；插件只链接 cdylib。
     installPhaseCommand = ''
-      install -Dm755 target/release/libmsime_host_api.so -t $out/lib
+      install -Dm755 target/release/liblingyao_host_api.so -t $out/lib
     '';
   }
 )

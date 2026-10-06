@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 几个版本的 .deb（msime-linux 和 msime-linux-<id>）能不能同时装、卸载一个会不会带走另一个。它们装进同一个干净的 Debian 容器（与 Dockerfile.build-gate 同一个基础镜像），确认 dpkg 不报文件冲突、各自的首次配置命令都在 /usr/bin 下；然后逐个卸载，每卸一个都用 dpkg --verify 核对其余的包，一个文件都没少。maintainer 脚本在容器里没有 systemd 和 loginctl，按设计什么也不做（tests/core/deb_maintainer_scripts.py 另测它们的行为）。
+# 几个版本的 .deb（lingyao-linux 和 lingyao-linux-<id>）能不能同时装、卸载一个会不会带走另一个。它们装进同一个干净的 Debian 容器（与 Dockerfile.build-gate 同一个基础镜像），确认 dpkg 不报文件冲突、各自的首次配置命令都在 /usr/bin 下；然后逐个卸载，每卸一个都用 dpkg --verify 核对其余的包，一个文件都没少。maintainer 脚本在容器里没有 systemd 和 loginctl，按设计什么也不做（tests/core/deb_maintainer_scripts.py 另测它们的行为）。
 #
 # Usage: platforms/linux/tests/tools/check-deb-coexistence.sh <package.deb>...
 # Needs docker and network access for the packages' dependencies.

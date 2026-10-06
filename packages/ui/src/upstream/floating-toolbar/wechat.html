@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://msime-contracts; style-src 'unsafe-inline'; img-src data: https://appassets https://candidate-skins; font-src data: https://appassets https://candidate-skins">
   <script src="https://msime-contracts/schema.js"></script>
   <script src="https://msime-contracts/runtime.js"></script>
-  <script>const serializeHostMessage = message => MsimeProtocol.serializeClientMessage(message, "toolbar");</script>
+  <script>const serializeHostMessage = message => LingyaoProtocol.serializeClientMessage(message, "toolbar");</script>
   <meta charset="UTF-8">
   <title>IME(WeChat FTB)</title>
   <style>
@@ -20,8 +20,8 @@
       --ftb-handle-width: 2.5px;
       --ftb-handle-height: 14px;
       /* Filled by C++ from half-monitor DIPs (DPI-aware). */
-      --msime-max-width-dip: 50vw;
-      --msime-max-height-dip: 50vh;
+      --lingyao-max-width-dip: 50vw;
+      --lingyao-max-height-dip: 50vh;
     }
 
     html,
@@ -44,8 +44,8 @@
       box-sizing: border-box;
       height: auto;
       min-height: calc(var(--ftb-bar-height) * var(--ftb-scale));
-      max-width: min(100%, var(--msime-max-width-dip));
-      max-height: min(100%, var(--msime-max-height-dip));
+      max-width: min(100%, var(--lingyao-max-width-dip));
+      max-height: min(100%, var(--lingyao-max-height-dip));
       top: 0px;
       left: 0px;
       display: flex;

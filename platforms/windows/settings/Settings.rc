@@ -1,5 +1,5 @@
 #include <windows.h>
 
-101 ICON "..\\tsf\\assets\\msime.ico"
+101 ICON "..\\tsf\\assets\\lingyao.ico"
 // The same icon file as raw bytes: the window decodes its PNG frame for the title bar and the about page.
-102 RCDATA "..\\tsf\\assets\\msime.ico"
+102 RCDATA "..\\tsf\\assets\\lingyao.ico"

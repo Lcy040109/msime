@@ -1,13 +1,13 @@
-// Adapted from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Adapted from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 #pragma once
 
 #import <AppKit/AppKit.h>
 
 #include "CandidateSkin.h"
 
-@class MSIMEAppearancePreferences;
-@interface MSIMECandidatePreviewView : NSView
-@property(nonatomic, weak) MSIMEAppearancePreferences *preferences;
+@class LINGYAOAppearancePreferences;
+@interface LINGYAOCandidatePreviewView : NSView
+@property(nonatomic, weak) LINGYAOAppearancePreferences *preferences;
 @property(nonatomic, weak) NSButton *themeButton;
 - (void)updatePanelStyle:(NSInteger)panelStyle pageSize:(NSInteger)pageSize fontSize:(NSInteger)fontSize;
 - (void)setPreviewSkinId:(NSString *)skinId;
@@ -20,7 +20,7 @@
 - (BOOL)previewUsesDark;
 - (NSString *)forcedThemeButtonTitle;
 - (void)reloadPreview;
-- (msime::mac::ResolvedSkin)previewSkin;
+- (lingyao::mac::ResolvedSkin)previewSkin;
 - (NSColor *)previewCanvasFillColor;
 - (NSColor *)previewPanelFillColor;
 - (NSColor *)previewTextColor;
@@ -29,10 +29,10 @@
 @end
 
 /// The floating toolbar drawn at the size the toolbar settings actually produce: the components that are ticked, laid out with LingyaoFloatingToolbarPanel's own metrics for the chosen 工具栏缩放 and 工具栏字号. The 状态栏 page offers four scale steps and seven font sizes, and until this view there was nowhere in the window those 28 combinations looked like anything.
-@interface MSIMEToolbarPreviewView : NSView
-@property(nonatomic, weak) MSIMEAppearancePreferences *preferences;
+@interface LINGYAOToolbarPreviewView : NSView
+@property(nonatomic, weak) LINGYAOAppearancePreferences *preferences;
 - (void)reloadPreview;
 - (BOOL)previewUsesDark;
 @end
 
-#define LingyaoCandidatePreviewView MSIMECandidatePreviewView
+#define LingyaoCandidatePreviewView LINGYAOCandidatePreviewView

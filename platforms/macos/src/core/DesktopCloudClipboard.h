@@ -1,20 +1,20 @@
 #pragma once
 #import <AppKit/AppKit.h>
-@class MSIMEDesktopInputSession;
+@class LINGYAODesktopInputSession;
 
-@protocol MSIMEDesktopCloudClipboardProvider
+@protocol LINGYAODesktopCloudClipboardProvider
 - (NSProgress *)request:(NSDictionary *)request completion:(void (^)(NSDictionary *))completion;
 @end
 
-@interface MSIMEDesktopCloudClipboardSession : NSObject
-- (instancetype)initWithProvider:(id<MSIMEDesktopCloudClipboardProvider>)provider;
-- (instancetype)initWithProvider:(id<MSIMEDesktopCloudClipboardProvider>)provider dictionary:(BOOL)dictionary;
+@interface LINGYAODesktopCloudClipboardSession : NSObject
+- (instancetype)initWithProvider:(id<LINGYAODesktopCloudClipboardProvider>)provider;
+- (instancetype)initWithProvider:(id<LINGYAODesktopCloudClipboardProvider>)provider dictionary:(BOOL)dictionary;
 @property(nonatomic, readonly, copy) NSDictionary<NSString *, NSString *> *launchEnvironment;
 - (void)authorizePID:(pid_t)pid stillValid:(BOOL (^)(void))valid;
 - (void)stop;
 @end
 
-void MSIMEOpenDesktopCloudClipboard(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback);
-void MSIMEOpenDesktopCloudDictionary(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback);
-void MSIMEOpenDesktopCloudClipboardWithInput(NSString *optionsPath, NSWorkspace *workspace,
-    MSIMEDesktopInputSession *inputSession, dispatch_block_t fallback);
+void LINGYAOOpenDesktopCloudClipboard(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback);
+void LINGYAOOpenDesktopCloudDictionary(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback);
+void LINGYAOOpenDesktopCloudClipboardWithInput(NSString *optionsPath, NSWorkspace *workspace,
+    LINGYAODesktopInputSession *inputSession, dispatch_block_t fallback);

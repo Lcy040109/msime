@@ -2,7 +2,7 @@
 #include <cassert>
 int main()
 {
-    using namespace msime::mac;
+    using namespace lingyao::mac;
     // Every size the shared preferences accept is honoured. The old rule kept 5, 7 and 9 and rewrote
     // everything else to 9, which turned the shared default of six into nine on this platform alone and
     // silently rewrote a document written anywhere else.

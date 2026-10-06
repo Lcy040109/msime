@@ -1,9 +1,9 @@
 #include "HostOptionsPaths.h"
 #include <fstream>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 std::string read_prepared_host_options(const std::filesystem::path &file) {
-  // Match msime_client_create's limit; an extra byte detects truncation.
+  // Match lingyao_client_create's limit; an extra byte detects truncation.
   constexpr std::size_t limit = 16384;
   std::ifstream stream(file, std::ios::binary);
   if (!stream) return {};

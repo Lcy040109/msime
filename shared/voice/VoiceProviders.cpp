@@ -15,9 +15,9 @@
 #include <thread>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
-using msime::voice::VoiceError;
+using lingyao::voice::VoiceError;
 // Every batch provider is sent 16 kHz mono 16-bit WAV, and none takes more than 20 MiB of it.
 constexpr std::uint32_t sample_rate = 16000;
 constexpr std::size_t maximum_encoded_audio_bytes = 20u * 1024u * 1024u;
@@ -493,7 +493,7 @@ std::string polish_cloud_text(
   // timeout can never be reached. Keep it within whatever the caller allows.
   curl_easy_setopt(curl.get(), CURLOPT_CONNECTTIMEOUT_MS,
                    static_cast<long>(std::min<long long>(15000, timeout_ms)));
-  // Whole request, not connection. MSIME-Windows develop 30a22e6f chose 3s so a slow polish service cannot
+  // Whole request, not connection. LINGYAO-Windows develop 30a22e6f chose 3s so a slow polish service cannot
   // hold the ASR text, and that remains the default. Hosts whose reference measured otherwise pass their
   // own - see the macOS caller.
   curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, timeout_ms);
@@ -522,7 +522,7 @@ std::string polish_cloud_text(
   throw VoiceError("Missing polished text");
 }
 
-bool local_asr_available() { return msime::voice::sherpa_runtime_available(); }
+bool local_asr_available() { return lingyao::voice::sherpa_runtime_available(); }
 
 std::string recognize_local_asr(
     const std::vector<float> &samples, std::string_view model_path,
@@ -535,12 +535,12 @@ std::string recognize_local_asr(
     throw VoiceError("Local speech model path is required");
   if (cancelled && cancelled->load())
     throw VoiceError("Voice request cancelled");
-  if (!msime::voice::is_local_model_dir(model_path))
+  if (!lingyao::voice::is_local_model_dir(model_path))
     throw VoiceError("Not an installed local speech model; choose a model from the local model list");
-  msime::voice::LocalAsrOptions options;
+  lingyao::voice::LocalAsrOptions options;
   options.model_dir = std::string(model_path);
   options.language = std::string(language);
   options.hotwords = hotwords;
-  return msime::voice::recognize_local_model(samples, options, cancelled);
+  return lingyao::voice::recognize_local_model(samples, options, cancelled);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

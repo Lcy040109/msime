@@ -5,7 +5,7 @@ import {
   keyHeatLevel,
   keyLabel,
   scopedKeyCounts,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 const dailyKeys = {
   "2026-09-29": { KeyA: 2, Space: 1 },

@@ -24,7 +24,7 @@ constexpr std::size_t kMaxEventBytes = 192;
 
 bool directoryIsSafe(const std::filesystem::path &directory) noexcept {
   try {
-    return msime::mac::StoragePathIsSafe(directory, true);
+    return lingyao::mac::StoragePathIsSafe(directory, true);
   } catch (...) {
     return false;
   }
@@ -137,21 +137,21 @@ Log &log() {
 }
 } // namespace
 
-void msime_macos_diagnostic_configure(const std::string &directory,
+void lingyao_macos_diagnostic_configure(const std::string &directory,
                                       bool enabled) noexcept {
   log().configure(directory, enabled);
 }
 
-void msime_macos_diagnostic_write(std::string_view event) noexcept {
+void lingyao_macos_diagnostic_write(std::string_view event) noexcept {
   log().write(event);
 }
 
-bool msime_macos_diagnostic_enabled() noexcept {
+bool lingyao_macos_diagnostic_enabled() noexcept {
   return gEnabled.load(std::memory_order_relaxed);
 }
 
-void msime_macos_diagnostic_writef(const char *format, ...) noexcept {
-  if (!format || !msime_macos_diagnostic_enabled())
+void lingyao_macos_diagnostic_writef(const char *format, ...) noexcept {
+  if (!format || !lingyao_macos_diagnostic_enabled())
     return;
   char buffer[kMaxEventBytes + 1]{};
   va_list arguments;

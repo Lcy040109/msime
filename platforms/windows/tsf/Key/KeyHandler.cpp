@@ -99,7 +99,7 @@ WCHAR GetPairedPunctuationClosing(const std::wstring &text)
 DWORD_PTR MapRawCaretToPreedit(const CStringRange &raw, DWORD_PTR rawCaret, const std::wstring &preedit,
                                size_t prefixLength)
 {
-    return msime::tsf::MapPreeditCaret(raw.ToWString(), rawCaret, preedit, prefixLength);
+    return lingyao::tsf::MapPreeditCaret(raw.ToWString(), rawCaret, preedit, prefixLength);
 }
 } // namespace
 
@@ -162,7 +162,7 @@ VOID CLingyaoIME::_DeleteCandidateList(BOOL isForce, _In_opt_ ITfContext *pConte
         CCandidateListUIPresenter *pPresenter = _pCandidateListUIPresenter;
         _pCandidateListUIPresenter = nullptr;
         // In Korean and Zhuyin the only list is the one the user opens, and it can close while the composition keeps going; the Server follows that from the keys themselves.
-        if (msime::windows::scheme::OpensCandidateList(Global::InputModeScheme.load(std::memory_order_relaxed)))
+        if (lingyao::windows::scheme::OpensCandidateList(Global::InputModeScheme.load(std::memory_order_relaxed)))
         {
             pPresenter->_ForgetCandidateUiSession();
         }
@@ -227,7 +227,7 @@ HRESULT CLingyaoIME::_HandleHostRawCommit(TfEditCookie ec, _In_ ITfContext *pCon
     if (!host || !host->valid()) return S_FALSE;
     HRESULT writeResult = E_FAIL;
     std::string error;
-    const auto status = msime::tsf::CommitHostRaw(*host, [&](const std::string &text) {
+    const auto status = lingyao::tsf::CommitHostRaw(*host, [&](const std::string &text) {
         if (text.size() > static_cast<size_t>((std::numeric_limits<int>::max)())) return false;
         const int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(),
                                                static_cast<int>(text.size()), nullptr, 0);
@@ -247,8 +247,8 @@ HRESULT CLingyaoIME::_HandleHostRawCommit(TfEditCookie ec, _In_ ITfContext *pCon
         GlobalIme::pending_create_word_preedit.clear();
         _HandleCompleteCommitFirst(ec, pContext);
     }, &error);
-    if (status == msime::tsf::RawCommitStatus::Completed) return S_OK;
-    if (status == msime::tsf::RawCommitStatus::Unhandled) return S_FALSE;
+    if (status == lingyao::tsf::RawCommitStatus::Completed) return S_OK;
+    if (status == lingyao::tsf::RawCommitStatus::Unhandled) return S_FALSE;
     return FAILED(writeResult) ? writeResult : E_FAIL;
 }
 
@@ -256,14 +256,14 @@ HRESULT CLingyaoIME::_HandleSyllableCommit(TfEditCookie ec, _In_ ITfContext *pCo
                                                bool replayKey)
 {
     std::wstring text;
-    bool keyText = msime::tsf::is_host_text_key(wch);
+    bool keyText = lingyao::tsf::is_host_text_key(wch);
     // Set when the host had already let go of the composition the document still shows.
     bool hostLetGo = true;
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (host && host->valid())
     {
         std::string error;
-        auto ended = msime::tsf::EndHostComposition(*host, Global::InputModeScheme.load(std::memory_order_relaxed),
+        auto ended = lingyao::tsf::EndHostComposition(*host, Global::InputModeScheme.load(std::memory_order_relaxed),
                                                     wch, &error);
         hostLetGo = ended.hostLetGo;
         keyText = ended.keyFollows;
@@ -296,17 +296,17 @@ HRESULT CLingyaoIME::_HandleSyllableCommit(TfEditCookie ec, _In_ ITfContext *pCo
     }
     _HandleCompleteCommitFirst(ec, pContext);
     // A caret or editing key goes on to the application without reaching the Server, whose own session still holds the syllable. The routed clear a terminated composition sends keeps the two in step; keys with text reach the Server and end the syllable there themselves.
-    if (code != 0 && !msime::tsf::is_host_text_key(wch) && Global::g_connected) SendHideCandidateWndEventToUIProcess();
-    if (replayKey && code != 0 && !msime::tsf::is_host_text_key(wch)) _QueueKoreanSyllableKeyReplay(code);
+    if (code != 0 && !lingyao::tsf::is_host_text_key(wch) && Global::g_connected) SendHideCandidateWndEventToUIProcess();
+    if (replayKey && code != 0 && !lingyao::tsf::is_host_text_key(wch)) _QueueKoreanSyllableKeyReplay(code);
     return S_OK;
 }
 
 namespace
 {
-// Under the Korean and Zhuyin rules the Engine lists candidates only after MSIME_OPEN_CANDIDATE_LIST (or Zhuyin's Space), so a composing view with candidates is the open list (msime_client.h). The TIP never enters a local or dedicated English mode in either scheme, the two states that keep their own rules there.
-bool KoreanHanjaListOpen(const msime::tsf::EngineView &view)
+// Under the Korean and Zhuyin rules the Engine lists candidates only after LINGYAO_OPEN_CANDIDATE_LIST (or Zhuyin's Space), so a composing view with candidates is the open list (lingyao_client.h). The TIP never enters a local or dedicated English mode in either scheme, the two states that keep their own rules there.
+bool KoreanHanjaListOpen(const lingyao::tsf::EngineView &view)
 {
-    return msime::windows::scheme::OpensCandidateList(static_cast<int>(view.scheme)) && !view.editing_text.empty() &&
+    return lingyao::windows::scheme::OpensCandidateList(static_cast<int>(view.scheme)) && !view.editing_text.empty() &&
            !view.candidates.empty();
 }
 } // namespace
@@ -317,8 +317,8 @@ CLingyaoIME::HostComposedView CLingyaoIME::_ReadHostComposedView() const
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return result;
     std::string raw, error;
-    msime::tsf::EngineResult current;
-    if (!host->view(&raw, &error) || !msime::tsf::EngineSessionAdapter::parse_result(raw, &current, &error))
+    lingyao::tsf::EngineResult current;
+    if (!host->view(&raw, &error) || !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &current, &error))
         return result;
     result.listOpen = KoreanHanjaListOpen(current.view);
     result.composing = !current.view.editing_text.empty();
@@ -331,8 +331,8 @@ bool CLingyaoIME::_IsKoreanHanjaListOpen() const
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return false;
     std::string raw, error;
-    msime::tsf::EngineResult current;
-    return host->view(&raw, &error) && msime::tsf::EngineSessionAdapter::parse_result(raw, &current, &error) &&
+    lingyao::tsf::EngineResult current;
+    return host->view(&raw, &error) && lingyao::tsf::EngineSessionAdapter::parse_result(raw, &current, &error) &&
            KoreanHanjaListOpen(current.view);
 }
 
@@ -342,21 +342,21 @@ HRESULT CLingyaoIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pCo
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return S_OK;
     std::string raw, error;
-    msime::tsf::EngineResult current;
-    if (!host->view(&raw, &error) || !msime::tsf::EngineSessionAdapter::parse_result(raw, &current, &error))
+    lingyao::tsf::EngineResult current;
+    if (!host->view(&raw, &error) || !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &current, &error))
         return E_FAIL;
-    const auto key = msime::windows::korean_hanja_key(code, static_cast<uint32_t>(wch));
+    const auto key = lingyao::windows::korean_hanja_key(code, static_cast<uint32_t>(wch));
     const int scheme = static_cast<int>(current.view.scheme);
     const bool listOpen = KoreanHanjaListOpen(current.view);
-    const bool trigger = msime::windows::opens_candidate_list(scheme, code, listOpen);
+    const bool trigger = lingyao::windows::opens_candidate_list(scheme, code, listOpen);
     if (!trigger && !listOpen)
     {
         // A key queued behind the one that closed the list, or classified before the list opened: it does what it does with no list. It was eaten, so a caret or editing key is replayed to the application after the composition.
-        switch (msime::tsf::host_composed_key_action(scheme, code, wch, true, false, current.view.spelling_symbols))
+        switch (lingyao::tsf::host_composed_key_action(scheme, code, wch, true, false, current.view.spelling_symbols))
         {
-        case msime::tsf::KoreanKeyAction::CommitWithText:
+        case lingyao::tsf::KoreanKeyAction::CommitWithText:
             return _HandleSyllableCommit(ec, pContext, code, wch);
-        case msime::tsf::KoreanKeyAction::CommitAndPass:
+        case lingyao::tsf::KoreanKeyAction::CommitAndPass:
             return _HandleSyllableCommit(ec, pContext, code, wch, true);
         default:
             break;
@@ -372,9 +372,9 @@ HRESULT CLingyaoIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pCo
     bool applied = false;
     if (trigger)
     {
-        applied = host->command(MSIME_OPEN_CANDIDATE_LIST, &raw, &error);
+        applied = host->command(LINGYAO_OPEN_CANDIDATE_LIST, &raw, &error);
     }
-    else if (key.kind == msime::windows::KoreanHanjaKeyKind::Select)
+    else if (key.kind == lingyao::windows::KoreanHanjaKeyKind::Select)
     {
         // A digit past the visible page chooses nothing and is swallowed, as with any candidate list.
         if (key.value >= current.view.candidates.size()) return S_OK;
@@ -384,8 +384,8 @@ HRESULT CLingyaoIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pCo
     {
         applied = host->command(key.value, &raw, &error);
     }
-    msime::tsf::EngineResult result;
-    if (!applied || !msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error)) return E_FAIL;
+    lingyao::tsf::EngineResult result;
+    if (!applied || !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error)) return E_FAIL;
 
     if (result.has_commit && !result.commit.empty() &&
         result.commit.size() <= static_cast<size_t>((std::numeric_limits<int>::max)()))
@@ -414,7 +414,7 @@ HRESULT CLingyaoIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pCo
 
 void CLingyaoIME::_QueueKoreanSyllableKeyReplay(UINT virtualKey)
 {
-    if (_msgWndHandle == nullptr || !msime::tsf::is_korean_caret_or_edit_key(virtualKey))
+    if (_msgWndHandle == nullptr || !lingyao::tsf::is_korean_caret_or_edit_key(virtualKey))
     {
         return;
     }
@@ -435,7 +435,7 @@ void CLingyaoIME::_RunKoreanSyllableKeyReplay(UINT virtualKey)
 {
     // A focus change since the commit means the key would land in another editor, so it is dropped.
     if (_koreanKeyReplayFocusToken == 0 || !_IsFocusSessionCurrent(_koreanKeyReplayFocusToken) ||
-        !msime::tsf::is_korean_caret_or_edit_key(virtualKey))
+        !lingyao::tsf::is_korean_caret_or_edit_key(virtualKey))
     {
         return;
     }
@@ -469,7 +469,7 @@ bool CLingyaoIME::_IsKeyboardCancellationCurrent(ITfContext *context, ITfComposi
     // GetFocus/GetTop cross COM; recheck local identities after they return.
     return _pContext == context && _IsCompositionCurrent(composition) &&
            _IsFocusSessionCurrent(focusToken) &&
-           msime::tsf::keyboard_cancellation_matches(
+           lingyao::tsf::keyboard_cancellation_matches(
                {focusToken, compositionEpoch}, {_CaptureFocusSessionToken(), _CaptureCompositionEpoch()},
                SupportsKeyboardCompositionCancel(this), !_voiceCompositionActive);
 }
@@ -514,7 +514,7 @@ HRESULT CLingyaoIME::_ApplyKeyboardCancellation(TfEditCookie ec, ITfContext *con
     const auto current = [&] {
         return _IsKeyboardCancellationCurrent(context, composition, focusToken, compositionEpoch);
     };
-    return msime::tsf::cancel_keyboard_composition(
+    return lingyao::tsf::cancel_keyboard_composition(
         S_OK, S_FALSE, current,
         [&]() -> HRESULT {
             const HRESULT result = composition->GetRange(&range.value);
@@ -543,13 +543,13 @@ bool CLingyaoIME::_CancelHostComposition()
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return true;
     std::string raw, error;
-    if (!host->command(MSIME_CANCEL, &raw, &error)) return false;
-    // 韩文汉字列表或注音列表打开时，MSIME_CANCEL 只关闭列表、组字保留（msime_client.h）；越南文词和藏文音节串上的第一次 MSIME_CANCEL 只把原文重新显示出来，所以再发一次来丢弃它。
-    msime::tsf::EngineResult result;
-    if (msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) &&
-        msime::windows::scheme::AlwaysInlinePreedit(static_cast<int>(result.view.scheme)) &&
+    if (!host->command(LINGYAO_CANCEL, &raw, &error)) return false;
+    // 韩文汉字列表或注音列表打开时，LINGYAO_CANCEL 只关闭列表、组字保留（lingyao_client.h）；越南文词和藏文音节串上的第一次 LINGYAO_CANCEL 只把原文重新显示出来，所以再发一次来丢弃它。
+    lingyao::tsf::EngineResult result;
+    if (lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) &&
+        lingyao::windows::scheme::AlwaysInlinePreedit(static_cast<int>(result.view.scheme)) &&
         !result.has_commit && !result.view.editing_text.empty())
-        return host->command(MSIME_CANCEL, &raw, &error);
+        return host->command(LINGYAO_CANCEL, &raw, &error);
     return true;
 }
 
@@ -558,7 +558,7 @@ HRESULT CLingyaoIME::_HandleEscape(TfEditCookie ec, _In_ ITfContext *pContext)
     // 越南文词和藏文音节串在第一次 Esc 时重新显示原文并继续组字；下一次 Esc 像其他组字一样丢弃它。
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     std::string error;
-    if (host && host->valid() && _IsComposing() && msime::tsf::RestoreHostRawOnEscape(*host, &error))
+    if (host && host->valid() && _IsComposing() && lingyao::tsf::RestoreHostRawOnEscape(*host, &error))
         return _HandleCompositionInputWorker(_pCompositionProcessorEngine, ec, pContext, FANY_IME_NO_REQUEST_ID);
     return _HandleCancel(ec, pContext);
 }
@@ -812,12 +812,12 @@ HRESULT CLingyaoIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *p
 
     // 在延迟按键屏障后面被分类为输入的注音、越南文或藏文按键，是按静态拼写规则判断的（VNI 的数字、列表投影为关闭时的大千键、藏文的威利符号）。由实时视图决定：它不拼写的键结束组字并跟在后面，与 Server 会话处理同一个键的方式一致。藏文组字时的空格也算组字接收的键（host_composition_takes_key）。
     if (const int scheme = Global::InputModeScheme.load(std::memory_order_relaxed);
-        scheme != msime::windows::scheme::Korean && msime::windows::scheme::AlwaysInlinePreedit(scheme) &&
-        msime::tsf::is_korean_text_key(wch) && pCompositionProcessorEngine->GetHostEngineAdapter() &&
+        scheme != lingyao::windows::scheme::Korean && lingyao::windows::scheme::AlwaysInlinePreedit(scheme) &&
+        lingyao::tsf::is_korean_text_key(wch) && pCompositionProcessorEngine->GetHostEngineAdapter() &&
         pCompositionProcessorEngine->GetHostEngineAdapter()->valid())
     {
         const auto hostView = _ReadHostComposedView();
-        if (!msime::tsf::host_composition_takes_key(scheme, hostView.spellingSymbols, wch, hostView.composing))
+        if (!lingyao::tsf::host_composition_takes_key(scheme, hostView.spellingSymbols, wch, hostView.composing))
             return _HandleSyllableCommit(ec, pContext, static_cast<UINT>(wch), wch);
     }
 
@@ -871,15 +871,15 @@ HRESULT CLingyaoIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *p
     if (auto *host = pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
     {
         std::string raw, error;
-        msime::tsf::EngineResult result;
+        lingyao::tsf::EngineResult result;
         const int scheme = Global::InputModeScheme.load(std::memory_order_relaxed);
-        if (composingBeforeKey && msime::windows::scheme::AlwaysInlinePreedit(scheme) && _IsComposing())
+        if (composingBeforeKey && lingyao::windows::scheme::AlwaysInlinePreedit(scheme) && _IsComposing())
         {
             // The composition still shows a syllable the host has already let go of: focus moved, or an edit session that would have ended the composition was refused. That syllable is text now, so end the composition around it and let this letter start the next one after it.
             std::string viewRaw, viewError;
-            msime::tsf::EngineResult current;
+            lingyao::tsf::EngineResult current;
             if (host->view(&viewRaw, &viewError) &&
-                msime::tsf::EngineSessionAdapter::parse_result(viewRaw, &current, &viewError) &&
+                lingyao::tsf::EngineSessionAdapter::parse_result(viewRaw, &current, &viewError) &&
                 current.view.editing_text.empty())
                 _HandleCompleteCommitFirst(ec, pContext);
         }
@@ -887,18 +887,18 @@ HRESULT CLingyaoIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *p
         if (wch > 0x7f)
             workerResult = S_FALSE;
         else if (!host->character(static_cast<uint8_t>(wch), shift, &raw, &error) ||
-                 !msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
+                 !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
             workerResult = E_FAIL;
         else
         {
             // Esc 锁定原文后，藏文组字时的空格只上屏原文并把空格交回宿主（未处理）。这个键已经被 TIP 吃掉，不会再到达应用，所以由 TIP 把空格写在原文后面。
-            if (scheme == msime::windows::scheme::Tibetan && result.has_commit && !result.handled &&
-                msime::tsf::is_host_text_key(wch))
+            if (scheme == lingyao::windows::scheme::Tibetan && result.has_commit && !result.handled &&
+                lingyao::tsf::is_host_text_key(wch))
             {
                 result.commit.push_back(static_cast<char>(wch));
                 result.handled = true;
             }
-            const auto status = msime::tsf::ApplyHostCharacterResult(result, [&](const std::string &text) {
+            const auto status = lingyao::tsf::ApplyHostCharacterResult(result, [&](const std::string &text) {
                 if (text.size() > static_cast<size_t>((std::numeric_limits<int>::max)())) return false;
                 const int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(),
                                                        static_cast<int>(text.size()), nullptr, 0);
@@ -920,8 +920,8 @@ HRESULT CLingyaoIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *p
                                                              FANY_IME_NO_REQUEST_ID);
                 return workerResult == S_OK;
             });
-            if (status == msime::tsf::CharacterResultStatus::Unhandled) workerResult = S_FALSE;
-            else if (status == msime::tsf::CharacterResultStatus::Failed && SUCCEEDED(workerResult))
+            if (status == lingyao::tsf::CharacterResultStatus::Unhandled) workerResult = S_FALSE;
+            else if (status == lingyao::tsf::CharacterResultStatus::Failed && SUCCEEDED(workerResult))
                 workerResult = E_FAIL;
         }
         tfSelection.range->Release();
@@ -973,14 +973,14 @@ HRESULT CLingyaoIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEng
     if (auto *host = pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
     {
         std::string raw, error;
-        msime::tsf::EngineResult result;
-        if (host->view(&raw, &error) && msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
+        lingyao::tsf::EngineResult result;
+        if (host->view(&raw, &error) && lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error))
         {
             // A Japanese composition is かな, not the letters that produced it: it is what the user
             // means, what the candidates are for, and what Enter commits. The one case that keeps
             // the letters is a caret the user moved into them, because the Engine's offset is an
             // offset into the romaji - see shared/input/CompositionDisplay.h.
-            const auto &value = msime::input::composition_shows_reading(
+            const auto &value = lingyao::input::composition_shows_reading(
                                     result.view.reading, result.view.caret,
                                     result.view.editing_text.size())
                                     ? result.view.reading
@@ -1061,7 +1061,7 @@ HRESULT CLingyaoIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEng
         std::wstring readingStr = readingStrings.GetAt(0)->ToWString();
         // Korean, Zhuyin and Vietnamese always mark their composition inline: it is the text the user is writing, not a reading, and until a list is opened there is no candidate window to show it in (scheme::AlwaysInlinePreedit).
         const std::string_view preeditStyle =
-            msime::windows::scheme::AlwaysInlinePreedit(Global::InputModeScheme.load(std::memory_order_relaxed)) &&
+            lingyao::windows::scheme::AlwaysInlinePreedit(Global::InputModeScheme.load(std::memory_order_relaxed)) &&
                     GlobalSettings::getTsfPreeditStyle() == GlobalSettings::TsfPreeditStyle::Empty
                 ? GlobalSettings::TsfPreeditStyle::Raw
                 : std::string_view(GlobalSettings::getTsfPreeditStyle());
@@ -1127,7 +1127,7 @@ HRESULT CLingyaoIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEng
             preeditStyle == GlobalSettings::TsfPreeditStyle::Empty ? 0 : GlobalIme::word_for_creating_word.size();
         // A Korean syllable, a Zhuyin conversion and a Vietnamese word have no caret inside them: the Engine ignores caret moves there, so the caret always follows the last key (scheme::LocksCaret).
         const DWORD_PTR displayCaret =
-            msime::windows::scheme::LocksCaret(Global::InputModeScheme.load(std::memory_order_relaxed))
+            lingyao::windows::scheme::LocksCaret(Global::InputModeScheme.load(std::memory_order_relaxed))
                 ? curReadingStr.GetLength()
                 : MapRawCaretToPreedit(pCompositionProcessorEngine->GetKeystrokeBuffer(),
                                        pCompositionProcessorEngine->GetCaretPosition(), curReadingStr.ToWString(),
@@ -1209,7 +1209,7 @@ HRESULT CLingyaoIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEng
         }
     }
     else if (_pCandidateListUIPresenter &&
-             msime::windows::scheme::OpensCandidateList(Global::InputModeScheme.load(std::memory_order_relaxed)))
+             lingyao::windows::scheme::OpensCandidateList(Global::InputModeScheme.load(std::memory_order_relaxed)))
     {
         // A letter typed into an open Hanja or Zhuyin list closed it and keeps composing: the presenter goes with the list, quietly (see _DeleteCandidateList).
         _DeleteCandidateList(FALSE, pContext);
@@ -1496,10 +1496,10 @@ HRESULT CLingyaoIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContex
     if (auto *host = pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
     {
         std::string raw, error;
-        if (host->command(MSIME_BACKSPACE, &raw, &error))
+        if (host->command(LINGYAO_BACKSPACE, &raw, &error))
         {
-            msime::tsf::EngineResult result;
-            if (msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
+            lingyao::tsf::EngineResult result;
+            if (lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
             {
                 const std::string &value = result.view.preedit;
                 int n = value.empty() ? 0 : MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, value.data(),
@@ -1552,9 +1552,9 @@ HRESULT CLingyaoIME::_HandleCompositionSegmentEdit(TfEditCookie ec, _In_ ITfCont
 {
     const bool isBackspace = keyFunction == FUNCTION_BACKSPACE_SEGMENT;
     const uint32_t command = isBackspace
-                                 ? MSIME_BACKSPACE_SEGMENT
-                                 : (keyFunction == FUNCTION_MOVE_LEFT_SEGMENT ? MSIME_MOVE_LEFT_SEGMENT
-                                                                               : MSIME_MOVE_RIGHT_SEGMENT);
+                                 ? LINGYAO_BACKSPACE_SEGMENT
+                                 : (keyFunction == FUNCTION_MOVE_LEFT_SEGMENT ? LINGYAO_MOVE_LEFT_SEGMENT
+                                                                               : LINGYAO_MOVE_RIGHT_SEGMENT);
     auto fallback = [&]() -> HRESULT {
         if (isBackspace)
             return _HandleCompositionBackspace(ec, pContext, requestId);
@@ -1570,8 +1570,8 @@ HRESULT CLingyaoIME::_HandleCompositionSegmentEdit(TfEditCookie ec, _In_ ITfCont
         return fallback();
 
     std::string raw, error;
-    msime::tsf::EngineResult result;
-    if (!host->command(command, &raw, &error) || !msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) ||
+    lingyao::tsf::EngineResult result;
+    if (!host->command(command, &raw, &error) || !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) ||
         !result.handled)
         return fallback();
 
@@ -1667,10 +1667,10 @@ HRESULT CLingyaoIME::_HandleCompositionDelete(TfEditCookie ec, _In_ ITfContext *
         if (auto *host = pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
         {
             std::string raw, error;
-            if (host->command(MSIME_DELETE_FORWARD, &raw, &error))
+            if (host->command(LINGYAO_DELETE_FORWARD, &raw, &error))
             {
-                msime::tsf::EngineResult result;
-                if (msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
+                lingyao::tsf::EngineResult result;
+                if (lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled)
                 {
                     const auto &value = result.view.preedit;
                     const int n = value.empty() ? 0 : MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
@@ -1729,10 +1729,10 @@ HRESULT CLingyaoIME::_HandleCompositionArrowKey(TfEditCookie ec, _In_ ITfContext
         if (auto *host = _pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
         {
             std::string raw, error;
-            const uint32_t command = keyFunction == FUNCTION_MOVE_LEFT ? MSIME_MOVE_LEFT : MSIME_MOVE_RIGHT;
-            msime::tsf::EngineResult result;
+            const uint32_t command = keyFunction == FUNCTION_MOVE_LEFT ? LINGYAO_MOVE_LEFT : LINGYAO_MOVE_RIGHT;
+            lingyao::tsf::EngineResult result;
             if (!host->command(command, &raw, &error) ||
-                !msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error)) return E_FAIL;
+                !lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error)) return E_FAIL;
             if (!result.handled) return S_OK;
             // The runtime caret is a byte offset in ASCII editing_text, not a
             // preedit prefix length. Map it against the text already rendered.
@@ -1863,9 +1863,9 @@ HRESULT CLingyaoIME::_HandleCompositionPunctuation(TfEditCookie ec, _In_ ITfCont
         if (auto *host = pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
         {
             std::string raw, error;
-            msime::tsf::EngineResult result;
+            lingyao::tsf::EngineResult result;
             if (host->punctuation(static_cast<uint8_t>(wch & 0xff), &raw, &error) &&
-                msime::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled &&
+                lingyao::tsf::EngineSessionAdapter::parse_result(raw, &result, &error) && result.handled &&
                 result.has_commit && !result.commit.empty())
             {
                 const int n = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, result.commit.data(),

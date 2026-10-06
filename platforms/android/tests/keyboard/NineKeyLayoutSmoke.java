@@ -1,4 +1,4 @@
-import app.msime.android.NineKeyLayout;
+import app.lingyao.android.NineKeyLayout;
 import java.util.List;
 
 public final class NineKeyLayoutSmoke {

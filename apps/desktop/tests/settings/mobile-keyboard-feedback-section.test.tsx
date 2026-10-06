@@ -14,7 +14,7 @@ import {
   MobileKeyboardFeedbackSettings,
   type MobileKeyboardFeedback,
   useMobileKeyboardFeedback,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

@@ -1,13 +1,13 @@
 #pragma once
 #include "EngineSessionAdapter.h"
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 enum class RawCommitStatus { Completed, Unhandled, Failed };
 
 // The host owns input state; the editor write must precede UI teardown.
 //
 // Japanese asks first. Romaji is not what the user typed; かな is, and the Engine has a command
-// for each: MSIME_COMMIT_READING gives the kana and MSIME_COMMIT_RAW gives the letters back. The
+// for each: LINGYAO_COMMIT_READING gives the kana and LINGYAO_COMMIT_RAW gives the letters back. The
 // reading command answers nothing at all unless the scheme is Japanese and a composition is open
 // (`InputSession::CommitReading` returns an empty result otherwise), so asking for it first needs
 // no knowledge of the scheme here - an unhandled answer leaves the composition untouched and the
@@ -21,14 +21,14 @@ RawCommitStatus CommitHostRaw(Host &host, Insert insert, Cleanup cleanup, std::s
     EngineResult result;
     std::string reading;
     EngineResult kana;
-    if (host.command(MSIME_COMMIT_READING, &reading, nullptr) &&
+    if (host.command(LINGYAO_COMMIT_READING, &reading, nullptr) &&
         EngineSessionAdapter::parse_result(reading, &kana, nullptr) && kana.has_commit &&
         !kana.commit.empty()) {
         if (!insert(kana.commit)) return RawCommitStatus::Failed;
         cleanup();
         return RawCommitStatus::Completed;
     }
-    if (!host.command(MSIME_COMMIT_RAW, &raw, error) ||
+    if (!host.command(LINGYAO_COMMIT_RAW, &raw, error) ||
         !EngineSessionAdapter::parse_result(raw, &result, error)) return RawCommitStatus::Failed;
     if (!result.handled && !result.has_commit &&
         (!result.view.editing_text.empty() || !result.view.preedit.empty())) return RawCommitStatus::Unhandled;

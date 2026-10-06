@@ -3,7 +3,7 @@ import { testHost } from "../support/host";
 import { settingsFormReady } from "../support/settings-form";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { SettingsPage, type Snapshot } from "@msime/ui";
+import { SettingsPage, type Snapshot } from "@lingyao/ui";
 import css from "../../../../packages/ui/src/styles.css?raw";
 
 afterEach(() => {
@@ -304,7 +304,7 @@ test("the home hero image is a desktop-only mark, and resolves", async () => {
   // Either form is a resolved asset: a path to the file, or the file itself once it is small enough
   // for the bundler to inline. What this guards against is a path that resolves to nothing.
   expect(
-    desktopHero.src.includes("msime.svg") || desktopHero.src.startsWith("data:image/svg+xml"),
+    desktopHero.src.includes("lingyao.svg") || desktopHero.src.startsWith("data:image/svg+xml"),
   ).toBe(true);
 });
 

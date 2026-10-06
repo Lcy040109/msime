@@ -4,7 +4,7 @@
 #include <string>
 
 int main() {
-    using msime::mac::WubiCodeHint;
+    using lingyao::mac::WubiCodeHint;
     assert(WubiCodeHint("wq", "w", true, 2, "none", false) == "q");
     assert(WubiCodeHint("wq", "wq", true, 2, "none", false).empty());
     assert(WubiCodeHint("wq", "x", true, 2, "none", false).empty());

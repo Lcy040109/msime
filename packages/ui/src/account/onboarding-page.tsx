@@ -34,9 +34,9 @@ export interface OnboardingActions {
 
 /** How long the first-launch splash stays up before the flow opens on its own. */
 export const SPLASH_MS = 2800;
-/** The panel the mark sits in (the frame of msime_frame.svg without its brush-scatter texture, which is a 200KB raster-like path set). */
+/** The panel the mark sits in (the frame of lingyao_frame.svg without its brush-scatter texture, which is a 200KB raster-like path set). */
 const framePath = "M5.84314 5.8335H109.843V125.833H5.84314V5.8335Z";
-/** The MSIME mark as a single stroke, so the splash can draw it. */
+/** The LINGYAO mark as a single stroke, so the splash can draw it. */
 const logoPath =
   "M80.394 18.8335L34.3451 36.489L80.394 49.7306L34.3451 71.7999C77.8789 79.1564 118.8 85.1887 31.8431 113.088";
 
@@ -312,7 +312,7 @@ export function WelcomeFlowPage({
         </div>
       )}
       <header className={onboarding.header}>
-        <img src={new URL("./assets/msime.svg", import.meta.url).href} alt="" />
+        <img src={new URL("./assets/lingyao.svg", import.meta.url).href} alt="" />
         <div>
           {/* Android shows its progress as the bar above; the desktop spells the count out (dc.html `ob.countTxt`). */}
           {!android && (
@@ -349,7 +349,7 @@ export function WelcomeFlowPage({
               <SetupStep number={2} title={ios ? "添加灵耀键盘" : "启用灵耀输入法"}>
                 {ios
                   ? "在第三方键盘列表中添加灵耀键盘。"
-                  : "在可用输入法列表中打开 MSIME Preview。"}
+                  : "在可用输入法列表中打开 LINGYAO Preview。"}
               </SetupStep>
               <SetupStep number={3} title="切换并开始输入" last>
                 {ios

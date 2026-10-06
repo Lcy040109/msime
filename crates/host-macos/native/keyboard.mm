@@ -1,18 +1,18 @@
 #include "keyboard.h"
 
-@interface MSIMEDetachedWindowContent : NSObject
+@interface LINGYAODetachedWindowContent : NSObject
 @property(strong) NSWindow *window;
 @property(strong) NSView *view;
 @end
-@implementation MSIMEDetachedWindowContent
+@implementation LINGYAODetachedWindowContent
 @end
 
-extern "C" uintptr_t msime_macos_detach_window_content(uintptr_t address) {
+extern "C" uintptr_t lingyao_macos_detach_window_content(uintptr_t address) {
     if (!NSThread.isMainThread) return 0;
     @autoreleasepool {
         for (NSWindow *window in NSApp.windows) {
             if ((uintptr_t)(__bridge void *)window != address || !window.contentView) continue;
-            MSIMEDetachedWindowContent *content = [MSIMEDetachedWindowContent new];
+            LINGYAODetachedWindowContent *content = [LINGYAODetachedWindowContent new];
             content.window = window;
             content.view = window.contentView;
             // WebKit unregisters its KVO observers while the original window
@@ -24,9 +24,9 @@ extern "C" uintptr_t msime_macos_detach_window_content(uintptr_t address) {
     return 0;
 }
 
-extern "C" void msime_macos_restore_window_content(uintptr_t token) {
+extern "C" void lingyao_macos_restore_window_content(uintptr_t token) {
     @autoreleasepool {
-        MSIMEDetachedWindowContent *content = CFBridgingRelease((void *)token);
+        LINGYAODetachedWindowContent *content = CFBridgingRelease((void *)token);
         content.window.contentView = content.view;
     }
 }
@@ -50,14 +50,14 @@ struct SystemKeyboardHost {
 };
 }
 
-extern "C" bool msime_macos_send_keyboard_key(unsigned short code, uint64_t flags) {
+extern "C" bool lingyao_macos_send_keyboard_key(unsigned short code, uint64_t flags) {
     @autoreleasepool {
         SystemKeyboardHost host;
-        return msime::SendKeyboardKey(host, code, flags);
+        return lingyao::SendKeyboardKey(host, code, flags);
     }
 }
 
-extern "C" int msime_macos_capture_launch_target(double *launched) {
+extern "C" int lingyao_macos_capture_launch_target(double *launched) {
     @autoreleasepool {
         SystemKeyboardHost host;
         if (!host.mainThread()) return 0;
@@ -68,14 +68,14 @@ extern "C" int msime_macos_capture_launch_target(double *launched) {
     }
 }
 
-extern "C" bool msime_macos_restore_launch_target(int pid, double launched) {
+extern "C" bool lingyao_macos_restore_launch_target(int pid, double launched) {
     @autoreleasepool {
         SystemKeyboardHost host;
-        return msime::RestoreLaunchFocus(host, pid, launched);
+        return lingyao::RestoreLaunchFocus(host, pid, launched);
     }
 }
 
-extern "C" bool msime_macos_activate_panel_target(int pid, double launched) {
+extern "C" bool lingyao_macos_activate_panel_target(int pid, double launched) {
     @autoreleasepool {
         SystemKeyboardHost host;
         if (!host.mainThread() || pid <= 0 || pid == host.ownProcess() || host.launchTime(pid) != launched) return false;

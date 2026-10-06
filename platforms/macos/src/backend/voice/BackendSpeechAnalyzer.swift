@@ -1,11 +1,11 @@
-// The macOS 26 SDK is the first with SpeechAnalyzer, and Swift 6.2 is the first compiler that ships with it. An older toolchain builds MSIMEBackend without this file's classes, and VoiceInputService stays on SFSpeechRecognizer.
+// The macOS 26 SDK is the first with SpeechAnalyzer, and Swift 6.2 is the first compiler that ships with it. An older toolchain builds LINGYAOBackend without this file's classes, and VoiceInputService stays on SFSpeechRecognizer.
 #if compiler(>=6.2)
 import AVFoundation
 import Foundation
 import Speech
 
 // Entry point for VoiceInputService.mm through BackendSpeechAnalyzer.h. The class itself is available everywhere so the lookup by name always succeeds; it hands out sessions only on macOS 26 and later, and only for a locale whose on-device model is already installed. The first request for any other locale starts the check and installation in the background and returns nil, so that one dictation goes through SFSpeechRecognizer instead of waiting on a download.
-@objc(MSIMEBackendSpeechAnalyzer)
+@objc(LINGYAOBackendSpeechAnalyzer)
 final class BackendSpeechAnalyzer: NSObject {
   private struct Prepared {
     let locale: Locale
@@ -56,7 +56,7 @@ final class BackendSpeechAnalyzer: NSObject {
 
 // One dictation. Audio arrives on the capture thread, is converted to the analyzer's format there and queued; results are assembled into the whole text so far - the finalized part plus the latest volatile guess for what follows it - and handed to main.
 @available(macOS 26, *)
-@objc(MSIMEBackendSpeechAnalyzerSession)
+@objc(LINGYAOBackendSpeechAnalyzerSession)
 final class BackendSpeechAnalyzerSession: NSObject {
   private let analyzer: SpeechAnalyzer
   private let format: AVAudioFormat

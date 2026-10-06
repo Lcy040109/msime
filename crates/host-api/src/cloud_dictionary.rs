@@ -1,4 +1,4 @@
-use msime_client_core::{has_disallowed_control_with_options, is_bounded_text, is_bounded_utf16};
+use lingyao_client_core::{has_disallowed_control_with_options, is_bounded_text, is_bounded_utf16};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -128,7 +128,7 @@ pub struct CloudDictionaryValue {
 pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'static str> {
     let valid_kind =
         |kind: &str| matches!(kind, "pinyin" | "wubi" | "wubi98" | "quick" | "english");
-    let valid_token = |token: &str| msime_client_core::is_bounded_ascii_identifier(token, 96);
+    let valid_token = |token: &str| lingyao_client_core::is_bounded_ascii_identifier(token, 96);
     let valid_value = |kind: &str, code: &str, word: &str, weight: i64| {
         let max_code_bytes = match kind {
             "wubi" | "wubi98" => 4,
@@ -138,11 +138,11 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
         };
         let code_alphabet_ok = match kind {
             "quick" => {
-                msime_client_core::dictionary::quick_phrase_transport_code_is_well_formed(code)
+                lingyao_client_core::dictionary::quick_phrase_transport_code_is_well_formed(code)
             }
-            "wubi" | "wubi98" => msime_client_core::dictionary::wubi_code_is_well_formed(code),
-            "english" => msime_client_core::is_ascii_alphabetic(code),
-            _ => msime_client_core::dictionary::pinyin_code_is_well_formed(code, true),
+            "wubi" | "wubi98" => lingyao_client_core::dictionary::wubi_code_is_well_formed(code),
+            "english" => lingyao_client_core::is_ascii_alphabetic(code),
+            _ => lingyao_client_core::dictionary::pinyin_code_is_well_formed(code, true),
         };
         code_alphabet_ok
             && !code.is_empty()
@@ -153,7 +153,7 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             && (kind != "quick"
                 || is_bounded_utf16(
                     word,
-                    msime_client_core::dictionary::import::MAX_QUICK_PHRASE_UTF16,
+                    lingyao_client_core::dictionary::import::MAX_QUICK_PHRASE_UTF16,
                 ))
     };
     let valid_format = |kind: &str, format: &str| {
@@ -257,7 +257,7 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             revision,
         } => {
             if valid_kind(kind)
-                && msime_client_core::is_lower_hex(id, 64)
+                && lingyao_client_core::is_lower_hex(id, 64)
                 && valid_value(kind, code, word, *weight)
                 && *revision > 0
             {
@@ -267,7 +267,7 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             }
         }
         CloudDictionaryRequest::Delete { kind, id, revision } => {
-            if valid_kind(kind) && msime_client_core::is_lower_hex(id, 64) && *revision > 0 {
+            if valid_kind(kind) && lingyao_client_core::is_lower_hex(id, 64) && *revision > 0 {
                 Ok(())
             } else {
                 Err("invalid cloud dictionary request")
@@ -302,7 +302,7 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             profile,
             limit,
         } => {
-            if msime_client_core::cloud::dictionary::valid_candidate_query(
+            if lingyao_client_core::cloud::dictionary::valid_candidate_query(
                 text, kind, scheme, profile, *limit,
             ) {
                 Ok(())
@@ -324,9 +324,9 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             trigger_count,
             ..
         } => {
-            if msime_client_core::cloud::dictionary::valid_candidate_query(
+            if lingyao_client_core::cloud::dictionary::valid_candidate_query(
                 text, kind, scheme, profile, *limit,
-            ) && msime_client_core::cloud::dictionary::valid_candidate_value(code, word)
+            ) && lingyao_client_core::cloud::dictionary::valid_candidate_value(code, word)
                 && *revision >= 0
                 && kind != "quick"
                 && matches!(
@@ -351,9 +351,9 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             word,
             revision,
         } => {
-            if msime_client_core::cloud::dictionary::valid_candidate_query(
+            if lingyao_client_core::cloud::dictionary::valid_candidate_query(
                 text, kind, scheme, profile, *limit,
-            ) && msime_client_core::cloud::dictionary::valid_candidate_value(code, word)
+            ) && lingyao_client_core::cloud::dictionary::valid_candidate_value(code, word)
                 && *revision >= 0
                 && kind != "quick"
             {
@@ -393,7 +393,7 @@ pub fn validate_cloud_request(request: &CloudDictionaryRequest) -> Result<(), &'
             if valid_kind(kind)
                 && valid_format(kind, format)
                 && !text.is_empty()
-                && text.len() <= msime_client_core::cloud::dictionary::MAX_IMPORT_BYTES
+                && text.len() <= lingyao_client_core::cloud::dictionary::MAX_IMPORT_BYTES
                 && !has_disallowed_control_with_options(text, true)
             {
                 Ok(())

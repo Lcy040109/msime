@@ -2,7 +2,7 @@
 #include "../core/TestHostOptions.h"
 #include <cassert>
 #include <chrono>
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 FanyImeNamedpipeData key(uint64_t request, uint32_t code, char16_t text, uint32_t modifiers = 0) {
@@ -57,7 +57,7 @@ struct Fixture {
 
 int main() {
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-korean-keys-" +
+                    ("lingyao-korean-keys-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {
@@ -271,7 +271,7 @@ int main() {
     assert(idle && !idle->encoded && !idle->committed_text);
   }
 
-  // The routed clear a terminated composition sends discards the syllable even with its list open, where one MSIME_CANCEL only closes the list.
+  // The routed clear a terminated composition sends discards the syllable even with its list open, where one LINGYAO_CANCEL only closes the list.
   {
     Fixture korean(serialized);
     korean.type("gks");

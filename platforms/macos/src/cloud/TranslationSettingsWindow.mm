@@ -1,7 +1,7 @@
 #import "TranslationSettingsWindow.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 
-static BOOL MSIMETranslationStrictRevision(id value, uint64_t *result) {
+static BOOL LINGYAOTranslationStrictRevision(id value, uint64_t *result) {
     if (![value isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() || CFNumberIsFloatType((__bridge CFNumberRef)value)) return NO;
     NSNumber *number = (NSNumber *)value;
     if ([number compare:@0] == NSOrderedAscending) return NO;
@@ -35,23 +35,23 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     NSMutableDictionary *next = [snapshot mutableCopy];
     next[@"preferences"] = TranslationPreferencesApplying(snapshot[@"preferences"], edits);
     uint64_t revision = 0;
-    if (!MSIMETranslationStrictRevision(snapshot[@"revision"], &revision)) return nil;
-    NSDictionary *saved = [MSIMEClientSession savePreferencesInDirectory:directory expectedRevision:revision snapshot:next error:nil];
+    if (!LINGYAOTranslationStrictRevision(snapshot[@"revision"], &revision)) return nil;
+    NSDictionary *saved = [LINGYAOClientSession savePreferencesInDirectory:directory expectedRevision:revision snapshot:next error:nil];
     if (saved) return saved;
-    NSDictionary *latest = [MSIMEClientSession loadPreferencesInDirectory:directory error:nil];
+    NSDictionary *latest = [LINGYAOClientSession loadPreferencesInDirectory:directory error:nil];
     // The same revision means the document itself was refused (a malformed value), which another attempt cannot fix.
     uint64_t latestRevision = 0;
-    if (!latest || !MSIMETranslationStrictRevision(latest[@"revision"], &latestRevision) || latestRevision == revision) return nil;
+    if (!latest || !LINGYAOTranslationStrictRevision(latest[@"revision"], &latestRevision) || latestRevision == revision) return nil;
     next = [latest mutableCopy];
     next[@"preferences"] = TranslationPreferencesApplying(latest[@"preferences"], edits);
-    return [MSIMEClientSession savePreferencesInDirectory:directory expectedRevision:latestRevision snapshot:next error:nil];
+    return [LINGYAOClientSession savePreferencesInDirectory:directory expectedRevision:latestRevision snapshot:next error:nil];
 }
 
-@interface MSIMETranslationSettingsWindow () <NSTextFieldDelegate>
+@interface LINGYAOTranslationSettingsWindow () <NSTextFieldDelegate>
 @end
 
 // Every control saves as soon as it is set, the way the voice settings window does: a checkbox or popup the moment it changes, a field when it loses focus, and whatever is still being edited when the window closes. There is no 保存 or 重新加载 button; the window reads the stored settings each time it opens.
-@implementation MSIMETranslationSettingsWindow {
+@implementation LINGYAOTranslationSettingsWindow {
     NSString *_directory;
     NSDictionary *_snapshot;
     /// The owned keys as last written (or as loaded); a commit writes only the keys that differ from these.
@@ -75,7 +75,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     if ((self = [super initWithWindow:nil])) {
         _directory = [directory copy]; _saved = [saved copy];
         // Loads and saves run in order on one queue, so a save flushed on close lands before the next open reads the file.
-        _queue = dispatch_queue_create("app.msime.translation-settings", DISPATCH_QUEUE_SERIAL);
+        _queue = dispatch_queue_create("app.lingyao.translation-settings", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -219,11 +219,11 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     _status.stringValue = @"正在加载…"; [self updateControls:nil];
     NSUInteger epoch = ++_epoch;
     NSString *directory = _directory;
-    __weak MSIMETranslationSettingsWindow *weakSelf = self;
+    __weak LINGYAOTranslationSettingsWindow *weakSelf = self;
     dispatch_async(_queue, ^{
-        NSDictionary *snapshot = [MSIMEClientSession loadPreferencesInDirectory:directory error:nil];
+        NSDictionary *snapshot = [LINGYAOClientSession loadPreferencesInDirectory:directory error:nil];
         dispatch_async(dispatch_get_main_queue(), ^{
-            MSIMETranslationSettingsWindow *current = weakSelf;
+            LINGYAOTranslationSettingsWindow *current = weakSelf;
             if (!current || current->_epoch != epoch) return;
             current->_busy = NO; current->_snapshot = snapshot;
             NSDictionary *preferences = snapshot[@"preferences"], *custom = preferences[@"custom_translation"], *niutrans = preferences[@"niutrans"];
@@ -271,7 +271,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     NSString *niuTransKey = _revealNiuTrans.state == NSControlStateValueOn ? _plainNiuTransKey.stringValue : _niuTransKey.stringValue;
     NSMutableDictionary *preferences = [NSMutableDictionary dictionary];
     preferences[@"custom_translation"] = @{@"enabled":@(selectedCustom), @"endpoint":_endpoint.stringValue, @"api_key":key};
-    // Choosing the MSIME account turns Tencent off, so the account is never shadowed by a Tencent checkbox the popup no longer shows.
+    // Choosing the LINGYAO account turns Tencent off, so the account is never shadowed by a Tencent checkbox the popup no longer shows.
     preferences[@"tencent_tmt"] = @{@"enabled":@(!selectedAccount && _tencent.state == NSControlStateValueOn),
         @"secret_id":_secretId.stringValue, @"secret_key":_revealTencent.state == NSControlStateValueOn ? _plainTencentKey.stringValue : _tencentKey.stringValue,
         @"region":_region.stringValue};
@@ -291,7 +291,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     // Use the same descriptor validation as runtime for the provider that is selected.
     if ([custom[@"enabled"] boolValue]) {
         NSString *endpoint = custom[@"endpoint"];
-        NSDictionary *request = [MSIMEClientSession customTranslationHTTPRequest:@{@"config":custom,
+        NSDictionary *request = [LINGYAOClientSession customTranslationHTTPRequest:@{@"config":custom,
             @"text":@"validation", @"source_language":@"en", @"target_language":@"zh"} error:nil];
         NSURLComponents *url = [NSURLComponents componentsWithString:endpoint];
         if (!request || !url.host.length || url.user || url.password || url.fragment ||
@@ -300,7 +300,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     }
     NSDictionary *niutrans = form[@"niutrans"];
     if ([niutrans[@"enabled"] boolValue]) {
-        NSDictionary *request = [MSIMEClientSession niuTransTranslationHTTPRequest:@{@"config":niutrans,
+        NSDictionary *request = [LINGYAOClientSession niuTransTranslationHTTPRequest:@{@"config":niutrans,
             @"text":@"validation", @"source_language":@"en", @"target_language":@"zh", @"timestamp":@"1704067200000"} error:nil];
         if (!request || ![request[@"url"] isKindOfClass:NSString.class]) return @"请输入有效的小牛翻译 App ID 和 API Key；修改尚未保存。";
     }
@@ -327,11 +327,11 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     NSString *directory = _directory;
     NSDictionary *snapshot = _snapshot;
     void (^savedHandler)(NSDictionary *) = _saved;
-    __weak MSIMETranslationSettingsWindow *weakSelf = self;
+    __weak LINGYAOTranslationSettingsWindow *weakSelf = self;
     dispatch_async(_queue, ^{
         NSDictionary *saved = SaveTranslationEdits(directory, snapshot, edits);
         dispatch_async(dispatch_get_main_queue(), ^{
-            MSIMETranslationSettingsWindow *current = weakSelf;
+            LINGYAOTranslationSettingsWindow *current = weakSelf;
             if (!current || current->_epoch != epoch) return;
             // 保存排队期间窗口可能已经关闭或开始新一轮加载；这个结果属于旧页面，不能通知当前宿主。
             if (saved && savedHandler) savedHandler(saved[@"preferences"]);
@@ -355,11 +355,11 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
             NSDictionary *snapshot = _snapshot;
             void (^savedHandler)(NSDictionary *) = _saved;
             NSUInteger callbackGeneration = _callbackGeneration;
-            __weak MSIMETranslationSettingsWindow *weakSelf = self;
+            __weak LINGYAOTranslationSettingsWindow *weakSelf = self;
             dispatch_async(_queue, ^{
                 NSDictionary *saved = SaveTranslationEdits(directory, snapshot, edits);
                 if (saved && savedHandler) dispatch_async(dispatch_get_main_queue(), ^{
-                    MSIMETranslationSettingsWindow *current = weakSelf;
+                    LINGYAOTranslationSettingsWindow *current = weakSelf;
                     if (current && current->_callbackGeneration == callbackGeneration) savedHandler(saved[@"preferences"]);
                 });
             });

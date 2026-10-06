@@ -1,6 +1,6 @@
 import android.view.KeyEvent;
-import app.msime.android.WordCharacterPolicy;
-import app.msime.android.WordCharacterPolicy.Edge;
+import app.lingyao.android.WordCharacterPolicy;
+import app.lingyao.android.WordCharacterPolicy.Edge;
 
 /** Which key claims 以词定字, and the three conditions that stop it claiming one. */
 public final class WordCharacterPolicySmoke {
@@ -52,7 +52,7 @@ public final class WordCharacterPolicySmoke {
             "with no highlighted candidate there is nothing to take a character from");
 
         check(Edge.FIRST.code() == 0 && Edge.LAST.code() == 1,
-            "the codes are MSIME_FIRST_HAN and MSIME_LAST_HAN from the shared header");
+            "the codes are LINGYAO_FIRST_HAN and LINGYAO_LAST_HAN from the shared header");
         System.out.println("Android word-character policy passed");
     }
 }

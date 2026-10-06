@@ -1,22 +1,22 @@
 #import "ClientDictionaryRuntime.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 
-static NSString *const MSIMEDictionaryRuntimeError = @"app.msime.client.dictionary-runtime";
+static NSString *const LINGYAODictionaryRuntimeError = @"app.lingyao.client.dictionary-runtime";
 static NSURL *AbsoluteDirectory(NSDictionary *options, NSString *key, NSError **error) {
     id value = options[key];
     if (![value isKindOfClass:NSString.class] || ![value isAbsolutePath]) {
-        if (error) *error = [NSError errorWithDomain:MSIMEDictionaryRuntimeError code:1 userInfo:@{NSLocalizedDescriptionKey: @"词典运行目录配置无效"}];
+        if (error) *error = [NSError errorWithDomain:LINGYAODictionaryRuntimeError code:1 userInfo:@{NSLocalizedDescriptionKey: @"词典运行目录配置无效"}];
         return nil;
     }
     return [NSURL fileURLWithPath:value isDirectory:YES];
 }
-@implementation MSIMEDictionaryRuntime {
+@implementation LINGYAODictionaryRuntime {
     NSURL *_resourcesDirectory; NSURL *_userDataDirectory; NSURL *_cacheDirectory; NSURL *_dictionariesDirectory;
 }
-+ (void)prepareResourcesDirectory:(NSString *)resourcesDirectory stateRoot:(NSString *)stateRoot completion:(MSIMEDictionaryPrepareCompletion)completion {
++ (void)prepareResourcesDirectory:(NSString *)resourcesDirectory stateRoot:(NSString *)stateRoot completion:(LINGYAODictionaryPrepareCompletion)completion {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSError *error = nil;
-        NSDictionary *options = [MSIMEClientSession prepareHostWithResourcesDirectory:resourcesDirectory stateRoot:stateRoot error:&error];
+        NSDictionary *options = [LINGYAOClientSession prepareHostWithResourcesDirectory:resourcesDirectory stateRoot:stateRoot error:&error];
         dispatch_async(dispatch_get_main_queue(), ^{ completion(options, error); });
     });
 }

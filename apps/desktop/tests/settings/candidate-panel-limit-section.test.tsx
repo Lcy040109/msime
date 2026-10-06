@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { CandidatePanelLimitSection } from "@msime/ui";
+import { CandidatePanelLimitSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

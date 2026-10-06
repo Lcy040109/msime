@@ -3,7 +3,7 @@
 //! Part of the C ABI; see the parent module for what these shims guarantee.
 
 use crate::*;
-use msime_client_core::is_bounded_text;
+use lingyao_client_core::is_bounded_text;
 
 fn traditional_retry_inputs(
     candidates: &[(String, u8)],
@@ -16,7 +16,7 @@ fn traditional_retry_inputs(
             continue;
         }
         let simplified =
-            msime_client_core::chinese_conversion::traditional_to_simplified_characters(text);
+            lingyao_client_core::chinese_conversion::traditional_to_simplified_characters(text);
         if simplified != *text {
             retry.push((simplified, *source));
             retry_index.push(index);
@@ -29,7 +29,7 @@ fn traditional_retry_inputs(
 /// # Safety
 /// `request` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_custom_translation_plan(
+pub unsafe extern "C" fn lingyao_client_custom_translation_plan(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -59,7 +59,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_plan(
         };
         if request.candidates.len() > 9
             || request.target_language == "zh"
-            || !msime_client_core::translation::is_supported_translation_language(
+            || !lingyao_client_core::translation::is_supported_translation_language(
                 &request.target_language,
             )
         {
@@ -69,14 +69,14 @@ pub unsafe extern "C" fn msime_client_custom_translation_plan(
         for candidate in request.candidates {
             // Engine CandidateSource::Emoji / Kaomoji, and unknown sources.
             if matches!(candidate.source, 6 | 7 | 10..=255)
-                || !msime_client_core::translation::is_valid_source_text(&candidate.text)
+                || !lingyao_client_core::translation::is_valid_source_text(&candidate.text)
             {
                 continue;
             }
             let (source, target, key) =
-                if msime_client_core::translation::is_cloud_translatable_english(&candidate.text) {
+                if lingyao_client_core::translation::is_cloud_translatable_english(&candidate.text) {
                     ("en", "zh", candidate.text.to_ascii_lowercase())
-                } else if msime_client_core::translation::is_cloud_translatable_chinese(
+                } else if lingyao_client_core::translation::is_cloud_translatable_chinese(
                     &candidate.text,
                 ) {
                     (
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_plan(
 /// # Safety
 /// `request` references `length` readable JSON bytes. No buffers are retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_ai_http_request(
+pub unsafe extern "C" fn lingyao_client_ai_http_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -108,8 +108,8 @@ pub unsafe extern "C" fn msime_client_ai_http_request(
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Request {
-            config: msime_client_core::preferences::AiAssistantPreferences,
-            input: msime_client_core::ai::AiSuggestionRequest,
+            config: lingyao_client_core::preferences::AiAssistantPreferences,
+            input: lingyao_client_core::ai::AiSuggestionRequest,
         }
         let request: Request = unsafe {
             with_bounded_bytes(
@@ -122,7 +122,7 @@ pub unsafe extern "C" fn msime_client_ai_http_request(
                 },
             )?
         };
-        msime_client_core::ai::chat_completion_http_request(&request.config, &request.input)
+        lingyao_client_core::ai::chat_completion_http_request(&request.config, &request.input)
             .map(|value| value.unwrap_or(Value::Null))
             .map_err(|e| e.to_string())
     })
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn msime_client_ai_http_request(
 /// # Safety
 /// `body` references `length` readable bytes. No buffers are retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_parse_ai_response(
+pub unsafe extern "C" fn lingyao_client_parse_ai_response(
     body: *const u8,
     length: usize,
     limit: u8,
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn msime_client_parse_ai_response(
         if body.is_null() || length > 1048576 || !(1..=10).contains(&limit) {
             return Err("invalid AI response buffer".into());
         }
-        Ok(msime_client_core::ai::parse_chat_completion_response(
+        Ok(lingyao_client_core::ai::parse_chat_completion_response(
             unsafe { std::slice::from_raw_parts(body, length) },
             limit,
         )
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn msime_client_parse_ai_response(
 /// # Safety
 /// `request` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_learned_translation_request(
+pub unsafe extern "C" fn lingyao_client_learned_translation_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -178,7 +178,7 @@ pub unsafe extern "C" fn msime_client_learned_translation_request(
 /// # Safety
 /// `request` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_tencent_translation_http_request(
+pub unsafe extern "C" fn lingyao_client_tencent_translation_http_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -197,7 +197,7 @@ pub unsafe extern "C" fn msime_client_tencent_translation_http_request(
 /// # Safety
 /// `request` must reference `length` readable bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_niutrans_translation_http_request(
+pub unsafe extern "C" fn lingyao_client_niutrans_translation_http_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -216,7 +216,7 @@ pub unsafe extern "C" fn msime_client_niutrans_translation_http_request(
 /// # Safety
 /// `body` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_parse_tencent_translation_response(
+pub unsafe extern "C" fn lingyao_client_parse_tencent_translation_response(
     body: *const u8,
     length: usize,
     expected: usize,
@@ -237,7 +237,7 @@ pub unsafe extern "C" fn msime_client_parse_tencent_translation_response(
 /// # Safety
 /// `body` must reference `length` readable bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_parse_niutrans_translation_response(
+pub unsafe extern "C" fn lingyao_client_parse_niutrans_translation_response(
     body: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -256,7 +256,7 @@ pub unsafe extern "C" fn msime_client_parse_niutrans_translation_response(
 /// # Safety
 /// `text` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_format_translation_gloss(
+pub unsafe extern "C" fn lingyao_client_format_translation_gloss(
     text: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -267,7 +267,7 @@ pub unsafe extern "C" fn msime_client_format_translation_gloss(
         let text = std::str::from_utf8(unsafe { std::slice::from_raw_parts(text, length) })
             .map_err(|_| "invalid translation gloss text")?;
         Ok(
-            msime_client_core::translation::format_translation_gloss(text)
+            lingyao_client_core::translation::format_translation_gloss(text)
                 .map(Value::String)
                 .unwrap_or(Value::Null),
         )
@@ -278,7 +278,7 @@ pub unsafe extern "C" fn msime_client_format_translation_gloss(
 /// # Safety
 /// `request` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_custom_translation_http_request(
+pub unsafe extern "C" fn lingyao_client_custom_translation_http_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -289,7 +289,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_http_request(
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Request {
-            config: msime_input_runtime::TranslationProviderConfig,
+            config: lingyao_input_runtime::TranslationProviderConfig,
             text: String,
             source_language: String,
             target_language: String,
@@ -315,11 +315,11 @@ pub unsafe extern "C" fn msime_client_custom_translation_http_request(
                     .bytes()
                     .all(|byte| byte.is_ascii_alphabetic() || byte == b'-')
         };
-        if !msime_client_core::translation::is_supported_endpoint(&config.endpoint)
+        if !lingyao_client_core::translation::is_supported_endpoint(&config.endpoint)
             || !is_bounded_text(&config.api_key, 4096)
             || text.is_empty()
             || !is_bounded_text(&text, 160)
-            || !msime_client_core::translation::is_valid_source_text(&text)
+            || !lingyao_client_core::translation::is_valid_source_text(&text)
             || !valid_language(&source_language)
             || !valid_language(&target_language)
         {
@@ -345,7 +345,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_http_request(
 /// # Safety
 /// `body` must reference `length` readable bytes for this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_parse_custom_translation_response(
+pub unsafe extern "C" fn lingyao_client_parse_custom_translation_response(
     body: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -356,8 +356,8 @@ pub unsafe extern "C" fn msime_client_parse_custom_translation_response(
         let bytes = unsafe { std::slice::from_raw_parts(body, length) };
         let result = std::str::from_utf8(bytes)
             .ok()
-            .and_then(msime_client_core::translation::parse_translation_response)
-            .and_then(|text| msime_client_core::translation::format_translation_gloss(&text))
+            .and_then(lingyao_client_core::translation::parse_translation_response)
+            .and_then(|text| lingyao_client_core::translation::format_translation_gloss(&text))
             .filter(|text| !text.is_empty() && text.len() <= 4096);
         Ok(result.map(Value::String).unwrap_or(Value::Null))
     })
@@ -367,7 +367,7 @@ pub unsafe extern "C" fn msime_client_parse_custom_translation_response(
 /// # Safety
 /// `body` must reference `length` readable bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_custom_translation_reply_failed(
+pub unsafe extern "C" fn lingyao_client_custom_translation_reply_failed(
     body: *const u8,
     length: usize,
 ) -> bool {
@@ -376,7 +376,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_reply_failed(
     }
     let bytes = unsafe { std::slice::from_raw_parts(body, length) };
     std::str::from_utf8(bytes)
-        .map(msime_client_core::translation::translation_response_failed)
+        .map(lingyao_client_core::translation::translation_response_failed)
         .unwrap_or(true)
 }
 
@@ -384,7 +384,7 @@ pub unsafe extern "C" fn msime_client_custom_translation_reply_failed(
 /// # Safety
 /// `body` must reference `length` readable bytes.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_niutrans_translation_reply_failed(
+pub unsafe extern "C" fn lingyao_client_niutrans_translation_reply_failed(
     body: *const u8,
     length: usize,
 ) -> bool {
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn msime_client_niutrans_translation_reply_failed(
 /// `translations` must point to a readable UTF-8 buffer of `length` bytes and
 /// must not be null. The buffer is not retained after this call.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_apply_translations(
+pub unsafe extern "C" fn lingyao_client_apply_translations(
     handle: u64,
     generation: u64,
     translations: *const u8,
@@ -441,7 +441,7 @@ pub unsafe extern "C" fn msime_client_apply_translations(
 /// # Safety
 /// Both pointers must reference readable buffers of their declared lengths.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_translation_gloss_save(
+pub unsafe extern "C" fn lingyao_client_translation_gloss_save(
     request: *const u8,
     request_length: usize,
     user_data: *const u8,
@@ -451,7 +451,7 @@ pub unsafe extern "C" fn msime_client_translation_gloss_save(
     #[serde(deny_unknown_fields)]
     struct Request {
         target_language: String,
-        translations: Vec<msime_input_runtime::TranslationResult>,
+        translations: Vec<lingyao_input_runtime::TranslationResult>,
     }
     response(|| {
         if request.is_null()
@@ -489,13 +489,13 @@ pub unsafe extern "C" fn msime_client_translation_gloss_save(
             )
             .map_err(|_| "dictionary access unavailable")?
             .ok_or("dictionary maintenance busy")?;
-            use msime_client_core::translation::{
+            use lingyao_client_core::translation::{
                 format_translation_gloss, is_cloud_translatable_chinese,
                 is_cloud_translatable_english, should_persist_translation,
             };
             for item in request.translations {
                 let english = is_cloud_translatable_english(&item.text);
-                if !msime_client_core::translation::is_valid_source_text(&item.text)
+                if !lingyao_client_core::translation::is_valid_source_text(&item.text)
                     || (!english && !is_cloud_translatable_chinese(&item.text))
                 {
                     continue;
@@ -511,7 +511,7 @@ pub unsafe extern "C" fn msime_client_translation_gloss_save(
                 } else {
                     item.text
                 };
-                if msime_engine::host::save_candidate_gloss(user_data, !english, &key, &gloss) {
+                if lingyao_engine::host::save_candidate_gloss(user_data, !english, &key, &gloss) {
                     saved += 1;
                 }
             }
@@ -528,7 +528,7 @@ pub unsafe extern "C" fn msime_client_translation_gloss_save(
 /// Both pointers must reference readable buffers for their stated lengths and
 /// remain valid for this call. The buffers are not retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_candidate_gloss_request(
+pub unsafe extern "C" fn lingyao_client_candidate_gloss_request(
     request: *const u8,
     request_length: usize,
     resources: *const u8,
@@ -593,7 +593,7 @@ pub unsafe extern "C" fn msime_client_candidate_gloss_request(
         }
         let lookup = |candidates: &[(String, u8)]| -> Result<Vec<String>, String> {
             Ok(match target_language.as_deref() {
-                None | Some("en") => msime_engine::host::candidate_glosses_with_user(
+                None | Some("en") => lingyao_engine::host::candidate_glosses_with_user(
                     resources, user_data, candidates,
                 )
                 .map_err(|_| "candidate gloss dictionary unavailable")?,
@@ -607,7 +607,7 @@ pub unsafe extern "C" fn msime_client_candidate_gloss_request(
                     let database = database
                         .to_str()
                         .ok_or("candidate gloss dictionary unavailable")?;
-                    msime_engine::host::candidate_target_glosses(database, language, candidates)
+                    lingyao_engine::host::candidate_target_glosses(database, language, candidates)
                         .map_err(|_| "candidate gloss dictionary unavailable")?
                 }
                 Some(_) => return Err("invalid candidate gloss request".into()),
@@ -663,7 +663,7 @@ pub unsafe extern "C" fn msime_client_candidate_gloss_request(
 /// The request and resources pointers must point to readable buffers of the supplied lengths.
 /// Neither buffer is retained after the call returns.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_english_completions_request(
+pub unsafe extern "C" fn lingyao_client_english_completions_request(
     request: *const u8,
     request_length: usize,
     resources: *const u8,
@@ -689,7 +689,7 @@ pub unsafe extern "C" fn msime_client_english_completions_request(
         if !(1..=32).contains(&request.limit)
             || request.prefix.is_empty()
             || request.prefix.len() > 128
-            || !msime_client_core::is_ascii_alphabetic(&request.prefix)
+            || !lingyao_client_core::is_ascii_alphabetic(&request.prefix)
         {
             return Err("invalid English completion prefix".into());
         }
@@ -699,7 +699,7 @@ pub unsafe extern "C" fn msime_client_english_completions_request(
         if !Path::new(resources).is_absolute() {
             return Err("resources path must be absolute".into());
         }
-        let items = msime_engine::host::english_completions(
+        let items = lingyao_engine::host::english_completions(
             resources,
             &request.prefix,
             usize::from(request.limit),

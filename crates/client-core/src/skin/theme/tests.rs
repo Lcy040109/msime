@@ -805,11 +805,11 @@ fn host_catalog_entries_read_as_packages() {
     }
 }
 
-/// The settings page draws the theme picker and its previews synchronously on every host, including hosts whose bridge has no theme call, so it reads a checked-in copy of `catalog()`. This keeps that copy equal to the table above; set `MSIME_WRITE_THEME_CATALOG=1` to rewrite it after changing a palette.
+/// The settings page draws the theme picker and its previews synchronously on every host, including hosts whose bridge has no theme call, so it reads a checked-in copy of `catalog()`. This keeps that copy equal to the table above; set `LINGYAO_WRITE_THEME_CATALOG=1` to rewrite it after changing a palette.
 #[test]
 fn web_catalog_copy_matches_the_catalog() {
     let catalog = serde_json::to_value(catalog()).expect("catalog serializes");
-    if std::env::var_os("MSIME_WRITE_THEME_CATALOG").is_some() {
+    if std::env::var_os("LINGYAO_WRITE_THEME_CATALOG").is_some() {
         let path = concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../packages/ui/src/theme/theme-catalog.json"
@@ -823,11 +823,11 @@ fn web_catalog_copy_matches_the_catalog() {
     .expect("web catalog copy is JSON");
     assert_eq!(
         copy, catalog,
-        "packages/ui/src/theme/theme-catalog.json is stale; rerun this test with MSIME_WRITE_THEME_CATALOG=1"
+        "packages/ui/src/theme/theme-catalog.json is stale; rerun this test with LINGYAO_WRITE_THEME_CATALOG=1"
     );
 }
 
-/// The settings page previews a custom theme with `customCandidatePalette` (packages/ui/src/theme/global-theme.ts) on hosts without a theme call, and until the host answers on the rest. These cases pin that mirror to `resolve()`: `apps/desktop/tests/candidate/custom-theme-parity.test.ts` runs the mirror over the same file. Each case names the base (the package's manifest base when there is a package), the host mode, the package's declared modes and raw manifest palettes in the shape the skin scan gives them, and the pickers; `expected` is what `resolve()` draws. Set `MSIME_WRITE_THEME_CATALOG=1` to rewrite the file after changing `resolve()` or a case.
+/// The settings page previews a custom theme with `customCandidatePalette` (packages/ui/src/theme/global-theme.ts) on hosts without a theme call, and until the host answers on the rest. These cases pin that mirror to `resolve()`: `apps/desktop/tests/candidate/custom-theme-parity.test.ts` runs the mirror over the same file. Each case names the base (the package's manifest base when there is a package), the host mode, the package's declared modes and raw manifest palettes in the shape the skin scan gives them, and the pickers; `expected` is what `resolve()` draws. Set `LINGYAO_WRITE_THEME_CATALOG=1` to rewrite the file after changing `resolve()` or a case.
 #[test]
 fn web_custom_theme_mirror_cases_match_resolve() {
     use serde_json::{json, Value};
@@ -964,7 +964,7 @@ fn web_custom_theme_mirror_cases_match_resolve() {
         expected.push(case);
     }
     let expected = Value::Array(expected);
-    if std::env::var_os("MSIME_WRITE_THEME_CATALOG").is_some() {
+    if std::env::var_os("LINGYAO_WRITE_THEME_CATALOG").is_some() {
         let path = concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../apps/desktop/tests/candidate/custom-theme-parity.json"
@@ -978,7 +978,7 @@ fn web_custom_theme_mirror_cases_match_resolve() {
     .expect("parity cases are JSON");
     assert_eq!(
         copy, expected,
-        "apps/desktop/tests/candidate/custom-theme-parity.json is stale; rerun this test with MSIME_WRITE_THEME_CATALOG=1"
+        "apps/desktop/tests/candidate/custom-theme-parity.json is stale; rerun this test with LINGYAO_WRITE_THEME_CATALOG=1"
     );
 }
 

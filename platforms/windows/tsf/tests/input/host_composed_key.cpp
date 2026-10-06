@@ -4,9 +4,9 @@
 #include <initializer_list>
 #include <utility>
 
-using msime::tsf::host_composed_key_action;
-using msime::tsf::KoreanKeyAction;
-namespace scheme = msime::windows::scheme;
+using lingyao::tsf::host_composed_key_action;
+using lingyao::tsf::KoreanKeyAction;
+namespace scheme = lingyao::windows::scheme;
 
 namespace {
 int failures = 0;
@@ -18,12 +18,12 @@ void check(bool condition, const char *what) {
     }
 }
 
-constexpr std::string_view idle = msime::tsf::kZhuyinIdleSymbols;
-constexpr std::string_view dachen = msime::tsf::kZhuyinComposingSymbols;
-constexpr std::string_view listOpen = msime::tsf::kZhuyinListOpenSymbols;
-constexpr std::string_view vni = msime::tsf::kVietnameseVniDigits;
-constexpr std::string_view tibetanIdle = msime::tsf::kTibetanIdleSymbols;
-constexpr std::string_view tibetanComposing = msime::tsf::kTibetanComposingSymbols;
+constexpr std::string_view idle = lingyao::tsf::kZhuyinIdleSymbols;
+constexpr std::string_view dachen = lingyao::tsf::kZhuyinComposingSymbols;
+constexpr std::string_view listOpen = lingyao::tsf::kZhuyinListOpenSymbols;
+constexpr std::string_view vni = lingyao::tsf::kVietnameseVniDigits;
+constexpr std::string_view tibetanIdle = lingyao::tsf::kTibetanIdleSymbols;
+constexpr std::string_view tibetanComposing = lingyao::tsf::kTibetanComposingSymbols;
 
 KoreanKeyAction tibetan(unsigned vk, wchar_t wch, bool composing) {
     return host_composed_key_action(scheme::Tibetan, vk, wch, composing, false,
@@ -42,7 +42,7 @@ int main() {
     check(host_composed_key_action(scheme::Korean, 'R', L'r', false, false, {}) == KoreanKeyAction::Compose,
           "Korean letters compose");
     check(host_composed_key_action(scheme::Korean, 0xBE, L'.', true, false, {}) ==
-              msime::tsf::korean_key_action(0xBE, L'.', true),
+              lingyao::tsf::korean_key_action(0xBE, L'.', true),
           "Korean punctuation follows korean_key_action");
 
     // Zhuyin: lowercase letters and the Dachen symbols spell, from idle too.
@@ -126,7 +126,7 @@ int main() {
     check(tibetan(0x08, L'\b', true) == KoreanKeyAction::Default, "Backspace edits the raw Wylie");
     check(tibetan(0x1B, 0x1B, true) == KoreanKeyAction::Default, "Escape restores or cancels the run");
     // 实时视图判断：藏文组字时空格算组字接收的键，空闲时不算；其他方案的空格只看视图的拼写符号。
-    using msime::tsf::host_composition_takes_key;
+    using lingyao::tsf::host_composition_takes_key;
     check(host_composition_takes_key(scheme::Tibetan, tibetanComposing, L' ', true), "the live view takes a composing Space");
     check(!host_composition_takes_key(scheme::Tibetan, tibetanIdle, L' ', false), "the live view leaves an idle Space");
     check(host_composition_takes_key(scheme::Tibetan, tibetanIdle, L'/', false), "the live view takes an idle slash");
@@ -141,7 +141,7 @@ int main() {
           "Stroke keys take the ordinary classification, which LetterPassesWhileIdle narrows");
 
     // The projected Zhuyin list: Down opens it, a choice fixes a reading and keeps composing, Escape closes it.
-    using msime::tsf::project_korean_hanja_key;
+    using lingyao::tsf::project_korean_hanja_key;
     const auto projects = [](unsigned vk, wchar_t wch, bool open, bool listOpen, bool ends) {
         const auto projected = project_korean_hanja_key(scheme::Zhuyin, vk, wch, open);
         return projected.listOpen == listOpen && projected.syllableEnds == ends;
@@ -151,7 +151,7 @@ int main() {
     check(projects('3', L'3', true, false, false), "a choice closes the list and keeps composing");
     check(projects(0x20, L' ', true, false, false), "Space fixes the highlighted reading and keeps composing");
     check(projects(0x1B, 0x1B, true, false, false), "Escape closes the projected list");
-    check(projects(msime::tsf::kVirtualKeyHanja, 0, false, false, false), "the Hanja key is not Zhuyin's");
+    check(projects(lingyao::tsf::kVirtualKeyHanja, 0, false, false, false), "the Hanja key is not Zhuyin's");
 
     if (failures)
         return EXIT_FAILURE;

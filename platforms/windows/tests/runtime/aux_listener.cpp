@@ -11,7 +11,7 @@
 #include <vector>
 #include <functional>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require_at(bool value, int line) {
   if (!value)
@@ -19,7 +19,7 @@ void require_at(bool value, int line) {
                              std::to_string(line));
 }
 std::wstring isolated_name(int serial) {
-  return L"\\\\.\\pipe\\MSIMEClientAuxTest-" +
+  return L"\\\\.\\pipe\\LINGYAOClientAuxTest-" +
          std::to_wstring(GetCurrentProcessId()) + L"-" +
          std::to_wstring(serial);
 }

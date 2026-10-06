@@ -6,7 +6,7 @@
 //! `resources/desktop-dictionary.lock.json`, and covers the three halves of the setting - that a
 //! selection is remembered across sessions, that turning learning off stops it being written, and
 //! that resetting learned data puts the packaged order back.
-use msime_engine::host::{prepare_options, reset_learned_data, EngineOptions, Session};
+use lingyao_engine::host::{prepare_options, reset_learned_data, EngineOptions, Session};
 
 const KEYS: &[u8] = b"nihao";
 /// Deep enough that promotion is visible, shallow enough to stay on the first page.

@@ -1,7 +1,7 @@
 #include "CloudCandidateWorker.h"
 #include "CandidateHttpPolicy.h"
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace msime::windows
+namespace lingyao::windows
 {
 namespace
 {
@@ -45,9 +45,9 @@ int transfer_progress(void *context, curl_off_t, curl_off_t, curl_off_t, curl_of
 
 std::string request_url(const std::string &query)
 {
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-        msime_client_cloud_request_url(reinterpret_cast<const uint8_t *>(query.data()), query.size()),
-        msime_client_string_free);
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+        lingyao_client_cloud_request_url(reinterpret_cast<const uint8_t *>(query.data()), query.size()),
+        lingyao_client_string_free);
     if (!raw)
         return {};
     try
@@ -150,10 +150,10 @@ std::string CloudCandidateWorker::fetch(const std::string &query,
     curl_easy_setopt(curl.get(), CURLOPT_PROTOCOLS_STR, "https");
     curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 0L);
     curl_easy_setopt(curl.get(), CURLOPT_CONNECTTIMEOUT_MS,
-                     static_cast<long>(MSIME_CLOUD_CONNECT_TIMEOUT_MS));
-    curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, static_cast<long>(MSIME_CLOUD_REQUEST_TIMEOUT_MS));
+                     static_cast<long>(LINGYAO_CLOUD_CONNECT_TIMEOUT_MS));
+    curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, static_cast<long>(LINGYAO_CLOUD_REQUEST_TIMEOUT_MS));
     curl_easy_setopt(curl.get(), CURLOPT_NOSIGNAL, 1L);
-    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "MSIME-Client/1.0");
+    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "LINGYAO-Client/1.0");
     curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, write_response);
     curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl.get(), CURLOPT_NOPROGRESS, 0L);
@@ -207,4 +207,4 @@ void CloudCandidateWorker::run() noexcept
         }
     }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

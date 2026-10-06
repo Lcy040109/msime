@@ -5,17 +5,17 @@
 
 // Observe the complete key stream; only a short, isolated modifier release toggles.
 // Engine composition remains owned by the normal host mode-switch operation.
-class MSIMEModifierTap {
+class LINGYAOModifierTap {
 public:
     /// Whether a key code is being held on the keyboard right now. A test drives a synthetic
     /// keyboard and has to answer for it; the default reads the HID system's own view.
     using KeyHeldProbe = bool (*)(unsigned short);
     void reset() {
         const auto probe = held_;
-        *this = MSIMEModifierTap{};
+        *this = LINGYAOModifierTap{};
         held_ = probe;
     }
-    void setKeyHeldProbe(KeyHeldProbe probe) { held_ = probe ? probe : &MSIMEModifierTap::physicallyHeld; }
+    void setKeyHeldProbe(KeyHeldProbe probe) { held_ = probe ? probe : &LINGYAOModifierTap::physicallyHeld; }
     bool observe(NSEvent *event, bool shiftEnabled, bool controlEnabled) {
         const auto mask = NSEventModifierFlagShift | NSEventModifierFlagControl |
             NSEventModifierFlagOption | NSEventModifierFlagCommand | NSEventModifierFlagFunction;
@@ -75,7 +75,7 @@ private:
     static bool physicallyHeld(unsigned short key) {
         return CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key) != false;
     }
-    KeyHeldProbe held_ = &MSIMEModifierTap::physicallyHeld;
+    KeyHeldProbe held_ = &LINGYAOModifierTap::physicallyHeld;
     std::set<unsigned short> keys_;
     NSEventModifierFlags modifiers_ = 0;
     NSEventModifierFlags armedModifier_ = 0;

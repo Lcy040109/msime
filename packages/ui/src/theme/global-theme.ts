@@ -51,7 +51,7 @@ export type ThemeCatalogEntry = {
   keyboard: KeyboardThemePalette | null;
 };
 
-/** `msime_client_theme_catalog()`. */
+/** `lingyao_client_theme_catalog()`. */
 export type ThemeCatalog = { themes: ThemeCatalogEntry[]; default: GlobalTheme };
 
 /** The seven candidate colour pickers of the custom theme, each `#RRGGBB` or unset. */
@@ -86,7 +86,7 @@ export function customThemeBase(
 
 export type ThemeSource = "system" | "builtin" | "custom";
 
-/** `msime_client_resolve_theme()` and `SettingsClient.resolveTheme`. */
+/** `lingyao_client_resolve_theme()` and `SettingsClient.resolveTheme`. */
 export type ResolvedTheme = {
   id: GlobalTheme;
   source: ThemeSource;
@@ -140,7 +140,7 @@ export function themeCandidateStyle(id: string | undefined): CSSProperties {
   return candidatePaletteStyle(themeEntry(id).candidate);
 }
 
-/** One mode of an external package's candidate palette as the skin scan (`msime_client_skin_catalog`) carries it: manifest colours as written, and the selected-bar switch. */
+/** One mode of an external package's candidate palette as the skin scan (`lingyao_client_skin_catalog`) carries it: manifest colours as written, and the selected-bar switch. */
 export type PackageCandidatePalette = Partial<
   Record<
     "surface" | "border" | "text" | "number" | "accent" | "selected" | "hover" | "translation",

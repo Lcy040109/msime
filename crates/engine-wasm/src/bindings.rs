@@ -1,11 +1,11 @@
 //! 浏览器边界（仅 wasm32-unknown-unknown）：wasm-bindgen 导出的几个函数和 `WebEngine`。
 //!
-//! 输出用 `js_sys::Object`/`Reflect` 拼成普通对象，键名是驼峰，和 TapTapGo 的 `MsimeFrame`（schema `msime-frame-v1`）逐字段对应；按键是打包的 u32 数组（`Key::unpack`）。这里不依赖 serde，也不依赖 web-sys。上下文只能由 Rust 自己写入，这里没有任何设置上下文的出口（D18）。
+//! 输出用 `js_sys::Object`/`Reflect` 拼成普通对象，键名是驼峰，和 TapTapGo 的 `LingyaoFrame`（schema `lingyao-frame-v1`）逐字段对应；按键是打包的 u32 数组（`Key::unpack`）。这里不依赖 serde，也不依赖 web-sys。上下文只能由 Rust 自己写入，这里没有任何设置上下文的出口（D18）。
 
 use std::sync::{Mutex, PoisonError};
 
 use js_sys::{Array, Object, Reflect};
-use msime_engine::time::{set_host_clock, HostClock};
+use lingyao_engine::time::{set_host_clock, HostClock};
 use wasm_bindgen::prelude::*;
 
 use crate::host::{Frame, Key, Out, Scheme, WebHost};
@@ -40,25 +40,25 @@ pub fn start() {
     }));
 }
 
-/// 把词库字节导入内存 VFS 的 `path`（如 `/res/msime-pinyin.db`）；同名库先删掉。
+/// 把词库字节导入内存 VFS 的 `path`（如 `/res/lingyao-pinyin.db`）；同名库先删掉。
 #[wasm_bindgen]
 pub fn import_database(path: &str, bytes: &[u8]) -> Result<(), JsError> {
-    msime_engine::web::import_database(path, bytes).map_err(|error| JsError::new(&error))
+    lingyao_engine::web::import_database(path, bytes).map_err(|error| JsError::new(&error))
 }
 
 /// 删除内存 VFS 里的词库；调用前须先释放所有用到它的 `WebEngine`。
 #[wasm_bindgen]
 pub fn delete_database(path: &str) -> Result<(), JsError> {
-    msime_engine::web::delete_database(path).map_err(|error| JsError::new(&error))
+    lingyao_engine::web::delete_database(path).map_err(|error| JsError::new(&error))
 }
 
-/// `"msime-engine-wasm <version> <git short sha>"`；构建时没有 `MSIME_GIT_SHA` 则为 `unknown`。
+/// `"lingyao-engine-wasm <version> <git short sha>"`；构建时没有 `LINGYAO_GIT_SHA` 则为 `unknown`。
 #[wasm_bindgen]
 pub fn build_info() -> String {
     format!(
-        "msime-engine-wasm {} {}",
+        "lingyao-engine-wasm {} {}",
         env!("CARGO_PKG_VERSION"),
-        option_env!("MSIME_GIT_SHA").unwrap_or("unknown")
+        option_env!("LINGYAO_GIT_SHA").unwrap_or("unknown")
     )
 }
 
@@ -78,7 +78,7 @@ pub struct WebEngine {
 
 #[wasm_bindgen]
 impl WebEngine {
-    /// `scheme` 是 `quanpin`、`xiaohe`、`ziranma` 或 `wubi86`；主库须已导入 `/res/msime-pinyin.db`（拼音方案导入网页包的 `msime-pinyin.db`，五笔导入 `msime-wubi86.db`，路径相同）。`model` 是解压后的 `sentence-model.safetensors`，五笔忽略它。
+    /// `scheme` 是 `quanpin`、`xiaohe`、`ziranma` 或 `wubi86`；主库须已导入 `/res/lingyao-pinyin.db`（拼音方案导入网页包的 `lingyao-pinyin.db`，五笔导入 `lingyao-wubi86.db`，路径相同）。`model` 是解压后的 `sentence-model.safetensors`，五笔忽略它。
     #[wasm_bindgen(constructor)]
     pub fn new(
         scheme: &str,
@@ -94,13 +94,13 @@ impl WebEngine {
         Ok(WebEngine { host })
     }
 
-    /// 处理一批打包的按键，返回 `MsimeFrame`。
+    /// 处理一批打包的按键，返回 `LingyaoFrame`。
     pub fn keys(&mut self, packed: &[u32]) -> JsValue {
         let keys: Vec<Key> = packed.iter().copied().filter_map(Key::unpack).collect();
         frame_to_js(&self.host.keys(&keys))
     }
 
-    /// 鼠标点击当前页第 `slot` 个候选，返回 `MsimeFrame`。
+    /// 鼠标点击当前页第 `slot` 个候选，返回 `LingyaoFrame`。
     pub fn pick(&mut self, slot: u32) -> JsValue {
         let slot = usize::try_from(slot).unwrap_or(usize::MAX);
         frame_to_js(&self.host.pick(slot))
@@ -115,7 +115,7 @@ impl WebEngine {
         self.host.set_backspace_deletes(deletes);
     }
 
-    /// 新回合：取消组字、清空上下文、重建会话，返回 `MsimeFrame`。
+    /// 新回合：取消组字、清空上下文、重建会话，返回 `LingyaoFrame`。
     pub fn reset(&mut self) -> JsValue {
         frame_to_js(&self.host.reset())
     }

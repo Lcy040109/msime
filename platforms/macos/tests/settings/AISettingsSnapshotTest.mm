@@ -20,15 +20,15 @@ int main() {
             @"prompt_custom_1": @"new-one",
             @"prompt_custom_2": @"new-two", @"prompt_custom_3": @"new-three"
         };
-        NSDictionary *merged = MSIMEAISettingsMerge(original, edits);
+        NSDictionary *merged = LINGYAOAISettingsMerge(original, edits);
         for (NSString *key in edits) assert([merged[@"ai_assistant"][key] isEqual:edits[key]]);
         for (NSString *key in originalAI) {
             if (!edits[key]) assert([merged[@"ai_assistant"][key] isEqual:originalAI[key]]);
         }
         assert([merged[@"learning"] isEqual:@YES]);
         assert([original[@"ai_assistant"][@"model"] isEqual:@"old-model"]);
-        NSDictionary *unowned = MSIMEAISettingsMerge(original, @{@"token": @"must-not-overwrite"});
+        NSDictionary *unowned = LINGYAOAISettingsMerge(original, @{@"token": @"must-not-overwrite"});
         assert([unowned isEqual:original]);
-        assert([MSIMEAISettingsMerge(@{}, edits)[@"ai_assistant"] isEqual:edits]);
+        assert([LINGYAOAISettingsMerge(@{}, edits)[@"ai_assistant"] isEqual:edits]);
     }
 }

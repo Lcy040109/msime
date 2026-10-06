@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <string>
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 void require(bool value, const char *what) {
@@ -28,7 +28,7 @@ std::u16string payload(const PendingReply &reply) {
 
 int main() {
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-translation-commit-" +
+                    ("lingyao-translation-commit-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {

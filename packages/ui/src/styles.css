@@ -594,7 +594,7 @@
     font-family: var(--appearance-font-family, sans-serif);
     font-size: var(--appearance-font-size, 16px);
     /* 整体大小: the hosts multiply the font and every geometry constant by the scale, which is what zoom does to the sample card. */
-    zoom: var(--msime-candidate-scale, 1);
+    zoom: var(--lingyao-candidate-scale, 1);
   }
 
   & .candidate .pinyin {
@@ -604,7 +604,7 @@
   /* A row is never rounder than a card radius the user chose, the rule the hosts follow; a package's radius leaves the rows at their own corners. */
   &.skin-card-preview .candidate .cand,
   &.skin-card-preview .candidate .first {
-    border-radius: min(4px, var(--msime-candidate-user-radius, 4px));
+    border-radius: min(4px, var(--lingyao-candidate-user-radius, 4px));
   }
 
   /* 不透明度 fades only the card's fill and outline; text and the selected row stay opaque. Guarded because a `var()` inside an unsupported `color-mix()` would leave the card with no fill at all. */
@@ -612,12 +612,12 @@
     &.skin-card-preview .candidate .container {
       background: color-mix(
         in srgb,
-        var(--cand-bg) var(--msime-candidate-opacity, 100%),
+        var(--cand-bg) var(--lingyao-candidate-opacity, 100%),
         transparent
       );
       border-color: color-mix(
         in srgb,
-        var(--cand-border) var(--msime-candidate-opacity, 100%),
+        var(--cand-border) var(--lingyao-candidate-opacity, 100%),
         transparent
       );
     }
@@ -636,12 +636,12 @@
 /*
  * An external skin's decoration geometry, the same on every host (Windows CandidateWindow.cpp draws it this way):
  *
- * - The stage is `--msime-skin-decoration-top` (the band) taller than the card. The band is transparent; the card -- fill, border, background image, shadow -- starts below it.
- * - The mascot is `--msime-skin-decoration-width` wide at its own aspect ratio. Its bottom is pad_y below the card's top edge, so it overhangs into the card, and it is drawn over the card.
+ * - The stage is `--lingyao-skin-decoration-top` (the band) taller than the card. The band is transparent; the card -- fill, border, background image, shadow -- starts below it.
+ * - The mascot is `--lingyao-skin-decoration-width` wide at its own aspect ratio. Its bottom is pad_y below the card's top edge, so it overhangs into the card, and it is drawn over the card.
  * - Taller than band + pad_y, it is scaled down uniformly to fit (`object-fit: contain`, anchored to the bottom and the aligned side); it is never squashed.
  * - Horizontally it is placed against the card, not the stage: left at card_left + pad_x, centre on the card, right (the default) at card_right - pad_x - width, never left of the card.
  *
- * pad_x / pad_y are the card's own inner padding, `--msime-candidate-pad-x` / `--msime-candidate-pad-y` from `skin-card-preview`. The container parent shrinks to the card, so its edges are the card's edges in both layouts.
+ * pad_x / pad_y are the card's own inner padding, `--lingyao-candidate-pad-x` / `--lingyao-candidate-pad-y` from `skin-card-preview`. The container parent shrinks to the card, so its edges are the card's edges in both layouts.
  *
  * Source: Windows 04a8df56 skin.ts candidatePreviewCss / skin.css, GPL-3.0. The sibling image element receives bytes from the bounded host image reader, never a manifest-supplied URL.
  *
@@ -655,28 +655,28 @@
   }
 
   & .candidate .containerParent {
-    --msime-skin-decoration-bottom: calc(
-      var(--msime-skin-decoration-top, 0px) + var(--msime-candidate-pad-y, 0px)
+    --lingyao-skin-decoration-bottom: calc(
+      var(--lingyao-skin-decoration-top, 0px) + var(--lingyao-candidate-pad-y, 0px)
     );
     position: relative;
     box-sizing: border-box;
     width: fit-content;
     max-width: 100%;
-    padding-top: var(--msime-skin-decoration-top, 0px);
+    padding-top: var(--lingyao-skin-decoration-top, 0px);
   }
 
   & .candidate .containerParent:not(:empty)::before,
   & .skin-decoration-image {
     position: absolute;
     z-index: 2;
-    bottom: calc(100% - var(--msime-skin-decoration-bottom));
+    bottom: calc(100% - var(--lingyao-skin-decoration-bottom));
     left: max(
       0px,
-      calc(100% - var(--msime-candidate-pad-x, 0px) - var(--msime-skin-decoration-width, 0px))
+      calc(100% - var(--lingyao-candidate-pad-x, 0px) - var(--lingyao-skin-decoration-width, 0px))
     );
-    width: var(--msime-skin-decoration-width, 0px);
+    width: var(--lingyao-skin-decoration-width, 0px);
     height: auto;
-    max-height: var(--msime-skin-decoration-bottom);
+    max-height: var(--lingyao-skin-decoration-bottom);
     object-fit: contain;
     object-position: right bottom;
     pointer-events: none;
@@ -685,26 +685,26 @@
   & .candidate .containerParent:not(:empty)::before {
     content: "";
     /* An empty box has no intrinsic height, so the hook takes the whole band + pad_y and a background drawn in it shrinks with `contain`. */
-    height: var(--msime-skin-decoration-bottom);
+    height: var(--lingyao-skin-decoration-bottom);
     background: none right bottom / contain no-repeat;
   }
 
   & .candidate .container {
     position: relative;
     z-index: 1;
-    min-width: max(7em, var(--msime-skin-min-width, 0px));
+    min-width: max(7em, var(--lingyao-skin-min-width, 0px));
   }
 
   /* The manifest's `decoration.align`; right is the default above. */
   & [data-decoration-align="left"] .skin-decoration-image,
   & [data-decoration-align="left"] .candidate .containerParent:not(:empty)::before {
-    left: var(--msime-candidate-pad-x, 0px);
+    left: var(--lingyao-candidate-pad-x, 0px);
     object-position: left bottom;
     background-position: left bottom;
   }
   & [data-decoration-align="center"] .skin-decoration-image,
   & [data-decoration-align="center"] .candidate .containerParent:not(:empty)::before {
-    left: max(0px, calc(50% - var(--msime-skin-decoration-width, 0px) / 2));
+    left: max(0px, calc(50% - var(--lingyao-skin-decoration-width, 0px) / 2));
     object-position: center bottom;
     background-position: center bottom;
   }
@@ -731,7 +731,7 @@
     --cand-selected: #e8e8e8;
   }
   /* ---- The candidate window inside the card. ---- */
-  /* MSIME-Windows 04a8df56 candidate preview styles, GPL-3.0; scoped to skin cards. */
+  /* LINGYAO-Windows 04a8df56 candidate preview styles, GPL-3.0; scoped to skin cards. */
   /* Keep the row for upstream adjacent-sibling decoration selectors. */
   & .container.preedit-hidden > .pinyin {
     display: none;
@@ -769,8 +769,8 @@
   }
   & .wnd-h {
     /* The card's inner padding, named so the decoration geometry (`external-skin-decorated`) reads the same pad_x / pad_y the card is drawn with. */
-    --msime-candidate-pad-x: 1px;
-    --msime-candidate-pad-y: 2px;
+    --lingyao-candidate-pad-x: 1px;
+    --lingyao-candidate-pad-y: 2px;
     /* Preview card is narrower than a real candwnd host; constrain to parent. */
     max-width: 100%;
     width: 100%;
@@ -781,8 +781,8 @@
       margin-top: 0px;
       margin-left: 0px;
       background: var(--cand-bg);
-      padding: var(--msime-candidate-pad-y) var(--msime-candidate-pad-x);
-      border-radius: var(--msime-skin-radius, 6px);
+      padding: var(--lingyao-candidate-pad-y) var(--lingyao-candidate-pad-x);
+      border-radius: var(--lingyao-skin-radius, 6px);
       box-shadow: var(--cand-shadow);
       min-width: 7em;
       /* Allow wrapping so the sample row is not clipped in settings preview.
@@ -895,15 +895,15 @@
     }
   }
   & .wnd-v {
-    --msime-candidate-pad-x: 2px;
-    --msime-candidate-pad-y: 2px;
+    --lingyao-candidate-pad-x: 2px;
+    --lingyao-candidate-pad-y: 2px;
 
     .container {
       margin-top: 0px;
       margin-left: 0px;
       background: var(--cand-bg);
-      padding: var(--msime-candidate-pad-y) var(--msime-candidate-pad-x);
-      border-radius: var(--msime-skin-radius, 6px);
+      padding: var(--lingyao-candidate-pad-y) var(--lingyao-candidate-pad-x);
+      border-radius: var(--lingyao-skin-radius, 6px);
       box-shadow: var(--cand-shadow);
       min-width: 7em;
       width: min(720px, fit-content);
@@ -998,7 +998,7 @@
   }
 
   /* ---- The floating-toolbar preview that shares the same card. ---- */
-  /* MSIME-Windows 04a8df56 settings toolbar preview rules, GPL-3.0. */
+  /* LINGYAO-Windows 04a8df56 settings toolbar preview rules, GPL-3.0. */
   & .ftb-preview-host {
     display: flex;
     justify-content: center;
@@ -1010,8 +1010,8 @@
     --ftb-gap: 6px;
     --ftb-pad-left: 8px;
     --ftb-pad-right: 4px;
-    /* A package's `[toolbar]` sets the `--msime-toolbar-*` properties on the card; unset ones keep these defaults. */
-    --ftb-radius: var(--msime-toolbar-radius, 8px);
+    /* A package's `[toolbar]` sets the `--lingyao-toolbar-*` properties on the card; unset ones keep these defaults. */
+    --ftb-radius: var(--lingyao-toolbar-radius, 8px);
     --ftb-handle-width: 2.5px;
     --ftb-handle-height: 14px;
   }
@@ -1023,8 +1023,8 @@
     padding: 0 calc(var(--ftb-pad-right) * var(--ftb-scale)) 0
       calc(var(--ftb-pad-left) * var(--ftb-scale));
     gap: calc(var(--ftb-gap) * var(--ftb-scale));
-    background-color: var(--msime-toolbar-background, #1a1a1a);
-    border: 1.4px solid var(--msime-toolbar-border, rgba(255, 255, 255, 0.15));
+    background-color: var(--lingyao-toolbar-background, #1a1a1a);
+    border: 1.4px solid var(--lingyao-toolbar-border, rgba(255, 255, 255, 0.15));
     border-radius: calc(var(--ftb-radius) * var(--ftb-scale));
     box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
@@ -1035,14 +1035,14 @@
     height: calc(var(--ftb-handle-height) * var(--ftb-scale));
     margin-right: 0;
     border-radius: calc(2px * var(--ftb-scale));
-    background: var(--msime-toolbar-handle, var(--accent-color));
+    background: var(--lingyao-toolbar-handle, var(--accent-color));
   }
   & .ftb-preview-host .divider {
     align-self: stretch;
     width: calc(1.2px * var(--ftb-scale));
     height: auto;
     margin: 0 0 0 calc(4px * var(--ftb-scale));
-    background-color: var(--msime-toolbar-divider, rgba(255, 255, 255, 0.15));
+    background-color: var(--lingyao-toolbar-divider, rgba(255, 255, 255, 0.15));
   }
   & .ftb-preview-host .icon {
     display: flex;
@@ -1050,7 +1050,7 @@
     justify-content: center;
     width: calc(var(--ftb-icon-size) * var(--ftb-scale));
     height: calc(var(--ftb-icon-size) * var(--ftb-scale));
-    color: var(--msime-toolbar-icon, #fff);
+    color: var(--lingyao-toolbar-icon, #fff);
     border-radius: calc(6px * var(--ftb-scale));
     font-family: "Segoe UI Symbol", "Microsoft YaHei", sans-serif;
     font-size: calc(var(--ftb-icon-size) * 0.833 * var(--ftb-scale));
@@ -1074,15 +1074,15 @@
     display: block;
   }
   &[data-preview-theme="light"] .ftb-preview-host .status-bar {
-    background-color: var(--msime-toolbar-background, #ffffff);
-    border: 1.4px solid var(--msime-toolbar-border, rgba(0, 0, 0, 0.12));
+    background-color: var(--lingyao-toolbar-background, #ffffff);
+    border: 1.4px solid var(--lingyao-toolbar-border, rgba(0, 0, 0, 0.12));
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.12);
   }
   &[data-preview-theme="light"] .ftb-preview-host .divider {
-    background-color: var(--msime-toolbar-divider, rgba(0, 0, 0, 0.12));
+    background-color: var(--lingyao-toolbar-divider, rgba(0, 0, 0, 0.12));
   }
   &[data-preview-theme="light"] .ftb-preview-host .icon {
-    color: var(--msime-toolbar-icon, #1a1a1a);
+    color: var(--lingyao-toolbar-icon, #1a1a1a);
   }
   &[data-preview-theme="light"] .ftb-preview-host .icon svg {
     filter: invert(1);

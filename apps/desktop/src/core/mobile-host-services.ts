@@ -10,7 +10,7 @@ import type {
   SettingsClient,
   SettingsSyncClient,
   MobileKeyboardFeedback,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 export type MobileHostPlatform = "android" | "ios";
 

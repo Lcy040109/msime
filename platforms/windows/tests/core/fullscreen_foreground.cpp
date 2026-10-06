@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("Fullscreen foreground test failed at line " +
@@ -31,7 +31,7 @@ int main() {
     klass.cbSize = sizeof(klass);
     klass.lpfnWndProc = DefWindowProcW;
     klass.hInstance = GetModuleHandleW(nullptr);
-    klass.lpszClassName = L"MSIME.Test.FullscreenProbe";
+    klass.lpszClassName = L"LINGYAO.Test.FullscreenProbe";
     if (!RegisterClassExW(&klass) &&
         GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
       require(false);

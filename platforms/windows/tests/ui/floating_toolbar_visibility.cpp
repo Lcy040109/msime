@@ -3,8 +3,8 @@
 #include <cassert>
 
 int main() {
-  using msime::windows::ShouldDeferFloatingToolbarHide;
-  using msime::windows::ShouldShowFloatingToolbar;
+  using lingyao::windows::ShouldDeferFloatingToolbarHide;
+  using lingyao::windows::ShouldShowFloatingToolbar;
 
   assert(ShouldShowFloatingToolbar(true, false, true));
   assert(!ShouldShowFloatingToolbar(false, false, true));

@@ -1,5 +1,5 @@
 import android.view.KeyEvent;
-import app.msime.android.HardwareMaintenancePolicy;
+import app.lingyao.android.HardwareMaintenancePolicy;
 
 /** The two chords a hardware keyboard needs, and everything that must not be mistaken for them. */
 public final class HardwareMaintenancePolicySmoke {

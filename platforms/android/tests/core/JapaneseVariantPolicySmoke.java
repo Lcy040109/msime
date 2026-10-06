@@ -1,4 +1,4 @@
-import app.msime.android.JapaneseVariantPolicy;
+import app.lingyao.android.JapaneseVariantPolicy;
 
 public final class JapaneseVariantPolicySmoke {
     public static void main(String[] args) {

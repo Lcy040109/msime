@@ -1,6 +1,6 @@
 # source: microsoft/Windows-classic-samples SampleIMESimplifiedQuanPin.txt (MIT)
 # engine-commit: a122e56b632b4c826464fa1bc199f3cdc68b61aa
-# generated-by: cargo run -p msime-input-runtime --example build_eval_set
+# generated-by: cargo run -p lingyao-input-runtime --example build_eval_set
 # kept=25119 unparsed=0 single_char=27561 truncated=1955
 id	input	gold	syllables	tags
 w-00001	aba	阿爸	2	

@@ -3,7 +3,7 @@ import fs from '@ohos.file.fs';
 import common from '@ohos.app.ability.common';
 import picker from '@ohos.file.picker';
 import util from '@ohos.util';
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import {
   AccountCloudBridge, AccountDownloadResponse, AccountTransportResponse,
   MAX_DICTIONARY_EXPORT_BYTES, MAX_SNAPSHOT_DOWNLOAD_BYTES, dictionaryChangePageChanged
@@ -363,7 +363,7 @@ export class HarmonyAccountCloudBridge {
         return this.failure(downloaded.error ?? 'account_unavailable');
       }
       const options: picker.DocumentSaveOptions = new picker.DocumentSaveOptions();
-      options.newFileNames = [`msime-${kind}-dictionary.tsv`];
+      options.newFileNames = [`lingyao-${kind}-dictionary.tsv`];
       options.fileSuffixChoices = ['TSV|.tsv'];
       const selected: string[] = await new picker.DocumentViewPicker(this.context).save(options);
       if (selected.length === 0) return this.success({ saved: false });
@@ -714,7 +714,7 @@ export class HarmonyAccountCloudBridge {
     let destination: string = '';
     try {
       const options: picker.DocumentSaveOptions = new picker.DocumentSaveOptions();
-      options.newFileNames = ['msime-dictionary-snapshot.ndjson'];
+      options.newFileNames = ['lingyao-dictionary-snapshot.ndjson'];
       options.fileSuffixChoices = ['NDJSON|.ndjson'];
       const selected: string[] = await new picker.DocumentViewPicker(this.context).save(options);
       if (selected.length === 0) return this.success({ saved: false, snapshot: result });

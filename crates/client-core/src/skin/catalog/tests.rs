@@ -614,7 +614,7 @@ fn base_names_system_or_a_builtin_theme() {
         assert!(catalog.issues.is_empty(), "{base}: {catalog:?}");
         assert_eq!(catalog.packages[0].base, expected, "{base}");
     }
-    // The msime-windows packages' `fluent` is the native Fluent look, which is `system` here.
+    // The lingyao-windows packages' `fluent` is the native Fluent look, which is `system` here.
     let catalog = scan_manifest(&manifest("sample").replace("base = 'night'", "base = 'fluent'"));
     assert!(catalog.issues.is_empty(), "{catalog:?}");
     assert_eq!(catalog.packages[0].base, GlobalTheme::System);
@@ -622,7 +622,7 @@ fn base_names_system_or_a_builtin_theme() {
         serde_json::to_value(&catalog.packages[0]).unwrap()["base"],
         "system"
     );
-    // msime-windows 的其他内置外观同样画在 `system` 之上。
+    // lingyao-windows 的其他内置外观同样画在 `system` 之上。
     for base in [
         "wechat",
         "graphite",
@@ -879,7 +879,7 @@ fn external_ids_are_the_folder_names_the_scan_lists() {
     }
 }
 
-/// msime-windows 的外观作为 `base` 时，包没写的颜色和圆角按该外观补齐，深浅各补各的；包自己写的、以及读得懂的颜色保持原样，读不懂的换成外观的颜色。
+/// lingyao-windows 的外观作为 `base` 时，包没写的颜色和圆角按该外观补齐，深浅各补各的；包自己写的、以及读得懂的颜色保持原样，读不懂的换成外观的颜色。
 #[test]
 fn a_windows_look_base_fills_what_the_package_leaves_out() {
     let body = manifest("sample").replace("base = 'night'", "base = 'wechat'")
@@ -1051,7 +1051,7 @@ fn a_symlinked_catalog_root_is_not_scanned() {
     assert!(read_resource(&root, "sample", "images/sample.png").is_err());
 }
 
-/// The layout msime-skins (github.com/metasequoiaime/msime-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
+/// The layout lingyao-skins (github.com/metasequoiaime/lingyao-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
 fn styled_package(root: &Path) -> std::path::PathBuf {
     let skin = root.join("bigfish");
     fs::create_dir_all(skin.join("assets")).unwrap();
@@ -1138,7 +1138,7 @@ fn styled_manifests_load_every_drawn_key() {
 
 #[test]
 fn defaults_leave_new_keys_to_the_host() {
-    // No decoration table at all, as msime-skins writes a package without one.
+    // No decoration table at all, as lingyao-skins writes a package without one.
     let body = manifest("sample").replace(
         "[candidate_window.decoration]\ntop_inset_dip = 0\nwidth_dip = 0\n",
         "",
@@ -1354,7 +1354,7 @@ fn host_catalog_publishes_what_linux_draws_of_a_styled_package() {
     );
 }
 
-/// `client_dialect.json` 是皮肤清单规则的共享用例表，各个实现都按它校验：这里的 `load`、msime-cloud 的 Go 移植（`internal/skins/client.go`）与种子脚本，以及 msime-windows 的 `CandidateSkinCatalog::Load`。它们各自保存一份副本，由各自仓库的同步脚本按本文件刷新，所以改规则先改这里。
+/// `client_dialect.json` 是皮肤清单规则的共享用例表，各个实现都按它校验：这里的 `load`、lingyao-cloud 的 Go 移植（`internal/skins/client.go`）与种子脚本，以及 lingyao-windows 的 `CandidateSkinCatalog::Load`。它们各自保存一份副本，由各自仓库的同步脚本按本文件刷新，所以改规则先改这里。
 ///
 /// 每个用例按 `_comment` 说明的顺序生成清单与旁边的文件（每个文件一个字节），接受的用例核对解析出的 `base`，拒绝的用例核对拒绝原因。
 #[test]

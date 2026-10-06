@@ -1,13 +1,13 @@
 # Windows WinUI 3 设置
 
-`MSIME.Settings.vcxproj` 是 Windows 设置窗口的原生宿主（安装后为 `msime-client-settings.exe`）。它使用 Windows App SDK 的 WinUI 3 控件，按 Windows 11 设置的样式绘制：标题栏搜索框、280 宽的侧栏（带页面筛选）、每行一张 Fluent 卡片。它不启动 Tauri 作为设置界面，也不拥有 TSF 或输入会话。
+`LINGYAO.Settings.vcxproj` 是 Windows 设置窗口的原生宿主（安装后为 `lingyao-client-settings.exe`）。它使用 Windows App SDK 的 WinUI 3 控件，按 Windows 11 设置的样式绘制：标题栏搜索框、280 宽的侧栏（带页面筛选）、每行一张 Fluent 卡片。它不启动 Tauri 作为设置界面，也不拥有 TSF 或输入会话。
 
 ## 页面
 
 侧栏的 18 个页面分成 6 组，依次是打字（输入、标点与翻译、快捷键、词库）、外观（主题、候选窗口、悬浮工具栏）、更多输入方式（屏幕键盘、语音输入、手写输入）、工具（剪贴板、打字统计、插件、AI 辅助）、账号（账号与同步）、支持（维护与诊断、帮助与反馈、关于），每组以组名开头。分组与顺序和共享设置界面的 `settingsNavGroups`（`packages/ui/src/settings/settings-page-registry.ts`）一致，定义在 `SettingsNavigation.h`，由 `tests/ui/settings_navigation.cpp` 核对，并对照共享路由词表检查；组名和页名在 `main.cpp` 中。
 
 - 输入、标点与翻译、快捷键、词库、主题、候选窗口、悬浮工具栏、屏幕键盘、语音输入、手写输入、维护与诊断、帮助与反馈、关于：在本窗口中原生绘制。
-- 剪贴板、打字统计、插件、AI 辅助、账号与同步：跨平台服务页，点击「打开」后用 `MSIME.exe --route=…` 在共享 Tauri 应用中显示对应页面。剪贴板打开共享应用的「剪贴板」页（`settings:tools`），本机剪贴板历史开关和云剪贴板入口都在那里。
+- 剪贴板、打字统计、插件、AI 辅助、账号与同步：跨平台服务页，点击「打开」后用 `LINGYAO.exe --route=…` 在共享 Tauri 应用中显示对应页面。剪贴板打开共享应用的「剪贴板」页（`settings:tools`），本机剪贴板历史开关和云剪贴板入口都在那里。
 - 桌面端没有社区页：社区皮肤在共享应用「主题」页的「社区皮肤」标签里，本窗口「主题」页的「社区皮肤」一行打开它，`community` 路由打开本窗口的「主题」页。AI 对话是 AI 辅助的子页，`chat` 路由打开「AI 辅助」。
 - 其他平台下载不单独成页：「关于」页的「版本与更新」组可以打开产品下载页或复制链接。
 
@@ -19,7 +19,7 @@
 
 窗口本身按设计稿的 Fluent token 绘制，强调色固定为浅色 `#005FB8`、深色 `#60CDFF`（与候选窗口原生调色板相同），不跟随 Windows 的个性化强调色。「设置界面主题」只覆盖本窗口的明暗。
 
-「主题」「候选窗口」「输入」「标点与翻译」页的候选窗口预览和「自定义」主题卡片不自己配色：它们用与 Server 相同的请求（全局主题、去掉键盘设计的 `custom_theme`、候选窗口自己的明暗与排列方式、数据目录下的 `skins`）调用 `msime_client_resolve_theme`，再用 `src/candidate/CandidatePalette.h` 合成调色板，并按 `CandidateWindow.cpp` 的规则绘制选中行、序号、选中条和翻译，所以自定义主题的 `candidate_colors` 与皮肤包会反映在预览里。其余主题卡片使用 `msime_client_theme_catalog` 给出的预览色。
+「主题」「候选窗口」「输入」「标点与翻译」页的候选窗口预览和「自定义」主题卡片不自己配色：它们用与 Server 相同的请求（全局主题、去掉键盘设计的 `custom_theme`、候选窗口自己的明暗与排列方式、数据目录下的 `skins`）调用 `lingyao_client_resolve_theme`，再用 `src/candidate/CandidatePalette.h` 合成调色板，并按 `CandidateWindow.cpp` 的规则绘制选中行、序号、选中条和翻译，所以自定义主题的 `candidate_colors` 与皮肤包会反映在预览里。其余主题卡片使用 `lingyao_client_theme_catalog` 给出的预览色。
 
 ## 默认输入法提示
 
@@ -27,23 +27,23 @@
 
 ## 保存
 
-设置窗口通过 `msime_client_load_preferences` 和 `msime_client_save_preferences` 读取、校验并以 compare-and-swap 方式保存共享偏好。每个控件改动后立即保存，滑块停止拖动后保存；保存被拒绝（其他窗口已更新或与其他设置冲突）时重新读取并在页面顶部说明。窗口重新获得焦点时重新读取，以反映托盘、共享应用或同步带来的变化。Server 启动它时注入 `MSIME_CLIENT_STATE_DIR`，所以设置和输入法宿主使用同一个数据目录；从开始菜单直接启动时回落到 `%LOCALAPPDATA%\MSIME-Client`。
+设置窗口通过 `lingyao_client_load_preferences` 和 `lingyao_client_save_preferences` 读取、校验并以 compare-and-swap 方式保存共享偏好。每个控件改动后立即保存，滑块停止拖动后保存；保存被拒绝（其他窗口已更新或与其他设置冲突）时重新读取并在页面顶部说明。窗口重新获得焦点时重新读取，以反映托盘、共享应用或同步带来的变化。Server 启动它时注入 `LINGYAO_CLIENT_STATE_DIR`，所以设置和输入法宿主使用同一个数据目录；从开始菜单直接启动时回落到 `%LOCALAPPDATA%\LINGYAO-Client`。
 
 ## 连接 AI 助手
 
-「维护与诊断」页的「连接 AI 助手」即共享设置页的同名区块：通过 `msime_client_mcp_status` 和 `msime_client_mcp_install` 显示与 `msime-client-settings.exe` 同目录的 `msime-mcp.exe`、可复制的 MCP 配置，并把它写入 Claude Desktop 或 Cursor 的配置文件。服务器指向的运行时选项取自 Server 注入的 `MSIME_CLIENT_HOST_OPTIONS`，直接启动时取数据目录下的 `runtime-options.json`；两者都没有时说明输入法尚未初始化，不提供配置。写入逻辑与 Tauri 外壳共用 host-api 的 `mcp_clients`。
+「维护与诊断」页的「连接 AI 助手」即共享设置页的同名区块：通过 `lingyao_client_mcp_status` 和 `lingyao_client_mcp_install` 显示与 `lingyao-client-settings.exe` 同目录的 `lingyao-mcp.exe`、可复制的 MCP 配置，并把它写入 Claude Desktop 或 Cursor 的配置文件。服务器指向的运行时选项取自 Server 注入的 `LINGYAO_CLIENT_HOST_OPTIONS`，直接启动时取数据目录下的 `runtime-options.json`；两者都没有时说明输入法尚未初始化，不提供配置。写入逻辑与 Tauri 外壳共用 host-api 的 `mcp_clients`。
 
 ## 与共享应用的分工
 
-Windows 的表情、手写和屏幕键盘面板以及上面列出的跨平台页面由同目录的共享 Tauri 应用 `MSIME.exe` 提供。本窗口通过 `src/system/ShellLauncher.cpp`（与托盘相同的启动器）启动它，数据目录和运行时选项都已知时一并传入，保证两边读写同一份设置。Server 将设置路由发送给 `msime-client-settings.exe`，将面板路由发送给 `MSIME.exe`。
+Windows 的表情、手写和屏幕键盘面板以及上面列出的跨平台页面由同目录的共享 Tauri 应用 `LINGYAO.exe` 提供。本窗口通过 `src/system/ShellLauncher.cpp`（与托盘相同的启动器）启动它，数据目录和运行时选项都已知时一并传入，保证两边读写同一份设置。Server 将设置路由发送给 `lingyao-client-settings.exe`，将面板路由发送给 `LINGYAO.exe`。
 
 ## 构建
 
 在 Visual Studio 开发者命令行中构建：
 
 ```powershell
-msbuild MSIME.Settings.vcxproj /p:Configuration=RelWithDebInfo /p:Platform=x64 `
-  /p:HostApiLibrary=C:\path\to\msime_host_api.dll.lib
+msbuild LINGYAO.Settings.vcxproj /p:Configuration=RelWithDebInfo /p:Platform=x64 `
+  /p:HostApiLibrary=C:\path\to\lingyao_host_api.dll.lib
 ```
 
 Windows App SDK 版本由 `WindowsAppSDKVersion` 属性控制，默认值与项目文件固定，发布构建使用 self-contained unpackaged 模式。项目没有 XAML 编译器：应用自己实现 `IXamlMetadataProvider` 并转交给 WinUI 控件库的元数据提供者，界面全部在 `main.cpp` 中用代码构建。

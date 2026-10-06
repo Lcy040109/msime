@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let state = std::path::Path::new(&args[1]);
     let document =
-        msime_host_api::prepare_host_configuration(std::path::Path::new(&args[0]), state)?;
+        lingyao_host_api::prepare_host_configuration(std::path::Path::new(&args[0]), state)?;
     let mut temporary = tempfile::NamedTempFile::new_in(state)?;
     temporary.write_all(document.as_bytes())?;
     temporary.as_file().sync_all()?;

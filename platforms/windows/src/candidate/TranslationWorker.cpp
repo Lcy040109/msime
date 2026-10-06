@@ -3,7 +3,7 @@
 #include "CandidateHttpPolicy.h"
 #include "TranslationDisplay.h"
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 constexpr auto kDebounce = std::chrono::milliseconds(500);
 constexpr size_t kMaximumQueryBytes = 65536;
@@ -53,8 +53,8 @@ int transfer_progress(void *context, curl_off_t, curl_off_t, curl_off_t,
   return cancelled && cancelled() ? 1 : 0;
 }
 
-std::unique_ptr<char, decltype(&msime_client_string_free)> owned(char *raw) {
-  return {raw, msime_client_string_free};
+std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(char *raw) {
+  return {raw, lingyao_client_string_free};
 }
 
 std::optional<nlohmann::json> host_value(char *raw) {
@@ -138,7 +138,7 @@ std::optional<std::string> http_request(const nlohmann::json &descriptor,
     curl_easy_setopt(curl.get(), CURLOPT_CONNECTTIMEOUT_MS, 2500L);
     curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, timeout_ms);
     curl_easy_setopt(curl.get(), CURLOPT_NOSIGNAL, 1L);
-    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "MSIME-Client/1.0");
+    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "LINGYAO-Client/1.0");
     curl_easy_setopt(curl.get(), CURLOPT_HTTPHEADER, request_headers.get());
     curl_easy_setopt(curl.get(), CURLOPT_POST, 1L);
     curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, write_response);
@@ -182,7 +182,7 @@ custom_translation(const nlohmann::json &config, const nlohmann::json &item,
                      {"source_language", item.at("source_language")},
                      {"target_language", item.at("target_language")}};
   const auto bytes = request.dump();
-  auto descriptor = host_value(msime_client_custom_translation_http_request(
+  auto descriptor = host_value(lingyao_client_custom_translation_http_request(
       reinterpret_cast<const uint8_t *>(bytes.data()), bytes.size()));
   if (!descriptor || descriptor->is_null() || cancelled())
     return std::nullopt;
@@ -192,7 +192,7 @@ custom_translation(const nlohmann::json &config, const nlohmann::json &item,
       http_request(*descriptor, cancelled, true, kCustomTranslationTimeoutMs);
   if (!body || cancelled())
     return std::nullopt;
-  auto parsed = host_value(msime_client_parse_custom_translation_response(
+  auto parsed = host_value(lingyao_client_parse_custom_translation_response(
       reinterpret_cast<const uint8_t *>(body->data()), body->size()));
   if (!parsed || !parsed->is_string() || parsed->get<std::string>().empty())
     return std::nullopt;
@@ -215,7 +215,7 @@ void append_tencent_group(const nlohmann::json &config,
                      {"target_language", items.front().at("target_language")},
                      {"timestamp", static_cast<int64_t>(std::time(nullptr))}};
   const auto bytes = request.dump();
-  auto descriptor = host_value(msime_client_tencent_translation_http_request(
+  auto descriptor = host_value(lingyao_client_tencent_translation_http_request(
       reinterpret_cast<const uint8_t *>(bytes.data()), bytes.size()));
   if (!descriptor || descriptor->is_null())
     return;
@@ -223,7 +223,7 @@ void append_tencent_group(const nlohmann::json &config,
       http_request(*descriptor, cancelled, false, kTencentTranslationTimeoutMs);
   if (!body || cancelled())
     return;
-  auto parsed = host_value(msime_client_parse_tencent_translation_response(
+  auto parsed = host_value(lingyao_client_parse_tencent_translation_response(
       reinterpret_cast<const uint8_t *>(body->data()), body->size(),
       items.size()));
   if (!parsed || !parsed->is_array() || parsed->size() != items.size())
@@ -258,7 +258,7 @@ void append_niutrans_item(const nlohmann::json &config,
                      {"target_language", item.at("target_language")},
                      {"timestamp", timestamp}};
   const auto bytes = request.dump();
-  auto descriptor = host_value(msime_client_niutrans_translation_http_request(
+  auto descriptor = host_value(lingyao_client_niutrans_translation_http_request(
       reinterpret_cast<const uint8_t *>(bytes.data()), bytes.size()));
   if (!descriptor || descriptor->is_null() || cancelled())
     return;
@@ -266,7 +266,7 @@ void append_niutrans_item(const nlohmann::json &config,
                            kNiuTransTranslationTimeoutMs);
   if (!body || cancelled())
     return;
-  auto parsed = host_value(msime_client_parse_niutrans_translation_response(
+  auto parsed = host_value(lingyao_client_parse_niutrans_translation_response(
       reinterpret_cast<const uint8_t *>(body->data()), body->size()));
   if (!parsed || !parsed->is_string() || parsed->get<std::string>().empty())
     return;
@@ -293,7 +293,7 @@ void persist_english_glosses(const nlohmann::json &query,
         {"target_language", "en"},
         {"translations",
          values}}.dump();
-    msime_client_string_free(msime_client_translation_gloss_save(
+    lingyao_client_string_free(lingyao_client_translation_gloss_save(
         reinterpret_cast<const uint8_t *>(request.data()), request.size(),
         reinterpret_cast<const uint8_t *>(user_data.data()), user_data.size()));
   } catch (...) {
@@ -386,7 +386,7 @@ TranslationWorker::translate(const FocusLease &lease, const std::string &query_b
       texts.reserve(candidates.size());
       for (const auto &candidate : candidates)
         texts.push_back(candidate.at("text").get<std::string>());
-      const auto command = msime::windows::command_translation_item(
+      const auto command = lingyao::windows::command_translation_item(
           true, texts, query.at("target_language").get<std::string>());
       if (!command)
         return std::nullopt;
@@ -492,7 +492,7 @@ TranslationWorker::translate(const FocusLease &lease, const std::string &query_b
             {{"text", candidate.at("text")}, {"source", 0}});
       gloss_request["candidates"] = std::move(gloss_candidates);
       const auto gloss_bytes = gloss_request.dump();
-      auto glossed = host_value(msime_client_candidate_gloss_request(
+      auto glossed = host_value(lingyao_client_candidate_gloss_request(
           reinterpret_cast<const uint8_t *>(gloss_bytes.data()),
           gloss_bytes.size(),
           reinterpret_cast<const uint8_t *>(resources.data()),
@@ -543,7 +543,7 @@ TranslationWorker::translate(const FocusLease &lease, const std::string &query_b
           dictionary.reserve(offline->size());
         entries(*offline, dictionary);
       }
-      msime::windows::fill_offline_glosses(answered, dictionary);
+      lingyao::windows::fill_offline_glosses(answered, dictionary);
       auto merged = nlohmann::json::array();
       for (const auto &[text, translation] : answered)
         if (!text.empty() && !translation.empty())
@@ -577,7 +577,7 @@ TranslationWorker::translate(const FocusLease &lease, const std::string &query_b
            return candidates;
          }()}};
     const auto plan_bytes = plan_request.dump();
-    auto plan = host_value(msime_client_custom_translation_plan(
+    auto plan = host_value(lingyao_client_custom_translation_plan(
         reinterpret_cast<const uint8_t *>(plan_bytes.data()),
         plan_bytes.size()));
     if (!plan || !plan->is_array() || cancelled())
@@ -654,7 +654,7 @@ TranslationWorker::translate(const FocusLease &lease, const std::string &query_b
     planned.reserve(plan->size());
     for (const auto &item : *plan)
       planned.push_back(item.at("text").get<std::string>());
-    const auto wanted = msime::windows::untranslated_texts(answered, planned);
+    const auto wanted = lingyao::windows::untranslated_texts(answered, planned);
     const std::unordered_set<std::string> wanted_texts(wanted.begin(),
                                                        wanted.end());
     std::vector<nlohmann::json> pending;
@@ -813,4 +813,4 @@ void TranslationWorker::run() noexcept {
     }
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

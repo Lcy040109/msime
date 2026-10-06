@@ -8,7 +8,7 @@ final class FuzzyPinyinDocumentTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-fuzzy-document-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-fuzzy-document-\(UUID().uuidString)", isDirectory: true)
     _ = LingyaoInputSessionBridge(stateRoot: state)
   }
 

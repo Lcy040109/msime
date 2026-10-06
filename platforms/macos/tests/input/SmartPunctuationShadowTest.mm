@@ -6,7 +6,7 @@
 #include <vector>
 
 // A terminal-like host: typed text goes to a pty and never comes back through the text client, so every read returns nothing and a replacement range is ignored. This is what xterm.js, iTerm2 and Terminal.app look like to an input method.
-@interface TerminalLikeClient : NSObject <MSIMETextClient>
+@interface TerminalLikeClient : NSObject <LINGYAOTextClient>
 @property(nonatomic, strong) NSMutableArray<NSString *> *insertions;
 @end
 @implementation TerminalLikeClient
@@ -32,7 +32,7 @@
 @end
 
 // An ordinary editor that hands its text back.
-@interface ReadableClient : NSObject <MSIMETextClient>
+@interface ReadableClient : NSObject <LINGYAOTextClient>
 @property(nonatomic, copy) NSString *document;
 @property(nonatomic) NSRange selection;
 @property(nonatomic) NSUInteger replacements;
@@ -87,7 +87,7 @@
 }
 @end
 
-@interface ShadowHiddenPanel : MSIMECandidatePanel
+@interface ShadowHiddenPanel : LINGYAOCandidatePanel
 @end
 @implementation ShadowHiddenPanel
 - (BOOL)isVisible { return NO; }
@@ -95,7 +95,7 @@
 @end
 
 // The posted rewrite is recorded instead of reaching the window server; `permitted` plays the Accessibility permission.
-@interface ShadowController : MSIMEInputController
+@interface ShadowController : LINGYAOInputController
 @property(nonatomic) BOOL permitted;
 @property(nonatomic, strong) NSMutableArray<NSNumber *> *posted;
 @end
@@ -124,7 +124,7 @@ static unichar Shadow(ShadowController *controller) {
 }
 
 // A key the application typed itself: English mode hands every key to it.
-static void PassThrough(ShadowController *controller, MSIMEAppearancePreferences *appearance, id client, NSEvent *event) {
+static void PassThrough(ShadowController *controller, LINGYAOAppearancePreferences *appearance, id client, NSEvent *event) {
     appearance.englishMode = YES;
     assert(![controller handleEvent:event client:client]);
     appearance.englishMode = NO;
@@ -133,16 +133,16 @@ static void PassThrough(ShadowController *controller, MSIMEAppearancePreferences
 static void TestRewriteRoute() {
     const NSTimeInterval now = NSProcessInfo.processInfo.systemUptime;
     std::vector<CGEventRef> posted;
-    MSIMESmartPunctuationRewriteIO io;
+    LINGYAOSmartPunctuationRewriteIO io;
     io.permitted = [] { return true; };
     io.post = [&](pid_t pid, CGEventRef event) {
         assert(pid == 4242);
         posted.push_back((CGEventRef)CFRetain(event));
     };
     io.now = [now] { return now; };
-    MSIMESmartPunctuationRewrite route;
+    LINGYAOSmartPunctuationRewrite route;
     route.pid = 4242;
-    route.deadline = now + MSIMESmartPunctuationRewriteTimeout;
+    route.deadline = now + LINGYAOSmartPunctuationRewriteTimeout;
     route.current = [] { return true; };
 
     // One Delete down/up pair, then the replacement as one Unicode keystroke, every event carrying the self tag so handleEvent: lets it through to the application.
@@ -150,7 +150,7 @@ static void TestRewriteRoute() {
     assert(posted.size() == 4);
     for (size_t i = 0; i < posted.size(); ++i) {
         CGEventRef event = posted[i];
-        assert(CGEventGetIntegerValueField(event, kCGEventSourceUserData) == MSIMEVoiceCommitEventTag);
+        assert(CGEventGetIntegerValueField(event, kCGEventSourceUserData) == LINGYAOVoiceCommitEventTag);
         assert(CGEventGetType(event) == (i % 2 == 0 ? kCGEventKeyDown : kCGEventKeyUp));
         assert(CGEventGetFlags(event) == 0 || (CGEventGetFlags(event) & (kCGEventFlagMaskShift | kCGEventFlagMaskControl |
                                                                          kCGEventFlagMaskAlternate | kCGEventFlagMaskCommand)) == 0);
@@ -158,7 +158,7 @@ static void TestRewriteRoute() {
         UniCharCount length = 0;
         CGEventKeyboardGetUnicodeString(event, 4, &length, units);
         if (i < 2) {
-            assert(CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) == MSIMESmartPunctuationRewriteDeleteKey);
+            assert(CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) == LINGYAOSmartPunctuationRewriteDeleteKey);
         } else {
             assert(length == 1 && units[0] == 0x3002);
         }
@@ -167,36 +167,36 @@ static void TestRewriteRoute() {
     posted.clear();
 
     // No Accessibility permission: nothing is posted, and nothing asks for it.
-    MSIMESmartPunctuationRewriteIO denied = io;
+    LINGYAOSmartPunctuationRewriteIO denied = io;
     denied.permitted = [] { return false; };
     assert(!route.deliver(0x3002, denied) && posted.empty());
 
     // The editor is no longer frontmost.
-    MSIMESmartPunctuationRewrite moved = route;
+    LINGYAOSmartPunctuationRewrite moved = route;
     moved.current = [] { return false; };
     assert(!moved.deliver(0x3002, io) && posted.empty());
 
     // Past the 500 ms the attempt was given.
-    MSIMESmartPunctuationRewriteIO late = io;
-    late.now = [now] { return now + MSIMESmartPunctuationRewriteTimeout + 0.01; };
+    LINGYAOSmartPunctuationRewriteIO late = io;
+    late.now = [now] { return now + LINGYAOSmartPunctuationRewriteTimeout + 0.01; };
     assert(!route.deliver(0x3002, late) && posted.empty());
 
     // A client whose application is not the frontmost one gets a route that delivers nothing.
     TerminalLikeClient *elsewhere = [TerminalLikeClient new];
-    MSIMESmartPunctuationRewrite captured = MSIMECaptureSmartPunctuationRewrite(elsewhere, now);
+    LINGYAOSmartPunctuationRewrite captured = LINGYAOCaptureSmartPunctuationRewrite(elsewhere, now);
     assert(captured.pid == 0);
     assert(!captured.deliver(0x3002, io) && posted.empty());
 }
 
 int main() {
-    assert(MSIMESmartPunctuationRewrite::kEventCount == 4);
+    assert(LINGYAOSmartPunctuationRewrite::kEventCount == 4);
     @autoreleasepool {
         [NSApplication sharedApplication];
         TestRewriteRoute();
 
-        NSString *suite = [@"msime.smart.shadow." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"lingyao.smart.shadow." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         appearance.smartPunctuation = YES;
         appearance.smartPunctuationRepeatToChinese = YES;
         appearance.smartPunctuationSpaceConvert = YES;
@@ -287,7 +287,7 @@ int main() {
         CGEventRef tagged = CGEventCreateKeyboardEvent(nullptr, 0, true);
         const UniChar x = 'x';
         CGEventKeyboardSetUnicodeString(tagged, 1, &x);
-        CGEventSetIntegerValueField(tagged, kCGEventSourceUserData, MSIMEVoiceCommitEventTag);
+        CGEventSetIntegerValueField(tagged, kCGEventSourceUserData, LINGYAOVoiceCommitEventTag);
         NSEvent *selfPosted = [NSEvent eventWithCGEvent:tagged];
         CFRelease(tagged);
         const unichar before = Shadow(controller);
@@ -387,7 +387,7 @@ int main() {
         [controller handleEvent:Key(18, @"1", 0) client:nil];
         assert(!ShadowValid(controller));
 
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
     std::puts("macOS smart punctuation shadow passed.");
     return 0;

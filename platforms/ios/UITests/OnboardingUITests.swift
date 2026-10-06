@@ -84,7 +84,7 @@ final class OnboardingUITests: XCTestCase {
     let keys = app.sliders["appKeySpacingSlider"]
     let rows = app.sliders["appRowSpacingSlider"]
     XCTAssertTrue(keys.waitForExistence(timeout: 5))
-    XCTAssertFalse(app.buttons["layoutPreset_msime"].exists)
+    XCTAssertFalse(app.buttons["layoutPreset_lingyao"].exists)
     let voice = app.switches["appVoiceShortcutSwitch"]
     func position(_ slider: XCUIElement) throws -> CGFloat {
       let raw = try XCTUnwrap(slider.value as? String)
@@ -1388,7 +1388,7 @@ final class OnboardingUITests: XCTestCase {
           app.textFields["serviceModel"].typeText("fixture")
           app.buttons["serviceDismissKeyboard"].tap()
           app.secureTextFields["serviceToken"].tap()
-          app.secureTextFields["serviceToken"].typeText("msime-ui-fixture")
+          app.secureTextFields["serviceToken"].typeText("lingyao-ui-fixture")
           app.buttons["serviceDismissKeyboard"].tap()
           app.buttons["saveServiceConfiguration"].tap()
           for _ in 0..<3 {

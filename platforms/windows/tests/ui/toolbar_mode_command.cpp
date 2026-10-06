@@ -1,7 +1,7 @@
 #include "../../src/candidate/ToolbarModeCommand.h"
 #include <cassert>
 #include <tuple>
-using namespace msime::windows;
+using namespace lingyao::windows;
 int main() {
   for (const auto &[button, on, off] : {
       std::tuple{kToolbarLanguage, FanyImeWorkerReplyType::SwitchToEnglish,

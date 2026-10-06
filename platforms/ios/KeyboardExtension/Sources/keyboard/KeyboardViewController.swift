@@ -58,9 +58,9 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     return worker
   }()
   private let candidateGlossQueue = DispatchQueue(
-    label: "app.msime.ios.candidate-gloss", qos: .utility)
+    label: "app.lingyao.ios.candidate-gloss", qos: .utility)
   private let statisticsQueue = DispatchQueue(
-    label: "app.msime.ios.typing-statistics", qos: .utility)
+    label: "app.lingyao.ios.typing-statistics", qos: .utility)
   private var candidateGlossEpoch: UInt64 = 0
   private var candidateGlossRequestedGeneration: UInt64?
   private let translations = CandidateTranslationStore()
@@ -178,7 +178,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   private var supportsLocalTools: Bool { isChineseMode && inputScheme != .wubi && inputScheme.writesChinese }
   /// Whether the letter keys feed the Korean syllable automaton: their faces are jamo and Shift picks the tense consonants instead of switching to English.
   private var typesKorean: Bool { isChineseMode && inputScheme.isKorean && !isInLocalMode }
-  /// Whether the Hanja list of the composing Korean syllable is on the strip. The Engine offers Korean no candidates until MSIME_CONVERT_HANJA (msime_client.h), so a Korean composition with candidates is that list.
+  /// Whether the Hanja list of the composing Korean syllable is on the strip. The Engine offers Korean no candidates until LINGYAO_CONVERT_HANJA (lingyao_client.h), so a Korean composition with candidates is that list.
   private var koreanHanjaListOpen: Bool { typesKorean && hasComposition && !visibleCandidates.isEmpty }
   /// Whether the Dachen keys are on screen and feed the Zhuyin editor: their faces are bopomofo and tone marks, and each sends the ASCII key the Engine reads for it.
   private var typesZhuyin: Bool { isChineseMode && inputScheme.isZhuyin && !isInLocalMode }
@@ -592,7 +592,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     render(session.finishComposition())
   }
 
-  /// 键盘放弃组字时发 MSIME_CANCEL。就地组字的方案第一次取消可能只退一步（msime_client.h）：关闭韩语汉字列表或注音列表，或把越南语单词、藏文音节退回原始按键（藏文是威利原文）。第二次取消再丢掉剩下的内容，否则 Engine 里会一直留着组字，而宿主已经把它当作输入的文字。
+  /// 键盘放弃组字时发 LINGYAO_CANCEL。就地组字的方案第一次取消可能只退一步（lingyao_client.h）：关闭韩语汉字列表或注音列表，或把越南语单词、藏文音节退回原始按键（藏文是威利原文）。第二次取消再丢掉剩下的内容，否则 Engine 里会一直留着组字，而宿主已经把它当作输入的文字。
   private func discardComposition() -> LingyaoInputSnapshot {
     let inPlace = composesInPlace
     let snapshot = session.cancel()
@@ -3888,7 +3888,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     hanjaButton.accessibilityTraits = listOpen ? [.button, .selected] : .button
   }
 
-  /// The 漢 button: MSIME_CONVERT_HANJA lists the Hanja of the composing syllable, or closes the open list and keeps the syllable composing. A lone jamo has no Hanja and the Engine leaves it alone, so the strip says why nothing opened.
+  /// The 漢 button: LINGYAO_CONVERT_HANJA lists the Hanja of the composing syllable, or closes the open list and keeps the syllable composing. A lone jamo has no Hanja and the Engine leaves it alone, so the strip says why nothing opened.
   private func convertKoreanSyllableToHanja() {
     guard typesKorean, hasComposition else { return }
     playInputClick()
@@ -3917,7 +3917,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   private func codeHint(code: String, engine: String, typed: String) -> (String, String) {
     let wubi = wubiCodeHint(code: code, typed: typed)
     if !wubi.isEmpty { return (wubi, "还需输入 \(wubi)") }
-    // A Hanja carries its 훈음 (meaning and reading) as the Engine's annotation; its code is only the key letters, which is not drawn (msime_client.h).
+    // A Hanja carries its 훈음 (meaning and reading) as the Engine's annotation; its code is only the key letters, which is not drawn (lingyao_client.h).
     if typesKorean { return engine.isEmpty ? ("", "") : (engine, "训音 \(engine)") }
     // 全拼、双拼以及五笔候选都可能在这里携带展示注释：前两者是辅助码或纠错提示，五笔是词条反查编码。
     guard !engine.isEmpty, !isInLocalMode,

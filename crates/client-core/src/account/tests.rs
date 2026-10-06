@@ -1872,12 +1872,12 @@ fn avatar_uploads_are_read_by_their_contents() {
     let empty = directory.path().join("empty.png");
     std::fs::write(&empty, b"").unwrap();
     let link = directory.path().join("link.png");
-    msime_path_trust::untrusted_symlink(&png, &link).unwrap();
+    lingyao_path_trust::untrusted_symlink(&png, &link).unwrap();
     let outside = tempfile::tempdir().unwrap();
     let outside_png = outside.path().join("outside.png");
     std::fs::write(&outside_png, b"\x89PNG\r\n\x1a\nexternal").unwrap();
     let linked_parent = directory.path().join("linked-parent");
-    msime_path_trust::untrusted_symlink(outside.path(), &linked_parent).unwrap();
+    lingyao_path_trust::untrusted_symlink(outside.path(), &linked_parent).unwrap();
     let nested_link = linked_parent.join("outside.png");
     for path in [&gif, &webp, &large, &empty, &link, directory.path()] {
         assert_eq!(
@@ -1995,7 +1995,7 @@ fn user_profile_fields_are_optional_and_bounded() {
     assert_eq!(image.data_url(), "data:image/jpeg;base64,AQID");
 }
 
-/// The backend's refresh contract: each refresh token works once, and presenting a spent one revokes the session (`msime-cloud` `Store.Refresh`).
+/// The backend's refresh contract: each refresh token works once, and presenting a spent one revokes the session (`lingyao-cloud` `Store.Refresh`).
 #[derive(Clone)]
 struct RotatingBackend {
     state: Arc<Mutex<RotatingState>>,

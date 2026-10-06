@@ -10,7 +10,7 @@ extension BackendAccountClient: DesktopCloudClipboardAPI {}
 
 /// A panel can perform clipboard operations for one native account only. Tokens
 /// stay inside the existing account actor; no credential is returned over IPC.
-@MainActor @objc(MSIMEBackendCloudClipboardProvider)
+@MainActor @objc(LINGYAOBackendCloudClipboardProvider)
 final class BackendCloudClipboardProvider: NSObject {
   private let client: any DesktopCloudClipboardAPI
   private let credentials: () async throws -> String

@@ -5,7 +5,7 @@
 #include <thread>
 #include <atomic>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 // Read the atomically published prepare_host document unchanged.
 // The shared host validates the schema; never synthesize fallback data.
 std::string read_prepared_host_options(const std::filesystem::path &file);

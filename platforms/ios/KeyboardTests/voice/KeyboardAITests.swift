@@ -4,8 +4,8 @@ import Security
 final class KeyboardAITests: XCTestCase {
   func testCommunityLibraryRejectsASymlinkedDirectoryBeforeWritingExternalResource() throws {
     #if canImport(Darwin)
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-community-link-\(UUID().uuidString)")
-    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("msime-community-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-community-link-\(UUID().uuidString)")
+    let outside = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-community-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outside)
@@ -63,7 +63,7 @@ final class KeyboardAITests: XCTestCase {
   @MainActor
   func testDownloadedReplyTemplateReachesPromptAndRemovalPreventsReuse() async throws {
     let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-community-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-community-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let id = UUID().uuidString
@@ -91,7 +91,7 @@ final class KeyboardAITests: XCTestCase {
 
   func testCommunityLibraryRejectsMalformedReplyTemplate() throws {
     let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-community-invalid-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-community-invalid-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let item = CommunityResource(id: UUID().uuidString, kind: .reply, name: "测试风格",
@@ -119,7 +119,7 @@ final class KeyboardAITests: XCTestCase {
     let otherPort = try XCTUnwrap(URL(string: "https://fixture.invalid:444/v1/chat/completions"))
     let query = KeyboardAIService.query(url: first)
     let account = kSecAttrAccount as String
-    XCTAssertEqual(query[kSecAttrAccessGroup as String] as? String, "group.app.msime.ios")
+    XCTAssertEqual(query[kSecAttrAccessGroup as String] as? String, "group.app.lingyao.ios")
     XCTAssertEqual(query[account] as? String, KeyboardAIService.query(url: otherPath)[account] as? String)
     XCTAssertNotEqual(query[account] as? String, KeyboardAIService.query(url: otherHost)[account] as? String)
     XCTAssertNotEqual(query[account] as? String, KeyboardAIService.query(url: otherPort)[account] as? String)

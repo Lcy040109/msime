@@ -1,5 +1,5 @@
 #include "../../src/core/TypingStatistics.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <Carbon/Carbon.h>
 #include <IOKit/hidsystem/IOLLEvent.h>
@@ -9,17 +9,17 @@
 #include <set>
 #include <string>
 
-using msime::mac::IsModifierPress;
-using msime::mac::KeyIdForVirtualKeyCode;
-using msime::mac::KeyPressBatch;
-using msime::mac::KeyPressFlush;
+using lingyao::mac::IsModifierPress;
+using lingyao::mac::KeyIdForVirtualKeyCode;
+using lingyao::mac::KeyPressBatch;
+using lingyao::mac::KeyPressFlush;
 
 static std::string call(const std::filesystem::path &directory, const std::string &action) {
     const std::string request = "{\"directory\":\"" + directory.string() + "\",\"action\":" + action + "}";
-    char *raw = msime_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size());
+    char *raw = lingyao_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size());
     assert(raw);
     std::string result(raw);
-    msime_client_string_free(raw);
+    lingyao_client_string_free(raw);
     return result;
 }
 
@@ -152,7 +152,7 @@ static void testStoreAcceptsEveryId() {
         keys += (keys.empty() ? "" : ",") + std::string("\"") + std::string(id) + "\":2";
         total += 2;
     }
-    const auto directory = std::filesystem::temp_directory_path() / "msime-macos-key-press-statistics-test";
+    const auto directory = std::filesystem::temp_directory_path() / "lingyao-macos-key-press-statistics-test";
     std::filesystem::remove_all(directory);
     const std::string action = "{\"operation\":\"record_keys\",\"day\":\"2026-09-30\",\"keys\":{" + keys + "}}";
     // Off by default, so nothing is written until the user turns statistics on.

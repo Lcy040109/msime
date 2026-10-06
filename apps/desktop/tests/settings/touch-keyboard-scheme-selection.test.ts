@@ -9,7 +9,7 @@ import {
   updateTouchKeyboardSchemeEnabled,
   type Preferences,
   useTouchKeyboardSchemeSelection,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import {
   selectTouchKeyboardScheme,
   touchKeyboardSchemeTitle,

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <thread>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 using Json = nlohmann::json;
 namespace {
 void require(bool value) {

@@ -1,5 +1,5 @@
-use msime_client_core::host_surface::{HostCapabilities, HostPlatform};
-use msime_client_core::preferences::{Preferences, PreferencesStore};
+use lingyao_client_core::host_surface::{HostCapabilities, HostPlatform};
+use lingyao_client_core::preferences::{Preferences, PreferencesStore};
 
 #[test]
 fn legacy_preferences_show_page_numbers_and_the_toggle_roundtrips() {

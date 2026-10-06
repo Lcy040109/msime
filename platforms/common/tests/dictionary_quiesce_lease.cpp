@@ -9,9 +9,9 @@
 
 // The lease every desktop input host reads: built by both the Linux and the macOS test suites.
 int main() {
-  using msime::dictionary_lease::dictionary_quiesce_lease_live;
-  using msime::dictionary_lease::dictionary_quiesced;
-  using msime::dictionary_lease::raise_dictionary_quiesce_lease;
+  using lingyao::dictionary_lease::dictionary_quiesce_lease_live;
+  using lingyao::dictionary_lease::dictionary_quiesced;
+  using lingyao::dictionary_lease::raise_dictionary_quiesce_lease;
 
   assert(dictionary_quiesce_lease_live("1010000", 1000000));
   assert(dictionary_quiesce_lease_live("1010000\n", 1000000));
@@ -25,18 +25,18 @@ int main() {
   assert(!dictionary_quiesce_lease_live("-1010000", 1000000));
   assert(!dictionary_quiesce_lease_live("99999999999999999999999", 1000000));
 
-  char pattern[] = "/tmp/msime-quiesce-XXXXXX";
+  char pattern[] = "/tmp/lingyao-quiesce-XXXXXX";
   const std::filesystem::path root = mkdtemp(pattern);
   assert(!dictionary_quiesced(root.string(), 1000000));
   assert(!dictionary_quiesced("", 1000000));
   assert(!dictionary_quiesced("relative", 1000000));
 
   // 临时文件名可预测时，不能跟随预先放置的符号链接写到外部文件。
-  char staged_outside_pattern[] = "/tmp/msime-quiesce-staged-outside-XXXXXX";
+  char staged_outside_pattern[] = "/tmp/lingyao-quiesce-staged-outside-XXXXXX";
   const std::filesystem::path staged_outside = mkdtemp(staged_outside_pattern);
   const auto staged_target = staged_outside / "target";
   std::ofstream(staged_target) << "keep";
-  const auto staged = root / (".msime-dictionary-quiesce." + std::to_string(getpid()) + "-0");
+  const auto staged = root / (".lingyao-dictionary-quiesce." + std::to_string(getpid()) + "-0");
   std::filesystem::create_symlink(staged_target, staged);
   std::string staged_written;
   assert(!raise_dictionary_quiesce_lease(root.string(), staged_written, 1000000));
@@ -48,26 +48,26 @@ int main() {
   std::filesystem::remove_all(staged_outside);
 
   {
-    std::ofstream(root / ".msime-dictionary-quiesce") << "1005000";
+    std::ofstream(root / ".lingyao-dictionary-quiesce") << "1005000";
   }
   assert(dictionary_quiesced(root.string(), 1000000));
   assert(dictionary_quiesced(root.string() + "/", 1000000));
   assert(!dictionary_quiesced(root.string(), 1006000));
   // A lease still being staged is not the lease; the rename is what raises it.
-  std::filesystem::remove(root / ".msime-dictionary-quiesce");
+  std::filesystem::remove(root / ".lingyao-dictionary-quiesce");
   {
-    std::ofstream(root / ".msime-dictionary-quiesce.4242") << "1030000\n";
+    std::ofstream(root / ".lingyao-dictionary-quiesce.4242") << "1030000\n";
   }
   assert(!dictionary_quiesced(root.string(), 1000000));
-  std::filesystem::remove(root / ".msime-dictionary-quiesce.4242");
+  std::filesystem::remove(root / ".lingyao-dictionary-quiesce.4242");
   // A host raising the lease itself leaves exactly the lease behind, live for the bound, with its owner line after the expiry, and lowering it clears it.
-  using msime::dictionary_lease::lower_dictionary_quiesce_lease;
-  using msime::dictionary_lease::raise_dictionary_quiesce_lease;
+  using lingyao::dictionary_lease::lower_dictionary_quiesce_lease;
+  using lingyao::dictionary_lease::raise_dictionary_quiesce_lease;
   std::string written;
   assert(raise_dictionary_quiesce_lease(root.string(), written, 1000000));
   assert(written.rfind("1030000\n", 0) == 0 && written.size() > 8 && written.back() == '\n');
   {
-    std::ifstream lease(root / ".msime-dictionary-quiesce");
+    std::ifstream lease(root / ".lingyao-dictionary-quiesce");
     assert(std::string(std::istreambuf_iterator<char>(lease), std::istreambuf_iterator<char>()) == written);
   }
   assert(dictionary_quiesced(root.string(), 1000000));
@@ -86,23 +86,23 @@ int main() {
   lower_dictionary_quiesce_lease(root.string(), written);
   assert(dictionary_quiesced(root.string(), 1000000));
   {
-    std::ofstream(root / ".msime-dictionary-quiesce", std::ios::trunc) << "1030000\n999 0\n";
+    std::ofstream(root / ".lingyao-dictionary-quiesce", std::ios::trunc) << "1030000\n999 0\n";
   }
   lower_dictionary_quiesce_lease(root.string(), second);
   assert(dictionary_quiesced(root.string(), 1000000));
   {
-    std::ofstream oversized(root / ".msime-dictionary-quiesce", std::ios::trunc);
-    oversized << std::string(msime::dictionary_lease::kDictionaryQuiesceLeaseMaxBytes + 1, 'x');
+    std::ofstream oversized(root / ".lingyao-dictionary-quiesce", std::ios::trunc);
+    oversized << std::string(lingyao::dictionary_lease::kDictionaryQuiesceLeaseMaxBytes + 1, 'x');
   }
   lower_dictionary_quiesce_lease(root.string(), second);
-  assert(std::filesystem::exists(root / ".msime-dictionary-quiesce"));
-  std::filesystem::remove(root / ".msime-dictionary-quiesce");
+  assert(std::filesystem::exists(root / ".lingyao-dictionary-quiesce"));
+  std::filesystem::remove(root / ".lingyao-dictionary-quiesce");
   assert(!raise_dictionary_quiesce_lease("relative", written, 1000000));
   assert(!raise_dictionary_quiesce_lease((root / "missing").string(), written, 1000000));
 
-  char outside_pattern[] = "/tmp/msime-quiesce-outside-XXXXXX";
+  char outside_pattern[] = "/tmp/lingyao-quiesce-outside-XXXXXX";
   const std::filesystem::path outside = mkdtemp(outside_pattern);
-  char link_pattern[] = "/tmp/msime-quiesce-link-XXXXXX";
+  char link_pattern[] = "/tmp/lingyao-quiesce-link-XXXXXX";
   const std::filesystem::path link_parent = mkdtemp(link_pattern);
   const auto linked = link_parent / "linked-user-data";
   std::filesystem::create_directory_symlink(outside, linked);
@@ -114,12 +114,12 @@ int main() {
   std::filesystem::remove_all(link_parent);
   std::filesystem::remove_all(outside);
 
-  char existing_outside_pattern[] = "/tmp/msime-quiesce-existing-XXXXXX";
+  char existing_outside_pattern[] = "/tmp/lingyao-quiesce-existing-XXXXXX";
   const std::filesystem::path existing_outside = mkdtemp(existing_outside_pattern);
   const auto existing_data = existing_outside / "data";
   std::filesystem::create_directory(existing_data);
-  std::ofstream(existing_data / ".msime-dictionary-quiesce") << "1005000\n";
-  char existing_link_pattern[] = "/tmp/msime-quiesce-existing-link-XXXXXX";
+  std::ofstream(existing_data / ".lingyao-dictionary-quiesce") << "1005000\n";
+  char existing_link_pattern[] = "/tmp/lingyao-quiesce-existing-link-XXXXXX";
   const std::filesystem::path existing_link_parent = mkdtemp(existing_link_pattern);
   const auto existing_link = existing_link_parent / "linked";
   std::filesystem::create_directory_symlink(existing_outside, existing_link);

@@ -151,10 +151,10 @@ def main() -> int:
                     f"codesign will call the bundle format ambiguous"
                 )
 
-    # Installed on-device models run in the msime-voice-local helper, which loads the sherpa-onnx runtime from ../Frameworks. The input method spawns it from beside its own executable, so a bundle missing either one accepts a model directory in settings and then fails every recognition.
-    helper = contents / "MacOS" / "msime-voice-local"
+    # Installed on-device models run in the lingyao-voice-local helper, which loads the sherpa-onnx runtime from ../Frameworks. The input method spawns it from beside its own executable, so a bundle missing either one accepts a model directory in settings and then fails every recognition.
+    helper = contents / "MacOS" / "lingyao-voice-local"
     if not helper.is_file() or not os.access(helper, os.X_OK):
-        failures.append("Contents/MacOS/msime-voice-local is missing or not executable; installed voice models cannot run")
+        failures.append("Contents/MacOS/lingyao-voice-local is missing or not executable; installed voice models cannot run")
     runtime = contents / "Frameworks" / "libsherpa-onnx-c-api.dylib"
     if not runtime.is_file() or runtime.stat().st_size == 0:
         failures.append("Contents/Frameworks/libsherpa-onnx-c-api.dylib was not staged; the voice helper has no runtime to load")

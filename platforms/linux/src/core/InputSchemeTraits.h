@@ -1,7 +1,7 @@
 #pragma once
 
 // Scheme behaviour the IBus and Fcitx5 hosts decide from a view's `scheme` number; InputSchemes.h reads it from views and preferences scheme ids. The view publishes `chinese_text`, `script_conversion` and `candidate_list_open` itself; everything in `scheme` is either a host-only trait or an Engine trait the view does not carry, and scripts/test-scheme-traits-parity.py checks the mirrored ones against the Engine. An unknown scheme number answers false everywhere, the way host-api reads `SchemeType::from_u8`.
-namespace msime::linux_host::scheme {
+namespace lingyao::linux_host::scheme {
 // The Engine's `SchemeType` ordinals (crates/engine/src/types.rs), as they appear in a view's `scheme`.
 constexpr int Quanpin = 0;
 constexpr int Shuangpin = 1;
@@ -25,7 +25,7 @@ constexpr bool CapsLockBypassExempt(int scheme) { return scheme == Korean || sch
 // 字母直接组成要写出的文字（一个谚文音节、一个越南文单词、一串藏文音节），而不是经候选转换的读音：方案不拿来拼写的按键会先把组字写出去，也没有可以从中取字的词。
 constexpr bool LetterComposition(int scheme) { return scheme == Korean || scheme == Vietnamese || scheme == Tibetan; }
 
-// Candidates appear only in a list the user opens with MSIME_OPEN_CANDIDATE_LIST (the Korean Hanja list, the Zhuyin list).
+// Candidates appear only in a list the user opens with LINGYAO_OPEN_CANDIDATE_LIST (the Korean Hanja list, the Zhuyin list).
 constexpr bool OpensCandidateList(int scheme) { return scheme == Korean || scheme == Zhuyin; }
 
 // The composition is always drawn inline whatever the preedit display preference says: until a list is opened there is no candidate window to show it in, and hidden it would be text the user cannot see being written.
@@ -36,7 +36,7 @@ constexpr bool AlwaysInlinePreedit(int scheme) { return LetterComposition(scheme
 // `is_chinese`: a Chinese scheme, the one a switch to a non-Chinese scheme remembers as `last_chinese_scheme`.
 constexpr bool IsChinese(int scheme) { return scheme == Quanpin || scheme == Shuangpin || scheme == Wubi || scheme == Cantonese || scheme == Zhuyin || scheme == Stroke; }
 
-// `script_conversion_applies`：繁体输出转换会改写这个方案的文字。粤拼和注音本来就写繁体字，笔画候选按 msime-stroke.db 里存的字形原样取用，假名、谚文、越南文和藏文都不是中文。
+// `script_conversion_applies`：繁体输出转换会改写这个方案的文字。粤拼和注音本来就写繁体字，笔画候选按 lingyao-stroke.db 里存的字形原样取用，假名、谚文、越南文和藏文都不是中文。
 constexpr bool ScriptConversionApplies(int scheme) { return scheme == Quanpin || scheme == Shuangpin || scheme == Wubi; }
 
 // `learns_into_main_dictionary`: a candidate may be removed from, or pinned in, the user dictionary of the main Chinese lexicon.
@@ -59,4 +59,4 @@ constexpr bool HostSmartPunctuation(int scheme) { return scheme == Quanpin || sc
 
 // `widens_full_width`: commits and direct characters are widened when the full-width switch is on.
 constexpr bool WidensFullWidth(int scheme) { return scheme == Quanpin || scheme == Shuangpin || scheme == Wubi || scheme == Japanese || scheme == Cantonese || scheme == Zhuyin || scheme == Stroke; }
-} // namespace msime::linux_host::scheme
+} // namespace lingyao::linux_host::scheme

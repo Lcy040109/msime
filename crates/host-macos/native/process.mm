@@ -1,7 +1,7 @@
 #import <AppKit/AppKit.h>
 
 // 搬动 SQLite 数据库之前先停掉独立的 IMK 进程。`bundle_identifier` 是本版本输入法的 bundle id（同时安装的其他版本不受影响）；设置应用的 bundle id 与它不同，所以从不在这个集合里。
-extern "C" bool msime_macos_stop_input_method(const char *bundle_identifier) {
+extern "C" bool lingyao_macos_stop_input_method(const char *bundle_identifier) {
     if (!NSThread.isMainThread || !bundle_identifier) return false;
     NSString *identifier = [NSString stringWithUTF8String:bundle_identifier];
     if (identifier.length == 0) return false;

@@ -1,7 +1,7 @@
 #pragma once
 #import <Foundation/Foundation.h>
 
-inline BOOL MSIMEShouldAutoCommitWubi(BOOL enabled, NSDictionary *view) {
+inline BOOL LINGYAOShouldAutoCommitWubi(BOOL enabled, NSDictionary *view) {
     if (!enabled || ![view isKindOfClass:NSDictionary.class]) return NO;
     NSNumber *scheme = view[@"scheme"];
     NSNumber *fallback = view[@"answered_by_pinyin_fallback"];

@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
 # 模板：platforms/windows/packaging/render.py 按一个 windows-v 发布填写 @...@ 字段。
-# 下面的事实取自 platforms/windows/installer/msime_setup.iss 与它包含的 editions.iss 里 full 的那一份：AppId（ProductCode 是这个 GUID 加上 Inno 的「_is1」后缀）、PrivilegesRequired=admin、ArchitecturesAllowed=x64compatible、AppName 与 AppPublisher。scripts/test-windows-package-managers.py 核对它们仍然一致。
+# 下面的事实取自 platforms/windows/installer/lingyao_setup.iss 与它包含的 editions.iss 里 full 的那一份：AppId（ProductCode 是这个 GUID 加上 Inno 的「_is1」后缀）、PrivilegesRequired=admin、ArchitecturesAllowed=x64compatible、AppName 与 AppPublisher。scripts/test-windows-package-managers.py 核对它们仍然一致。
 
 PackageIdentifier: Lingyao.LingyaoIME
 PackageVersion: "@VERSION@"
@@ -21,7 +21,7 @@ InstallerSwitches:
 # 安装包就地升级并保留用户的数据目录；先卸载会删掉这个目录，因为卸载程序会删除它拥有的数据目录。
 UpgradeBehavior: install
 ElevationRequirement: elevatesSelf
-# 安装包不带这两样，静默安装缺了也照样继续（msime_setup.iss 的 InitializeSetup 只把缺的写进日志）。
+# 安装包不带这两样，静默安装缺了也照样继续（lingyao_setup.iss 的 InitializeSetup 只把缺的写进日志）。
 Dependencies:
   PackageDependencies:
     - PackageIdentifier: Microsoft.VCRedist.2015+.x64

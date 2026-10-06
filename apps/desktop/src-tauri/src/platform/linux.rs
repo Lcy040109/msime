@@ -15,18 +15,18 @@ pub(crate) mod linux_setup;
 
 /// 启动时检查前缀 bin 目录里的版本声明（`Edition::of_linux_package`）：声明了本构建不认识的版本、或者声明读不了的包不能当成 full 运行，否则它会去读写 full 的状态目录、连 full 的 socket、启停 full 的用户服务。
 pub(crate) fn check_linux_edition() -> Result<(), &'static str> {
-    msime_client_core::edition::Edition::linux_package_identity().map(|_| ())
+    lingyao_client_core::edition::Edition::linux_package_identity().map(|_| ())
 }
 
-/// 把版本的 identifier 写进编进二进制的 Tauri 配置。所有版本共用同一个 `msime-desktop` 可执行文件，`generate_context!` 编进去的是 full 的配置；应用数据目录（`$XDG_DATA_HOME/<identifier>`）和单实例的 D-Bus 名都按这里的 identifier 来，几个版本的设置窗口才能同时运行，而不把启动参数转给另一个版本。窗口标题里的产品名换成本版本的。full 什么也不改。
+/// 把版本的 identifier 写进编进二进制的 Tauri 配置。所有版本共用同一个 `lingyao-desktop` 可执行文件，`generate_context!` 编进去的是 full 的配置；应用数据目录（`$XDG_DATA_HOME/<identifier>`）和单实例的 D-Bus 名都按这里的 identifier 来，几个版本的设置窗口才能同时运行，而不把启动参数转给另一个版本。窗口标题里的产品名换成本版本的。full 什么也不改。
 pub(crate) fn apply_edition_to_config(config: &mut tauri::Config) {
-    let Ok(edition) = msime_client_core::edition::Edition::of_linux_package() else {
+    let Ok(edition) = lingyao_client_core::edition::Edition::of_linux_package() else {
         return;
     };
     let (false, Some(identity)) = (edition.is_full(), edition.linux()) else {
         return;
     };
-    let full = msime_client_core::edition::Edition::full();
+    let full = lingyao_client_core::edition::Edition::full();
     config.identifier = identity.tauri_identifier.clone();
     for window in &mut config.app.windows {
         window.title = window
@@ -46,9 +46,9 @@ pub(crate) fn read_bounded_file(path: &Path, max_bytes: u64) -> io::Result<Vec<u
     Ok(bytes)
 }
 
-/// 拒绝经过符号链接祖先目录解析的存储路径，`msime-path-trust` 信任的系统链接除外。
+/// 拒绝经过符号链接祖先目录解析的存储路径，`lingyao-path-trust` 信任的系统链接除外。
 pub(crate) fn reject_symlink_ancestors(path: &Path) -> io::Result<()> {
-    msime_path_trust::reject_symlinked_components(path)
+    lingyao_path_trust::reject_symlinked_components(path)
 }
 
 pub(crate) fn create_directory_and_check(path: &Path) -> io::Result<bool> {

@@ -1,10 +1,10 @@
 // 引擎所在的 Worker：编译 wasm，同时下载并解压词库和整句模型，把词库导入引擎的内存文件系统，然后按到达顺序回答主线程的按键、点选和重置请求，每个请求回一帧。放在 Worker 里，一次慢的重排也卡不住页面。
 //
-// 与 TapTapGo 的 apps/web/src/features/msime/msime.worker.ts 同源；这里不依赖任何框架，消息协议见 index.d.ts 的 ToWorker / FromWorker。
-import init, { WebEngine, build_info, import_database, last_panic } from "./msime_engine.js";
+// 与 TapTapGo 的 apps/web/src/features/lingyao/lingyao.worker.ts 同源；这里不依赖任何框架，消息协议见 index.d.ts 的 ToWorker / FromWorker。
+import init, { WebEngine, build_info, import_database, last_panic } from "./lingyao_engine.js";
 
-// 引擎读主词库的位置。wasm32 上读不到文件元数据，引擎不会退回旧名 msime.db，所以必须是这个名字；拼音方案和五笔都放这里，见 crates/engine-wasm/src/host.rs 的 WebHost::new。
-const DB_PATH = "/res/msime-pinyin.db";
+// 引擎读主词库的位置。wasm32 上读不到文件元数据，引擎不会退回旧名 lingyao.db，所以必须是这个名字；拼音方案和五笔都放这里，见 crates/engine-wasm/src/host.rs 的 WebHost::new。
+const DB_PATH = "/res/lingyao-pinyin.db";
 // 下载期间最多每隔这么久报一次进度。
 const PROGRESS_MS = 100;
 
@@ -49,7 +49,7 @@ async function request(url, signal) {
   }
   if (!res.ok || res.body === null) {
     // 404 几乎总是资源没部署到 assetBase 指向的位置。
-    const hint = res.status === 404 ? " (are the engine files deployed there? see `npx msime-web-engine copy`)" : "";
+    const hint = res.status === 404 ? " (are the engine files deployed there? see `npx lingyao-web-engine copy`)" : "";
     throw new LoadError("network", `${url}: HTTP ${res.status}${hint}`);
   }
   return res;
@@ -143,7 +143,7 @@ export function createWorkerHandler(post, close) {
     pageSize = msg.pageSize ?? pageSize;
     modelEnabled = msg.modelEnabled ?? modelEnabled;
     if (typeof WebAssembly === "undefined" || typeof DecompressionStream === "undefined") {
-      die("unsupported", "msime: WebAssembly or DecompressionStream is missing", "fetch");
+      die("unsupported", "lingyao: WebAssembly or DecompressionStream is missing", "fetch");
       return;
     }
     const timings = { fetch: 0, compile: 0, import: 0, session: 0 };

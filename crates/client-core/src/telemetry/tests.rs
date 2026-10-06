@@ -172,8 +172,8 @@ fn a_crash_record_turns_the_leftover_session_into_session_crash_and_a_crash() {
     assert!(start.crash_record_path.parent().unwrap().is_dir());
     assert!(store
         .record_crash(
-            "std::runtime_error: bad state in C:\\Users\\Alice Smith\\AppData\\Local\\MSIME\\data.bin",
-            "msime-server.exe+0x1a2b\r\nC:\\Users\\Alice Smith\\AppData\\Local\\MSIME\\msime_host_api.dll+0x77\r\n"
+            "std::runtime_error: bad state in C:\\Users\\Alice Smith\\AppData\\Local\\LINGYAO\\data.bin",
+            "lingyao-server.exe+0x1a2b\r\nC:\\Users\\Alice Smith\\AppData\\Local\\LINGYAO\\lingyao_host_api.dll+0x77\r\n"
         )
         .unwrap());
     // A second record for the same session (the SIGABRT after a terminate handler) keeps the first.
@@ -200,7 +200,7 @@ fn a_crash_record_turns_the_leftover_session_into_session_crash_and_a_crash() {
     assert_eq!(crash.message, "std::runtime_error: bad state in data.bin");
     assert_eq!(
         crash.stack,
-        "msime-server.exe+0x1a2b\nmsime_host_api.dll+0x77"
+        "lingyao-server.exe+0x1a2b\nlingyao_host_api.dll+0x77"
     );
     assert!(!crash.stack.contains("Alice"));
     assert!(crash.is_valid());
@@ -226,7 +226,7 @@ fn a_record_a_signal_handler_wrote_raw_is_read_too() {
     let start = store.begin_session(&app(), noon()).unwrap();
     std::fs::write(
         &start.crash_record_path,
-        b"SIGSEGV\n/home/alice/.local/lib/libmsime_host_api.so(+0x1f2e)[0x7f00]\n/usr/lib/x86_64-linux-gnu/libc.so.6(+0x3c050)[0x7f01]\n\xff\n",
+        b"SIGSEGV\n/home/alice/.local/lib/liblingyao_host_api.so(+0x1f2e)[0x7f00]\n/usr/lib/x86_64-linux-gnu/libc.so.6(+0x3c050)[0x7f01]\n\xff\n",
     )
     .unwrap();
     store.begin_session(&app(), noon()).unwrap();
@@ -239,7 +239,7 @@ fn a_record_a_signal_handler_wrote_raw_is_read_too() {
     assert_eq!(crash.message, "SIGSEGV");
     assert_eq!(
         crash.stack,
-        "libmsime_host_api.so(+0x1f2e)[0x7f00]\nlibc.so.6(+0x3c050)[0x7f01]\n\u{fffd}"
+        "liblingyao_host_api.so(+0x1f2e)[0x7f00]\nlibc.so.6(+0x3c050)[0x7f01]\n\u{fffd}"
     );
 }
 
@@ -257,8 +257,8 @@ fn messages_and_stacks_are_cleaned_and_bounded() {
     );
     assert_eq!(strip_directories("~/lib/x.so"), "x.so");
     assert_eq!(
-        strip_directories("msime.dll!foo+0x12 (D:\\a\\b\\c.cpp:3)"),
-        "msime.dll!foo+0x12 (c.cpp:3)"
+        strip_directories("lingyao.dll!foo+0x12 (D:\\a\\b\\c.cpp:3)"),
+        "lingyao.dll!foo+0x12 (c.cpp:3)"
     );
     assert_eq!(strip_directories("\\\\server\\share\\x.dll"), "x.dll");
     assert_eq!(
@@ -268,12 +268,12 @@ fn messages_and_stacks_are_cleaned_and_bounded() {
     assert_eq!(strip_directories("no paths here"), "no paths here");
     // URLs in Foundation error descriptions carry the home directory after the scheme's colon.
     assert_eq!(
-        strip_directories("NSURL=file:///Users/bob/Library/MSIME/x.json"),
+        strip_directories("NSURL=file:///Users/bob/Library/LINGYAO/x.json"),
         "NSURL=file:x.json"
     );
     assert_eq!(
-        strip_directories("error:/home/bob/.local/lib/libmsime.so"),
-        "error:libmsime.so"
+        strip_directories("error:/home/bob/.local/lib/liblingyao.so"),
+        "error:liblingyao.so"
     );
     assert_eq!(strip_directories("std::vector::at"), "std::vector::at");
 

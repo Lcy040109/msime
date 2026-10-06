@@ -6,7 +6,7 @@ The recipe below is historical. `engine-lock.json`, `scripts/fetch_engine.py` an
 
 ## Oracle
 
-- Engine: `metasequoiaime/msime-engine` commit `a9b9f092219505166c927843762b650d1e0e501d`, archive sha256 `9510e03f761e94c44c9dcba74f84de23db661251b0eb67766aba0991a7e5445e`, plus the `dependencies` of `engine-lock.json` (googlepinyinime-rev, utfcpp, ...) extracted at their paths, exactly as `scripts/fetch_engine.py` stages them.
+- Engine: `metasequoiaime/lingyao-engine` commit `a9b9f092219505166c927843762b650d1e0e501d`, archive sha256 `9510e03f761e94c44c9dcba74f84de23db661251b0eb67766aba0991a7e5445e`, plus the `dependencies` of `engine-lock.json` (googlepinyinime-rev, utfcpp, ...) extracted at their paths, exactly as `scripts/fetch_engine.py` stages them.
 - 23 overlays applied, in `engine-lock.json` order: alternative_segmentation_page, double_helpcode_cache, english_display, expand_initial_candidates, frequency_comparison_set, google_umlaut, jiajia_helpcode, lattice_reading, standalone_sentence_learning, quanpin_autocorrect_parity, manual_segmentation_cloud, wubi_prefix_learning, shuangpin_yo, xuan_single_character, punctuation_alternation, bundled_dictionary_entries, paired_punctuation_ipc, local_mode_fallback, custom_helpcode, personal_learning, online_candidate_dedup, wubi_mixed_candidates, shuangpin_sentence_score (each `scripts/apply_engine_<name>.py`).
 - 3 overlays NOT applied (they fail to apply to this archive): `wubi_mixed_routing`, `neural_association`, `caret_prefix`. Nothing they add has a golden; the Rust side needs hand-written tests for them.
 - Not engine behaviour, so not recorded: the Google decoder (`dict_pinyin.dat`, dropped) and the sentence reranker (`sentence-model*.safetensors`).
@@ -14,17 +14,17 @@ The recipe below is historical. `engine-lock.json`, `scripts/fetch_engine.py` an
 ## 1. Reference tree and build
 
 ```sh
-REF=/path/to/engine-ref          # holds MSIME-Engine/ (pristine archive + dependencies)
-cd <msime checkout>
+REF=/path/to/engine-ref          # holds LINGYAO-Engine/ (pristine archive + dependencies)
+cd <lingyao checkout>
 for s in alternative_segmentation_page double_helpcode_cache english_display expand_initial_candidates \
          frequency_comparison_set google_umlaut jiajia_helpcode lattice_reading standalone_sentence_learning \
          quanpin_autocorrect_parity manual_segmentation_cloud wubi_prefix_learning shuangpin_yo \
          xuan_single_character punctuation_alternation bundled_dictionary_entries paired_punctuation_ipc \
          local_mode_fallback custom_helpcode personal_learning online_candidate_dedup wubi_mixed_candidates \
          shuangpin_sentence_score; do
-  python3 scripts/apply_engine_$s.py "$REF/MSIME-Engine"
+  python3 scripts/apply_engine_$s.py "$REF/LINGYAO-Engine"
 done
-cmake -S "$REF/MSIME-Engine" -B "$REF/build-ref" -DCMAKE_BUILD_TYPE=Release   # Unix Makefiles, AppleClang 21, Homebrew boost/fmt/spdlog/sqlite
+cmake -S "$REF/LINGYAO-Engine" -B "$REF/build-ref" -DCMAKE_BUILD_TYPE=Release   # Unix Makefiles, AppleClang 21, Homebrew boost/fmt/spdlog/sqlite
 cmake --build "$REF/build-ref" --target LingyaoImeEngine -j8
 ```
 
@@ -34,7 +34,7 @@ The recorded goldens came from macOS arm64 with that exact configuration (`-O3 -
 
 ```sh
 cmake -S tools/engine-golden -B "$WORK/build" \
-  -DMSIME_ENGINE_REF_SRC="$REF/MSIME-Engine" -DMSIME_ENGINE_REF_BUILD="$REF/build-ref"
+  -DLINGYAO_ENGINE_REF_SRC="$REF/LINGYAO-Engine" -DLINGYAO_ENGINE_REF_BUILD="$REF/build-ref"
 cmake --build "$WORK/build"
 ```
 
@@ -42,7 +42,7 @@ Links `libLingyaoImeEngine.a` the way the reference test targets do (Boost heade
 
 ## 3. Resource directory (real-dictionary goldens)
 
-The `dict-v2.0.5` set pinned by `resources/desktop-dictionary.lock.json` (sha256 of every file checked against the lock), minus `sentence-model*.safetensors`: `msime-pinyin.db msime-wubi.db msime-english.db msime-bigram.bin msime-trigram.bin msime-others.db msime-japanese.dat msime-dictionary-manifest.json msime-mozc_dictionary_oss_README.txt`.
+The `dict-v2.0.5` set pinned by `resources/desktop-dictionary.lock.json` (sha256 of every file checked against the lock), minus `sentence-model*.safetensors`: `lingyao-pinyin.db lingyao-wubi.db lingyao-english.db lingyao-bigram.bin lingyao-trigram.bin lingyao-others.db lingyao-japanese.dat lingyao-dictionary-manifest.json lingyao-mozc_dictionary_oss_README.txt`.
 
 ## 4. Record
 
@@ -63,18 +63,18 @@ Record twice and `diff -r`; both outputs must be identical.
 
 ```json
 {"name": "...", "source": "tests/src/test_x.cpp:lines", "note": "optional",
- "fixture": {"english_schema": false, "databases": {"msime-pinyin.db": "SQL", "msime-english.db": "SQL", "msime-others.db": "SQL"},
+ "fixture": {"english_schema": false, "databases": {"lingyao-pinyin.db": "SQL", "lingyao-english.db": "SQL", "lingyao-others.db": "SQL"},
              "files": {"helpcodes/helpcode.txt": "text"}},
  "options": {"scheme": "quanpin", "learning": true, "frequency": {"mode": "pin"}, "...": "..."},
  "steps": [{"op": "type", "arg": "nihao"}, {"op": "select", "arg": {"word": "拟好"}}, {"op": "reopen"}]}
 ```
 
-- Fixture SQL is copied verbatim from the reference ctest named in `source`. The fixture directory becomes `resources`, staged with `prepare_runtime_paths(resources, user, cache, "v1")` like the product; an absent `msime-english.db` gets `EnglishDictionary::ensure_schema`, and `english_schema: true` runs it before the fixture SQL. Tests that used `RuntimePaths::legacy()` get this staged layout instead, the one the product uses (`crates/engine-bridge/native/bridge.cpp:699`).
+- Fixture SQL is copied verbatim from the reference ctest named in `source`. The fixture directory becomes `resources`, staged with `prepare_runtime_paths(resources, user, cache, "v1")` like the product; an absent `lingyao-english.db` gets `EnglishDictionary::ensure_schema`, and `english_schema: true` runs it before the fixture SQL. Tests that used `RuntimePaths::legacy()` get this staged layout instead, the one the product uses (`crates/engine-bridge/native/bridge.cpp:699`).
 - Options: only fields of the reference `SessionOptions` (`include/lingyao/session.h:12-54`); unset fields keep that struct's defaults, which is what the ctest's own session used. `learning_undo` is refused (feature dropped). `page_size` enables the recorder-side `page` / `select_on_page` view (the engine returns the whole list; paging is input-runtime's). The view returns to page 0 whenever the editing text or candidate list changes, as a host does.
-- Ops mirror `lingyao::Session`: `type` (one `character()` per byte), `char` (+`shift`), `command` (`Command` enum name), `candidate_key`, `punctuation`, `select` / `pin` / `remove` / `clear_position` / `select_edge` (+`edge` first|last) / `fix_position` (+`position`) with an index or `{"word": ...}`, `finish` (optional index), `switch_scheme`, `set_helpcode_schema`, `set_helpcode_enabled`, `set_dedicated_english`, `set_wubi_mixed_pinyin`, `set_chinese_punctuation_enabled`, `set_punctuation_lock`, `set_paired_punctuation_enabled`, `balance_paired_punctuation_after_auto_close`, `set_nine_key_enabled`, `choose_nine_key_spelling` (index or `{"spelling": ...}`), `set_personal_context_enabled`, `reset_cache`, `reset_context`, `expand_initial_candidates`, `apply_online_candidates` (+`source` cloud|ai, against the live query), personal dictionary `validate_entry` / `dict_edit` / `dict_list`. Control: `reopen` (new Session on the same user data; re-preparing replays the journal; an optional `options` object, in the scenario `options` shape, is applied before the new Session opens, which is how options with no live setter such as the Vietnamese tone style change mid-scenario), `new_generation` (content id), `dump_journal`, `query` (read-only SQL on the generation's `msime-pinyin.db` / `msime-english.db`, or `msime_user.db`).
-- Scheme names for `options.scheme` / `switch_scheme` include `vietnamese`, which takes `vietnamese_input_method` (`telex` | `vni`) and `vietnamese_tone_style` (`modern` | `classic`) in `options`, and `cantonese` and `zhuyin`, which read a `msime-cantonese.db` or `msime-zhuyin.db` staged through `fixture.databases` (the `language_dictionary` schema with `metadata` `format_version` 1); the harness hands that file to the session as a host would, since the files ship beside the resource set. A `switch_scheme` the engine refuses (a scheme whose dictionary cannot be opened) records `{"error": ...}` as its result and leaves the session in its scheme.
+- Ops mirror `lingyao::Session`: `type` (one `character()` per byte), `char` (+`shift`), `command` (`Command` enum name), `candidate_key`, `punctuation`, `select` / `pin` / `remove` / `clear_position` / `select_edge` (+`edge` first|last) / `fix_position` (+`position`) with an index or `{"word": ...}`, `finish` (optional index), `switch_scheme`, `set_helpcode_schema`, `set_helpcode_enabled`, `set_dedicated_english`, `set_wubi_mixed_pinyin`, `set_chinese_punctuation_enabled`, `set_punctuation_lock`, `set_paired_punctuation_enabled`, `balance_paired_punctuation_after_auto_close`, `set_nine_key_enabled`, `choose_nine_key_spelling` (index or `{"spelling": ...}`), `set_personal_context_enabled`, `reset_cache`, `reset_context`, `expand_initial_candidates`, `apply_online_candidates` (+`source` cloud|ai, against the live query), personal dictionary `validate_entry` / `dict_edit` / `dict_list`. Control: `reopen` (new Session on the same user data; re-preparing replays the journal; an optional `options` object, in the scenario `options` shape, is applied before the new Session opens, which is how options with no live setter such as the Vietnamese tone style change mid-scenario), `new_generation` (content id), `dump_journal`, `query` (read-only SQL on the generation's `lingyao-pinyin.db` / `lingyao-english.db`, or `lingyao_user.db`).
+- Scheme names for `options.scheme` / `switch_scheme` include `vietnamese`, which takes `vietnamese_input_method` (`telex` | `vni`) and `vietnamese_tone_style` (`modern` | `classic`) in `options`, and `cantonese` and `zhuyin`, which read a `lingyao-cantonese.db` or `lingyao-zhuyin.db` staged through `fixture.databases` (the `language_dictionary` schema with `metadata` `format_version` 1); the harness hands that file to the session as a host would, since the files ship beside the resource set. A `switch_scheme` the engine refuses (a scheme whose dictionary cannot be opened) records `{"error": ...}` as its result and leaves the session in its scheme.
 - Output: step 0 is the snapshot after construction; every step records its `result` (KeyResult or op result) and, unless it is a read-only op, the full snapshot: every `SessionSnapshot` field, `segment_raw_boundaries()`, every candidate (word, pinyin, canonical_pinyin, numeric `CandidateSource`, scheme, weight, fixed_position, fuzzy, corrected_from, sentence_association, sentence_words, annotation, answers_key) and the online query minus its per-process `generation` / `identity` / `session_id`.
-- Journal dumps list every table of `msime_user.db` with every column except `updated_at`, ordered by all columns, after `PersonalNgramStore::flush_all()` (its writes are otherwise delayed 2 s).
+- Journal dumps list every table of `lingyao_user.db` with every column except `updated_at`, ordered by all columns, after `PersonalNgramStore::flush_all()` (its writes are otherwise delayed 2 s).
 - Paths in diagnostics are replaced by `$ROOT`.
 - `weight` of `Generated` rows is a lattice score and of learned rows the adjusted weight; replayers may compare it or ignore it.
 - `qp_generated_sentence` records `Unable to persist the selected sentence.` on selecting 特乐好: the fixture has no `tbl_3_t` for standalone sentence learning to write into. The source ctest (`test_input_session.cpp:507-530`) does not check the diagnostic.

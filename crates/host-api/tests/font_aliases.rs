@@ -1,4 +1,4 @@
-use msime_host_api::system_fonts::resolve_css_families;
+use lingyao_host_api::system_fonts::resolve_css_families;
 
 #[test]
 fn invalid_font_requests_are_rejected_before_platform_calls() {
@@ -33,7 +33,7 @@ fn a_face_name_resolves_to_the_family_a_stylesheet_matches() {
     // Helvetica ships with every macOS, so its bold face is a pair that exists on any machine this
     // runs on. Skipped rather than failed if the catalogue says otherwise: the assertion is about
     // resolution, not about which fonts are installed.
-    let installed = msime_host_api::system_fonts::list().expect("the font catalogue");
+    let installed = lingyao_host_api::system_fonts::list().expect("the font catalogue");
     if !installed.iter().any(|family| family == "Helvetica") {
         return;
     }

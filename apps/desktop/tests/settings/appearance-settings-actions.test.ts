@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createAppearanceSettingsActions, type Preferences } from "@msime/ui";
+import { createAppearanceSettingsActions, type Preferences } from "@lingyao/ui";
 
 function draft(): Preferences {
   return {

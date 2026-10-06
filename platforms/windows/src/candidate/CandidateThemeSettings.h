@@ -7,7 +7,7 @@
 #include <optional>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The preference fields the card, the toolbar and the menus are coloured from: the light/dark modes, the global theme and what a custom theme is made of. The custom keyboard design (which may carry a photo) colours nothing drawn here, so it is left behind rather than copied across threads.
 inline nlohmann::json
 candidate_theme_values(const nlohmann::json &preferences) {
@@ -50,7 +50,7 @@ inline std::string candidate_theme_package(const nlohmann::json &values) {
   auto id = custom.at("candidate_skin").get<std::string>();
   return valid_candidate_skin_id(id) ? id : std::string{};
 }
-// The msime_client_resolve_theme request for one surface. `dark` is that surface's own mode and `horizontal` the candidate layout being drawn. The skin root is sent whenever it is absolute; the shared layer only reads it for a custom theme that names a package.
+// The lingyao_client_resolve_theme request for one surface. `dark` is that surface's own mode and `horizontal` the candidate layout being drawn. The skin root is sent whenever it is absolute; the shared layer only reads it for a custom theme that names a package.
 inline nlohmann::json
 candidate_theme_request(const nlohmann::json &values, bool dark,
                         bool horizontal,
@@ -75,7 +75,7 @@ struct CandidateThemeResolution {
   CandidatePaletteOverrides candidate;
   std::string candidate_skin;
 };
-// Read the `value` of a msime_client_resolve_theme response. A shape this reader does not recognise is refused as a whole, and the caller draws the native tokens.
+// Read the `value` of a lingyao_client_resolve_theme response. A shape this reader does not recognise is refused as a whole, and the caller draws the native tokens.
 inline std::optional<CandidateThemeResolution>
 candidate_theme_resolution(const nlohmann::json &value) {
   if (!value.is_object())
@@ -143,7 +143,7 @@ candidate_theme_palette(const CandidateThemeResolution &theme, bool dark) {
   return candidate_palette(theme.candidate,
                            candidate_native_palette(theme.dark.value_or(dark)));
 }
-// The title the theme picker shows for a global theme id, read from a msime_client_theme_catalog response so no host keeps its own copy of the names. Empty when the response is not a catalog, does not list the id or carries an implausible title, so the tray menu shows no hint rather than a raw id.
+// The title the theme picker shows for a global theme id, read from a lingyao_client_theme_catalog response so no host keeps its own copy of the names. Empty when the response is not a catalog, does not list the id or carries an implausible title, so the tray menu shows no hint rather than a raw id.
 inline std::string theme_catalog_title(const nlohmann::json &response,
                                        const std::string &id) {
   if (!response.is_object() || !response.contains("ok") ||
@@ -182,4 +182,4 @@ private:
   std::mutex mutex_;
   std::optional<nlohmann::json> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

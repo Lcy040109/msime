@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardLayout;
-import app.msime.android.KoreanKeyboardLayout;
+import app.lingyao.android.KeyboardLayout;
+import app.lingyao.android.KoreanKeyboardLayout;
 import java.util.List;
 
 public final class KoreanKeyboardLayoutSmoke {

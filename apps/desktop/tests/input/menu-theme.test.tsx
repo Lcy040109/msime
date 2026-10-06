@@ -2,7 +2,7 @@
 import { settingsFormReady, saveSettingsNow } from "../support/settings-form";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { SettingsPage, type Preferences, type Snapshot } from "@msime/ui";
+import { SettingsPage, type Preferences, type Snapshot } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

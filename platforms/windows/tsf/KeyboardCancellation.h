@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace msime::tsf {
+namespace lingyao::tsf {
 struct KeyboardCancellationIdentity {
   std::uint64_t focus = 0;
   std::uint64_t composition = 0;
@@ -39,4 +39,4 @@ Result cancel_keyboard_composition(Result applied, Result stale,
     return result;
   return retire();
 }
-} // namespace msime::tsf
+} // namespace lingyao::tsf

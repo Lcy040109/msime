@@ -13,12 +13,12 @@ standard=$("$compiler-g++" -print-file-name=libstdc++-6.dll)
 [[ -f "$standard" ]] || { echo "Compiler C++ runtime not found" >&2; exit 1; }
 runtime_lib=$(cd "$(dirname "$standard")" && pwd)
 runtime_dirs=("$runtime_lib" "$runtime_lib/../bin")
-if [[ -n "${MSIME_MINGW_RUNTIME_DIR:-}" ]]; then runtime_dirs+=("$MSIME_MINGW_RUNTIME_DIR"); fi
+if [[ -n "${LINGYAO_MINGW_RUNTIME_DIR:-}" ]]; then runtime_dirs+=("$LINGYAO_MINGW_RUNTIME_DIR"); fi
 files=(windows-registration-inbox.exe windows-focus-router.exe windows-main-frame.exe
        windows-focus-gate.exe windows-input-queue.exe windows-session-smoke.exe
        windows-reply-codec.exe windows-reply-composer.exe windows-server-smoke.exe
-       windows-pipe-io.exe windows-preview-config.exe LingyaoImeServer.exe msime_host_api.dll)
-[[ -f "$output/windows-server-smoke.exe" && -f "$output/msime_host_api.dll" ]] || { echo "Run build-cross.sh first" >&2; exit 1; }
+       windows-pipe-io.exe windows-preview-config.exe LingyaoImeServer.exe lingyao_host_api.dll)
+[[ -f "$output/windows-server-smoke.exe" && -f "$output/lingyao_host_api.dll" ]] || { echo "Run build-cross.sh first" >&2; exit 1; }
 cmake -E copy_if_different "$output/tests/native-pipe/windows-pipe-io.exe" "$output/windows-pipe-io.exe"
 seen='|'
 index=0
@@ -43,7 +43,7 @@ while (( index < ${#files[@]} )); do
         case "$source_metadata" in *"file format $format"*) ;; *) echo "Wrong runtime architecture: $dependency" >&2; exit 1 ;; esac
         cmake -E copy_if_different "$source_path" "$output/$dependency"
         files+=("$dependency") ;;
-      msime_host_api.dll) ;;
+      lingyao_host_api.dll) ;;
       *)
         lower=$(printf '%s' "$dependency" | tr '[:upper:]' '[:lower:]')
         case "$lower" in

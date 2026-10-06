@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsPageSelection } from "@msime/ui";
+import { createSettingsPageSelection } from "@lingyao/ui";
 
 test("adapts shared string page links to typed navigation", () => {
   const selectPage = vi.fn();

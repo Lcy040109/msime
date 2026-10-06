@@ -4,7 +4,7 @@
 #include "ReplyCodec.h"
 #include "UiSelectionDelivery.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 thread_local const SessionController *active_controller = nullptr;
 }
@@ -769,4 +769,4 @@ void SessionController::run() {
     preferences_->stop();
   active_controller = nullptr;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

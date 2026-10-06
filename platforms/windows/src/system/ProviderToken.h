@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 inline std::string usable_provider_token(std::string_view token) {
   if (token.empty() ||
@@ -44,4 +44,4 @@ inline std::string provider_token(const nlohmann::json &input,
   return usable_provider_token(input.value(flat_key, std::string{}));
 }
 
-} // namespace msime::windows
+} // namespace lingyao::windows

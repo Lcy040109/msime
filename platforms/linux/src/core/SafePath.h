@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // `crates/path-trust/src/lib.rs` 中的 Linux 规则，所有逐层检查存储路径的 Rust crate 都向它查询；这个头文件是给 IBus 和 Fcitx5 宿主用的 C++ 副本，必须与它保持一致。
 
@@ -52,4 +52,4 @@ inline bool storage_directory_path_is_safe(const std::filesystem::path &director
   return true;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

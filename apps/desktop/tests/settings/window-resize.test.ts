@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { windowResizeEdge } from "@msime/ui";
+import { windowResizeEdge } from "@lingyao/ui";
 
 const bounds = { left: 0, top: 0, right: 800, bottom: 600 };
 

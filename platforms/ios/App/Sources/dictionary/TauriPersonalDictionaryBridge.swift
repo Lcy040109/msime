@@ -161,8 +161,8 @@ private func tauriPersonalDictionaryResponse(_ document: [String: Any]) -> Unsaf
   return text.withCString { strdup($0) }
 }
 
-@_cdecl("msime_ios_personal_dictionary_request")
-func msimeIOSPersonalDictionaryRequest(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>? {
+@_cdecl("lingyao_ios_personal_dictionary_request")
+func lingyaoIOSPersonalDictionaryRequest(_ request: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>? {
   guard let request, length <= UInt(TauriPersonalDictionaryBridge.maximumRequestBytes) else { return nil }
   do {
     let value = try TauriPersonalDictionaryBridge.request(Data(bytes: request, count: Int(length)))
@@ -172,7 +172,7 @@ func msimeIOSPersonalDictionaryRequest(_ request: UnsafePointer<UInt8>?, _ lengt
   }
 }
 
-@_cdecl("msime_ios_personal_dictionary_string_free")
-func msimeIOSPersonalDictionaryStringFree(_ value: UnsafeMutablePointer<CChar>?) {
+@_cdecl("lingyao_ios_personal_dictionary_string_free")
+func lingyaoIOSPersonalDictionaryStringFree(_ value: UnsafeMutablePointer<CChar>?) {
   free(value)
 }

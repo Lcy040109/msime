@@ -19,7 +19,7 @@ extension BackendAccountClient: DesktopCloudDictionaryAPI {}
 
 /// Account credentials stay in the native actor. Only dictionary values and a
 /// private, bounded export descriptor cross the authenticated desktop channel.
-@MainActor @objc(MSIMEBackendCloudDictionaryProvider)
+@MainActor @objc(LINGYAOBackendCloudDictionaryProvider)
 final class BackendCloudDictionaryProvider: NSObject {
   private let client: any DesktopCloudDictionaryAPI
   private let credentials: () async throws -> String
@@ -198,7 +198,7 @@ final class BackendCloudDictionaryProvider: NSObject {
     case .export(let kind, let format):
       let file = try await client.exportDictionary(kind, format: format, token: token)
       guard file.isFileURL, file.lastPathComponent == "dictionary-" + kind.rawValue + ".tsv",
-            file.deletingLastPathComponent().lastPathComponent.hasPrefix("msime-export-") else { throw BackendAccountClient.Failure(status: 0) }
+            file.deletingLastPathComponent().lastPathComponent.hasPrefix("lingyao-export-") else { throw BackendAccountClient.Failure(status: 0) }
       pendingExport = file
       let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
       guard let bytes = attributes[.size] as? NSNumber, bytes.int64Value <= 384 * 1024 * 1024 else { throw BackendAccountClient.Failure(status: 0) }

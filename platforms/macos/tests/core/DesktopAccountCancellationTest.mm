@@ -8,7 +8,7 @@
 #include <memory>
 #include <thread>
 
-@interface PendingAccountProvider : NSObject <MSIMEDesktopCloudClipboardProvider>
+@interface PendingAccountProvider : NSObject <LINGYAODesktopCloudClipboardProvider>
 @property(nonatomic) BOOL started;
 @property(nonatomic) BOOL cancelled;
 @end
@@ -25,11 +25,11 @@
 int main() {
     @autoreleasepool {
         PendingAccountProvider *provider = [PendingAccountProvider new];
-        MSIMEDesktopCloudClipboardSession *session = [[MSIMEDesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
+        LINGYAODesktopCloudClipboardSession *session = [[LINGYAODesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
         assert(session);
         auto live = std::make_shared<std::atomic<bool>>(true);
         [session authorizePID:getpid() stillValid:^BOOL { return live->load(); }];
-        NSData *json = [session.launchEnvironment[@"MSIME_CLIENT_CLOUD_DICTIONARY_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
+        NSData *json = [session.launchEnvironment[@"LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION"] dataUsingEncoding:NSUTF8StringEncoding];
         NSString *path = [NSJSONSerialization JSONObjectWithData:json options:0 error:nil][@"path"];
         std::atomic<bool> done{false};
         std::thread worker([&] {

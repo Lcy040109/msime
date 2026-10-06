@@ -12,7 +12,7 @@ param(
     [string]$HelpCodeDirectory = 'resources/helpcodes',
     [string]$ServerReleaseDirectory = '',
     # Native WinUI 3 settings binary; relative overrides are resolved against RepoRoot.
-    [string]$DesktopExecutable = 'target/windows-full/x64/bin/msime-client-settings.exe',
+    [string]$DesktopExecutable = 'target/windows-full/x64/bin/lingyao-client-settings.exe',
     # Optional shared Tauri panel shell. The normal consolidated build stages it beside the Server.
     [string]$DesktopPreviewExecutable = '',
     # Exact files from resources/desktop-dictionary.lock.json; full packages only.
@@ -57,13 +57,13 @@ $languageDictionaryNames = @($editionEntry[0].language_dictionaries)
 $editionOfflineGlosses = [bool]$editionEntry[0].features.offline_glosses
 $editionBuild = "target/windows-$Edition"
 if (-not $PSBoundParameters.ContainsKey('DesktopExecutable')) {
-    $DesktopExecutable = "$editionBuild/x64/bin/msime-client-settings.exe"
+    $DesktopExecutable = "$editionBuild/x64/bin/lingyao-client-settings.exe"
 }
 
 function Test-PackageTestArtifact {
     param([Parameter(Mandatory)][string]$BaseName)
     # Client CMake tests use windows-*; the other patterns cover the remaining test executables.
-    # Production entry points use LingyaoIme* or msime-client-* names.
+    # Production entry points use LingyaoIme* or lingyao-client-* names.
     return $BaseName -like '*Tests' -or $BaseName -like 'test_*' -or $BaseName -like 'windows-*'
 }
 
@@ -95,7 +95,7 @@ $clientNativeBin = Join-Path $RepoRoot "$editionBuild\x64\bin"
 if (-not $ServerReleaseDirectory -and (Test-Path -LiteralPath $clientNativeBin -PathType Container)) {
     $serverRelease = $clientNativeBin
 }
-$stagedDesktop = Join-Path $serverRelease 'msime-client-settings.exe'
+$stagedDesktop = Join-Path $serverRelease 'lingyao-client-settings.exe'
 $desktopSource = if (-not $PSBoundParameters.ContainsKey('DesktopExecutable') -and
     (Test-Path -LiteralPath $stagedDesktop -PathType Leaf)) {
     $stagedDesktop
@@ -112,10 +112,10 @@ if ($DesktopPreviewExecutable) {
         Join-Path $RepoRoot $DesktopPreviewExecutable
     }
 } else {
-    $stagedPreview = Join-Path $serverRelease 'MSIME.exe'
+    $stagedPreview = Join-Path $serverRelease 'LINGYAO.exe'
     if (Test-Path -LiteralPath $stagedPreview -PathType Leaf) { $previewSource = $stagedPreview }
 }
-$mcpRelease = Join-Path $serverRelease 'msime-mcp.exe'
+$mcpRelease = Join-Path $serverRelease 'lingyao-mcp.exe'
 if (-not $Tsf32ReleaseDirectory -and (Test-Path -LiteralPath (Join-Path $RepoRoot "$editionBuild/x86/bin") -PathType Container)) {
     $Tsf32ReleaseDirectory = "$editionBuild/x86/bin"
 }
@@ -150,7 +150,7 @@ $helpcodeSource = Join-Path $RepoRoot $HelpCodeDirectory
 # 语言栏与工具栏的状态图标不在这里：它们在 tsf/assets 下，由 LingyaoIME.rc 编进 TSF DLL，
 # 运行时走 MAKEINTRESOURCE。这里曾经有它们的一份逐字节副本，随包装到用户磁盘、且因为
 # uninsneveruninstall 连卸载都不清除，而没有任何代码从磁盘读图标。
-$appIcon = Join-Path $iconSource 'msime.ico'
+$appIcon = Join-Path $iconSource 'lingyao.ico'
 $thirdPartyNotices = Join-Path $RepoRoot (Join-Path $NoticesDirectory 'THIRD_PARTY_NOTICES.txt')
 $collectedNotices = Join-Path $RepoRoot 'target/windows-notices/THIRD_PARTY_NOTICES.txt'
 if (-not $PSBoundParameters.ContainsKey('NoticesDirectory') -and
@@ -161,7 +161,7 @@ $license = Join-Path $RepoRoot 'LICENSE'
 $resourceSource = if ([IO.Path]::IsPathRooted($DesktopResourcesDirectory)) {
     $DesktopResourcesDirectory
 } else { Join-Path $RepoRoot $DesktopResourcesDirectory }
-$englishDb = Join-Path $resourceSource 'msime-english.db'
+$englishDb = Join-Path $resourceSource 'lingyao-english.db'
 
 Assert-PathExists -LiteralPath $RepoRoot -Description '源码仓库根目录'
 if (-not (Test-Path -LiteralPath $desktopSource -PathType Leaf)) {
@@ -244,14 +244,14 @@ if (-not $Light) {
     if (-not (Get-ChildItem -LiteralPath $helpcodeSource -File -Filter '*.txt')) {
         throw "辅助码目录中没有码表：$helpcodeSource"
     }
-    Assert-PathExists -LiteralPath $englishDb -Description '英文词库数据库 msime-english.db'
+    Assert-PathExists -LiteralPath $englishDb -Description '英文词库数据库 lingyao-english.db'
     python -c @"
 import sqlite3, sys
 cols = list(sqlite3.connect(sys.argv[1]).execute('PRAGMA table_info(english_words)'))
 names = {row[1] for row in cols}
 pk = [row[1] for row in cols if row[5] > 0]
 if 'weight' not in names or pk != ['word', 'display']:
-    raise SystemExit('msime-english.db schema is stale; rebuild with weight and PRIMARY KEY(word, display)')
+    raise SystemExit('lingyao-english.db schema is stale; rebuild with weight and PRIMARY KEY(word, display)')
 "@ $englishDb
     if ($LASTEXITCODE -ne 0) {
         throw "英文词库数据库 schema 检查失败：$englishDb"
@@ -322,24 +322,24 @@ $targetSoundPacks = Join-Path $targetAppData 'sound-packs'
 Reset-Directory -LiteralPath $targetSoundPacks
 Copy-DirectoryContents -Source (Join-Path $RepoRoot 'resources/sound-packs') -Destination $targetSoundPacks
 
-# Server Release 输出整体复制，但测试程序及其 PDB 绝不能进入安装包。其他 PDB 照常暂存在对应 EXE 旁边，供发布流程打成单独的符号包；msime_setup.iss 不把 PDB 和 .ilk 装到用户机器上。
+# Server Release 输出整体复制，但测试程序及其 PDB 绝不能进入安装包。其他 PDB 照常暂存在对应 EXE 旁边，供发布流程打成单独的符号包；lingyao_setup.iss 不把 PDB 和 .ilk 装到用户机器上。
 Reset-Directory -LiteralPath $targetServer
 Copy-DirectoryContents -Source $serverRelease -Destination $targetServer
 # Match ShellSurfaces.h, independent of Cargo/Tauri's build artifact filename.
-Copy-Item -LiteralPath $desktopSource -Destination (Join-Path $targetServer 'msime-client-settings.exe') -Force
+Copy-Item -LiteralPath $desktopSource -Destination (Join-Path $targetServer 'lingyao-client-settings.exe') -Force
 # An explicit shell override must not inherit a PDB from the native shell that
 # was copied with Server output. Only stage symbols beside the chosen source.
-$targetDesktopPdb = Join-Path $targetServer 'msime-client-settings.pdb'
+$targetDesktopPdb = Join-Path $targetServer 'lingyao-client-settings.pdb'
 if (Test-Path -LiteralPath $targetDesktopPdb) { Remove-Item -LiteralPath $targetDesktopPdb -Force }
 $desktopPdbSource = [IO.Path]::ChangeExtension($desktopSource, '.pdb')
 if (Test-Path -LiteralPath $desktopPdbSource -PathType Leaf) {
     Copy-Item -LiteralPath $desktopPdbSource -Destination $targetDesktopPdb
 }
 if ($previewSource) {
-    Copy-Item -LiteralPath $previewSource -Destination (Join-Path $targetServer 'MSIME.exe') -Force
+    Copy-Item -LiteralPath $previewSource -Destination (Join-Path $targetServer 'LINGYAO.exe') -Force
     $previewPdbSource = [IO.Path]::ChangeExtension($previewSource, '.pdb')
     if (Test-Path -LiteralPath $previewPdbSource -PathType Leaf) {
-        Copy-Item -LiteralPath $previewPdbSource -Destination (Join-Path $targetServer 'MSIME.pdb') -Force
+        Copy-Item -LiteralPath $previewPdbSource -Destination (Join-Path $targetServer 'LINGYAO.pdb') -Force
     }
 }
 # Inno recursively installs server_exe under Program Files. Keep these verified read-only sources separate from app_data and per-user writable state.
@@ -382,7 +382,7 @@ if (-not $editionOfflineGlosses) {
         Write-Host "No offline glosses with their notice in $glossesSource; candidate glosses stay English only"
     }
 }
-# 粤拼、注音和笔画词库（scripts/fetch_language_dictionaries.py 下载到 target/language-dictionaries，版本由 resources/language-dictionaries.lock.json 固定），和译文一样装在 resources 旁边：host-api 在那里找到 language-dictionaries 并写进运行时配置。可选；缺少词库时对应方案显示为不可用并退回上次的中文方案，越南文和藏文不需要数据。每个词库只随它的授权文本一起分发，授权文本必须跟着数据走。设置 MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 时，没有带上 resources/language-dictionaries.lock.json 固定的每一个词库的包会失败。
+# 粤拼、注音和笔画词库（scripts/fetch_language_dictionaries.py 下载到 target/language-dictionaries，版本由 resources/language-dictionaries.lock.json 固定），和译文一样装在 resources 旁边：host-api 在那里找到 language-dictionaries 并写进运行时配置。可选；缺少词库时对应方案显示为不可用并退回上次的中文方案，越南文和藏文不需要数据。每个词库只随它的授权文本一起分发，授权文本必须跟着数据走。设置 LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 时，没有带上 resources/language-dictionaries.lock.json 固定的每一个词库的包会失败。
 $languagesSource = Join-Path $RepoRoot 'target/language-dictionaries'
 $languagesTarget = Join-Path $targetServer 'language-dictionaries'
 if (Test-Path -LiteralPath $languagesTarget) {
@@ -390,7 +390,7 @@ if (Test-Path -LiteralPath $languagesTarget) {
 }
 if (-not $Light) {
     $stagedLanguages = @()
-    foreach ($pair in @(@('msime-cantonese.db', 'msime-rime_cantonese_LICENSE.txt'), @('msime-zhuyin.db', 'msime-libchewing_data_LICENSE.txt'), @('msime-stroke.db', 'msime-rime_stroke_LICENSE.txt'))) {
+    foreach ($pair in @(@('lingyao-cantonese.db', 'lingyao-rime_cantonese_LICENSE.txt'), @('lingyao-zhuyin.db', 'lingyao-libchewing_data_LICENSE.txt'), @('lingyao-stroke.db', 'lingyao-rime_stroke_LICENSE.txt'))) {
         # 只带本版本的方案用得到的语言词库（版本表 language_dictionaries）。
         if ($languageDictionaryNames -notcontains $pair[0]) { continue }
         $database = Join-Path $languagesSource $pair[0]
@@ -410,19 +410,19 @@ if (-not $Light) {
         Write-Host "未找到语言词库（$languagesSource），粤拼、注音和笔画保持不可用"
     }
     # 发版要求的是本版本要带的（版本表 language_dictionaries）、resources/language-dictionaries.lock.json 又固定了的每一份词库，而不是写死的清单：还没发布的词库存在时照常装入，但不会让发版失败；发布它的那次锁更新会让它变成必需。
-    if ($env:MSIME_REQUIRE_LANGUAGE_DICTIONARIES -eq '1') {
+    if ($env:LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES -eq '1') {
         $languagesLock = Join-Path $RepoRoot 'resources/language-dictionaries.lock.json'
         if (-not (Test-Path -LiteralPath $languagesLock -PathType Leaf)) {
-            throw "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1，但 $languagesLock 不存在"
+            throw "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1，但 $languagesLock 不存在"
         }
         $pinnedLanguages = @((Get-Content -LiteralPath $languagesLock -Raw -Encoding UTF8 | ConvertFrom-Json).artifacts | ForEach-Object { $_.name } | Where-Object { $_ -like '*.db' })
         if ($pinnedLanguages.Count -eq 0) {
-            throw "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1，但 $languagesLock 没有固定任何词库"
+            throw "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1，但 $languagesLock 没有固定任何词库"
         }
         foreach ($pinned in $pinnedLanguages) {
             if ($languageDictionaryNames -notcontains $pinned) { continue }
             if ($stagedLanguages -notcontains $pinned) {
-                throw "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1，但锁文件固定的 $pinned 没有从 $languagesSource 装入"
+                throw "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1，但锁文件固定的 $pinned 没有从 $languagesSource 装入"
             }
         }
     }
@@ -441,13 +441,13 @@ Get-ChildItem -LiteralPath $targetServer -Recurse -File |
         (Test-PackageTestArtifact -BaseName $_.BaseName)
     } |
     Remove-Item -Force
-# CI 里 Server 输出目录同时也是 x64 TIP 的构建目录。TIP 和它的符号暂存在 tsf_dll\64 下，只从版本目录加载；宿主 DLL 和 TIP 的运行时 DLL 也从同一份 tsf_dll\64 进入 Server 目录（msime_setup.iss），所以它们都不重复暂存。Build-Client.ps1 也把宿主 DLL 的 PDB 留在这里；Collect-Symbols.ps1 直接从构建输出取它打进符号包，所以它完全不暂存。
-foreach ($name in @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', $hostDllName, 'msime_host_api.pdb') + @($tsf64Dependencies | ForEach-Object { Split-Path -Leaf $_ })) {
+# CI 里 Server 输出目录同时也是 x64 TIP 的构建目录。TIP 和它的符号暂存在 tsf_dll\64 下，只从版本目录加载；宿主 DLL 和 TIP 的运行时 DLL 也从同一份 tsf_dll\64 进入 Server 目录（lingyao_setup.iss），所以它们都不重复暂存。Build-Client.ps1 也把宿主 DLL 的 PDB 留在这里；Collect-Symbols.ps1 直接从构建输出取它打进符号包，所以它完全不暂存。
+foreach ($name in @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', $hostDllName, 'lingyao_host_api.pdb') + @($tsf64Dependencies | ForEach-Object { Split-Path -Leaf $_ })) {
     $staged = Join-Path $targetServer $name
     if (Test-Path -LiteralPath $staged -PathType Leaf) { Remove-Item -LiteralPath $staged -Force }
 }
 
-# 版本声明（Edition::PACKAGE_MARKER_FILE）：MSIME.exe 和 msime-mcp.exe 从自己所在的 Server 目录读它，决定连哪个版本的 Server、用哪个状态目录。只有管理员能写 Program Files，普通进程改不了它。full 不带这个文件，包与引入版本之前相同。
+# 版本声明（Edition::PACKAGE_MARKER_FILE）：LINGYAO.exe 和 lingyao-mcp.exe 从自己所在的 Server 目录读它，决定连哪个版本的 Server、用哪个状态目录。只有管理员能写 Program Files，普通进程改不了它。full 不带这个文件，包与引入版本之前相同。
 $editionMarker = Join-Path $targetServer 'edition.json'
 if (Test-Path -LiteralPath $editionMarker) { Remove-Item -LiteralPath $editionMarker -Force }
 if ($Edition -ne 'full') {
@@ -471,17 +471,17 @@ Copy-Item -LiteralPath $tsfArm64Release, $tsfArm64Pdb, $tsfArm64Host -Destinatio
 foreach ($dependency in $tsf32Dependencies) { Copy-Item -LiteralPath $dependency -Destination $targetTsf32 -Force }
 foreach ($dependency in $tsf64Dependencies) { Copy-Item -LiteralPath $dependency -Destination $targetTsf64 -Force }
 Copy-Item -LiteralPath $appIcon -Destination (Join-Path $PSScriptRoot 'LingyaoIME.ico') -Force
-# rime-ice is GPL-3.0 and requires attribution, and its content forms the bulk of msime-pinyin.db, so the
+# rime-ice is GPL-3.0 and requires attribution, and its content forms the bulk of lingyao-pinyin.db, so the
 # notice has to reach the user's disk rather than only exist in the source repository.
 Copy-Item -LiteralPath $thirdPartyNotices -Destination (Join-Path $PSScriptRoot 'THIRD_PARTY_NOTICES.txt') -Force
 # GPLv3 sections 4 and 6 require a copy of the licence to reach whoever receives the program, and the
 # packaged product includes third-party GPL-3.0 dictionary data. macOS and Linux already install the
-# licence text (CMakeLists.txt in MSIME-Apple and MSIME-Linux); Windows is the platform that actually
+# licence text (CMakeLists.txt in LINGYAO-Apple and LINGYAO-Linux); Windows is the platform that actually
 # ships at volume and was the only one omitting it. THIRD_PARTY_NOTICES.txt does not cover this: it
 # points at "the LICENSE file" without carrying the GPL text itself.
 Copy-Item -LiteralPath $license -Destination (Join-Path $PSScriptRoot 'LICENSE.txt') -Force
 
-$targetIss = Join-Path $PSScriptRoot 'msime_setup.iss'
+$targetIss = Join-Path $PSScriptRoot 'lingyao_setup.iss'
 Assert-PathExists -LiteralPath $targetIss -Description '安装脚本'
 $issContent = Get-Content -LiteralPath $targetIss -Raw
 if ($issContent -notmatch '(?m)^#define\s+MyAppVersion\s+"[^"]+"\s*$') {

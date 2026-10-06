@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ ${MSIME_ISOLATED_LINUX_TEST:-} == 1 && $(id -u) != 0 ]] || exit 2
-runtime=$(mktemp -d /tmp/msime-wayland.XXXXXX)
+[[ ${LINGYAO_ISOLATED_LINUX_TEST:-} == 1 && $(id -u) != 0 ]] || exit 2
+runtime=$(mktemp -d /tmp/lingyao-wayland.XXXXXX)
 chmod 700 "$runtime"
 export XDG_RUNTIME_DIR="$runtime"
 export XDG_CACHE_HOME="$runtime/cache" XDG_CONFIG_HOME="$runtime/config"

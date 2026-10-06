@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <cmath>
 
-// The compact water-fir mark keeps the toolbar identifiable when it is detached from the settings window. It mirrors the shared MSIME app mark without loading an image resource, so it remains crisp at every toolbar scale.
+// The compact water-fir mark keeps the toolbar identifiable when it is detached from the settings window. It mirrors the shared LINGYAO app mark without loading an image resource, so it remains crisp at every toolbar scale.
 //
 // It is also the drag handle, the counterpart of the reference's ToolbarDragHandle: pressing it moves the panel through movableByWindowBackground, and the reference's IDC_SIZEALL cursor maps to the open-hand cursor, the macOS cue for a movable surface. The toolbar used to carry a grip bar beside the logo in the theme's accent, standing in for the reference's own handle; with the logo already leading the row that bar was a second mark saying the same thing, so the logo took over its job.
 // Side of the brand mark inside the logo view, unscaled: the size of the toolbar's button glyphs.
@@ -28,10 +28,10 @@ constexpr CGFloat kToolbarLogoMarkSide = 22.0;
     if (self != nil)
     {
         _scale = 1.0;
-        NSString *path = [[NSBundle bundleForClass:self.class] pathForResource:@"MSIMEClientInputMethod" ofType:@"icns"];
+        NSString *path = [[NSBundle bundleForClass:self.class] pathForResource:@"LINGYAOClientInputMethod" ofType:@"icns"];
         _image = path == nil ? nil : [[NSImage alloc] initWithContentsOfFile:path];
         self.accessibilityIdentifier = @"LingyaoFloatingToolbarLogo";
-        self.accessibilityLabel = MSIMEEditionDisplayName();
+        self.accessibilityLabel = LINGYAOEditionDisplayName();
     }
     return self;
 }
@@ -370,7 +370,7 @@ NSRect LingyaoFloatingToolbarFrame(NSRect proposedFrame, NSRect visibleFrame, BO
 
 NSMenu *CreateLingyaoFloatingToolbarUtilityMenu(id target)
 {
-    NSMenu *menu = [[NSMenu alloc] initWithTitle:MSIMEEditionDisplayName()];
+    NSMenu *menu = [[NSMenu alloc] initWithTitle:LINGYAOEditionDisplayName()];
     // Every item targets the panel, an NSWindow subclass, and NSMenu's automatic enabling asks
     // NSWindow's own -validateMenuItem: about each one. NSWindow implements -hideToolbar: for real
     // toolbars and answers NO when the window has none, which greyed out 隐藏悬浮状态栏 and swallowed
@@ -397,7 +397,7 @@ NSMenu *CreateLingyaoFloatingToolbarUtilityMenu(id target)
     [menu addItem:website];
     for (NSMenuItem *item in @[
              [[NSMenuItem alloc] initWithTitle:@"使用帮助…" action:@selector(openHelp:) keyEquivalent:@""],
-             [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"关于%@…", MSIMEEditionDisplayName()] action:@selector(openAbout:) keyEquivalent:@""],
+             [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"关于%@…", LINGYAOEditionDisplayName()] action:@selector(openAbout:) keyEquivalent:@""],
              [[NSMenuItem alloc] initWithTitle:@"问题反馈…" action:@selector(openFeedback:) keyEquivalent:@""],
          ])
     {
@@ -450,9 +450,9 @@ NSMenu *CreateLingyaoFloatingToolbarUtilityMenu(id target)
 @end
 
 // Every toolbar action, and whether anything was behind it: a nil delegate sends the message nowhere, which is indistinguishable on screen from a window that opened behind the editor.
-static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sender)
+static void LINGYAOLogToolbarAction(const char *action, BOOL hasDelegate, id sender)
 {
-    os_log(MSIMEUILog(), "toolbar_action action=%{public}s delegate=%d from=%{public}s", action, hasDelegate,
+    os_log(LINGYAOUILog(), "toolbar_action action=%{public}s delegate=%d from=%{public}s", action, hasDelegate,
            [sender isKindOfClass:NSMenuItem.class] ? "menu" : "button");
 }
 
@@ -483,11 +483,11 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     CGFloat _appliedFontSize;
     NSUInteger _appliedComponentMask;
     BOOL _hasHostSkin;
-    msime::mac::SkinTokens _lightSkin;
-    msime::mac::SkinTokens _darkSkin;
+    lingyao::mac::SkinTokens _lightSkin;
+    lingyao::mac::SkinTokens _darkSkin;
     BOOL _hasHostToolbarSkin;
-    msime::mac::SkinTokens _lightToolbarSkin;
-    msime::mac::SkinTokens _darkToolbarSkin;
+    lingyao::mac::SkinTokens _lightToolbarSkin;
+    lingyao::mac::SkinTokens _darkToolbarSkin;
     BOOL _requestedVisible;
     BOOL _imeActive;
     BOOL _idleHidden;
@@ -574,7 +574,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     _settingsButton = ToolbarButton(@"", @"LingyaoFloatingToolbarSettings", self, @selector(openSettings:));
     _settingsButton.image = [NSImage imageWithSystemSymbolName:@"gearshape" accessibilityDescription:@"设置"];
     _settingsButton.menu = CreateLingyaoFloatingToolbarUtilityMenu(self);
-    _settingsButton.accessibilityLabel = [NSString stringWithFormat:@"打开%@设置", MSIMEEditionDisplayName()];
+    _settingsButton.accessibilityLabel = [NSString stringWithFormat:@"打开%@设置", LINGYAOEditionDisplayName()];
     _settingsButton.toolTip = _settingsButton.accessibilityLabel;
 
     NSStackView *actions = [NSStackView stackViewWithViews:@[
@@ -651,7 +651,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     // The toolbar stays resident across client focus-outs, so its weak owner can be freed while it is on screen (the client app quit). Every application activation re-runs this check, which hides the toolbar instead of leaving buttons with nobody behind them.
     if (self.toolbarDelegate == nil)
     {
-        if (self.isVisible) os_log(MSIMEUILog(), "toolbar_hidden reason=owner_released");
+        if (self.isVisible) os_log(LINGYAOUILog(), "toolbar_hidden reason=owner_released");
         [self orderOut:nil];
         return;
     }
@@ -694,7 +694,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
         // snapshot omits their keys. They can still be enabled explicitly.
         const BOOL defaultEnabled = ![@[@"emoji", @"handwriting", @"voice", @"screen_keyboard"] containsObject:keys[index]];
         // 不提供手写的版本（日文、越南文和藏文版）不放手写按钮，偏好里同步来的开关也不算。
-        const BOOL offered = ![keys[index] isEqualToString:@"handwriting"] || MSIMEEditionOffersHandwriting();
+        const BOOL offered = ![keys[index] isEqualToString:@"handwriting"] || LINGYAOEditionOffersHandwriting();
         const BOOL enabled = offered && ([value isKindOfClass:NSNumber.class] ? [value boolValue] : defaultEnabled);
         if (enabled) { mask |= 1u << index; ++count; }
     }
@@ -761,7 +761,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self applySkin];
 }
 
-- (void)applyLightSkin:(const msime::mac::SkinTokens &)light darkSkin:(const msime::mac::SkinTokens &)dark
+- (void)applyLightSkin:(const lingyao::mac::SkinTokens &)light darkSkin:(const lingyao::mac::SkinTokens &)dark
 {
     _lightSkin = light;
     _darkSkin = dark;
@@ -769,7 +769,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self applySkin];
 }
 
-- (void)applyLightToolbarSkin:(const msime::mac::SkinTokens &)light darkSkin:(const msime::mac::SkinTokens &)dark
+- (void)applyLightToolbarSkin:(const lingyao::mac::SkinTokens &)light darkSkin:(const lingyao::mac::SkinTokens &)dark
 {
     _lightToolbarSkin = light;
     _darkToolbarSkin = dark;
@@ -787,7 +787,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     auto tokens = _hasHostToolbarSkin ? (dark ? _darkToolbarSkin : _lightToolbarSkin)
         : (_hasHostSkin ? (dark ? _darkSkin : _lightSkin) : LingyaoResolveStoredTheme(dark, NO).tokens);
     // Candidate tokens carry a package's card radius, which is not the toolbar's; only a toolbar palette (ToolbarSkinTokens: the package's toolbar radius, then its stylesheet) sets the toolbar radius.
-    if (!_hasHostToolbarSkin) tokens.radius = msime::mac::NativeCandidateTokens(dark).radius;
+    if (!_hasHostToolbarSkin) tokens.radius = lingyao::mac::NativeCandidateTokens(dark).radius;
     _chrome.layer.cornerRadius = tokens.radius * (_appliedScale > 0.0 ? _appliedScale : 1.0);
     _chrome.fillColor = LingyaoColorFromRgba(tokens.surface);
     _chrome.strokeColor = LingyaoColorFromRgba(tokens.border);
@@ -996,42 +996,42 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
 - (void)toggleInputMode:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("toggleInputMode", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("toggleInputMode", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestToggleInputMode:self];
 }
 
 - (void)togglePunctuation:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("togglePunctuation", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("togglePunctuation", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestTogglePunctuation:self];
 }
 
 - (void)toggleFullWidth:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("toggleFullWidth", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("toggleFullWidth", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestToggleFullWidth:self];
 }
 
 - (void)toggleTraditionalOutput:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("toggleTraditionalOutput", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("toggleTraditionalOutput", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestToggleTraditionalOutput:self];
 }
 
 - (void)openSettings:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openSettings", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openSettings", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenSettings:self];
 }
 
 // 方案菜单由代理（输入控制器）给出，和输入法菜单里的「输入方案」子菜单是同一份：同样只列可用的方案、勾上正在用的那个，选中后走同一条切换路径。
 - (void)showInputSchemeMenu:(id)sender
 {
-    MSIMELogToolbarAction("showInputSchemeMenu", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("showInputSchemeMenu", self.toolbarDelegate != nil, sender);
     NSMenu *menu = [self.toolbarDelegate floatingToolbarInputSchemeMenu:self];
     if (menu.numberOfItems == 0) return;
     [menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(0.0, NSHeight(_inputSchemeButton.bounds) + 4.0) inView:_inputSchemeButton];
@@ -1040,83 +1040,83 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
 - (void)openEmoji:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openEmoji", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openEmoji", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenEmoji:self];
 }
 
 - (void)openHandwriting:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openHandwriting", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openHandwriting", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenHandwriting:self];
 }
 
 - (void)openScreenKeyboard:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openScreenKeyboard", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openScreenKeyboard", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenScreenKeyboard:self];
 }
 
 - (void)toggleVoice:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("toggleVoice", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("toggleVoice", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestToggleVoice:self];
 }
 
 - (void)openCharacterPalette:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openCharacterPalette", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openCharacterPalette", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenCharacterPalette:self];
 }
 
 - (void)checkForUpdates:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("checkForUpdates", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("checkForUpdates", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestCheckForUpdates:self];
 }
 
 - (void)openWebsite:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openWebsite", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("openWebsite", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestOpenWebsite:self];
 }
 
 - (void)openHelp:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openHelp", self.toolbarDelegate != nil, sender);
-    MSIMEOpenDesktopRoute(@"settings:help", NSWorkspace.sharedWorkspace, ^{
-        [[MSIMESupportWindowController sharedController] showPage:MSIMESupportPageHelp];
+    LINGYAOLogToolbarAction("openHelp", self.toolbarDelegate != nil, sender);
+    LINGYAOOpenDesktopRoute(@"settings:help", NSWorkspace.sharedWorkspace, ^{
+        [[LINGYAOSupportWindowController sharedController] showPage:LINGYAOSupportPageHelp];
     });
 }
 
 - (void)openAbout:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openAbout", self.toolbarDelegate != nil, sender);
-    MSIMEOpenDesktopRoute(@"settings:about", NSWorkspace.sharedWorkspace, ^{
-        [[MSIMESupportWindowController sharedController] showPage:MSIMESupportPageAbout];
+    LINGYAOLogToolbarAction("openAbout", self.toolbarDelegate != nil, sender);
+    LINGYAOOpenDesktopRoute(@"settings:about", NSWorkspace.sharedWorkspace, ^{
+        [[LINGYAOSupportWindowController sharedController] showPage:LINGYAOSupportPageAbout];
     });
 }
 
 - (void)openFeedback:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("openFeedback", self.toolbarDelegate != nil, sender);
-    MSIMEOpenDesktopRoute(@"settings:feedback", NSWorkspace.sharedWorkspace, ^{
-        [[MSIMESupportWindowController sharedController] showPage:MSIMESupportPageFeedback];
+    LINGYAOLogToolbarAction("openFeedback", self.toolbarDelegate != nil, sender);
+    LINGYAOOpenDesktopRoute(@"settings:feedback", NSWorkspace.sharedWorkspace, ^{
+        [[LINGYAOSupportWindowController sharedController] showPage:LINGYAOSupportPageFeedback];
     });
 }
 
 - (void)dismissFloatingToolbar:(id)sender
 {
     (void)sender;
-    MSIMELogToolbarAction("dismissFloatingToolbar", self.toolbarDelegate != nil, sender);
+    LINGYAOLogToolbarAction("dismissFloatingToolbar", self.toolbarDelegate != nil, sender);
     [self.toolbarDelegate floatingToolbarDidRequestHide:self];
 }
 @end

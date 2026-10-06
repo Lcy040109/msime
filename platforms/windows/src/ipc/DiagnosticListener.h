@@ -11,7 +11,7 @@
 #include <string>
 #include <thread>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class PipeListener;
 
 // The fifth pipe: TIP diagnostics.
@@ -56,4 +56,4 @@ private:
   Stats stats_;
   std::atomic<DWORD> failure_{ERROR_SUCCESS};
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

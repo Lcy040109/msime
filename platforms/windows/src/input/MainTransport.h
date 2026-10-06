@@ -5,7 +5,7 @@
 #include <optional>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The native implementation is PipeMainTransport. The seam allows the same
 // session loop to execute against deterministic transport tests on other OSes.
 class MainTransport {
@@ -26,4 +26,4 @@ public:
                                   const std::vector<uint8_t> &frame) = 0;
   virtual void close(const PipeTicket &ticket) noexcept = 0;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

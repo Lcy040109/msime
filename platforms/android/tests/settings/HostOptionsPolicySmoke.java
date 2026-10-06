@@ -1,4 +1,4 @@
-import app.msime.android.policy.HostOptionsPolicy;
+import app.lingyao.android.policy.HostOptionsPolicy;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,7 +12,7 @@ public final class HostOptionsPolicySmoke {
     }
 
     public static void main(String[] args) throws IOException {
-        Path root = Files.createTempDirectory("msime-host-options");
+        Path root = Files.createTempDirectory("lingyao-host-options");
         try {
             Path options = root.resolve("runtime-options.json");
             String valid = "{\"preferences_directory\":\"/data/user/0/app/files/preferences\"}";

@@ -73,12 +73,12 @@ export function keyboardThemeLook(skin: string, theme: "dark" | "light"): Keyboa
   };
 }
 
-// Layout source: MSIME-Windows@04a8df56f86312474a069f4335a1b58da7afaa9e,
+// Layout source: LINGYAO-Windows@04a8df56f86312474a069f4335a1b58da7afaa9e,
 // server/src/keyboard-panel/KeyboardPanel.cpp (GPL-3.0). This preview has no input actions.
 // The touch hosts put three letter rows above a control strip, so the desktop artwork above is the
 // wrong picture of them: it promises a number row, Tab, Caps Lock and Win keys that a phone keyboard
 // simply does not have. Mirrors KeyboardLayout.LETTER_ROWS plus the leading controls that
-// MSIMEInputService builds beneath them.
+// LINGYAOInputService builds beneath them.
 
 function Pattern({
   id,

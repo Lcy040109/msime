@@ -7,7 +7,7 @@
 #include <optional>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 struct WaveOverlayWorkArea {
   int x = 0;
@@ -156,4 +156,4 @@ inline int wave_overlay_scaled(int logical, double scale) {
   return static_cast<int>(std::lround(logical * scale));
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

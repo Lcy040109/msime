@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { useDataDirectory, type DataDirectoryClient } from "@msime/ui";
+import { useDataDirectory, type DataDirectoryClient } from "@lingyao/ui";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

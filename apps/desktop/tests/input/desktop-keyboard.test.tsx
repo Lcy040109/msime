@@ -2,7 +2,7 @@
 import { testHost } from "../support/host";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { themeEntry, type Snapshot } from "@msime/ui";
+import { themeEntry, type Snapshot } from "@lingyao/ui";
 import { DesktopKeyboard } from "../../src/input/desktop-keyboard";
 
 afterEach(() => {

@@ -1,6 +1,6 @@
 //! The input engine: composition state, input schemes, dictionary queries, ranking and learning.
 //!
-//! This crate replaces the C++ MSIME-Engine that used to be fetched from `engine-lock.json` and patched by overlay scripts. It owns the input algorithms; `msime-input-runtime` keeps orchestrating hosts and does not duplicate any of it.
+//! This crate replaces the C++ LINGYAO-Engine that used to be fetched from `engine-lock.json` and patched by overlay scripts. It owns the input algorithms; `lingyao-input-runtime` keeps orchestrating hosts and does not duplicate any of it.
 //!
 //! Two public layers: `Session` and the functions beside it mirror the C++ `lingyao::` API the golden fixtures were recorded against, and `host` is the flattened surface host-api and input-runtime call. The module map and who owns what is `.migration/spec/modules.md`.
 
@@ -74,7 +74,7 @@ pub use user_dictionary::state::{
 pub use local::date_time::LocalDateTime;
 pub use local::url;
 
-/// Create or migrate an `msime-english.db` to the schema the engine reads. Fixtures without one need it; `prepare_runtime_paths` copies both dictionaries.
+/// Create or migrate an `lingyao-english.db` to the schema the engine reads. Fixtures without one need it; `prepare_runtime_paths` copies both dictionaries.
 pub fn ensure_english_schema(path: &std::path::Path) -> Result<()> {
     dictionary::english::ensure_english_schema(path)
 }

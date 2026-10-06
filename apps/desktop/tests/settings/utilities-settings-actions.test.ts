@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createUtilitiesSettingsActions, type Preferences } from "@msime/ui";
+import { createUtilitiesSettingsActions, type Preferences } from "@lingyao/ui";
 
 const draft: Preferences = {
   scheme: "quanpin",

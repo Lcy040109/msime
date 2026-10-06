@@ -5,11 +5,11 @@
 #import <AppKit/AppKit.h>
 #endif
 
-static BOOL MSIMEPreeditSeparator(unichar character) {
+static BOOL LINGYAOPreeditSeparator(unichar character) {
     return character == '\'' || character == ' ';
 }
 
-static BOOL MSIMEStrictCaretPosition(id value, NSUInteger *result) {
+static BOOL LINGYAOStrictCaretPosition(id value, NSUInteger *result) {
     if (![value isKindOfClass:NSNumber.class] ||
         CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() ||
         CFNumberIsFloatType((__bridge CFNumberRef)value)) return NO;
@@ -21,43 +21,43 @@ static BOOL MSIMEStrictCaretPosition(id value, NSUInteger *result) {
     return YES;
 }
 
-static NSString *MSIMEPreeditLetters(NSString *text) {
+static NSString *LINGYAOPreeditLetters(NSString *text) {
     NSMutableString *letters = [NSMutableString string];
     for (NSUInteger i = 0; i < text.length; ++i) {
         unichar character = [text characterAtIndex:i];
-        if (MSIMEPreeditSeparator(character)) continue;
+        if (LINGYAOPreeditSeparator(character)) continue;
         if (!((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'))) return nil;
         [letters appendString:[text substringWithRange:NSMakeRange(i, 1)]];
     }
     return letters;
 }
 
-NSUInteger MSIMEPreeditCaretPosition(NSString *editing, NSString *preedit, id position) {
+NSUInteger LINGYAOPreeditCaretPosition(NSString *editing, NSString *preedit, id position) {
     NSUInteger rawCaret = 0;
-    if (!MSIMEStrictCaretPosition(position, &rawCaret)) return preedit.length;
+    if (!LINGYAOStrictCaretPosition(position, &rawCaret)) return preedit.length;
     rawCaret = MIN(rawCaret, editing.length);
     if ([preedit isEqual:editing]) return rawCaret;
     // Only map lossless separator formatting. Expanded shuangpin, converted words
     // and corrections need an Engine-provided offset map, not host-side guesses.
-    NSString *letters = MSIMEPreeditLetters(editing);
-    if (!letters.length || ![letters isEqual:MSIMEPreeditLetters(preedit)]) return preedit.length;
+    NSString *letters = LINGYAOPreeditLetters(editing);
+    if (!letters.length || ![letters isEqual:LINGYAOPreeditLetters(preedit)]) return preedit.length;
     if (rawCaret == editing.length) return preedit.length;
     NSUInteger remaining = 0;
     for (NSUInteger i = 0; i < rawCaret; ++i)
-        if (!MSIMEPreeditSeparator([editing characterAtIndex:i])) ++remaining;
+        if (!LINGYAOPreeditSeparator([editing characterAtIndex:i])) ++remaining;
     NSUInteger displayCaret = 0;
     while (displayCaret < preedit.length && remaining) {
-        if (!MSIMEPreeditSeparator([preedit characterAtIndex:displayCaret])) --remaining;
+        if (!LINGYAOPreeditSeparator([preedit characterAtIndex:displayCaret])) --remaining;
         ++displayCaret;
     }
     // Preserve the two sides of an explicitly typed syllable separator, matching
     // Windows GetPreeditWithCaretMarker at the pinned product reference.
-    if (rawCaret && MSIMEPreeditSeparator([editing characterAtIndex:rawCaret - 1]))
-        while (displayCaret < preedit.length && MSIMEPreeditSeparator([preedit characterAtIndex:displayCaret])) ++displayCaret;
+    if (rawCaret && LINGYAOPreeditSeparator([editing characterAtIndex:rawCaret - 1]))
+        while (displayCaret < preedit.length && LINGYAOPreeditSeparator([preedit characterAtIndex:displayCaret])) ++displayCaret;
     return displayCaret;
 }
 
-NSString *MSIMETextClientFollowingCharacter(id<MSIMETextClient> client) {
+NSString *LINGYAOTextClientFollowingCharacter(id<LINGYAOTextClient> client) {
     if (!client || ![client respondsToSelector:@selector(selectedRange)] ||
         ![client respondsToSelector:@selector(attributedSubstringFromRange:)]) return nil;
     NSRange selected = [client selectedRange];
@@ -67,7 +67,7 @@ NSString *MSIMETextClientFollowingCharacter(id<MSIMETextClient> client) {
     return text.length == 1 ? [text substringWithRange:NSMakeRange(0, 1)] : nil;
 }
 
-uint32_t MSIMETextClientPrecedingUnicodeScalar(id<MSIMETextClient> client) {
+uint32_t LINGYAOTextClientPrecedingUnicodeScalar(id<LINGYAOTextClient> client) {
     if (!client || ![client respondsToSelector:@selector(selectedRange)] ||
         ![client respondsToSelector:@selector(attributedSubstringFromRange:)]) return 0;
     NSRange selected = [client selectedRange];
@@ -89,18 +89,18 @@ uint32_t MSIMETextClientPrecedingUnicodeScalar(id<MSIMETextClient> client) {
     return tail;
 }
 
-void MSIMEApplyTransitionWithPreeditStyle(NSDictionary *transition, id<MSIMETextClient> client,
-                                          MSIMEInlinePreeditStyle style) {
-    MSIMEApplyTransitionWithPendingClosing(transition, client, style, nil);
+void LINGYAOApplyTransitionWithPreeditStyle(NSDictionary *transition, id<LINGYAOTextClient> client,
+                                          LINGYAOInlinePreeditStyle style) {
+    LINGYAOApplyTransitionWithPendingClosing(transition, client, style, nil);
 }
 
-void MSIMEApplyTransitionWithPendingClosing(NSDictionary *transition, id<MSIMETextClient> client,
-                                            MSIMEInlinePreeditStyle style, NSString *closing) {
-    MSIMEApplyTransitionTrackingMarkedText(transition, client, style, closing, NULL);
+void LINGYAOApplyTransitionWithPendingClosing(NSDictionary *transition, id<LINGYAOTextClient> client,
+                                            LINGYAOInlinePreeditStyle style, NSString *closing) {
+    LINGYAOApplyTransitionTrackingMarkedText(transition, client, style, closing, NULL);
 }
 
-void MSIMEApplyTransitionTrackingMarkedText(NSDictionary *transition, id<MSIMETextClient> client,
-                                            MSIMEInlinePreeditStyle style, NSString *closing,
+void LINGYAOApplyTransitionTrackingMarkedText(NSDictionary *transition, id<LINGYAOTextClient> client,
+                                            LINGYAOInlinePreeditStyle style, NSString *closing,
                                             BOOL *clientHasMarkedText) {
     if (!closing.length) closing = nil;
     id commit = transition[@"commit"];
@@ -125,12 +125,12 @@ void MSIMEApplyTransitionTrackingMarkedText(NSDictionary *transition, id<MSIMETe
     //
     // The exception is a caret the user has moved into the middle of the letters. The Engine's
     // offset is into the romaji and there is no map from it into the kana - the same reason
-    // MSIMEPreeditCaretPosition refuses to guess for shuangpin - so rather than draw the caret in
+    // LINGYAOPreeditCaretPosition refuses to guess for shuangpin - so rather than draw the caret in
     // the wrong place, that case keeps showing what the caret belongs to. Typing never reaches it:
     // the caret sits at the end until an arrow key moves it.
     NSString *reading = view[@"reading"];
     NSUInteger rawCaret = 0;
-    BOOL validCaret = MSIMEStrictCaretPosition(position, &rawCaret);
+    BOOL validCaret = LINGYAOStrictCaretPosition(position, &rawCaret);
     if ([reading isKindOfClass:NSString.class] && reading.length &&
         (!validCaret || rawCaret >= editing.length)) {
         editing = reading;
@@ -140,11 +140,11 @@ void MSIMEApplyTransitionTrackingMarkedText(NSDictionary *transition, id<MSIMETe
         validCaret = YES;
     }
     NSString *marked = preedit;
-    NSUInteger caret = MSIMEPreeditCaretPosition(editing, preedit, position);
-    if (style == MSIMEInlinePreeditStyleRaw) {
+    NSUInteger caret = LINGYAOPreeditCaretPosition(editing, preedit, position);
+    if (style == LINGYAOInlinePreeditStyleRaw) {
         marked = editing;
         caret = validCaret ? MIN(rawCaret, editing.length) : editing.length;
-    } else if (style == MSIMEInlinePreeditStyleEmpty) {
+    } else if (style == LINGYAOInlinePreeditStyleEmpty) {
         marked = @"";
         caret = 0;
     }
@@ -155,7 +155,7 @@ void MSIMEApplyTransitionTrackingMarkedText(NSDictionary *transition, id<MSIMETe
     // caret_position is an offset into the editing text in this host's own string unit.
     NSString *phrase = view[@"phrase_prefix"];
     NSUInteger phraseLength = 0;
-    if ([phrase isKindOfClass:NSString.class] && phrase.length && style != MSIMEInlinePreeditStyleEmpty) {
+    if ([phrase isKindOfClass:NSString.class] && phrase.length && style != LINGYAOInlinePreeditStyleEmpty) {
         marked = [phrase stringByAppendingString:marked];
         caret += phrase.length;
         phraseLength = phrase.length;
@@ -192,6 +192,6 @@ void MSIMEApplyTransitionTrackingMarkedText(NSDictionary *transition, id<MSIMETe
     [client setMarkedText:displayed selectionRange:NSMakeRange(caret, 0) replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
 }
 
-void MSIMEApplyTransition(NSDictionary *transition, id<MSIMETextClient> client) {
-    MSIMEApplyTransitionWithPreeditStyle(transition, client, MSIMEInlinePreeditStylePinyin);
+void LINGYAOApplyTransition(NSDictionary *transition, id<LINGYAOTextClient> client) {
+    LINGYAOApplyTransitionWithPreeditStyle(transition, client, LINGYAOInlinePreeditStylePinyin);
 }

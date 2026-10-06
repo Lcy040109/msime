@@ -1,7 +1,7 @@
 #include "InputQueue.h"
 #include "TerminalDeactivationPolicy.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 std::optional<PendingReply>
 InputState::select_candidate(const FocusLease &lease, uint64_t expected_session,
                              uint64_t generation, size_t index) {
@@ -540,4 +540,4 @@ std::optional<PendingReply> InputState::configured_key(
                                        std::move(local_text), word_binding)
                : std::nullopt;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

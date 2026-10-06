@@ -15,7 +15,7 @@ import {
   vietnameseToneStyleOptions,
   zhuyinLayoutOptions,
 } from "../../../../packages/ui/src/settings/input-scheme-options";
-import type { InputScheme } from "@msime/ui";
+import type { InputScheme } from "@lingyao/ui";
 
 test("shares the input scheme labels used by settings controls", () => {
   expect(chineseInputSchemeOptions).toEqual([

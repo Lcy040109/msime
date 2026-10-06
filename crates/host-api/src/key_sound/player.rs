@@ -9,8 +9,8 @@ use kira::sound::static_sound::StaticSoundData;
 use kira::sound::streaming::{StreamingSoundData, StreamingSoundHandle};
 use kira::sound::PlaybackState;
 use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Semitones, Tween};
-use msime_client_core::plugins::sound_pack::{SequenceAdvance, SoundPack};
-use msime_client_core::plugins::{PluginContent, PluginKind, PluginSummary};
+use lingyao_client_core::plugins::sound_pack::{SequenceAdvance, SoundPack};
+use lingyao_client_core::plugins::{PluginContent, PluginKind, PluginSummary};
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::panic::{catch_unwind, AssertUnwindSafe};
@@ -58,7 +58,7 @@ static DISABLED: AtomicBool = AtomicBool::new(false);
 /// Turn sound off for the rest of the process, saying why once.
 fn disable(reason: &str) {
     if !DISABLED.swap(true, Ordering::AcqRel) {
-        eprintln!("msime: sound is off for the rest of this process: {reason}");
+        eprintln!("lingyao: sound is off for the rest of this process: {reason}");
     }
 }
 
@@ -79,7 +79,7 @@ fn spawn() -> Option<Player> {
     let (sender, receiver) = sync_channel(QUEUE);
     let loads = sender.clone();
     match thread::Builder::new()
-        .name("msime-sound".into())
+        .name("lingyao-sound".into())
         .spawn(move || run(receiver, loads))
     {
         Ok(_) => Some(Player {
@@ -383,7 +383,7 @@ where
                 let loads = self.loads.clone();
                 let load = self.load;
                 let spawned = thread::Builder::new()
-                    .name("msime-sound-load".into())
+                    .name("lingyao-sound-load".into())
                     .spawn(move || {
                         let result = catch_unwind(|| self::load(&selection));
                         // The player has stopped when this fails, and then nobody wants the samples.
@@ -425,7 +425,7 @@ where
         }
         match *result {
             Ok(Ok(samples)) => self.samples = Some(samples),
-            Ok(Err(reason)) => eprintln!("msime: sound pack not loaded: {reason}"),
+            Ok(Err(reason)) => eprintln!("lingyao: sound pack not loaded: {reason}"),
             Err(_) => disable("decoding a sound pack panicked"),
         }
     }
@@ -501,7 +501,7 @@ where
                 }
                 Err(error) => {
                     if !std::mem::replace(&mut self.open_failing, true) {
-                        eprintln!("msime: no audio output, trying again later: {error:?}");
+                        eprintln!("lingyao: no audio output, trying again later: {error:?}");
                     }
                     self.open_retry = Some(now + OPEN_RETRY);
                     return None;
@@ -614,7 +614,7 @@ where
                     ..
                 }) => self.music.tracks = Some((directory, pack.tracks)),
                 Ok(_) => {}
-                Err(reason) => eprintln!("msime: music not played: {reason}"),
+                Err(reason) => eprintln!("lingyao: music not played: {reason}"),
             }
         }
         let Some((directory, tracks)) = self.music.tracks.clone() else {
@@ -639,7 +639,7 @@ where
             self.music.track = (self.music.track + 1) % tracks.len();
         }
         eprintln!(
-            "msime: music not played: music pack {}: no track could be played",
+            "lingyao: music not played: music pack {}: no track could be played",
             self.settings.music_pack
         );
         self.music.tracks = None;

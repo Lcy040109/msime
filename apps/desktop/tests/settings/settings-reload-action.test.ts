@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsReloadAction } from "@msime/ui";
+import { createSettingsReloadAction } from "@lingyao/ui";
 
 test("reloads immediately when settings are clean", async () => {
   const reload = vi.fn().mockResolvedValue(undefined);

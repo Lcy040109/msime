@@ -1645,7 +1645,7 @@ fn data_files_are_checked_by_name_size_and_extension_not_as_notices() {
     );
 }
 
-/// `tests/fixtures/plugin-packs` 下的共享 fixture 包：`valid/<kind>-<case>` 必须通过、类型与目录名前缀一致；`invalid/<kind>-<case>` 必须因为下表写的原因被拒绝。后端（msime-cloud）的 Go 校验器在自己的测试里放一份相同内容的 fixture，两边对同一批包给出同样的接受与拒绝。
+/// `tests/fixtures/plugin-packs` 下的共享 fixture 包：`valid/<kind>-<case>` 必须通过、类型与目录名前缀一致；`invalid/<kind>-<case>` 必须因为下表写的原因被拒绝。后端（lingyao-cloud）的 Go 校验器在自己的测试里放一份相同内容的 fixture，两边对同一批包给出同样的接受与拒绝。
 fn fixture_packs() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/plugin-packs")
 }

@@ -30,7 +30,7 @@ pub fn focus_external(target: InputTarget) -> bool {
 /// Clipboard failure never sends Ctrl+V with unrelated existing contents.
 /// History uses its shared UTF-8 byte budget, not the smaller SendInput budget.
 pub fn paste_text(target: InputTarget, text: &str) -> bool {
-    paste_text_with_limit(target, text, msime_client_core::clipboard::MAX_TEXT_BYTES)
+    paste_text_with_limit(target, text, lingyao_client_core::clipboard::MAX_TEXT_BYTES)
 }
 
 fn paste_text_with_limit(target: InputTarget, text: &str, max_bytes: usize) -> bool {

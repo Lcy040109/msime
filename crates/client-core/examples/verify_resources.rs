@@ -3,8 +3,8 @@
 //! `--omit-on-demand` 按 macOS 发布包的规则校验：日文词典那一组文件（词典与两份 Mozc 许可文本）整体缺席时只校验其余核心文件，并且只输出核心文件名。
 //!
 //! `--edition <id>` 按该版本的资源锁（`Edition::resource_set`，版本表 `shared/contracts/editions.json`）校验，而不是 full 的 `resources/desktop-dictionary.lock.json`；目录必须恰好是该版本带的文件。
-use msime_client_core::edition::Edition;
-use msime_client_core::resources::{ResourceSet, ResourceStore, MACOS_ON_DEMAND_ARTIFACTS};
+use lingyao_client_core::edition::Edition;
+use lingyao_client_core::resources::{ResourceSet, ResourceStore, MACOS_ON_DEMAND_ARTIFACTS};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let usage = "usage: verify_resources [--omit-on-demand] [--edition <id>] <resource-directory>";
     let mut arguments = std::env::args_os().skip(1).peekable();

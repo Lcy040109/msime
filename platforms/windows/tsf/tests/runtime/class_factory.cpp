@@ -6,11 +6,11 @@
 #include <string>
 #include <cstring>
 
-#include "../../../../../shared/contracts/msime_edition.h"
+#include "../../../../../shared/contracts/lingyao_edition.h"
 
 namespace {
 // 本次构建的版本的 CLSID：DLL 只为自己版本的 CLSID 给出类工厂。
-constexpr CLSID kLingyaoImeClsid = MSIME_EDITION_CLSID;
+constexpr CLSID kLingyaoImeClsid = LINGYAO_EDITION_CLSID;
 constexpr CLSID kUnknownClsid = {
     0x4c8a4f2b, 0x2c98, 0x4f85, {0x9e, 0x40, 0x62, 0x35, 0x8c, 0x1b, 0x91, 0x77}};
 

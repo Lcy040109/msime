@@ -203,7 +203,7 @@ export function useProviderCredentials({ client }: UseProviderCredentialsOptions
           ? { ok: true, text: success }
           : {
               ok: false,
-              text: `${success}但未能更新语音服务，请运行 systemctl --user enable --now msime-linux-voice.socket。`,
+              text: `${success}但未能更新语音服务，请运行 systemctl --user enable --now lingyao-linux-voice.socket。`,
             },
       }));
     });

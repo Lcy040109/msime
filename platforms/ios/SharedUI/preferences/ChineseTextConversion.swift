@@ -1,10 +1,10 @@
 import Foundation
 
-@_silgen_name("msime_client_simplified_to_traditional")
-private func msimeSimplifiedToTraditional(_ text: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
+@_silgen_name("lingyao_client_simplified_to_traditional")
+private func lingyaoSimplifiedToTraditional(_ text: UnsafePointer<UInt8>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-@_silgen_name("msime_client_string_free")
-private func msimeChineseConversionStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoChineseConversionStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 // Renders engine output in the script the user chose. The engine and its dictionary keep their original simplified strings, so only visible candidates and committed text pass through here, matching the macOS render/commit boundary.
 //
@@ -14,11 +14,11 @@ enum ChineseTextConversion {
     guard traditional, !text.isEmpty else { return text }
     var bytes = Array(text.utf8)
     guard let converted = bytes.withUnsafeMutableBufferPointer({ buffer in
-      msimeSimplifiedToTraditional(buffer.baseAddress, UInt(buffer.count))
+      lingyaoSimplifiedToTraditional(buffer.baseAddress, UInt(buffer.count))
     }) else {
       return text
     }
-    defer { msimeChineseConversionStringFree(converted) }
+    defer { lingyaoChineseConversionStringFree(converted) }
     return String(cString: converted)
   }
 }

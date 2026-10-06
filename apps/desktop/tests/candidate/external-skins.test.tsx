@@ -27,7 +27,7 @@ import {
   type SettingsClient,
   type SkinCatalog,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import { utilityCss } from "../support/utility-css";
 
 const geometryCss = utilityCss("external-skin-decorated");
@@ -396,9 +396,9 @@ test("decorated previews preserve upstream geometry in both layouts without deco
   const card = screen.getByRole("article");
   expect(card.classList.contains("external-skin-decorated")).toBe(true);
   const preview = card.querySelector<HTMLElement>("[data-skin-preview]")!;
-  expect(preview.style.getPropertyValue("--msime-skin-min-width")).toBe("280.5px");
-  expect(preview.style.getPropertyValue("--msime-skin-decoration-top")).toBe("32.5px");
-  expect(preview.style.getPropertyValue("--msime-skin-decoration-width")).toBe("150px");
+  expect(preview.style.getPropertyValue("--lingyao-skin-min-width")).toBe("280.5px");
+  expect(preview.style.getPropertyValue("--lingyao-skin-decoration-top")).toBe("32.5px");
+  expect(preview.style.getPropertyValue("--lingyao-skin-decoration-width")).toBe("150px");
   for (const layout of ["horizontal", "vertical"]) {
     expect(
       card.querySelector(`[data-preview-layout="${layout}"] > .containerParent > .container`),
@@ -448,9 +448,9 @@ test.each([
     expect(card.classList.contains("external-skin-decorated")).toBe(false);
     expect(card.querySelector(".containerParent")).toBeNull();
     const preview = card.querySelector<HTMLElement>("[data-skin-preview]")!;
-    expect(preview.style.getPropertyValue("--msime-skin-min-width")).toBe("0px");
-    expect(preview.style.getPropertyValue("--msime-skin-decoration-top")).toBe("0px");
-    expect(preview.style.getPropertyValue("--msime-skin-decoration-width")).toBe("0px");
+    expect(preview.style.getPropertyValue("--lingyao-skin-min-width")).toBe("0px");
+    expect(preview.style.getPropertyValue("--lingyao-skin-decoration-top")).toBe("0px");
+    expect(preview.style.getPropertyValue("--lingyao-skin-decoration-width")).toBe("0px");
   },
 );
 
@@ -493,28 +493,28 @@ test("geometry stylesheet overhangs the mascot into the card, above it, as every
     )!;
     // The stage is the band taller than the card, and shrinks to the card so the edges it aligns to are the card's.
     expect(parent.style.getPropertyValue("padding-top")).toBe(
-      "var(--msime-skin-decoration-top, 0px)",
+      "var(--lingyao-skin-decoration-top, 0px)",
     );
     expect(parent.style.getPropertyValue("width")).toBe("fit-content");
     expect(
-      parent.style.getPropertyValue("--msime-skin-decoration-bottom").replace(/\s+/g, ""),
-    ).toBe("calc(var(--msime-skin-decoration-top,0px)+var(--msime-candidate-pad-y,0px))");
+      parent.style.getPropertyValue("--lingyao-skin-decoration-bottom").replace(/\s+/g, ""),
+    ).toBe("calc(var(--lingyao-skin-decoration-top,0px)+var(--lingyao-candidate-pad-y,0px))");
     const mascot = rules.find((rule) =>
       rule.selectorText?.split(/,\s*/).includes(".external-skin-decorated .skin-decoration-image"),
     )!;
     expect(mascot.selectorText).toContain("::before");
     // Bottom pad_y below the card's top edge, at most band + pad_y tall, never squashed.
     expect(mascot.style.getPropertyValue("bottom")).toBe(
-      "calc(100% - var(--msime-skin-decoration-bottom))",
+      "calc(100% - var(--lingyao-skin-decoration-bottom))",
     );
-    expect(mascot.style.getPropertyValue("width")).toBe("var(--msime-skin-decoration-width, 0px)");
+    expect(mascot.style.getPropertyValue("width")).toBe("var(--lingyao-skin-decoration-width, 0px)");
     expect(mascot.style.getPropertyValue("height")).toBe("auto");
-    expect(mascot.style.getPropertyValue("max-height")).toBe("var(--msime-skin-decoration-bottom)");
+    expect(mascot.style.getPropertyValue("max-height")).toBe("var(--lingyao-skin-decoration-bottom)");
     expect(mascot.style.getPropertyValue("object-fit")).toBe("contain");
     expect(mascot.style.getPropertyValue("object-position")).toBe("right bottom");
     // Right by default: card_right - pad_x - width, never left of the card.
     expect(mascot.style.getPropertyValue("left").replace(/\s+/g, "")).toBe(
-      "max(0px,calc(100%-var(--msime-candidate-pad-x,0px)-var(--msime-skin-decoration-width,0px)))",
+      "max(0px,calc(100%-var(--lingyao-candidate-pad-x,0px)-var(--lingyao-skin-decoration-width,0px)))",
     );
     expect(mascot.style.getPropertyValue("pointer-events")).toBe("none");
     const container = rules.find(
@@ -525,7 +525,7 @@ test("geometry stylesheet overhangs the mascot into the card, above it, as every
       Number(container.style.getPropertyValue("z-index")),
     );
     expect(container.style.getPropertyValue("min-width")).toBe(
-      "max(7em, var(--msime-skin-min-width, 0px))",
+      "max(7em, var(--lingyao-skin-min-width, 0px))",
     );
     expect(geometryCss).not.toContain("url(");
   } finally {
@@ -1134,7 +1134,7 @@ test("the Windows skin page keeps the toolbar preview", async () => {
   expect(builtin.querySelectorAll("[data-skin-stage]")).toHaveLength(3);
 });
 
-// The keys a msime-skins package adds: its own decoration image and alignment, a background, a card radius and a toolbar palette.
+// The keys a lingyao-skins package adds: its own decoration image and alignment, a background, a card radius and a toolbar palette.
 const styledSkin: ExternalSkin = {
   ...sample,
   preview: "preview.png",
@@ -1170,16 +1170,16 @@ test("a styled package draws its decoration image, alignment, background, radius
   }
   const preview = card.querySelector<HTMLElement>("[data-skin-preview]")!;
   expect(preview.dataset.decorationAlign).toBe("left");
-  expect(drawn(card, "--msime-skin-radius")).toBe("12px");
-  expect(drawn(card, "--msime-toolbar-radius")).toBe("8px");
-  expect(drawn(card, "--msime-toolbar-background")).toBe("#141B33");
-  expect(drawn(card, "--msime-toolbar-handle")).toBe("#5B9BFF");
+  expect(drawn(card, "--lingyao-skin-radius")).toBe("12px");
+  expect(drawn(card, "--lingyao-toolbar-radius")).toBe("8px");
+  expect(drawn(card, "--lingyao-toolbar-background")).toBe("#141B33");
+  expect(drawn(card, "--lingyao-toolbar-handle")).toBe("#5B9BFF");
   // A value that is not a colour never reaches the style.
-  expect(drawn(card, "--msime-toolbar-icon")).toBe("");
+  expect(drawn(card, "--lingyao-toolbar-icon")).toBe("");
   expect(preview.getAttribute("style")).not.toContain("url(");
   fireEvent.click(within(card).getByRole("button", { name: "预览浅色" }));
-  expect(drawn(card, "--msime-toolbar-background")).toBe("#F4F8FF");
-  expect(drawn(card, "--msime-toolbar-handle")).toBe("");
+  expect(drawn(card, "--lingyao-toolbar-background")).toBe("#F4F8FF");
+  expect(drawn(card, "--lingyao-toolbar-handle")).toBe("");
 });
 
 test("a background that fails to load keeps the plain card and says so", async () => {
@@ -1199,22 +1199,22 @@ test("the geometry stylesheet aligns the decoration and clips the background to 
   const geometry = geometryCss.replace(/\s+/g, "");
   // Aligned against the card with its own padding: left at pad_x, centre on the card.
   expect(geometry).toMatch(
-    /\[data-decoration-align="left"\]\.skin-decoration-image,[^{]*\{left:var\(--msime-candidate-pad-x,0px\);object-position:leftbottom;/,
+    /\[data-decoration-align="left"\]\.skin-decoration-image,[^{]*\{left:var\(--lingyao-candidate-pad-x,0px\);object-position:leftbottom;/,
   );
   expect(geometry).toMatch(
-    /\[data-decoration-align="center"\]\.skin-decoration-image,[^{]*\{left:max\(0px,calc\(50%-var\(--msime-skin-decoration-width,0px\)\/2\)\);object-position:centerbottom;/,
+    /\[data-decoration-align="center"\]\.skin-decoration-image,[^{]*\{left:max\(0px,calc\(50%-var\(--lingyao-skin-decoration-width,0px\)\/2\)\);object-position:centerbottom;/,
   );
   // pad_x / pad_y are the card's own padding, one name for both.
-  expect(card).toContain("--msime-candidate-pad-x:1px;--msime-candidate-pad-y:2px;");
-  expect(card).toContain("--msime-candidate-pad-x:2px;--msime-candidate-pad-y:2px;");
+  expect(card).toContain("--lingyao-candidate-pad-x:1px;--lingyao-candidate-pad-y:2px;");
+  expect(card).toContain("--lingyao-candidate-pad-x:2px;--lingyao-candidate-pad-y:2px;");
   expect(
-    card.match(/padding:var\(--msime-candidate-pad-y\)var\(--msime-candidate-pad-x\)/g),
+    card.match(/padding:var\(--lingyao-candidate-pad-y\)var\(--lingyao-candidate-pad-x\)/g),
   ).toHaveLength(2);
-  expect(card).toContain("border-radius:var(--msime-skin-radius,6px)");
+  expect(card).toContain("border-radius:var(--lingyao-skin-radius,6px)");
   expect(card).toContain(
     ".container:has(>.skin-background-image){position:relative;overflow:hidden",
   );
-  expect(card).toContain("--ftb-radius:var(--msime-toolbar-radius,8px)");
+  expect(card).toContain("--ftb-radius:var(--lingyao-toolbar-radius,8px)");
 });
 
 test("发布到社区 appears only when the host can publish candidate skins", async () => {

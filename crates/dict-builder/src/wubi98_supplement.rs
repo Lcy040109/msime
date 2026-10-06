@@ -1,17 +1,17 @@
-//! `wubi98-supplement`：生成 msime-dictionary 的 `sources/wubi/wubi98-supplement.txt`，即 98 五笔码表（`sources/wubi/wubi98.txt` 与 `sources/wubi/wubi98-fcitx.txt`）缺少的多字词，编码按词组规则由这两张表自己的单字编码推出。
+//! `wubi98-supplement`：生成 lingyao-dictionary 的 `sources/wubi/wubi98-supplement.txt`，即 98 五笔码表（`sources/wubi/wubi98.txt` 与 `sources/wubi/wubi98-fcitx.txt`）缺少的多字词，编码按词组规则由这两张表自己的单字编码推出。
 //!
-//! 一个词在两张 98 表的任何编码下都没有，全部由基本区汉字组成（不含 CJK 扩展 A 和 BMP 以外的字，与 86 表构建时去掉的范围相同，见 `msime::outside_basic_cjk`），并且满足以下其一时收录：86 五笔极点码表（`sources/wubi/wubi86-jidian.txt`）里它是两字及以上的词；或 `sources/pinyin/rime-ice.txt` 里它是权重不低于 `wubi86_supplement::MIN_PINYIN_WEIGHT` 的二字词。极点码表是人工整理的词表，所以两字及以上的词都从中收录；rime-ice 只收超过阈值的二字词，理由与 86 补充表相同。9999 这类人工填写的权重不与词频区分。
+//! 一个词在两张 98 表的任何编码下都没有，全部由基本区汉字组成（不含 CJK 扩展 A 和 BMP 以外的字，与 86 表构建时去掉的范围相同，见 `lingyao::outside_basic_cjk`），并且满足以下其一时收录：86 五笔极点码表（`sources/wubi/wubi86-jidian.txt`）里它是两字及以上的词；或 `sources/pinyin/rime-ice.txt` 里它是权重不低于 `wubi86_supplement::MIN_PINYIN_WEIGHT` 的二字词。极点码表是人工整理的词表，所以两字及以上的词都从中收录；rime-ice 只收超过阈值的二字词，理由与 86 补充表相同。9999 这类人工填写的权重不与词频区分。
 //!
 //! 98 版的词组规则与 86 版相同：取每个字的全码（两张表里该字单独出现时最长的编码），二字词各取前两码；三字词取前两字的首码和第三字的前两码；更长的词取第一、二、三字和末字的首码。表里没有单独编码的字，或几个全码在所需码位上不一致的字，含它的词不收。在两张 98 表自己的 76,150 个词上，这套规则还原了全部编码。
 //!
-//! 补充表从不移动 98 表的行。表里各行的权重按构建的规则算出（`msime::wubi98_rows`：主表按编码内先后给 10 的倍数，Fcitx 补充表的行给 1）。补充词在其编码下的权重低于该编码原有的最低权重，并且不高于 `wubi86_supplement::SUPPLEMENT_CEILING`，也就低于主表所有的行（最低是 10），所以在前缀列表里也排在它们之后。同一编码下的几个补充词按 rime-ice 权重从高到低、再按词排序，从这个上限起依次减 1，最低为 0；构建把本文件插在两张 98 表之后，所以同权重时原有行在前，同一编码内保持本文件的顺序。原本四码只有一个词、输入法会自动上屏的编码，一旦有补充词共用就不再自动上屏；报告会统计这类编码。
+//! 补充表从不移动 98 表的行。表里各行的权重按构建的规则算出（`lingyao::wubi98_rows`：主表按编码内先后给 10 的倍数，Fcitx 补充表的行给 1）。补充词在其编码下的权重低于该编码原有的最低权重，并且不高于 `wubi86_supplement::SUPPLEMENT_CEILING`，也就低于主表所有的行（最低是 10），所以在前缀列表里也排在它们之后。同一编码下的几个补充词按 rime-ice 权重从高到低、再按词排序，从这个上限起依次减 1，最低为 0；构建把本文件插在两张 98 表之后，所以同权重时原有行在前，同一编码内保持本文件的顺序。原本四码只有一个词、输入法会自动上屏的编码，一旦有补充词共用就不再自动上屏；报告会统计这类编码。
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt::Write as _;
 
 use anyhow::{bail, Result};
 
-use crate::msime;
+use crate::lingyao;
 use crate::places_supplement::weighted_rows;
 use crate::wubi86_supplement::{
     full_codes, is_word, word_code, MIN_PINYIN_WEIGHT, REPORT_EXAMPLES, SUPPLEMENT_CEILING,
@@ -53,7 +53,7 @@ pub struct Supplement {
 }
 
 pub fn build(inputs: &Inputs) -> Result<Supplement> {
-    let (weighted, _) = msime::wubi98_rows(inputs.wubi98, &[inputs.wubi98_fcitx]);
+    let (weighted, _) = lingyao::wubi98_rows(inputs.wubi98, &[inputs.wubi98_fcitx]);
     if weighted.is_empty() {
         bail!("{WUBI98} and {WUBI98_FCITX} have no rows");
     }
@@ -83,7 +83,7 @@ pub fn build(inputs: &Inputs) -> Result<Supplement> {
 
     let jidian: BTreeSet<&str> = text::universal_lines(text::without_bom(inputs.jidian))
         .into_iter()
-        .filter_map(|line| msime::parse_code_line(line, false))
+        .filter_map(|line| lingyao::parse_code_line(line, false))
         .map(|(_, value, _)| value)
         .filter(|value| value.chars().count() >= 2)
         .collect();
@@ -103,7 +103,7 @@ pub fn build(inputs: &Inputs) -> Result<Supplement> {
         .copied()
         .filter(|word| is_word(word) && !wubi98_words.contains(word))
         .filter(|word| {
-            let outside = msime::outside_basic_cjk(word);
+            let outside = lingyao::outside_basic_cjk(word);
             outside_basic_cjk += usize::from(outside);
             !outside
         })
@@ -155,7 +155,7 @@ pub fn build(inputs: &Inputs) -> Result<Supplement> {
 pub struct Provenance<'a> {
     /// 每个输入的 `(path, sha256)`。
     pub inputs: &'a [(&'a str, &'a str)],
-    /// 运行生成器的 msime 提交；构建器有未提交改动时带 `-dirty` 后缀。
+    /// 运行生成器的 lingyao 提交；构建器有未提交改动时带 `-dirty` 后缀。
     pub generator_commit: &'a str,
 }
 
@@ -167,7 +167,7 @@ pub fn render(supplement: &Supplement, provenance: &Provenance) -> String {
         .collect::<Vec<_>>()
         .join("、");
     let mut out = String::new();
-    let _ = writeln!(out, "# 98 五笔词组补充表，由 msime 仓库提交 {} 的 crates/dict-builder/src/wubi98_supplement.rs 以 `msime-dict-build wubi98-supplement --dictionary <msime-dictionary checkout> --cache <dir> --out sources/wubi/wubi98-supplement.txt` 生成；不要手工编辑。", provenance.generator_commit);
+    let _ = writeln!(out, "# 98 五笔词组补充表，由 lingyao 仓库提交 {} 的 crates/dict-builder/src/wubi98_supplement.rs 以 `lingyao-dict-build wubi98-supplement --dictionary <lingyao-dictionary checkout> --cache <dir> --out sources/wubi/wubi98-supplement.txt` 生成；不要手工编辑。", provenance.generator_commit);
     let _ = writeln!(out, "# 输入：{inputs}。");
     let _ = writeln!(out, "# 收录：{WUBI98} 和 {WUBI98_FCITX} 在任何编码下都没有、且全部由基本区汉字组成（不含 CJK 扩展 A 和 BMP 以外的字）的词，满足其一即收：在 86 五笔的 {JIDIAN} 里是两字及以上的词；或在 {BASE} 里是权重不低于 {MIN_PINYIN_WEIGHT} 的二字词（9999 这类人工填写的权重不与词频区分）。");
     let _ = writeln!(out, "# 编码：按 98 版词组规则，取 {WUBI98} 和 {WUBI98_FCITX} 里单字的全码（该字单独出现时最长的编码）：二字词各取前两码；三字词取前两字的首码和第三字的前两码；四字及以上取第一、二、三字和末字的首码。单字表里没有、或几个全码在所需码位上不一致的字，含它的词不收。");
@@ -334,7 +334,7 @@ mod tests {
             .lines()
             .next()
             .unwrap()
-            .contains("msime 仓库提交 0123456789abcdef0123456789abcdef01234567"));
+            .contains("lingyao 仓库提交 0123456789abcdef0123456789abcdef01234567"));
         let dir = tempfile::tempdir().unwrap();
         let mut primary = vec![0xff, 0xfe];
         for unit in WUBI98_FIXTURE.trim_start_matches('\u{feff}').encode_utf16() {
@@ -345,7 +345,7 @@ mod tests {
         let generated = dir.path().join("wubi98-supplement.txt");
         std::fs::write(&generated, rendered).unwrap();
         let mut connection = rusqlite::Connection::open_in_memory().unwrap();
-        msime::build_wubi98_sources(&mut connection, &primary_path, &[], &[&generated]).unwrap();
+        lingyao::build_wubi98_sources(&mut connection, &primary_path, &[], &[&generated]).unwrap();
         let ukuy: Vec<(String, i64)> = connection
             .prepare(
                 "SELECT value, weight FROM wubi98 WHERE key = 'ukuy' ORDER BY weight DESC, rowid",

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { FuzzyPinyinSection, type FuzzyPinyinPreferences } from "@msime/ui";
+import { FuzzyPinyinSection, type FuzzyPinyinPreferences } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

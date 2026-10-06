@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
@@ -28,16 +28,16 @@ public final class PreferencesDeviceSmoke extends DeviceSmoke {
             publish(preferences, snapshot.toString().getBytes(StandardCharsets.UTF_8));
             // Clear the previous editor's focus before the instrumentation-driven
             // rebind; otherwise its delayed hide request can hide the new keyboard.
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             // Instrumenting the IME package restarts its process. Rebind the system
             // service before opening the editor; this fixture runs only on the guarded AVD.
-            shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-            shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-            shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+            shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+            shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+            shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
             SystemClock.sleep(1000);
-            shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
+            shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
             stage = "baseline editor focus";
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             stage = "baseline typing";
             typePhrase();
             stage = "baseline five candidates";
@@ -51,40 +51,40 @@ public final class PreferencesDeviceSmoke extends DeviceSmoke {
             snapshot.getJSONObject("preferences").put("candidate_page_size", 2).put("chinese_punctuation", false);
             publish(preferences, snapshot.toString().getBytes(StandardCharsets.UTF_8));
             await(imeTextContains("设置将在组词结束后应用"));
-            await(field("msime-test-plain").and(node -> equalsText("nihao", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("nihao", node.getText())));
             stage = "commit preserves composition";
             tap(key("空格"));
-            await(field("msime-test-plain").and(node -> equalsText("你好", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你好", node.getText())));
             stage = "updated punctuation";
             tapSymbol(",");
-            await(field("msime-test-plain").and(node -> equalsText("你好,", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你好,", node.getText())));
             stage = "updated page size";
             typePhrase();
             awaitAny(candidateAt(2));
             assertNoRendered(candidateAt(3));
             stage = "updated second candidate selection";
             tap(candidateAt(2));
-            await(field("msime-test-plain").and(node -> node.getText() != null && !node.getText().toString().contains("nihao")));
+            await(field("lingyao-test-plain").and(node -> node.getText() != null && !node.getText().toString().contains("nihao")));
             stage = "malformed preferences preserve working input";
             byte[] broken = "broken".getBytes(StandardCharsets.UTF_8);
             publish(preferences, broken);
             await(key("设置读取或应用失败，保留当前设置"));
             typePhrase();
             tap(key("空格"));
-            await(field("msime-test-plain").and(node -> node.getText() != null && node.getText().toString().endsWith("你好")));
+            await(field("lingyao-test-plain").and(node -> node.getText() != null && node.getText().toString().endsWith("你好")));
             if (!java.util.Arrays.equals(broken, Files.readAllBytes(preferences.toPath()))) throw new AssertionError("Malformed file overwritten");
             stage = "valid preferences recover after read failure";
             snapshot.put("revision", revision + 3);
             snapshot.getJSONObject("preferences").put("chinese_punctuation", true);
             publish(preferences, snapshot.toString().getBytes(StandardCharsets.UTF_8));
             tapSymbol(",");
-            await(field("msime-test-plain").and(node -> node.getText() != null && node.getText().toString().endsWith("你好，")));
+            await(field("lingyao-test-plain").and(node -> node.getText() != null && node.getText().toString().endsWith("你好，")));
         } catch (Exception | AssertionError error) {
-            shell("screencap -p /data/local/tmp/msime-preferences-failure.png");
+            shell("screencap -p /data/local/tmp/lingyao-preferences-failure.png");
             throw error;
         } finally {
             // Stop editor first; the next session starts with the restored configuration.
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath()); else publish(preferences, original);
         }
     }
@@ -95,7 +95,7 @@ public final class PreferencesDeviceSmoke extends DeviceSmoke {
 
     private java.util.function.Predicate<android.view.accessibility.AccessibilityNodeInfo> candidateAt(
             int index) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.getContentDescription() != null
             && node.getContentDescription().toString().startsWith("候选 " + index + "：")
             && node.isClickable();

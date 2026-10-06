@@ -2,7 +2,7 @@
 #include "../core/TestHostOptions.h"
 #include <cassert>
 #include <chrono>
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 FanyImeNamedpipeData key(uint64_t request, uint32_t code, char16_t text, uint32_t modifiers = 0) {
@@ -41,7 +41,7 @@ struct Fixture {
 
 int main() {
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-japanese-keys-" +
+                    ("lingyao-japanese-keys-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {

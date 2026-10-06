@@ -5,7 +5,7 @@
 
 int main() {
   using Json = nlohmann::json;
-  namespace host = msime::linux_host;
+  namespace host = lingyao::linux_host;
 
   // The native tokens are the design's Adwaita ones (tok('linux')): the translucent ink is composited over the surface because both frontends paint opaque colours.
   const auto light = host::candidate_native_palette(false);
@@ -67,7 +67,7 @@ int main() {
   // A failed call draws exactly the same.
   assert(host::candidate_theme_colors(Json::object(), true).colors.background == 0x303030u);
 
-  // A built-in theme fixes its appearance whatever the host's mode, and its translucent slots are composited over its surface. 浅色 (light) as msime_client_resolve_theme answers it:
+  // A built-in theme fixes its appearance whatever the host's mode, and its translucent slots are composited over its surface. 浅色 (light) as lingyao_client_resolve_theme answers it:
   const Json builtin_light = Json::parse(
       R"({"id":"light","source":"builtin","appearance":"light","candidate":{"surface":"#FFFFFF","border":"#0000001F",)"
       R"("text":"#1A1A1A","number":"#6A6F76","secondary":"#6A6F76","accent":"#005FB8","selected":"#005FB824",)"
@@ -139,14 +139,14 @@ int main() {
   unlisted["custom_theme"]["candidate_skin"] = "absent";
   assert(!host::candidate_theme_request(unlisted, false, catalog).contains("package"));
 
-  assert(msime::linux_host::candidate_preedit_with_caret("nihao", "nihao", 0) ==
+  assert(lingyao::linux_host::candidate_preedit_with_caret("nihao", "nihao", 0) ==
          "|nihao");
-  assert(msime::linux_host::candidate_preedit_with_caret("nihao", "nihao", 2) ==
+  assert(lingyao::linux_host::candidate_preedit_with_caret("nihao", "nihao", 2) ==
          "ni|hao");
-  assert(msime::linux_host::candidate_preedit_with_caret("nihao", "nihao", 5) ==
+  assert(lingyao::linux_host::candidate_preedit_with_caret("nihao", "nihao", 5) ==
          "nihao|");
-  assert(msime::linux_host::candidate_preedit_with_caret("ni'hao", "nihao", 2) ==
+  assert(lingyao::linux_host::candidate_preedit_with_caret("ni'hao", "nihao", 2) ==
          "ni'hao");
-  assert(msime::linux_host::candidate_preedit_with_caret("nihao", "nihao", 9) ==
+  assert(lingyao::linux_host::candidate_preedit_with_caret("nihao", "nihao", 9) ==
          "nihao");
 }

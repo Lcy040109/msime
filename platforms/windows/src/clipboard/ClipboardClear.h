@@ -1,6 +1,6 @@
 #pragma once
 #include "CandidateClickWorker.h"
-namespace msime::windows {
+namespace lingyao::windows {
 struct ClipboardClear {};
 using ClipboardClearWorker = SingleClickWorker<ClipboardClear>;
 }

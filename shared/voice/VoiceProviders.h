@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
-namespace msime::windows {
-// MSIME-Windows voice_batch_protocol.cpp caps a batch upload at upload_sample_limit = (maximum_encoded_audio_bytes - 44) / 2: the 20 MiB encoded-audio budget less the 44-byte WAV header, counted in 16-bit mono samples of the 16 kHz stream (about 655 s). Batch providers are always sent 16-bit WAV, whatever sample format the host captured in, so this is the budget of the bytes actually uploaded. VoiceProviders.cpp checks it against the encoder's own constants.
+namespace lingyao::windows {
+// LINGYAO-Windows voice_batch_protocol.cpp caps a batch upload at upload_sample_limit = (maximum_encoded_audio_bytes - 44) / 2: the 20 MiB encoded-audio budget less the 44-byte WAV header, counted in 16-bit mono samples of the 16 kHz stream (about 655 s). Batch providers are always sent 16-bit WAV, whatever sample format the host captured in, so this is the budget of the bytes actually uploaded. VoiceProviders.cpp checks it against the encoder's own constants.
 inline constexpr std::size_t batch_upload_sample_limit = (20u * 1024u * 1024u - 44u) / 2u;
 // Longest recording a batch host keeps: the upload limit less the 0.2 s of silence SiliconFlow gets on each side, so a recording that reached the cap still encodes for every batch provider.
 inline constexpr std::size_t batch_capture_sample_limit = batch_upload_sample_limit - 2u * (16000u / 5u);
-// The longest recording the on-device path takes in one piece: 60 seconds, the bound msime-voice-local puts on a `--wav` file and the macOS host puts on a batch local request.
+// The longest recording the on-device path takes in one piece: 60 seconds, the bound lingyao-voice-local puts on a `--wav` file and the macOS host puts on a batch local request.
 inline constexpr std::size_t local_asr_sample_limit = 16000u * 60u;
 std::string transcription_language(std::string_view provider, std::string_view language);
 std::string normalize_voice_provider(std::string_view provider);
@@ -35,7 +35,7 @@ bool voice_endpoint_is_websocket(std::string_view endpoint);
 bool secure_voice_endpoint(std::string_view endpoint, bool websocket);
 std::string resolved_asr_endpoint(std::string_view provider,
                                   std::string_view configured_endpoint);
-// What recognize_cloud_asr throws when the request is built, sent or answered badly. what() keeps the terse English diagnostic hosts already log; user_message() is the sentence MSIME-Windows voice_input_service.cpp Recognize() shows the person dictating - the provider's own JSON message or the HTTP status, and for SiliconFlow the trace id its support asks for. It never carries the token or the request body.
+// What recognize_cloud_asr throws when the request is built, sent or answered badly. what() keeps the terse English diagnostic hosts already log; user_message() is the sentence LINGYAO-Windows voice_input_service.cpp Recognize() shows the person dictating - the provider's own JSON message or the HTTP status, and for SiliconFlow the trace id its support asks for. It never carries the token or the request body.
 class CloudAsrError : public std::runtime_error {
 public:
   CloudAsrError(const std::string &diagnostic, std::string user_message)
@@ -45,7 +45,7 @@ public:
 private:
   std::string user_message_;
 };
-// MSIME-Windows JsonErrorMessage: the provider's error text from a failed response body - error (string or object.message), else message with its code and data - or, when the body is not such JSON, the body itself cut to 240 bytes. The cut never splits a UTF-8 sequence.
+// LINGYAO-Windows JsonErrorMessage: the provider's error text from a failed response body - error (string or object.message), else message with its code and data - or, when the body is not such JSON, the body itself cut to 240 bytes. The cut never splits a UTF-8 sequence.
 std::string cloud_asr_error_detail(std::string_view body);
 // The message for a non-2xx answer: "语音识别失败：" and the detail above, "HTTP <status>" when there is none, plus the SiliconFlow 5xx explanation and trace id.
 std::string cloud_asr_status_message(long status, std::string_view body,
@@ -73,7 +73,7 @@ std::string recognize_local_asr(
     const std::shared_ptr<std::atomic_bool> &cancelled,
     const std::vector<std::string> &hotwords = {});
 }
-namespace msime::voice {
+namespace lingyao::voice {
 using windows::batch_upload_sample_limit;
 using windows::batch_capture_sample_limit;
 using windows::local_asr_sample_limit;

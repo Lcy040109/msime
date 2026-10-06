@@ -2,23 +2,23 @@
 
 ## 目录结构
 
-Windows 平台的实现源码在 `src/` 下；`tsf/`、`msimeui/`、`tests/`、`installer/` 各自守着协议、UI、测试与打包的边界，`experiments/` 放不进产品的验证工具。平台根目录放构建文件、脚本、清单和文档。
+Windows 平台的实现源码在 `src/` 下；`tsf/`、`lingyaoui/`、`tests/`、`installer/` 各自守着协议、UI、测试与打包的边界，`experiments/` 放不进产品的验证工具。平台根目录放构建文件、脚本、清单和文档。
 
-`common/` 只收 TSF DLL 与 Server 两侧都要编译的协议头：`PipeMetadata.h`（主管道元数据位）、`AuxMessage.h`（Aux 管道消息的编码与解析）、`TsfFocusLeaseProtocol.h`（焦点租约帧）、`KeyEventSendResult.h`（按键写入结果的三分类；`tsf/IPC/KeyEventSendResult.h` 只是把它以 DLL 原有的全局名转出来）和 `StateDirectory.h`（状态目录的解析顺序：本版本的数据目录环境变量（full 是 `LINGYAO_IME_DATA_DIR`）、本版本 HKLM 键在 64 位视图下的 `DataDir`、`%LOCALAPPDATA%\<本版本的状态目录>`（full 是 `MSIME-Client`），两个进程各自解析，但必须落到同一个根；`crates/host-windows` 的 `server_state_directory` 是它的 Rust 副本，`scripts/test-windows-state-dir-parity.py` 核对两边都从版本表取这些名字）。`tsf/` 只能以相对路径（`../common/`、`../../common/`）引用这里的头文件，不得再伸进 `src/`；Server 侧经全局 include 路径按文件名引用。往这里加头文件等于扩大 DLL ↔ Server 的契约，只放两侧确实共用的定义。
+`common/` 只收 TSF DLL 与 Server 两侧都要编译的协议头：`PipeMetadata.h`（主管道元数据位）、`AuxMessage.h`（Aux 管道消息的编码与解析）、`TsfFocusLeaseProtocol.h`（焦点租约帧）、`KeyEventSendResult.h`（按键写入结果的三分类；`tsf/IPC/KeyEventSendResult.h` 只是把它以 DLL 原有的全局名转出来）和 `StateDirectory.h`（状态目录的解析顺序：本版本的数据目录环境变量（full 是 `LINGYAO_IME_DATA_DIR`）、本版本 HKLM 键在 64 位视图下的 `DataDir`、`%LOCALAPPDATA%\<本版本的状态目录>`（full 是 `LINGYAO-Client`），两个进程各自解析，但必须落到同一个根；`crates/host-windows` 的 `server_state_directory` 是它的 Rust 副本，`scripts/test-windows-state-dir-parity.py` 核对两边都从版本表取这些名字）。`tsf/` 只能以相对路径（`../common/`、`../../common/`）引用这里的头文件，不得再伸进 `src/`；Server 侧经全局 include 路径按文件名引用。往这里加头文件等于扩大 DLL ↔ Server 的契约，只放两侧确实共用的定义。
 
 ## 产品版本（edition）
 
-同一套源码按 `shared/contracts/editions.json` 打出几个可以同时安装、彼此完全隔离的产品：full（灵耀输入法，引入版本之前的产品本身）、pinyin（灵耀拼音）、wubi（灵耀五笔）、japanese（灵耀日语）、vietnamese（灵耀越南语）和 tibetan（灵耀藏文）。每个版本有自己的 TSF CLSID、profile 和全部 TSF 内部 GUID、Inno AppId、Program Files 下的安装目录、HKLM 键、状态目录、用户目录（匿名账号和使用统计）、数据目录环境变量、看门狗计划任务、host DLL 名、`MSIME.exe` 的 Tauri identifier 和安装包名；命名管道、命名事件、互斥量和窗口类名都带 `.<id>` 后缀。full 的后缀是空串，所有标识与引入版本之前相同。
+同一套源码按 `shared/contracts/editions.json` 打出几个可以同时安装、彼此完全隔离的产品：full（灵耀输入法，引入版本之前的产品本身）、pinyin（灵耀拼音）、wubi（灵耀五笔）、japanese（灵耀日语）、vietnamese（灵耀越南语）和 tibetan（灵耀藏文）。每个版本有自己的 TSF CLSID、profile 和全部 TSF 内部 GUID、Inno AppId、Program Files 下的安装目录、HKLM 键、状态目录、用户目录（匿名账号和使用统计）、数据目录环境变量、看门狗计划任务、host DLL 名、`LINGYAO.exe` 的 Tauri identifier 和安装包名；命名管道、命名事件、互斥量和窗口类名都带 `.<id>` 后缀。full 的后缀是空串，所有标识与引入版本之前相同。
 
-- `platforms/windows/scripts/edition_windows.py gen` 从版本表生成并提交 `shared/contracts/msime_edition.h`（C++ 读的宏）和 `installer/editions.iss`（Inno Setup 读的 `#define`）。构建必须定义且只定义一个 `MSIME_EDITION_<ID>`：CMake 由缓存变量 `MSIME_EDITION`（`Edition.cmake`，缺省 full）定义，WinUI 设置窗口工程由 `MsimeEdition` 属性定义；少了它头文件以 `#error` 停下，不会悄悄编成 full。
-- TSF DLL、Server、看门狗、prepare 工具和设置窗口在编译期绑定一个版本，所以每个版本各编一次：`Build-Client.ps1 -Edition <id>` 和 `build-cross.sh <arch> <id>` 的输出在 `target/windows-<id>`（full 仍是 `target/windows-full`）。host DLL 改成版本表里的名字（例如 `msime_host_api_wubi.dll`），再按原 DLL 的导出表生成同名导入库（MSVC 用 `lib /DEF`，MinGW 用 `dlltool`）：两个版本的 TIP 被同一个应用加载时，按导入表找 DLL 会拿到先加载的那一个。
-- `MSIME.exe` 和 `msime-mcp.exe` 所有版本共用一份构建，运行时读 Server 目录里的 `edition.json`（只有不是 full 的包才有，由 `Prepare-PackageFiles.ps1 -Edition` 写入）决定管道后缀、状态目录和 Tauri identifier。
-- 每个版本注册在它的默认方案所属的语言下（版本表 `langid`，经 `msime_edition.h` 的 `MSIME_EDITION_LANGID` 进入 TSF 的 `RegisterProfile`、看门狗和设置窗口的「添加到键盘列表」）：中文版本是简体中文 0x0804，日文版 0x0411（日语），越南文版 0x042A（越南语），藏文版 0x0451（藏语），于是在 Windows 设置里分别列在这几种语言下。TIP 的行为不按语言分支：保留键、开关和标点 compartment、转换模式和语言栏按钮在各版本都一样，提交的文字按注册语言标上 `GUID_PROP_LANGID`；唯一按语言取的是触摸键盘布局（中文版本是优化的简体拼音布局，日文版是优化的日文布局，越南文和藏文版没有优化布局，用经典布局）。未在真机核实：注册在日语下时，系统的输入指示器按 TIP 写的转换模式位（`TF_CONVERSIONMODE_NATIVE`、`FULLSHAPE`）显示成什么样子，以及触摸键盘是否按上面的布局弹出。
+- `platforms/windows/scripts/edition_windows.py gen` 从版本表生成并提交 `shared/contracts/lingyao_edition.h`（C++ 读的宏）和 `installer/editions.iss`（Inno Setup 读的 `#define`）。构建必须定义且只定义一个 `LINGYAO_EDITION_<ID>`：CMake 由缓存变量 `LINGYAO_EDITION`（`Edition.cmake`，缺省 full）定义，WinUI 设置窗口工程由 `LingyaoEdition` 属性定义；少了它头文件以 `#error` 停下，不会悄悄编成 full。
+- TSF DLL、Server、看门狗、prepare 工具和设置窗口在编译期绑定一个版本，所以每个版本各编一次：`Build-Client.ps1 -Edition <id>` 和 `build-cross.sh <arch> <id>` 的输出在 `target/windows-<id>`（full 仍是 `target/windows-full`）。host DLL 改成版本表里的名字（例如 `lingyao_host_api_wubi.dll`），再按原 DLL 的导出表生成同名导入库（MSVC 用 `lib /DEF`，MinGW 用 `dlltool`）：两个版本的 TIP 被同一个应用加载时，按导入表找 DLL 会拿到先加载的那一个。
+- `LINGYAO.exe` 和 `lingyao-mcp.exe` 所有版本共用一份构建，运行时读 Server 目录里的 `edition.json`（只有不是 full 的包才有，由 `Prepare-PackageFiles.ps1 -Edition` 写入）决定管道后缀、状态目录和 Tauri identifier。
+- 每个版本注册在它的默认方案所属的语言下（版本表 `langid`，经 `lingyao_edition.h` 的 `LINGYAO_EDITION_LANGID` 进入 TSF 的 `RegisterProfile`、看门狗和设置窗口的「添加到键盘列表」）：中文版本是简体中文 0x0804，日文版 0x0411（日语），越南文版 0x042A（越南语），藏文版 0x0451（藏语），于是在 Windows 设置里分别列在这几种语言下。TIP 的行为不按语言分支：保留键、开关和标点 compartment、转换模式和语言栏按钮在各版本都一样，提交的文字按注册语言标上 `GUID_PROP_LANGID`；唯一按语言取的是触摸键盘布局（中文版本是优化的简体拼音布局，日文版是优化的日文布局，越南文和藏文版没有优化布局，用经典布局）。未在真机核实：注册在日语下时，系统的输入指示器按 TIP 写的转换模式位（`TF_CONVERSIONMODE_NATIVE`、`FULLSHAPE`）显示成什么样子，以及触摸键盘是否按上面的布局弹出。
 - 日文、越南文和藏文版不带中文主词库、n-gram 和整句模型（资源锁见 `resources/editions/<id>.lock.json`），`Prepare-PackageFiles.ps1` 也不给它们装非英文离线释义（版本表 `features.offline_glosses` 为 false），托盘菜单和原生设置窗口也没有手写（`features.handwriting` 为 false）；越南文和藏文版只带 core，日文版另带日文词典。
 - Server 把版本 id 交给宿主库准备状态根，宿主库按版本选资源锁、收窄方案；托盘和设置窗口只列出本版本提供的方案和本版本带的快捷模式（五笔版没有临时日语，也没有全拼、双拼的辅助码）。几个版本的 Server 同时运行时，维护快捷键由焦点所在版本的 Server 处理（每个生产 Server 用命名事件 `LingyaoImeServer_ModeActive<后缀>` 发布本版本的模式是否活动）；没有任何版本的模式活动时，由先收到按键的 Server 处理，不会谁都不管。
 - 数据目录的所有权标记文件名也按版本取：full 是 `.lingyaoime-data`，其他版本接上名字后缀（例如 `.lingyaoime-data.wubi`）。每个版本的安装器（包括 full）只认本版本的标记，目录里只要有别的版本的标记就不认，即使那是它自己的默认数据目录，所以不会接管、清理或删除别的版本的数据目录。full 的标记文件名和内容不变，以前的 full 写下的标记照样认。
 - 标记只看目录顶层，看不到嵌在子目录里的别的版本，所以安装器还按 `editions.iss` 里别的版本的注册表键和安装目录名（由 `edition_windows.py gen` 从版本表生成）找出别的版本的数据目录：它们登记的 `DataDir` 和默认目录 `%LOCALAPPDATA%\<安装目录>`。本版本的数据目录不能和这些目录重叠或互相包含，向导和 `/DATADIR` 都会拒绝；卸载和更换数据目录时，嵌在本版本目录里的别的版本的数据目录原样留下，迁移也不把它当作用户数据复制。
-- 升级和卸载前，每个版本的安装器（包括 full）只结束可执行文件在本安装 `server` 目录里的进程，不按映像名结束：几个版本的 Server、看门狗、设置窗口、`MSIME.exe` 和 `msime-mcp.exe` 同名，`taskkill /IM` 会把同时安装的其他版本一起停掉。已经发出去的旧版 full 仍按映像名结束进程，所以卸载旧版 full、或运行旧版 full 的安装包时，同时安装的其他版本的进程会被停一次；数据和安装不受影响，Server 在下次需要时由 TSF 重新拉起，看门狗在下次登录时由计划任务拉起。
+- 升级和卸载前，每个版本的安装器（包括 full）只结束可执行文件在本安装 `server` 目录里的进程，不按映像名结束：几个版本的 Server、看门狗、设置窗口、`LINGYAO.exe` 和 `lingyao-mcp.exe` 同名，`taskkill /IM` 会把同时安装的其他版本一起停掉。已经发出去的旧版 full 仍按映像名结束进程，所以卸载旧版 full、或运行旧版 full 的安装包时，同时安装的其他版本的进程会被停一次；数据和安装不受影响，Server 在下次需要时由 TSF 重新拉起，看门狗在下次登录时由计划任务拉起。
 - `scripts/test-editions.py` 检查版本表（GUID 两两不同、名字不撞、目录不嵌套），`scripts/test-windows-editions.py` 检查生成文件没有漂移、安装脚本按版本展开后互不越界、每个版本的 `langid` 是它默认方案所属的语言、`release-windows.yml` 的发布矩阵恰好是有 Windows 段的全部版本，并且 Windows 源码不再自己写 full 的 CLSID 和注册表键。
 
 `src/` 按职责分目录，每个目录一句话说清它收什么：
@@ -38,23 +38,23 @@ Windows 平台的实现源码在 `src/` 下；`tsf/`、`msimeui/`、`tests/`、`
 
 ### `panels/` 是什么
 
-`EmojiPanel.h`、`HandwritingPanel.h` 和 `EmojiPanelIcons.{h,cpp}` 不在 `CMakeLists.txt` 里，也没有任何文件 include 它们——它们不参与构建。产品里的表情/符号面板和手写识别板由共享桌面面板宿主（Tauri）提供，托盘菜单通过 `--route` 拉起，见下文「托盘菜单与共享界面」。`msimeui/demos/` 下另有一份**在构建的** `EmojiPanel`，但那是 demo，比这里这份短（163 行对 210 行），且不接 `ClipboardHistory` 与 `NativeTextInput`。这里这份是原生面板的另一条实现路线，单独成目录保留，让它的状态一眼可见，而不是混在 `system/` 里。
+`EmojiPanel.h`、`HandwritingPanel.h` 和 `EmojiPanelIcons.{h,cpp}` 不在 `CMakeLists.txt` 里，也没有任何文件 include 它们——它们不参与构建。产品里的表情/符号面板和手写识别板由共享桌面面板宿主（Tauri）提供，托盘菜单通过 `--route` 拉起，见下文「托盘菜单与共享界面」。`lingyaoui/demos/` 下另有一份**在构建的** `EmojiPanel`，但那是 demo，比这里这份短（163 行对 210 行），且不接 `ClipboardHistory` 与 `NativeTextInput`。这里这份是原生面板的另一条实现路线，单独成目录保留，让它的状态一眼可见，而不是混在 `system/` 里。
 
-本目录以 MSIME-Windows 的完整功能和既有 TSF DLL / Server 协议为基线：Rust/C++ 共享会话、管道、焦点和回复编排，以及 TSF 注册、Server/Host DLL、原生候选窗口、语音与安装打包都在这里落地。
+本目录以 LINGYAO-Windows 的完整功能和既有 TSF DLL / Server 协议为基线：Rust/C++ 共享会话、管道、焦点和回复编排，以及 TSF 注册、Server/Host DLL、原生候选窗口、语音与安装打包都在这里落地。
 
-固定 Engine 的 `FanyImeNamedpipeData` 键包通过 `msime-host-api` 接入。共享库只进入独立 Server，不加载到注入应用的 TSF DLL 中；TSF DLL / Server 进程隔离、版本化 Named Pipe 契约和 UI 原生窗口所有权是这条边界上不变的三条约束。
+固定 Engine 的 `FanyImeNamedpipeData` 键包通过 `lingyao-host-api` 接入。共享库只进入独立 Server，不加载到注入应用的 TSF DLL 中；TSF DLL / Server 进程隔离、版本化 Named Pipe 契约和 UI 原生窗口所有权是这条边界上不变的三条约束。
 
 ## 包管理器（winget、Scoop、Chocolatey）
 
-`packaging/` 下是 winget（`Lingyao.LingyaoIME`）、Scoop（`msime`）与 Chocolatey（`msime`）的包定义模板和渲染脚本 `packaging/render.py`。三个包都只静默运行发布页上 full 的 Inno Setup 安装包，不另编二进制；包描述和主页 `https://github.com/Lcy040109/msime` 与 Linux 各发行版的定义一致。包管理器只能指向签过名的安装包：`release-windows.yml` 先行发布的安装包未签名，其 uiAccess Server 无法启动，所以 `render.py` 拒绝没有有效 Authenticode 签名的安装包；维护者把 SimplySign 签名的安装包替换到发布上之后，手动触发 `package-definitions-windows.yml` 渲染并上传构建产物 `msime-package-definitions-windows-<版本>`（含 `.nupkg`），不向任何外部仓库推送。`scripts/test-windows-package-managers.py`（由 `scripts/run-checks.sh` 自动运行）核对模板里的安装包事实与 `installer/msime_setup.iss`、`installer/editions.iss` 和发布流程一致。
+`packaging/` 下是 winget（`Lingyao.LingyaoIME`）、Scoop（`lingyao`）与 Chocolatey（`lingyao`）的包定义模板和渲染脚本 `packaging/render.py`。三个包都只静默运行发布页上 full 的 Inno Setup 安装包，不另编二进制；包描述和主页 `https://github.com/Lcy040109/msime` 与 Linux 各发行版的定义一致。包管理器只能指向签过名的安装包：`release-windows.yml` 先行发布的安装包未签名，其 uiAccess Server 无法启动，所以 `render.py` 拒绝没有有效 Authenticode 签名的安装包；维护者把 SimplySign 签名的安装包替换到发布上之后，手动触发 `package-definitions-windows.yml` 渲染并上传构建产物 `lingyao-package-definitions-windows-<版本>`（含 `.nupkg`），不向任何外部仓库推送。`scripts/test-windows-package-managers.py`（由 `scripts/run-checks.sh` 自动运行）核对模板里的安装包事实与 `installer/lingyao_setup.iss`、`installer/editions.iss` 和发布流程一致。
 
-上架之后的安装方式：`winget install Lingyao.LingyaoIME`；`scoop bucket add msime https://github.com/metasequoiaime/scoop-bucket` 后 `scoop install msime`；`choco install msime`。各仓库的发布步骤（winget-pkgs PR、Scoop bucket、`choco push`）见 [packaging/README.md](packaging/README.md#发布步骤)。
+上架之后的安装方式：`winget install Lingyao.LingyaoIME`；`scoop bucket add lingyao https://github.com/metasequoiaime/scoop-bucket` 后 `scoop install lingyao`；`choco install lingyao`。各仓库的发布步骤（winget-pkgs PR、Scoop bucket、`choco push`）见 [packaging/README.md](packaging/README.md#发布步骤)。
 
 ## 原生界面渲染与皮肤
 
-候选窗、悬浮工具条、托盘菜单和 `msimeui` 的面板 demo 都通过 `msimeui` 的 Direct2D 设备资源绘制，本仓库不引入第二套 D2D 路径。几何与配色从已发布 Windows 呈现器移植：`CandidateCardSize.h` 提供卡片尺寸、行矩形与命中测试的唯一来源，`CandidatePalette.h` 解析皮肤清单里的 CSS 颜色子集（三位/六位/八位十六进制、`rgb()`/`rgba()`、`transparent`），无法表示的写法保留内置 token 而不是渲染出不可见窗口。候选卡片用 DirectWrite 实测预编辑与每个候选的宽度后合成尺寸，工作区一半封顶两个轴；绘制和命中读同一份 metrics，点击不会落到渲染器没画的行上。固定候选只在未高亮时使用 accent；进入高亮行后，候选正文、辅助码和翻译整体改用选中行正文颜色。
+候选窗、悬浮工具条、托盘菜单和 `lingyaoui` 的面板 demo 都通过 `lingyaoui` 的 Direct2D 设备资源绘制，本仓库不引入第二套 D2D 路径。几何与配色从已发布 Windows 呈现器移植：`CandidateCardSize.h` 提供卡片尺寸、行矩形与命中测试的唯一来源，`CandidatePalette.h` 解析皮肤清单里的 CSS 颜色子集（三位/六位/八位十六进制、`rgb()`/`rgba()`、`transparent`），无法表示的写法保留内置 token 而不是渲染出不可见窗口。候选卡片用 DirectWrite 实测预编辑与每个候选的宽度后合成尺寸，工作区一半封顶两个轴；绘制和命中读同一份 metrics，点击不会落到渲染器没画的行上。固定候选只在未高亮时使用 accent；进入高亮行后，候选正文、辅助码和翻译整体改用选中行正文颜色。
 
-皮肤经 `msime_client_skin_catalog` 从共享目录进入原生宿主，Server 解析可选的 `appearance`（`skin_directory` 绝对路径、`skin`、`dark_theme`）后下发给候选窗和悬浮工具条。兼容性以清单为准：没有声明当前布局和主题的包保留内置 token，不做半套应用；目录不可读、id 未知或条目畸形都不改变主题，也不让运行中的 Server 失败。独立面板以各自的内置 token 作为缺省值，同时接收解析后的共享调色板。
+皮肤经 `lingyao_client_skin_catalog` 从共享目录进入原生宿主，Server 解析可选的 `appearance`（`skin_directory` 绝对路径、`skin`、`dark_theme`）后下发给候选窗和悬浮工具条。兼容性以清单为准：没有声明当前布局和主题的包保留内置 token，不做半套应用；目录不可读、id 未知或条目畸形都不改变主题，也不让运行中的 Server 失败。独立面板以各自的内置 token 作为缺省值，同时接收解析后的共享调色板。
 
 Direct2D 的成像工厂是 COM 服务器，这些窗口各自进入套间（`S_FALSE` 仍需配对释放，`RPC_E_CHANGED_MODE` 不动其他模式）；面板在 `--help` 返回之后才进入套间，冒烟运行器不需要额外条件。
 
@@ -100,7 +100,7 @@ CandidatePresentation.h 将回复投影为带焦点 lease、会话/代次、坐�
 
 `VoiceInputSession::start_review` 为面板提供独立结果对象与录音电平、识别/润色阶段；该模式不显示原生浮层、不发送行内组合、不执行 TSF/SendInput/剪贴板自动上屏或失败回退。结果限制为 v2 允许的 UTF-8 大小，取消后晚到结果不能恢复，`stop_review` / `cancel_review` 只作用于匹配对象，不能取消后续录音。`windows-voice-review-result` 覆盖结果状态、竞态与提交隔离。
 
-识别服务选 `local` 时，Server 不联网，模型为 `voice_input.asr_model_path` 指向的已安装目录。录音开始时即在识别任务上加载模型，采集线程只把音频放进队列，由该任务边录边用共享的 `msime::voice::LocalAsrSession`（`shared/voice/LocalAsr.h`）解码；识别中的文字与豆包流式识别走同一条路径显示（允许内嵌预编辑时写入组合串，否则显示在语音浮窗上），录音结束后取最终文本。`asr_model_path` 若是旧的 Whisper 模型文件而非已安装目录，录音结束后走批量的 `recognize_local_asr`，识别会失败并提示模型不可用（Windows 从未带 Whisper 识别器）。热词取自 `msime_client_voice_hotwords`（用户自己的拼音词条）；模型清单 `msime-model.json` 写明 `"hotwords": "pinyin"` 时，最终文本再经 `msime_client_voice_hotword_correct` 校正。未选模型时开始录音即提示去设置下载；运行时或模型不可用时给出对应提示。已加载的模型空闲 120 秒后由 `maintain()` 交给工作线程卸载。运行时 `sherpa-onnx-c-api.dll`、`onnxruntime.dll`、`onnxruntime_providers_shared.dll` 由 `Build-Client.ps1` 取来并放在 Server 同目录，安装包随 `server_exe` 一起安装。
+识别服务选 `local` 时，Server 不联网，模型为 `voice_input.asr_model_path` 指向的已安装目录。录音开始时即在识别任务上加载模型，采集线程只把音频放进队列，由该任务边录边用共享的 `lingyao::voice::LocalAsrSession`（`shared/voice/LocalAsr.h`）解码；识别中的文字与豆包流式识别走同一条路径显示（允许内嵌预编辑时写入组合串，否则显示在语音浮窗上），录音结束后取最终文本。`asr_model_path` 若是旧的 Whisper 模型文件而非已安装目录，录音结束后走批量的 `recognize_local_asr`，识别会失败并提示模型不可用（Windows 从未带 Whisper 识别器）。热词取自 `lingyao_client_voice_hotwords`（用户自己的拼音词条）；模型清单 `lingyao-model.json` 写明 `"hotwords": "pinyin"` 时，最终文本再经 `lingyao_client_voice_hotword_correct` 校正。未选模型时开始录音即提示去设置下载；运行时或模型不可用时给出对应提示。已加载的模型空闲 120 秒后由 `maintain()` 交给工作线程卸载。运行时 `sherpa-onnx-c-api.dll`、`onnxruntime.dll`、`onnxruntime_providers_shared.dll` 由 `Build-Client.ps1` 取来并放在 Server 同目录，安装包随 `server_exe` 一起安装。
 
 `VoiceControllerProtocol.h` 直接消费 `shared/contracts/voice_controller.h` 的 v2 布局，处理有界消息、UTF-8 和语言标识，不复制 opcode。`VoiceControllerConnection.h` 在专用连接上执行 Hello、OS 对端认证、请求顺序和有界读写，拒绝重放；它不接受客户端提供的 TSF 目标身份。`windows-voice-controller-protocol` 可在非 Windows 运行，`windows-voice-controller-connection` 使用真实 Windows Named Pipe。
 
@@ -108,17 +108,17 @@ Server 主循环创建 `VoiceControllerListener`：专用 I/O 线程通过单槽
 
 共享 `client-core::voice_controller` 注入消息传输，校验精确 v2 帧、请求/会话 ID、阶段顺序和有界 UTF-8 结果；Windows `host-windows::voice_controller` 使用消息管道与 overlapped I/O，校验并保留 Server 的进程句柄，核对同账户/同 Windows 会话。每次 I/O 限时 12 秒并在取消后排空，消息不自动重试。Tauri Windows `recognize_voice` 接线到该控制端，每 100ms 轮询，复用现有 request_id、停止/取消标志、电平及 `voice-update` 事件；结果仅返回面板，不自动提交。原生 `Processing` 映射到面板的 `polishing` 阶段。
 
-依赖 CMake 3.25+、C++17、nlohmann-json 3.11+ 以及为运行平台构建的 msime-host-api。下面这组测试在 macOS/Linux 本机驱动真实的共享 Rust/C++ 库，用于在没有 Windows 机器时检查跨平台的会话与编码边界：
+依赖 CMake 3.25+、C++17、nlohmann-json 3.11+ 以及为运行平台构建的 lingyao-host-api。下面这组测试在 macOS/Linux 本机驱动真实的共享 Rust/C++ 库，用于在没有 Windows 机器时检查跨平台的会话与编码边界：
 
 ```sh
-cargo build -p msime-host-api --locked
-cmake -S platforms/windows -B target/windows-boundary -DMSIME_HOST_LIBRARY=/absolute/path/to/libmsime_host_api.dylib
+cargo build -p lingyao-host-api --locked
+cmake -S platforms/windows -B target/windows-boundary -DLINGYAO_HOST_LIBRARY=/absolute/path/to/liblingyao_host_api.dylib
 cmake --build target/windows-boundary
 ctest --test-dir target/windows-boundary --output-on-failure
 target/windows-boundary/windows-session-smoke /absolute/verified-resources
 ```
 
-Windows 构建时 MSIME_HOST_LIBRARY 应指定同架构 Rust DLL 的导入库，运行时需可找到对应 DLL；Linux 本机边界测试使用 .so。Windows MSVC 的完整构建入口是 `Build-Client.ps1`（见 `Build-Client.md`），MinGW 交叉构建不替代它；两者产出同一组目标。
+Windows 构建时 LINGYAO_HOST_LIBRARY 应指定同架构 Rust DLL 的导入库，运行时需可找到对应 DLL；Linux 本机边界测试使用 .so。Windows MSVC 的完整构建入口是 `Build-Client.ps1`（见 `Build-Client.md`），MinGW 交叉构建不替代它；两者产出同一组目标。
 
 `bash tests/tools/check-cross.sh /absolute/nlohmann-include-root` 使用 x86_64/i686 MinGW 分别编译适配器、测试源和 `shared/contracts` 中的 IPC 契约，验证 32/64 位 COFF 和 Windows SDK 键码断言；另将不依赖 Rust 的编码测试链接为 Windows PE。不会链接 Windows Rust 库，也不执行 Windows 二进制。会话测试覆盖真实 Unicode 输入、锁定词库第二页数字选词、配置延迟、客户端/焦点/线程拒绝及本地取消不回复。
 
@@ -144,9 +144,9 @@ PreviousCandidate/NextCandidate/PreviousPage/NextPage 路径消费共享导航�
 
 ## 测试与 CI
 
-`platforms/windows/CMakeLists.txt` 注册 96 个 CTest，`tsf/CMakeLists.txt` 另有 19 个，`tests/native-pipe/`（仅 Windows）2 个，`msimeui/tests/` 1 个；`tsf/tests/exports/`、`tsf/tests/registration_profiles/`、`tsf/tests/registration_categories/` 和 `tests/server-manifest/` 是各自 configure 的独立子工程。PowerShell 侧另有 `tests/tools/*.ps1` 与 `installer/tests/*.ps1` 覆盖构建编排、PE 门禁、通知收集、运行器控制和安装器编排。
+`platforms/windows/CMakeLists.txt` 注册 96 个 CTest，`tsf/CMakeLists.txt` 另有 19 个，`tests/native-pipe/`（仅 Windows）2 个，`lingyaoui/tests/` 1 个；`tsf/tests/exports/`、`tsf/tests/registration_profiles/`、`tsf/tests/registration_categories/` 和 `tests/server-manifest/` 是各自 configure 的独立子工程。PowerShell 侧另有 `tests/tools/*.ps1` 与 `installer/tests/*.ps1` 覆盖构建编排、PE 门禁、通知收集、运行器控制和安装器编排。
 
-`bash platforms/windows/run-tests-wine.sh x64` 把交叉构建出的 C++ 套件（`windows-*.exe`、`msime-tsf-*.exe`、`bin/msimeui-tests.exe`）和 `cargo test --no-run` 产出的 Rust 套件一起放在 `xvfb-run -a wine` 下执行，每个 120 秒超时，结果与 `scripts/known-failures.txt` 比对；不带 `--quick` 的 `scripts/verify-local.sh` 会自动调用它。
+`bash platforms/windows/run-tests-wine.sh x64` 把交叉构建出的 C++ 套件（`windows-*.exe`、`lingyao-tsf-*.exe`、`bin/lingyaoui-tests.exe`）和 `cargo test --no-run` 产出的 Rust 套件一起放在 `xvfb-run -a wine` 下执行，每个 120 秒超时，结果与 `scripts/known-failures.txt` 比对；不带 `--quick` 的 `scripts/verify-local.sh` 会自动调用它。
 
 CI（`.github/workflows/ci-platforms.yml` 的 windows job）在 `debian:trixie-slim` 容器里跑 `build-cross.sh x64`——Ubuntu 24.04 的 MinGW 头文件缺 `d2d1_3.h`。`release-windows.yml` 是手动 `workflow_dispatch`，在 Windows runner 上按版本矩阵（full、wubi、pinyin）各跑一遍 `Build-Client.ps1 -Edition`、打包和装卸冒烟，再用 `installer/tests/coexistence-smoke.ps1` 把几个版本装到同一台机器上，检查它们并存、卸掉一个版本不碰 full，并在 `windows-11-arm` runner 上装卸每个版本、检查 Arm64X TIP 能在原生 ARM64 和模拟 x64 进程里创建，最后一起发布。安装器由 Windows 上的 `installer/Package-SimplySign.ps1` 编译和签名，不在 CI 里产出。
 
@@ -158,7 +158,7 @@ CI（`.github/workflows/ci-platforms.yml` 的 windows job）在 `debian:trixie-s
 
 调用方必须先配置正确的生产 DACL 与 PIPE_REJECT_REMOTE_CLIENTS，在客户端存活时完成绑定，并在路由/端点生命周期保护下进行复核。进程绑定不证明同进程中的具体线程，不检查程序签名，不替代协议版本协商、管道角色、registration/activation epoch 或输入焦点授权，也不消除复核后进程立即退出的可能。受保护进程、UAC 提升进程、AppContainer 与跨会话客户端各有自己的访问规则，不能为了兼容直接跳过拒绝检查。
 
-管道子集的独立测试入口：`cmake -S platforms/windows -B target/windows-pipe -DMSIME_WINDOWS_PIPE_ONLY=ON`，随后 `cmake --build target/windows-pipe --config Debug` 与 `ctest --test-dir target/windows-pipe -C Debug --output-on-failure`。它不需要 Rust 库，也不注册输入法，因此适合只验证帧 I/O 与身份绑定；`verify-local.sh` 在有 MinGW 的非 Windows 主机上对 x86_64 和 i686 两个架构分别配置这一子集，用来锁住 `windows_ipc.h` 的帧大小与字段偏移 `static_assert`。
+管道子集的独立测试入口：`cmake -S platforms/windows -B target/windows-pipe -DLINGYAO_WINDOWS_PIPE_ONLY=ON`，随后 `cmake --build target/windows-pipe --config Debug` 与 `ctest --test-dir target/windows-pipe -C Debug --output-on-failure`。它不需要 Rust 库，也不注册输入法，因此适合只验证帧 I/O 与身份绑定；`verify-local.sh` 在有 MinGW 的非 Windows 主机上对 x86_64 和 i686 两个架构分别配置这一子集，用来锁住 `windows_ipc.h` 的帧大小与字段偏移 `static_assert`。
 
 键码依据 [Microsoft Virtual-Key Codes](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)，线格式直接包含 shared/contracts，不另造 opcode 或改协议能力声明。
 
@@ -294,11 +294,11 @@ SessionController 持有输入队列、连接 worker 和独立控制线程，消
 
 WindowsServer 的回调可能在构造返回前运行，捕获依赖须事先初始化，不能访问尚未构造完成的 server。通用 SessionController 的 healthy/stop_service 回调在控制线程运行；stop_service 必须关闭所有登记端点（包括尚未消费的收件箱票据）并等待服务线程结束，服务和收件箱须活到 controller 停止之后。
 
-本机测试增加有界登记队列、空闲时服务故障、输入异常全局停机，以及持有焦点锁的事件回调请求退出。原生 windows-server-smoke 使用唯一测试名称运行实际 WindowsServer，发送反向握手、Main 协商、激活及 Unicode 输入，并验证完整提交和空闲停机。它需要完整的同架构 Rust 导入库构建（不能用 MSIME_WINDOWS_PIPE_ONLY），运行方式是 `ctest --test-dir target/windows-boundary -C Debug -R windows-server --output-on-failure`。测试里用的是固定 Unicode 处理器，产品的模式/候选 UI 走的是 `production_key_handler()` 和原生窗口。
+本机测试增加有界登记队列、空闲时服务故障、输入异常全局停机，以及持有焦点锁的事件回调请求退出。原生 windows-server-smoke 使用唯一测试名称运行实际 WindowsServer，发送反向握手、Main 协商、激活及 Unicode 输入，并验证完整提交和空闲停机。它需要完整的同架构 Rust 导入库构建（不能用 LINGYAO_WINDOWS_PIPE_ONLY），运行方式是 `ctest --test-dir target/windows-boundary -C Debug -R windows-server --output-on-failure`。测试里用的是固定 Unicode 处理器，产品的模式/候选 UI 走的是 `production_key_handler()` 和原生窗口。
 
 ### Windows GNU 完整链接构建
 
-`bash platforms/windows/build-cross.sh x64` 在已具备 Git、MinGW、Rust、CMake 的主机上准备固定 vcpkg、安装锁定依赖，构建真实 Rust/C++ 宿主 DLL，再链接全部 Windows 原生测试（包含 windows-server-smoke.exe）。vcpkg 固定 ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0；默认使用 target/tooling/vcpkg，缺失时由 bootstrap-vcpkg.sh 从官方仓库获取固定提交并关闭指标收集进行 bootstrap。会访问网络下载工具与依赖。也可设置绝对 MSIME_VCPKG_ROOT，显式提供的目录必须已准备好，脚本不重置或自动修复它。脚本会安装相应 Rust 标准库和清单依赖，依赖安装根按架构隔离，避免 vcpkg 切换 triplet 时移除另一架构的库；同一 vcpkg checkout 不并发执行。宿主库不需要 vcpkg 前缀，其中的 C 部分（rusqlite 自带的 SQLite）用同一套 MinGW 工具链编译；同架构依赖前缀只交给 platforms/windows 的 CMake（`CMAKE_PREFIX_PATH`）。
+`bash platforms/windows/build-cross.sh x64` 在已具备 Git、MinGW、Rust、CMake 的主机上准备固定 vcpkg、安装锁定依赖，构建真实 Rust/C++ 宿主 DLL，再链接全部 Windows 原生测试（包含 windows-server-smoke.exe）。vcpkg 固定 ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0；默认使用 target/tooling/vcpkg，缺失时由 bootstrap-vcpkg.sh 从官方仓库获取固定提交并关闭指标收集进行 bootstrap。会访问网络下载工具与依赖。也可设置绝对 LINGYAO_VCPKG_ROOT，显式提供的目录必须已准备好，脚本不重置或自动修复它。脚本会安装相应 Rust 标准库和清单依赖，依赖安装根按架构隔离，避免 vcpkg 切换 triplet 时移除另一架构的库；同一 vcpkg checkout 不并发执行。宿主库不需要 vcpkg 前缀，其中的 C 部分（rusqlite 自带的 SQLite）用同一套 MinGW 工具链编译；同架构依赖前缀只交给 platforms/windows 的 CMake（`CMAKE_PREFIX_PATH`）。
 
 bootstrap 只管理默认工具缓存，已有错误版本、跟踪文件改动、符号链接或非预期目录均拒绝，不覆盖用户内容。目录锁拒绝并发准备；失败的独立 staging 目录保留供检查，不递归删除。若遗留锁，先确认原进程已结束再清理空锁目录。可单独执行 `bash platforms/windows/bootstrap-vcpkg.sh`，已有固定版本且可执行时复用；离线拒绝路径测试为 `bash tests/tools/bootstrap-vcpkg.sh`，测试只操作新建的隔离目录。本机 x86 SJLJ 工具链会在网络准备前被拒绝。
 
@@ -308,23 +308,23 @@ x86 的 Rust GNU 目标要求 DWARF 展开，而 Homebrew 的 i686 MinGW 用 SJL
 
 ### 本地原生测试目录
 
-完整 x64 构建后运行 `bash platforms/windows/stage-runtime.sh x64`，脚本从同一 MinGW 工具链定位 libstdc++、libgcc、libwinpthread，复制到 target/windows-full/x64，并逐项检查测试 EXE、宿主 DLL 和递归运行时导入的架构。未分类依赖或缺失运行时立即失败，不从网络或任意系统目录猜 DLL；工具链的额外运行时目录可显式通过 MSIME_MINGW_RUNTIME_DIR 提供。该目录用于本地验证，不带完整的许可证与源码交付，不要拿它当发行包——发行走 `installer/Package-SimplySign.ps1`。
+完整 x64 构建后运行 `bash platforms/windows/stage-runtime.sh x64`，脚本从同一 MinGW 工具链定位 libstdc++、libgcc、libwinpthread，复制到 target/windows-full/x64，并逐项检查测试 EXE、宿主 DLL 和递归运行时导入的架构。未分类依赖或缺失运行时立即失败，不从网络或任意系统目录猜 DLL；工具链的额外运行时目录可显式通过 LINGYAO_MINGW_RUNTIME_DIR 提供。该目录用于本地验证，不带完整的许可证与源码交付，不要拿它当发行包——发行走 `installer/Package-SimplySign.ps1`。
 
 可将验证目录复制到匹配的 Windows 测试机，在其中运行 `powershell -File .\run-smoke.ps1`。脚本预检十一个固定测试程序和 Server EXE，逐个执行并限制超时，失败立即停止；Server EXE 只执行 --help，不启动常驻服务。不要求 CMake，也不注册 TSF 或修改输入源。
 
 显式运行真实词库回归：`powershell -File .\run-smoke.ps1 -ResourcesDirectory 'C:\IME Test\resources\固定代目录' -TimeoutSeconds 120`。目录必须是已下载的锁定词库代；脚本仅解析目录，数据完整性由共享 prepare_host 校验，不下载或修改词库，工作状态仍在测试临时目录。会话测试在 Windows 使用宽字符入口，路径转 UTF-8 后传给共享宿主；脚本为原生进程引用路径，不经过 shell。未提供目录时明确输出 SKIP，不冒充词库回归通过。这套隔离回归检查的是宿主与管道边界，编辑器内的交互由 `experiments/tsf-edit-control/` 的受控编辑器和第三方编辑器实测负责。
 
-脚本进程控制已另用 macOS 原生探针和 PowerShell 7.6.6 执行验证：默认 12 项及词库跳过、指定含空格目录追加第 13 项、空参数、缺少程序、非零退出和超时终止。探针不链接 Engine，不验证 Windows 二进制、词库内容或 Windows 中文路径。非交叉 CMake 配置找到 pwsh/powershell 时自动登记 windows-runner-control，也可通过 MSIME_POWERSHELL 指定路径；交叉构建不会尝试在本机执行 Windows 探针。探针与临时副本仅用于测试，超时 Kill 后等待进程退出再释放对象。
+脚本进程控制已另用 macOS 原生探针和 PowerShell 7.6.6 执行验证：默认 12 项及词库跳过、指定含空格目录追加第 13 项、空参数、缺少程序、非零退出和超时终止。探针不链接 Engine，不验证 Windows 二进制、词库内容或 Windows 中文路径。非交叉 CMake 配置找到 pwsh/powershell 时自动登记 windows-runner-control，也可通过 LINGYAO_POWERSHELL 指定路径；交叉构建不会尝试在本机执行 Windows 探针。探针与临时副本仅用于测试，超时 Kill 后等待进程退出再释放对象。
 
 ### Server 命令行入口
 
 完整构建产出 `LingyaoImeServer.exe`。生产启动使用 `--production`（Watchdog 使用等价的 `--watchdog-managed`），从安装状态目录读取配置并监听生产 TSF 管道；隔离预览实例使用 `--config <绝对配置路径>`，用来在不碰系统输入源的前提下跑一个独立 Server。`--help` 只显示模式说明，不读写状态。TSF 注册由安装器负责，Server 不在启动时修改系统输入法注册。预览配置是最多 16 KiB 的 JSON，以下五个字段必需，另可提供 key_bindings；其余字段拒绝：
 
 ```json
-{"format_version":1,"resources":"C:\\MSIME-Preview\\resources","state_root":"C:\\MSIME-Preview\\state","pipe_namespace":"dev-01","preedit_style":"pinyin"}
+{"format_version":1,"resources":"C:\\LINGYAO-Preview\\resources","state_root":"C:\\LINGYAO-Preview\\state","pipe_namespace":"dev-01","preedit_style":"pinyin"}
 ```
 
-resources 指向已下载的锁定词库代目录；state_root 必须是本预览实例独享的独立目录，两者不能互相包含。路径需绝对；preedit_style 仅 local/pinyin，它决定该实例的宿主收到哪些组字帧，始终覆盖共享 preferences.json 的 tsf_preedit_style，修改启动文件需重启。命名空间只允许 1–48 个 ASCII 字母、数字或连字符，三条管道固定生成为 `\\.\pipe\msime-client-preview-<命名空间>-0/1/2`，不接受旧产品管道名。词库准备前独占打开稳定锁文件，持有到 Server/worker/输入会话全部停止；退出释放句柄，锁文件不删除，其存在不代表实例仍活着。其他直接调用 Engine 的进程不遵守此锁，必须由调用方保证不共享此状态目录。
+resources 指向已下载的锁定词库代目录；state_root 必须是本预览实例独享的独立目录，两者不能互相包含。路径需绝对；preedit_style 仅 local/pinyin，它决定该实例的宿主收到哪些组字帧，始终覆盖共享 preferences.json 的 tsf_preedit_style，修改启动文件需重启。命名空间只允许 1–48 个 ASCII 字母、数字或连字符，三条管道固定生成为 `\\.\pipe\lingyao-client-preview-<命名空间>-0/1/2`，不接受旧产品管道名。词库准备前独占打开稳定锁文件，持有到 Server/worker/输入会话全部停止；退出释放句柄，锁文件不删除，其存在不代表实例仍活着。其他直接调用 Engine 的进程不遵守此锁，必须由调用方保证不共享此状态目录。
 
 入口调用共享 prepare_host 校验词库并准备隔离工作数据，启用同目录配置监听，再启动 WindowsServer。Ctrl+C/Ctrl+Break 请求顺序停机；准备阶段的磁盘操作不能即时中断，系统强制终止不保证清理。初始化错误只输出通用信息，不输出配置路径或输入内容。
 
@@ -338,9 +338,9 @@ key_bindings 可选对象示例：
 
 #### 托盘菜单与共享界面
 
-托盘菜单七项与成品一致：悬浮工具栏开关由 Server 自己处理；设置和关于在独立的 WinUI 3 `msime-client-settings.exe` 中打开，表情/符号面板、手写识别板和屏幕键盘仍在共享桌面面板宿主（Tauri）中打开。两类窗口与 Linux 的 IBus 属性菜单共用同一套路由契约——用 `--route=<面板>` 指定面板，`--route=settings:<分类>` 指定设置分类（关于用 `settings:about`），只接受小写 ASCII 标识符；同一路由也写进子进程的 `MSIME_CLIENT_ROUTE`，进程自身继承到的同名变量会被丢弃，不会盖过实际点击的那一行。Windows 语音输入由 Server 内置的 VoiceInputSession 和波形浮层负责录音、识别及 TSF 提交；共享外壳的语音入口通过固定 Aux 管道发送 `ToggleVoiceInput`，由 Server 主线程消费，避免让 Tauri 伪造一个无法录音的面板。
+托盘菜单七项与成品一致：悬浮工具栏开关由 Server 自己处理；设置和关于在独立的 WinUI 3 `lingyao-client-settings.exe` 中打开，表情/符号面板、手写识别板和屏幕键盘仍在共享桌面面板宿主（Tauri）中打开。两类窗口与 Linux 的 IBus 属性菜单共用同一套路由契约——用 `--route=<面板>` 指定面板，`--route=settings:<分类>` 指定设置分类（关于用 `settings:about`），只接受小写 ASCII 标识符；同一路由也写进子进程的 `LINGYAO_CLIENT_ROUTE`，进程自身继承到的同名变量会被丢弃，不会盖过实际点击的那一行。Windows 语音输入由 Server 内置的 VoiceInputSession 和波形浮层负责录音、识别及 TSF 提交；共享外壳的语音入口通过固定 Aux 管道发送 `ToggleVoiceInput`，由 Server 主线程消费，避免让 Tauri 伪造一个无法录音的面板。
 
-设置外壳按 `MSIME_CLIENT_SETTINGS_COMMAND`（须为绝对路径且存在）、Server 同目录的 `msime-client-settings.exe` 查找；面板外壳使用同目录的 `MSIME.exe`。找不到时这些行保持可见但禁用，点击不会做任何事，也不会声称已打开；启动失败同样按未处理返回，菜单不会因为一个没发生的动作而关闭。两个外壳都用 `CreateProcessW` 启动并继承本进程令牌，因此打包时它们与 Server 的完整性级别一致。
+设置外壳按 `LINGYAO_CLIENT_SETTINGS_COMMAND`（须为绝对路径且存在）、Server 同目录的 `lingyao-client-settings.exe` 查找；面板外壳使用同目录的 `LINGYAO.exe`。找不到时这些行保持可见但禁用，点击不会做任何事，也不会声称已打开；启动失败同样按未处理返回，菜单不会因为一个没发生的动作而关闭。两个外壳都用 `CreateProcessW` 启动并继承本进程令牌，因此打包时它们与 Server 的完整性级别一致。
 
 隔离预览实例不注册 TSF，也不接管系统输入源：它挂上候选窗口、后台点击选词和悬浮工具条，走 configured_key 的同一套路径；未支持的路由会断开当前连接。生产模式复用同一份 Server 会话/窗口实现，只是换成安装器注册的生产管道名，TSF 注册和 DLL/Server 部署由安装器完成。Enter 缺少宿主实际本地提交观察时明确拒绝，不从 Engine 伪造观察。预览实例不连接旧产品管道，也不替代生产 KeyHandler。运行时检查包含此 EXE 的依赖，PowerShell 合成测试不启动常驻 Server 进程；CMake 另登记无副作用的 `windows-preview-help` --help 测试。
 
@@ -368,7 +368,7 @@ WindowsServerOptions::preferences_directory 显式启用共享配置轮询，空
 
 轮询停机使用条件变量唤醒，不等待整个间隔；已提交任务只捕获快照值，不引用监听器，监听器停机不等待输入 future。控制器先请求监听器停止，再停止服务/连接 worker/输入队列，最后 join 设置线程；对象仍保留输入队列到 join 完成。设置线程禁止从输入任务 join，request_stop 可请求退出。初次轮询异步执行，启动须提供经过共享准备的 host_options。这里用的是轮询而不是系统级文件变化通知：配置文件由共享设置存储以原子替换的方式写入，轮询读到的永远是完整文档，而变化通知还要处理替换产生的删除/重建事件。
 
-监听器使用 `PreferenceSnapshot::try_load`：调用共享 C ABI msime_client_try_load_preferences，锁竞争返回空值（ok:true,value:null），成功返回完整已校验快照，坏文件/权限错误仍报错。空值只表示忙，保留之前发布值并稍后重试，不能恢复默认配置。底层仍使用同一稳定锁文件及共享验证，没有旁路读 JSON；不会等待写者释放锁，但磁盘 I/O 仍可能阻塞，因此不能在输入队列调用，停机时限也不因此有保证。宿主库与 Windows 适配器需成套更新到含该符号的版本。
+监听器使用 `PreferenceSnapshot::try_load`：调用共享 C ABI lingyao_client_try_load_preferences，锁竞争返回空值（ok:true,value:null），成功返回完整已校验快照，坏文件/权限错误仍报错。空值只表示忙，保留之前发布值并稍后重试，不能恢复默认配置。底层仍使用同一稳定锁文件及共享验证，没有旁路读 JSON；不会等待写者释放锁，但磁盘 I/O 仍可能阻塞，因此不能在输入队列调用，停机时限也不因此有保证。宿主库与 Windows 适配器需成套更新到含该符号的版本。
 
 ### 显式导航绑定入口
 
@@ -390,17 +390,17 @@ Microsoft 双拼分号在 edit/basic_key 中先于标点处理：读取 View.mic
 
 以词定字依据共享视图中的高亮候选 ID 调用 Engine 首／尾汉字选择，成功发送 CommitExactText；无汉字或没有候选时清理组合并发送 Normal 高亮文本（可为空），交给 TSF 补本地智能标点，不在 Server 再转换一次，也不完成剩余分段。两条路径都带已有已选前缀，保留焦点、待回复及投递确认门禁。配置持久化监听和生产 KeyHandler 分别由 `PreferenceMonitor` 和 `production_key_handler()` 提供。
 
-ABI 1 的附加符号 msime_client_punctuation，适配器与宿主库必须成套更新。它显式复用共享运行时的高亮候选完成与 Engine 标点转换，避免 Unicode 等局部模式把普通 character 调用标记为已处理却未完成标点提交。非 ASCII 标点参数在状态推进前拒绝；普通/UILess 标点完成均发送 CommitExactText，保留已有焦点、待回复与投递确认门禁。
+ABI 1 的附加符号 lingyao_client_punctuation，适配器与宿主库必须成套更新。它显式复用共享运行时的高亮候选完成与 Engine 标点转换，避免 Unicode 等局部模式把普通 character 调用标记为已处理却未完成标点提交。非 ASCII 标点参数在状态推进前拒绝；普通/UILess 标点完成均发送 CommitExactText，保留已有焦点、待回复与投递确认门禁。
 
 ### TSF 标点开关同步
 
 PuncSwitch 的 keycode 与 StatusSnapshot/FocusRestored 的 pinyin_length 同步到当前会话的中文标点开关。经共享 C ABI 调用固定 Engine 的运行时 setter，不重建会话，不改变组合、光标、候选代次或引号配对。待回复和过期焦点仍不能修改状态。TSF 开关是每会话临时覆盖，不写入配置文件，并在共享偏好替换 Engine 时重新应用；未收到覆盖的会话继续使用持久化偏好默认值。
 
-msime_client_set_chinese_punctuation 是 ABI 1 的附加符号，适配器和宿主库须成套更新。其返回值为未变化的 View；关闭时空组合 ASCII 标点由宿主透传，组合中标点仍按共享运行时的完成策略处理。这个接口只管每会话的标点开关，全局作用域由 `ModeAuthority` 和共享的 `ime_mode_scope` 决定。
+lingyao_client_set_chinese_punctuation 是 ABI 1 的附加符号，适配器和宿主库须成套更新。其返回值为未变化的 View；关闭时空组合 ASCII 标点由宿主透传，组合中标点仍按共享运行时的完成策略处理。这个接口只管每会话的标点开关，全局作用域由 `ModeAuthority` 和共享的 `ime_mode_scope` 决定。
 
 ### 书名号自动补全后的嵌套回退
 
-候选打开时 `<` 由 Server 的 Engine 转换，Engine 的书名号嵌套计数随之加一；开启配对补全后右半边由 TSF 自己插入，之后的 `>` 只跨过它，Server 收不到能回退计数的按键，于是后面每个书名号都变成〈〉。所以 TSF 自动补全 `<` 后发 Main 事件 PairedPunctuationAutoClosed（16），keycode 为开口键，只能是 `<`，其他值在 `valid_main_frame` 被拒。它是没有回复的通知，和 PuncSwitch 一样经 FocusRouter 限定当前焦点，在输入队列里调用 `msime_client_balance_paired_punctuation_after_auto_close`；管道按序投递，所以回退先于下一个按键生效。开口由 TSF 本地解析时也照发：两边计数都在零处截止，多回退一次无害。事件编号由 `scripts/apply_engine_paired_punctuation_ipc.py` 叠加进 Engine 契约头。
+候选打开时 `<` 由 Server 的 Engine 转换，Engine 的书名号嵌套计数随之加一；开启配对补全后右半边由 TSF 自己插入，之后的 `>` 只跨过它，Server 收不到能回退计数的按键，于是后面每个书名号都变成〈〉。所以 TSF 自动补全 `<` 后发 Main 事件 PairedPunctuationAutoClosed（16），keycode 为开口键，只能是 `<`，其他值在 `valid_main_frame` 被拒。它是没有回复的通知，和 PuncSwitch 一样经 FocusRouter 限定当前焦点，在输入队列里调用 `lingyao_client_balance_paired_punctuation_after_auto_close`；管道按序投递，所以回退先于下一个按键生效。开口由 TSF 本地解析时也照发：两边计数都在零处截止，多回退一次无害。事件编号由 `scripts/apply_engine_paired_punctuation_ipc.py` 叠加进 Engine 契约头。
 
 ### 发往 TSF 的模式请求
 
@@ -438,11 +438,11 @@ TSF 在收到 Server 回复之前就要决定一个键是组合输入还是选�
 
 ### 韩语的汉字转换
 
-韩语（Dubeolsik）组字时按汉字键（VK_HANJA，0x19），或者单独轻按一下右 Ctrl（按下到松开之间没有别的键，且在 500 ms 内松开），发送 `MSIME_CONVERT_HANJA`，列出正在组字的那一个音节的汉字，再按一次关闭。右 Ctrl 只在韩语有音节在组字时这样解释，这时它优先于“单击 Ctrl 切换语言”；没有组字时两个键都照旧交给应用或切换语言。纯辅音（ㄱ）没有汉字，按键被吞掉，音节继续组字。已经上屏的音节不转换。
+韩语（Dubeolsik）组字时按汉字键（VK_HANJA，0x19），或者单独轻按一下右 Ctrl（按下到松开之间没有别的键，且在 500 ms 内松开），发送 `LINGYAO_CONVERT_HANJA`，列出正在组字的那一个音节的汉字，再按一次关闭。右 Ctrl 只在韩语有音节在组字时这样解释，这时它优先于“单击 Ctrl 切换语言”；没有组字时两个键都照旧交给应用或切换语言。纯辅音（ㄱ）没有汉字，按键被吞掉，音节继续组字。已经上屏的音节不转换。
 
-列表打开时的按键规则只有一份，在 `common/KoreanHanjaKey.h`：TIP 用它驱动自己的 host session，Server 用它驱动自己的会话（`ReplyComposer::korean_hanja`），两边对同一个键做同一件事，不看中文候选的翻页绑定。数字 1-9（主键盘或小键盘）选本页，空格和回车选高亮项，方向键移动高亮，PageUp/PageDown 翻页，Home/End 到首尾，Esc 和退格只关闭列表、保留音节。其余键照没有列表时的规则：字母关闭列表并继续组字；标点（包括 `-` `=` `[` `]` `,` `.`）、`0`、Tab、Insert、Delete 关闭列表并提交韩文，与 macOS 和 Linux 一致。TIP 上屏的是自己 host session 选出的汉字，Server 对这些键不回帧，只计入打字统计；在候选窗口里点选时由 Server 选出，TIP 写入后丢弃 host session 里的音节。TIP 先决定吃不吃键、再执行：排在别的键后面的键，按“前面的键执行完以后列表开没开”的推算来分类。推算从 host session 的实际状态出发，汉字键打开或关闭列表，Esc、退格、选字和字母关闭列表。推算列表关着时，每个键照没有列表时的规则分类，所以从不按汉字键的韩文输入和以前完全一样；推算列表开着时，列表的键在执行时再按 host session 的实际状态决定，Server 也按自己会话的状态决定，两边一致。纯辅音按汉字键不会打开列表，推算会暂时偏开，但键在执行时仍按实际状态处理，只是排在后面的键的推算要等队列排空才校正。Ctrl+Enter 在韩语下始终交给应用，Server 的 `commit_candidate_translation` 遇到韩语也不提交，汉字候选的훈음和译文都只用于显示。列表在音节仍在组字时关闭，TIP 的候选 presenter 会安静地撤掉，不发 HideCandidateWnd，否则 Server 会取消它仍在组的音节；Server 的 `cancel_composition` 遇到列表打开时会连发两次 `MSIME_CANCEL`。汉字候选不提供置顶、固定排位和删除菜单。
+列表打开时的按键规则只有一份，在 `common/KoreanHanjaKey.h`：TIP 用它驱动自己的 host session，Server 用它驱动自己的会话（`ReplyComposer::korean_hanja`），两边对同一个键做同一件事，不看中文候选的翻页绑定。数字 1-9（主键盘或小键盘）选本页，空格和回车选高亮项，方向键移动高亮，PageUp/PageDown 翻页，Home/End 到首尾，Esc 和退格只关闭列表、保留音节。其余键照没有列表时的规则：字母关闭列表并继续组字；标点（包括 `-` `=` `[` `]` `,` `.`）、`0`、Tab、Insert、Delete 关闭列表并提交韩文，与 macOS 和 Linux 一致。TIP 上屏的是自己 host session 选出的汉字，Server 对这些键不回帧，只计入打字统计；在候选窗口里点选时由 Server 选出，TIP 写入后丢弃 host session 里的音节。TIP 先决定吃不吃键、再执行：排在别的键后面的键，按“前面的键执行完以后列表开没开”的推算来分类。推算从 host session 的实际状态出发，汉字键打开或关闭列表，Esc、退格、选字和字母关闭列表。推算列表关着时，每个键照没有列表时的规则分类，所以从不按汉字键的韩文输入和以前完全一样；推算列表开着时，列表的键在执行时再按 host session 的实际状态决定，Server 也按自己会话的状态决定，两边一致。纯辅音按汉字键不会打开列表，推算会暂时偏开，但键在执行时仍按实际状态处理，只是排在后面的键的推算要等队列排空才校正。Ctrl+Enter 在韩语下始终交给应用，Server 的 `commit_candidate_translation` 遇到韩语也不提交，汉字候选的훈음和译文都只用于显示。列表在音节仍在组字时关闭，TIP 的候选 presenter 会安静地撤掉，不发 HideCandidateWnd，否则 Server 会取消它仍在组的音节；Server 的 `cancel_composition` 遇到列表打开时会连发两次 `LINGYAO_CANCEL`。汉字候选不提供置顶、固定排位和删除菜单。
 
-汉字候选的훈음（音训，例如 `나라 이름 한, 한나라 한`）由 Engine 放在候选的 annotation 里。`CandidatePresentation.h` 在韩语汉字列表（scheme 4，不在专用英文模式和任何局部模式下）里把它从 annotation 挪到 `PresentationCandidate::gloss`，所以候选正文只有汉字本身，훈음画在翻译那一段：字号是候选的 0.78 倍（`translation_font`），颜色是翻译的颜色，摆放规则也和翻译一样（竖排放得下时跟在汉字后面，横排或放不下时在汉字下面），不看候选翻译和英文释义开关。翻译查询对韩语和中文一样发出（共享库的 `msime_client_translation_query` 不再对 scheme 4 返回 null，繁体汉字查不到时按简体字再查一次），有译文时훈음在上、译文另起一行在下：`candidate_secondary_text` 用换行连接两者，`CandidateItemWidths::translation_lines` 为 2，这样的一段总是放到汉字下面，高度按两行实测。훈음只存在于这份显示投影里，从不写进 Engine 的 translation，Ctrl+Enter 等提交译文的路径读到的始终是 Engine 自己的 translation。
+汉字候选的훈음（音训，例如 `나라 이름 한, 한나라 한`）由 Engine 放在候选的 annotation 里。`CandidatePresentation.h` 在韩语汉字列表（scheme 4，不在专用英文模式和任何局部模式下）里把它从 annotation 挪到 `PresentationCandidate::gloss`，所以候选正文只有汉字本身，훈음画在翻译那一段：字号是候选的 0.78 倍（`translation_font`），颜色是翻译的颜色，摆放规则也和翻译一样（竖排放得下时跟在汉字后面，横排或放不下时在汉字下面），不看候选翻译和英文释义开关。翻译查询对韩语和中文一样发出（共享库的 `lingyao_client_translation_query` 不再对 scheme 4 返回 null，繁体汉字查不到时按简体字再查一次），有译文时훈음在上、译文另起一行在下：`candidate_secondary_text` 用换行连接两者，`CandidateItemWidths::translation_lines` 为 2，这样的一段总是放到汉字下面，高度按两行实测。훈음只存在于这份显示投影里，从不写进 Engine 的 translation，Ctrl+Enter 等提交译文的路径读到的始终是 Engine 自己的 translation。
 
 未在真机核实：TIP 只注册在 zh-CN 配置下，韩国键盘的汉字键在这种情况下能否送到 0x19，以及右 Ctrl 在各种键盘驱动下是否作为右 Ctrl 而不是汉字键上报。
 
@@ -456,23 +456,23 @@ TSF 在收到 Server 回复之前就要决定一个键是组合输入还是选�
 - 越南语：Telex 或 VNI（设置里选择），字母按原样大小写组字，Caps Lock 下的大写字母照样组字，与 macOS 一致；VNI 下组字中的数字是声调。没有候选列表。空格、数字（Telex）、标点提交单词并跟上该字符，标点是半角；方向键等提交后交给应用；Esc 丢弃整个单词。关闭中文时越南语与韩语一样直接输出半角 ASCII。
 - 藏语：威利转写（EWTS），没有可选项。字母按原样大小写组字（`T`、`D`、`N`、`Sh`、`A`、`I`、`U`、`M`、`H` 都是不同的字母），Caps Lock 下的大写字母照样送进宿主会话；威利读不了的字母（`A`、`D`、`H`、`I`、`M`、`N`、`R`、`S`、`T`、`U`、`W`、`X`、`Y` 以外的大写字母，以及小写 `q`、`x`）不进组合，引擎先上屏已有的藏文再原样写出该字母，拉丁字母不会混进转换结果；`'` 随时参与拼写（可以开头 achung 音节），`+`、`.`、`-` 在组字中参与拼写。组合里保存当前音节串的威利原文，内嵌显示的是转换出的藏文，没有候选列表。组字中空格上屏藏文并加音节点 `་`，`/` 上屏藏文并加垂符 `།`（以 ང 结尾时垂符前保留音节点，`ང་།`），空组合时 `/` 单独输出垂符；回车只上屏藏文，按键被吃掉；数字和其他标点上屏藏文并跟上该字符（半角，数字保持原样）；方向键等提交后交给应用。第一次 Esc 把组合切回拉丁原文并继续组字，第二次 Esc 丢弃；原文显示时空格上屏原文并跟上空格。排队时用引擎的静态拼写表（`kTibetanIdleSymbols`、`kTibetanComposingSymbols`）推算，执行时以 View.spelling_symbols 为准再判断一次。
 
-粤拼和注音需要安装包附带的词库：`Prepare-PackageFiles.ps1` 从 `target/language-dictionaries`（`scripts/fetch_language_dictionaries.py` 按 `resources/language-dictionaries.lock.json` 下载）把 `msime-cantonese.db`、`msime-zhuyin.db` 连同各自的授权声明放进 `server_exe/language-dictionaries`，安装后位于 `server\language-dictionaries`，与 `server\resources` 同级，宿主库在那里找到它们并写进运行时配置。缺少某个词库时，托盘里对应的项不可选，已选的方案按宿主库的 `effective_scheme` 退回上次的中文方案（再不行就是全拼），TIP 和托盘都按实际运行的方案处理。越南语和藏语不需要数据。设置 `MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1` 时缺少任一词库会让打包失败。
+粤拼和注音需要安装包附带的词库：`Prepare-PackageFiles.ps1` 从 `target/language-dictionaries`（`scripts/fetch_language_dictionaries.py` 按 `resources/language-dictionaries.lock.json` 下载）把 `lingyao-cantonese.db`、`lingyao-zhuyin.db` 连同各自的授权声明放进 `server_exe/language-dictionaries`，安装后位于 `server\language-dictionaries`，与 `server\resources` 同级，宿主库在那里找到它们并写进运行时配置。缺少某个词库时，托盘里对应的项不可选，已选的方案按宿主库的 `effective_scheme` 退回上次的中文方案（再不行就是全拼），TIP 和托盘都按实际运行的方案处理。越南语和藏语不需要数据。设置 `LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1` 时缺少任一词库会让打包失败。
 
 未在真机核实：注音、越南语与藏语的 TIP 行为只在 macOS 上用交叉编译和单元测试验证过，没有在 Windows 上实际打字。语言栏图标没有新增，这几个方案显示中文图标。
 
 ### 笔画
 
-笔画（scheme 9）是中文方案，在托盘菜单「输入方案」里排在藏文之后，设置页的分段控件里同样可选，工具栏语言按钮显示「笔」。它有自己的输入模式代码 `7`：它的 trait 与全拼不同（不做繁简转换、不显示译文），TIP 的按键分类也不同。Engine 谓词逐项照抄粤拼，所以它和粤拼一样走 Server 的候选窗，标点、翻页、数字选词与全拼相同，候选来自只读的 `msime-stroke.db`，不提供置顶、固定和删除，繁体输出开关不再转换，打字统计记在 `stroke` 名下。
+笔画（scheme 9）是中文方案，在托盘菜单「输入方案」里排在藏文之后，设置页的分段控件里同样可选，工具栏语言按钮显示「笔」。它有自己的输入模式代码 `7`：它的 trait 与全拼不同（不做繁简转换、不显示译文），TIP 的按键分类也不同。Engine 谓词逐项照抄粤拼，所以它和粤拼一样走 Server 的候选窗，标点、翻页、数字选词与全拼相同，候选来自只读的 `lingyao-stroke.db`，不提供置顶、固定和删除，繁体输出开关不再转换，打字统计记在 `stroke` 名下。
 
 键位：`h` 横、`s` 竖、`p` 撇、`n` 点、`z` 折，`x` 是匹配任意一笔的通配符。空组合时只有 `hspnz` 开始组合，`x`、其他字母和大写字母交给应用（`InputSchemeTraits.h` 的 `LetterPassesWhileIdle`，立即路径和排队路径共用）。Engine 自己的英文模式（Ctrl+Shift+E、工具栏或托盘的英文）例外：那时 TSF 仍报告中文，Engine 先于方案判断英文模式、组合每一个字母，所以 Server 用 Worker 帧 DedicatedEnglishChanged（29，载荷 `0`/`1`）把这个状态推给 TIP，打开时所有字母都交给 Engine，否则 "apple" 的 a 会直接进应用。这个状态随 Server 每 250 毫秒读一次焦点会话的英文模式推送；TIP 吞下 Ctrl+Shift+E 时先在本地翻转（`common/DedicatedEnglishMirror.h`），所以切换后立刻键入的字母已按新状态分类。这个先行值 1 秒内没有被推送确认（按键在发出前被丢弃，或 Server 没有切换），就退回 Server 推送过的值。组合中 TIP 收下所有字母，Engine 在两边都吞掉笔画以外的字母，组合不变。数字 1-9 选词，空格提交高亮候选，回车提交键入的字母，Backspace 删最后一笔，Esc 清空。组合中的 `'` 不是音节分隔符（Engine 的 `accepts_apostrophe` 对笔画为假）：TIP 和 Server 都按 `ApostropheIsPunctuationWhileComposing` 把它当标点，和逗号一样先上屏高亮候选再上屏标点，与 Linux、macOS 一致。预编辑显示笔画字形 一丨丿丶乛＊：候选窗的预编辑行和 TIP 的内嵌组合都取 View 的 `preedit`（TIP 读自己 host session 的 View），`editing_text` 仍是 ASCII 字母，只用来对齐光标和校验回车提交的文本。
 
-词库：`Prepare-PackageFiles.ps1` 把 `msime-stroke.db` 连同 `msime-rime_stroke_LICENSE.txt` 与粤拼、注音词库一起放进 `server_exe/language-dictionaries`；Server、TIP（`FanyUtils.cpp` 的 `ReadConfiguredRunningScheme`）和托盘都按这个文件是否存在决定笔画能否运行，缺少时托盘里的「笔画」不可选，已选的笔画按 `effective_scheme` 退回上次的中文方案。`MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1` 要求 `resources/language-dictionaries.lock.json` 固定的每一份词库都在；锁固定 `msime-stroke.db` 之前笔画词库存在就装入，缺少也不让打包失败。`tests/input/stroke_keys.cpp` 用入库的合成词库 `tests/input/fixtures/msime-stroke.db` 对真实 Engine 会话跑这些键。
+词库：`Prepare-PackageFiles.ps1` 把 `lingyao-stroke.db` 连同 `lingyao-rime_stroke_LICENSE.txt` 与粤拼、注音词库一起放进 `server_exe/language-dictionaries`；Server、TIP（`FanyUtils.cpp` 的 `ReadConfiguredRunningScheme`）和托盘都按这个文件是否存在决定笔画能否运行，缺少时托盘里的「笔画」不可选，已选的笔画按 `effective_scheme` 退回上次的中文方案。`LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1` 要求 `resources/language-dictionaries.lock.json` 固定的每一份词库都在；锁固定 `lingyao-stroke.db` 之前笔画词库存在就装入，缺少也不让打包失败。`tests/input/stroke_keys.cpp` 用入库的合成词库 `tests/input/fixtures/lingyao-stroke.db` 对真实 Engine 会话跑这些键。
 
 未在真机核实：笔画的 TIP 行为和十个方案的设置页分段控件宽度只在 macOS 上用 MinGW 语法检查、本机运行的测试验证过，没有在 Windows 上实际打字或查看。
 
 ### 按键音、上屏音与背景音乐
 
-播放由共享库完成（host-api 的 kira 播放器，设置来自会话的 `preferences.plugins`），Server 只在自己的输入队列上报事件，TSF DLL 从不调用任何音频接口：它把同一个 `msime_host_api.dll` 加载进每个宿主进程，而播放器要等第一次有开关打开的调用才启动。`FocusedSession::configured_key` 在 Engine 处理完一个它接受的键之后调用 `msime_client_key_sound`，类别由 `src/input/KeySoundPolicy.h` 决定（空格 1、回车 2、退格 3、其他 0；Ctrl/Alt 组合键和单独的修饰键不出声），英文模式下不出声。TSF 只把输入法接手的键转给 Server，所以没有组合时的空格、回车等交给应用的键不会出声。确认送达的上屏在 `record_commit` 里调用 `msime_client_commit_sound`。获得焦点时调用 `msime_client_music_set_active(true)`，失去焦点、会话销毁时置为 false，偏好更新后在仍持有焦点时再报一次，让中途打开的背景音乐立即开始。前台是全屏应用（`FullscreenForeground.h`）时按键音、上屏音都不出，获得焦点时也不开音乐。
+播放由共享库完成（host-api 的 kira 播放器，设置来自会话的 `preferences.plugins`），Server 只在自己的输入队列上报事件，TSF DLL 从不调用任何音频接口：它把同一个 `lingyao_host_api.dll` 加载进每个宿主进程，而播放器要等第一次有开关打开的调用才启动。`FocusedSession::configured_key` 在 Engine 处理完一个它接受的键之后调用 `lingyao_client_key_sound`，类别由 `src/input/KeySoundPolicy.h` 决定（空格 1、回车 2、退格 3、其他 0；Ctrl/Alt 组合键和单独的修饰键不出声），英文模式下不出声。TSF 只把输入法接手的键转给 Server，所以没有组合时的空格、回车等交给应用的键不会出声。确认送达的上屏在 `record_commit` 里调用 `lingyao_client_commit_sound`。获得焦点时调用 `lingyao_client_music_set_active(true)`，失去焦点、会话销毁时置为 false，偏好更新后在仍持有焦点时再报一次，让中途打开的背景音乐立即开始。前台是全屏应用（`FullscreenForeground.h`）时按键音、上屏音都不出，获得焦点时也不开音乐。
 
 密码框：TSF 不读取输入范围（InputScope），靠的是键盘上下文。经典 Edit 的 ES_PASSWORD 控件会停用输入法；Chromium 与 Firefox 的密码框按它们的实现也挂在停用的上下文上（这一点没有在真机上逐个验证）。`_IsKeyboardDisabled()` 为真时 TSF 不接手任何键，Server 也就收不到，按键音不会泄露密码节奏。背景音乐只随 Server 的焦点租约开关，并不知道字段是不是密码框，所以不会因为密码框而暂停。
 

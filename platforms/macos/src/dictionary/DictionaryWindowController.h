@@ -1,4 +1,4 @@
 #import <AppKit/AppKit.h>
-@interface MSIMEDictionaryWindowController : NSWindowController
+@interface LINGYAODictionaryWindowController : NSWindowController
 - (instancetype)initWithOptions:(NSDictionary<NSString *, id> *)options;
 @end

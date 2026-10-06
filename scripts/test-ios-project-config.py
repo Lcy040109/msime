@@ -13,7 +13,7 @@ class IOSProjectConfigTests(unittest.TestCase):
     def test_tauri_app_declares_export_compliance_without_non_exempt_encryption(self):
         project = (APPLE_ROOT / "project.yml").read_text()
         self.assertIn("ITSAppUsesNonExemptEncryption: false", project)
-        with (APPLE_ROOT / "msime-desktop_iOS/Info.plist").open("rb") as file:
+        with (APPLE_ROOT / "lingyao-desktop_iOS/Info.plist").open("rb") as file:
             info = plistlib.load(file)
         self.assertIs(info["ITSAppUsesNonExemptEncryption"], False)
 
@@ -21,13 +21,13 @@ class IOSProjectConfigTests(unittest.TestCase):
         explanation = "仅在你开始语音输入时录音，并发送到你配置的语音识别服务。"
         project = (APPLE_ROOT / "project.yml").read_text()
         self.assertIn(f'NSMicrophoneUsageDescription: "{explanation}"', project)
-        with (APPLE_ROOT / "msime-desktop_iOS/Info.plist").open("rb") as file:
+        with (APPLE_ROOT / "lingyao-desktop_iOS/Info.plist").open("rb") as file:
             info = plistlib.load(file)
         self.assertEqual(info["NSMicrophoneUsageDescription"], explanation)
 
     def test_tauri_voice_panel_uses_bounded_native_recording_and_all_asr_transports(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         plugin = TAURI_ROOT / "../../../crates/tauri-mobile-platform"
         plugin_rust = (plugin / "src/lib.rs").read_text()
         swift = (plugin / "ios/Sources/MobilePlatformPlugin.swift").read_text()
@@ -57,9 +57,9 @@ class IOSProjectConfigTests(unittest.TestCase):
         )
         self.assertIn('args.provider == "doubao"', swift)
         self.assertIn('components.scheme?.lowercased() == "wss"', swift)
-        self.assertIn('@_silgen_name("msime_client_doubao_start_frame")', doubao)
-        self.assertIn('@_silgen_name("msime_client_doubao_audio_frame")', doubao)
-        self.assertIn('@_silgen_name("msime_client_doubao_decode_frame")', doubao)
+        self.assertIn('@_silgen_name("lingyao_client_doubao_start_frame")', doubao)
+        self.assertIn('@_silgen_name("lingyao_client_doubao_audio_frame")', doubao)
+        self.assertIn('@_silgen_name("lingyao_client_doubao_decode_frame")', doubao)
         self.assertIn("URLSessionWebSocketTask", doubao)
         self.assertIn("task.maximumMessageSize = Self.maximumFrameBytes", doubao)
         self.assertIn("private static let pcmChunkBytes = 6_400", doubao)
@@ -70,7 +70,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         # through this shell, reads the same answer. What this pins is unchanged: the Doubao
         # authentication headers come from the shared policy rather than a copy in a host.
         self.assertIn(
-            "use msime_client_core::voice::provider::{", rust_voice
+            "use lingyao_client_core::voice::provider::{", rust_voice
         )
         shared_voice = (
             TAURI_ROOT.parents[2] / "crates/client-core/src/voice/provider.rs"
@@ -95,7 +95,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         project = (APPLE_ROOT / "project.yml").read_text()
         reference = "path: ../../../../../platforms/ios/SharedResources/PrivacyInfo.xcprivacy"
         self.assertEqual(project.count(reference), 2)
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         self.assertIn("path = PrivacyInfo.xcprivacy", generated)
         self.assertEqual(generated.count("PrivacyInfo.xcprivacy in Resources"), 4)
 
@@ -106,14 +106,14 @@ class IOSProjectConfigTests(unittest.TestCase):
         self.assertEqual(config["bundle"]["iOS"]["minimumSystemVersion"], "17.0")
 
     def test_native_entry_and_entitlement_share_keyboard_state_without_private_data(self):
-        entry = (APPLE_ROOT / "Sources/msime-desktop/main.mm").read_text()
-        self.assertIn("group.app.msime.ios", entry)
-        self.assertIn('setenv("MSIME_CLIENT_STATE_DIR"', entry)
-        with (APPLE_ROOT / "msime-desktop_iOS/msime-desktop_iOS.entitlements").open("rb") as file:
+        entry = (APPLE_ROOT / "Sources/lingyao-desktop/main.mm").read_text()
+        self.assertIn("group.app.lingyao.ios", entry)
+        self.assertIn('setenv("LINGYAO_CLIENT_STATE_DIR"', entry)
+        with (APPLE_ROOT / "lingyao-desktop_iOS/lingyao-desktop_iOS.entitlements").open("rb") as file:
             entitlements = plistlib.load(file)
         self.assertEqual(
             entitlements["com.apple.security.application-groups"],
-            ["group.app.msime.ios"],
+            ["group.app.lingyao.ios"],
         )
 
     def test_tauri_ios_onboarding_reuses_the_native_app_marker(self):
@@ -144,7 +144,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_keyboard_brand_asset_is_packaged_for_app_and_extension(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         asset = TAURI_ROOT / "../../../platforms/ios/SharedResources/KeyboardBrand.png"
 
         self.assertTrue(asset.resolve().is_file())
@@ -156,7 +156,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_language_dictionaries_are_bundled_beside_engine_resources_for_app_and_extension(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         rust_entry = (TAURI_ROOT / "src/lib.rs").read_text()
 
         entry = (
@@ -167,36 +167,36 @@ class IOSProjectConfigTests(unittest.TestCase):
         )
         self.assertEqual(project.count(entry), 2)
         self.assertEqual(generated.count("language-dictionaries in Resources */,"), 2)
-        self.assertIn("msime_host_api::installed_language_dictionaries(resources)", rust_entry)
+        self.assertIn("lingyao_host_api::installed_language_dictionaries(resources)", rust_entry)
 
     def test_tauri_app_embeds_the_native_keyboard_extension(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        self.assertIn("  MSIMEKeyboardExtension:\n    type: app-extension", project)
+        self.assertIn("  LINGYAOKeyboardExtension:\n    type: app-extension", project)
         self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.keyboard", project)
-        self.assertIn("CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements", project)
+        self.assertIn("CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements", project)
         self.assertIn("SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h", project)
         self.assertIn("SWIFT_VERSION: 5.0", project)
-        self.assertIn("path: MSIMEKeyboardExtension/Info.plist", project)
-        self.assertIn("      - target: MSIMEKeyboardExtension", project)
+        self.assertIn("path: LINGYAOKeyboardExtension/Info.plist", project)
+        self.assertIn("      - target: LINGYAOKeyboardExtension", project)
 
-        info_path = APPLE_ROOT / "MSIMEKeyboardExtension/Info.plist"
+        info_path = APPLE_ROOT / "LINGYAOKeyboardExtension/Info.plist"
         with info_path.resolve().open("rb") as file:
             info = plistlib.load(file)
         extension = info["NSExtension"]
         self.assertEqual(extension["NSExtensionPointIdentifier"], "com.apple.keyboard-service")
         self.assertTrue(extension["NSExtensionAttributes"]["RequestsOpenAccess"])
 
-        entitlement_path = APPLE_ROOT / "../../../../../platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements"
+        entitlement_path = APPLE_ROOT / "../../../../../platforms/ios/KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements"
         with entitlement_path.resolve().open("rb") as file:
             entitlements = plistlib.load(file)
         self.assertEqual(
             entitlements["com.apple.security.application-groups"],
-            ["group.app.msime.ios"],
+            ["group.app.lingyao.ios"],
         )
 
     def test_tauri_keyboard_extension_registers_all_shipping_swift_dependencies(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
 
         # The checked-in XcodeGen output is the shipping project used by Tauri. Keep the
         # generated target in lockstep with project.yml so a newly added keyboard dependency
@@ -217,7 +217,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_tauri_app_packages_and_registers_ios_alternate_icons(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated_project = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated_project = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         alternate_names = [
             "AppIconForest",
             "AppIconSky",
@@ -243,8 +243,8 @@ class IOSProjectConfigTests(unittest.TestCase):
         desktop_entry = (TAURI_ROOT.parent / "src/main.tsx").read_text()
         plugin = TAURI_ROOT / "../../../crates/tauri-mobile-platform"
         swift = (plugin / "ios/Sources/MobilePlatformPlugin.swift").read_text()
-        self.assertIn("msime-tauri-mobile-platform", manifest)
-        self.assertIn("builder.plugin(msime_tauri_mobile_platform::init())", rust_entry)
+        self.assertIn("lingyao-tauri-mobile-platform", manifest)
+        self.assertIn("builder.plugin(lingyao_tauri_mobile_platform::init())", rust_entry)
         self.assertIn("open_system_keyboard_settings", rust_entry)
         self.assertIn("app_icon_info", rust_entry)
         self.assertIn("app_icon_set", rust_entry)
@@ -261,10 +261,10 @@ class IOSProjectConfigTests(unittest.TestCase):
         self.assertIn("EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]: HandwritingInputViewFallback.swift", project)
         self.assertIn("EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]: HandwritingInputView.swift HandwritingDownloadSession.m", project)
         self.assertIn("../../../../../target/ios/EngineResources", project)
-        self.assertIn('          - "-lmsime_host_api"', project)
+        self.assertIn('          - "-llingyao_host_api"', project)
 
         podfile = (APPLE_ROOT / "Podfile").read_text()
-        self.assertIn("target 'MSIMEKeyboardExtension'", podfile)
+        self.assertIn("target 'LINGYAOKeyboardExtension'", podfile)
         self.assertIn("pod 'MLKitDigitalInkRecognition', '8.0.0'", podfile)
 
     def test_mobile_platform_keeps_account_sessions_in_the_ios_keychain(self):
@@ -275,10 +275,10 @@ class IOSProjectConfigTests(unittest.TestCase):
         self.assertIn('run_mobile_plugin::<AccountSessionResponse>("loadSession", ())', rust)
         self.assertIn('run_mobile_plugin("saveSession", AccountSessionRequest { value })', rust)
         self.assertIn('run_mobile_plugin("clearSession", ())', rust)
-        self.assertIn('kSecAttrService as String: "app.msime.backend.account"', swift)
+        self.assertIn('kSecAttrService as String: "app.lingyao.backend.account"', swift)
         self.assertIn('kSecAttrAccount as String: "https://api.msime.app"', swift)
         self.assertIn("kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly", swift)
-        self.assertNotIn("app.msime.ios.community", swift)
+        self.assertNotIn("app.lingyao.ios.community", swift)
         self.assertIn("static let maximumPayloadBytes = 16 * 1024", swift)
         self.assertIn("@objc public func loadSession", swift)
         self.assertIn("@objc public func saveSession", swift)
@@ -332,7 +332,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
         self.assertIn('run_mobile_plugin::<IosKeyboardPreferences>("loadKeyboardPreferences", ())', rust)
         self.assertIn('run_mobile_plugin::<IosKeyboardPreferences>("saveKeyboardPreferences", preferences)', rust)
-        self.assertIn('UserDefaults(suiteName: "group.app.msime.ios")', swift)
+        self.assertIn('UserDefaults(suiteName: "group.app.lingyao.ios")', swift)
         for key in [
             "chineseInputScheme",
             "chineseOutputUsesTraditional",
@@ -389,7 +389,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_ios_cloud_dictionary_uses_shared_account_and_snapshot_queue(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         rust_entry = (TAURI_ROOT / "src/lib.rs").read_text()
         account = (TAURI_ROOT / "src/platform/ios/ios_account.rs").read_text()
         shared_account = (TAURI_ROOT / "src/platform/mobile/mobile_account_helpers.rs").read_text()
@@ -437,7 +437,7 @@ class IOSProjectConfigTests(unittest.TestCase):
             self.assertIn(source, generated)
         self.assertIn("DictionarySnapshotQueue()", bridge)
         self.assertIn("BackendPreparedSnapshot(copying: url)", bridge)
-        self.assertIn('@_cdecl("msime_ios_dictionary_snapshot_request")', bridge)
+        self.assertIn('@_cdecl("lingyao_ios_dictionary_snapshot_request")', bridge)
         capabilities = (TAURI_ROOT.parent / "src/input/mobile-host-capabilities.ts").read_text()
         self.assertIn("snapshot: isMobileHost(platform) || platform === \"macos\"", capabilities)
         self.assertIn("snapshotNative: platform === \"macos\"", capabilities)
@@ -478,15 +478,15 @@ class IOSProjectConfigTests(unittest.TestCase):
     def test_xcode27_runtime_exports_are_built_before_the_rust_mobile_library(self):
         project = (APPLE_ROOT / "project.yml").read_text()
         self.assertIn("revision: a83e2b2f196e3fa9605cb21c7d3b82652205c279", project)
-        self.assertIn("  MSIMESwiftRsRuntimeExports:\n    type: library.static", project)
-        self.assertIn("      - target: MSIMESwiftRsRuntimeExports", project)
+        self.assertIn("  LINGYAOSwiftRsRuntimeExports:\n    type: library.static", project)
+        self.assertIn("      - target: LINGYAOSwiftRsRuntimeExports", project)
         build_script = (TAURI_ROOT / "build.rs").read_text()
         self.assertIn("CONFIGURATION_BUILD_DIR", build_script)
-        self.assertIn("cargo:rustc-link-lib=static=MSIMESwiftRsRuntimeExports", build_script)
+        self.assertIn("cargo:rustc-link-lib=static=LINGYAOSwiftRsRuntimeExports", build_script)
 
     def test_ios_tauri_dictionary_edits_use_the_app_group_queue(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        generated = (APPLE_ROOT / "msime-desktop.xcodeproj/project.pbxproj").read_text()
+        generated = (APPLE_ROOT / "lingyao-desktop.xcodeproj/project.pbxproj").read_text()
         rust_entry = (TAURI_ROOT / "src/lib.rs").read_text()
         store = (TAURI_ROOT / "../../../platforms/ios/SharedUI/dictionary/PersonalDictionaryStore.swift").read_text()
         bridge = (TAURI_ROOT / "../../../platforms/ios/App/Sources/dictionary/TauriPersonalDictionaryBridge.swift").read_text()
@@ -499,7 +499,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         ]:
             self.assertIn(path, project)
         target = re.search(
-            r"/\* msime-desktop_iOS \*/ = \{.*?buildPhases = \((.*?)\);",
+            r"/\* lingyao-desktop_iOS \*/ = \{.*?buildPhases = \((.*?)\);",
             generated,
             re.DOTALL,
         )
@@ -521,7 +521,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         ]:
             self.assertIn(f"{source} in Sources", phase.group(1))
         self.assertIn("ios_personal_dictionary_action", rust_entry)
-        self.assertIn("msime_ios_native_ffi::personal_dictionary_request", rust_entry)
+        self.assertIn("lingyao_ios_native_ffi::personal_dictionary_request", rust_entry)
         self.assertIn('case "import_personal":', bridge)
         self.assertIn('case "edit":', bridge)
         self.assertIn("requestID: requestID", bridge)

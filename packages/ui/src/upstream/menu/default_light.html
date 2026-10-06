@@ -5,13 +5,13 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://msime-contracts; style-src 'unsafe-inline'; img-src data: https://appassets https://candidate-skins; font-src data: https://appassets https://candidate-skins">
   <script src="https://msime-contracts/schema.js"></script>
   <script src="https://msime-contracts/runtime.js"></script>
-  <script>const serializeHostMessage = message => MsimeProtocol.serializeClientMessage(message, "menu");</script>
+  <script>const serializeHostMessage = message => LingyaoProtocol.serializeClientMessage(message, "menu");</script>
   <meta charset="UTF-8">
   <title>(IME)TrayMenu</title>
   <style>
     :root {
-      --msime-max-width-dip: 50vw;
-      --msime-max-height-dip: 50vh;
+      --lingyao-max-width-dip: 50vw;
+      --lingyao-max-height-dip: 50vh;
     }
 
     html,
@@ -32,8 +32,8 @@
       padding: 0.2em 0;
       width: max-content;
       min-width: 12em;
-      max-width: min(100%, var(--msime-max-width-dip));
-      max-height: min(100vh, var(--msime-max-height-dip));
+      max-width: min(100%, var(--lingyao-max-width-dip));
+      max-height: min(100vh, var(--lingyao-max-height-dip));
       overflow-x: hidden;
       overflow-y: auto;
       overflow-wrap: anywhere;

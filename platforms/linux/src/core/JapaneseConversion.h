@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The Engine's `CandidateSource::Fallback`, as it appears in a view candidate's `source`.
 inline constexpr int kCandidateSourceFallback = 9;
@@ -13,8 +13,8 @@ inline constexpr int kCandidateSourceFallback = 9;
 // Space converts and Enter takes what is on screen - the way every Japanese input method works.
 //
 // Romaji is not what the user typed; かな is. The Engine keeps both (`editing_text` is the romaji,
-// `reading` the kana it converts to) and has one command for each ending: `MSIME_COMMIT_RAW` gives
-// the romaji back and `MSIME_COMMIT_READING` gives the kana. Both front ends here sent COMMIT_RAW
+// `reading` the kana it converts to) and has one command for each ending: `LINGYAO_COMMIT_RAW` gives
+// the romaji back and `LINGYAO_COMMIT_READING` gives the kana. Both front ends here sent COMMIT_RAW
 // on Enter for every scheme, so Japanese input committed `nihon` where the user meant にほん, and
 // Space committed the first conversion outright, so the second one could not be reached.
 //
@@ -103,4 +103,4 @@ class JapaneseConversion
     std::string reading_;
 };
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

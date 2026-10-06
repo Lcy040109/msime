@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { clipboardHistoryEnabled } from "@msime/ui";
+import { clipboardHistoryEnabled } from "@lingyao/ui";
 
 test("clipboard history is always enabled on iOS", () => {
   expect(clipboardHistoryEnabled(true)).toBe(true);

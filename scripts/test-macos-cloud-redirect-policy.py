@@ -12,7 +12,7 @@ def main() -> int:
     cmake = (ROOT / "platforms/macos/CMakeLists.txt").read_text()
     if "completionHandler(nil);" not in helper:
         raise SystemExit("the macOS cloud session must reject redirects")
-    if "MSIMEStartCloudDataTask" not in header or "CloudURLSession.mm" not in cmake:
+    if "LINGYAOStartCloudDataTask" not in header or "CloudURLSession.mm" not in cmake:
         raise SystemExit("the bounded cloud session helper is not built and exposed")
 
     for relative in (
@@ -21,7 +21,7 @@ def main() -> int:
         "platforms/macos/src/core/AccountAuthClient.mm",
     ):
         text = (ROOT / relative).read_text()
-        if "MSIMEStartCloudDataTask" not in text:
+        if "LINGYAOStartCloudDataTask" not in text:
             raise SystemExit(f"{relative} does not use the bounded cloud session")
         if "sharedSession" in text:
             raise SystemExit(f"{relative} still uses NSURLSession.sharedSession")

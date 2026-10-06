@@ -13,7 +13,7 @@ struct BackendLocalStore: BackendSessionStorage {
     self.baseDirectory = directory ?? Self.directory
   }
   private static var directory: URL? {
-    FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: MSIMEAppEdition.appGroupIdentifier)
+    FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: LINGYAOAppEdition.appGroupIdentifier)
   }
   private var url: URL? { baseDirectory?.appendingPathComponent(fileName, isDirectory: false) }
   private var lockURL: URL? { baseDirectory?.appendingPathComponent("backend-local-store.lock", isDirectory: false) }

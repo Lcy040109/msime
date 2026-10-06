@@ -3,7 +3,7 @@
 //! The command line does not reimplement any tool: it starts the same server in process and calls it over an in-memory pipe as an MCP client would, so the tools offered, their arguments, their limits and their answers are the server's own.
 
 use crate::config::Config;
-use crate::server::MsimeServer;
+use crate::server::LingyaoServer;
 use rmcp::model::{CallToolRequestParams, CallToolResult, GetPromptRequestParams};
 use rmcp::service::RunningService;
 use rmcp::{RoleClient, ServiceExt};
@@ -49,7 +49,7 @@ pub enum Action {
 pub async fn run(config: Config, action: Action) -> Result<ExitCode, Box<dyn std::error::Error>> {
     let (server_io, client_io) = tokio::io::duplex(PIPE_CAPACITY);
     let server = tokio::spawn(async move {
-        MsimeServer::new(config)
+        LingyaoServer::new(config)
             .serve(server_io)
             .await?
             .waiting()

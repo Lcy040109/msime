@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "lingyao.msime",
+  "id": "lingyao.lingyao",
   "name": "灵耀输入法",
   "version": "1.0.0",
   "author": "Lingyao",
-  "description": "Input mode and scheme of the MSIME Fcitx5 addon, with its settings menu",
+  "description": "Input mode and scheme of the LINGYAO Fcitx5 addon, with its settings menu",
   "kinds": [
     "bar-widget"
   ],
@@ -13,7 +13,7 @@
   },
   "barWidget": {
     "displayName": "灵耀输入法",
-    "description": "中/英 mode and the active scheme; click for the MSIME menu",
+    "description": "中/英 mode and the active scheme; click for the LINGYAO menu",
     "category": "Input",
     "allowMultiple": false,
     "defaultSection": "right"

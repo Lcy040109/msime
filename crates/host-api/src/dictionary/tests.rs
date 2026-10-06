@@ -4,14 +4,14 @@
 
 use super::*;
 
-fn import_engine_options() -> msime_engine::host::EngineOptions {
-    msime_engine::host::EngineOptions {
+fn import_engine_options() -> lingyao_engine::host::EngineOptions {
+    lingyao_engine::host::EngineOptions {
         resources: String::new(),
         user_data: String::new(),
         cache: String::new(),
         dictionaries: String::new(),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: false,
@@ -48,7 +48,7 @@ fn import_engine_options() -> msime_engine::host::EngineOptions {
         mention_entries: Vec::new(),
         quick_phrase_table: Vec::new(),
         helpcode_table: None,
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -85,7 +85,7 @@ fn typed_quick_phrase_edits_find_rows_by_code_and_text_and_list_only_user_phrase
     for name in ["resources", "dictionaries"] {
         let path = directory.path().join(name);
         std::fs::create_dir(&path).unwrap();
-        rusqlite::Connection::open(path.join("msime-pinyin.db"))
+        rusqlite::Connection::open(path.join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(fixture)
             .unwrap();
@@ -96,7 +96,7 @@ fn typed_quick_phrase_edits_find_rows_by_code_and_text_and_list_only_user_phrase
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": root,
     });
     // The Linux desktop publishes the skin catalog into the same document.
@@ -125,7 +125,7 @@ fn typed_quick_phrase_edits_find_rows_by_code_and_text_and_list_only_user_phrase
     )
     .unwrap();
     // Other dictionaries share the store and must never be listed.
-    let wubi = msime_engine::host::DictionaryEntry {
+    let wubi = lingyao_engine::host::DictionaryEntry {
         kind: DictionaryKind::Wubi,
         key: "dz".into(),
         value: "合成".into(),
@@ -218,7 +218,7 @@ fn word_fixture(directory: &Path, bundled: &str) -> DictionaryOptions {
     for name in ["resources", "dictionaries"] {
         let path = directory.join(name);
         std::fs::create_dir(&path).unwrap();
-        let connection = rusqlite::Connection::open(path.join("msime-pinyin.db")).unwrap();
+        let connection = rusqlite::Connection::open(path.join("lingyao-pinyin.db")).unwrap();
         connection.execute_batch(fixture).unwrap();
         connection.execute_batch(bundled).unwrap();
     }
@@ -228,7 +228,7 @@ fn word_fixture(directory: &Path, bundled: &str) -> DictionaryOptions {
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": root,
     }))
     .unwrap()
@@ -519,7 +519,7 @@ fn a_unique_four_letter_wubi_code_still_reports_its_word() {
     );
     // 自动上屏走的是选词，但查询关了学习，用户数据里除了词库访问锁（空目录第一次查询时才建）什么都不多。
     let mut after = tree(&directory.path().join("user"));
-    after.retain(|(path, _)| !path.ends_with(".msime-dictionary-access.lock"));
+    after.retain(|(path, _)| !path.ends_with(".lingyao-dictionary-access.lock"));
     assert_eq!(after, before);
 }
 
@@ -534,14 +534,14 @@ fn a_wubi_edition_lookup_refuses_schemes_it_does_not_offer() {
              INSERT INTO tbl_2_c VALUES('ce''shi','cs','测试',100);",
     );
     let root = directory.path().to_str().unwrap();
-    let wubi = msime_client_core::edition::Edition::by_id("wubi").unwrap();
+    let wubi = lingyao_client_core::edition::Edition::by_id("wubi").unwrap();
     let options = DictionaryOptions::from_host_document(json!({
         "api_version": 1,
         "resources": format!("{root}/resources"),
         "user_data": format!("{root}/user"),
         "cache": format!("{root}/cache"),
         "dictionaries": format!("{root}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::for_edition(wubi),
+        "preferences": lingyao_client_core::preferences::Preferences::for_edition(wubi),
         "preferences_directory": root,
         "edition": "wubi",
     }))
@@ -587,7 +587,7 @@ fn hans_entries_reject_what_the_import_format_rejects_without_touching_state() {
 
     let read = |text: &[u8], resources: &[u8]| -> serde_json::Value {
         let pointer = unsafe {
-            msime_client_dictionary_hans_entries(
+            lingyao_client_dictionary_hans_entries(
                 text.as_ptr(),
                 text.len(),
                 resources.as_ptr(),
@@ -598,18 +598,18 @@ fn hans_entries_reject_what_the_import_format_rejects_without_touching_state() {
             .to_str()
             .unwrap()
             .to_owned();
-        unsafe { crate::msime_client_string_free(pointer) };
+        unsafe { crate::lingyao_client_string_free(pointer) };
         serde_json::from_str(&value).unwrap()
     };
     assert_eq!(read(b"\xff", resources.as_bytes())["ok"], false);
     assert_eq!(read("你好".as_bytes(), &[0xff])["ok"], false);
     let null =
-        unsafe { msime_client_dictionary_hans_entries(std::ptr::null(), 0, std::ptr::null(), 0) };
+        unsafe { lingyao_client_dictionary_hans_entries(std::ptr::null(), 0, std::ptr::null(), 0) };
     let value = unsafe { std::ffi::CStr::from_ptr(null) }
         .to_str()
         .unwrap()
         .to_owned();
-    unsafe { crate::msime_client_string_free(null) };
+    unsafe { crate::lingyao_client_string_free(null) };
     assert!(value.contains("\"ok\":false"));
 }
 
@@ -640,7 +640,7 @@ fn a_manual_pinyin_entry_is_cut_into_syllables_like_an_imported_one() {
         let entry = replacement_for_engine(pinyin(typed, "你好")).unwrap();
         assert_eq!(entry.key, "ni'hao", "{typed:?}");
         // What this layer hands on is what the Engine accepts.
-        msime_engine::host::dictionary_validate(&entry.into()).unwrap();
+        lingyao_engine::host::dictionary_validate(&entry.into()).unwrap();
     }
     // The word's length picks the cut, as it does for an imported row.
     assert_eq!(
@@ -670,7 +670,7 @@ fn a_refused_edit_says_which_rule_it_broke() {
                 "user_data": format!("{root}/user"),
                 "cache": format!("{root}/cache"),
                 "dictionaries": format!("{root}/dictionaries"),
-                "preferences": msime_client_core::preferences::Preferences::default(),
+                "preferences": lingyao_client_core::preferences::Preferences::default(),
             },
             "action": {
                 "operation": "edit",
@@ -741,7 +741,7 @@ fn a_listed_english_word_above_the_ceiling_can_be_edited() {
             "user_data": format!("{root}/user"),
             "cache": format!("{root}/cache"),
             "dictionaries": format!("{root}/dictionaries"),
-            "preferences": msime_client_core::preferences::Preferences::default(),
+            "preferences": lingyao_client_core::preferences::Preferences::default(),
         },
         "action": {
             "operation": "edit",
@@ -791,7 +791,7 @@ fn a_quick_phrase_code_is_letters_only_for_new_input_but_a_stored_digit_row_stay
             "user_data": format!("{root}/user"),
             "cache": format!("{root}/cache"),
             "dictionaries": format!("{root}/dictionaries"),
-            "preferences": msime_client_core::preferences::Preferences::default(),
+            "preferences": lingyao_client_core::preferences::Preferences::default(),
         },
         "action": {
             "operation": "edit",
@@ -806,7 +806,7 @@ fn a_quick_phrase_code_is_letters_only_for_new_input_but_a_stored_digit_row_stay
     );
 
     // A personal dictionary file carrying a digit code is refused, as the text import skips such a row.
-    let file = r#"{"format":"msime-personal-dictionary","version":1,"entries":[{"kind":"quickPhrase","key":"nh1","value":"你好","weight":1}]}"#;
+    let file = r#"{"format":"lingyao-personal-dictionary","version":1,"entries":[{"kind":"quickPhrase","key":"nh1","value":"你好","weight":1}]}"#;
     assert_eq!(
         parse_personal_dictionary_import(file).unwrap_err(),
         "invalid personal dictionary entry"
@@ -815,12 +815,12 @@ fn a_quick_phrase_code_is_letters_only_for_new_input_but_a_stored_digit_row_stay
     // The validation iOS runs on every new entry follows the same rule.
     let validate = |entry: Entry| -> serde_json::Value {
         let bytes = serde_json::to_vec(&entry).unwrap();
-        let pointer = unsafe { msime_client_dictionary_validate(bytes.as_ptr(), bytes.len()) };
+        let pointer = unsafe { lingyao_client_dictionary_validate(bytes.as_ptr(), bytes.len()) };
         let value = unsafe { std::ffi::CStr::from_ptr(pointer) }
             .to_str()
             .unwrap()
             .to_owned();
-        unsafe { crate::msime_client_string_free(pointer) };
+        unsafe { crate::lingyao_client_string_free(pointer) };
         serde_json::from_str(&value).unwrap()
     };
     let refused = validate(quick("nh1", "你好"));
@@ -848,7 +848,7 @@ fn a_mobile_store_holding_a_digit_quick_phrase_still_exports_it() {
         .synchronize(
             |_| Ok(()),
             |_| {
-                Ok(msime_client_core::dictionary::personal::PersonalWordPage {
+                Ok(lingyao_client_core::dictionary::personal::PersonalWordPage {
                     entries: vec![legacy.clone()],
                     has_more: false,
                 })
@@ -862,7 +862,7 @@ fn a_mobile_store_holding_a_digit_quick_phrase_still_exports_it() {
             "user_data": format!("{root}/user"),
             "cache": format!("{root}/cache"),
             "dictionaries": format!("{root}/dictionaries"),
-            "preferences": msime_client_core::preferences::Preferences::default(),
+            "preferences": lingyao_client_core::preferences::Preferences::default(),
             "preferences_directory": root,
         },
         "action": {
@@ -943,7 +943,7 @@ fn engine_backed_pinyin_import_resolves_lengths_and_reports_invalid_rows() {
     assert_eq!(report.first_failures[0].line, 2);
     assert_eq!(
         report.first_failures[0].issue,
-        msime_client_core::dictionary::import::ImportIssue::Pinyin
+        lingyao_client_core::dictionary::import::ImportIssue::Pinyin
     );
 
     let (wubi, _) = parse_import(&Kind::Wubi, "windows", "wq\t你好\t9\n", Some(&options)).unwrap();
@@ -953,7 +953,7 @@ fn engine_backed_pinyin_import_resolves_lengths_and_reports_invalid_rows() {
 #[test]
 fn personal_import_accepts_the_apple_envelope_and_rejects_duplicates() {
     let text = r#"{
-          "format": "msime-personal-dictionary",
+          "format": "lingyao-personal-dictionary",
           "version": 1,
           "entries": [
             {"kind":"pinyin","key":"ni hao","value":"你好","weight":100000},
@@ -977,12 +977,12 @@ fn personal_import_accepts_the_apple_envelope_and_rejects_duplicates() {
 
 #[test]
 fn personal_import_enforces_file_and_entry_bounds() {
-    let empty = r#"{"format":"msime-personal-dictionary","version":1,"entries":[]}"#;
+    let empty = r#"{"format":"lingyao-personal-dictionary","version":1,"entries":[]}"#;
     assert_eq!(
         parse_personal_dictionary_import(empty).unwrap_err(),
         "invalid personal dictionary entry count"
     );
-    let malformed = r#"{"format":"msime-personal-dictionary","version":1,"entries":[{"kind":"pinyin","key":"nihao","value":"坏词","weight":1}]}"#;
+    let malformed = r#"{"format":"lingyao-personal-dictionary","version":1,"entries":[{"kind":"pinyin","key":"nihao","value":"坏词","weight":1}]}"#;
     assert_eq!(
         parse_personal_dictionary_import(malformed).unwrap_err(),
         "invalid personal dictionary entry"
@@ -996,7 +996,7 @@ fn personal_import_enforces_file_and_entry_bounds() {
 #[test]
 fn personal_import_normalizes_before_deduplicating_and_allows_multiline_quick_phrases() {
     let text = r#"{
-            "format":"msime-personal-dictionary",
+            "format":"lingyao-personal-dictionary",
             "version":1,
             "entries":[
                 {"kind":"pinyin","key":"NI HAO","value":"拟好","weight":100000},
@@ -1009,7 +1009,7 @@ fn personal_import_normalizes_before_deduplicating_and_allows_multiline_quick_ph
     assert_eq!(entries[1].value, "第一行\n第二行\t末列");
 
     let large = json!({
-        "format": "msime-personal-dictionary",
+        "format": "lingyao-personal-dictionary",
         "version": 1,
         "entries": [{
             "kind": "quickPhrase",
@@ -1022,7 +1022,7 @@ fn personal_import_normalizes_before_deduplicating_and_allows_multiline_quick_ph
     assert_eq!(parse_personal_dictionary_import(&large).unwrap().len(), 1);
 
     let duplicate = r#"{
-            "format":"msime-personal-dictionary",
+            "format":"lingyao-personal-dictionary",
             "version":1,
             "entries":[
                 {"kind":"pinyin","key":"ni hao","value":"你好","weight":1},

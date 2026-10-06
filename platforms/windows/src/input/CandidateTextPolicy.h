@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class HanCharacterEdge { First, Last };
 
 inline bool is_han_code_point(char32_t code_point) {
@@ -56,4 +56,4 @@ extract_han_character(std::string_view text, HanCharacterEdge edge) {
   }
   return result;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

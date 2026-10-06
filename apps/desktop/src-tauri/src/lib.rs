@@ -65,36 +65,36 @@ use platform::mobile::mobile_community;
 #[cfg(windows)]
 use platform::windows::{windows_account, windows_voice};
 
-use msime_client_core::clipboard::ClipboardHistoryStore;
-use msime_client_core::host_surface::{HostCapabilities, HostPlatform, SurfaceRoute};
-use msime_client_core::panels::{
+use lingyao_client_core::clipboard::ClipboardHistoryStore;
+use lingyao_client_core::host_surface::{HostCapabilities, HostPlatform, SurfaceRoute};
+use lingyao_client_core::panels::{
     HandwritingRecognitionRequest, HandwritingRecognitionResult, KeyboardInputRequest,
 };
-use msime_client_core::preferences::{
+use lingyao_client_core::preferences::{
     Preferences, PreferencesError, PreferencesSnapshot, PreferencesStore,
 };
-use msime_client_core::skin::custom_library::{
+use lingyao_client_core::skin::custom_library::{
     CustomSkinLibraryAction, CustomSkinLibraryError, CustomSkinLibraryStore, SavedTouchKeyboardSkin,
 };
-use msime_client_core::skin::keyboard_trial::KeyboardSkinTrialStore;
+use lingyao_client_core::skin::keyboard_trial::KeyboardSkinTrialStore;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-use msime_client_core::typing_statistics::TypingSource;
-use msime_client_core::typing_statistics::{TypingStatistics, TypingStatisticsStore};
+use lingyao_client_core::typing_statistics::TypingSource;
+use lingyao_client_core::typing_statistics::{TypingStatistics, TypingStatisticsStore};
 #[cfg(target_os = "android")]
-use msime_tauri_mobile_platform::{AndroidVoicePlatform, AndroidVoicePolishRequest};
+use lingyao_tauri_mobile_platform::{AndroidVoicePlatform, AndroidVoicePolishRequest};
 // Both mobile hosts build the same transcription request; only the transport differs.
 #[cfg(any(target_os = "ios", test))]
-use msime_tauri_mobile_platform::IosKeyboardAiPreferences;
+use lingyao_tauri_mobile_platform::IosKeyboardAiPreferences;
 #[cfg(target_os = "ios")]
-use msime_tauri_mobile_platform::MobilePlatform;
+use lingyao_tauri_mobile_platform::MobilePlatform;
 #[cfg(any(target_os = "ios", target_os = "android"))]
-use msime_tauri_mobile_platform::MobileVoiceRequestHeader;
+use lingyao_tauri_mobile_platform::MobileVoiceRequestHeader;
 #[cfg(any(target_os = "ios", target_os = "android"))]
-use msime_tauri_mobile_platform::MobileVoiceTranscriptionRequest;
+use lingyao_tauri_mobile_platform::MobileVoiceTranscriptionRequest;
 // The packaged recognizer runs on every host; only the socket provider is unix.
 #[cfg(all(unix, not(any(target_os = "ios", target_os = "android"))))]
-use msime_input_runtime::UnixSocketProvider;
-use msime_input_runtime::{HandwritingPoint, HandwritingQuery};
+use lingyao_input_runtime::UnixSocketProvider;
+use lingyao_input_runtime::{HandwritingPoint, HandwritingQuery};
 use serde_json::Value;
 use std::collections::HashMap;
 #[cfg(any(
@@ -126,8 +126,8 @@ use tauri::Emitter;
 use tauri::Manager;
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-use msime_host_api::mcp_clients;
-use msime_host_api::system_fonts;
+use lingyao_host_api::mcp_clients;
+use lingyao_host_api::system_fonts;
 use shared::export_file;
 use shared::skin_directory;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -175,20 +175,20 @@ pub(crate) fn clipboard_history_uses_preference(platform: HostPlatform) -> bool 
     !matches!(platform, HostPlatform::Ios)
 }
 
-/// The surface a native host asked this shell to present, from `--route=<route>` or `MSIME_CLIENT_ROUTE`. An unparseable route opens the ordinary settings window rather than failing startup.
+/// The surface a native host asked this shell to present, from `--route=<route>` or `LINGYAO_CLIENT_ROUTE`. An unparseable route opens the ordinary settings window rather than failing startup.
 fn requested_surface_route() -> Option<SurfaceRoute> {
     let argument = std::env::args()
         .skip(1)
         .find_map(|argument| argument.strip_prefix("--route=").map(str::to_string));
-    let requested = argument.or_else(|| std::env::var("MSIME_CLIENT_ROUTE").ok())?;
+    let requested = argument.or_else(|| std::env::var("LINGYAO_CLIENT_ROUTE").ok())?;
     SurfaceRoute::parse(requested.trim())
         .ok()
         .filter(|route| edition_offers_route(package_edition(), *route))
 }
 
 /// 本安装包所属的版本：macOS 读 app 里的版本声明，Windows 读 Server 目录里的，Linux 读安装前缀 bin 目录里的；没有声明（开发运行、测试、其他平台）是 full。声明坏了的包在启动时就已经退出（`check_*_edition`），这里读不出来时按 full 处理只会多给入口，不会少给。
-pub(crate) fn package_edition() -> &'static msime_client_core::edition::Edition {
-    use msime_client_core::edition::Edition;
+pub(crate) fn package_edition() -> &'static lingyao_client_core::edition::Edition {
+    use lingyao_client_core::edition::Edition;
     #[cfg(target_os = "macos")]
     let declared = Edition::of_macos_bundle();
     #[cfg(target_os = "windows")]
@@ -202,13 +202,13 @@ pub(crate) fn package_edition() -> &'static msime_client_core::edition::Edition 
 
 /// 版本是否提供这个界面。手写面板只认汉字，不提供手写的版本（版本表 `features.handwriting` 为 false：日文、越南文和藏文版）既不从启动参数、也不从菜单转发或设置页打开它，对应的设置页同样不打开。其他界面每个版本都有。
 pub(crate) fn edition_offers_route(
-    edition: &msime_client_core::edition::Edition,
+    edition: &lingyao_client_core::edition::Edition,
     route: SurfaceRoute,
 ) -> bool {
     match route {
         SurfaceRoute::Handwriting
         | SurfaceRoute::Settings(Some(
-            msime_client_core::host_surface::SettingsCategory::Handwriting,
+            lingyao_client_core::host_surface::SettingsCategory::Handwriting,
         )) => edition.features.handwriting,
         _ => true,
     }
@@ -230,7 +230,7 @@ fn host_capabilities(app: tauri::AppHandle) -> HostCapabilities {
         || (cfg!(target_os = "linux")
             && host_options
                 .as_ref()
-                .is_some_and(|document| !msime_host_api::packaged_language_dictionaries(document)));
+                .is_some_and(|document| !lingyao_host_api::packaged_language_dictionaries(document)));
     if downloads_language_dictionaries {
         drop_unpinned_language_schemes(&mut capabilities);
     } else {
@@ -243,7 +243,7 @@ fn host_capabilities(app: tauri::AppHandle) -> HostCapabilities {
     // HostOptions 文档记录了版本时，去掉本版本不含的方案；full 的文档没有这个键，什么也不改。
     if let Some(edition) = host_options
         .as_ref()
-        .and_then(msime_client_core::edition::Edition::of_host_options)
+        .and_then(lingyao_client_core::edition::Edition::of_host_options)
     {
         capabilities.narrow_to_edition(edition);
     }
@@ -253,13 +253,13 @@ fn host_capabilities(app: tauri::AppHandle) -> HostCapabilities {
 /// 本应用所属的版本，取自 HostOptions 文档：没有 `edition` 键（包括还没有文档、读不到文档）是 full；文档写着版本表里没有的 id 时返回 `None`，调用方按认不出的版本处理，不当成 full。
 pub(crate) fn host_edition(
     app: &tauri::AppHandle,
-) -> Option<&'static msime_client_core::edition::Edition> {
+) -> Option<&'static lingyao_client_core::edition::Edition> {
     match app
         .try_state::<DictionaryHostOptions>()
         .and_then(|options| options.snapshot().ok())
     {
-        Some(document) => msime_client_core::edition::Edition::of_host_options(&document),
-        None => Some(msime_client_core::edition::Edition::full()),
+        Some(document) => lingyao_client_core::edition::Edition::of_host_options(&document),
+        None => Some(lingyao_client_core::edition::Edition::full()),
     }
 }
 
@@ -271,7 +271,7 @@ fn drop_uninstalled_language_schemes(
     host_options: Option<&Value>,
     beside_resources: bool,
 ) {
-    use msime_client_core::preferences::InputScheme;
+    use lingyao_client_core::preferences::InputScheme;
     let named = host_options
         .and_then(|document| document.get("language_dictionaries"))
         .and_then(Value::as_str)
@@ -293,9 +293,9 @@ fn drop_uninstalled_language_schemes(
     .filter(|directory| directory.is_absolute());
     capabilities.input_schemes.retain(|scheme| {
         let dictionary = match scheme {
-            InputScheme::Cantonese => "msime-cantonese.db",
-            InputScheme::Zhuyin => "msime-zhuyin.db",
-            InputScheme::Stroke => "msime-stroke.db",
+            InputScheme::Cantonese => "lingyao-cantonese.db",
+            InputScheme::Zhuyin => "lingyao-zhuyin.db",
+            InputScheme::Stroke => "lingyao-stroke.db",
             _ => return true,
         };
         directory
@@ -306,8 +306,8 @@ fn drop_uninstalled_language_schemes(
 
 /// macOS 按需下载语言词库包：包里没有某方案的词库（锁文件还没固定它）时，选了它 host-api 也只会退回别的方案，所以设置页不列出它。
 fn drop_unpinned_language_schemes(capabilities: &mut HostCapabilities) {
-    use msime_client_core::preferences::InputScheme;
-    use msime_client_core::resource_packs::ResourcePack;
+    use lingyao_client_core::preferences::InputScheme;
+    use lingyao_client_core::resource_packs::ResourcePack;
     let pinned = ResourcePack::LanguageDictionaries.schemes();
     capabilities.input_schemes.retain(|scheme| {
         let name = match scheme {
@@ -322,8 +322,8 @@ fn drop_unpinned_language_schemes(capabilities: &mut HostCapabilities) {
 
 /// What the running Linux host found about the desktop's candidate panel. Only the host knows which panel draws its list - GNOME Shell's popup, a Fcitx5 theme the user picked, the desktop's Kimpanel - so it writes that finding to a per-session file and the page reads it here instead of guessing from the desktop name.
 #[cfg(target_os = "linux")]
-fn linux_candidate_panel_limit() -> Option<msime_client_core::host_surface::CandidatePanelLimit> {
-    use msime_client_core::host_surface::CandidatePanelLimit;
+fn linux_candidate_panel_limit() -> Option<lingyao_client_core::host_surface::CandidatePanelLimit> {
+    use lingyao_client_core::host_surface::CandidatePanelLimit;
     let file = CandidatePanelLimit::status_file(std::env::var_os("XDG_RUNTIME_DIR").as_deref())?;
     CandidatePanelLimit::from_host_status(&read_candidate_panel_status(&file)?)
 }
@@ -341,7 +341,7 @@ fn read_candidate_panel_status(path: &Path) -> Option<String> {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn linux_candidate_panel_limit() -> Option<msime_client_core::host_surface::CandidatePanelLimit> {
+fn linux_candidate_panel_limit() -> Option<lingyao_client_core::host_surface::CandidatePanelLimit> {
     None
 }
 
@@ -450,7 +450,7 @@ async fn list_voice_capture_devices() -> Result<Value, CommandError> {
     }
     #[cfg(target_os = "windows")]
     {
-        let devices = tauri::async_runtime::spawn_blocking(msime_host_api::voice_capture_devices)
+        let devices = tauri::async_runtime::spawn_blocking(lingyao_host_api::voice_capture_devices)
             .await
             .map_err(|_| CommandError {
                 code: "audio_devices",
@@ -473,7 +473,7 @@ async fn list_voice_capture_devices() -> Result<Value, CommandError> {
     }
     #[cfg(target_os = "macos")]
     {
-        let devices = tauri::async_runtime::spawn_blocking(msime_host_macos::voice_capture_devices)
+        let devices = tauri::async_runtime::spawn_blocking(lingyao_host_macos::voice_capture_devices)
             .await
             .map_err(|_| CommandError {
                 code: "audio_devices",
@@ -503,7 +503,7 @@ async fn list_voice_capture_devices() -> Result<Value, CommandError> {
 #[tauri::command]
 async fn capture_voice_pcm(milliseconds: u32) -> Result<Vec<f32>, CommandError> {
     tauri::async_runtime::spawn_blocking(move || {
-        msime_host_api::voice_capture_pcm(milliseconds).map_err(|code| CommandError { code })
+        lingyao_host_api::voice_capture_pcm(milliseconds).map_err(|code| CommandError { code })
     })
     .await
     .map_err(|_| CommandError {
@@ -611,7 +611,7 @@ async fn set_typing_statistics_enabled(
             .set_enabled(enabled)
             .map_err(|_| CommandError { code: "storage" })?;
         #[cfg(target_os = "macos")]
-        msime_host_macos::notify_typing_statistics_enabled(enabled);
+        lingyao_host_macos::notify_typing_statistics_enabled(enabled);
         typing_statistics_status(&store, statistics)
     })
     .await
@@ -638,7 +638,7 @@ async fn set_typing_statistics_retention(
         );
         let statistics = store
             .set_retention(
-                msime_client_core::typing_statistics::StatisticsRetention::parse(&retention),
+                lingyao_client_core::typing_statistics::StatisticsRetention::parse(&retention),
                 &today,
             )
             .map_err(|_| CommandError { code: "storage" })?;
@@ -716,7 +716,7 @@ fn reveal_file_in_finder(file: &std::path::Path) -> Result<(), &'static str> {
 
 /// Reveal the input method's diagnostic log so it can be sent after a reproduction.
 ///
-/// MSIME-Windows writes its log to the Desktop to make it easy to find; on macOS the file stays in the preferences directory under Application Support and this action selects it in Finder instead. The host picks the location - the webview cannot name one.
+/// LINGYAO-Windows writes its log to the Desktop to make it easy to find; on macOS the file stays in the preferences directory under Application Support and this action selects it in Finder instead. The host picks the location - the webview cannot name one.
 #[tauri::command]
 async fn open_diagnostic_log_directory(
     state: tauri::State<'_, DiagnosticLogState>,
@@ -754,7 +754,7 @@ async fn save_export(
         .map_err(|code| CommandError { code })
 }
 
-/// `msime-mcp` beside this executable, the runtime options it would be pointed at, the entry to paste into an assistant, and whether each assistant offered here already has it.
+/// `lingyao-mcp` beside this executable, the runtime options it would be pointed at, the entry to paste into an assistant, and whether each assistant offered here already has it.
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 #[tauri::command]
 async fn mcp_server_status(
@@ -772,7 +772,7 @@ async fn mcp_server_status(
     .map_err(|_| CommandError { code: "storage" })?
 }
 
-/// 把条目（`args` 末尾加上 `flags`）写进 `client` 的配置文件。已有条目只差权限参数时直接更新；其它不同的 `msime` 条目在未设 `replace` 时以 `mcp_entry_exists` 失败，由设置页先问再覆盖。
+/// 把条目（`args` 末尾加上 `flags`）写进 `client` 的配置文件。已有条目只差权限参数时直接更新；其它不同的 `lingyao` 条目在未设 `replace` 时以 `mcp_entry_exists` 失败，由设置页先问再覆盖。
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 #[tauri::command]
 async fn install_mcp_client(
@@ -804,7 +804,7 @@ fn read_skin_toolbar_stylesheet_at(
     root: PathBuf,
     id: &str,
 ) -> Result<Option<String>, CommandError> {
-    msime_client_core::skin::catalog::read_toolbar_stylesheet(root, id)
+    lingyao_client_core::skin::catalog::read_toolbar_stylesheet(root, id)
         .map_err(|_| CommandError { code: "storage" })
 }
 
@@ -824,7 +824,7 @@ fn read_skin_stylesheet_at(
     id: &str,
     relative: &str,
 ) -> Result<String, CommandError> {
-    msime_client_core::skin::catalog::read_stylesheet(root, id, relative)
+    lingyao_client_core::skin::catalog::read_stylesheet(root, id, relative)
         .map_err(|_| CommandError { code: "storage" })
 }
 
@@ -852,7 +852,7 @@ fn read_skin_image_at(
     id: &str,
     relative: &str,
 ) -> Result<SkinImageResponse, CommandError> {
-    let resource = msime_client_core::skin::catalog::read_resource(root, id, relative)
+    let resource = lingyao_client_core::skin::catalog::read_resource(root, id, relative)
         .map_err(|_| CommandError { code: "storage" })?;
     if !resource.content_type.starts_with("image/") {
         return Err(CommandError {
@@ -889,7 +889,7 @@ fn read_skin_font_at(
     id: &str,
     relative: &str,
 ) -> Result<SkinFontResponse, CommandError> {
-    let resource = msime_client_core::skin::catalog::read_resource(root, id, relative)
+    let resource = lingyao_client_core::skin::catalog::read_resource(root, id, relative)
         .map_err(|_| CommandError { code: "storage" })?;
     if !resource.content_type.starts_with("font/") {
         return Err(CommandError {
@@ -946,7 +946,7 @@ async fn import_picked_skin(app: &tauri::AppHandle, root: PathBuf) -> Result<(),
         return Ok(());
     };
     let copied = tauri::async_runtime::spawn_blocking(move || {
-        msime_client_core::skin::folder_import::import(&source, &root)
+        lingyao_client_core::skin::folder_import::import(&source, &root)
     })
     .await;
     let _ = platform.end_skin_folder_access();
@@ -960,13 +960,13 @@ async fn import_picked_skin(app: &tauri::AppHandle, root: PathBuf) -> Result<(),
 struct SkinCatalogResponse {
     directory: String,
     #[serde(flatten)]
-    catalog: msime_client_core::skin::catalog::SkinCatalog,
+    catalog: lingyao_client_core::skin::catalog::SkinCatalog,
 }
 
 fn read_skin_catalog(root: PathBuf) -> SkinCatalogResponse {
     SkinCatalogResponse {
         directory: root.to_string_lossy().into_owned(),
-        catalog: msime_client_core::skin::catalog::scan(root),
+        catalog: lingyao_client_core::skin::catalog::scan(root),
     }
 }
 
@@ -999,44 +999,44 @@ fn rescan_skin_catalog(root: PathBuf, runtime: &RuntimeOptionsState) -> SkinCata
 /// page input.
 fn list_helpcode_schemas_at(
     options: &DictionaryHostOptions,
-) -> Result<Vec<msime_client_core::helpcode::CustomHelpcodeSchema>, CommandError> {
+) -> Result<Vec<lingyao_client_core::helpcode::CustomHelpcodeSchema>, CommandError> {
     let document = options.snapshot()?;
     let resources = document
         .get("resources")
         .and_then(Value::as_str)
         .filter(|value| std::path::Path::new(value).is_absolute())
         .ok_or(CommandError { code: "storage" })?;
-    msime_host_api::list_custom_helpcode_schemas(resources)
+    lingyao_host_api::list_custom_helpcode_schemas(resources)
         .map_err(|_| CommandError { code: "storage" })
 }
 
 #[tauri::command]
 async fn list_helpcode_schemas(
     options: tauri::State<'_, DictionaryHostOptions>,
-) -> Result<Vec<msime_client_core::helpcode::CustomHelpcodeSchema>, CommandError> {
+) -> Result<Vec<lingyao_client_core::helpcode::CustomHelpcodeSchema>, CommandError> {
     let options = options.inner().clone();
     tauri::async_runtime::spawn_blocking(move || list_helpcode_schemas_at(&options))
         .await
         .map_err(|_| CommandError { code: "storage" })?
 }
 
-/// `SettingsClient.resolveTheme`: the page's global theme draft, resolved the way `msime_client_resolve_theme` resolves it for native hosts.
+/// `SettingsClient.resolveTheme`: the page's global theme draft, resolved the way `lingyao_client_resolve_theme` resolves it for native hosts.
 #[derive(serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ResolveThemeRequest {
-    global_theme: msime_client_core::skin::theme::GlobalTheme,
+    global_theme: lingyao_client_core::skin::theme::GlobalTheme,
     #[serde(default)]
-    custom_theme: msime_client_core::preferences::CustomTheme,
+    custom_theme: lingyao_client_core::preferences::CustomTheme,
     dark: bool,
-    layout: msime_client_core::preferences::CandidateLayout,
+    layout: lingyao_client_core::preferences::CandidateLayout,
 }
 
 /// Resolve `request` against the installed packages under `root`. A custom theme whose package is missing or unreadable resolves without it, as it does on every native host.
 fn resolve_theme_at(
     root: &std::path::Path,
     request: ResolveThemeRequest,
-) -> Result<msime_client_core::skin::theme::ResolvedTheme, CommandError> {
-    use msime_client_core::skin::theme::{self, GlobalTheme, ThemePackage};
+) -> Result<lingyao_client_core::skin::theme::ResolvedTheme, CommandError> {
+    use lingyao_client_core::skin::theme::{self, GlobalTheme, ThemePackage};
     request.custom_theme.validate()?;
     let global_theme = request.global_theme;
     let package = request
@@ -1044,7 +1044,7 @@ fn resolve_theme_at(
         .candidate_skin
         .as_deref()
         .filter(|_| global_theme == GlobalTheme::Custom)
-        .and_then(|id| msime_client_core::skin::catalog::load_package(root, id).ok())
+        .and_then(|id| lingyao_client_core::skin::catalog::load_package(root, id).ok())
         .map(|summary| ThemePackage::from(&summary));
     Ok(theme::resolve(
         global_theme,
@@ -1059,7 +1059,7 @@ fn resolve_theme_at(
 async fn resolve_theme(
     directory: tauri::State<'_, SkinDirectoryState>,
     request: ResolveThemeRequest,
-) -> Result<msime_client_core::skin::theme::ResolvedTheme, CommandError> {
+) -> Result<lingyao_client_core::skin::theme::ResolvedTheme, CommandError> {
     // The host chooses the root; the webview names a package only by id.
     let root = directory.0.clone();
     tauri::async_runtime::spawn_blocking(move || resolve_theme_at(&root, request))
@@ -1210,7 +1210,7 @@ enum PanelInputTarget {
     Sway(u64),
     Ydotool,
     Wayland,
-    // No external tool reached the editor, but the MSIME input method serves the panel socket and types into whatever context it has focused.
+    // No external tool reached the editor, but the LINGYAO input method serves the panel socket and types into whatever context it has focused.
     InputMethod,
 }
 
@@ -1218,12 +1218,12 @@ enum PanelInputTarget {
 // focus, but a click still has to reach that window and not the panel itself.
 #[cfg(target_os = "windows")]
 #[derive(Clone, Copy, Debug)]
-struct PanelInputTarget(msime_host_windows::InputTarget);
+struct PanelInputTarget(lingyao_host_windows::InputTarget);
 
 // macOS 上 `remember_input_target` 会写入它，但面板改走原生 `macos_panel_session` 以后，没有地方再读这个目标。
 #[cfg(target_os = "macos")]
 #[derive(Clone, Debug)]
-struct PanelInputTarget(#[allow(dead_code)] msime_host_macos::LaunchTarget);
+struct PanelInputTarget(#[allow(dead_code)] lingyao_host_macos::LaunchTarget);
 
 #[cfg(all(
     not(target_os = "linux"),
@@ -1321,14 +1321,14 @@ async fn recover_preferences(
     let runtime = runtime.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         let recovery = match store.recover().map_err(CommandError::from)? {
-            msime_client_core::preferences::RecoveryOutcome::NotNeeded(snapshot) => {
+            lingyao_client_core::preferences::RecoveryOutcome::NotNeeded(snapshot) => {
                 PreferencesRecovery {
                     snapshot,
                     backup_path: None,
                     salvaged: false,
                 }
             }
-            msime_client_core::preferences::RecoveryOutcome::Recovered {
+            lingyao_client_core::preferences::RecoveryOutcome::Recovered {
                 snapshot,
                 backup_path,
                 salvaged,
@@ -1458,7 +1458,7 @@ async fn save_preferences(
 
 #[cfg(any(target_os = "ios", test))]
 fn ios_keyboard_ai_preferences(
-    preferences: &msime_client_core::preferences::AiAssistantPreferences,
+    preferences: &lingyao_client_core::preferences::AiAssistantPreferences,
 ) -> IosKeyboardAiPreferences {
     let provider = match preferences.provider.as_str() {
         "everyapi" => "everyAPI",
@@ -1562,14 +1562,14 @@ fn credential_provider_socket(document: &Value, service: &str) -> Option<PathBuf
         return configured_provider_socket(
             document,
             "translation_provider_socket",
-            "MSIME_TRANSLATION_PROVIDER_SOCKET",
+            "LINGYAO_TRANSLATION_PROVIDER_SOCKET",
             "translation.sock",
         )
         .or_else(|| {
             configured_provider_socket(
                 document,
                 "online_provider_socket",
-                "MSIME_ONLINE_PROVIDER_SOCKET",
+                "LINGYAO_ONLINE_PROVIDER_SOCKET",
                 "online.sock",
             )
         });
@@ -1578,7 +1578,7 @@ fn credential_provider_socket(document: &Value, service: &str) -> Option<PathBuf
         configured_provider_socket(
             document,
             "online_provider_socket",
-            "MSIME_ONLINE_PROVIDER_SOCKET",
+            "LINGYAO_ONLINE_PROVIDER_SOCKET",
             "online.sock",
         )
     })?
@@ -1656,7 +1656,7 @@ async fn test_api_credential(
     runtime: tauri::State<'_, RuntimeOptionsState>,
     service: String,
     config: Value,
-) -> Result<msime_input_runtime::CredentialTestResult, CommandError> {
+) -> Result<lingyao_input_runtime::CredentialTestResult, CommandError> {
     #[cfg(target_os = "linux")]
     {
         let runtime = runtime.inner().clone();
@@ -1684,14 +1684,14 @@ async fn test_api_credential(
         let result = tauri::async_runtime::spawn_blocking(move || {
             if service == "voice.asr" {
                 if config.get("provider").and_then(Value::as_str) == Some("doubao") {
-                    return msime_client_core::credential::doubao::test(
+                    return lingyao_client_core::credential::doubao::test(
                         &config,
-                        &msime_client_core::credential::doubao::WebSocketTransport,
+                        &lingyao_client_core::credential::doubao::WebSocketTransport,
                     );
                 }
-                return msime_client_core::credential::asr::test(
+                return lingyao_client_core::credential::asr::test(
                     &config,
-                    &msime_client_core::credential::asr::HttpTransport,
+                    &lingyao_client_core::credential::asr::HttpTransport,
                 );
             }
             if service.starts_with("translation.") {
@@ -1699,24 +1699,24 @@ async fn test_api_credential(
                     .duration_since(std::time::UNIX_EPOCH)
                     .map(|duration| duration.as_millis().min(u64::MAX as u128) as u64)
                     .unwrap_or(0);
-                return msime_client_core::credential::translation::test(
+                return lingyao_client_core::credential::translation::test(
                     &service,
                     &config,
                     milliseconds,
-                    &msime_client_core::credential::translation::HttpTransport,
+                    &lingyao_client_core::credential::translation::HttpTransport,
                 );
             }
-            msime_client_core::credential::probe::test_chat(
+            lingyao_client_core::credential::probe::test_chat(
                 &service,
                 &config,
-                &msime_client_core::credential::probe::HttpsProbeTransport,
+                &lingyao_client_core::credential::probe::HttpsProbeTransport,
             )
         })
         .await
         .map_err(|_| CommandError {
             code: "unavailable",
         })?;
-        Ok(msime_input_runtime::CredentialTestResult {
+        Ok(lingyao_input_runtime::CredentialTestResult {
             ok: result.ok,
             message: result.message,
         })
@@ -1725,12 +1725,12 @@ async fn test_api_credential(
     {
         let _ = runtime;
         let result = tauri::async_runtime::spawn_blocking(move || {
-            let result = msime_client_core::credential::probe::test_chat(
+            let result = lingyao_client_core::credential::probe::test_chat(
                 &service,
                 &config,
-                &msime_client_core::credential::probe::HttpsProbeTransport,
+                &lingyao_client_core::credential::probe::HttpsProbeTransport,
             );
-            msime_input_runtime::CredentialTestResult {
+            lingyao_input_runtime::CredentialTestResult {
                 ok: result.ok,
                 message: result.message,
             }
@@ -1819,7 +1819,7 @@ fn sync_runtime_options(
         let catalog = runtime
             .skins
             .as_deref()
-            .map(|root| (root, msime_client_core::skin::catalog::scan(root)));
+            .map(|root| (root, lingyao_client_core::skin::catalog::scan(root)));
         let mut document = runtime
             .document
             .lock()
@@ -1859,7 +1859,7 @@ fn sync_runtime_options(
     Ok(())
 }
 
-/// The most runtime-options.json may hold. The IBus launcher, the Fcitx5 addon and `msime_host_api::refresh_host_options` all read at most 16 KiB and keep their previous configuration (IBus) or fail (Fcitx5, the upgrade refresh) on anything longer.
+/// The most runtime-options.json may hold. The IBus launcher, the Fcitx5 addon and `lingyao_host_api::refresh_host_options` all read at most 16 KiB and keep their previous configuration (IBus) or fail (Fcitx5, the upgrade refresh) on anything longer.
 #[cfg(target_os = "linux")]
 const LINUX_RUNTIME_OPTIONS_LIMIT: usize = 16384;
 
@@ -1885,7 +1885,7 @@ fn linux_runtime_options_bytes(document: &Value) -> Result<Vec<u8>, RuntimeOptio
 fn runtime_options_with_skin_catalog(
     document: &mut Value,
     root: &std::path::Path,
-    catalog: &msime_client_core::skin::catalog::SkinCatalog,
+    catalog: &lingyao_client_core::skin::catalog::SkinCatalog,
 ) -> Result<Vec<u8>, RuntimeOptionsError> {
     let serialize = |document: &Value| {
         serde_json::to_vec_pretty(document)
@@ -1896,7 +1896,7 @@ fn runtime_options_with_skin_catalog(
         .unwrap_or_default()
         .to_owned();
     let mut published =
-        msime_client_core::skin::catalog::host_candidate_catalog(catalog, root, &selected);
+        lingyao_client_core::skin::catalog::host_candidate_catalog(catalog, root, &selected);
     loop {
         document["candidate_skin_catalog"] = published.clone();
         let bytes = serialize(document)?;
@@ -1925,7 +1925,7 @@ fn runtime_options_with_skin_catalog(
 #[cfg(target_os = "linux")]
 fn publish_candidate_skin_catalog(
     runtime: &RuntimeOptionsState,
-    catalog: &msime_client_core::skin::catalog::SkinCatalog,
+    catalog: &lingyao_client_core::skin::catalog::SkinCatalog,
 ) -> Result<(), RuntimeOptionsError> {
     let (Some(path), Some(root)) = (runtime.path.as_ref(), runtime.skins.as_ref()) else {
         return Ok(());
@@ -1958,11 +1958,11 @@ fn start_desktop_preferences_monitor(
 ) {
     let app = app.clone();
     let _ = std::thread::Builder::new()
-        .name("msime-preferences-monitor".to_owned())
+        .name("lingyao-preferences-monitor".to_owned())
         .spawn(move || {
             let mut monitor = desktop_preferences_monitor::Monitor::new(&store);
             #[cfg(target_os = "macos")]
-            let mut last_change_count = msime_host_macos::clipboard_snapshot(
+            let mut last_change_count = lingyao_host_macos::clipboard_snapshot(
                 store
                     .load()
                     .map(|snapshot| snapshot.preferences.clipboard_history)
@@ -1976,7 +1976,7 @@ fn start_desktop_preferences_monitor(
                     // store update. Keep the same timeout as the old poll so
                     // preferences and writes from other tools remain visible
                     // even when the event is unavailable.
-                    let _ = msime_host_windows::wait_for_clipboard_history_change(
+                    let _ = lingyao_host_windows::wait_for_clipboard_history_change(
                         std::time::Duration::from_millis(750),
                     );
                 }
@@ -1994,7 +1994,7 @@ fn start_desktop_preferences_monitor(
                         .load()
                         .map(|snapshot| snapshot.preferences.clipboard_history)
                         .unwrap_or(false);
-                    if let Some(snapshot) = msime_host_macos::clipboard_snapshot(enabled) {
+                    if let Some(snapshot) = lingyao_host_macos::clipboard_snapshot(enabled) {
                         desktop_preferences_monitor::record_macos_clipboard_change(
                             snapshot,
                             &mut last_change_count,
@@ -2029,9 +2029,9 @@ fn dictionary_error_code(reason: &str) -> &'static str {
         "learned-data reset rejected" => "dictionary_reset_rejected",
         "bundled dictionary entry is read-only" => "dictionary_bundled_readonly",
         // The host appends which rule the entry broke. The page words a code refusal per dictionary kind, so a word or weight refusal must not share that code, or it would send the user to fix a code that is already valid.
-        reason if reason == msime_host_api::INVALID_DICTIONARY_ENTRY => "dictionary_invalid_entry",
+        reason if reason == lingyao_host_api::INVALID_DICTIONARY_ENTRY => "dictionary_invalid_entry",
         reason => match reason
-            .strip_prefix(msime_host_api::INVALID_DICTIONARY_ENTRY)
+            .strip_prefix(lingyao_host_api::INVALID_DICTIONARY_ENTRY)
             .and_then(|rest| rest.strip_prefix(": "))
         {
             Some(rule) if invalid_entry_rule_is_about_word(rule) => "dictionary_invalid_word",
@@ -2077,7 +2077,7 @@ fn ios_personal_dictionary_request(request: &Value) -> Result<Value, CommandErro
     if bytes.len() > 1_200_000 {
         return Err(CommandError { code: "storage" });
     }
-    let response = msime_ios_native_ffi::personal_dictionary_request(&bytes)
+    let response = lingyao_ios_native_ffi::personal_dictionary_request(&bytes)
         .ok_or(CommandError { code: "storage" })?;
     let envelope: Value =
         serde_json::from_slice(&response).map_err(|_| CommandError { code: "storage" })?;
@@ -2120,7 +2120,7 @@ async fn dictionary_request(
         {
             let bytes =
                 serde_json::to_vec(&request).map_err(|_| CommandError { code: "storage" })?;
-            return msime_host_api::personal_dictionary_request_json(&bytes).map_err(|reason| {
+            return lingyao_host_api::personal_dictionary_request_json(&bytes).map_err(|reason| {
                 CommandError {
                     code: dictionary_error_code(&reason),
                 }
@@ -2129,14 +2129,14 @@ async fn dictionary_request(
         #[cfg(not(target_os = "android"))]
         {
             // One request to the host. An import too large for one request is several, each through this, so whatever releases the input sessions below stays in force until the last of them.
-            let host = |bytes: &[u8]| msime_host_api::dictionary_request_json(bytes);
+            let host = |bytes: &[u8]| lingyao_host_api::dictionary_request_json(bytes);
             // The input hosts are asked to let go and the lock failure is retried until they have. On Linux and macOS that is a lease the hosts find on their timers, with the macOS input method also told at once over a distributed notification when the lease first goes up; on Windows the Server is asked over its pipe and answers once its sessions are gone. Either is renewed before each later request, so a large import that runs past the 30 second bound keeps the hosts released, and let go when `hosts` goes, after the last request, whatever the outcome.
             #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
-            let mut hosts = msime_client_core::dictionary::quiesce::QuiescedHosts::new(
+            let mut hosts = lingyao_client_core::dictionary::quiesce::QuiescedHosts::new(
                 user_data.as_deref(),
                 || {
                     #[cfg(target_os = "macos")]
-                    msime_host_macos::quiesce_input_sessions();
+                    lingyao_host_macos::quiesce_input_sessions();
                 },
             );
             #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
@@ -2208,7 +2208,7 @@ async fn cloud_clipboard_request(
     account: tauri::State<'_, desktop_account::AccountState>,
     action: Value,
 ) -> Result<Value, CommandError> {
-    msime_host_api::cloud_clipboard::validate_request(&action)
+    lingyao_host_api::cloud_clipboard::validate_request(&action)
         .map_err(|_| CommandError { code: "invalid" })?;
     // Windows has no provider socket or native session, so every request goes to the account.
     #[cfg(unix)]
@@ -2224,7 +2224,7 @@ async fn cloud_clipboard_request(
                 .and_then(Value::as_str)
                 .map(str::to_owned)
                 .or_else(|| {
-                    std::env::var_os("MSIME_CLOUD_CLIPBOARD_PROVIDER_SOCKET")
+                    std::env::var_os("LINGYAO_CLOUD_CLIPBOARD_PROVIDER_SOCKET")
                         .and_then(|value| value.into_string().ok())
                 });
             #[cfg(target_os = "macos")]
@@ -2266,7 +2266,7 @@ async fn cloud_clipboard_request(
     state: tauri::State<'_, platform::mobile::MobileAccountState>,
     action: Value,
 ) -> Result<Value, CommandError> {
-    msime_host_api::cloud_clipboard::validate_request(&action).map_err(|_| CommandError {
+    lingyao_host_api::cloud_clipboard::validate_request(&action).map_err(|_| CommandError {
         code: "invalid_cloud_clipboard",
     })?;
     platform::cloud_clipboard::cloud_clipboard_request(state.session(), action).await
@@ -2296,11 +2296,11 @@ async fn cloud_dictionary_request(
 ) -> Result<Value, CommandError> {
     let _ = (&app, &window);
     let request =
-        serde_json::from_value::<msime_host_api::cloud_dictionary::CloudDictionaryRequest>(
+        serde_json::from_value::<lingyao_host_api::cloud_dictionary::CloudDictionaryRequest>(
             action.clone(),
         )
         .map_err(|_| CommandError { code: "invalid" })?;
-    msime_host_api::cloud_dictionary::validate_cloud_request(&request)
+    lingyao_host_api::cloud_dictionary::validate_cloud_request(&request)
         .map_err(|_| CommandError { code: "invalid" })?;
     let options = options.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
@@ -2312,7 +2312,7 @@ async fn cloud_dictionary_request(
                 .and_then(Value::as_str)
                 .map(str::to_owned);
             let configured = configured.or_else(|| {
-                std::env::var_os("MSIME_CLOUD_DICTIONARY_PROVIDER_SOCKET")
+                std::env::var_os("LINGYAO_CLOUD_DICTIONARY_PROVIDER_SOCKET")
                     .and_then(|value| value.into_string().ok())
             });
             #[cfg(target_os = "macos")]
@@ -2438,7 +2438,7 @@ fn read_local_emoji_groups(
     category: &str,
 ) -> Result<Vec<EmojiCatalogGroup>, &'static str> {
     if category == "symbols" {
-        return msime_host_api::local_symbol_catalog(resources).map(|groups| {
+        return lingyao_host_api::local_symbol_catalog(resources).map(|groups| {
             groups
                 .into_iter()
                 .map(|group| EmojiCatalogGroup {
@@ -2475,7 +2475,7 @@ fn read_local_emoji_groups(
     let mut complete = false;
     for _ in 0..256 {
         let page =
-            msime_host_api::local_emoji_catalog_slice(resources, category, offset, PAGE_SIZE)?;
+            lingyao_host_api::local_emoji_catalog_slice(resources, category, offset, PAGE_SIZE)?;
         reserve_emoji_group_page_capacity(&mut groups, &mut positions, page.items.len());
         for item in page.items {
             if item.text.is_empty() {
@@ -2535,11 +2535,11 @@ fn read_local_emoji_groups(
 
 /// 把已安装符号集插件的组追加到内置目录之后：`symbols` 组以插件名为上级分类，`kaomoji` 组排在颜文字的 All 之后；不跨包、不与内置目录去重。每组都带上包 id，面板据此区分插件组和内置组；组的 `keywords` 只用于搜索，各项自己的 `keywords` 仍是符号本身。
 fn append_plugin_symbol_groups(
-    groups: Vec<msime_host_api::PluginSymbolGroup>,
+    groups: Vec<lingyao_host_api::PluginSymbolGroup>,
     kaomoji: &mut Vec<EmojiCatalogGroup>,
     symbols: &mut Vec<EmojiCatalogGroup>,
 ) {
-    use msime_client_core::plugins::symbol_set::SymbolTab;
+    use lingyao_client_core::plugins::symbol_set::SymbolTab;
     for group in groups {
         let items: Vec<EmojiCatalogItem> = group
             .items
@@ -2617,7 +2617,7 @@ async fn load_emoji_catalog(
         let mut symbols = read("symbols", "symbols");
         if let Some(root) = plugin_root {
             append_plugin_symbol_groups(
-                msime_host_api::plugin_symbol_groups(&root),
+                lingyao_host_api::plugin_symbol_groups(&root),
                 &mut kaomoji,
                 &mut symbols,
             );
@@ -2651,14 +2651,14 @@ fn macos_input_source_restart_args() -> [&'static str; 5] {
     ]
 }
 
-/// `addon` 是本版本的 Fcitx5 插件名（版本表的 `fcitx5_addon`，full 是 `msime`）：只重置本版本的插件，同一个 fcitx5 里别的版本不受影响。
+/// `addon` 是本版本的 Fcitx5 插件名（版本表的 `fcitx5_addon`，full 是 `lingyao`）：只重置本版本的插件，同一个 fcitx5 里别的版本不受影响。
 #[cfg(any(target_os = "linux", test))]
 fn linux_input_method_restart_command(
     fcitx5_running: bool,
     addon: &str,
 ) -> (&'static str, Vec<String>) {
     if fcitx5_running {
-        // Fcitx5 owns the process that loads the MSIME addon, so restarting it would take every other input method in the user's group down too. The controller's ReloadAddonConfig for the `msime` addon reaches the addon's reloadConfig, which resets MSIME in process: it ends every composition, closes the Engine sessions and re-reads runtime-options.json. `fcitx5-remote -r` sends ReloadConfig instead, which reloads only Fcitx5's global configuration and never reaches an addon. The call goes through `gdbus`, the same client msime-linux-setup uses for this controller; `gdbus call` waits for the reply, so a controller that refused the call fails the action.
+        // Fcitx5 owns the process that loads the LINGYAO addon, so restarting it would take every other input method in the user's group down too. The controller's ReloadAddonConfig for the `lingyao` addon reaches the addon's reloadConfig, which resets LINGYAO in process: it ends every composition, closes the Engine sessions and re-reads runtime-options.json. `fcitx5-remote -r` sends ReloadConfig instead, which reloads only Fcitx5's global configuration and never reaches an addon. The call goes through `gdbus`, the same client lingyao-linux-setup uses for this controller; `gdbus call` waits for the reply, so a controller that refused the call fails the action.
         let mut arguments: Vec<String> = [
             "call",
             "--session",
@@ -2693,9 +2693,9 @@ fn restart_input_method_blocking() -> Result<(), HostActionError> {
     #[cfg(target_os = "windows")]
     {
         // 只重启本版本的 Server：管道名带本安装包所属版本的后缀（full 没有后缀）。
-        let pipe = msime_client_core::edition::Edition::of_windows_package()
+        let pipe = lingyao_client_core::edition::Edition::of_windows_package()
             .ok()
-            .and_then(msime_client_core::dictionary::quiesce::server::pipe_name)
+            .and_then(lingyao_client_core::dictionary::quiesce::server::pipe_name)
             .ok_or(HostActionError {
                 code: "unavailable",
             })?;
@@ -2747,7 +2747,7 @@ fn restart_input_method_blocking() -> Result<(), HostActionError> {
         );
         let (program, arguments) = linux_input_method_restart_command(
             fcitx5_running,
-            &msime_client_core::edition::Edition::linux_package_identity_or_full().fcitx5_addon,
+            &lingyao_client_core::edition::Edition::linux_package_identity_or_full().fcitx5_addon,
         );
         let arguments: Vec<&str> = arguments.iter().map(String::as_str).collect();
         linux_process::run_status(program, &arguments, std::time::Duration::from_secs(3))
@@ -3023,10 +3023,10 @@ fn macos_input_method_defaults_domain() -> &'static str {
 }
 
 #[cfg(target_os = "macos")]
-const MACOS_SHUANGPIN_KEYMAP_DEFAULTS_KEY: &str = "MSIMEClientShuangpinKeymap";
+const MACOS_SHUANGPIN_KEYMAP_DEFAULTS_KEY: &str = "LINGYAOClientShuangpinKeymap";
 
 #[cfg(target_os = "macos")]
-const MACOS_WUBI_AUTO_COMMIT_UNIQUE_DEFAULTS_KEY: &str = "MSIMEClientWubiAutoCommitUnique";
+const MACOS_WUBI_AUTO_COMMIT_UNIQUE_DEFAULTS_KEY: &str = "LINGYAOClientWubiAutoCommitUnique";
 
 #[cfg(target_os = "macos")]
 #[tauri::command]
@@ -3150,7 +3150,7 @@ async fn save_macos_wubi_auto_commit_unique(enabled: bool) -> Result<(), HostAct
 // The input method's Swift backend records here the Apple translation pairs (Simplified Chinese to each code) that it found downloadable but not yet downloaded, so its on-device glosses stay empty until the user downloads them in System Settings.
 #[cfg(target_os = "macos")]
 const MACOS_ON_DEVICE_TRANSLATION_DOWNLOADABLE_DEFAULTS_KEY: &str =
-    "MSIMEOnDeviceTranslationDownloadableLanguages";
+    "LINGYAOOnDeviceTranslationDownloadableLanguages";
 
 // Only the target languages the settings page can choose; anything else in the value is not ours to report.
 #[cfg(any(target_os = "macos", test))]
@@ -3159,7 +3159,7 @@ fn parse_on_device_translation_downloadable(value: &str) -> Vec<String> {
     let mut codes = Vec::with_capacity(7);
     for code in value.trim().split(',').map(str::trim) {
         if code != "zh"
-            && msime_client_core::translation::is_supported_translation_language(code)
+            && lingyao_client_core::translation::is_supported_translation_language(code)
             && !codes.iter().any(|known| known == code)
         {
             codes.push(code.to_owned());
@@ -3217,7 +3217,7 @@ async fn pick_voice_model_path(app: tauri::AppHandle) -> Result<Option<String>, 
     // A local speech model is an installed directory loaded by path, and a web view's file input hands back contents instead, so the settings page cannot resolve one itself. AppKit will only run the panel on the main thread.
     let (send, received) = std::sync::mpsc::sync_channel(1);
     app.run_on_main_thread(move || {
-        let _ = send.send(msime_host_macos::pick_voice_model_directory());
+        let _ = send.send(lingyao_host_macos::pick_voice_model_directory());
     })
     .map_err(|_| HostActionError {
         code: "unavailable",
@@ -3235,7 +3235,7 @@ async fn pick_data_directory(
 ) -> Result<Option<String>, HostActionError> {
     let (send, received) = std::sync::mpsc::sync_channel(1);
     app.run_on_main_thread(move || {
-        let _ = send.send(msime_host_macos::pick_directory());
+        let _ = send.send(lingyao_host_macos::pick_directory());
     })
     .map_err(|_| HostActionError {
         code: "data_directory_unavailable",
@@ -3324,7 +3324,7 @@ async fn move_data_directory(
         })?;
     // 在新目录里按同一个版本重新准备：资源目录按本版本的锁校验，新文档也带着版本。认不出的版本不搬，免得被当成 full 准备。
     let edition =
-        msime_client_core::edition::Edition::of_host_options(&document).ok_or(HostActionError {
+        lingyao_client_core::edition::Edition::of_host_options(&document).ok_or(HostActionError {
             code: "data_directory_unavailable",
         })?;
     let target = selection
@@ -3350,7 +3350,7 @@ async fn move_data_directory(
 
     let (send, received) = std::sync::mpsc::sync_channel(1);
     app.run_on_main_thread(move || {
-        let _ = send.send(msime_host_macos::stop_input_method());
+        let _ = send.send(lingyao_host_macos::stop_input_method());
     })
     .map_err(|_| HostActionError {
         code: "data_directory_busy",
@@ -3371,7 +3371,7 @@ async fn move_data_directory(
             &native_root,
             &locators,
             |destination| {
-                let document = msime_host_api::prepare_host_configuration_for_edition(
+                let document = lingyao_host_api::prepare_host_configuration_for_edition(
                     &resources,
                     destination,
                     edition,
@@ -3445,7 +3445,7 @@ async fn uninstall_input_source(
                 code: "input_source_listed",
             });
         }
-        msime_host_macos::uninstall_input_source(&bundle, &state, remove_user_data).map_err(|_| {
+        lingyao_host_macos::uninstall_input_source(&bundle, &state, remove_user_data).map_err(|_| {
             HostActionError {
                 code: "unavailable",
             }
@@ -3459,7 +3459,7 @@ async fn uninstall_input_source(
     let (send, received) = std::sync::mpsc::sync_channel(1);
     if app
         .run_on_main_thread(move || {
-            let _ = send.send(msime_host_macos::stop_input_method());
+            let _ = send.send(lingyao_host_macos::stop_input_method());
         })
         .is_ok()
     {
@@ -3605,7 +3605,7 @@ fn remember_input_target(
         #[cfg(target_os = "macos")]
         {
             let _ = window;
-            let target = msime_host_macos::capture_launch_target().ok_or(HostActionError {
+            let target = lingyao_host_macos::capture_launch_target().ok_or(HostActionError {
                 code: "unavailable",
             })?;
             *state.0.lock().map_err(|_| HostActionError {
@@ -3670,7 +3670,7 @@ async fn send_key(
             // The keyboard is non-activating, so the user can switch editors
             // while it remains open. Resolve the foreground target immediately
             // before each stroke and re-check it in native code before posting.
-            let _ = send.send(msime_host_macos::send_keyboard_key(&request));
+            let _ = send.send(lingyao_host_macos::send_keyboard_key(&request));
         })
         .map_err(|_| HostActionError {
             code: "unavailable",
@@ -3741,7 +3741,7 @@ async fn recognize_handwriting(
     // configured; otherwise the Engine's packaged recognizer answers, which is
     // the only path hosts without unix sockets have.
     #[cfg(all(unix, not(any(target_os = "ios", target_os = "android"))))]
-    let socket = match std::env::var_os("MSIME_HANDWRITING_PROVIDER_SOCKET") {
+    let socket = match std::env::var_os("LINGYAO_HANDWRITING_PROVIDER_SOCKET") {
         Some(value) => {
             let path = PathBuf::from(value);
             if !path.is_absolute() {
@@ -3774,13 +3774,13 @@ async fn recognize_handwriting(
     // Windows 的中文语言包自带手写识别器，先用它。安装包不再内置引擎的手写模型：Ink 没有中文识别器时，设置应用把模型下载到手写资源包，这里再落到下面的模型。
     #[cfg(windows)]
     {
-        let strokes: Vec<msime_host_windows::ink::Stroke> = query
+        let strokes: Vec<lingyao_host_windows::ink::Stroke> = query
             .strokes
             .iter()
             .map(|stroke| stroke.iter().map(|point| (point.x, point.y)).collect())
             .collect();
         let recognized = tauri::async_runtime::spawn_blocking(move || {
-            msime_host_windows::ink::recognize(&strokes)
+            lingyao_host_windows::ink::recognize(&strokes)
         })
         .await
         .map_err(|_| HostActionError {
@@ -3800,7 +3800,7 @@ async fn recognize_handwriting(
         });
     };
     let candidates = tauri::async_runtime::spawn_blocking(move || {
-        msime_host_api::handwriting_local_candidates(model.to_str().unwrap_or_default(), &query)
+        lingyao_host_api::handwriting_local_candidates(model.to_str().unwrap_or_default(), &query)
     })
     .await
     .map_err(|_| HostActionError {
@@ -3840,9 +3840,9 @@ fn discover_session_provider_in(
 ) -> Option<PathBuf> {
     use std::os::unix::fs::MetadataExt;
 
-    // 本安装包所属版本的运行时目录（full 是 msime-client）：只连本版本的 provider。
+    // 本安装包所属版本的运行时目录（full 是 lingyao-client）：只连本版本的 provider。
     let directory = runtime_directory.join(
-        &msime_client_core::edition::Edition::linux_package_identity_or_full().client_directory,
+        &lingyao_client_core::edition::Edition::linux_package_identity_or_full().client_directory,
     );
     let path = directory.join(filename);
     let directory_metadata = std::fs::symlink_metadata(&directory).ok()?;
@@ -3859,7 +3859,7 @@ fn discover_session_provider_in(
     Some(path)
 }
 
-/// 查找引擎的手写模型：先看 HostOptions 的 `handwriting_model`，再看 `MSIME_HANDWRITING_MODEL`。都没给时，Windows 和 Linux 先用安装布局里随包的模型，再用偏好目录（同一份文档里的绝对 `preferences_directory`）下已下载的手写资源包；macOS 先用已下载的资源包，再用旧版本打进 app 的模型和各安装器的固定布局，与按需下载上线时的顺序相同。只接受指向已存在文件的绝对路径，过期的设置不会把笔画送给别的文件。
+/// 查找引擎的手写模型：先看 HostOptions 的 `handwriting_model`，再看 `LINGYAO_HANDWRITING_MODEL`。都没给时，Windows 和 Linux 先用安装布局里随包的模型，再用偏好目录（同一份文档里的绝对 `preferences_directory`）下已下载的手写资源包；macOS 先用已下载的资源包，再用旧版本打进 app 的模型和各安装器的固定布局，与按需下载上线时的顺序相同。只接受指向已存在文件的绝对路径，过期的设置不会把笔画送给别的文件。
 fn packaged_handwriting_model(host_options: &str) -> Option<PathBuf> {
     let document = serde_json::from_str::<Value>(host_options).ok();
     let downloaded = || downloaded_handwriting_model(document.as_ref());
@@ -3875,7 +3875,7 @@ fn packaged_handwriting_model(host_options: &str) -> Option<PathBuf> {
     found.filter(|path| path.is_absolute() && path.is_file())
 }
 
-/// HostOptions 的 `handwriting_model`，没有时是 `MSIME_HANDWRITING_MODEL`。只取值、不检查文件：指定了就只用它。
+/// HostOptions 的 `handwriting_model`，没有时是 `LINGYAO_HANDWRITING_MODEL`。只取值、不检查文件：指定了就只用它。
 fn configured_handwriting_model(document: Option<&Value>) -> Option<PathBuf> {
     document
         .and_then(|value| {
@@ -3887,7 +3887,7 @@ fn configured_handwriting_model(document: Option<&Value>) -> Option<PathBuf> {
         })
         .map(PathBuf::from)
         .or_else(|| {
-            std::env::var_os("MSIME_HANDWRITING_MODEL")
+            std::env::var_os("LINGYAO_HANDWRITING_MODEL")
                 .filter(|value| !value.is_empty())
                 .map(PathBuf::from)
         })
@@ -3905,7 +3905,7 @@ fn bundled_handwriting_model() -> Option<PathBuf> {
     discover_packaged_file(
         &format!(
             "{}/handwriting/handwriting-zh_CN.model",
-            msime_client_core::edition::Edition::linux_package_identity_or_full().client_directory
+            lingyao_client_core::edition::Edition::linux_package_identity_or_full().client_directory
         ),
         "handwriting/handwriting-zh_CN.model",
     )
@@ -3917,9 +3917,9 @@ pub(crate) fn handwriting_model_without_pack(document: Option<&Value>) -> bool {
     configured_handwriting_model(document).is_some() || bundled_handwriting_model().is_some()
 }
 
-/// HostOptions 文档里绝对 `preferences_directory` 下已完整安装的手写资源包里的模型；相对路径、缺少 `msime-model.json` 的目录和符号链接一律忽略。
+/// HostOptions 文档里绝对 `preferences_directory` 下已完整安装的手写资源包里的模型；相对路径、缺少 `lingyao-model.json` 的目录和符号链接一律忽略。
 fn downloaded_handwriting_model(document: Option<&Value>) -> Option<PathBuf> {
-    use msime_client_core::resource_packs::{self, ResourcePack};
+    use lingyao_client_core::resource_packs::{self, ResourcePack};
     let state_root = document?
         .get("preferences_directory")
         .and_then(Value::as_str)
@@ -3941,20 +3941,20 @@ fn packaged_emoji_resources(document: &Value) -> Option<PathBuf> {
         .and_then(Value::as_str)
         .map(PathBuf::from)
         .or_else(|| {
-            std::env::var_os("MSIME_EMOJI_RESOURCES")
+            std::env::var_os("LINGYAO_EMOJI_RESOURCES")
                 .filter(|value| !value.is_empty())
                 .map(PathBuf::from)
         });
     if let Some(directory) = configured {
-        return (directory.is_absolute() && directory.join("msime-others.db").is_file())
+        return (directory.is_absolute() && directory.join("lingyao-others.db").is_file())
             .then_some(directory);
     }
     discover_packaged_file(
         &format!(
-            "{}/emoji/msime-others.db",
-            msime_client_core::edition::Edition::linux_package_identity_or_full().client_directory
+            "{}/emoji/lingyao-others.db",
+            lingyao_client_core::edition::Edition::linux_package_identity_or_full().client_directory
         ),
-        "emoji/msime-others.db",
+        "emoji/lingyao-others.db",
     )
     .and_then(|path| path.parent().map(std::path::Path::to_path_buf))
 }
@@ -4016,7 +4016,7 @@ async fn submit_handwriting_candidate(
     let _ = (&window, &typing_statistics, &state);
     #[cfg(target_os = "linux")]
     {
-        msime_client_core::panels::validate_candidate(&candidate).map_err(|_| HostActionError {
+        lingyao_client_core::panels::validate_candidate(&candidate).map_err(|_| HostActionError {
             code: "invalid_text",
         })?;
         return send_panel_text(
@@ -4036,7 +4036,7 @@ async fn submit_handwriting_candidate(
         // Windows panels inject through the host rather than the runtime, so
         // they do not pass through the typing counter, matching send_text.
         let _ = (&app, &typing_statistics);
-        msime_client_core::panels::validate_candidate(&candidate).map_err(|_| HostActionError {
+        lingyao_client_core::panels::validate_candidate(&candidate).map_err(|_| HostActionError {
             code: "invalid_text",
         })?;
         send_panel_text_windows(&state, &candidate)
@@ -4114,7 +4114,7 @@ async fn paste_clipboard_text(
     #[cfg(target_os = "linux")]
     {
         if text.is_empty()
-            || text.len() > msime_client_core::clipboard::MAX_TEXT_BYTES
+            || text.len() > lingyao_client_core::clipboard::MAX_TEXT_BYTES
             || text.contains('\0')
         {
             return Err(HostActionError {
@@ -4138,7 +4138,7 @@ async fn paste_clipboard_text(
     #[cfg(target_os = "windows")]
     {
         if text.is_empty()
-            || text.len() > msime_client_core::clipboard::MAX_TEXT_BYTES
+            || text.len() > lingyao_client_core::clipboard::MAX_TEXT_BYTES
             || text.contains('\0')
         {
             return Err(HostActionError {
@@ -4153,8 +4153,8 @@ async fn paste_clipboard_text(
             // moved to another editor while the panel was open, use the
             // current external foreground window just like voice submission;
             // when the panel is foreground, retain the captured destination.
-            if msime_host_windows::foreground_is_external() {
-                if let Some(current) = msime_host_windows::foreground_window() {
+            if lingyao_host_windows::foreground_is_external() {
+                if let Some(current) = lingyao_host_windows::foreground_window() {
                     *remembered = Some(PanelInputTarget(current));
                 }
             }
@@ -4166,7 +4166,7 @@ async fn paste_clipboard_text(
                 })?
         };
         return tauri::async_runtime::spawn_blocking(move || {
-            msime_host_windows::paste_text(target, &text)
+            lingyao_host_windows::paste_text(target, &text)
                 .then_some(())
                 .ok_or(HostActionError {
                     code: "unavailable",
@@ -4212,8 +4212,8 @@ async fn send_voice_text(
             // editor while it was running, the external foreground window is
             // the new destination; when the panel itself is foreground keep
             // the target captured before the panel opened.
-            if msime_host_windows::foreground_is_external() {
-                if let Some(current) = msime_host_windows::foreground_window() {
+            if lingyao_host_windows::foreground_is_external() {
+                if let Some(current) = lingyao_host_windows::foreground_window() {
                     *remembered = Some(PanelInputTarget(current));
                 }
             }
@@ -4243,11 +4243,11 @@ async fn send_voice_text(
                 // explicit SendInput mode. The native hotkey path remains
                 // unchanged and continues to commit through TSF.
                 voice_output::OutputMode::Tsf | voice_output::OutputMode::SendInput => {
-                    msime_host_windows::focus_external(target)
-                        && msime_host_windows::send_text(text)
+                    lingyao_host_windows::focus_external(target)
+                        && lingyao_host_windows::send_text(text)
                 }
                 voice_output::OutputMode::Clipboard => {
-                    msime_host_windows::paste_voice_text(target, text)
+                    lingyao_host_windows::paste_voice_text(target, text)
                 }
             })
             .map_err(|error| HostActionError {
@@ -4352,7 +4352,7 @@ fn voice_input_language(
 
 fn external_url_is_safe(url: &str) -> bool {
     url.len() <= 4096
-        && msime_client_core::is_bounded_text(url, 4096)
+        && lingyao_client_core::is_bounded_text(url, 4096)
         && !url.bytes().any(|byte| {
             byte <= b' ' || matches!(byte, b'"' | b'\'' | b'`' | b'|' | b'<' | b'>' | b'\\')
         })
@@ -4423,7 +4423,7 @@ fn launch_external_url(url: &str) -> Result<(), HostActionError> {
     }
     #[cfg(target_os = "windows")]
     {
-        return msime_host_windows::open_url(url)
+        return lingyao_host_windows::open_url(url)
             .then_some(())
             .ok_or(HostActionError {
                 code: "unavailable",
@@ -4468,14 +4468,14 @@ fn open_third_party_licenses(app: tauri::AppHandle) -> Result<(), HostActionErro
     })
 }
 
-// The Server launches this shell with MSIME_CLIENT_STATE_DIR and MSIME_CLIENT_HOST_OPTIONS pointing into its state directory. A launch without them, such as the Start Menu settings shortcut, otherwise fell back to this shell's own application directory and opened on a state the Server never reads. Use the Server's directory once the Server has prepared its runtime options there.
+// The Server launches this shell with LINGYAO_CLIENT_STATE_DIR and LINGYAO_CLIENT_HOST_OPTIONS pointing into its state directory. A launch without them, such as the Start Menu settings shortcut, otherwise fell back to this shell's own application directory and opened on a state the Server never reads. Use the Server's directory once the Server has prepared its runtime options there.
 #[cfg(target_os = "windows")]
 fn windows_server_state_directory() -> Option<PathBuf> {
-    msime_host_windows::server_state_directory()
+    lingyao_host_windows::server_state_directory()
         .filter(|directory| directory.join("runtime-options.json").is_file())
 }
 
-// The Server's state root is the options' preferences_directory when one is set, and its state directory otherwise (production_preview_document in server_main.cpp); it is what the Server passes as MSIME_CLIENT_STATE_DIR.
+// The Server's state root is the options' preferences_directory when one is set, and its state directory otherwise (production_preview_document in server_main.cpp); it is what the Server passes as LINGYAO_CLIENT_STATE_DIR.
 #[cfg(target_os = "windows")]
 fn windows_server_preferences_directory() -> Option<PathBuf> {
     let directory = windows_server_state_directory()?;
@@ -4494,15 +4494,15 @@ fn windows_server_preferences_directory() -> Option<PathBuf> {
 
 #[cfg(target_os = "linux")]
 fn linux_runtime_state_directory() -> Result<Option<PathBuf>, String> {
-    let Some(options_path) = std::env::var_os("MSIME_CLIENT_HOST_OPTIONS")
-        .or_else(|| std::env::var_os("MSIME_IBUS_OPTIONS"))
+    let Some(options_path) = std::env::var_os("LINGYAO_CLIENT_HOST_OPTIONS")
+        .or_else(|| std::env::var_os("LINGYAO_IBUS_OPTIONS"))
     else {
         return Ok(None);
     };
     linux_runtime_state_directory_at(Path::new(&options_path))
 }
 
-// msime-linux-settings always exports the locator, prepared or not. A missing file is the normal first run: it names no directory, so the window opens on the first-run page with the same default state directory a prepared file without `preferences_directory` would give.
+// lingyao-linux-settings always exports the locator, prepared or not. A missing file is the normal first run: it names no directory, so the window opens on the first-run page with the same default state directory a prepared file without `preferences_directory` would give.
 #[cfg(any(target_os = "linux", test))]
 fn linux_runtime_state_directory_at(options_path: &Path) -> Result<Option<PathBuf>, String> {
     if !options_path.is_absolute() {
@@ -4540,7 +4540,7 @@ fn ios_host_options_document(
                 "state_root": state_root.to_string_lossy(),
             });
             // The Cantonese, Zhuyin and Stroke dictionaries are bundled beside EngineResources; naming them here is what lets host-api run those schemes and the page offer them.
-            if let Some(directory) = msime_host_api::installed_language_dictionaries(resources) {
+            if let Some(directory) = lingyao_host_api::installed_language_dictionaries(resources) {
                 document["language_dictionaries"] = Value::String(directory);
             }
             Ok(document)
@@ -4564,7 +4564,7 @@ fn ios_community_resource_library_path(state_root: &std::path::Path) -> PathBuf 
 #[cfg(target_os = "ios")]
 #[tauri::command]
 async fn open_system_keyboard_settings(
-    state: tauri::State<'_, msime_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
+    state: tauri::State<'_, lingyao_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
 ) -> Result<(), CommandError> {
     let platform = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || platform.open_system_keyboard_settings())
@@ -4580,7 +4580,7 @@ async fn open_system_keyboard_settings(
 #[cfg(target_os = "ios")]
 #[tauri::command]
 async fn ios_onboarding_status(
-    state: tauri::State<'_, msime_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
+    state: tauri::State<'_, lingyao_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
 ) -> Result<bool, CommandError> {
     let platform = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || platform.onboarding_completed())
@@ -4592,7 +4592,7 @@ async fn ios_onboarding_status(
 #[cfg(target_os = "ios")]
 #[tauri::command]
 async fn ios_onboarding_complete(
-    state: tauri::State<'_, msime_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
+    state: tauri::State<'_, lingyao_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
 ) -> Result<(), CommandError> {
     let platform = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || platform.complete_onboarding())
@@ -4604,8 +4604,8 @@ async fn ios_onboarding_complete(
 #[cfg(target_os = "ios")]
 #[tauri::command]
 async fn app_icon_info(
-    state: tauri::State<'_, msime_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
-) -> Result<msime_tauri_mobile_platform::AppIconInfo, CommandError> {
+    state: tauri::State<'_, lingyao_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
+) -> Result<lingyao_tauri_mobile_platform::AppIconInfo, CommandError> {
     let platform = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || platform.app_icon_info())
         .await
@@ -4616,10 +4616,10 @@ async fn app_icon_info(
 #[cfg(target_os = "ios")]
 #[tauri::command]
 async fn app_icon_set(
-    state: tauri::State<'_, msime_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
+    state: tauri::State<'_, lingyao_tauri_mobile_platform::MobilePlatform<tauri::Wry>>,
     style: String,
-) -> Result<msime_tauri_mobile_platform::AppIconInfo, CommandError> {
-    if !msime_tauri_mobile_platform::is_supported_app_icon_style(&style) {
+) -> Result<lingyao_tauri_mobile_platform::AppIconInfo, CommandError> {
+    if !lingyao_tauri_mobile_platform::is_supported_app_icon_style(&style) {
         return Err(CommandError {
             code: "invalid_app_icon",
         });
@@ -4632,11 +4632,11 @@ async fn app_icon_set(
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-/// `--sync-omarchy-theme`, which the Omarchy theme-set hook runs through msime-linux-settings: rewrite the `omarchy` skin from the current Omarchy palette and publish the catalog to the hosts, the way a rescan from the settings page would, then exit without opening a window. The state directory is the one the settings window would open on, so the package lands in the skin root it lists.
+/// `--sync-omarchy-theme`, which the Omarchy theme-set hook runs through lingyao-linux-settings: rewrite the `omarchy` skin from the current Omarchy palette and publish the catalog to the hosts, the way a rescan from the settings page would, then exit without opening a window. The state directory is the one the settings window would open on, so the package lands in the skin root it lists.
 #[cfg(target_os = "linux")]
 fn sync_omarchy_theme() -> i32 {
     let fail = |message: &str| {
-        eprintln!("msime: {message}");
+        eprintln!("lingyao: {message}");
         1
     };
     let absolute = |name: &str| {
@@ -4645,22 +4645,22 @@ fn sync_omarchy_theme() -> i32 {
             .filter(|path| path.is_absolute())
     };
     let Some(path) =
-        absolute("MSIME_IBUS_OPTIONS").or_else(|| absolute("MSIME_CLIENT_HOST_OPTIONS"))
+        absolute("LINGYAO_IBUS_OPTIONS").or_else(|| absolute("LINGYAO_CLIENT_HOST_OPTIONS"))
     else {
         return fail(&format!(
             "no runtime options path; run this through {}",
-            msime_client_core::edition::Edition::linux_package_identity_or_full()
+            lingyao_client_core::edition::Edition::linux_package_identity_or_full()
                 .settings_program()
         ));
     };
-    let directory = match absolute("MSIME_CLIENT_STATE_DIR") {
+    let directory = match absolute("LINGYAO_CLIENT_STATE_DIR") {
         Some(directory) => directory,
         None => match linux_runtime_state_directory() {
             Ok(Some(directory)) => directory,
             Ok(None) => {
                 return fail(&format!(
                     "the runtime options name no state directory; run {} first",
-                    msime_client_core::edition::Edition::linux_package_identity_or_full()
+                    lingyao_client_core::edition::Edition::linux_package_identity_or_full()
                         .setup_program()
                 ))
             }
@@ -4689,7 +4689,7 @@ fn sync_omarchy_theme() -> i32 {
         document: Arc::new(Mutex::new(Value::Null)),
         skins: Some(root.clone()),
     };
-    match publish_candidate_skin_catalog(&runtime, &msime_client_core::skin::catalog::scan(&root)) {
+    match publish_candidate_skin_catalog(&runtime, &lingyao_client_core::skin::catalog::scan(&root)) {
         Ok(()) => 0,
         Err(_) => fail("cannot publish the skin catalog to the runtime options"),
     }
@@ -4721,7 +4721,7 @@ pub fn run() {
     }
     #[cfg(target_os = "macos")]
     let mut keyboard_launch_target = macos_keyboard::startup_panel(requested_surface_route())
-        .and_then(|_| msime_host_macos::capture_launch_target());
+        .and_then(|_| lingyao_host_macos::capture_launch_target());
     let context = tauri::generate_context!();
     #[cfg(target_os = "windows")]
     let context = {
@@ -4783,7 +4783,7 @@ pub fn run() {
     #[cfg(target_os = "android")]
     let builder = builder.plugin(android_account::init());
     #[cfg(target_os = "ios")]
-    let builder = builder.plugin(msime_tauri_mobile_platform::init());
+    let builder = builder.plugin(lingyao_tauri_mobile_platform::init());
     builder
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -4806,9 +4806,9 @@ pub fn run() {
                 let standard_options = macos_launch::native_locator_root()
                     .ok()
                     .map(|root| root.join("runtime-options.json"));
-                let development_run = std::env::var_os("MSIME_IBUS_OPTIONS").is_some()
+                let development_run = std::env::var_os("LINGYAO_IBUS_OPTIONS").is_some()
                     || macos_input_source::development_options_override(
-                        std::env::var_os("MSIME_CLIENT_HOST_OPTIONS").as_deref(),
+                        std::env::var_os("LINGYAO_CLIENT_HOST_OPTIONS").as_deref(),
                         standard_options.as_deref(),
                     );
                 let panel_launch = requested_surface_route().and_then(|route| route.panel()).is_some();
@@ -4836,9 +4836,9 @@ pub fn run() {
             }
             #[cfg(target_os = "macos")]
             let macos_launch = {
-                let options_override = std::env::var_os("MSIME_CLIENT_HOST_OPTIONS")
-                    .or_else(|| std::env::var_os("MSIME_IBUS_OPTIONS"));
-                let state_override = std::env::var_os("MSIME_CLIENT_STATE_DIR");
+                let options_override = std::env::var_os("LINGYAO_CLIENT_HOST_OPTIONS")
+                    .or_else(|| std::env::var_os("LINGYAO_IBUS_OPTIONS"));
+                let state_override = std::env::var_os("LINGYAO_CLIENT_STATE_DIR");
                 let application_directory = app.path().app_data_dir()?;
                 let resources_directory = if options_override.is_none() {
                     Some(app.path().resource_dir()?.join("EngineResources"))
@@ -4861,11 +4861,11 @@ pub fn run() {
             #[cfg(target_os = "android")]
             let directory = app.path().app_data_dir()?.join("files/bootstrap/state");
             #[cfg(not(any(target_os = "android", target_os = "macos")))]
-            let directory = match std::env::var_os("MSIME_CLIENT_STATE_DIR") {
+            let directory = match std::env::var_os("LINGYAO_CLIENT_STATE_DIR") {
                 Some(value) => {
                     let path = std::path::PathBuf::from(value);
                     if !path.is_absolute() {
-                        return Err("MSIME_CLIENT_STATE_DIR must be absolute".into());
+                        return Err("LINGYAO_CLIENT_STATE_DIR must be absolute".into());
                     }
                     path
                 }
@@ -4897,7 +4897,7 @@ pub fn run() {
             #[cfg(target_os = "android")]
             let _ = keyboard_skin_trials.restore_pending();
             // The iOS keyboard extension stores named designs in the App Group
-            // root, while the Rust preferences live below App Group/MSIME.
+            // root, while the Rust preferences live below App Group/LINGYAO.
             // Point both hosts at the same bounded library file.
             #[cfg(target_os = "ios")]
             let custom_skin_directory = ios_custom_skin_library_root(&directory);
@@ -4911,12 +4911,12 @@ pub fn run() {
                 .join("files/CommunityLibrary.json");
             // The iOS reply keyboard reads downloads directly from the App
             // Group root. Keep the Tauri community page on that exact file;
-            // the Rust preferences and statistics remain below App Group/MSIME.
+            // the Rust preferences and statistics remain below App Group/LINGYAO.
             #[cfg(target_os = "ios")]
             let community_resource_library_path =
                 ios_community_resource_library_path(&directory);
             #[cfg(any(target_os = "android", target_os = "ios"))]
-            app.manage(msime_client_core::community::resource_library::CommunityResourceLibraryStore::new(
+            app.manage(lingyao_client_core::community::resource_library::CommunityResourceLibraryStore::new(
                 community_resource_library_path,
             ));
             app.manage(keyboard_skin_trials);
@@ -4959,7 +4959,7 @@ pub fn run() {
             #[cfg(target_os = "linux")]
             start_linux_clipboard_monitor(Arc::clone(&clipboard_state.0), preferences);
             #[cfg(target_os = "windows")]
-            msime_host_windows::start_clipboard_monitor({
+            lingyao_host_windows::start_clipboard_monitor({
                 let preferences = preferences.clone();
                 move |text| {
                     let _ = preferences.capture_clipboard_text(text);
@@ -5037,11 +5037,11 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             let host_options_path = macos_launch.options_path;
             #[cfg(not(any(target_os = "android", target_os = "ios", target_os = "macos")))]
-            let host_options_path = std::env::var_os("MSIME_CLIENT_HOST_OPTIONS")
+            let host_options_path = std::env::var_os("LINGYAO_CLIENT_HOST_OPTIONS")
                 .map(PathBuf::from)
                 .filter(|path| path.is_absolute())
                 .or_else(|| {
-                    std::env::var_os("MSIME_IBUS_OPTIONS")
+                    std::env::var_os("LINGYAO_IBUS_OPTIONS")
                         .map(PathBuf::from)
                         .filter(|path| path.is_absolute())
                 })
@@ -5056,11 +5056,11 @@ pub fn run() {
                     if let Ok(dir) = app.path().app_data_dir() {
                         candidates.push(dir.join("runtime-options.json"));
                     }
-                    // 本安装包所属版本的状态目录名（full 是 MSIME-Client）；版本声明坏了的包不会走到这里（启动时就退出了）。
+                    // 本安装包所属版本的状态目录名（full 是 LINGYAO-Client）；版本声明坏了的包不会走到这里（启动时就退出了）。
                     #[cfg(target_os = "windows")]
                     if let (Some(local), Ok(identity)) = (
                         std::env::var_os("LOCALAPPDATA"),
-                        msime_client_core::edition::Edition::windows_package_identity(),
+                        lingyao_client_core::edition::Edition::windows_package_identity(),
                     ) {
                         candidates.push(
                             PathBuf::from(local)
@@ -5080,7 +5080,7 @@ pub fn run() {
                         .or(user_locator)
                 })
                 .ok_or_else(|| {
-                    "MSIME_CLIENT_HOST_OPTIONS or MSIME_IBUS_OPTIONS must point to a prepared HostOptions JSON"
+                    "LINGYAO_CLIENT_HOST_OPTIONS or LINGYAO_IBUS_OPTIONS must point to a prepared HostOptions JSON"
                         .to_string()
                 })?;
             let host_document: Value = {
@@ -5150,7 +5150,7 @@ pub fn run() {
                         .map_err(|_| "Cannot parse prepared HostOptions JSON".to_string())?
                 }
             };
-            let runtime_path = std::env::var_os("MSIME_IBUS_OPTIONS")
+            let runtime_path = std::env::var_os("LINGYAO_IBUS_OPTIONS")
                 .map(PathBuf::from)
                 .filter(|path| path.is_absolute())
                 .or_else(|| Some(host_options_path.clone()));
@@ -5626,7 +5626,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if matches!(_event, tauri::RunEvent::Ready) {
                 if let Some(target) = keyboard_launch_target.take() {
-                    let _ = msime_host_macos::restore_launch_target(target);
+                    let _ = lingyao_host_macos::restore_launch_target(target);
                 }
             }
             #[cfg(target_os = "macos")]

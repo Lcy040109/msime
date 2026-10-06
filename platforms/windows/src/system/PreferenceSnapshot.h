@@ -1,12 +1,12 @@
 #pragma once
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Immutable validated publication value. Loading may block on the shared store
 // lock: call on a settings worker, never inside an input task/focus callback.
 class PreferenceSnapshot final {
@@ -25,12 +25,12 @@ public:
 private:
   static std::optional<PreferenceSnapshot> read(const std::string &directory,
                                                 bool try_only) {
-    const auto load = try_only ? msime_client_try_load_preferences
-                               : msime_client_load_preferences;
-    std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
+    const auto load = try_only ? lingyao_client_try_load_preferences
+                               : lingyao_client_load_preferences;
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
         load(reinterpret_cast<const uint8_t *>(directory.data()),
              directory.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!raw)
       throw std::runtime_error("Missing shared preferences response");
     auto response = nlohmann::json::parse(raw.get());
@@ -50,4 +50,4 @@ private:
   uint64_t revision_;
   std::string serialized_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

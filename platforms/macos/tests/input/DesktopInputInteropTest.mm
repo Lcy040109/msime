@@ -5,9 +5,9 @@ int main(int argc, const char *argv[]) {
     @autoreleasepool {
         assert(argc == 2);
         __block unsigned committed = 0;
-        MSIMEDesktopInputSession *session = [[MSIMEDesktopInputSession alloc]
+        LINGYAODesktopInputSession *session = [[LINGYAODesktopInputSession alloc]
             initWithTargetPID:NSProcessInfo.processInfo.processIdentifier launchTime:42
-            handler:^(NSString *text, double deadline, MSIMEPanelTextCompletion completion) {
+            handler:^(NSString *text, double deadline, LINGYAOPanelTextCompletion completion) {
                 assert(NSThread.isMainThread);
                 assert([text isEqualToString:@"synthetic"]);
                 assert(deadline > NSProcessInfo.processInfo.systemUptime);

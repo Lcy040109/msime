@@ -171,7 +171,7 @@ fn reject_database_parent(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// A dictionary (`msime-pinyin.db`, `msime-english.db`) opened for writing; a missing dictionary is an error, never a new empty file.
+/// A dictionary (`lingyao-pinyin.db`, `lingyao-english.db`) opened for writing; a missing dictionary is an error, never a new empty file.
 pub(crate) fn open_dictionary_for_writing(path: &Path) -> Result<Connection> {
     open_database(path, OpenFlags::SQLITE_OPEN_READ_WRITE)
 }
@@ -277,7 +277,7 @@ pub fn close_cached_journals() {
     crate::local::database::close_cached_local_databases();
 }
 
-/// Closes this thread's cached journal connection now. The reference cached only its default journal path and opened msime's journal per call (user_dictionary_journal.cpp:445-452), so a thread that is done with the journal must not keep a handle that blocks the reset's rename or a generation delete on Windows. A connection an operation still holds closes when that operation ends.
+/// Closes this thread's cached journal connection now. The reference cached only its default journal path and opened lingyao's journal per call (user_dictionary_journal.cpp:445-452), so a thread that is done with the journal must not keep a handle that blocks the reset's rename or a generation delete on Windows. A connection an operation still holds closes when that operation ends.
 pub(crate) fn release_thread_journal() {
     // At thread exit the cache may already be destroyed, which closed its connection; there is nothing left to release then.
     let _ = CACHED_JOURNAL.try_with(|cache| *cache.borrow_mut() = None);
@@ -414,15 +414,15 @@ pub(crate) mod test_support {
         }
 
         pub fn journal(&self) -> PathBuf {
-            self.root.path().join("msime_user.db")
+            self.root.path().join("lingyao_user.db")
         }
 
         pub fn main_db(&self) -> PathBuf {
-            self.root.path().join("msime-pinyin.db")
+            self.root.path().join("lingyao-pinyin.db")
         }
 
         pub fn english_db(&self) -> PathBuf {
-            self.root.path().join("msime-english.db")
+            self.root.path().join("lingyao-english.db")
         }
 
         /// Pinyin rows `(key, word, weight)`, each into the table its key names.
@@ -542,7 +542,7 @@ mod tests {
 
         let root = tempfile::tempdir().unwrap();
         let external = root.path().join("external.db");
-        let linked = root.path().join("msime_user.db");
+        let linked = root.path().join("lingyao_user.db");
         symlink(&external, &linked).unwrap();
 
         assert!(open_journal(&linked).is_err());
@@ -558,10 +558,10 @@ mod tests {
         let external = tempfile::tempdir().unwrap();
         let linked = root.path().join("user");
         symlink(external.path(), &linked).unwrap();
-        let journal = linked.join("msime_user.db");
+        let journal = linked.join("lingyao_user.db");
 
         assert!(open_journal(&journal).is_err());
-        assert!(!external.path().join("msime_user.db").exists());
+        assert!(!external.path().join("lingyao_user.db").exists());
     }
 
     #[test]

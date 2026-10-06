@@ -6,7 +6,7 @@
 #include <functional>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Production TSF clients receive their input policy from the validated
 // preference snapshot owned by InputState.  Do not capture launch-time preview
 // values here: the preference monitor can publish a newer snapshot while a
@@ -27,4 +27,4 @@ production_key_handler(
         local_commit_observation(packet), state.word_character_binding());
   };
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

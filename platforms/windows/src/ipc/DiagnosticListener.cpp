@@ -2,7 +2,7 @@
 #include "PipeIo.h"
 #include "PipeListener.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 // One batch per connection, read with a short deadline so a TIP that connects
 // and never writes cannot hold the single instance.
@@ -115,4 +115,4 @@ void DiagnosticListener::run() {
     }
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

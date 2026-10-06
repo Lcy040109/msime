@@ -1,12 +1,12 @@
 //! Real Rust client against the portable C++ peer; no device or native pipe.
 //!
 //! Build the peer and run this with `platforms/windows/tests/tools/voice-wire-interop.sh`,
-//! which compiles voice_wire_peer.cpp and puts its path in `MSIME_VOICE_WIRE_PEER`.
+//! which compiles voice_wire_peer.cpp and puts its path in `LINGYAO_VOICE_WIRE_PEER`.
 //! Without that variable there is nothing to talk to, so both tests report why
 //! they did nothing and return rather than failing an ordinary `cargo test`.
 
-use msime_client_core::voice::controller;
-use msime_client_core::voice::controller::{Error, Phase, Transport};
+use lingyao_client_core::voice::controller;
+use lingyao_client_core::voice::controller::{Error, Phase, Transport};
 use std::io::{Read, Write};
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -82,11 +82,11 @@ impl Drop for Peer {
 /// here", not a failure. Returning the path keeps the check and the use of it
 /// in one place.
 fn peer_binary() -> Option<std::ffi::OsString> {
-    match std::env::var_os("MSIME_VOICE_WIRE_PEER") {
+    match std::env::var_os("LINGYAO_VOICE_WIRE_PEER") {
         Some(path) => Some(path),
         None => {
             eprintln!(
-                "skipped: set MSIME_VOICE_WIRE_PEER to the compiled peer, or run \
+                "skipped: set LINGYAO_VOICE_WIRE_PEER to the compiled peer, or run \
                  platforms/windows/tests/tools/voice-wire-interop.sh"
             );
             None

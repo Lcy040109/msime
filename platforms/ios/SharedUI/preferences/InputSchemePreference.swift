@@ -27,7 +27,7 @@ enum ChineseInputScheme: String, CaseIterable {
   /// 笔画输入：五个笔画键 h s p n z 加通配 x，从笔画词库按笔顺查单字，候选只读、不学习。键面和预编辑都画笔画字形 一丨丿丶乛＊，ASCII 字母只是发给 Engine 的键。
   var isStroke: Bool { self == .stroke }
 
-  /// 预编辑是否是按键的字形而不是按键的拼写：笔画的 一丨丿丶乛＊ 代表字母 h s p n z x。`editing_text` 里的字母只是按键发出的内容，所以无论行内还是候选栏，都不显示这些字母（msime_client.h）。
+  /// 预编辑是否是按键的字形而不是按键的拼写：笔画的 一丨丿丶乛＊ 代表字母 h s p n z x。`editing_text` 里的字母只是按键发出的内容，所以无论行内还是候选栏，都不显示这些字母（lingyao_client.h）。
   var drawsKeysAsGlyphs: Bool { isStroke }
 
   /// 方案是否使用普通话那一套功能：繁体输出转换、候选释义、本地输入模式和候选菜单。日语、韩语、越南语和藏文写的是各自的文字，粤拼和注音直接从各自的词库写出繁体中文，笔画从自己的词库按笔顺查单字，这些功能都不用。
@@ -69,15 +69,15 @@ enum ChineseInputScheme: String, CaseIterable {
 
   /// 本版本是否提供这个入口：入口背后的方案在本版本里时提供。手写面板写出的是汉字，所以只在提供中文方案的版本里有（full、拼音版、五笔版），日文、越南文和藏文版没有。与 client-core 的 `Edition::offers_touch_scheme` 一致。
   var isOfferedByEdition: Bool {
-    guard self == .handwriting else { return MSIMEAppEdition.offers(engineScheme) }
-    return Self.chineseEngineSchemes.contains(where: MSIMEAppEdition.offers)
+    guard self == .handwriting else { return LINGYAOAppEdition.offers(engineScheme) }
+    return Self.chineseEngineSchemes.contains(where: LINGYAOAppEdition.offers)
   }
 
   /// 写中文的方案（版本表里的方案名），与 client-core 的 `ChineseScheme::of` 相同；提供其中任何一个的版本才有手写。
   static let chineseEngineSchemes = ["quanpin", "shuangpin", "wubi", "cantonese", "zhuyin", "stroke"]
 
   /// 偏好里的方案本版本没有、或一个入口都没剩下时退回的入口：本版本默认方案的 26 键入口。full 是全拼 26 键，与引入版本之前相同。
-  static var editionFallback: ChineseInputScheme { ChineseInputScheme(rawValue: MSIMEAppEdition.defaultScheme) ?? .quanpin }
+  static var editionFallback: ChineseInputScheme { ChineseInputScheme(rawValue: LINGYAOAppEdition.defaultScheme) ?? .quanpin }
 
   var shuangpinProfile: String? {
     switch self {
@@ -197,7 +197,7 @@ enum InputSchemePreference {
     get {
       // 本版本不提供的入口（比如 full 那边存下的拼音落到五笔版）不算启用，一个都不剩时退回本版本的默认入口。没存过列表时，要用户自己打开的那几个不启用；只有一个方案的版本例外，越南文版、藏文版的入口就是这个版本本身，与 client-core 的 `TouchKeyboardSchemePreferences::for_edition` 一致。
       guard let stored = defaults.stringArray(forKey: enabledSchemesKey) else {
-        let optInEnabled = (MSIMEAppEdition.inputSchemes?.count ?? .max) <= 1
+        let optInEnabled = (LINGYAOAppEdition.inputSchemes?.count ?? .max) <= 1
         let initial = ChineseInputScheme.allCases.filter {
           (optInEnabled || !ChineseInputScheme.optInSchemes.contains($0)) && $0.isOfferedByEdition
         }
@@ -237,7 +237,7 @@ enum InputSchemePreference {
   /// The schemes whose dictionary `directory` holds, by the file names host-api looks for; nil when there is no directory to look in, which `offeredSchemes` reads as unknown.
   static func installedLanguageSchemes(in directory: URL?) -> Set<ChineseInputScheme>? {
     guard let directory else { return nil }
-    let files: [(ChineseInputScheme, String)] = [(.cantonese, "msime-cantonese.db"), (.zhuyin, "msime-zhuyin.db"), (.stroke, "msime-stroke.db")]
+    let files: [(ChineseInputScheme, String)] = [(.cantonese, "lingyao-cantonese.db"), (.zhuyin, "lingyao-zhuyin.db"), (.stroke, "lingyao-stroke.db")]
     return Set(files.filter { FileManager.default.fileExists(atPath: directory.appendingPathComponent($0.1).path) }.map(\.0))
   }
 
@@ -271,5 +271,5 @@ enum InputSchemePreference {
     return true
   }
 
-  static let appGroupIdentifier = MSIMEAppEdition.appGroupIdentifier
+  static let appGroupIdentifier = LINGYAOAppEdition.appGroupIdentifier
 }

@@ -1,6 +1,6 @@
 [package]
-name = "msime-dict-builder"
-description = "Builds the shipped dictionary artifacts (msime-pinyin.db, msime-wubi.db, msime-english.db, msime-others.db, msime-japanese.dat, msime-bigram.bin, msime-trigram.bin and the manifest) from pinned sources. Replaces the Python pipeline under MSIME-Engine dictionary/."
+name = "lingyao-dict-builder"
+description = "Builds the shipped dictionary artifacts (lingyao-pinyin.db, lingyao-wubi.db, lingyao-english.db, lingyao-others.db, lingyao-japanese.dat, lingyao-bigram.bin, lingyao-trigram.bin and the manifest) from pinned sources. Replaces the Python pipeline under LINGYAO-Engine dictionary/."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,7 +9,7 @@ rust-version.workspace = true
 publish = false
 
 [[bin]]
-name = "msime-dict-build"
+name = "lingyao-dict-build"
 path = "src/main.rs"
 
 [dependencies]
@@ -23,7 +23,7 @@ html-escape = "0.2"
 # Insertion-ordered maps: the Python pipeline iterates dicts in insertion order, and the n-gram tie-break and the emoji extras depend on it.
 indexmap = { version = "2", features = ["serde"] }
 # The quanpin table naming contract, shared with the runtime.
-msime-engine = { path = "../engine" }
+lingyao-engine = { path = "../engine" }
 pinyin = { version = "0.11", default-features = false, features = ["plain"] }
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }

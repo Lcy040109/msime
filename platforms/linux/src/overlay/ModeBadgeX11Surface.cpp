@@ -12,7 +12,7 @@
 #include "ModeBadgePainter.h"
 #include "WaveOverlayX11Placement.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 namespace {
 
@@ -138,4 +138,4 @@ void ModeBadgeX11Surface::destroy_window() {
   visible_ = false;
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

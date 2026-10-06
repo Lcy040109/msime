@@ -1,4 +1,4 @@
-import app.msime.android.CandidateWrapPolicy;
+import app.lingyao.android.CandidateWrapPolicy;
 import java.util.Arrays;
 
 public final class CandidatePanelSmoke {

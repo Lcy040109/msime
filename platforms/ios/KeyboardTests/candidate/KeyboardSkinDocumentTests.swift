@@ -9,7 +9,7 @@ final class KeyboardSkinDocumentTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-skin-document-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-skin-document-\(UUID().uuidString)", isDirectory: true)
     previousTheme = KeyboardFeedbackPreference.defaults.string(forKey: GlobalThemePreference.key)
     previousDesign = KeyboardFeedbackPreference.defaults.data(forKey: CustomKeyboardSkinStore.key)
   }

@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
@@ -45,12 +45,12 @@ public final class NineKeyEnglishDeviceSmoke extends DeviceSmoke {
                 .getBytes(StandardCharsets.UTF_8));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
 
             stage = "real nine-key digit entry";
             tap(key("MNO"));
             tap(key("JKL"));
-            await(field("msime-test-plain").and(node -> equalsText("65", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("65", node.getText())));
 
             // dict-v1.0.0 has zero English weights, so production acceptance deliberately
             // checks the complete Engine candidate set instead of assuming first-page rank.
@@ -59,9 +59,9 @@ public final class NineKeyEnglishDeviceSmoke extends DeviceSmoke {
             tap(candidate("ok"));
 
             stage = "nine-key English commit identity";
-            await(field("msime-test-plain").and(node -> equalsText("ok", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("ok", node.getText())));
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath());
             else publish(preferences, original);
         }
@@ -69,7 +69,7 @@ public final class NineKeyEnglishDeviceSmoke extends DeviceSmoke {
 
     private Predicate<AccessibilityNodeInfo> candidate(String text) {
         return node -> {
-            if (!equalsText("app.msime.android", node.getPackageName())
+            if (!equalsText("app.lingyao.android", node.getPackageName())
                     || !node.isClickable() || node.getContentDescription() == null) return false;
             String description = node.getContentDescription().toString();
             int delimiter = description.indexOf('：');
@@ -80,14 +80,14 @@ public final class NineKeyEnglishDeviceSmoke extends DeviceSmoke {
     }
 
     private void restartIme() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
     private void openEditor() throws Exception {
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
     }
 
     private void shell(String command) throws Exception {

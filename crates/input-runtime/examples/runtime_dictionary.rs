@@ -1,6 +1,6 @@
 //! Exercise shared input routing against the locked production dictionary.
-use msime_engine::host::{prepare_options, Session};
-use msime_input_runtime::{Action, Runtime};
+use lingyao_engine::host::{prepare_options, Session};
+use lingyao_input_runtime::{Action, Runtime};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resources = std::env::args_os()

@@ -10,12 +10,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-using msime::linux_host::classify_proc_path;
-using msime::linux_host::mapped_file_state;
-using msime::linux_host::maps_line_path;
-using msime::linux_host::ProgramFileState;
-using msime::linux_host::running_executable_state;
-using msime::linux_host::user_service_unit;
+using lingyao::linux_host::classify_proc_path;
+using lingyao::linux_host::mapped_file_state;
+using lingyao::linux_host::maps_line_path;
+using lingyao::linux_host::ProgramFileState;
+using lingyao::linux_host::running_executable_state;
+using lingyao::linux_host::user_service_unit;
 
 namespace {
 
@@ -69,7 +69,7 @@ Reporter start_reporter(const std::filesystem::path &program) {
 }
 
 void classification() {
-  char pattern[] = "/tmp/msime-replaced-program-XXXXXX";
+  char pattern[] = "/tmp/lingyao-replaced-program-XXXXXX";
   const char *created = mkdtemp(pattern);
   assert(created != nullptr);
   const std::filesystem::path root(created);
@@ -95,9 +95,9 @@ void classification() {
 
 void maps_parsing() {
   const std::string_view library =
-      "7f1c2a000000-7f1c2a021000 r-xp 00001000 08:01 1234                       /usr/lib/x86_64-linux-gnu/fcitx5/libmsime-fcitx5.so (deleted)\n";
+      "7f1c2a000000-7f1c2a021000 r-xp 00001000 08:01 1234                       /usr/lib/x86_64-linux-gnu/fcitx5/liblingyao-fcitx5.so (deleted)\n";
   auto path = maps_line_path(library, 0x7f1c2a000000);
-  assert(path && *path == "/usr/lib/x86_64-linux-gnu/fcitx5/libmsime-fcitx5.so (deleted)");
+  assert(path && *path == "/usr/lib/x86_64-linux-gnu/fcitx5/liblingyao-fcitx5.so (deleted)");
   assert(maps_line_path(library, 0x7f1c2a020fff));
   // The end of the range is exclusive.
   assert(!maps_line_path(library, 0x7f1c2a021000));
@@ -133,11 +133,11 @@ void service_unit_detection() {
 }
 
 void mapped_file_replaced_and_removed() {
-  char pattern[] = "/tmp/msime-replaced-mapping-XXXXXX";
+  char pattern[] = "/tmp/lingyao-replaced-mapping-XXXXXX";
   const char *created = mkdtemp(pattern);
   assert(created != nullptr);
   const std::filesystem::path root(created);
-  const auto library = root / "libmsime-fcitx5.so";
+  const auto library = root / "liblingyao-fcitx5.so";
   write_file(library, std::string(8192, 'a'));
   const std::string path = library.string();
   FILE *file = std::fopen(path.c_str(), "r");
@@ -149,8 +149,8 @@ void mapped_file_replaced_and_removed() {
 
   assert(mapped_file_state(inside) == ProgramFileState::Current);
   // dpkg unpacks next to the file and renames over it.
-  write_file(root / "libmsime-fcitx5.so.dpkg-new", std::string(8192, 'b'));
-  std::filesystem::rename(root / "libmsime-fcitx5.so.dpkg-new", library);
+  write_file(root / "liblingyao-fcitx5.so.dpkg-new", std::string(8192, 'b'));
+  std::filesystem::rename(root / "liblingyao-fcitx5.so.dpkg-new", library);
   assert(mapped_file_state(inside) == ProgramFileState::Replaced);
   std::filesystem::remove(library);
   assert(mapped_file_state(inside) == ProgramFileState::Removed);
@@ -163,19 +163,19 @@ void mapped_file_replaced_and_removed() {
 
 void running_executable_replaced_and_removed() {
   // Under the build directory rather than /tmp, which may be mounted noexec.
-  std::string pattern = (std::filesystem::current_path() / "msime-replaced-executable-XXXXXX").string();
+  std::string pattern = (std::filesystem::current_path() / "lingyao-replaced-executable-XXXXXX").string();
   const char *created = mkdtemp(pattern.data());
   assert(created != nullptr);
   const std::filesystem::path root(created);
-  const auto program = root / "msime-linux-ibus";
+  const auto program = root / "lingyao-linux-ibus";
   std::filesystem::copy_file("/proc/self/exe", program);
   std::filesystem::permissions(program, std::filesystem::perms::owner_all);
   const auto reporter = start_reporter(program);
 
   assert(reporter.ask() == ProgramFileState::Current);
-  std::filesystem::copy_file("/proc/self/exe", root / "msime-linux-ibus.dpkg-new");
-  std::filesystem::permissions(root / "msime-linux-ibus.dpkg-new", std::filesystem::perms::owner_all);
-  std::filesystem::rename(root / "msime-linux-ibus.dpkg-new", program);
+  std::filesystem::copy_file("/proc/self/exe", root / "lingyao-linux-ibus.dpkg-new");
+  std::filesystem::permissions(root / "lingyao-linux-ibus.dpkg-new", std::filesystem::perms::owner_all);
+  std::filesystem::rename(root / "lingyao-linux-ibus.dpkg-new", program);
   assert(reporter.ask() == ProgramFileState::Replaced);
   // Removing the package leaves no program to restart into.
   std::filesystem::remove(program);

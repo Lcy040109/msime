@@ -1,4 +1,4 @@
-// Ported from MSIME-Apple develop at 2b0250f4dd7012520392b310dfcc0288c3208a75.
+// Ported from LINGYAO-Apple develop at 2b0250f4dd7012520392b310dfcc0288c3208a75.
 // Uses synthetic fixtures and in-memory credentials only; no live service access.
 import AppKit
 import Foundation
@@ -197,7 +197,7 @@ private final class AccountFixture: URLProtocol, @unchecked Sendable {
     try require(started == [1, 3, 5])
     // The input method stopping its use of the account drops the waiting page, so nothing goes out after the user opted out; the request in flight still finishes.
     BackendCandidateGloss.fetch(words: ["谢谢"], primary: "en", secondary: "", generation: 6)
-    msimeCancelAccountCandidateGlosses()
+    lingyaoCancelAccountCandidateGlosses()
     release.removeFirst().resume()
     try await Task.sleep(nanoseconds: 50_000_000)
     try require(started == [1, 3, 5] && release.isEmpty)

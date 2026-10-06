@@ -1,4 +1,4 @@
-import app.msime.android.PreferencesRevisionPolicy;
+import app.lingyao.android.PreferencesRevisionPolicy;
 
 public final class PreferencesRevisionPolicySmoke {
     static void check(boolean condition, String message) {

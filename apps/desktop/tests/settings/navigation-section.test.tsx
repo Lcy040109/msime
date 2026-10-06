@@ -5,7 +5,7 @@ import {
   NavigationSection,
   type NavigationPreferences,
   type WordCharacterPreferences,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

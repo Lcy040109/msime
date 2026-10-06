@@ -10,8 +10,8 @@
 #include <atomic>
 #include <memory>
 
-@protocol MSIMEDesktopCloudClipboardPreparing
-+ (void)prepareWithCompletion:(void (^)(id<MSIMEDesktopCloudClipboardProvider>))completion;
+@protocol LINGYAODesktopCloudClipboardPreparing
++ (void)prepareWithCompletion:(void (^)(id<LINGYAODesktopCloudClipboardProvider>))completion;
 @end
 
 namespace {
@@ -45,26 +45,26 @@ struct Reply {
 };
 }
 
-@implementation MSIMEDesktopCloudClipboardSession {
+@implementation LINGYAODesktopCloudClipboardSession {
     dispatch_source_t _source, _timer;
     dispatch_queue_t _queue;
     NSDictionary *_launchEnvironment;
-    id<MSIMEDesktopCloudClipboardProvider> _provider;
-    MSIMEDesktopCloudClipboardSession *_keepAlive;
+    id<LINGYAODesktopCloudClipboardProvider> _provider;
+    LINGYAODesktopCloudClipboardSession *_keepAlive;
     pid_t _peer;
     BOOL (^_valid)(void);
     std::atomic<bool> _stopped;
     BOOL _dictionary;
 }
-- (instancetype)initWithProvider:(id<MSIMEDesktopCloudClipboardProvider>)provider {
+- (instancetype)initWithProvider:(id<LINGYAODesktopCloudClipboardProvider>)provider {
     return [self initWithProvider:provider dictionary:NO];
 }
-- (instancetype)initWithProvider:(id<MSIMEDesktopCloudClipboardProvider>)provider dictionary:(BOOL)dictionary {
+- (instancetype)initWithProvider:(id<LINGYAODesktopCloudClipboardProvider>)provider dictionary:(BOOL)dictionary {
     if (!(self = [super init])) return nil;
     _stopped.store(false);
     _dictionary = dictionary;
     if (!provider) return nil;
-    char directory[] = "/tmp/msime-cloud-XXXXXX";
+    char directory[] = "/tmp/lingyao-cloud-XXXXXX";
     if (!mkdtemp(directory)) return nil;
     NSString *root = [NSString stringWithUTF8String:directory];
     NSString *path = [root stringByAppendingPathComponent:@"clipboard.sock"];
@@ -79,13 +79,13 @@ struct Reply {
     fcntl(listener, F_SETFD, FD_CLOEXEC);
     _provider = provider;
     NSData *configuration = [NSJSONSerialization dataWithJSONObject:@{@"version":@1, @"path":path, @"host_pid":@(getpid())} options:0 error:nil];
-    _launchEnvironment = @{dictionary ? @"MSIME_CLIENT_CLOUD_DICTIONARY_SESSION" : @"MSIME_CLIENT_CLOUD_CLIPBOARD_SESSION":[[NSString alloc] initWithData:configuration encoding:NSUTF8StringEncoding]};
-    _queue = dispatch_queue_create("app.msime.cloud-clipboard-session", DISPATCH_QUEUE_SERIAL);
+    _launchEnvironment = @{dictionary ? @"LINGYAO_CLIENT_CLOUD_DICTIONARY_SESSION" : @"LINGYAO_CLIENT_CLOUD_CLIPBOARD_SESSION":[[NSString alloc] initWithData:configuration encoding:NSUTF8StringEncoding]};
+    _queue = dispatch_queue_create("app.lingyao.cloud-clipboard-session", DISPATCH_QUEUE_SERIAL);
     _source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, listener, 0, _queue);
     dispatch_source_set_cancel_handler(_source, ^{ close(listener); unlink(path.fileSystemRepresentation); rmdir(root.fileSystemRepresentation); });
-    __weak MSIMEDesktopCloudClipboardSession *weakSelf = self;
+    __weak LINGYAODesktopCloudClipboardSession *weakSelf = self;
     dispatch_source_set_event_handler(_source, ^{
-        MSIMEDesktopCloudClipboardSession *session = weakSelf;
+        LINGYAODesktopCloudClipboardSession *session = weakSelf;
         if (!session || session->_stopped.load()) return;
         int fd = accept(listener, nullptr, nullptr);
         if (fd < 0) return;
@@ -102,7 +102,7 @@ struct Reply {
     dispatch_source_set_timer(_timer, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), NSEC_PER_SEC, NSEC_PER_SEC / 10);
     const double started = NSProcessInfo.processInfo.systemUptime;
     dispatch_source_set_event_handler(_timer, ^{
-        MSIMEDesktopCloudClipboardSession *session = weakSelf;
+        LINGYAODesktopCloudClipboardSession *session = weakSelf;
         if (!session) return;
         BOOL (^valid)(void); pid_t peer;
         @synchronized(session) { valid = session->_valid; peer = session->_peer; }
@@ -166,58 +166,58 @@ struct Reply {
 - (void)dealloc { [self stop]; }
 @end
 
-void MSIMEOpenDesktopCloudClipboard(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback) {
-    MSIMEOpenDesktopCloudClipboardWithInput(optionsPath, workspace, nil, fallback);
+void LINGYAOOpenDesktopCloudClipboard(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback) {
+    LINGYAOOpenDesktopCloudClipboardWithInput(optionsPath, workspace, nil, fallback);
 }
 
-void MSIMEOpenDesktopCloudDictionary(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback) {
-    Class bridge = NSClassFromString(@"MSIMEBackendCloudDictionaryProvider");
+void LINGYAOOpenDesktopCloudDictionary(NSString *optionsPath, NSWorkspace *workspace, dispatch_block_t fallback) {
+    Class bridge = NSClassFromString(@"LINGYAOBackendCloudDictionaryProvider");
     if (![bridge respondsToSelector:@selector(prepareWithCompletion:)]) {
-        os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-dictionary reason=backend_bridge_missing");
+        os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-dictionary reason=backend_bridge_missing");
         fallback();
         return;
     }
-    [(Class<MSIMEDesktopCloudClipboardPreparing>)bridge prepareWithCompletion:^(id<MSIMEDesktopCloudClipboardProvider> provider) {
+    [(Class<LINGYAODesktopCloudClipboardPreparing>)bridge prepareWithCompletion:^(id<LINGYAODesktopCloudClipboardProvider> provider) {
         if (!provider) {
-            os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-dictionary reason=no_provider");
+            os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-dictionary reason=no_provider");
             fallback();
             return;
         }
-        MSIMEDesktopCloudClipboardSession *session = [[MSIMEDesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
+        LINGYAODesktopCloudClipboardSession *session = [[LINGYAODesktopCloudClipboardSession alloc] initWithProvider:provider dictionary:YES];
         if (!session) {
-            os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-dictionary reason=session_failed");
+            os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-dictionary reason=session_failed");
             fallback();
             return;
         }
-        MSIMEOpenDesktopRouteWithContext(@"cloud-dictionary", optionsPath, session.launchEnvironment, workspace,
+        LINGYAOOpenDesktopRouteWithContext(@"cloud-dictionary", optionsPath, session.launchEnvironment, workspace,
             ^(NSRunningApplication *application) { [session authorizePID:application.processIdentifier stillValid:^BOOL { return !application.terminated; }]; },
             ^{ [session stop]; fallback(); });
     }];
 }
 
-void MSIMEOpenDesktopCloudClipboardWithInput(NSString *optionsPath, NSWorkspace *workspace,
-    MSIMEDesktopInputSession *inputSession, dispatch_block_t fallback) {
-    Class bridge = NSClassFromString(@"MSIMEBackendCloudClipboardProvider");
+void LINGYAOOpenDesktopCloudClipboardWithInput(NSString *optionsPath, NSWorkspace *workspace,
+    LINGYAODesktopInputSession *inputSession, dispatch_block_t fallback) {
+    Class bridge = NSClassFromString(@"LINGYAOBackendCloudClipboardProvider");
     if (![bridge respondsToSelector:@selector(prepareWithCompletion:)]) {
-        os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-clipboard reason=backend_bridge_missing");
+        os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-clipboard reason=backend_bridge_missing");
         fallback();
         return;
     }
-    [(Class<MSIMEDesktopCloudClipboardPreparing>)bridge prepareWithCompletion:^(id<MSIMEDesktopCloudClipboardProvider> provider) {
+    [(Class<LINGYAODesktopCloudClipboardPreparing>)bridge prepareWithCompletion:^(id<LINGYAODesktopCloudClipboardProvider> provider) {
         if (!provider) {
-            os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-clipboard reason=no_provider");
+            os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-clipboard reason=no_provider");
             fallback();
             return;
         }
-        MSIMEDesktopCloudClipboardSession *session = [[MSIMEDesktopCloudClipboardSession alloc] initWithProvider:provider];
+        LINGYAODesktopCloudClipboardSession *session = [[LINGYAODesktopCloudClipboardSession alloc] initWithProvider:provider];
         if (!session) {
-            os_log(MSIMEUILog(), "desktop_route_fallback route=cloud-clipboard reason=session_failed");
+            os_log(LINGYAOUILog(), "desktop_route_fallback route=cloud-clipboard reason=session_failed");
             fallback();
             return;
         }
         NSMutableDictionary *environment = [session.launchEnvironment mutableCopy];
         if (inputSession) [environment addEntriesFromDictionary:inputSession.launchEnvironment];
-        MSIMEOpenDesktopRouteWithContext(@"cloud-clipboard", optionsPath, environment, workspace,
+        LINGYAOOpenDesktopRouteWithContext(@"cloud-clipboard", optionsPath, environment, workspace,
             ^(NSRunningApplication *application) {
                 [session authorizePID:application.processIdentifier stillValid:^BOOL { return !application.terminated; }];
                 [inputSession authorizePID:application.processIdentifier stillValid:^BOOL { return !application.terminated; }];

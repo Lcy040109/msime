@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require_at(bool value, int line) {
   if (!value)
     throw std::runtime_error("Shell surface test failed at line " +
@@ -72,33 +72,33 @@ int main() {
     // A panel request replaces whatever route this process inherited and leaves the rest of the environment, including drive current directories, alone.
     const std::wstring existing =
         std::wstring(L"PATH=C:\\Windows") + L'\0' +
-        L"msime_client_route=stale" + L'\0' + L"=C:=C:\\work" + L'\0';
+        L"lingyao_client_route=stale" + L'\0' + L"=C:=C:\\work" + L'\0';
     const auto panel = entries(shell_environment_block(
         existing.c_str(), *shell_surface_request(TrayMenuCommand::OpenEmojiPanel)));
     require(contains(panel, L"PATH=C:\\Windows"));
     require(contains(panel, L"=C:=C:\\work"));
-    require(!contains(panel, L"msime_client_route=stale"));
+    require(!contains(panel, L"lingyao_client_route=stale"));
 
     // The settings row asks for no panel at all, so the shell opens its own window; the about row names a section instead.
     const auto plain = entries(shell_environment_block(existing.c_str(), *settings));
     require(plain.size() == 3 && contains(plain, L"PATH=C:\\Windows"));
-    require(contains(plain, L"MSIME_CLIENT_ROUTE=settings"));
+    require(contains(plain, L"LINGYAO_CLIENT_ROUTE=settings"));
     const auto about_block = entries(shell_environment_block(existing.c_str(), *about));
 
     const ShellLaunchContext context{L"C:\\Users\\ime\\state",
                                     L"C:\\Users\\ime\\state\\runtime-options.json"};
     const std::wstring stale_paths =
-        std::wstring(L"MSIME_CLIENT_STATE_DIR=C:\\stale") + L'\0' +
-        L"MSIME_CLIENT_HOST_OPTIONS=C:\\stale\\runtime-options.json" + L'\0' +
+        std::wstring(L"LINGYAO_CLIENT_STATE_DIR=C:\\stale") + L'\0' +
+        L"LINGYAO_CLIENT_HOST_OPTIONS=C:\\stale\\runtime-options.json" + L'\0' +
         L"PATH=C:\\Windows" + L'\0';
     const auto configured_entries = entries(
         shell_environment_block(stale_paths.c_str(), *settings, &context));
-    require(contains(configured_entries, L"MSIME_CLIENT_STATE_DIR=C:\\Users\\ime\\state"));
+    require(contains(configured_entries, L"LINGYAO_CLIENT_STATE_DIR=C:\\Users\\ime\\state"));
     require(contains(configured_entries,
-                     L"MSIME_CLIENT_HOST_OPTIONS=C:\\Users\\ime\\state\\runtime-options.json"));
-    require(!contains(configured_entries, L"MSIME_CLIENT_STATE_DIR=C:\\stale"));
+                     L"LINGYAO_CLIENT_HOST_OPTIONS=C:\\Users\\ime\\state\\runtime-options.json"));
+    require(!contains(configured_entries, L"LINGYAO_CLIENT_STATE_DIR=C:\\stale"));
     require(!contains(configured_entries,
-                      L"MSIME_CLIENT_HOST_OPTIONS=C:\\stale\\runtime-options.json"));
+                      L"LINGYAO_CLIENT_HOST_OPTIONS=C:\\stale\\runtime-options.json"));
 
     // Nothing but a short lowercase identifier may reach the child.
     for (const char *invalid : {"emoji panel", "Emoji", "emoji=1", "../etc"}) {
@@ -114,30 +114,30 @@ int main() {
     // Discovery accepts only an existing file: settings opens the native settings binary and panels the shared shell.
     const auto root =
         std::filesystem::temp_directory_path() /
-        ("msime-shell-fixture-" +
+        ("lingyao-shell-fixture-" +
          std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     std::filesystem::create_directories(root);
     require(!shell_executable(root, {}, *settings));
     require(!shell_executable("relative", {}, *settings));
-    std::ofstream(root / "MSIME.exe") << "fixture";
+    std::ofstream(root / "LINGYAO.exe") << "fixture";
     require(!shell_executable(root, {}, *settings));
-    std::ofstream(root / "msime-client-settings.exe") << "fixture";
+    std::ofstream(root / "lingyao-client-settings.exe") << "fixture";
     require(shell_executable(
                 root, {}, *shell_surface_request(TrayMenuCommand::OpenSettings)) ==
-            root / "msime-client-settings.exe");
+            root / "lingyao-client-settings.exe");
     require(shell_executable(
                 root, {}, *shell_surface_request(TrayMenuCommand::OpenEmojiPanel)) ==
-            root / "MSIME.exe");
+            root / "LINGYAO.exe");
     const auto configured_shell = root / "configured-settings.exe";
     std::ofstream(configured_shell) << "fixture";
     require(shell_executable(root, configured_shell.wstring(), *settings) ==
             configured_shell);
     require(shell_executable(root, configured_shell.wstring(),
                              *shell_surface_request(TrayMenuCommand::OpenEmojiPanel)) ==
-            root / "MSIME.exe");
+            root / "LINGYAO.exe");
     const auto configured = root / "elsewhere.exe";
     require(!shell_executable(root, configured.wstring(), *settings));
-    require(!shell_executable(root, L"msime-client-settings.exe", *settings));
+    require(!shell_executable(root, L"lingyao-client-settings.exe", *settings));
 
     // Every surface also travels as the cross-platform route the shell parses.
     // A settings section becomes "settings:<category>": the bare section name is
@@ -149,18 +149,18 @@ int main() {
                 TrayMenuCommand::OpenKeyboardPanel)) == "keyboard");
     require(shell_surface_route(*settings) == "settings");
     require(shell_surface_route(*about) == "settings:about");
-    require(contains(panel, L"MSIME_CLIENT_ROUTE=emoji"));
-    require(contains(about_block, L"MSIME_CLIENT_ROUTE=settings:about"));
+    require(contains(panel, L"LINGYAO_CLIENT_ROUTE=emoji"));
+    require(contains(about_block, L"LINGYAO_CLIENT_ROUTE=settings:about"));
 
     // A stale route inherited from this process must not reach the shell.
     const std::wstring stale_route =
-        std::wstring(L"PATH=C:\\Windows") + L'\0' + L"msime_client_route=stale" +
+        std::wstring(L"PATH=C:\\Windows") + L'\0' + L"lingyao_client_route=stale" +
         L'\0';
     const auto replaced = entries(shell_environment_block(
         stale_route.c_str(), *shell_surface_request(TrayMenuCommand::OpenEmojiPanel)));
     for (const auto &entry : replaced)
-      require(entry != L"msime_client_route=stale");
-    require(contains(replaced, L"MSIME_CLIENT_ROUTE=emoji"));
+      require(entry != L"lingyao_client_route=stale");
+    require(contains(replaced, L"LINGYAO_CLIENT_ROUTE=emoji"));
 
     // The value filter still refuses anything outside the contract, and allows
     // at most the single separator a route needs.

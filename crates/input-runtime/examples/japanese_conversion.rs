@@ -8,8 +8,8 @@
 //!
 //! usage: japanese_conversion <verified-dictionary-directory>
 
-use msime_engine::host::{prepare_options, Command, Session};
-use msime_input_runtime::{Action, Runtime};
+use lingyao_engine::host::{prepare_options, Command, Session};
+use lingyao_input_runtime::{Action, Runtime};
 
 const KEYS: &str = "nihon";
 

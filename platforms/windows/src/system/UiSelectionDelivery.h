@@ -3,7 +3,7 @@
 #include "MainTransport.h"
 #include "ReplyCodec.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class UiDeliveryResult { Stale, Sent, WriteFailed };
 // External I/O thread only, after queue-owned selection preparation. A Sent
 // result still requires queue-owned confirmation; it is not proof TSF applied
@@ -39,4 +39,4 @@ inline UiDeliveryResult deliver_ui_selection(MainTransport &transport,
   transport.close(lease.transport);
   return UiDeliveryResult::WriteFailed;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

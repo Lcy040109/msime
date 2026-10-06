@@ -5,7 +5,7 @@
 #include <mutex>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The Server's diagnostic file, the counterpart of the reference's candidate_diag_log.cpp. The Server is a windows-subsystem program, so under the Watchdog nothing reads stdout or stderr; this file is where the Server log and the TIP's diagnostic batches go when the user turns on 「Server 端日志」 or 「TSF 端日志」 on the settings page.
 //
 // The reference writes to the Desktop and falls back to the data directory. Here the file always lives under the data directory (logs\server.log): a file that appears on the Desktop whenever a switch is on is the kind of side effect a user does not expect from an input method, and the settings page can point at the folder instead.
@@ -38,4 +38,4 @@ private:
   std::atomic<bool> tsf_{false};
   std::mutex mutex_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

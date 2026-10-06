@@ -5,7 +5,7 @@
 #include <fstream>
 #include <unistd.h>
 
-namespace host = msime::linux_host;
+namespace host = lingyao::linux_host;
 
 int main(int argc, char **argv) {
   assert(argc == 2);
@@ -28,19 +28,19 @@ int main(int argc, char **argv) {
   }
 
   // A missing size, a file that is not a PNG, or an icon of the wrong size leaves the theme without a mark.
-  const auto root = std::filesystem::temp_directory_path() / ("msime-fcitx-logo-" + std::to_string(::getpid()));
+  const auto root = std::filesystem::temp_directory_path() / ("lingyao-fcitx-logo-" + std::to_string(::getpid()));
   std::filesystem::remove_all(root);
   assert(!host::load_fcitx_theme_logo(root));
   std::filesystem::create_directories(root / "16x16/apps");
   std::filesystem::create_directories(root / "32x32/apps");
-  std::filesystem::copy_file(icons / "16x16/apps/msime-linux.png", root / "16x16/apps/msime-linux.png");
+  std::filesystem::copy_file(icons / "16x16/apps/lingyao-linux.png", root / "16x16/apps/lingyao-linux.png");
   assert(!host::load_fcitx_theme_logo(root));
-  std::ofstream(root / "32x32/apps/msime-linux.png", std::ios::binary) << "not a png";
+  std::ofstream(root / "32x32/apps/lingyao-linux.png", std::ios::binary) << "not a png";
   assert(!host::load_fcitx_theme_logo(root));
-  std::filesystem::copy_file(icons / "16x16/apps/msime-linux.png", root / "32x32/apps/msime-linux.png",
+  std::filesystem::copy_file(icons / "16x16/apps/lingyao-linux.png", root / "32x32/apps/lingyao-linux.png",
                              std::filesystem::copy_options::overwrite_existing);
   assert(!host::load_fcitx_theme_logo(root));
-  std::filesystem::copy_file(icons / "32x32/apps/msime-linux.png", root / "32x32/apps/msime-linux.png",
+  std::filesystem::copy_file(icons / "32x32/apps/lingyao-linux.png", root / "32x32/apps/lingyao-linux.png",
                              std::filesystem::copy_options::overwrite_existing);
   assert(host::load_fcitx_theme_logo(root));
   std::filesystem::remove_all(root);

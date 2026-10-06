@@ -8,16 +8,16 @@
 // Host-owned worker. Capture/provider code is injected by run(); the worker
 // guarantees cancellation before destruction and never invokes callbacks after
 // cancellation has been observed.
-class MsimeVoiceWorker {
+class LingyaoVoiceWorker {
  public:
   using Task = std::function<std::string(const std::atomic_bool &)>;
   using Progress = std::function<void(std::string, bool)>;
   using StreamTask = std::function<std::string(const std::atomic_bool &,
                                                const Progress &)>;
   using Result = std::function<void(std::string)>;
-  MsimeVoiceWorker() : cancelled_(std::make_shared<std::atomic_bool>(false)) {}
-  ~MsimeVoiceWorker() { cancel(); }
-  MsimeVoiceWorker(const MsimeVoiceWorker &) = delete;
+  LingyaoVoiceWorker() : cancelled_(std::make_shared<std::atomic_bool>(false)) {}
+  ~LingyaoVoiceWorker() { cancel(); }
+  LingyaoVoiceWorker(const LingyaoVoiceWorker &) = delete;
   void cancel() {
     cancelled_->store(true);
     if (thread_.joinable()) thread_.join();

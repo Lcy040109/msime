@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -159,10 +159,10 @@ public final class BackendAccountRefreshDeviceSmoke extends Instrumentation {
             retriesAccountRequestsAfter401();
             unauthorizedRefreshClearsSession();
             unboundedPersistedExpiryIsRejected();
-            result.putString("stream", "MSIME_DEVICE_SMOKE_PASSED: account refresh rotation, single-flight and unauthorized clearing\n");
+            result.putString("stream", "LINGYAO_DEVICE_SMOKE_PASSED: account refresh rotation, single-flight and unauthorized clearing\n");
             finish(Activity.RESULT_OK, result);
         } catch (Exception | AssertionError error) {
-            result.putString("stream", "MSIME_DEVICE_SMOKE_FAILED: account refresh ("
+            result.putString("stream", "LINGYAO_DEVICE_SMOKE_FAILED: account refresh ("
                 + error.getClass().getSimpleName() + ")\n");
             finish(Activity.RESULT_CANCELED, result);
         }

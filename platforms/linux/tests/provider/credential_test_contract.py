@@ -23,8 +23,8 @@ def load(name, filename):
     return module
 
 
-online = load("credential_online_provider", "msime-linux-online-provider")
-voice = load("credential_voice_provider", "msime-linux-voice-provider")
+online = load("credential_online_provider", "lingyao-linux-online-provider")
+voice = load("credential_voice_provider", "lingyao-linux-voice-provider")
 
 
 class OnlineCredentialTest(unittest.TestCase):
@@ -74,7 +74,7 @@ class OnlineCredentialTest(unittest.TestCase):
                 }
             },
         }
-        with tempfile.TemporaryDirectory(prefix="msime-ai-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-ai-") as directory:
             path = Path(directory) / "ai.json"
             path.write_text(json.dumps(configuration), encoding="utf-8")
             path.chmod(0o600)
@@ -91,7 +91,7 @@ class OnlineCredentialTest(unittest.TestCase):
             "model": "fixture-model",
             "token": "fixture-\x01-token",
         }
-        with tempfile.TemporaryDirectory(prefix="msime-ai-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-ai-") as directory:
             path = Path(directory) / "ai.json"
             path.write_text(json.dumps(configuration), encoding="utf-8")
             path.chmod(0o600)
@@ -100,7 +100,7 @@ class OnlineCredentialTest(unittest.TestCase):
 
         for key in ("endpoint", "model"):
             configuration[key] = configuration[key] + "\x01"
-            with tempfile.TemporaryDirectory(prefix="msime-ai-") as directory:
+            with tempfile.TemporaryDirectory(prefix="lingyao-ai-") as directory:
                 path = Path(directory) / "ai.json"
                 path.write_text(json.dumps(configuration), encoding="utf-8")
                 path.chmod(0o600)
@@ -115,7 +115,7 @@ class OnlineCredentialTest(unittest.TestCase):
             "model": "fixture-model",
             "token": "fixture-token",
         }
-        with tempfile.TemporaryDirectory(prefix="msime-ai-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-ai-") as directory:
             root = Path(directory)
             target = root / "target.json"
             link = root / "ai.json"
@@ -179,7 +179,7 @@ class VoiceCredentialTest(unittest.TestCase):
                 "token": " fixture-polish-token\n",
             },
         }
-        with tempfile.TemporaryDirectory(prefix="msime-voice-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-voice-") as directory:
             path = Path(directory) / "voice.json"
             path.write_text(json.dumps(configuration), encoding="utf-8")
             path.chmod(0o600)
@@ -200,7 +200,7 @@ class VoiceCredentialTest(unittest.TestCase):
                 "token": "fixture-\x01-token",
             },
         }
-        with tempfile.TemporaryDirectory(prefix="msime-voice-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-voice-") as directory:
             path = Path(directory) / "voice.json"
             path.write_text(json.dumps(configuration), encoding="utf-8")
             path.chmod(0o600)
@@ -209,7 +209,7 @@ class VoiceCredentialTest(unittest.TestCase):
 
         for key in ("endpoint", "model"):
             configuration["asr"][key] = configuration["asr"][key] + "\x01"
-            with tempfile.TemporaryDirectory(prefix="msime-voice-") as directory:
+            with tempfile.TemporaryDirectory(prefix="lingyao-voice-") as directory:
                 path = Path(directory) / "voice.json"
                 path.write_text(json.dumps(configuration), encoding="utf-8")
                 path.chmod(0o600)
@@ -226,7 +226,7 @@ class VoiceCredentialTest(unittest.TestCase):
                 "token": "fixture-token",
             },
         }
-        with tempfile.TemporaryDirectory(prefix="msime-voice-") as directory:
+        with tempfile.TemporaryDirectory(prefix="lingyao-voice-") as directory:
             root = Path(directory)
             target = root / "target.json"
             link = root / "voice.json"

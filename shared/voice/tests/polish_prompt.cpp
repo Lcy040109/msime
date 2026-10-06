@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("Polish prompt test failed at line " +

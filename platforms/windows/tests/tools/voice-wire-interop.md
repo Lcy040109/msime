@@ -6,7 +6,7 @@ Run from the repository root:
 bash platforms/windows/tests/tools/voice-wire-interop.sh
 ```
 
-The Rust half lives at `crates/client-core/tests/voice_wire_interop.rs`, so rustfmt and clippy reach it through the ordinary workspace commands and need no separate invocation here. Running `cargo test -p msime-client-core` without `MSIME_VOICE_WIRE_PEER` reports that the peer is absent and passes; only the script above builds the peer (`platforms/windows/tests/voice/voice_wire_peer.cpp`) and makes the two tests do anything.
+The Rust half lives at `crates/client-core/tests/voice_wire_interop.rs`, so rustfmt and clippy reach it through the ordinary workspace commands and need no separate invocation here. Running `cargo test -p lingyao-client-core` without `LINGYAO_VOICE_WIRE_PEER` reports that the peer is absent and passes; only the script above builds the peer (`platforms/windows/tests/voice/voice_wire_peer.cpp`) and makes the two tests do anything.
 
 Requires a host C++17 compiler with AddressSanitizer/UndefinedBehaviorSanitizer and Rust. The runner compiles the real client-core controller module and the real C++ dispatcher/codec against the contract headers in `shared/contracts`. A subprocess exchanges exact v2 messages inside bounded test-only length prefixes. Replies have a two-second receive deadline; teardown kills and reaps the peer.
 

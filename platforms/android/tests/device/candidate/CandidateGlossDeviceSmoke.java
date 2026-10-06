@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
@@ -37,7 +37,7 @@ public final class CandidateGlossDeviceSmoke extends DeviceSmoke {
             publish(preferences, snapshot(revision + 1, new JSONObject(base.toString())));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             typeGreeting();
 
             stage = "candidate strip offline gloss";
@@ -59,21 +59,21 @@ public final class CandidateGlossDeviceSmoke extends DeviceSmoke {
 
             stage = "glossed candidate selection identity";
             tap(glossCandidate());
-            await(field("msime-test-plain").and(node -> equalsText("你好", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你好", node.getText())));
 
             stage = "disable offline gloss preference";
             publish(preferences, snapshot(revision + 2,
                 new JSONObject(base.toString()).put("candidate_english_gloss", false)));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             typeGreeting();
             await(plainCandidate());
             SystemClock.sleep(1200);
             if (findVisible(glossCandidate()) != null)
                 throw new AssertionError("Disabled candidate gloss became visible");
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath());
             else publish(preferences, original);
         }
@@ -122,7 +122,7 @@ public final class CandidateGlossDeviceSmoke extends DeviceSmoke {
     }
 
     private boolean preview(AccessibilityNodeInfo node) {
-        return equalsText("app.msime.android", node.getPackageName());
+        return equalsText("app.lingyao.android", node.getPackageName());
     }
 
     private AccessibilityNodeInfo findVisible(Predicate<AccessibilityNodeInfo> predicate) {
@@ -134,14 +134,14 @@ public final class CandidateGlossDeviceSmoke extends DeviceSmoke {
     }
 
     private void restartIme() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
     private void openEditor() throws Exception {
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
     }
 
     private void shell(String command) throws Exception {

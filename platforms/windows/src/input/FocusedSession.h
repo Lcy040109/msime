@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Receives the text of a commit that has been confirmed as delivered, together
 // with the mode that produced it. Injected so the queue can be exercised
 // without touching the shared store; the default writes it there.
@@ -143,4 +143,4 @@ private:
   std::optional<nlohmann::json> preferences_retry_;
   ContinuationHide continuation_hide_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

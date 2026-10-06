@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Windows 各版本的身份没有漂移，安装脚本按版本展开后互不越界。
 
-版本表 `shared/contracts/editions.json` 的 `platforms.windows` 段经 `platforms/windows/scripts/edition_windows.py gen` 变成两个提交进仓库的文件：C++ 读的 `shared/contracts/msime_edition.h` 和 Inno Setup 读的 `platforms/windows/installer/editions.iss`。这里检查：
+版本表 `shared/contracts/editions.json` 的 `platforms.windows` 段经 `platforms/windows/scripts/edition_windows.py gen` 变成两个提交进仓库的文件：C++ 读的 `shared/contracts/lingyao_edition.h` 和 Inno Setup 读的 `platforms/windows/installer/editions.iss`。这里检查：
 
 - 两个生成文件与版本表一致（等同于 `edition_windows.py gen --check`）；
-- `installer/msime_setup.iss` 用一个只覆盖本脚本用到的那部分 ISPP 语法的预处理器按每个版本展开：每个版本的结果里出现本版本的 AppId、CLSID、安装目录、注册表键和看门狗任务名，不出现任何别的版本的，唯一的例外是 OtherEditionDataDirs 里别的全部版本的注册表键和安装目录名（安装器拿它们找出别的版本的数据目录，本版本的数据目录不能和它们重叠或互相包含）；所有版本（包括 full）都只结束可执行文件在本安装 server 目录里的进程，不按映像名结束（`taskkill /IM` 会停掉同时安装的其他版本）；所有版本的数据目录所有权都只认本版本的标记，目录里有别的版本的标记就不归它管，即使那是它的默认数据目录；不是 full 的版本的所有权标记还带着自己的版本 id；
+- `installer/lingyao_setup.iss` 用一个只覆盖本脚本用到的那部分 ISPP 语法的预处理器按每个版本展开：每个版本的结果里出现本版本的 AppId、CLSID、安装目录、注册表键和看门狗任务名，不出现任何别的版本的，唯一的例外是 OtherEditionDataDirs 里别的全部版本的注册表键和安装目录名（安装器拿它们找出别的版本的数据目录，本版本的数据目录不能和它们重叠或互相包含）；所有版本（包括 full）都只结束可执行文件在本安装 server 目录里的进程，不按映像名结束（`taskkill /IM` 会停掉同时安装的其他版本）；所有版本的数据目录所有权都只认本版本的标记，目录里有别的版本的标记就不归它管，即使那是它的默认数据目录；不是 full 的版本的所有权标记还带着自己的版本 id；
 - full 的展开结果里没有任何只属于其他版本的写法，full 的标识（AppId、CLSID、名称、路径、注册表键、看门狗任务名）一个不变。full 的展开与引入版本之前的脚本相比只有两处不同，都是为了几个版本同时安装时互不越界：结束进程从按映像名改为按本安装的 server 目录，数据目录所有权多了「目录里没有别的版本的标记」这一条件（full 的标记文件名和内容不变，以前的 full 写下的标记照样认）。除此之外是「把字面量换成值相同的宏」，这一点在引入时用同一个预处理器对照旧脚本核对过；之后对安装脚本的普通修改照常进行，这里不冻结它的内容；
 - Windows 原生代码和 Rust 侧不再自己写 full 的 CLSID、管道名和状态目录名：这些名字只能出现在生成的头文件、版本表和本检查允许的地方，否则某个版本会悄悄用上 full 的名字。
 - 每个版本注册在它的默认方案所属的语言下（版本表 `langid`）：中文版本是简体中文 0x0804，日文版 0x0411，越南文版 0x042A，藏文版 0x0451。TSF 按它把文本服务列在 Windows 设置的对应语言下；
@@ -25,7 +25,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 EDITIONS = ROOT / "shared/contracts/editions.json"
 INSTALLER = ROOT / "platforms/windows/installer"
-SETUP = INSTALLER / "msime_setup.iss"
+SETUP = INSTALLER / "lingyao_setup.iss"
 RELEASE_WORKFLOW = ROOT / ".github/workflows/release-windows.yml"
 # 默认方案到它所属语言的 LANGID。中文方案都是简体中文；一个版本的默认方案不在这里时，先想清楚它该注册在哪个语言下再补上。
 SCHEME_LANGID = {
@@ -43,7 +43,7 @@ IDENTIFIER_HOMES = {
     "shared/contracts/editions.json",
     "shared/contracts/editions.frozen.json",
     "shared/contracts/editions.schema.json",
-    "shared/contracts/msime_edition.h",
+    "shared/contracts/lingyao_edition.h",
     "platforms/windows/installer/editions.iss",
     "scripts/test-editions.py",
     "scripts/test-windows-editions.py",
@@ -214,36 +214,36 @@ def check_installer(errors: list[str], editions: list[dict]) -> None:
         ]
         for line in sibling_lines:
             if output.count(line) != 1:
-                errors.append(f"msime_setup.iss for edition {edition_id}: OtherEditionDataDirs does not list exactly the other editions ({line.strip()!r})")
+                errors.append(f"lingyao_setup.iss for edition {edition_id}: OtherEditionDataDirs does not list exactly the other editions ({line.strip()!r})")
             output = output.replace(line, "")
         for key, text in own.items():
             if text not in output:
-                errors.append(f"msime_setup.iss for edition {edition_id}: {key} {text.strip()!r} does not appear")
+                errors.append(f"lingyao_setup.iss for edition {edition_id}: {key} {text.strip()!r} does not appear")
         for other in editions:
             if other["id"] == edition_id:
                 continue
             for key, text in identifiers(other["platforms"]["windows"]).items():
                 # 一个版本的名字可能恰好是另一个版本名字的前缀（LingyaoIME 和 LingyaoIME-Wubi）；只看完整出现、又不属于本版本那一处的情况。
                 if text in output and text not in own.values() and not any(text in mine for mine in own.values()):
-                    errors.append(f"msime_setup.iss for edition {edition_id}: contains edition {other['id']}'s {key} {text.strip()!r}")
+                    errors.append(f"lingyao_setup.iss for edition {edition_id}: contains edition {other['id']}'s {key} {text.strip()!r}")
         # 所有权标记的文件名接版本的名字后缀：full 的安装器认 .lingyaoime-data 这个文件名就当目录归自己，别的版本用同一个文件名就会被 full 接管、清理或删除。
         marker = f"DataDirMarkerName = '.lingyaoime-data{entry['platforms']['windows']['name_suffix']}';"
         if marker not in output:
-            errors.append(f"msime_setup.iss for edition {edition_id}: the data-directory ownership marker is not named {marker!r}")
+            errors.append(f"lingyao_setup.iss for edition {edition_id}: the data-directory ownership marker is not named {marker!r}")
         # 每个版本（包括 full）都只停本安装 server 目录里的进程：几个版本的进程同名，按映像名结束会停掉同时安装的其他版本。
         if "taskkill.exe" in output:
-            errors.append(f"msime_setup.iss for edition {edition_id}: stops processes by image name, which also stops the other installed editions")
+            errors.append(f"lingyao_setup.iss for edition {edition_id}: stops processes by image name, which also stops the other installed editions")
         server_dir = "ServerDir := ExpandConstant('{commonpf64}\\" + entry["platforms"]["windows"]["install_dir"] + "\\server');"
         if server_dir not in output or "StopProcessesUnder(ServerDir, '');" not in output:
-            errors.append(f"msime_setup.iss for edition {edition_id}: does not stop exactly the processes under its own server directory ({server_dir!r})")
+            errors.append(f"lingyao_setup.iss for edition {edition_id}: does not stop exactly the processes under its own server directory ({server_dir!r})")
         # 每个版本（包括 full）都不认带着别的版本标记的目录，即使那是它的默认数据目录。
         owns = output[output.find("function OwnsDataDir"):output.find("procedure WriteDataDirMarker")]
         if "DataDirMarkerPrefix = '.lingyaoime-data';" not in output or "(not HasOtherEditionDataDirMarker(Directory)) and" not in owns:
-            errors.append(f"msime_setup.iss for edition {edition_id}: OwnsDataDir may claim a directory that carries another edition's marker")
+            errors.append(f"lingyao_setup.iss for edition {edition_id}: OwnsDataDir may claim a directory that carries another edition's marker")
         if edition_id == FULL:
             continue
         if f"(edition {edition_id})" not in output:
-            errors.append(f"msime_setup.iss for edition {edition_id}: the data-directory ownership marker does not name the edition")
+            errors.append(f"lingyao_setup.iss for edition {edition_id}: the data-directory ownership marker does not name the edition")
     # 轻量包也要能展开（它走另一组 #ifdef 分支）。
     for entry in editions:
         preprocess(entry["id"], light=True)
@@ -272,7 +272,7 @@ def check_hardcoded(errors: list[str], full: dict) -> None:
         text = path.read_text(encoding="utf-8", errors="replace")
         for needle, what in needles.items():
             if needle in text or needle in text.upper():
-                errors.append(f"{relative} spells {what} itself; take it from shared/contracts/msime_edition.h (C++) or the edition's WindowsIdentity (Rust)")
+                errors.append(f"{relative} spells {what} itself; take it from shared/contracts/lingyao_edition.h (C++) or the edition's WindowsIdentity (Rust)")
 
 
 def check_languages(errors: list[str], editions: list[dict]) -> None:
@@ -310,7 +310,7 @@ def main() -> int:
         for error in errors:
             print(f"FAIL: {error}")
         return 1
-    print(f"windows editions: generated identity files are current, msime_setup.iss expands to {len(editions)} disjoint installers, every edition registers under its default scheme's language and is in the release matrix, and no Windows source spells the full identifiers itself")
+    print(f"windows editions: generated identity files are current, lingyao_setup.iss expands to {len(editions)} disjoint installers, every edition registers under its default scheme's language and is in the release matrix, and no Windows source spells the full identifiers itself")
     return 0
 
 

@@ -1,7 +1,7 @@
 //! Tests for the parts of the player that need no audio device: settings, the melody, pack files, bounded decoding and the sample table swap. Nothing here opens an output stream.
 
 use super::*;
-use msime_client_core::preferences::{KeySoundMode, PluginPreferences};
+use lingyao_client_core::preferences::{KeySoundMode, PluginPreferences};
 
 fn builtin_sounds() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/sound-packs")
@@ -215,7 +215,7 @@ fn install_effect(state: &Path, style: &str) {
 
 #[test]
 fn the_selected_effect_pack_replaces_the_preferences_style_and_follows_a_reimport() {
-    use msime_client_core::plugins::EffectStyle;
+    use lingyao_client_core::plugins::EffectStyle;
 
     let state = tempfile::tempdir().unwrap();
     let roots = PluginRoots::new(state.path().to_str(), None, "");

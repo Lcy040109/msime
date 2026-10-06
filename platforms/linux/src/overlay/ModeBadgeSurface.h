@@ -4,7 +4,7 @@
 
 #include "ModeBadgeStyle.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // 中英文切换徽章的后端接口。Wayland 用 layer-shell，X11 用 override-redirect 窗口，画法
 // 两边共用 ModeBadgePainter.h。宿主只管要一个，拿不到就回退到各自面板能表达的文字提示。
@@ -20,4 +20,4 @@ class ModeBadgeSurface {
   static std::unique_ptr<ModeBadgeSurface> create();
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

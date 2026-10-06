@@ -10,7 +10,7 @@
 //! and without them there is nothing to match: single codes stop reordering and double codes filter
 //! everything away, which reads as the feature being broken rather than absent. This probe
 //! therefore composes a resource view that has both, and says so if it cannot.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 const SCHEMA: &str = "ziranma";
 
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let helpcodes = match arguments.next() {
         Some(path) => std::fs::canonicalize(path)?,
-        // The tables msime carries in the repository, wherever the example is run from.
+        // The tables lingyao carries in the repository, wherever the example is run from.
         None => std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/helpcodes"),
     };
     if !resources.join("helpcodes").is_dir() && !helpcodes.is_dir() {

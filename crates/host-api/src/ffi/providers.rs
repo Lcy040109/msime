@@ -3,7 +3,7 @@
 //! Part of the C ABI; see the parent module for what these shims guarantee.
 
 use crate::*;
-use msime_client_core::is_bounded_text;
+use lingyao_client_core::is_bounded_text;
 
 #[cfg(test)]
 mod tests {
@@ -34,12 +34,12 @@ fn online_candidate_response(candidates: Vec<(String, u8)>) -> Value {
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_view(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_view(handle: u64) -> *mut c_char {
     response(|| with_session(handle, |session| serialized_runtime_view(session)))
 }
 
 #[no_mangle]
-pub extern "C" fn msime_client_online_query(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_online_query(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             let Some(query) = session.runtime.online_query().map_err(|e| e.to_string())? else {
@@ -61,7 +61,7 @@ pub extern "C" fn msime_client_online_query(handle: u64) -> *mut c_char {
 /// # Safety
 /// `query` references `query_length` readable UTF-8 JSON bytes. No buffers are retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_ai_request_for_query(
+pub unsafe extern "C" fn lingyao_client_ai_request_for_query(
     handle: u64,
     query: *const u8,
     query_length: usize,
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn msime_client_ai_request_for_query(
                 context: query.ai_context,
                 candidate_limit: config.candidate_limit,
             };
-            msime_client_core::ai::chat_completion_http_request(&config, &request)
+            lingyao_client_core::ai::chat_completion_http_request(&config, &request)
                 .map(|value| value.unwrap_or(Value::Null))
                 .map_err(|error| error.to_string())
         })
@@ -107,7 +107,7 @@ pub unsafe extern "C" fn msime_client_ai_request_for_query(
 /// # Safety
 /// `token` references `token_length` readable UTF-8 bytes; null is accepted only with a zero length. No buffers are retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_set_ai_credential(
+pub unsafe extern "C" fn lingyao_client_set_ai_credential(
     handle: u64,
     token: *const u8,
     token_length: usize,
@@ -144,19 +144,19 @@ struct TranslationServices {
 }
 
 fn selected_translation_services(
-    preferences: &msime_client_core::preferences::Preferences,
+    preferences: &lingyao_client_core::preferences::Preferences,
     account_allowed: bool,
 ) -> Result<TranslationServices, &'static str> {
     let custom_translation = &preferences.custom_translation;
     let tencent = &preferences.tencent_tmt;
-    // The MSIME account gloss endpoint (api.msime.app) is used only when the user explicitly chose it and no service of their own takes precedence. Tencent counts only with usable secrets, because its default `enabled: true` is not a user choice.
+    // The LINGYAO account gloss endpoint (api.msime.app) is used only when the user explicitly chose it and no service of their own takes precedence. Tencent counts only with usable secrets, because its default `enabled: true` is not a user choice.
     let translation_account = account_allowed
         && preferences.translation_account
         && !preferences.niutrans.enabled
         && !custom_translation.enabled
         && !(tencent.enabled
-            && msime_client_core::translation::usable_credential(&tencent.secret_id)
-            && msime_client_core::translation::usable_credential(&tencent.secret_key));
+            && lingyao_client_core::translation::usable_credential(&tencent.secret_id)
+            && lingyao_client_core::translation::usable_credential(&tencent.secret_key));
     // The selected service, derived from the enable flags alone so an incomplete NiuTrans or custom configuration stays selected instead of reading as Tencent. A host whose Tencent secret lives outside preferences (Linux keeps it in the provider's own file) relies on this to honour 关闭.
     let provider = if translation_account {
         TranslationService::Account
@@ -173,8 +173,8 @@ fn selected_translation_services(
     let tencent_tmt = (!custom_translation.enabled
         && !preferences.niutrans.enabled
         && tencent.enabled
-        && msime_client_core::translation::usable_credential(&tencent.secret_id)
-        && msime_client_core::translation::usable_credential(&tencent.secret_key))
+        && lingyao_client_core::translation::usable_credential(&tencent.secret_id)
+        && lingyao_client_core::translation::usable_credential(&tencent.secret_key))
     .then(|| serde_json::to_value(tencent))
     .transpose()
     .map_err(|_| "invalid Tencent translation configuration")?;
@@ -189,8 +189,8 @@ fn selected_translation_services(
         })
     });
     let niutrans = (preferences.niutrans.enabled
-        && msime_client_core::translation::usable_credential(&preferences.niutrans.app_id)
-        && msime_client_core::translation::usable_credential(&preferences.niutrans.apikey))
+        && lingyao_client_core::translation::usable_credential(&preferences.niutrans.app_id)
+        && lingyao_client_core::translation::usable_credential(&preferences.niutrans.apikey))
     .then(|| serde_json::to_value(&preferences.niutrans))
     .transpose()
     .map_err(|_| "invalid NiuTrans translation configuration")?;
@@ -204,9 +204,9 @@ fn selected_translation_services(
 }
 
 /// Return the visible candidate texts that may receive asynchronous translations.
-/// The generation must be echoed to `msime_client_apply_translations`.
+/// The generation must be echoed to `lingyao_client_apply_translations`.
 #[no_mangle]
-pub extern "C" fn msime_client_translation_query(handle: u64) -> *mut c_char {
+pub extern "C" fn lingyao_client_translation_query(handle: u64) -> *mut c_char {
     response(|| {
         with_session(handle, |session| {
             // Provider settings can change while Engine preferences wait for
@@ -229,13 +229,13 @@ pub extern "C" fn msime_client_translation_query(handle: u64) -> *mut c_char {
                 && target_languages.iter().any(|language| {
                     matches!(
                         language,
-                        msime_client_core::preferences::TranslationTargetLanguage::En
+                        lingyao_client_core::preferences::TranslationTargetLanguage::En
                     )
                 });
             let persist_english_translation = preferences.candidate_translations
                 && matches!(
                     preferences.translation_target_language,
-                    msime_client_core::preferences::TranslationTargetLanguage::En
+                    lingyao_client_core::preferences::TranslationTargetLanguage::En
                 );
             // Non-English targets with an offline dictionary installed beside the resources, in preference order. The same switches as macOS's English fallback reach them: the offline gloss switch, or candidate translation, whose online answer replaces the offline one when it arrives. Never read from the user directory, so no user path is needed for them.
             let offline_gloss_languages =
@@ -317,9 +317,9 @@ pub extern "C" fn msime_client_translation_query(handle: u64) -> *mut c_char {
                 json!({
                     "text": candidate.text,
                     "online_gloss":
-                        !msime_client_core::translation::is_emoji_or_kaomoji_source(
+                        !lingyao_client_core::translation::is_emoji_or_kaomoji_source(
                             candidate.source,
-                        ) && msime_client_core::translation::is_cloud_translatable_chinese(
+                        ) && lingyao_client_core::translation::is_cloud_translatable_chinese(
                             &candidate.text,
                         ),
                 })
@@ -359,13 +359,13 @@ pub extern "C" fn msime_client_translation_query(handle: u64) -> *mut c_char {
 }
 
 /// Build the default HTTPS cloud URL for a copied eligible query. The host
-/// performs the request and later calls `msime_client_apply_online_candidate`.
+/// performs the request and later calls `lingyao_client_apply_online_candidate`.
 ///
 /// # Safety
 /// `query` must point to a readable UTF-8 JSON buffer of `query_length` bytes,
 /// or be null only when `query_length` is zero. The buffer is not retained.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_cloud_request_url(
+pub unsafe extern "C" fn lingyao_client_cloud_request_url(
     query: *const u8,
     query_length: usize,
 ) -> *mut c_char {
@@ -377,7 +377,7 @@ pub unsafe extern "C" fn msime_client_cloud_request_url(
             std::slice::from_raw_parts(query, query_length)
         })
         .map_err(|_| "invalid online query document")?;
-        let url = msime_input_runtime::cloud_request_url(&query)
+        let url = lingyao_input_runtime::cloud_request_url(&query)
             .ok_or_else(|| "cloud query is not eligible".to_owned())?;
         Ok(json!(url))
     })
@@ -391,7 +391,7 @@ pub unsafe extern "C" fn msime_client_cloud_request_url(
 /// zero lengths; buffers are read for the duration of this call and never retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_online_provider_request(
+pub unsafe extern "C" fn lingyao_client_online_provider_request(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -424,7 +424,7 @@ pub unsafe extern "C" fn msime_client_online_provider_request(
 /// only for the duration of this call and are never retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_cloud_dictionary_provider_request(
+pub unsafe extern "C" fn lingyao_client_cloud_dictionary_provider_request(
     request: *const u8,
     request_length: usize,
     socket_path: *const u8,
@@ -448,7 +448,7 @@ pub unsafe extern "C" fn msime_client_cloud_dictionary_provider_request(
         })?;
         let request = serde_json::from_slice::<serde_json::Value>(request_bytes)
             .map_err(|_| "invalid cloud dictionary request")?;
-        msime_input_runtime::UnixSocketProvider::new(path)
+        lingyao_input_runtime::UnixSocketProvider::new(path)
             .cloud_dictionary(request)
             .ok_or_else(|| "cloud dictionary provider unavailable".to_owned())
     })
@@ -462,7 +462,7 @@ pub unsafe extern "C" fn msime_client_cloud_dictionary_provider_request(
 /// only for the duration of this call and are never retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_cloud_clipboard_provider_request(
+pub unsafe extern "C" fn lingyao_client_cloud_clipboard_provider_request(
     request: *const u8,
     request_length: usize,
     socket_path: *const u8,
@@ -483,7 +483,7 @@ pub unsafe extern "C" fn msime_client_cloud_clipboard_provider_request(
         let path = super::parse_absolute_socket_path(unsafe {
             std::slice::from_raw_parts(socket_path, socket_length)
         })?;
-        msime_input_runtime::UnixSocketProvider::new(path)
+        lingyao_input_runtime::UnixSocketProvider::new(path)
             .cloud_clipboard(request)
             .ok_or_else(|| "cloud clipboard provider unavailable".to_owned())
     })
@@ -496,7 +496,7 @@ pub unsafe extern "C" fn msime_client_cloud_clipboard_provider_request(
 /// they are copied for the duration of this call and never retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_translation_provider_request(
+pub unsafe extern "C" fn lingyao_client_translation_provider_request(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -530,7 +530,7 @@ pub unsafe extern "C" fn msime_client_translation_provider_request(
 /// the duration of this call; the buffers are not retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_handwriting_provider_request(
+pub unsafe extern "C" fn lingyao_client_handwriting_provider_request(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -567,7 +567,7 @@ pub unsafe extern "C" fn msime_client_handwriting_provider_request(
 /// only for the duration of this call and are never retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_handwriting_local_request(
+pub unsafe extern "C" fn lingyao_client_handwriting_local_request(
     query: *const u8,
     query_length: usize,
     model_path: *const u8,
@@ -601,7 +601,7 @@ pub unsafe extern "C" fn msime_client_handwriting_local_request(
 /// the duration of this call; the buffers are not retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_emoji_provider_request(
+pub unsafe extern "C" fn lingyao_client_emoji_provider_request(
     query: *const u8,
     query_length: usize,
     socket_path: *const u8,
@@ -650,7 +650,7 @@ pub(crate) struct EmojiCatalogQuery {
     pub(crate) list_plugin_symbol_groups: bool,
 }
 
-/// Query the local verified `msime-others.db` Emoji catalog without a provider socket.
+/// Query the local verified `lingyao-others.db` Emoji catalog without a provider socket.
 /// Success contains `{items:[{text,annotation,group}]}` in the response envelope.
 /// With `cursor:true`, also returns `next_offset` and `complete`, preserves
 /// duplicate entries, and advances past invalid rows without treating them as EOF.
@@ -661,7 +661,7 @@ pub(crate) struct EmojiCatalogQuery {
 /// the duration of this call; the buffers are not retained.
 #[cfg(unix)]
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_emoji_catalog_request(
+pub unsafe extern "C" fn lingyao_client_emoji_catalog_request(
     query: *const u8,
     query_length: usize,
     resources: *const u8,
@@ -688,12 +688,12 @@ pub unsafe extern "C" fn msime_client_emoji_catalog_request(
             return Err("invalid emoji page".into());
         }
         if query.list_groups {
-            let groups = msime_engine::host::emoji_catalog_groups(resources, &query.panel.category)
+            let groups = lingyao_engine::host::emoji_catalog_groups(resources, &query.panel.category)
                 .map_err(|_| "local emoji catalog unavailable")?;
             return Ok(json!({"groups": groups}));
         }
         if query.list_plugin_symbol_groups {
-            // 符号集插件不依赖 msime-others.db：目录不可用时内置符号读不出来，插件组照样给。没传插件目录时没有插件组。
+            // 符号集插件不依赖 lingyao-others.db：目录不可用时内置符号读不出来，插件组照样给。没传插件目录时没有插件组。
             let groups = match query.plugins.as_deref() {
                 None => Vec::new(),
                 Some(plugins) if std::path::Path::new(plugins).is_absolute() => {
@@ -704,7 +704,7 @@ pub unsafe extern "C" fn msime_client_emoji_catalog_request(
             return Ok(json!({ "plugin_symbol_groups": groups }));
         }
         if query.list_symbol_groups {
-            let groups = msime_engine::host::emoji_symbol_groups(resources)
+            let groups = lingyao_engine::host::emoji_symbol_groups(resources)
                 .map_err(|_| "local emoji catalog unavailable")?;
             let mut symbol_groups = Vec::with_capacity(groups.len());
             symbol_groups.extend(
@@ -718,7 +718,7 @@ pub unsafe extern "C" fn msime_client_emoji_catalog_request(
             return Err("parent filter requires symbols catalog".into());
         }
         if query.cursor {
-            let slice = msime_engine::host::emoji_catalog_slice(
+            let slice = lingyao_engine::host::emoji_catalog_slice(
                 resources,
                 &query.panel.search,
                 &query.panel.category,
@@ -742,7 +742,7 @@ pub unsafe extern "C" fn msime_client_emoji_catalog_request(
                 "complete": complete,
             }));
         }
-        let items = msime_engine::host::emoji_catalog_filtered_page(
+        let items = lingyao_engine::host::emoji_catalog_filtered_page(
             resources,
             &query.panel.search,
             &query.panel.category,

@@ -2,8 +2,8 @@
 //!
 //! An allowlist rather than the whole document: the document also holds API keys, account tokens and endpoints, none of which an agent should read, and most of its fields are choices only the settings page can present properly. The enums are mirrored here so the tool schema names exactly the values the store accepts; `the_mirrors_serialize_as_the_store_does` keeps the two in step.
 
-use msime_client_core::edition::Edition;
-use msime_client_core::preferences::{
+use lingyao_client_core::edition::Edition;
+use lingyao_client_core::preferences::{
     CandidateLayout, CharacterWidthPreference, ChineseScheme, DefaultImeMode, InputScheme,
     Preferences, PreferencesSnapshot, PreferencesStore, ShuangpinProfile, WubiProfile,
 };
@@ -792,7 +792,7 @@ mod tests {
         let options = directory.path().join("runtime-options.json");
         std::fs::write(&options, br#"{"api_version":1}"#).unwrap();
         let mut preferences = Preferences::default();
-        preferences.custom_theme.keyboard = Some(msime_client_core::preferences::TouchKeyboardSkinDesign {
+        preferences.custom_theme.keyboard = Some(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
             photo: Some("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=".into()),
             ..Default::default()
         });

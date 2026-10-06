@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { Snapshot } from "@msime/ui";
+import type { Snapshot } from "@lingyao/ui";
 import { completeOnboardingPreferences } from "../../../../packages/ui/src/account/onboarding-preferences";
 
 const snapshot: Snapshot = {

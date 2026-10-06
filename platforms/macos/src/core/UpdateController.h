@@ -22,7 +22,7 @@ typedef NS_ENUM(NSInteger, LingyaoUpdateRoute) {
 // version, a code signature - and started anywhere else it reports the misconfiguration with a modal
 // alert, which in an input method means the user's typing stops behind a dialog they never asked for.
 // A pure function so the decision can be tested without starting an updater.
-static inline BOOL MSIMEUpdateHostCanStartSparkle(NSString *_Nullable identifier, NSString *_Nullable path,
+static inline BOOL LINGYAOUpdateHostCanStartSparkle(NSString *_Nullable identifier, NSString *_Nullable path,
                                                   NSString *_Nullable feedURL)
 {
     return identifier.length > 0 && [path.pathExtension isEqualToString:@"app"] && feedURL.length > 0;
@@ -31,11 +31,11 @@ static inline BOOL MSIMEUpdateHostCanStartSparkle(NSString *_Nullable identifier
 // A shipped application with no Sparkle feed must still give an honest, actionable result when the
 // shared settings bundle cannot be launched. Test binaries and command-line helpers have neither
 // route: presenting AppKit update UI from them would steal focus for an action they did not initiate.
-static inline LingyaoUpdateRoute MSIMEUpdateRouteForHost(NSString *_Nullable identifier,
+static inline LingyaoUpdateRoute LINGYAOUpdateRouteForHost(NSString *_Nullable identifier,
                                                              NSString *_Nullable path,
                                                              NSString *_Nullable feedURL)
 {
-    if (MSIMEUpdateHostCanStartSparkle(identifier, path, feedURL)) return LingyaoUpdateRouteSparkle;
+    if (LINGYAOUpdateHostCanStartSparkle(identifier, path, feedURL)) return LingyaoUpdateRouteSparkle;
     if (identifier.length > 0 && [path.pathExtension isEqualToString:@"app"])
         return LingyaoUpdateRouteReleasePage;
     return LingyaoUpdateRouteUnavailable;
@@ -62,6 +62,6 @@ typedef void (^LingyaoUpdateReleaseFailure)(void);
 @property(nonatomic, readonly) BOOL automaticallyChecksForUpdates;
 - (void)checkForUpdates:(nullable id)sender;
 @end
-#define MSIMEUpdateController LingyaoUpdateController
+#define LINGYAOUpdateController LingyaoUpdateController
 
 NS_ASSUME_NONNULL_END

@@ -1,5 +1,5 @@
-import app.msime.android.CommunityCatalog;
-import app.msime.android.CommunityRequest;
+import app.lingyao.android.CommunityCatalog;
+import app.lingyao.android.CommunityRequest;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;

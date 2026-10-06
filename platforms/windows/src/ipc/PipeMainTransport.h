@@ -2,7 +2,7 @@
 #include "MainTransport.h"
 #include "PipeRegistry.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 class PipeMainTransport final : public MainTransport {
 public:
   PipeMainTransport(PipeRegistry &registry, DWORD write_timeout);
@@ -18,4 +18,4 @@ private:
   PipeRegistry &registry_;
   DWORD timeout_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { EmojiPanel } from "@msime/ui";
+import { EmojiPanel } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();
@@ -9,13 +9,13 @@ afterEach(() => {
 });
 
 test("emoji panel restores persisted recent items", () => {
-  localStorage.setItem("msime.emoji.recent", JSON.stringify([{ text: "⚙", keywords: "gear" }]));
+  localStorage.setItem("lingyao.emoji.recent", JSON.stringify([{ text: "⚙", keywords: "gear" }]));
   render(<EmojiPanel client={{ close: async () => {} }} />);
   expect(screen.getByRole("button", { name: "最近使用" })).toBeDefined();
 });
 
 test("emoji panel ignores malformed recent storage", () => {
-  localStorage.setItem("msime.emoji.recent", "not json");
+  localStorage.setItem("lingyao.emoji.recent", "not json");
   render(<EmojiPanel client={{ close: async () => {} }} />);
   expect(screen.queryByRole("button", { name: "⚙" })).toBeNull();
 });
@@ -108,7 +108,7 @@ test("empty recent tab shows the source hint with or without a search", async ()
 });
 
 test("recent tab with history but no search match shows no results", async () => {
-  localStorage.setItem("msime.emoji.recent", JSON.stringify([{ text: "⚙", keywords: "gear" }]));
+  localStorage.setItem("lingyao.emoji.recent", JSON.stringify([{ text: "⚙", keywords: "gear" }]));
   await openRecentTab();
   fireEvent.change(screen.getByRole("textbox", { name: "搜索" }), {
     target: { value: "synthetic" },

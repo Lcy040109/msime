@@ -9,7 +9,7 @@ vi.mock("../../../../packages/ui/src/settings/shortcuts-settings-section", () =>
     hidden ? null : <section aria-label="共享快捷键设置" />,
 }));
 
-import { SettingsPage, type Snapshot } from "@msime/ui";
+import { SettingsPage, type Snapshot } from "@lingyao/ui";
 
 const snapshot: Snapshot = {
   format_version: 1,

@@ -4,18 +4,18 @@
 #include <string>
 #include <vector>
 
-using msime::linux_host::ascii_mark_from_text;
-using msime::linux_host::ascii_mark_text;
-using msime::linux_host::chinese_punctuation_mark;
-using msime::linux_host::english_mode_output;
-using msime::linux_host::EnglishPunctuationState;
-using msime::linux_host::is_auto_paired_opening_key;
-using msime::linux_host::is_smart_punctuation_key;
-using msime::linux_host::is_space_conversion_key;
-using msime::linux_host::repeat_conversion_matches_document;
-using msime::linux_host::smart_punctuation_ascii_mark;
-using msime::linux_host::space_conversion_ascii_text;
-using msime::linux_host::space_conversion_matches_document;
+using lingyao::linux_host::ascii_mark_from_text;
+using lingyao::linux_host::ascii_mark_text;
+using lingyao::linux_host::chinese_punctuation_mark;
+using lingyao::linux_host::english_mode_output;
+using lingyao::linux_host::EnglishPunctuationState;
+using lingyao::linux_host::is_auto_paired_opening_key;
+using lingyao::linux_host::is_smart_punctuation_key;
+using lingyao::linux_host::is_space_conversion_key;
+using lingyao::linux_host::repeat_conversion_matches_document;
+using lingyao::linux_host::smart_punctuation_ascii_mark;
+using lingyao::linux_host::space_conversion_ascii_text;
+using lingyao::linux_host::space_conversion_matches_document;
 
 int main() {
   const std::vector<std::string> after_letter{"好", "，"};

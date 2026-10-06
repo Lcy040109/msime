@@ -3,7 +3,7 @@
 #include <array>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 struct WubiProfileName {
   const char *value;
   const char *label;
@@ -21,4 +21,4 @@ inline const char *wubi_scheme_label(std::string_view profile) {
     if (profile == name.value) return name.label;
   return "五笔";
 }
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

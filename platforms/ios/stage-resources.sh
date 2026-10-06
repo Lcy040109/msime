@@ -7,14 +7,14 @@ cd "$repo_root"
 source_dir=${1:?usage: stage-resources.sh <verified-resource-directory> [offline-glosses-directory] [language-dictionaries-directory]}
 source_dir=$(cd "$source_dir" && pwd)
 destination="$repo_root/target/ios/EngineResources"
-artifacts=$(cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$source_dir")
+artifacts=$(cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$source_dir")
 # Rebuilt as one unit, as on macOS: a directory staged for an earlier lock keeps files the current lock no longer names, and the verifier below refuses them.
 rm -rf "$destination"
 mkdir -p "$destination"
 while IFS= read -r artifact; do
   cp "$source_dir/$artifact" "$destination/$artifact"
 done <<< "$artifacts"
-cargo run --quiet -p msime-client-core --example verify_resources --locked -- "$destination" >/dev/null
+cargo run --quiet -p lingyao-client-core --example verify_resources --locked -- "$destination" >/dev/null
 # Helpcode tables are not part of the dictionary release; the repository carries them in resources/helpcodes, and the Engine reads them from helpcodes/ under the resource directory (crates/engine/src/assets.rs names the six files). Without them the Engine has nothing to match: Shift letters are taken as helpcode and narrow nothing.
 helpcodes="$repo_root/resources/helpcodes"
 rm -rf "$destination/helpcodes"
@@ -35,13 +35,13 @@ if compgen -G "$glosses_source/zh-*.db" >/dev/null && [ -f "$glosses_source/offl
 else
   echo "no offline glosses at $glosses_source; candidates are glossed offline in English only"
 fi
-# Optional: the Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `msime-dict-build languages`), as on macOS. host-api finds them in language-dictionaries/ beside EngineResources and names them in the runtime options; the keyboard leaves an enabled scheme whose dictionary is missing out of its picker. The directory is always created, empty when there are none, since the keyboard target bundles it as a folder. Each dictionary is staged only with its licence text, which must travel with the data.
+# Optional: the Cantonese, Zhuyin and Stroke dictionaries fetched by scripts/fetch_language_dictionaries.py (or built by `lingyao-dict-build languages`), as on macOS. host-api finds them in language-dictionaries/ beside EngineResources and names them in the runtime options; the keyboard leaves an enabled scheme whose dictionary is missing out of its picker. The directory is always created, empty when there are none, since the keyboard target bundles it as a folder. Each dictionary is staged only with its licence text, which must travel with the data.
 languages_source=${3:-$repo_root/target/language-dictionaries}
 languages_destination="$repo_root/target/ios/language-dictionaries"
 rm -rf "$languages_destination"
 mkdir -p "$languages_destination"
 staged_languages=()
-for pair in msime-cantonese.db:msime-rime_cantonese_LICENSE.txt msime-zhuyin.db:msime-libchewing_data_LICENSE.txt msime-stroke.db:msime-rime_stroke_LICENSE.txt; do
+for pair in lingyao-cantonese.db:lingyao-rime_cantonese_LICENSE.txt lingyao-zhuyin.db:lingyao-libchewing_data_LICENSE.txt lingyao-stroke.db:lingyao-rime_stroke_LICENSE.txt; do
   database=${pair%%:*}
   license=${pair#*:}
   [ -f "$languages_source/$database" ] || continue
@@ -58,15 +58,15 @@ else
   echo "no language dictionaries at $languages_source; Cantonese, Zhuyin and Stroke stay unavailable"
 fi
 # A release requires every dictionary resources/language-dictionaries.lock.json pins, not a fixed list: a dictionary that has not been released yet is staged when present but cannot fail a release, and the lock bump that publishes it makes it required.
-if [ "${MSIME_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
+if [ "${LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES:-0}" = 1 ]; then
   required_languages=$(python3 "$repo_root/scripts/fetch_language_dictionaries.py" --list-databases)
   if [ -z "$required_languages" ]; then
-    echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
+    echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but resources/language-dictionaries.lock.json pins no dictionary" >&2
     exit 1
   fi
   for database in $required_languages; do
     if [[ " ${staged_languages[*]:-} " != *" $database "* ]]; then
-      echo "MSIME_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, pinned by resources/language-dictionaries.lock.json, was not staged from $languages_source" >&2
+      echo "LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES=1 but $database, pinned by resources/language-dictionaries.lock.json, was not staged from $languages_source" >&2
       exit 1
     fi
   done

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { SettingsStartupPage } from "@msime/ui";
+import { SettingsStartupPage } from "@lingyao/ui";
 import { afterEach, expect, it, describe, vi } from "vitest";
 
 afterEach(cleanup);

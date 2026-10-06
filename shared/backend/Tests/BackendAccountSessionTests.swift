@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 private final class MemorySessions: BackendSessionStorage, @unchecked Sendable {
   private let lock = NSLock()

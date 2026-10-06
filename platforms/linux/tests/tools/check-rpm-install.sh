@@ -5,7 +5,7 @@
 #
 # Usage: platforms/linux/tests/tools/check-rpm-install.sh <package.rpm>...
 #
-# 给出几个版本的包（msime-linux、msime-linux-<id>）时，它们一起装进同一个容器，确认能同时安装、各自的首次配置命令都在；然后逐个卸载，每卸一个都核对其余的包一个文件都没少（rpm -V 不报 missing），卸载一个版本不会带走另一个版本的东西。
+# 给出几个版本的包（lingyao-linux、lingyao-linux-<id>）时，它们一起装进同一个容器，确认能同时安装、各自的首次配置命令都在；然后逐个卸载，每卸一个都核对其余的包一个文件都没少（rpm -V 不报 missing），卸载一个版本不会带走另一个版本的东西。
 set -euo pipefail
 
 [ $# -gt 0 ] || { echo "usage: check-rpm-install.sh <package.rpm>..." >&2; exit 2; }
@@ -29,7 +29,7 @@ docker run --rm -v "$dir":/dist:ro "$image" bash -euo pipefail -c '
   for file in "$@"; do
     requires=$(rpm -qpR "/dist/$file")
     echo "$requires"
-    if grep -E "libmsime_host_api|libsherpa-onnx|libonnxruntime|CURL_OPENSSL_4|libboost" <<<"$requires"; then
+    if grep -E "liblingyao_host_api|libsherpa-onnx|libonnxruntime|CURL_OPENSSL_4|libboost" <<<"$requires"; then
       echo "the package requires a library it carries privately or one only Debian provides" >&2
       exit 1
     fi
@@ -42,7 +42,7 @@ docker run --rm -v "$dir":/dist:ro "$image" bash -euo pipefail -c '
   for package in "${packages[@]}"; do
     rpm -q "$package"
     test -x "/usr/bin/$package-setup"
-    # 发布页的 rpm 和 deb 一样不带手写模型，由设置应用按需下载（package-container.sh 传 MSIME_BUNDLE_HANDWRITING_MODEL=OFF）。
+    # 发布页的 rpm 和 deb 一样不带手写模型，由设置应用按需下载（package-container.sh 传 LINGYAO_BUNDLE_HANDWRITING_MODEL=OFF）。
     if rpm -ql "$package" | grep handwriting-zh_CN.model >/dev/null; then echo "$package bundles the handwriting model" >&2; exit 1; fi
   done
   # 在装完这些包之后才装它，免得它替包满足了包自己漏声明的依赖。

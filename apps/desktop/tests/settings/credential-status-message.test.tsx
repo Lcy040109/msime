@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { CredentialStatusMessage } from "@msime/ui";
+import { CredentialStatusMessage } from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -35,11 +35,11 @@ pub(crate) fn read_ai_response_body(reader: impl Read) -> Result<Vec<u8>, AiResp
 }
 
 pub(crate) fn validate_ai_endpoint(value: &str) -> Result<Url, CommandError> {
-    if !msime_client_core::is_bounded_text_with_options(value, 2048, false) {
+    if !lingyao_client_core::is_bounded_text_with_options(value, 2048, false) {
         return Err(CommandError { code: "ai_invalid" });
     }
     let url = Url::parse(value).map_err(|_| CommandError { code: "ai_invalid" })?;
-    if !msime_client_core::translation::is_secure_endpoint(value)
+    if !lingyao_client_core::translation::is_secure_endpoint(value)
         || !value.split_once("://").is_some_and(|(_, authority)| {
             authority
                 .as_bytes()
@@ -57,7 +57,7 @@ pub(crate) fn validate_ai_endpoint(value: &str) -> Result<Url, CommandError> {
 }
 
 pub(crate) fn validate_ai_token(token: &str) -> Result<(), CommandError> {
-    if token.is_empty() || !msime_client_core::is_bounded_text_with_options(token, 16 * 1024, false)
+    if token.is_empty() || !lingyao_client_core::is_bounded_text_with_options(token, 16 * 1024, false)
     {
         return Err(CommandError { code: "ai_invalid" });
     }
@@ -66,7 +66,7 @@ pub(crate) fn validate_ai_token(token: &str) -> Result<(), CommandError> {
 
 pub(crate) fn ai_text_is_valid(value: &str, allow_empty: bool) -> bool {
     (allow_empty || !value.is_empty())
-        && msime_client_core::is_bounded_text_with_options(value, 16 * 1024, true)
+        && lingyao_client_core::is_bounded_text_with_options(value, 16 * 1024, true)
 }
 
 /// The listing sits next to the chat endpoint, whatever its version prefix
@@ -124,7 +124,7 @@ pub(crate) fn ai_models_request(endpoint: &str, token: &str) -> Result<Vec<Strin
         .iter()
         .filter_map(|item| item.get("id").and_then(Value::as_str))
         .filter(|id| {
-            !id.is_empty() && msime_client_core::is_bounded_text_with_options(id, 256, false)
+            !id.is_empty() && lingyao_client_core::is_bounded_text_with_options(id, 256, false)
         })
         .take(MAX_MODELS)
     {
@@ -149,7 +149,7 @@ pub(crate) fn ai_test_request(
     let endpoint = validate_ai_endpoint(endpoint)?;
     validate_ai_token(token)?;
     if model.is_empty()
-        || !msime_client_core::is_bounded_text_with_options(model, 256, false)
+        || !lingyao_client_core::is_bounded_text_with_options(model, 256, false)
         || !ai_text_is_valid(prompt, true)
         || !ai_text_is_valid(text, false)
     {

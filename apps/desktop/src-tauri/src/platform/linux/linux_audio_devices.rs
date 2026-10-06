@@ -16,7 +16,7 @@ fn add(devices: &mut Vec<CaptureDevice>, backend: &'static str, id: &str, label:
         || id.is_empty()
         || id.len() > 512
         || id.chars().count() > 128
-        || msime_client_core::has_disallowed_control_with_options(id, false)
+        || lingyao_client_core::has_disallowed_control_with_options(id, false)
         || devices
             .iter()
             .any(|device| device.backend == backend && device.id == id)

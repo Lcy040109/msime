@@ -1,7 +1,7 @@
 #include "MainFrame.h"
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Main frame validation failed");

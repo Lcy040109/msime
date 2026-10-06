@@ -10,7 +10,7 @@ final class OnlineCandidateTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-online-candidates-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-online-candidates-\(UUID().uuidString)", isDirectory: true)
     storedPreference = CloudCandidatePreference.defaults.object(forKey: CloudCandidatePreference.key)
   }
 

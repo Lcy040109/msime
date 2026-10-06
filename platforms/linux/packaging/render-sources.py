@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""按发布版本渲染发行版源码包的版本相关文件：RPM 规格文件（msime.spec）和 Debian 的 debian/changelog。
+"""按发布版本渲染发行版源码包的版本相关文件：RPM 规格文件（lingyao.spec）和 Debian 的 debian/changelog。
 
-两者的源码地址都由版本号推出（发布页 linux-vVERSION 下的 msime-VERSION.tar.xz 与 msime-VERSION-vendor.tar.xz），校验和在 .src.rpm 和 .dsc 生成时由 rpmbuild、dpkg-source 自己算出，所以这里只改版本、发布号和更新日志，不抄写任何哈希。
+两者的源码地址都由版本号推出（发布页 linux-vVERSION 下的 lingyao-VERSION.tar.xz 与 lingyao-VERSION-vendor.tar.xz），校验和在 .src.rpm 和 .dsc 生成时由 rpmbuild、dpkg-source 自己算出，所以这里只改版本、发布号和更新日志，不抄写任何哈希。
 
   render-sources.py --version 0.9.1 --spec-out OUT.spec --changelog-out OUT/changelog
       [--rpm-release 1] [--debian-revision 1] [--debian-distribution unstable] [--date 2026-10-05]
@@ -16,27 +16,27 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SPEC = HERE / "rpm" / "msime.spec"
+SPEC = HERE / "rpm" / "lingyao.spec"
 MAINTAINER = "Lingyao IME <metasequoiaime@gmail.com>"
 
 
 def render_spec(text: str, version: str, release: str, date: dt.date) -> str:
     text, count = re.subn(r"(?m)^Version:(\s+)\S+$", rf"Version:\g<1>{version}", text)
     if count != 1:
-        raise SystemExit("msime.spec: expected exactly one Version: line")
+        raise SystemExit("lingyao.spec: expected exactly one Version: line")
     text, count = re.subn(r"(?m)^Release:(\s+)\S+$", rf"Release:\g<1>{release}%{{?dist}}", text)
     if count != 1:
-        raise SystemExit("msime.spec: expected exactly one Release: line")
+        raise SystemExit("lingyao.spec: expected exactly one Release: line")
     head, marker, _ = text.partition("\n%changelog\n")
     if not marker:
-        raise SystemExit("msime.spec: no %changelog section")
+        raise SystemExit("lingyao.spec: no %changelog section")
     entry = f"* {date.strftime('%a %b %d %Y')} {MAINTAINER} - {version}-{release}\n- Release {version}\n"
     return f"{head}{marker}{entry}"
 
 
 def render_changelog(version: str, revision: str, distribution: str, date: dt.date) -> str:
     stamp = dt.datetime.combine(date, dt.time(), tzinfo=dt.timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
-    return f"msime ({version}-{revision}) {distribution}; urgency=medium\n\n  * Release {version}.\n\n -- {MAINTAINER}  {stamp}\n"
+    return f"lingyao ({version}-{revision}) {distribution}; urgency=medium\n\n  * Release {version}.\n\n -- {MAINTAINER}  {stamp}\n"
 
 
 def main() -> None:

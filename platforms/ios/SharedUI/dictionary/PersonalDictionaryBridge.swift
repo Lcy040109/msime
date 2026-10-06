@@ -1,19 +1,19 @@
 import Foundation
 
 private typealias PersonalDictionaryByte = UInt8
-@_silgen_name("msime_client_dictionary_validate")
-private func msimeClientDictionaryValidate(_ request: UnsafePointer<PersonalDictionaryByte>?,
+@_silgen_name("lingyao_client_dictionary_validate")
+private func lingyaoClientDictionaryValidate(_ request: UnsafePointer<PersonalDictionaryByte>?,
                                             _ length: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_dictionary_hans_entries")
-private func msimeClientDictionaryHansEntries(_ text: UnsafePointer<PersonalDictionaryByte>?, _ textLength: UInt,
+@_silgen_name("lingyao_client_dictionary_hans_entries")
+private func lingyaoClientDictionaryHansEntries(_ text: UnsafePointer<PersonalDictionaryByte>?, _ textLength: UInt,
                                               _ resources: UnsafePointer<PersonalDictionaryByte>?,
                                               _ resourcesLength: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_dictionary_import_entries")
-private func msimeClientDictionaryImportEntries(_ request: UnsafePointer<PersonalDictionaryByte>?, _ requestLength: UInt,
+@_silgen_name("lingyao_client_dictionary_import_entries")
+private func lingyaoClientDictionaryImportEntries(_ request: UnsafePointer<PersonalDictionaryByte>?, _ requestLength: UInt,
                                                 _ resources: UnsafePointer<PersonalDictionaryByte>?,
                                                 _ resourcesLength: UInt) -> UnsafeMutablePointer<CChar>?
-@_silgen_name("msime_client_string_free")
-private func msimeClientPersonalDictionaryStringFree(_ value: UnsafeMutablePointer<CChar>?)
+@_silgen_name("lingyao_client_string_free")
+private func lingyaoClientPersonalDictionaryStringFree(_ value: UnsafeMutablePointer<CChar>?)
 
 enum PersonalDictionaryBridge {
   static func validateEntry(_ entry: [String: Any]) throws -> [String: Any] {
@@ -28,12 +28,12 @@ enum PersonalDictionaryBridge {
       throw PersonalDictionaryBridgeFailure.invalid(kind)
     }
     let pointer = data.withUnsafeBytes { bytes in
-      msimeClientDictionaryValidate(bytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress,
+      lingyaoClientDictionaryValidate(bytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress,
                                     UInt(data.count))
     }
     guard let pointer else { throw PersonalDictionaryBridgeFailure.invalid(kind) }
     let text = String(cString: pointer)
-    msimeClientPersonalDictionaryStringFree(pointer)
+    lingyaoClientPersonalDictionaryStringFree(pointer)
     guard let response = text.data(using: .utf8),
           let envelope = try? JSONSerialization.jsonObject(with: response) as? [String: Any],
           envelope["ok"] as? Bool == true,
@@ -52,14 +52,14 @@ extension PersonalDictionaryBridge {
     let resourceData = Data(resources.path.utf8)
     let pointer = textData.withUnsafeBytes { textBytes in
       resourceData.withUnsafeBytes { resourceBytes in
-        msimeClientDictionaryHansEntries(
+        lingyaoClientDictionaryHansEntries(
           textBytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress, UInt(textData.count),
           resourceBytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress, UInt(resourceData.count))
       }
     }
     guard let pointer else { throw HansImportFailure.dictionaryUnavailable }
     let response = String(cString: pointer)
-    msimeClientPersonalDictionaryStringFree(pointer)
+    lingyaoClientPersonalDictionaryStringFree(pointer)
     guard let data = response.data(using: .utf8),
           let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
       throw HansImportFailure.dictionaryUnavailable
@@ -81,14 +81,14 @@ extension PersonalDictionaryBridge {
     let resourceData = Data(resources.path.utf8)
     let pointer = request.withUnsafeBytes { requestBytes in
       resourceData.withUnsafeBytes { resourceBytes in
-        msimeClientDictionaryImportEntries(
+        lingyaoClientDictionaryImportEntries(
           requestBytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress, UInt(request.count),
           resourceBytes.bindMemory(to: PersonalDictionaryByte.self).baseAddress, UInt(resourceData.count))
       }
     }
     guard let pointer else { throw DictionaryFileImportFailure.unavailable }
     let response = String(cString: pointer)
-    msimeClientPersonalDictionaryStringFree(pointer)
+    lingyaoClientPersonalDictionaryStringFree(pointer)
     guard let data = response.data(using: .utf8),
           let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
       throw DictionaryFileImportFailure.unavailable
@@ -114,7 +114,7 @@ extension PersonalDictionaryBridge {
     }?.filter { $0.pathExtension == "appex" }
       .map { $0.appendingPathComponent("EngineResources", isDirectory: true) } ?? []
     return ([own].compactMap { $0 } + plugins).first {
-      fm.isReadableFile(atPath: $0.appendingPathComponent("msime-pinyin.db").path)
+      fm.isReadableFile(atPath: $0.appendingPathComponent("lingyao-pinyin.db").path)
     }
   }
 }

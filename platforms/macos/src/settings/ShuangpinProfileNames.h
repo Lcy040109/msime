@@ -1,8 +1,8 @@
 #pragma once
-// Display names from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Display names from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 #include <array>
 #include <string_view>
-namespace msime::mac {
+namespace lingyao::mac {
 inline constexpr std::array<const char *, 4> kShuangpinSchemaIdentifiers = {"xiaohe", "ziranma", "shoudao",
                                                                             "microsoft"};
 

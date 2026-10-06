@@ -1,4 +1,4 @@
-//! `msime-japanese.dat`: the immutable Viterbi model (`MSJPDT1`) the Japanese sentence decoder memory-maps, packed from Mozc's OSS dictionary at a pinned revision.
+//! `lingyao-japanese.dat`: the immutable Viterbi model (`MSJPDT1`) the Japanese sentence decoder memory-maps, packed from Mozc's OSS dictionary at a pinned revision.
 //!
 //! Layout, little-endian: a 56-byte header (`MSJPDT1\0`, version, token count, connection size, reserved, token/connection/string offsets, string bytes), 20-byte token records (reading offset u32, reading length u16, surface offset u32, surface length u16, left id u16, right id u16, cost i32), the `size * size` connection matrix as i16, then the interned UTF-8 strings.
 
@@ -34,10 +34,10 @@ pub const MANUAL_WORDS: [&str; 2] = ["sources/japanese/places.tsv", "sources/jap
 pub const CONNECTION: &str = "sources/japanese/connection_single_column.txt";
 /// Mozc 的 README 包含模型所依据的 IPAdic、ICOT 与冲绳词典说明，因此随模型一同发布。
 pub const NOTICE: &str = "sources/japanese/README.txt";
-pub const NOTICE_NAME: &str = "msime-mozc_dictionary_oss_README.txt";
+pub const NOTICE_NAME: &str = "lingyao-mozc_dictionary_oss_README.txt";
 /// Mozc's BSD-3-Clause `LICENSE`, which asks for its copyright notice, conditions and disclaimer in the documentation of every binary redistribution; the model is built from Mozc's data files, so the licence ships beside it too.
 pub const LICENSE: &str = "sources/japanese/LICENSE";
-pub const LICENSE_NAME: &str = "msime-mozc_LICENSE.txt";
+pub const LICENSE_NAME: &str = "lingyao-mozc_LICENSE.txt";
 
 const HEADER_SIZE: u64 = 56;
 

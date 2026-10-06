@@ -1,7 +1,7 @@
 import Foundation
 
-@_silgen_name("msime_ios_voice_polish_prompt")
-private func msimeIOSVoicePolishPrompt(_ id: UnsafePointer<CChar>?, _ custom1: UnsafePointer<CChar>?,
+@_silgen_name("lingyao_ios_voice_polish_prompt")
+private func lingyaoIOSVoicePolishPrompt(_ id: UnsafePointer<CChar>?, _ custom1: UnsafePointer<CChar>?,
                                        _ custom2: UnsafePointer<CChar>?,
                                        _ custom3: UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>?
 
@@ -75,7 +75,7 @@ struct VoicePolishSettings: Equatable {
     let values = [promptID] + customPrompts
     let pointers = values.map { strdup($0) }
     defer { pointers.forEach { free($0) } }
-    guard let result = msimeIOSVoicePolishPrompt(pointers[0], pointers[1], pointers[2], pointers[3])
+    guard let result = lingyaoIOSVoicePolishPrompt(pointers[0], pointers[1], pointers[2], pointers[3])
     else { return "" }
     defer { free(result) }
     return String(cString: result)

@@ -56,7 +56,7 @@ int main() {
         assert([files createDirectoryAtURL:root withIntermediateDirectories:YES attributes:nil error:nil]);
         NSURL *installed = [root URLByAppendingPathComponent:@"installed"];
         assert([files createDirectoryAtURL:installed withIntermediateDirectories:YES attributes:nil error:nil]);
-        NSURL *target = [installed URLByAppendingPathComponent:@"msime-pinyin.db"];
+        NSURL *target = [installed URLByAppendingPathComponent:@"lingyao-pinyin.db"];
 
         NSURL *replacement = Database(root, @"replacement.db", @"new");
         NSData *replacementData = [NSData dataWithContentsOfURL:replacement];
@@ -64,23 +64,23 @@ int main() {
 
         // Nothing installed yet: the first install is the whole operation.
         NSError *error = nil;
-        assert(MSIMEInstallDictionary(replacement, installed, replacementDigest, &error) && !error);
+        assert(LINGYAOInstallDictionary(replacement, installed, replacementDigest, &error) && !error);
         assert([MarkerValue(target) isEqual:@"new"]);
         // The staged file does not survive the install.
-        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".msime-pinyin.db.installing"].path]);
+        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".lingyao-pinyin.db.installing"].path]);
 
         // Installing over it: the user ends up with the new one.
         NSURL *second = Database(root, @"second.db", @"newer");
         NSData *secondData = [NSData dataWithContentsOfURL:second];
-        assert(MSIMEInstallDictionary(second, installed, Digest(secondData), &error) && !error);
+        assert(LINGYAOInstallDictionary(second, installed, Digest(secondData), &error) && !error);
         assert([MarkerValue(target) isEqual:@"newer"]);
-        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".msime-pinyin.db.installing"].path]);
+        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".lingyao-pinyin.db.installing"].path]);
 
         // A fingerprint that does not match is refused, and what is installed is untouched. This is
         // the case the atomic replace exists for: the old rule deleted the target before moving the
         // new file into place, so anything failing in between left no dictionary at all.
         error = nil;
-        assert(!MSIMEInstallDictionary(replacement, installed, Digest(secondData), &error) && error);
+        assert(!LINGYAOInstallDictionary(replacement, installed, Digest(secondData), &error) && error);
         assert([MarkerValue(target) isEqual:@"newer"]);
 
         // A file SQLite cannot vouch for is refused before it can replace anything. A file cut short
@@ -93,25 +93,25 @@ int main() {
         [bytes setLength:bytes.length - 1024];
         assert([bytes writeToURL:damaged options:NSDataWritingAtomic error:nil]);
         error = nil;
-        assert(!MSIMEInstallDictionary(damaged, installed, Digest(bytes), &error) && error);
+        assert(!LINGYAOInstallDictionary(damaged, installed, Digest(bytes), &error) && error);
         assert([MarkerValue(target) isEqual:@"newer"]);
 
         // Arguments that cannot describe an install at all, including a digest of the wrong length -
         // a truncated one would otherwise be compared against a prefix of the real value.
         error = nil;
-        assert(!MSIMEInstallDictionary(replacement, installed, [replacementDigest substringToIndex:63], &error) && error);
-        assert(!MSIMEInstallDictionary(replacement, installed, @"", nil));
-        assert(!MSIMEInstallDictionary([NSURL URLWithString:@"https://example.invalid/msime-pinyin.db"], installed,
+        assert(!LINGYAOInstallDictionary(replacement, installed, [replacementDigest substringToIndex:63], &error) && error);
+        assert(!LINGYAOInstallDictionary(replacement, installed, @"", nil));
+        assert(!LINGYAOInstallDictionary([NSURL URLWithString:@"https://example.invalid/msime-pinyin.db"], installed,
                                        replacementDigest, nil));
-        assert(!MSIMEInstallDictionary(replacement, [NSURL URLWithString:@"https://example.invalid/"],
+        assert(!LINGYAOInstallDictionary(replacement, [NSURL URLWithString:@"https://example.invalid/"],
                                        replacementDigest, nil));
         assert([MarkerValue(target) isEqual:@"newer"]);
 
         // A source that is not there at all fails without leaving anything staged behind.
         error = nil;
         NSURL *missing = [root URLByAppendingPathComponent:@"missing.db"];
-        assert(!MSIMEInstallDictionary(missing, installed, replacementDigest, &error) && error);
-        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".msime-pinyin.db.installing"].path]);
+        assert(!LINGYAOInstallDictionary(missing, installed, replacementDigest, &error) && error);
+        assert(![files fileExistsAtPath:[installed URLByAppendingPathComponent:@".lingyao-pinyin.db.installing"].path]);
         assert([MarkerValue(target) isEqual:@"newer"]);
 
         // A destination directory supplied through preferences must not redirect an install through a symlink.
@@ -120,8 +120,8 @@ int main() {
         NSURL *linked = [root URLByAppendingPathComponent:@"linked-installed"];
         assert([files createSymbolicLinkAtURL:linked withDestinationURL:outside error:nil]);
         error = nil;
-        assert(!MSIMEInstallDictionary(replacement, linked, replacementDigest, &error) && error);
-        assert(![files fileExistsAtPath:[outside URLByAppendingPathComponent:@"msime-pinyin.db"].path]);
+        assert(!LINGYAOInstallDictionary(replacement, linked, replacementDigest, &error) && error);
+        assert(![files fileExistsAtPath:[outside URLByAppendingPathComponent:@"lingyao-pinyin.db"].path]);
 
         [files removeItemAtURL:root error:nil];
     }

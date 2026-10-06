@@ -31,7 +31,7 @@ fn activation_receipt_does_not_follow_a_fixed_temporary_symlink() {
 #[cfg(unix)]
 #[test]
 fn activation_receipt_rejects_a_symlinked_receipt() {
-    use msime_client_core::preferences::Preferences;
+    use lingyao_client_core::preferences::Preferences;
     use std::fs;
     use std::os::unix::fs::symlink;
 
@@ -60,8 +60,8 @@ fn activation_receipt_rejects_a_symlinked_receipt() {
 
 #[test]
 fn queue_state_can_be_polled_while_an_engine_session_holds_shared_access() {
-    use msime_client_core::dictionary::access::DictionaryAccess;
-    use msime_client_core::preferences::Preferences;
+    use lingyao_client_core::dictionary::access::DictionaryAccess;
+    use lingyao_client_core::preferences::Preferences;
     use std::fs;
 
     let root = tempfile::tempdir().unwrap();
@@ -99,7 +99,7 @@ fn inspection_requires_the_complete_counted_snapshot_envelope() {
     let directory = tempfile::tempdir().unwrap();
     let file = directory.path().join("snapshot.ndjson");
     let lines = [
-        r#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":7}"#,
+        r#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":7}"#,
         r#"{"type":"entry","data":{"id":"fixture","kind":"quick","code":"test","word":"合成","weight":1,"revision":1,"updated_at":"2026-09-01T00:00:00Z"}}"#,
         r#"{"type":"overlay","deleted":false,"data":{"id":"fixture","kind":"quick","code":"test","word":"合成","weight":1,"revision":1,"updated_at":"2026-09-01T00:00:00Z"}}"#,
     ];
@@ -155,14 +155,14 @@ fn inspection_requires_the_complete_counted_snapshot_envelope() {
 #[cfg(unix)]
 #[test]
 fn inspection_rejects_a_snapshot_below_a_symlinked_parent() {
-    use msime_path_trust::untrusted_symlink as symlink;
+    use lingyao_path_trust::untrusted_symlink as symlink;
     use sha2::{Digest, Sha256};
     use std::fs;
 
     let root = tempfile::tempdir().unwrap();
     let outside = tempfile::tempdir().unwrap();
     let body = concat!(
-        r#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":7}"#,
+        r#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":7}"#,
         "\n"
     );
     let digest = hex::encode(Sha256::digest(body.as_bytes()));
@@ -176,14 +176,14 @@ fn inspection_rejects_a_snapshot_below_a_symlinked_parent() {
 
 #[test]
 fn restore_reinspects_the_exact_file_before_upload() {
-    use msime_client_core::account::AccountDictionarySnapshotRestore;
+    use lingyao_client_core::account::AccountDictionarySnapshotRestore;
     use sha2::{Digest, Sha256};
     use std::fs;
 
     let directory = tempfile::tempdir().unwrap();
     let file = directory.path().join("snapshot.ndjson");
     let header =
-        r#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":7}"#;
+        r#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":7}"#;
     let body = format!("{header}\n");
     let body_sha256 = hex::encode(Sha256::digest(body.as_bytes()));
     let complete =
@@ -231,14 +231,14 @@ fn restore_reinspects_the_exact_file_before_upload() {
 
 #[test]
 fn restore_maps_account_errors_without_exposing_snapshot_data() {
-    use msime_client_core::account::AccountError;
+    use lingyao_client_core::account::AccountError;
     use sha2::{Digest, Sha256};
     use std::fs;
 
     let directory = tempfile::tempdir().unwrap();
     let file = directory.path().join("snapshot.ndjson");
     let header =
-        r#"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":0}"#;
+        r#"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":0}"#;
     let body = format!("{header}\n");
     let body_sha256 = hex::encode(Sha256::digest(body.as_bytes()));
     let complete =
@@ -272,8 +272,8 @@ fn activation_rejects_live_session_before_swapping() {
 #[test]
 fn discard_does_not_require_maintenance_lock_for_live_paths() {
     use super::*;
-    use msime_client_core::dictionary::access::DictionaryAccess;
-    use msime_engine::host::EngineOptions;
+    use lingyao_client_core::dictionary::access::DictionaryAccess;
+    use lingyao_engine::host::EngineOptions;
     use std::fs;
 
     let root = tempfile::tempdir().unwrap();
@@ -291,7 +291,7 @@ fn discard_does_not_require_maintenance_lock_for_live_paths() {
         cache: root.path().join("cache").to_string_lossy().into_owned(),
         dictionaries: dictionaries.to_string_lossy().into_owned(),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: false,
@@ -328,7 +328,7 @@ fn discard_does_not_require_maintenance_lock_for_live_paths() {
         mention_entries: Vec::new(),
         quick_phrase_table: Vec::new(),
         helpcode_table: None,
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -361,8 +361,8 @@ fn discard_does_not_require_maintenance_lock_for_live_paths() {
 
 fn activation_case(nested_dictionaries: bool, hold_session: bool, handle: u64) {
     use super::*;
-    use msime_client_core::dictionary::access::DictionaryAccess;
-    use msime_engine::host::EngineOptions;
+    use lingyao_client_core::dictionary::access::DictionaryAccess;
+    use lingyao_engine::host::EngineOptions;
     use std::fs;
     use std::path::Path;
 
@@ -392,7 +392,7 @@ fn activation_case(nested_dictionaries: bool, hold_session: bool, handle: u64) {
         cache: base.join("cache").to_str().unwrap().into(),
         dictionaries: base.join(dictionaries).to_str().unwrap().into(),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: false,
@@ -436,7 +436,7 @@ fn activation_case(nested_dictionaries: bool, hold_session: bool, handle: u64) {
         zhuyin_dictionary: String::new(),
         stroke_dictionary: String::new(),
         japanese_dictionary: String::new(),
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -514,7 +514,7 @@ fn activation_case(nested_dictionaries: bool, hold_session: bool, handle: u64) {
     }
     let backup_path = |path: &Path| {
         path.with_file_name(format!(
-            "{}.msime-snapshot-old-{handle}",
+            "{}.lingyao-snapshot-old-{handle}",
             path.file_name().unwrap().to_string_lossy(),
         ))
     };
@@ -594,11 +594,11 @@ fn a_backup_that_still_holds_the_user_s_data_survives_the_cleanup() {
     );
 }
 
-/// Activation replaces `msime_user.db` at the same path, as `reset_learned_data` does, and must close the process's cached journal and personal-context connections first, as reset does (reset.rs). Otherwise the personal-context store keeps writing into the replaced, deleted journal and serving its counts, so what a new session learns after the restore is lost.
+/// Activation replaces `lingyao_user.db` at the same path, as `reset_learned_data` does, and must close the process's cached journal and personal-context connections first, as reset does (reset.rs). Otherwise the personal-context store keeps writing into the replaced, deleted journal and serving its counts, so what a new session learns after the restore is lost.
 #[test]
 fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
     use super::*;
-    use msime_engine::host::{EngineOptions, Session};
+    use lingyao_engine::host::{EngineOptions, Session};
     use std::fs;
     use std::path::Path;
 
@@ -614,7 +614,7 @@ fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
             fs::create_dir_all(base.join(name)).unwrap();
         }
         for name in ["resources", "dictionaries"] {
-            rusqlite::Connection::open(base.join(name).join("msime-pinyin.db"))
+            rusqlite::Connection::open(base.join(name).join("lingyao-pinyin.db"))
                 .unwrap()
                 .execute_batch(fixture)
                 .unwrap();
@@ -626,7 +626,7 @@ fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
         cache: base.join("cache").to_str().unwrap().into(),
         dictionaries: base.join("dictionaries").to_str().unwrap().into(),
         scheme: 0,
-        enabled_schemes: msime_engine::SchemeSet::ALL,
+        enabled_schemes: lingyao_engine::SchemeSet::ALL,
         shuangpin_profile: 0,
         shuangpin_preedit_uses_raw: true,
         learning: true,
@@ -670,7 +670,7 @@ fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
         zhuyin_dictionary: String::new(),
         stroke_dictionary: String::new(),
         japanese_dictionary: String::new(),
-        sentence_association: msime_engine::host::SentenceAssociationOptions {
+        sentence_association: lingyao_engine::host::SentenceAssociationOptions {
             word_lattice: true,
             neural_keyboard: false,
             show_next_on_duplicate: false,
@@ -678,7 +678,7 @@ fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
         rescoring_context: String::new(),
     };
     let active_options = make(&active);
-    let journal = active.join("user").join("msime_user.db");
+    let journal = active.join("user").join("lingyao_user.db");
     let pick = |word: &str| {
         let mut session = Session::new(&active_options).unwrap();
         for byte in b"nihao" {
@@ -740,15 +740,15 @@ fn activation_reopens_the_personal_context_store_on_the_restored_journal() {
 #[test]
 fn snapshot_preparation_accepts_resources_shipped_without_the_on_demand_pair() {
     use super::*;
-    use msime_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS;
+    use lingyao_client_core::resources::MACOS_ON_DEMAND_ARTIFACTS;
     use std::fs;
 
     let root = tempfile::tempdir().unwrap();
     let resources = root.path().join("resources");
     let specification = crate::tests::synthetic_desktop_lock(&resources);
-    fs::remove_file(resources.join("msime-japanese.dat")).unwrap();
-    fs::remove_file(resources.join("msime-mozc_dictionary_oss_README.txt")).unwrap();
-    fs::remove_file(resources.join("msime-mozc_LICENSE.txt")).unwrap();
+    fs::remove_file(resources.join("lingyao-japanese.dat")).unwrap();
+    fs::remove_file(resources.join("lingyao-mozc_dictionary_oss_README.txt")).unwrap();
+    fs::remove_file(resources.join("lingyao-mozc_LICENSE.txt")).unwrap();
     for name in ["user", "cache", "dictionaries", "staging"] {
         fs::create_dir_all(root.path().join(name)).unwrap();
     }
@@ -758,7 +758,7 @@ fn snapshot_preparation_accepts_resources_shipped_without_the_on_demand_pair() {
         "user_data": root.path().join("user"),
         "cache": root.path().join("cache"),
         "dictionaries": root.path().join("dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
     });
     let request = || -> PrepareRequest {
         let options: HostOptions = serde_json::from_value(document.clone()).unwrap();

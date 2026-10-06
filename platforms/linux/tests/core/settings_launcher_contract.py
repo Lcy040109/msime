@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
-launcher = (root / "data/msime-linux-settings.in").read_text()
-desktop = (root / "data/msime-linux.desktop.in").read_text()
+launcher = (root / "data/lingyao-linux-settings.in").read_text()
+desktop = (root / "data/lingyao-linux.desktop.in").read_text()
 engine = (root / "src/core/ClientEngine.cpp").read_text()
 assert "about|help|feedback|dictionary) route=settings:$2" in launcher
 assert "Desktop Action Dictionary" in desktop
@@ -17,7 +17,7 @@ assert '"--route=$route"' in launcher
 assert '"--route="' in engine
 # The host builds the route rather than spelling each one out, so the literal to look for is the prefix it prepends.
 assert 'std::string("settings:")' in engine
-for retired in ("MSIME_CLIENT_PANEL", "MSIME_CLIENT_SETTINGS_PAGE", "MSIME_CLIENT_ROUTE"):
+for retired in ("LINGYAO_CLIENT_PANEL", "LINGYAO_CLIENT_SETTINGS_PAGE", "LINGYAO_CLIENT_ROUTE"):
     assert retired not in launcher and retired not in engine, retired
 for property_name in ("Learning", "FrequencyMode", "FrequencyTriggerCount", "FrequencyLinearStep"):
     assert f'"{property_name}"' in engine
@@ -35,28 +35,28 @@ assert "MenuPreference::WubiCodeHint" in engine
 with tempfile.TemporaryDirectory() as scratch:
     scratch = Path(scratch)
     system_config = scratch / "system/runtime-options.json"
-    script = scratch / "bin/msime-linux-settings"
+    script = scratch / "bin/lingyao-linux-settings"
     script.parent.mkdir()
     # 首行换成 /bin/sh：模板的 `#!/usr/bin/env sh` 在没有 FHS 布局的环境（Nix 构建沙箱）里找不到 env，
     # 装出去的那份由打包时的 patchShebangs 改写；这里测的是脚本内容。
-    body = launcher.replace("@MSIME_SETTINGS_SYSTEM_CONFIG@", str(system_config))
+    body = launcher.replace("@LINGYAO_SETTINGS_SYSTEM_CONFIG@", str(system_config))
     assert body.startswith("#!/usr/bin/env sh\n"), body.splitlines()[0]
     script.write_text("#!/bin/sh\n" + body.split("\n", 1)[1])
-    desktop_binary = scratch / "bin/msime-linux-desktop"
-    desktop_binary.write_text('#!/bin/sh\nprintf %s "$MSIME_CLIENT_HOST_OPTIONS"\n')
+    desktop_binary = scratch / "bin/lingyao-linux-desktop"
+    desktop_binary.write_text('#!/bin/sh\nprintf %s "$LINGYAO_CLIENT_HOST_OPTIONS"\n')
     for path in (script, desktop_binary):
         path.chmod(0o755)
     environment = {
         key: value
         for key, value in os.environ.items()
-        if key not in ("MSIME_CLIENT_HOST_OPTIONS", "MSIME_IBUS_OPTIONS")
+        if key not in ("LINGYAO_CLIENT_HOST_OPTIONS", "LINGYAO_IBUS_OPTIONS")
     }
     environment["XDG_CONFIG_HOME"] = str(scratch / "config")
 
     def launched() -> str:
         return subprocess.run([str(script)], env=environment, check=True, capture_output=True, text=True).stdout
 
-    assert launched() == str(scratch / "config/msime-client/runtime-options.json")
+    assert launched() == str(scratch / "config/lingyao-client/runtime-options.json")
     system_config.parent.mkdir()
     system_config.write_text("{}")
     assert launched() == str(system_config)

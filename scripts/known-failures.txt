@@ -68,8 +68,8 @@ native windows-session
 # Engine attribution above turned out to be wrong twice over. Unicode, date and time and quick phrase all
 # pass now - the Engine behaviour blamed here really was fixed - and the abort had moved on to emoji, where
 # it was never the Engine at all. Four of the eight modes are gated on a runtime resource as well as on the
-# preference (apply_local_mode_resource_gates: emoji and kaomoji need msime-others.db, temporary English needs
-# msime-english.db, temporary Japanese needs msime-japanese.dat), and the test built an empty resources directory,
+# preference (apply_local_mode_resource_gates: emoji and kaomoji need lingyao-others.db, temporary English needs
+# lingyao-english.db, temporary Japanese needs lingyao-japanese.dat), and the test built an empty resources directory,
 # so it asserted something that could not hold. The gate only asks whether the file is there, so the test
 # now creates empty ones - and asserts the gate itself, which nothing on macOS covered: with the resource
 # gone the mode stays off however the preference is set, and the trigger key comes back unhandled rather
@@ -189,7 +189,7 @@ desktop tests/candidate/external-skins.test.tsx > external selection enters the 
 desktop tests/candidate/external-skins.test.tsx > settings synchronize all cards and reset local overrides on candidate theme changes
 
 # The Windows suites, run under Wine by platforms/windows/run-tests-wine.sh.
-# 77 of 78 pass with MSIME_WINE_RESOURCES set, 76 without; these do not, and each was read rather than assumed. The
+# 77 of 78 pass with LINGYAO_WINE_RESOURCES set, 76 without; these do not, and each was read rather than assumed. The
 # same two, for the same reasons, on x86 and x64 - the names are not repeated
 # per architecture because the runner reports one set either way.
 #
@@ -230,7 +230,7 @@ desktop tests/candidate/external-skins.test.tsx > settings synchronize all cards
 # "wine <suite>", so a "wine-x86" line could never match anything and would sit
 # here looking like something that is checked.
 
-# msimeui-tests had never run here at all: CMake puts it in bin/ while the
+# lingyaoui-tests had never run here at all: CMake puts it in bin/ while the
 # runner's pattern looked for it beside the other executables, so the pattern
 # matched nothing and the suite was silently absent from every count. It is
 # included now, which is why it appears as a failure rather than as an
@@ -242,7 +242,7 @@ desktop tests/candidate/external-skins.test.tsx > settings synchronize all cards
 # layout ones, and it stops when it reaches the tests that build real
 # DirectWrite and Direct2D devices. An x86_64 host may well get further; this
 # entry records what this machine does.
-wine msimeui-tests
+wine lingyaoui-tests
 wine windows-voice-controller-connection
 wine windows-voice-controller-listener
 wine windows-session-smoke

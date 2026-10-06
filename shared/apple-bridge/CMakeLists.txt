@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(MSIMEAppleBridgeTests LANGUAGES CXX OBJCXX)
+project(LINGYAOAppleBridgeTests LANGUAGES CXX OBJCXX)
 if(PROJECT_IS_TOP_LEVEL)
   include(CTest)
 endif()

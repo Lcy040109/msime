@@ -2,10 +2,10 @@
 #include "../core/TestHostOptions.h"
 #include <cassert>
 #include <chrono>
-using namespace msime::windows;
+using namespace lingyao::windows;
 int main() {
   const auto root = std::filesystem::temp_directory_path() /
-      ("msime-dedicated-english-" + std::to_string(
+      ("lingyao-dedicated-english-" + std::to_string(
           std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {

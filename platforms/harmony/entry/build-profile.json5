@@ -13,7 +13,7 @@
     },
     "nativeLib": {
       "filter": {
-        // The sherpa-onnx HAR ships its own libc++_shared.so next to the one libmsimeclient.so links; both are the NDK's, so one copy is packaged.
+        // The sherpa-onnx HAR ships its own libc++_shared.so next to the one liblingyaoclient.so links; both are the NDK's, so one copy is packaged.
         "pickFirsts": [
           "**/libc++_shared.so"
         ]

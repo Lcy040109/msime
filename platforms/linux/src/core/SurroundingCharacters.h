@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 template <typename StringVector>
 inline std::optional<StringVector> preceding_characters_from_byte_offset_with_storage(
@@ -32,4 +32,4 @@ inline std::optional<std::vector<std::string>> preceding_characters_from_byte_of
       text, offset, count);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

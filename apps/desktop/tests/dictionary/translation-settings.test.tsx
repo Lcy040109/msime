@@ -9,7 +9,7 @@ import {
   type Preferences,
   type SettingsClient,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(cleanup);
 
@@ -142,7 +142,7 @@ test("NiuTrans provider is mutually exclusive and exposes synthetic credential f
   expect(apiKey.value).toBe("synthetic-key");
 });
 
-describe("the MSIME account translation is an explicit choice", () => {
+describe("the LINGYAO account translation is an explicit choice", () => {
   async function mountOn(platform: string, preferences: Partial<Preferences> = {}) {
     const snapshot: Snapshot = { ...base, preferences: { ...base.preferences, ...preferences } };
     // Echo the saved document back, as the hosts do, so a second save starts from the first.

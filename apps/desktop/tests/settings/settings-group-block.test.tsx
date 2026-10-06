@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
-import { SettingsGroupBlock } from "@msime/ui";
+import { SettingsGroupBlock } from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -1,6 +1,6 @@
 #include "SessionWorkers.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 thread_local const SessionWorkers *active_workers = nullptr;
 struct WorkerScope {
@@ -162,4 +162,4 @@ void SessionWorkers::run(size_t index) {
       request_stop();
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

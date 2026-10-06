@@ -4,12 +4,12 @@
 
 // Native modifier events use device-side flags, not keyDown/keyUp. Match the
 // Windows written chord order (Control first), adapting Win to Command.
-class MSIMEVoiceHoldShortcut {
+class LINGYAOVoiceHoldShortcut {
 public:
     enum class Action { None, Toggle, Cancel };
     struct Result { bool consumed = false; Action action = Action::None; bool onRelease = false; };
     struct Options { bool rightOption; bool controlCommand; bool rightControlOption; bool spaceLock; };
-    void reset() { *this = MSIMEVoiceHoldShortcut{}; }
+    void reset() { *this = LINGYAOVoiceHoldShortcut{}; }
     // Space during the hold locked the recording: releasing the hold no longer stops it.
     bool locked() const { return locked_; }
     Result observe(NSEvent *event, Options options, bool recording) {

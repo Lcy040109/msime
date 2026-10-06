@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardScheme;
-import app.msime.android.TypingSource;
+import app.lingyao.android.KeyboardScheme;
+import app.lingyao.android.TypingSource;
 
 public final class TypingSourceSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

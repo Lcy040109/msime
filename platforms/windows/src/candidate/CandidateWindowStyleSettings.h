@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Projects the three style fields out of the preferences document, as candidate_font_settings does for the fonts. An absent field is its default; a field of the wrong type or out of range rejects the whole projection, which leaves the card as it is.
 inline std::optional<CandidateWindowStyle>
 candidate_window_style(const nlohmann::json &preferences) {
@@ -66,4 +66,4 @@ private:
   std::optional<uint64_t> revision_;
   std::optional<CandidateWindowStyle> pending_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

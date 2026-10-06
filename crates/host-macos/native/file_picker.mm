@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <cstring>
 
-// Choosing a local speech model by typing its absolute path is not a real option on macOS: the path is long, Finder does not show it, and a typo surfaces as a recognizer that fails at the moment the user speaks. The reference host puts an NSOpenPanel behind a 选择… button; so does this, exposed as a host capability the shared settings page can ask for when the platform offers one. The model is an installed directory holding msime-model.json, so that button opens MSIMEDefaultVoiceModelDirectoryPicker.
+// Choosing a local speech model by typing its absolute path is not a real option on macOS: the path is long, Finder does not show it, and a typo surfaces as a recognizer that fails at the moment the user speaks. The reference host puts an NSOpenPanel behind a 选择… button; so does this, exposed as a host capability the shared settings page can ask for when the platform offers one. The model is an installed directory holding lingyao-model.json, so that button opens LINGYAODefaultVoiceModelDirectoryPicker.
 //
 // The panel itself cannot run headless, so the choice is injectable: tests drive the same path handling with their own picker, the way input source registration is tested.
-extern "C" const char *MSIMEDefaultFilePicker(void) {
+extern "C" const char *LINGYAODefaultFilePicker(void) {
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     panel.canChooseDirectories = NO;
     panel.canChooseFiles = YES;
@@ -16,7 +16,7 @@ extern "C" const char *MSIMEDefaultFilePicker(void) {
     return panel.URL.path.UTF8String;
 }
 
-extern "C" const char *MSIMEDefaultDirectoryPicker(void) {
+extern "C" const char *LINGYAODefaultDirectoryPicker(void) {
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     panel.canChooseDirectories = YES;
     panel.canChooseFiles = NO;
@@ -30,7 +30,7 @@ extern "C" const char *MSIMEDefaultDirectoryPicker(void) {
 }
 
 // An installed voice model is an existing directory, so the panel neither offers files nor creates folders, and it carries none of the data-directory panel's wording.
-extern "C" const char *MSIMEDefaultVoiceModelDirectoryPicker(void) {
+extern "C" const char *LINGYAODefaultVoiceModelDirectoryPicker(void) {
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     panel.canChooseDirectories = YES;
     panel.canChooseFiles = NO;
@@ -41,7 +41,7 @@ extern "C" const char *MSIMEDefaultVoiceModelDirectoryPicker(void) {
     return panel.URL.path.UTF8String;
 }
 
-extern "C" char *msime_macos_pick_file_with(const char *(*picker)(void)) {
+extern "C" char *lingyao_macos_pick_file_with(const char *(*picker)(void)) {
     if (picker == nullptr) return nullptr;
     @autoreleasepool {
         const char *chosen = picker();
@@ -51,19 +51,19 @@ extern "C" char *msime_macos_pick_file_with(const char *(*picker)(void)) {
     }
 }
 
-extern "C" char *msime_macos_pick_file(void) {
+extern "C" char *lingyao_macos_pick_file(void) {
     if (!NSThread.isMainThread) return nullptr;
-    return msime_macos_pick_file_with(MSIMEDefaultFilePicker);
+    return lingyao_macos_pick_file_with(LINGYAODefaultFilePicker);
 }
 
-extern "C" char *msime_macos_pick_directory(void) {
+extern "C" char *lingyao_macos_pick_directory(void) {
     if (!NSThread.isMainThread) return nullptr;
-    return msime_macos_pick_file_with(MSIMEDefaultDirectoryPicker);
+    return lingyao_macos_pick_file_with(LINGYAODefaultDirectoryPicker);
 }
 
-extern "C" char *msime_macos_pick_voice_model_directory(void) {
+extern "C" char *lingyao_macos_pick_voice_model_directory(void) {
     if (!NSThread.isMainThread) return nullptr;
-    return msime_macos_pick_file_with(MSIMEDefaultVoiceModelDirectoryPicker);
+    return lingyao_macos_pick_file_with(LINGYAODefaultVoiceModelDirectoryPicker);
 }
 
-extern "C" void msime_macos_free_picked_path(char *path) { free(path); }
+extern "C" void lingyao_macos_free_picked_path(char *path) { free(path); }

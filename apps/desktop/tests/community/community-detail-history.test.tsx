@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
-import { useCommunityDetailHistory } from "@msime/ui";
+import { useCommunityDetailHistory } from "@lingyao/ui";
 
 function Probe({
   mobile,

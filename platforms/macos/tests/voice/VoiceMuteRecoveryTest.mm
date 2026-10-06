@@ -47,8 +47,8 @@ OSStatus Set(AudioObjectID object, const AudioObjectPropertyAddress *address,
     muted = *static_cast<const UInt32 *>(data);
     return noErr;
 }
-__attribute__((ns_returns_retained)) MSIMEVoiceAudioMuter *NewMuter() {
-    return [[MSIMEVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr} recoveryDirectory:directory];
+__attribute__((ns_returns_retained)) LINGYAOVoiceAudioMuter *NewMuter() {
+    return [[LINGYAOVoiceAudioMuter alloc] initWithAudioAPI:{Get, Set, nullptr, nullptr} recoveryDirectory:directory];
 }
 void Crash(NSString *executable, NSString *mode, int expected) {
     NSTask *task = [[NSTask alloc] init];
@@ -65,16 +65,16 @@ int main(int argc, const char *argv[]) {
         if (argc == 3) {
             directory = [NSURL fileURLWithPath:@(argv[1]) isDirectory:YES];
             if ([@(argv[2]) isEqual:@"contend"]) {
-                MSIMEVoiceAudioMuter *competitor = NewMuter();
+                LINGYAOVoiceAudioMuter *competitor = NewMuter();
                 assert(![competitor mute:nil]); [competitor restore]; assert(writes == 0);
                 _exit(79);
             }
             crashBeforeWrite = [@(argv[2]) isEqual:@"before-write"];
-            __attribute__((objc_precise_lifetime)) MSIMEVoiceAudioMuter *muter = NewMuter();
+            __attribute__((objc_precise_lifetime)) LINGYAOVoiceAudioMuter *muter = NewMuter();
             assert([muter mute:nil] && muted == 1 && writes == 1);
             _exit(77); // Deliberately bypass ARC, dealloc and all graceful cleanup.
         }
-        char temporary[] = "/tmp/msime-voice-recovery-test-XXXXXX";
+        char temporary[] = "/tmp/lingyao-voice-recovery-test-XXXXXX";
         assert(mkdtemp(temporary));
         directory = [NSURL fileURLWithPath:@(temporary) isDirectory:YES];
         NSString *executable = @(argv[0]);
@@ -82,7 +82,7 @@ int main(int argc, const char *argv[]) {
         struct stat info = {};
         assert(stat(Journal().fileSystemRepresentation, &info) == 0 && (info.st_mode & 0777) == 0600);
         muted = 1; writes = 0;
-        MSIMEVoiceAudioMuter *muter = NewMuter();
+        LINGYAOVoiceAudioMuter *muter = NewMuter();
         [muter restore]; assert(muted == 0 && writes == 1 && JournalSize() == 0);
         [muter restore]; assert(writes == 1);
 
@@ -102,7 +102,7 @@ int main(int argc, const char *argv[]) {
         // Another object/process cannot recover or overwrite a live owner's snapshot.
         assert([muter mute:nil] && muted == 1);
         Crash(executable, @"contend", 79);
-        MSIMEVoiceAudioMuter *competitor = NewMuter();
+        LINGYAOVoiceAudioMuter *competitor = NewMuter();
         NSUInteger before = writes;
         [competitor restore]; assert(![competitor mute:nil] && writes == before && muted == 1);
         competitor = nil; assert(writes == before && JournalSize() > 0);

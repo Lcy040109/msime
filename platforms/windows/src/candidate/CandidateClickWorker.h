@@ -6,7 +6,7 @@
 #include <functional>
 #include <thread>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct CandidateClick {
   FocusLease lease;
   uint64_t session, generation;
@@ -91,4 +91,4 @@ private:
 };
 using CandidateClickWorker = SingleClickWorker<CandidateClick>;
 using CandidatePageWorker = SingleClickWorker<CandidatePage>;
-} // namespace msime::windows
+} // namespace lingyao::windows

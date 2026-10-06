@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The decisions the voice keyboard hook makes, as pure functions over plain
 // values.
 //
@@ -154,4 +154,4 @@ constexpr bool voice_space_locks_hold(unsigned key, VoiceHoldShortcut active,
 constexpr bool voice_escape_cancels(unsigned key, bool recording) {
   return key == voice_key_escape && recording;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

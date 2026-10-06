@@ -1,5 +1,5 @@
-#include "msime_client.h"
-#ifdef MSIME_FCITX5_TELEMETRY
+#include "lingyao_client.h"
+#ifdef LINGYAO_FCITX5_TELEMETRY
 #include "Telemetry.h"
 #endif
 #include "../src/system/ChineseTextConversion.h"
@@ -48,7 +48,7 @@
 #include "../src/core/InputModeIndicator.h"
 #include "../src/core/InputStatus.h"
 #include "../src/core/ReplacedProgram.h"
-#ifdef MSIME_FCITX5_MODE_BADGE
+#ifdef LINGYAO_FCITX5_MODE_BADGE
 #include "../src/overlay/ModeBadgeSurface.h"
 #endif
 #include "../src/core/BackspaceHoldPolicy.h"
@@ -74,10 +74,10 @@
 #include "../src/voice/VoiceProviderOptions.h"
 #include "../src/overlay/WaveOverlayModel.h"
 #include "../src/overlay/WaveOverlaySurface.h"
-#ifdef MSIME_LINUX_HAS_X11_SURFACE
+#ifdef LINGYAO_LINUX_HAS_X11_SURFACE
 #include "../src/overlay/WaveOverlayX11Surface.h"
 #endif
-#ifdef MSIME_LINUX_HAS_WAYLAND_SURFACE
+#ifdef LINGYAO_LINUX_HAS_WAYLAND_SURFACE
 #include "../src/overlay/WaveOverlayWaylandSurface.h"
 #endif
 #include <nlohmann/json.hpp>
@@ -106,24 +106,24 @@
 #include <ctime>
 #if __has_include(<fcitx/candidateaction.h>)
 #include <fcitx/candidateaction.h>
-#define MSIME_FCITX_ACTIONS 1
+#define LINGYAO_FCITX_ACTIONS 1
 #endif
 
 #include "../src/core/LinuxEdition.h"
 
-#ifndef MSIME_SYSTEM_OPTIONS
-#define MSIME_SYSTEM_OPTIONS "/etc/" MSIME_EDITION_CLIENT_DIRECTORY "/runtime-options.json"
+#ifndef LINGYAO_SYSTEM_OPTIONS
+#define LINGYAO_SYSTEM_OPTIONS "/etc/" LINGYAO_EDITION_CLIENT_DIRECTORY "/runtime-options.json"
 #endif
-#ifndef MSIME_BINDIR
-#define MSIME_BINDIR "/usr/bin"
+#ifndef LINGYAO_BINDIR
+#define LINGYAO_BINDIR "/usr/bin"
 #endif
-#ifndef MSIME_SOUND_PACKS
-#define MSIME_SOUND_PACKS "/usr/share/" MSIME_EDITION_CLIENT_DIRECTORY "/sound-packs"
+#ifndef LINGYAO_SOUND_PACKS
+#define LINGYAO_SOUND_PACKS "/usr/share/" LINGYAO_EDITION_CLIENT_DIRECTORY "/sound-packs"
 #endif
 
 extern char **environ;
 
-namespace msime::fcitx_host {
+namespace lingyao::fcitx_host {
 using Json = nlohmann::json;
 class FcitxEngine;
 class FcitxMaintenanceAction;
@@ -147,10 +147,10 @@ struct PendingPreferenceSave {
 
 // ABI buffers and errors never escape into diagnostics or the panel.
 Json response(char *raw) {
-  std::unique_ptr<char, decltype(&msime_client_string_free)> owned(raw, msime_client_string_free);
-  if (!raw) throw std::runtime_error("MSIME request failed");
+  std::unique_ptr<char, decltype(&lingyao_client_string_free)> owned(raw, lingyao_client_string_free);
+  if (!raw) throw std::runtime_error("LINGYAO request failed");
   auto value = Json::parse(raw);
-  if (!value.value("ok", false)) throw std::runtime_error("MSIME request failed");
+  if (!value.value("ok", false)) throw std::runtime_error("LINGYAO request failed");
   return value.at("value");
 }
 
@@ -161,7 +161,7 @@ Json loadPluginSymbolGroups(const std::string &resources, const std::string &plu
   if (plugins.empty() || resources.empty()) return Json::array();
   try {
     const auto query = Json{{"limit", 1}, {"list_plugin_symbol_groups", true}, {"plugins", plugins}}.dump();
-    auto listed = response(msime_client_emoji_catalog_request(
+    auto listed = response(lingyao_client_emoji_catalog_request(
         reinterpret_cast<const uint8_t *>(query.data()), query.size(),
         reinterpret_cast<const uint8_t *>(resources.data()), resources.size()));
     if (listed.is_object()) return listed.value("plugin_symbol_groups", Json::array());
@@ -174,20 +174,20 @@ Json savePreference(const PendingPreferenceSave &request) {
   const auto options = readOptions();
   const auto directory = options.value("preferences_directory", std::string{});
   if (directory.empty() ||
-      msime::linux_host::preference_save_held(options.value("user_data", std::string{})))
+      lingyao::linux_host::preference_save_held(options.value("user_data", std::string{})))
     return Json::object();
-  auto snapshot = response(msime_client_load_preferences(
+  auto snapshot = response(lingyao_client_load_preferences(
       reinterpret_cast<const uint8_t *>(directory.data()), directory.size()));
   if (!snapshot.is_object() || !snapshot.contains("revision") ||
       !snapshot.contains("preferences") || !snapshot.at("preferences").is_object())
     return Json::object();
-  if (request.theme_choice) msime::linux_host::apply_theme_choice(snapshot["preferences"], request.value);
+  if (request.theme_choice) lingyao::linux_host::apply_theme_choice(snapshot["preferences"], request.value);
   else if (request.section.empty()) snapshot["preferences"][request.key] = request.value;
   else snapshot["preferences"][request.section][request.key] = request.value;
   const auto encoded = snapshot.dump();
-  return response(msime_client_save_preferences(
+  return response(lingyao_client_save_preferences(
       reinterpret_cast<const uint8_t *>(directory.data()), directory.size(),
-      msime::linux_host::strict_json_required_integer<uint64_t>(snapshot.at("revision")),
+      lingyao::linux_host::strict_json_required_integer<uint64_t>(snapshot.at("revision")),
       reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size()));
 }
 
@@ -210,26 +210,26 @@ struct FcitxVoiceMailbox {
   bool final_ready = false;
 };
 
-std::unique_ptr<msime::linux_host::WaveOverlaySurface>
+std::unique_ptr<lingyao::linux_host::WaveOverlaySurface>
 create_fcitx_wave_overlay_surface(
-    msime::linux_host::WaveOverlaySurface::ActionHandler handler) {
-  const auto *requested = std::getenv("MSIME_WAVE_OVERLAY_BACKEND");
+    lingyao::linux_host::WaveOverlaySurface::ActionHandler handler) {
+  const auto *requested = std::getenv("LINGYAO_WAVE_OVERLAY_BACKEND");
   const bool force_auxiliary = requested &&
       (std::strcmp(requested, "ibus") == 0 ||
        std::strcmp(requested, "auxiliary") == 0);
   const bool wayland_requested = requested && std::strcmp(requested, "wayland") == 0;
   const bool x11_requested = requested && std::strcmp(requested, "x11") == 0;
-#ifdef MSIME_LINUX_HAS_WAYLAND_SURFACE
+#ifdef LINGYAO_LINUX_HAS_WAYLAND_SURFACE
   if (!force_auxiliary &&
       (wayland_requested || (!x11_requested && std::getenv("WAYLAND_DISPLAY"))))
-    return std::make_unique<msime::linux_host::WaveOverlayWaylandSurface>(
+    return std::make_unique<lingyao::linux_host::WaveOverlayWaylandSurface>(
         std::move(handler));
 #else
   (void)wayland_requested;
 #endif
-#ifdef MSIME_LINUX_HAS_X11_SURFACE
+#ifdef LINGYAO_LINUX_HAS_X11_SURFACE
   if (!force_auxiliary && (x11_requested || std::getenv("DISPLAY")))
-    return std::make_unique<msime::linux_host::WaveOverlayX11Surface>(
+    return std::make_unique<lingyao::linux_host::WaveOverlayX11Surface>(
         std::move(handler));
 #else
   (void)x11_requested;
@@ -275,17 +275,17 @@ extern "C" void fcitxVoiceLevel(float level, void *context) noexcept {
 
 // Neither the user nor the system runtime options exist: first-run setup has not run. Kept apart from every other load failure so the panel can say what to do about it.
 struct OptionsNotConfigured : std::runtime_error {
-  OptionsNotConfigured() : std::runtime_error("MSIME not configured") {}
+  OptionsNotConfigured() : std::runtime_error("LINGYAO not configured") {}
 };
 
 std::filesystem::path optionsPath() {
-  const auto located = msime::linux_host::locate_runtime_options(
-      std::getenv("MSIME_FCITX5_OPTIONS"), std::getenv("XDG_CONFIG_HOME"), std::getenv("HOME"),
-      MSIME_SYSTEM_OPTIONS);
-  if (located.state == msime::linux_host::RuntimeOptionsState::NotConfigured)
+  const auto located = lingyao::linux_host::locate_runtime_options(
+      std::getenv("LINGYAO_FCITX5_OPTIONS"), std::getenv("XDG_CONFIG_HOME"), std::getenv("HOME"),
+      LINGYAO_SYSTEM_OPTIONS);
+  if (located.state == lingyao::linux_host::RuntimeOptionsState::NotConfigured)
     throw OptionsNotConfigured();
-  if (located.state != msime::linux_host::RuntimeOptionsState::Found)
-    throw std::runtime_error("MSIME configuration unavailable");
+  if (located.state != lingyao::linux_host::RuntimeOptionsState::Found)
+    throw std::runtime_error("LINGYAO configuration unavailable");
   return located.path;
 }
 
@@ -294,33 +294,33 @@ Json readOptions() {
   std::array<char, 16385> data{};
   file.read(data.data(), data.size());
   if (file.bad() || file.gcount() <= 0 || file.gcount() >= static_cast<std::streamsize>(data.size()))
-    throw std::runtime_error("MSIME configuration unavailable");
+    throw std::runtime_error("LINGYAO configuration unavailable");
   return Json::parse(data.data(), data.data() + file.gcount());
 }
 
-using CandidateSkinCatalog = std::vector<msime::linux_host::CandidateSkin>;
+using CandidateSkinCatalog = std::vector<lingyao::linux_host::CandidateSkin>;
 
 // Fcitx5 gives each input context its own property, so keep the mode memory
 // at addon scope just as the IBus host keeps it at engine scope.  The shared
 // policy bounds this table and provides an anonymous fallback.
-msime::linux_host::ClientInputModeMemory fcitx_app_input_modes;
+lingyao::linux_host::ClientInputModeMemory fcitx_app_input_modes;
 std::optional<bool> fcitx_global_input_mode;
 // Addon scope too: the statistics store is one per preferences directory, not one per input context.
-msime::linux_host::TypingStatisticsSwitch fcitx_typing_statistics{msime_client_typing_statistics_enabled};
+lingyao::linux_host::TypingStatisticsSwitch fcitx_typing_statistics{lingyao_client_typing_statistics_enabled};
 // Key press writes still running on their own threads, which ~FcitxEngine waits for so the addon library is not unloaded, nor the process ended, under them.
-msime::linux_host::PendingWrites fcitx_key_press_writes;
+lingyao::linux_host::PendingWrites fcitx_key_press_writes;
 // Set by ~FcitxEngine: Fcitx5 is unloading the addon, usually because it is exiting, so the last batches are written on the loop rather than handed to a thread that may not outlive it.
 bool fcitx_key_presses_shutting_down = false;
 
 CandidateSkinCatalog parseCandidateSkinCatalog(const Json &options) {
-  return msime::linux_host::parse_configured_skins(options);
+  return lingyao::linux_host::parse_configured_skins(options);
 }
 
 // 主题目录来自共享层，宿主不留 id 或标题的副本。ABI 的答案在进程内不变，取一次即可；取不到时主题菜单只剩外部皮肤，而不是在这里补一份会漂的表。
 const Json &themeCatalog() {
   static const Json document = [] {
     try {
-      return response(msime_client_theme_catalog());
+      return response(lingyao_client_theme_catalog());
     } catch (const std::exception &) {
       return Json::object();
     }
@@ -328,33 +328,33 @@ const Json &themeCatalog() {
   return document;
 }
 
-// The candidate colours for one preferences document, resolved by the shared layer (msime_client_resolve_theme) in the given mode. The package is a catalogue entry the shared layer reads strictly, and one it refuses fails the whole call, so that costs only the package: the theme is resolved again without it. A call that still fails draws the native tokens.
-msime::linux_host::CandidateTheme resolveThemeInMode(const Json &preferences, bool dark, const Json &catalog) {
-  auto request = msime::linux_host::candidate_theme_request(preferences, dark, catalog);
+// The candidate colours for one preferences document, resolved by the shared layer (lingyao_client_resolve_theme) in the given mode. The package is a catalogue entry the shared layer reads strictly, and one it refuses fails the whole call, so that costs only the package: the theme is resolved again without it. A call that still fails draws the native tokens.
+lingyao::linux_host::CandidateTheme resolveThemeInMode(const Json &preferences, bool dark, const Json &catalog) {
+  auto request = lingyao::linux_host::candidate_theme_request(preferences, dark, catalog);
   while (true) {
     try {
       const auto encoded = request.dump();
-      return msime::linux_host::candidate_theme_colors(
-          response(msime_client_resolve_theme(reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())),
+      return lingyao::linux_host::candidate_theme_colors(
+          response(lingyao_client_resolve_theme(reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())),
           dark);
     } catch (const std::exception &) {
       if (!request.contains("package")) break;
       request.erase("package");
     }
   }
-  return msime::linux_host::candidate_theme_colors(Json::object(), dark);
+  return lingyao::linux_host::candidate_theme_colors(Json::object(), dark);
 }
 
 // The candidate window's theme, in the mode candidate_theme settles on.
-msime::linux_host::CandidateTheme resolveCandidateTheme(const Json &preferences, bool system_dark,
+lingyao::linux_host::CandidateTheme resolveCandidateTheme(const Json &preferences, bool system_dark,
                                                         const Json &catalog) {
-  return resolveThemeInMode(preferences, msime::linux_host::candidate_dark_theme(preferences, system_dark), catalog);
+  return resolveThemeInMode(preferences, lingyao::linux_host::candidate_dark_theme(preferences, system_dark), catalog);
 }
 
-// The voice overlay's theme: its mode from voice_theme by the rule it has always used (VoiceAction.h), its colours from the resolved theme as the floating toolbar takes them, so the bar MSIME draws matches the candidate window's theme rather than fixed greys. A fixed-appearance theme overrides the mode, as it does for the panel.
-msime::linux_host::CandidateTheme resolveVoiceOverlayTheme(const Json &preferences, bool system_dark,
+// The voice overlay's theme: its mode from voice_theme by the rule it has always used (VoiceAction.h), its colours from the resolved theme as the floating toolbar takes them, so the bar LINGYAO draws matches the candidate window's theme rather than fixed greys. A fixed-appearance theme overrides the mode, as it does for the panel.
+lingyao::linux_host::CandidateTheme resolveVoiceOverlayTheme(const Json &preferences, bool system_dark,
                                                            const Json &catalog) {
-  const bool dark = !msime_voice_overlay_light_theme(preferences.value("voice_theme", "follow"),
+  const bool dark = !lingyao_voice_overlay_light_theme(preferences.value("voice_theme", "follow"),
                                                      preferences.value("theme", "dark"), system_dark);
   return resolveThemeInMode(preferences, dark, catalog);
 }
@@ -367,7 +367,7 @@ std::string providerSocket(const Json &options, const char *option,
   }
   if (!value.empty()) return value;
   if (const auto *runtime = std::getenv("XDG_RUNTIME_DIR")) {
-    const auto candidate = std::filesystem::path(runtime) / MSIME_EDITION_CLIENT_DIRECTORY / filename;
+    const auto candidate = std::filesystem::path(runtime) / LINGYAO_EDITION_CLIENT_DIRECTORY / filename;
     std::error_code error;
     if (std::filesystem::is_socket(candidate, error)) return candidate.string();
   }
@@ -376,24 +376,24 @@ std::string providerSocket(const Json &options, const char *option,
 
 std::string onlineSocket(const Json &options) {
   return providerSocket(options, "online_provider_socket",
-                        "MSIME_ONLINE_PROVIDER_SOCKET", "online.sock");
+                        "LINGYAO_ONLINE_PROVIDER_SOCKET", "online.sock");
 }
 
 std::string cloudClipboardSocket(const Json &options) {
   return providerSocket(options, "cloud_clipboard_provider_socket",
-                        "MSIME_CLOUD_CLIPBOARD_PROVIDER_SOCKET", "cloud-clipboard.sock");
+                        "LINGYAO_CLOUD_CLIPBOARD_PROVIDER_SOCKET", "cloud-clipboard.sock");
 }
 
 std::string translationSocket(const Json &options) {
   auto value = providerSocket(options, "translation_provider_socket",
-                              "MSIME_TRANSLATION_PROVIDER_SOCKET", "translation.sock");
+                              "LINGYAO_TRANSLATION_PROVIDER_SOCKET", "translation.sock");
   return value.empty() ? onlineSocket(options) : value;
 }
 
 bool launchDesktopPanel(const char *panel) {
   if (!panel || !*panel) return false;
-  const char *command = std::getenv("MSIME_CLIENT_SETTINGS_COMMAND");
-  if (!command || !*command) command = MSIME_EDITION_SETTINGS_PROGRAM;
+  const char *command = std::getenv("LINGYAO_CLIENT_SETTINGS_COMMAND");
+  if (!command || !*command) command = LINGYAO_EDITION_SETTINGS_PROGRAM;
   // About, help, feedback and the local dictionary are settings sections, not desktop surfaces, so each travels as "settings:<category>" exactly as the IBus host sends it; the bare name is not a route head and the shared parser would reject it, leaving the window on its home page.
   const char *page = std::strcmp(panel, "about") == 0        ? "about"
                      : std::strcmp(panel, "help") == 0       ? "help"
@@ -406,7 +406,7 @@ bool launchDesktopPanel(const char *panel) {
   return posix_spawnp(&child, command, nullptr, nullptr, arguments, ::environ) == 0;
 }
 
-// Asks the user's Fcitx5 to reload its global configuration through its user-session helper, with a fixed argv that keeps the configurable settings launcher out of this service-control path. Fcitx5 does not pass that reload on to addons, so it never reset MSIME; the chord and the status-menu action now reset in process through FcitxEngine::resetSessions instead.
+// Asks the user's Fcitx5 to reload its global configuration through its user-session helper, with a fixed argv that keeps the configurable settings launcher out of this service-control path. Fcitx5 does not pass that reload on to addons, so it never reset LINGYAO; the chord and the status-menu action now reset in process through FcitxEngine::resetSessions instead.
 bool reloadFcitxService() {
   char command[] = "fcitx5-remote";
   char reload[] = "-r";
@@ -421,8 +421,8 @@ public:
   FcitxState(fcitx::InputContext &ic, FcitxEngine *engine, fcitx::EventLoop &loop, bool system_dark)
       : ic_(ic), engine_(engine), loop_(&loop), system_dark_(system_dark) {
     wave_overlay_surface_ = create_fcitx_wave_overlay_surface(
-        [this](msime::linux_host::WaveOverlayModel::Action action) {
-          if (action == msime::linux_host::WaveOverlayModel::Action::Cancel)
+        [this](lingyao::linux_host::WaveOverlayModel::Action action) {
+          if (action == lingyao::linux_host::WaveOverlayModel::Action::Cancel)
             cancelVoice();
           else
             stopVoice();
@@ -451,12 +451,12 @@ public:
     key_presses_.forget_held();
     hideVoiceOverlay();
     wave_overlay_.reset();
-    if (session_) msime_linux_diagnostic_write("focus_out");
-    music_.release(session_, msime_client_music_set_active);
+    if (session_) lingyao_linux_diagnostic_write("focus_out");
+    music_.release(session_, lingyao_client_music_set_active);
     // The combo lives in the session; the next one starts from none.
     typing_combo_ = 0;
     key_repeat_.reset();
-    if (session_) msime_client_string_free(msime_client_destroy(session_));
+    if (session_) lingyao_client_string_free(lingyao_client_destroy(session_));
     session_ = 0;
     view_ = Json::object();
     preferences_ = Json::object();
@@ -522,7 +522,7 @@ public:
     if (voice_job_.valid() && !voice_socket_.empty() && voice_generation_ != 0) {
       const auto socket = voice_socket_;
       const auto generation = voice_generation_;
-      msime_client_string_free(msime_client_voice_provider_cancel(
+      lingyao_client_string_free(lingyao_client_voice_provider_cancel(
           reinterpret_cast<const uint8_t *>(socket.data()), socket.size(), generation));
     }
     voice_socket_.clear();
@@ -576,25 +576,25 @@ public:
   }
   // The label Fcitx5 shows for the input method in its tray and panel (FcitxEngine::subModeLabelImpl), in the same words as the mode HUD.
   std::string modeIndicatorLabel() const {
-    switch (msime::linux_host::input_mode_indicator(input_enabled_, effectiveScheme(), caps_lock_)) {
-    case msime::linux_host::InputModeIndicator::Chinese: return "中";
-    case msime::linux_host::InputModeIndicator::Japanese: return "日";
-    case msime::linux_host::InputModeIndicator::Korean: return "한";
-    case msime::linux_host::InputModeIndicator::Cantonese: return "粤";
-    case msime::linux_host::InputModeIndicator::Zhuyin: return "注";
-    case msime::linux_host::InputModeIndicator::Stroke: return "笔";
-    case msime::linux_host::InputModeIndicator::Vietnamese: return "越";
-    case msime::linux_host::InputModeIndicator::Tibetan: return "藏";
-    case msime::linux_host::InputModeIndicator::English: return "英";
-    case msime::linux_host::InputModeIndicator::CapsLock: return "⇪";
+    switch (lingyao::linux_host::input_mode_indicator(input_enabled_, effectiveScheme(), caps_lock_)) {
+    case lingyao::linux_host::InputModeIndicator::Chinese: return "中";
+    case lingyao::linux_host::InputModeIndicator::Japanese: return "日";
+    case lingyao::linux_host::InputModeIndicator::Korean: return "한";
+    case lingyao::linux_host::InputModeIndicator::Cantonese: return "粤";
+    case lingyao::linux_host::InputModeIndicator::Zhuyin: return "注";
+    case lingyao::linux_host::InputModeIndicator::Stroke: return "笔";
+    case lingyao::linux_host::InputModeIndicator::Vietnamese: return "越";
+    case lingyao::linux_host::InputModeIndicator::Tibetan: return "藏";
+    case lingyao::linux_host::InputModeIndicator::English: return "英";
+    case lingyao::linux_host::InputModeIndicator::CapsLock: return "⇪";
     }
     return "中";
   }
-  // The focused context's mode for a bar without a tray (see InputStatus.h); `active` is false when MSIME gives the focused context up.
+  // The focused context's mode for a bar without a tray (see InputStatus.h); `active` is false when LINGYAO gives the focused context up.
   void publishInputStatus(bool active) const {
-    msime::linux_host::publish_input_status(
+    lingyao::linux_host::publish_input_status(
         std::getenv("XDG_RUNTIME_DIR"),
-        msime::linux_host::input_status_document(
+        lingyao::linux_host::input_status_document(
             active, modeIndicatorLabel(), effectiveScheme()));
   }
   // Called wherever the mode can change; the status area is asked to redraw only when the label actually does.
@@ -623,7 +623,7 @@ public:
   bool toggleEnglish() {
     if (!session_) return false;
     const bool enabled = !view_.value("dedicated_english", false);
-    view_ = response(msime_client_set_english_mode(session_, enabled));
+    view_ = response(lingyao_client_set_english_mode(session_, enabled));
     render();
     return true;
   }
@@ -631,26 +631,26 @@ public:
   static constexpr std::array<const char *, 10> kSchemes = {"quanpin", "shuangpin", "wubi", "japanese", "korean",
                                                             "cantonese", "zhuyin", "vietnamese", "tibetan",
                                                             "stroke"};
-  static_assert(kSchemes.size() == msime::linux_host::kInputSchemeIds.size());
+  static_assert(kSchemes.size() == lingyao::linux_host::kInputSchemeIds.size());
   // Whether a scheme can run with the runtime options this context last read: Cantonese, Zhuyin and Stroke need their language dictionary (core/InputSchemes.h).
   bool schemeAvailable(const char *id) const {
-    return msime::linux_host::input_scheme_available(id, scheme_dictionaries_);
+    return lingyao::linux_host::input_scheme_available(id, scheme_dictionaries_);
   }
   // The scheme the Engine runs for the preferences, after host-api's fallback from a scheme whose data is missing; the indicator and the status file show this one.
   std::string effectiveScheme() const {
-    return msime::linux_host::effective_input_scheme(
+    return lingyao::linux_host::effective_input_scheme(
         scheme_override_.value_or(preferences_.value("scheme", std::string("quanpin"))),
         preferences_.value("last_chinese_scheme", std::string("quanpin")), scheme_dictionaries_);
   }
   // Works out from the runtime options just read which language dictionaries are installed, once per read rather than per key, and lists Cantonese, Zhuyin and Stroke in the scheme menu only while theirs is.
   void noteSchemeOptions(const Json &options) {
-    scheme_dictionaries_ = msime::linux_host::language_dictionary_availability(options);
+    scheme_dictionaries_ = lingyao::linux_host::language_dictionary_availability(options);
     refreshSchemeMenu();
   }
   void refreshSchemeMenu();
   bool cycleScheme() {
     if (!session_ || restricted() || privateInput()) return false;
-    const auto current = msime::linux_host::strict_json_value(view_, "scheme", 0u);
+    const auto current = lingyao::linux_host::strict_json_value(view_, "scheme", 0u);
     // Steps past a scheme whose dictionary is missing; quanpin always runs, so the walk ends.
     for (size_t step = 1; step <= kSchemes.size(); ++step) {
       const auto *next = kSchemes[(current + step) % kSchemes.size()];
@@ -661,9 +661,9 @@ public:
   bool selectScheme(const char *next) {
     if (!session_ || restricted() || privateInput() || !schemeAvailable(next)) return false;
     if (!view_.value("editing_text", std::string{}).empty())
-      command(MSIME_FINISH_COMPOSITION);
+      command(LINGYAO_FINISH_COMPOSITION);
     // 共享设置页和 IBus 宿主都提供「中文」入口，回到用户最后用来打中文的方案。这里如果不记录它，从状态区切到日文、韩文、越南文或藏文后，这个选择就只剩全拼这个兜底可回。
-    if (msime::linux_host::scheme::IsChinese(msime::linux_host::scheme_number(next)))
+    if (lingyao::linux_host::scheme::IsChinese(lingyao::linux_host::scheme_number(next)))
       saveStringPreference("last_chinese_scheme", next);
     saveStringPreference("scheme", next);
     waitForPreferenceSave();
@@ -674,23 +674,23 @@ public:
     helpcode_schema_override_.reset();
     close();
     if (!ensure()) return false;
-    view_ = response(msime_client_focus(session_, true)).at("view");
+    view_ = response(lingyao_client_focus(session_, true)).at("view");
     render();
     return true;
   }
   bool cycleShuangpinProfile() {
-    if (!session_ || msime::linux_host::strict_json_value(view_, "scheme", 0u) != 1 || restricted() || privateInput())
+    if (!session_ || lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 1 || restricted() || privateInput())
       return false;
     const auto current = preferences_.value("shuangpin_profile", std::string("xiaohe"));
-    auto it = std::find_if(msime::linux_host::kShuangpinProfileNames.begin(),
-                           msime::linux_host::kShuangpinProfileNames.end(),
+    auto it = std::find_if(lingyao::linux_host::kShuangpinProfileNames.begin(),
+                           lingyao::linux_host::kShuangpinProfileNames.end(),
                            [&](const auto &profile) { return current == profile.value; });
-    const auto next = it == msime::linux_host::kShuangpinProfileNames.end() ||
-                              std::next(it) == msime::linux_host::kShuangpinProfileNames.end()
-                          ? msime::linux_host::kShuangpinProfileNames.front()
+    const auto next = it == lingyao::linux_host::kShuangpinProfileNames.end() ||
+                              std::next(it) == lingyao::linux_host::kShuangpinProfileNames.end()
+                          ? lingyao::linux_host::kShuangpinProfileNames.front()
                           : *std::next(it);
     if (!view_.value("editing_text", std::string{}).empty())
-      command(MSIME_FINISH_COMPOSITION);
+      command(LINGYAO_FINISH_COMPOSITION);
     saveStringPreference("shuangpin_profile", next.value);
     waitForPreferenceSave();
     // An earlier scheme choice keeps its own unsaved mark: this save replaces its retry but says nothing about whether the store holds shuangpin.
@@ -699,12 +699,12 @@ public:
     shuangpin_profile_unsaved_ = unsavedChoice("", "shuangpin_profile");
     close();
     if (!ensure()) return false;
-    view_ = response(msime_client_focus(session_, true)).at("view");
+    view_ = response(lingyao_client_focus(session_, true)).at("view");
     render();
     return true;
   }
   bool cycleHelpcodeSchema() {
-    const auto scheme = msime::linux_host::strict_json_value(view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(view_, "scheme", 0u);
     if (!session_ || (scheme != 0 && scheme != 1) || restricted() || privateInput())
       return false;
     // The size follows the list rather than being written twice: jiajia was added as the sixth
@@ -718,21 +718,21 @@ public:
     const auto next = it == schemas.end() || std::next(it) == schemas.end()
         ? schemas.front() : *std::next(it);
     if (!view_.value("editing_text", std::string{}).empty())
-      command(MSIME_FINISH_COMPOSITION);
+      command(LINGYAO_FINISH_COMPOSITION);
     saveNestedStringPreference(section, "schema", next);
     waitForPreferenceSave();
     helpcode_schema_override_ = next;
     helpcode_schema_unsaved_ = unsavedChoice(section, "schema");
     close();
     if (!ensure()) return false;
-    view_ = response(msime_client_focus(session_, true)).at("view");
+    view_ = response(lingyao_client_focus(session_, true)).at("view");
     render();
     return true;
   }
   bool toggleNineKey() {
-    if (!session_ || msime::linux_host::strict_json_value(view_, "scheme", 0u) != 0) return false;
+    if (!session_ || lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 0) return false;
     const bool enabled = !view_.value("nine_key", false);
-    view_ = response(msime_client_set_nine_key_mode(session_, enabled));
+    view_ = response(lingyao_client_set_nine_key_mode(session_, enabled));
     preferences_["touch_keyboard_layout"] = enabled ? "nine_key" : "twenty_six_key";
     if (preferences_snapshot_.is_object() && preferences_snapshot_.contains("preferences"))
       preferences_snapshot_["preferences"]["touch_keyboard_layout"] =
@@ -743,8 +743,8 @@ public:
   }
   bool setCandidatePageSize(uint8_t size) {
     if (!session_ || size < 1 || size > 9 || restricted() || privateInput()) return false;
-    if (msime::linux_host::strict_json_value(view_, "page_size", size_t{}) == size) return true;
-    view_ = response(msime_client_set_candidate_page_size(session_, size)).at("view");
+    if (lingyao::linux_host::strict_json_value(view_, "page_size", size_t{}) == size) return true;
+    view_ = response(lingyao_client_set_candidate_page_size(session_, size)).at("view");
     preferences_["candidate_page_size"] = size;
     if (preferences_snapshot_.is_object() && preferences_snapshot_.contains("preferences"))
       preferences_snapshot_["preferences"]["candidate_page_size"] = size;
@@ -753,27 +753,27 @@ public:
     return true;
   }
   bool chooseNineKeySpelling(size_t index) {
-    if (!session_ || msime::linux_host::strict_json_value(view_, "scheme", 0u) != 0 ||
+    if (!session_ || lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 0 ||
         !view_.value("nine_key", false) || restricted() || privateInput()) return false;
     const auto spellings = view_.value("nine_key_spellings", Json::array());
     if (!spellings.is_array() || index >= spellings.size() || !spellings.at(index).is_string())
       return false;
-    view_ = response(msime_client_choose_nine_key_spelling(
-        session_, msime::linux_host::strict_json_value(view_, "generation", uint64_t{}), index)).at("view");
+    view_ = response(lingyao_client_choose_nine_key_spelling(
+        session_, lingyao::linux_host::strict_json_value(view_, "generation", uint64_t{}), index)).at("view");
     render();
     return true;
   }
   bool toggleHelpcode() {
-    if (!session_ || (msime::linux_host::strict_json_value(view_, "scheme", 0u) != 0 && msime::linux_host::strict_json_value(view_, "scheme", 0u) != 1))
+    if (!session_ || (lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 0 && lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 1))
       return false;
-    const std::string section = msime::linux_host::strict_json_value(view_, "scheme", 0u) == 1 ? "shuangpin_helpcode" : "quanpin_helpcode";
+    const std::string section = lingyao::linux_host::strict_json_value(view_, "scheme", 0u) == 1 ? "shuangpin_helpcode" : "quanpin_helpcode";
     const bool enabled = !preferences_.value(section, Json::object()).value("enabled", true);
     auto snapshot = preferences_snapshot_;
     if (!snapshot.is_object() || !snapshot.contains("revision") ||
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"][section]["enabled"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -783,14 +783,14 @@ public:
     return true;
   }
   bool toggleQuanpinAutocorrect(const char *key) {
-    if (!session_ || msime::linux_host::strict_json_value(view_, "scheme", 0u) != 0 || !key || !*key) return false;
+    if (!session_ || lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 0 || !key || !*key) return false;
     const bool enabled = !preferences_.value("quanpin", Json::object()).value(key, true);
     auto snapshot = preferences_snapshot_;
     if (!snapshot.is_object() || !snapshot.contains("revision") ||
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["quanpin"][key] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -807,7 +807,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["mixed_input"]["english"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -824,7 +824,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["mixed_input"][key] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -841,13 +841,13 @@ public:
         "expression", "command", "mention"};
     if (std::find(allowed.begin(), allowed.end(), key) == allowed.end()) return false;
     const bool enabled = !preferences_.value("local_modes", Json::object())
-                              .value(key, msime::linux_host::local_mode_enabled_by_default(key));
+                              .value(key, lingyao::linux_host::local_mode_enabled_by_default(key));
     auto snapshot = preferences_snapshot_;
     if (!snapshot.is_object() || !snapshot.contains("revision") ||
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["local_modes"][key] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -864,7 +864,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["candidate_english_gloss"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -882,7 +882,7 @@ public:
       preferences_save_job_ = {};
       if (!options_path_.empty()) {
         try {
-          auto latest = response(msime_client_load_preferences(
+          auto latest = response(lingyao_client_load_preferences(
               reinterpret_cast<const uint8_t *>(options_path_.data()), options_path_.size()));
           if (latest.is_object() && latest.contains("revision") && latest.contains("preferences")) {
             preferences_snapshot_ = latest;
@@ -898,7 +898,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"][key] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -916,7 +916,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["floating_toolbar"]["enabled"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -935,7 +935,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["voice_input"]["enabled"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -966,7 +966,7 @@ public:
   // 中英文切换后在光标附近短暂显示「中」或「英」，由 Fcitx5 面板绘制；定义在
   // FcitxEngine 之后，它需要那个类型完整。
   void showInputModeHud();
-#ifdef MSIME_FCITX5_MODE_BADGE
+#ifdef LINGYAO_FCITX5_MODE_BADGE
   // 徽章显示约 1 秒后自行消失。用事件循环的定时器而不是线程：绘制和销毁都必须回到这条
   // 线程上，Wayland 连接不是线程安全的。
   void scheduleModeBadgeHide() {
@@ -996,7 +996,7 @@ public:
       // 这几个字母，而不是它当前高亮的「你好」。Windows 是这个语义，IBus 宿主也照它写着
       // （见 ClientEngine.cpp 的 toggle_input_mode），这个宿主此前用的是结束组合，于是
       // 同一个手势在两个 Linux 宿主上给出不同的结果。
-      if (!view_.value("editing_text", std::string{}).empty()) command(MSIME_COMMIT_RAW);
+      if (!view_.value("editing_text", std::string{}).empty()) command(LINGYAO_COMMIT_RAW);
       resyncPunctuationForMode();
       clearPanel();
     } else {
@@ -1015,7 +1015,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["word_character"]["enabled"] = enabled;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1033,7 +1033,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["character_width"] = fullwidth ? "fullwidth" : "halfwidth";
     if (!applyPreferenceSnapshot(std::move(snapshot))) return false;
-    view_ = response(msime_client_set_character_width(session_, fullwidth));
+    view_ = response(lingyao_client_set_character_width(session_, fullwidth));
     session_fullwidth_ = fullwidth;
     saveStringPreference("character_width", fullwidth ? "fullwidth" : "halfwidth");
     render();
@@ -1046,7 +1046,7 @@ public:
       const auto result = preferences_save_job_.get();
       saved = result.is_object() && !result.empty();
     } catch (...) {}
-    msime_linux_diagnostic_write(saved ? "menu_save_succeeded" : "menu_save_failed");
+    lingyao_linux_diagnostic_write(saved ? "menu_save_succeeded" : "menu_save_failed");
     preferences_save_job_ = {};
     if (saved) preferences_save_retry_.reset();
   }
@@ -1104,7 +1104,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["frequency"][key] = value;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1131,7 +1131,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["frequency"]["mode"] = next;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1148,7 +1148,7 @@ public:
       return true;
     }
     chinese_punctuation_ = !chinese_punctuation_;
-    view_ = response(msime_client_set_chinese_punctuation(session_, chinese_punctuation_));
+    view_ = response(lingyao_client_set_chinese_punctuation(session_, chinese_punctuation_));
     session_chinese_punctuation_ = chinese_punctuation_;
     preferences_["chinese_punctuation"] = chinese_punctuation_;
     if (preferences_snapshot_.is_object() && preferences_snapshot_.contains("preferences"))
@@ -1160,7 +1160,7 @@ public:
   bool togglePairedPunctuation() {
     if (!session_) return false;
     paired_punctuation_ = !paired_punctuation_;
-    view_ = response(msime_client_set_paired_punctuation(session_, paired_punctuation_));
+    view_ = response(lingyao_client_set_paired_punctuation(session_, paired_punctuation_));
     preferences_["paired_punctuation"] = paired_punctuation_;
     if (preferences_snapshot_.is_object() && preferences_snapshot_.contains("preferences"))
       preferences_snapshot_["preferences"]["paired_punctuation"] = paired_punctuation_;
@@ -1177,8 +1177,8 @@ public:
     if (!applyPreferenceSnapshot(std::move(snapshot))) return false;
     if (!enabled && view_.contains("generation")) {
       const auto empty = std::string("[]");
-      view_ = response(msime_client_apply_translations(
-          session_, msime::linux_host::strict_json_required_integer<uint64_t>(view_.at("generation")),
+      view_ = response(lingyao_client_apply_translations(
+          session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(view_.at("generation")),
           reinterpret_cast<const uint8_t *>(empty.data()), empty.size())).at("view");
       translation_query_.clear();
       translation_pending_.clear();
@@ -1190,7 +1190,7 @@ public:
   bool cyclePunctuationLock() {
     if (!session_) return false;
     punctuation_lock_ = static_cast<uint8_t>((punctuation_lock_ + 1) % 3);
-    view_ = response(msime_client_set_punctuation_lock(session_, punctuation_lock_));
+    view_ = response(lingyao_client_set_punctuation_lock(session_, punctuation_lock_));
     const auto lock = punctuation_lock_ == 1 ? "chinese" : punctuation_lock_ == 2 ? "english" : "follow";
     preferences_["punctuation_lock"] = lock;
     if (preferences_snapshot_.is_object() && preferences_snapshot_.contains("preferences"))
@@ -1213,8 +1213,8 @@ public:
     snapshot["preferences"]["translation_target_language"] = next;
     if (!applyPreferenceSnapshot(std::move(snapshot))) return false;
     const auto empty = std::string("[]");
-    view_ = response(msime_client_apply_translations(
-        session_, msime::linux_host::strict_json_required_integer<uint64_t>(view_.at("generation")),
+    view_ = response(lingyao_client_apply_translations(
+        session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(view_.at("generation")),
         reinterpret_cast<const uint8_t *>(empty.data()), empty.size())).at("view");
     translation_query_.clear();
     translation_pending_.clear();
@@ -1231,7 +1231,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["candidate_layout"] = next;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1252,7 +1252,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["candidate_theme"] = next;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1261,28 +1261,28 @@ public:
     render();
     return true;
   }
-  std::vector<msime::linux_host::ThemeChoice> themeChoices() const {
-    return msime::linux_host::theme_choices(themeCatalog(), candidate_skin_catalog_);
+  std::vector<lingyao::linux_host::ThemeChoice> themeChoices() const {
+    return lingyao::linux_host::theme_choices(themeCatalog(), candidate_skin_catalog_);
   }
   std::string currentThemeChoice() const {
-    return msime::linux_host::current_theme_choice(preferences_, themeChoices());
+    return lingyao::linux_host::current_theme_choice(preferences_, themeChoices());
   }
   // Choose one 主题 menu entry: the session takes the new theme at once and the store is written behind it, as the other status-bar choices are.
   bool setThemeChoice(const std::string &id) {
     if (!session_ || restricted() || privateInput()) return false;
     const auto choices = themeChoices();
-    if (msime::linux_host::current_theme_choice(preferences_, choices) == id) return false;
-    const auto change = msime::linux_host::theme_choice_change(choices, id);
+    if (lingyao::linux_host::current_theme_choice(preferences_, choices) == id) return false;
+    const auto change = lingyao::linux_host::theme_choice_change(choices, id);
     if (!change) return false;
     auto snapshot = preferences_snapshot_;
     if (!snapshot.is_object() || !snapshot.contains("revision") ||
         !snapshot.contains("preferences")) return false;
     // 自定义 while the custom theme is drawn over a listed package changes no preference, and nothing is written.
     const auto before = snapshot["preferences"];
-    msime::linux_host::apply_theme_choice(snapshot["preferences"], *change);
+    lingyao::linux_host::apply_theme_choice(snapshot["preferences"], *change);
     if (snapshot["preferences"] == before) return false;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1302,7 +1302,7 @@ public:
         !snapshot.contains("preferences")) return false;
     snapshot["preferences"]["ime_mode_scope"] = next;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1322,7 +1322,7 @@ public:
     if (!applyPreferenceSnapshot(std::move(snapshot))) return false;
     if (!enabled && !online_query_.empty()) {
       const auto empty = std::string("[]");
-      view_ = response(msime_client_apply_online_candidates(
+      view_ = response(lingyao_client_apply_online_candidates(
           session_, reinterpret_cast<const uint8_t *>(online_query_.data()), online_query_.size(),
           reinterpret_cast<const uint8_t *>(empty.data()), empty.size(), 0)).at("view");
       ++online_epoch_;
@@ -1344,7 +1344,7 @@ public:
     if (!applyPreferenceSnapshot(std::move(snapshot))) return false;
     if (!enabled && !online_query_.empty()) {
       const auto empty = std::string("[]");
-      view_ = response(msime_client_apply_online_candidates(
+      view_ = response(lingyao_client_apply_online_candidates(
           session_, reinterpret_cast<const uint8_t *>(online_query_.data()), online_query_.size(),
           reinterpret_cast<const uint8_t *>(empty.data()), empty.size(), 1)).at("view");
       ++online_epoch_;
@@ -1361,9 +1361,9 @@ public:
     for (const auto &candidate : view_.at("candidates")) {
       if (!candidate.value("highlighted", false)) continue;
       const auto &id = candidate.at("id");
-      return apply(msime_client_select_edge(
-          session_, msime::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
-          msime::linux_host::strict_json_required_integer<size_t>(id.at("index")), edge));
+      return apply(lingyao_client_select_edge(
+          session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
+          lingyao::linux_host::strict_json_required_integer<size_t>(id.at("index")), edge));
     }
     return false;
   }
@@ -1448,25 +1448,25 @@ public:
   // replies - and stays closed unless the preference asks for it.
   void configureDiagnostics() const {
     const auto diagnostic = preferences_.value("diagnostic_log", Json::object());
-    msime_linux_diagnostic_configure(
+    lingyao_linux_diagnostic_configure(
         options_path_, diagnostic.is_object() && diagnostic.value("server", false));
   }
   // "在候选窗中显示辅助码" and the wubi code hint both decide whether the
   // annotation belongs on the candidate row. This host appended it
   // unconditionally, so turning either off changed nothing here.
   bool showCandidateAnnotations() const {
-    const auto scheme = msime::linux_host::strict_json_value(view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(view_, "scheme", 0u);
     if (scheme == 2) return preferences_.value("wubi_code_hint", true);
     if (scheme != 0 && scheme != 1) return true;
     const std::string section = scheme == 1 ? "shuangpin_helpcode" : "quanpin_helpcode";
     return preferences_.value(section, Json::object())
         .value("show_in_candidate_window",
-               msime::linux_host::default_show_helpcode(
+               lingyao::linux_host::default_show_helpcode(
                    scheme == 1 ? "shuangpin" : "quanpin"));
   }
   void syncSessionChinesePunctuation() {
     if (!session_ || session_chinese_punctuation_ == chinese_punctuation_) return;
-    view_ = response(msime_client_set_chinese_punctuation(session_, chinese_punctuation_));
+    view_ = response(lingyao_client_set_chinese_punctuation(session_, chinese_punctuation_));
     session_chinese_punctuation_ = chinese_punctuation_;
   }
   // The runtime takes its width only from set_character_width, never from the preferences it is handed, and fullwidthOutput() reads it back from the view, so the saved character_width reaches this host only when it is stated here: when the session opens and whenever a reload moves it.
@@ -1474,7 +1474,7 @@ public:
     const bool fullwidth =
         preferences_.value("character_width", std::string("halfwidth")) == "fullwidth";
     if (!session_ || session_fullwidth_ == fullwidth) return;
-    view_ = response(msime_client_set_character_width(session_, fullwidth));
+    view_ = response(lingyao_client_set_character_width(session_, fullwidth));
     session_fullwidth_ = fullwidth;
     paired_tracker_.clear();
   }
@@ -1482,7 +1482,7 @@ public:
     if (!snapshot.is_object() || !snapshot.contains("revision") ||
         !snapshot.contains("preferences")) return false;
     const auto encoded = effectiveContextSnapshot(snapshot).dump();
-    view_ = response(msime_client_update_preferences(
+    view_ = response(lingyao_client_update_preferences(
         session_, reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
     preferences_ = snapshot.at("preferences");
     applyContextOverrides(preferences_);
@@ -1490,7 +1490,7 @@ public:
     chinese_punctuation_ = preferences_.value("chinese_punctuation", chinese_punctuation_);
     syncSessionChinesePunctuation();
     preferences_snapshot_ = std::move(snapshot);
-    msime_linux_diagnostic_write("preferences_applied");
+    lingyao_linux_diagnostic_write("preferences_applied");
     return true;
   }
   bool ensure() {
@@ -1500,7 +1500,7 @@ public:
     auto options = readOptions();
     dictionary_user_data_ = options.value("user_data", std::string{});
     // Dictionary maintenance is running from the settings window; keys go to the application until it is done.
-    if (msime::linux_host::dictionary_quiesced(dictionary_user_data_)) return false;
+    if (lingyao::linux_host::dictionary_quiesced(dictionary_user_data_)) return false;
     candidate_skin_catalog_ = parseCandidateSkinCatalog(options);
     candidate_skin_document_ = options.value("candidate_skin_catalog", Json());
     refreshThemeMenu();
@@ -1561,7 +1561,7 @@ public:
       preferences_save_retry_.reset();
     if (!options_path_.empty()) {
       try {
-        auto snapshot = response(msime_client_load_preferences(
+        auto snapshot = response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(options_path_.data()), options_path_.size()));
         if (snapshot.is_object() && snapshot.contains("revision") && snapshot.contains("preferences")) {
           preferences_snapshot_ = std::move(snapshot);
@@ -1605,7 +1605,7 @@ public:
     }
     cloud_clipboard_socket_ = std::move(cloud_clipboard_socket);
     voice_socket_ = providerSocket(options, "voice_provider_socket",
-                                   "MSIME_VOICE_PROVIDER_SOCKET", "voice.sock");
+                                   "LINGYAO_VOICE_PROVIDER_SOCKET", "voice.sock");
     const auto voicePreferences = preferences_.value("voice_input", Json::object());
     voice_enabled_ = voicePreferences.value("enabled", true);
     voice_hotkey_ctrl_f9_ = voicePreferences.value("hotkey_ctrl_f9", true);
@@ -1639,15 +1639,15 @@ public:
     options["phrase_preedit"] = true;
     // The built-in sound packs of this installation, unless the runtime options name others. The Host API's own fallback looks beside the configured resource directory, which is no longer the installed one once the user has downloaded a newer dictionary into their own data directory.
     if (std::error_code error; !options.contains("sound_packs") &&
-                               std::filesystem::is_directory(MSIME_SOUND_PACKS, error))
-      options["sound_packs"] = MSIME_SOUND_PACKS;
+                               std::filesystem::is_directory(LINGYAO_SOUND_PACKS, error))
+      options["sound_packs"] = LINGYAO_SOUND_PACKS;
     // On-device recognition reads the user's dictionary words as hotwords with the same options; see requestVoice.
     voice_host_options_ = options;
     const auto document = options.dump();
-    view_ = response(msime_client_create(reinterpret_cast<const uint8_t *>(document.data()), document.size()));
-    session_ = msime::linux_host::strict_json_required_integer<uint64_t>(view_.at("session"));
+    view_ = response(lingyao_client_create(reinterpret_cast<const uint8_t *>(document.data()), document.size()));
+    session_ = lingyao::linux_host::strict_json_required_integer<uint64_t>(view_.at("session"));
     applied_preferences_revision_ = 0;
-    msime_linux_diagnostic_write("focus_in");
+    lingyao_linux_diagnostic_write("focus_in");
     session_chinese_punctuation_ =
         options.at("preferences").value("chinese_punctuation", true);
     syncSessionChinesePunctuation();
@@ -1655,7 +1655,7 @@ public:
     syncSessionCharacterWidth();
     // A mode the focus restores is a Chinese/English switch like any other; resolved here, once the lock is read and the session exists.
     if (restore_changed_mode) resyncPunctuationForMode();
-    view_ = response(msime_client_focus(session_, true)).at("view");
+    view_ = response(lingyao_client_focus(session_, true)).at("view");
     return true;
   }
   void refreshPreferences() {
@@ -1684,7 +1684,7 @@ public:
             auto effective = effectiveContextSnapshot(snapshot);
             auto effectivePreferences = effective.at("preferences");
             const auto encoded = effective.dump();
-            view_ = response(msime_client_update_preferences(session_,
+            view_ = response(lingyao_client_update_preferences(session_,
                 reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size())).at("view");
             preferences_ = std::move(effectivePreferences);
             configureDiagnostics();
@@ -1739,7 +1739,7 @@ public:
       preferences_job_session_ = session_;
       preferences_job_ = detachedJob([directory = options_path_] {
         fcitx_typing_statistics.refresh(directory);
-        return response(msime_client_try_load_preferences(
+        return response(lingyao_client_try_load_preferences(
             reinterpret_cast<const uint8_t *>(directory.data()), directory.size()));
       });
     } catch (...) {
@@ -1791,7 +1791,7 @@ public:
         cloud_clipboard_socket_ = std::move(nextCloudClipboard);
       }
       auto nextVoice = providerSocket(options, "voice_provider_socket",
-                                      "MSIME_VOICE_PROVIDER_SOCKET", "voice.sock");
+                                      "LINGYAO_VOICE_PROVIDER_SOCKET", "voice.sock");
       if (nextVoice != voice_socket_) {
         if (voice_loading_) cancelVoice();
         voice_socket_ = std::move(nextVoice);
@@ -1827,12 +1827,12 @@ public:
           Json candidates = Json::array();
           for (const auto &item : result.value("candidates", Json::array())) {
             if (!item.is_object() || item.value("text", std::string{}).empty()) continue;
-            if (msime::linux_host::strict_json_value(item, "source", uint64_t{255}) == source)
+            if (lingyao::linux_host::strict_json_value(item, "source", uint64_t{255}) == source)
               candidates.push_back(item.at("text"));
           }
           if (!candidates.empty()) {
             const auto encoded = candidates.dump();
-            view_ = response(msime_client_apply_online_candidates(
+            view_ = response(lingyao_client_apply_online_candidates(
                 session_, reinterpret_cast<const uint8_t *>(slot.query.data()), slot.query.size(),
                 reinterpret_cast<const uint8_t *>(encoded.data()), encoded.size(), source)).at("view");
             render();
@@ -1840,7 +1840,7 @@ public:
         }
       }
       if (!session_ || online_socket_.empty() || privateInput() || !ic_.hasFocus() || restricted()) return;
-      const auto query = response(msime_client_online_query(session_));
+      const auto query = response(lingyao_client_online_query(session_));
       if (!query.is_object()) return;
       const bool cloud = query.value("cloud_eligible", false) &&
                          query.value("cloud_candidates", true);
@@ -1878,7 +1878,7 @@ public:
         slot.epoch = online_epoch_;
         slot.job = detachedJob(
             [providerEncoded, encoded, socket = online_socket_] {
-              auto raw = response(msime_client_online_provider_request(
+              auto raw = response(lingyao_client_online_provider_request(
                   reinterpret_cast<const uint8_t *>(providerEncoded.data()), providerEncoded.size(),
                   reinterpret_cast<const uint8_t *>(socket.data()), socket.size()));
               Json result = raw.is_object() ? raw : Json::object();
@@ -1910,7 +1910,7 @@ public:
     };
     read(glosses, merged);
     read(online, answers);
-    msime::linux_host::prefer_online_glosses(merged, answers);
+    lingyao::linux_host::prefer_online_glosses(merged, answers);
     auto result = Json::array();
     for (const auto &[text, translation] : merged)
       result.push_back({{"text", text}, {"translation", translation}});
@@ -1926,7 +1926,7 @@ public:
     for (const auto &candidate : view_.at("candidates"))
       candidates.push_back({{"text", candidate.at("text")}, {"source", candidate.at("source")}});
     const bool dictionary = offlineDictionary(query);
-    auto glossRequest = Json{{"generation", msime::linux_host::strict_json_required_integer<uint64_t>(query.at("generation"))},
+    auto glossRequest = Json{{"generation", lingyao::linux_host::strict_json_required_integer<uint64_t>(query.at("generation"))},
                              {"user_data", query.value("user_data", Json())},
                              {"candidates", candidates}};
     if (dictionary) glossRequest["target_language"] = query.at("target_language");
@@ -1938,7 +1938,7 @@ public:
         [query, encoded, gloss, offline, local, socket, dictionary, resources = resources_] () mutable {
           if (offline) {
             try {
-              local = response(msime_client_candidate_gloss_request(
+              local = response(lingyao_client_candidate_gloss_request(
                   reinterpret_cast<const uint8_t *>(gloss.data()), gloss.size(),
                   reinterpret_cast<const uint8_t *>(resources.data()), resources.size()))
                   .value("translations", Json::array());
@@ -1956,7 +1956,7 @@ public:
             if (!transport.at("candidates").empty()) {
               const auto request = transport.dump();
               try {
-                auto result = response(msime_client_translation_provider_request(
+                auto result = response(lingyao_client_translation_provider_request(
                     reinterpret_cast<const uint8_t *>(request.data()), request.size(),
                     reinterpret_cast<const uint8_t *>(socket.data()), socket.size()));
                 if (result.is_object() && dictionary) {
@@ -1972,7 +1972,7 @@ public:
                       translations.erase(translations.begin() + 9, translations.end());
                     const auto save = Json{{"target_language", target},
                                            {"translations", std::move(translations)}}.dump();
-                    msime_client_string_free(msime_client_translation_gloss_save(
+                    lingyao_client_string_free(lingyao_client_translation_gloss_save(
                         reinterpret_cast<const uint8_t *>(save.data()), save.size(),
                         reinterpret_cast<const uint8_t *>(userData.data()), userData.size()));
                   }
@@ -1991,14 +1991,14 @@ public:
         translation_socket_.empty() || translation_job_.valid())
       return;
     try {
-      auto query = response(msime_client_translation_query(session_));
+      auto query = response(lingyao_client_translation_query(session_));
       const auto candidates = view_.value("candidates", Json::array());
       if (!query.is_object() || !candidates.is_array() || candidates.empty()) return;
       const Json *selected = &candidates.front();
       for (const auto &candidate : candidates)
         if (candidate.value("highlighted", false)) { selected = &candidate; break; }
       const auto text = selected->value("text", std::string{});
-      if (text.empty() || msime::linux_host::utf8_scalar_count(text) > kMaxSentenceChars)
+      if (text.empty() || lingyao::linux_host::utf8_scalar_count(text) > kMaxSentenceChars)
         return;
       query["sentence"] = true;
       query["target_language"] = preferences_.value("translation_target_language", std::string("en"));
@@ -2010,7 +2010,7 @@ public:
   void refreshTranslations() {
     try {
       const bool allowed = session_ && ic_.hasFocus() && !restricted() && !privateInput();
-      const auto query = allowed ? response(msime_client_translation_query(session_)) : Json();
+      const auto query = allowed ? response(lingyao_client_translation_query(session_)) : Json();
       const auto encodedQuery = query.is_object() ? query.dump() : std::string{};
       if (translation_job_.valid()) {
         if (translation_job_.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return;
@@ -2020,9 +2020,9 @@ public:
         if (translation_manual_sentence_ && result.is_object()) {
           try {
             const auto parsed_query = Json::parse(result.value("query", "{}"));
-            manual_query_matches = msime::linux_host::strict_json_value(
+            manual_query_matches = lingyao::linux_host::strict_json_value(
                                        parsed_query, "generation", uint64_t{0}) ==
-                                   msime::linux_host::strict_json_value(query, "generation", uint64_t{0});
+                                   lingyao::linux_host::strict_json_value(query, "generation", uint64_t{0});
           } catch (...) {}
         }
         if (allowed && session_ == translation_session_ && query.is_object() &&
@@ -2030,8 +2030,8 @@ public:
             (result.value("query", "") == encodedQuery || manual_query_matches) &&
             result.value("_socket", std::string{}) == translation_socket_) {
           const auto encoded = result.value("translations", Json::array()).dump();
-          view_ = response(msime_client_apply_translations(
-              session_, msime::linux_host::strict_json_required_integer<uint64_t>(query.at("generation")), reinterpret_cast<const uint8_t *>(encoded.data()),
+          view_ = response(lingyao_client_apply_translations(
+              session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(query.at("generation")), reinterpret_cast<const uint8_t *>(encoded.data()),
               encoded.size())).at("view");
           render();
           if (result.value("continue_online", false)) {
@@ -2058,7 +2058,7 @@ public:
   // /fy asks the selected service alone, in the query's own target language, and answers with a row rather than a gloss (CandidateTranslationPolicy.h): no offline dictionary, no other service, no gloss cache.
   bool commandTranslation(const Json &query) const {
     return query.is_object() &&
-           msime::linux_host::command_translation_query(
+           lingyao::linux_host::command_translation_query(
                view_.value("local_mode", std::string("none")), query.value("sentence", false));
   }
   void refreshClipboard() {
@@ -2078,7 +2078,7 @@ public:
         if (preferences_.value("clipboard_history", false) && session_ && ic_.hasFocus() &&
             !restricted() && !privateInput() && result.is_object() &&
             result.value("_path", std::string{}) == clipboard_path_ &&
-            msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == clipboard_generation_)
+            lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == clipboard_generation_)
           clipboard_items_ = result.value("entries", Json::array());
       }
       if (!preferences_.value("clipboard_history", false)) {
@@ -2092,7 +2092,7 @@ public:
       const auto path = clipboard_path_;
       const auto generation = clipboard_generation_;
       clipboard_job_ = detachedJob([path, generation] {
-        auto raw = response(msime_client_load_clipboard_history(
+        auto raw = response(lingyao_client_load_clipboard_history(
             reinterpret_cast<const uint8_t *>(path.data()), path.size()));
         if (!raw.is_object()) return Json::object();
         raw["_path"] = path;
@@ -2101,15 +2101,15 @@ public:
       });
     } catch (...) { clipboard_loading_ = false; clipboard_items_.clear(); }
   }
-  msime::linux_host::TypingSource typingSource() const {
+  lingyao::linux_host::TypingSource typingSource() const {
     const auto profile = preferences_.value("shuangpin_profile", std::string("xiaohe"));
-    return msime::linux_host::resolve_typing_source(
-        msime::linux_host::strict_json_value(view_, "scheme", -1), view_.value("nine_key", false),
+    return lingyao::linux_host::resolve_typing_source(
+        lingyao::linux_host::strict_json_value(view_, "scheme", -1), view_.value("nine_key", false),
         view_.value("dedicated_english", false),
         view_.value("local_mode", std::string("none")), profile);
   }
   void recordTypingStatistics(const std::string &text,
-                              msime::linux_host::TypingSource source) const {
+                              lingyao::linux_host::TypingSource source) const {
     // With statistics off nothing below runs: no date, no request, no thread, no store lock.
     if (!fcitx_typing_statistics.enabled()) return;
     if (text.empty() || options_path_.empty() || privateInput()) return;
@@ -2120,7 +2120,7 @@ public:
     if (localtime_r(&now, &local) == nullptr) return;
     char day[11]{};
     if (std::strftime(day, sizeof(day), "%Y-%m-%d", &local) == 0) return;
-    const auto sourceId = std::string(msime::linux_host::typing_source_id(source));
+    const auto sourceId = std::string(lingyao::linux_host::typing_source_id(source));
     fcitx_key_press_writes.begin();
     try {
       std::thread([directory, text, sourceId, day = std::string(day),
@@ -2132,9 +2132,9 @@ public:
                                 {"source", sourceId}, {"day", day},
                                 {"hour", hour}}}}
                                     .dump();
-          if (auto *raw = msime_client_typing_statistics(
+          if (auto *raw = lingyao_client_typing_statistics(
                   reinterpret_cast<const uint8_t *>(request.data()), request.size()))
-            msime_client_string_free(raw);
+            lingyao_client_string_free(raw);
         } catch (...) {
           // Statistics are best effort and must never affect text commitment.
         }
@@ -2146,7 +2146,7 @@ public:
   }
   // `typingStatistics` is false for text the Engine generated rather than the user typed out (the expression, command and mention modes), which the statistics leave out.
   void commitText(const std::string &text,
-                  std::optional<msime::linux_host::TypingSource> source = std::nullopt,
+                  std::optional<lingyao::linux_host::TypingSource> source = std::nullopt,
                   bool typingStatistics = true) {
     if (text.empty()) return;
     ic_.commitString(text);
@@ -2159,7 +2159,7 @@ public:
     const auto &item = clipboard_items_.at(index);
     const auto text = item.is_string() ? item.get<std::string>() : item.value("text", std::string{});
     if (text.empty()) return false;
-    commitText(text, msime::linux_host::TypingSource::Reply);
+    commitText(text, lingyao::linux_host::TypingSource::Reply);
     return true;
   }
   bool removeClipboard(size_t index) {
@@ -2172,7 +2172,7 @@ public:
     const auto path = clipboard_path_;
     clipboard_mutation_job_ = detachedJob([path, text] {
       const auto request = Json{{"directory", path}, {"text", text}}.dump();
-      auto raw = response(msime_client_remove_clipboard_history(
+      auto raw = response(lingyao_client_remove_clipboard_history(
           reinterpret_cast<const uint8_t *>(request.data()), request.size()));
       return raw.is_object() ? raw : Json::object();
     });
@@ -2194,7 +2194,7 @@ public:
       Json result = Json::object();
       for (const auto &text : texts) {
         const auto request = Json{{"directory", path}, {"text", text}}.dump();
-        result = response(msime_client_remove_clipboard_history(
+        result = response(lingyao_client_remove_clipboard_history(
             reinterpret_cast<const uint8_t *>(request.data()), request.size()));
       }
       return result;
@@ -2209,7 +2209,7 @@ public:
         cloud_clipboard_job_ = {};
         if (ic_.hasFocus() && !restricted() && !privateInput() && result.is_object() &&
             result.value("_socket", std::string{}) == cloud_clipboard_socket_ &&
-            msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == cloud_clipboard_generation_)
+            lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == cloud_clipboard_generation_)
         {
           cloud_clipboard_enabled_ = result.value("enabled", true);
           cloud_clipboard_items_ = cloud_clipboard_enabled_
@@ -2226,7 +2226,7 @@ public:
     if (index < cloud_clipboard_items_.size()) {
       const auto &item = cloud_clipboard_items_.at(index);
       const auto text = item.is_string() ? item.get<std::string>() : item.value("text", std::string{});
-      if (!text.empty()) { commitText(text, msime::linux_host::TypingSource::Reply); return true; }
+      if (!text.empty()) { commitText(text, lingyao::linux_host::TypingSource::Reply); return true; }
     }
     if (index != 0) return false;
     if (cloud_clipboard_job_.valid()) return false;
@@ -2234,7 +2234,7 @@ public:
     const auto generation = cloud_clipboard_generation_;
     cloud_clipboard_job_ = detachedJob([socket, generation] {
       const auto request = Json{{"operation", "list"}, {"search", ""}}.dump();
-      auto raw = response(msime_client_cloud_clipboard_provider_request(
+      auto raw = response(lingyao_client_cloud_clipboard_provider_request(
           reinterpret_cast<const uint8_t *>(request.data()), request.size(),
           reinterpret_cast<const uint8_t *>(socket.data()), socket.size()));
       if (!raw.is_object()) return Json::object();
@@ -2252,12 +2252,12 @@ public:
         auto result = emoji_groups_job_.get();
         emoji_groups_job_ = {};
         if (result.is_object() &&
-            msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_) {
+            lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_) {
           emoji_groups_.clear();
           for (const auto &item : result.value("groups", Json::array()))
             if (item.is_string() && !item.get<std::string>().empty()) emoji_groups_.push_back(item.get<std::string>());
           if (result.contains("_plugin_groups"))
-            emoji_plugin_groups_ = msime::linux_host::parse_plugin_symbol_groups(result.at("_plugin_groups"));
+            emoji_plugin_groups_ = lingyao::linux_host::parse_plugin_symbol_groups(result.at("_plugin_groups"));
           emoji_groups_loaded_ = true;
         }
       }
@@ -2267,23 +2267,23 @@ public:
         emoji_job_ = {};
         const auto requestQuery = emoji_job_query_;
         emoji_job_query_.clear();
-        const bool current = result.is_object() && msime::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_;
+        const bool current = result.is_object() && lingyao::linux_host::strict_json_value(result, "_generation", uint64_t{}) == emoji_generation_;
         if (current && result.contains("_plugin_groups"))
-          emoji_plugin_groups_ = msime::linux_host::parse_plugin_symbol_groups(result.at("_plugin_groups"));
+          emoji_plugin_groups_ = lingyao::linux_host::parse_plugin_symbol_groups(result.at("_plugin_groups"));
         if (ic_.hasFocus() && !restricted() && !privateInput() &&
             requestQuery == emoji_search_ && current) {
           // 内置目录的页之后接上符号集插件的条目；内置目录读不出来时只剩插件条目，没有插件时与原来的内置分页一致。
-          const auto pluginItems = msime::linux_host::plugin_emoji_items(
+          const auto pluginItems = lingyao::linux_host::plugin_emoji_items(
               emoji_plugin_groups_, emoji_category_, emojiBuiltinGroup(), emoji_plugin_group_, requestQuery);
-          msime::linux_host::EmojiPage page;
+          lingyao::linux_host::EmojiPage page;
           if (emoji_offset_.plugin || emoji_plugin_group_) {
-            page = msime::linux_host::plugin_emoji_page(pluginItems, emoji_offset_.offset, kEmojiPageSize);
+            page = lingyao::linux_host::plugin_emoji_page(pluginItems, emoji_offset_.offset, kEmojiPageSize);
           } else if (result.value("_builtin_failed", false)) {
-            page = msime::linux_host::merge_builtin_emoji_page(Json::array(), emoji_offset_.offset, true,
+            page = lingyao::linux_host::merge_builtin_emoji_page(Json::array(), emoji_offset_.offset, true,
                                                                pluginItems, kEmojiPageSize);
           } else {
             const auto items = result.value("items", Json::array());
-            page = msime::linux_host::merge_builtin_emoji_page(
+            page = lingyao::linux_host::merge_builtin_emoji_page(
                 items, result.value("next_offset", emoji_offset_.offset + items.size()),
                 result.value("complete", true), pluginItems, kEmojiPageSize);
           }
@@ -2306,7 +2306,7 @@ public:
     if (options_path_.empty() || options_path_.front() != '/') return {};
     return (std::filesystem::path(options_path_) / "plugins").string();
   }
-  bool requestEmojiPage(msime::linux_host::EmojiPageCursor cursor) {
+  bool requestEmojiPage(lingyao::linux_host::EmojiPageCursor cursor) {
     if (emoji_job_.valid() || resources_.empty()) return false;
     const auto resources = resources_;
     const auto category = emoji_category_;
@@ -2328,7 +2328,7 @@ public:
         try {
           const auto query = Json{{"limit", kEmojiPageSize}, {"offset", offset}, {"cursor", true},
                                   {"category", category}, {"group", group}, {"search", search}}.dump();
-          auto page = response(msime_client_emoji_catalog_request(
+          auto page = response(lingyao_client_emoji_catalog_request(
               reinterpret_cast<const uint8_t *>(query.data()), query.size(),
               reinterpret_cast<const uint8_t *>(resources.data()), resources.size()));
           if (page.is_object()) result.update(page);
@@ -2369,7 +2369,7 @@ public:
     if (index < emoji_items_.size()) {
       const auto &item = emoji_items_.at(index);
       const auto text = item.is_string() ? item.get<std::string>() : item.value("text", std::string{});
-      if (!text.empty()) { commitText(text, msime::linux_host::TypingSource::Local); return true; }
+      if (!text.empty()) { commitText(text, lingyao::linux_host::TypingSource::Local); return true; }
     }
     if (index != 0 || !emoji_items_.empty()) return false;
     return requestEmojiPage({});
@@ -2411,7 +2411,7 @@ public:
   bool cycleEmojiGroup() {
     if (restricted() || privateInput() || !ic_.hasFocus() || emoji_job_.valid() ||
         emoji_groups_job_.valid()) return false;
-    const auto count = msime::linux_host::emoji_group_count(emoji_groups_, emoji_plugin_groups_, emoji_category_);
+    const auto count = lingyao::linux_host::emoji_group_count(emoji_groups_, emoji_plugin_groups_, emoji_category_);
     if (!emoji_groups_loaded_ || count == 0) {
       if (resources_.empty()) return false;
       const auto resources = resources_;
@@ -2424,7 +2424,7 @@ public:
         auto result = Json::object();
         try {
           const auto query = Json{{"limit", 1}, {"list_groups", true}, {"category", category}}.dump();
-          auto listed = response(msime_client_emoji_catalog_request(
+          auto listed = response(lingyao_client_emoji_catalog_request(
               reinterpret_cast<const uint8_t *>(query.data()), query.size(),
               reinterpret_cast<const uint8_t *>(resources.data()), resources.size()));
           if (listed.is_object()) result["groups"] = listed.value("groups", Json::array());
@@ -2436,7 +2436,7 @@ public:
       return false;
     }
     emoji_group_index_ = (emoji_group_index_ + 1) % (count + 1);
-    const auto choice = msime::linux_host::emoji_group_choice(emoji_groups_, emoji_plugin_groups_,
+    const auto choice = lingyao::linux_host::emoji_group_choice(emoji_groups_, emoji_plugin_groups_,
                                                               emoji_category_, emoji_group_index_);
     emoji_group_ = choice.label;
     emoji_plugin_group_ = choice.plugin;
@@ -2454,18 +2454,18 @@ public:
   }
   // Release the session, and with it the shared dictionary lock, when the settings window asks for maintenance (core/DictionaryQuiesceLease.h). The composition is finished first, so nothing typed is lost; ensure() opens a new session once the lease is gone.
   void refreshDictionaryQuiesce() {
-    if (!session_ || !msime::linux_host::dictionary_quiesced(dictionary_user_data_)) return;
+    if (!session_ || !lingyao::linux_host::dictionary_quiesced(dictionary_user_data_)) return;
     if (!view_.value("editing_text", std::string{}).empty())
-      command(MSIME_FINISH_COMPOSITION);
+      command(LINGYAO_FINISH_COMPOSITION);
     close();
     clearPanel();
-    msime_linux_diagnostic_write("dictionary_quiesce_released");
+    lingyao_linux_diagnostic_write("dictionary_quiesce_released");
   }
   // The voice overlay's mode and palette, re-read wherever the preferences, the skin catalogue or the desktop appearance change.
   void syncVoiceOverlayTheme() {
     const auto theme = resolveVoiceOverlayTheme(preferences_, system_dark_, candidate_skin_document_);
     wave_overlay_.light_theme = !theme.dark;
-    wave_overlay_.palette = msime::linux_host::floating_surface_colors(theme);
+    wave_overlay_.palette = lingyao::linux_host::floating_surface_colors(theme);
   }
   // Called by FcitxEngine::applySystemTheme on the loop when its addon-wide probe sees the desktop appearance change.
   void setSystemDark(bool dark) {
@@ -2550,10 +2550,10 @@ public:
           voice_partial_seen_ = true;
           voice_phase_seen_ = voice_phase_seen_ || phaseSeen;
           voice_level_seen_ = voice_level_seen_ || levelSeen;
-          partial = msime_voice_bound_result(std::move(partial));
+          partial = lingyao_voice_bound_result(std::move(partial));
           if (!partial.empty()) {
             // Fcitx5 commit is the only voice commit path on Linux and the settings page offers no strategy, so a stored commit_mode must not turn the inline preedit off.
-            const bool inlinePreedit = msime_voice_stream_inline_enabled(
+            const bool inlinePreedit = lingyao_voice_stream_inline_enabled(
                 voice_options_.value("stream_inline_preedit", false),
                 voice_options_.value("asr_provider", std::string{"doubao"}), "tsf");
             if (inlinePreedit) {
@@ -2570,10 +2570,10 @@ public:
             voice_phase_ = phaseLabel[std::min<size_t>(phase, 2)];
             if (phase >= 2)
               wave_overlay_.compact_status =
-                  msime::linux_host::WaveOverlayModel::CompactStatus::Processing;
+                  lingyao::linux_host::WaveOverlayModel::CompactStatus::Processing;
             else if (phase == 1)
               wave_overlay_.compact_status =
-                  msime::linux_host::WaveOverlayModel::CompactStatus::Recognizing;
+                  lingyao::linux_host::WaveOverlayModel::CompactStatus::Recognizing;
           }
           if (levelSeen) voice_level_ = level;
           if (!partial.empty()) voice_transcript_ = std::move(partial);
@@ -2607,13 +2607,13 @@ public:
           latestPartial = mailbox->partial;
         }
         if (voice_preedit_.empty() && voice_transcript_.empty() && !latestPartial.empty()) {
-          latestPartial = msime_voice_bound_result(std::move(latestPartial));
-          const bool inlinePreedit = msime_voice_stream_inline_enabled(
+          latestPartial = lingyao_voice_bound_result(std::move(latestPartial));
+          const bool inlinePreedit = lingyao_voice_stream_inline_enabled(
               voice_options_.value("stream_inline_preedit", false),
               voice_options_.value("asr_provider", std::string{"doubao"}), "tsf");
           (inlinePreedit ? voice_preedit_ : voice_transcript_) = std::move(latestPartial);
         }
-        text = msime_voice_result_or_transcript(
+        text = lingyao_voice_result_or_transcript(
             std::move(text), voice_transcript_, voice_preedit_);
         voice_preedit_.clear();
         voice_transcript_.clear();
@@ -2622,10 +2622,10 @@ public:
         ic_.inputPanel().setAuxUp(fcitx::Text());
         ic_.updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
         voice_mailbox_.reset();
-        if (!text.empty()) { commitText(text, msime::linux_host::TypingSource::Voice); return true; }
+        if (!text.empty()) { commitText(text, lingyao::linux_host::TypingSource::Voice); return true; }
         const auto providerError = result.find("provider_error");
         showVoiceFailure(providerError != result.end() && providerError->is_string()
-                             ? msime_voice_provider_failure_notice(providerError->get<std::string>())
+                             ? lingyao_voice_provider_failure_notice(providerError->get<std::string>())
                              : "未识别到文字，请重新录音");
         return false;
       }
@@ -2651,7 +2651,7 @@ public:
   // An oversized prompt must not take the rest of the configuration down with it; like the IBus host, the refusal surfaces when voice input starts.
   void loadVoiceOptions() {
     try {
-      voice_options_ = msime::linux_host::voice_provider_options(preferences_);
+      voice_options_ = lingyao::linux_host::voice_provider_options(preferences_);
       voice_options_valid_ = true;
     } catch (const std::runtime_error &) {
       voice_options_ = Json::object();
@@ -2672,15 +2672,15 @@ public:
     // Voice text takes the composition's place: Windows purges the typed keys when the voice composition starts, and the IBus host cancels the composition in voice_start. Left in place, the pinyin came back as preedit after the voice result was committed.
     if (session_ && (!view_.value("editing_text", std::string{}).empty() ||
                      !view_.value("candidates", Json::array()).empty()))
-      command(MSIME_CANCEL);
+      command(LINGYAO_CANCEL);
     voice_loading_ = true;
     syncMusic();
     voice_cancelled_ = false;
     const auto socket = voice_socket_;
-    const auto generation = msime::linux_host::strict_json_value(view_, "generation", uint64_t{});
+    const auto generation = lingyao::linux_host::strict_json_value(view_, "generation", uint64_t{});
     const auto language = voice_language_;
     const auto options = voice_options_;
-    const auto host_options = msime::linux_host::voice_wants_hotwords(options) ? voice_host_options_ : Json();
+    const auto host_options = lingyao::linux_host::voice_wants_hotwords(options) ? voice_host_options_ : Json();
     voice_generation_ = generation;
     voice_mailbox_ = std::make_shared<FcitxVoiceMailbox>();
     voice_preedit_.clear();
@@ -2700,16 +2700,16 @@ public:
     updateVoiceOverlay();
     const auto mailbox = voice_mailbox_;
     voice_job_ = detachedJob([socket, generation, language, options, host_options, mailbox] {
-      auto request = msime::linux_host::voice_query(language, generation, options, host_options);
+      auto request = lingyao::linux_host::voice_query(language, generation, options, host_options);
       request["stream"] = true;
       const auto query = request.dump();
-      std::unique_ptr<char, decltype(&msime_client_string_free)> raw(
-          msime_client_voice_provider_stream_feedback(
+      std::unique_ptr<char, decltype(&lingyao_client_string_free)> raw(
+          lingyao_client_voice_provider_stream_feedback(
               reinterpret_cast<const uint8_t *>(query.data()), query.size(),
               reinterpret_cast<const uint8_t *>(socket.data()), socket.size(),
               fcitxVoiceUpdate, fcitxVoiceStatus, fcitxVoiceLevel, mailbox.get()),
-          msime_client_string_free);
-      if (!raw) throw std::runtime_error("MSIME request failed");
+          lingyao_client_string_free);
+      if (!raw) throw std::runtime_error("LINGYAO request failed");
       // A provider that gave no result (value null) or named a missing dependency (ok:false) is a provider failure, as in the IBus host, not an empty recognition.
       const auto document = Json::parse(raw.get());
       if (!document.value("ok", false))
@@ -2724,7 +2724,7 @@ public:
     const auto socket = voice_socket_;
     bool stopped = false;
     try {
-      stopped = response(msime_client_voice_provider_stop(
+      stopped = response(lingyao_client_voice_provider_stop(
           reinterpret_cast<const uint8_t *>(socket.data()), socket.size(), voice_generation_))
           .get<bool>();
     } catch (...) {
@@ -2738,7 +2738,7 @@ public:
     voice_phase_ = "识别中";
     wave_overlay_.listening = false;
     wave_overlay_.compact_status =
-        msime::linux_host::WaveOverlayModel::CompactStatus::Recognizing;
+        lingyao::linux_host::WaveOverlayModel::CompactStatus::Recognizing;
     updateVoiceOverlay();
     return true;
   }
@@ -2747,7 +2747,7 @@ public:
     const auto socket = voice_socket_;
     const auto generation = voice_generation_;
     if (!socket.empty() && generation != 0)
-      msime_client_string_free(msime_client_voice_provider_cancel(
+      lingyao_client_string_free(lingyao_client_voice_provider_cancel(
           reinterpret_cast<const uint8_t *>(socket.data()), socket.size(), generation));
     voice_cancelled_ = true;
     voice_mailbox_.reset();
@@ -2769,25 +2769,25 @@ public:
   }
   bool apply(char *raw,
              std::optional<std::string> spaceConvertPreceding = std::nullopt,
-             msime::linux_host::PunctuationPairMode pairMode =
-                 msime::linux_host::PunctuationPairMode::Unpaired) {
+             lingyao::linux_host::PunctuationPairMode pairMode =
+                 lingyao::linux_host::PunctuationPairMode::Unpaired) {
     auto result = response(raw);
     pair_inserted_ = false;
     if (result.contains("commit") && result["commit"].is_string()) {
       auto text = result["commit"].get<std::string>();
-      if (traditionalApplies()) text = msime_linux_simplified_to_traditional(text);
+      if (traditionalApplies()) text = lingyao_linux_simplified_to_traditional(text);
       const auto spaceConvertAscii =
           spaceConvertPreceding
-              ? msime::linux_host::smart_punctuation_ascii_mark(text)
+              ? lingyao::linux_host::smart_punctuation_ascii_mark(text)
               : 0;
-      pair_inserted_ = msime::linux_host::normalize_punctuation_pair(text, pairMode);
+      pair_inserted_ = lingyao::linux_host::normalize_punctuation_pair(text, pairMode);
       // An ASCII mark smart punctuation kept can be taken back to Chinese by
       // typing the same key again. Engine applies the width itself here, so the
       // commit is matched in whichever width it went out as - and against the
       // width in effect when this key produced it, which is the one still in
       // view_ at this point.
       const auto committedMark =
-          msime::linux_host::ascii_mark_from_text(text, fullwidthOutput());
+          lingyao::linux_host::ascii_mark_from_text(text, fullwidthOutput());
       if (committedMark != 0 && smart_punctuation_) {
         last_smart_punctuation_ = committedMark;
         last_smart_punctuation_at_ = std::chrono::steady_clock::now();
@@ -2803,13 +2803,13 @@ public:
                  !context.is_object() || context.value("typing_statistics", true));
       // The key sound played when the key went down; this is the commit's own sound, or the next note of a melody that advances on commits. Never for a secure field.
       if (!text.empty() && !privateInput()) {
-        msime_client_commit_sound(session_);
+        lingyao_client_commit_sound(session_);
         // The commit counts nothing; it reports the combo as it stands, which is how one that lapsed while the user paused leaves the aux line drawn next.
-        typing_combo_ = msime::linux_host::typing_effect_combo(
-            msime_client_typing_effect(session_, msime::linux_host::kTypingEffectCommit));
+        typing_combo_ = lingyao::linux_host::typing_effect_combo(
+            lingyao_client_typing_effect(session_, lingyao::linux_host::kTypingEffectCommit));
       }
       if (pair_inserted_) {
-        if (const auto closing = msime::linux_host::paired_closing_from_text(text))
+        if (const auto closing = lingyao::linux_host::paired_closing_from_text(text))
           paired_tracker_.push(*closing);
       }
       if (spaceConvertAscii != 0 && !pair_inserted_) {
@@ -2822,7 +2822,7 @@ public:
     render();
     return result.value("handled", false);
   }
-  bool command(uint32_t command) { return apply(msime_client_command(session_, command)); }
+  bool command(uint32_t command) { return apply(lingyao_client_command(session_, command)); }
   // The `count` characters in front of the caret, oldest first. std::nullopt is
   // "this host publishes nothing usable there", which is not the same answer as
   // an empty vector: that one means the document starts at the caret.
@@ -2839,7 +2839,7 @@ public:
     return preceding_characters(text, surrounding.cursor(), count);
   }
   bool composingOrCandidates() const {
-    return msime::linux_host::view_has_composition(
+    return lingyao::linux_host::view_has_composition(
         view_.value("editing_text", std::string{}),
         !view_.value("candidates", Json::array()).empty(),
         view_.value("phrase_prefix", std::string{}));
@@ -2849,28 +2849,28 @@ public:
   }
   // The session types Korean: jamo compose in the preedit, punctuation is always half-width ASCII and none of the Chinese punctuation helpers apply. The dedicated English mode keeps its own rules in every scheme.
   bool korean() const {
-    return msime::linux_host::strict_json_value(view_, "scheme", 0u) == 4 && !view_.value("dedicated_english", false);
+    return lingyao::linux_host::strict_json_value(view_, "scheme", 0u) == 4 && !view_.value("dedicated_english", false);
   }
   // The view's scheme number outside the dedicated English mode, which keeps its own rules in every scheme; -1 there.
   int typingScheme() const {
-    return view_.value("dedicated_english", false) ? -1 : msime::linux_host::view_scheme(view_);
+    return view_.value("dedicated_english", false) ? -1 : lingyao::linux_host::view_scheme(view_);
   }
   // 韩文音节、注音转换、越南文单词或藏文音节串是用户已经写下的文字：离开它的按键把它写出去而不是丢弃（`commits_on_blur`），光标停在末尾，所以没有可编辑的分段（`locks_caret`）。
   bool commitsOnBlur() const {
     const int scheme = typingScheme();
-    return scheme >= 0 && msime::linux_host::scheme::CommitsOnBlur(scheme);
+    return scheme >= 0 && lingyao::linux_host::scheme::CommitsOnBlur(scheme);
   }
   // 韩文、越南文和藏文写半角 ASCII 标点，从不变成全角（`widens_full_width`）。
   bool narrowScheme() const {
     const int scheme = typingScheme();
-    return scheme == msime::linux_host::scheme::Korean || scheme == msime::linux_host::scheme::Vietnamese ||
-           scheme == msime::linux_host::scheme::Tibetan;
+    return scheme == lingyao::linux_host::scheme::Korean || scheme == lingyao::linux_host::scheme::Vietnamese ||
+           scheme == lingyao::linux_host::scheme::Tibetan;
   }
   // 韩文、注音、越南文和藏文的标点取自 Engine，不用宿主的成对标点和智能标点辅助（`host_smart_punctuation`）。日文保留这些辅助，本宿主一直如此。
   bool withoutHostPunctuation() const {
     const int scheme = typingScheme();
-    return scheme == msime::linux_host::scheme::Korean || scheme == msime::linux_host::scheme::Zhuyin ||
-           scheme == msime::linux_host::scheme::Vietnamese || scheme == msime::linux_host::scheme::Tibetan;
+    return scheme == lingyao::linux_host::scheme::Korean || scheme == lingyao::linux_host::scheme::Zhuyin ||
+           scheme == lingyao::linux_host::scheme::Vietnamese || scheme == lingyao::linux_host::scheme::Tibetan;
   }
   void forgetSmartPunctuationRepeat() {
     last_smart_punctuation_ = 0;
@@ -2890,10 +2890,10 @@ public:
     if (std::chrono::steady_clock::now() - last_smart_punctuation_at_ >
         std::chrono::seconds(2))
       return false;
-    const auto chinese = msime::linux_host::chinese_punctuation_mark(ascii);
+    const auto chinese = lingyao::linux_host::chinese_punctuation_mark(ascii);
     const auto characters = precedingCharacters(1);
     if (chinese.empty() || !characters ||
-        !msime::linux_host::repeat_conversion_matches_document(
+        !lingyao::linux_host::repeat_conversion_matches_document(
             ascii, fullwidthOutput(), *characters))
       return false;
     ic_.deleteSurroundingText(-1, 1);
@@ -2904,8 +2904,8 @@ public:
     return true;
   }
   bool punctuation(uint8_t value,
-                   msime::linux_host::PunctuationPairMode pairMode =
-                       msime::linux_host::PunctuationPairMode::Unpaired) {
+                   lingyao::linux_host::PunctuationPairMode pairMode =
+                       lingyao::linux_host::PunctuationPairMode::Unpaired) {
     uint32_t preceding = 0;
     std::optional<size_t> surroundingLength;
     const auto &surrounding = ic_.surroundingText();
@@ -2927,9 +2927,9 @@ public:
     const auto ascii = static_cast<char>(value);
     const bool arm = smart_punctuation_ && smart_punctuation_space_convert_ &&
                      chinese_punctuation_ &&
-                     msime::linux_host::is_space_conversion_key(ascii) &&
+                     lingyao::linux_host::is_space_conversion_key(ascii) &&
                      !(paired_punctuation_ &&
-                       msime::linux_host::is_auto_paired_opening_key(ascii)) &&
+                       lingyao::linux_host::is_auto_paired_opening_key(ascii)) &&
                      !composingOrCandidates();
     std::string armedPreceding;
     if (arm) {
@@ -2947,13 +2947,13 @@ public:
       spaceConvertPreceding = armedPreceding;
     // The shared route keeps , . : ASCII beside an ASCII letter or digit only under the follow lock, with Chinese and smart punctuation on and nothing composing; idle, Engine then hands the key back and the editor types it, so apply() never sees a commit to arm the repeat gesture from. Decide that here, before the call changes the view, so the same key typed again inside the window still converts, as Windows arms it for the ASCII mark it resolved.
     const bool keptAscii = punctuation_lock_ == 0 && chinese_punctuation_ && smart_punctuation_ &&
-                           msime::linux_host::is_smart_punctuation_key(ascii) &&
+                           lingyao::linux_host::is_smart_punctuation_key(ascii) &&
                            preceding < 0x80 && std::isalnum(static_cast<int>(preceding)) != 0 &&
                            !composingOrCandidates() && !view_.value("dedicated_english", false) &&
                            view_.value("local_mode", std::string("none")) == "none" &&
-                           msime::linux_host::strict_json_value(view_, "scheme", 0u) != 3 && !withoutHostPunctuation();
+                           lingyao::linux_host::strict_json_value(view_, "scheme", 0u) != 3 && !withoutHostPunctuation();
     const bool handled =
-        apply(msime_client_punctuation_with_context(session_, value, preceding),
+        apply(lingyao_client_punctuation_with_context(session_, value, preceding),
               std::move(spaceConvertPreceding), pairMode);
     if (handled && smart_punctuation_rejected_ == ascii)
       forgetSmartPunctuationRepeat();
@@ -2984,7 +2984,7 @@ public:
     // Wayland 虚拟键盘沿用物理修饰状态；Shift 尚未松开时不能发送方向键，否则会选中文字。
     if (std::string_view(ic_.frontend()).find("wayland") == 0 && caretShiftHeld().value_or(caret_shift_)) {
       pending_caret_.push_back(sym);
-#ifdef MSIME_FCITX5_XKB_STATE_MASK
+#ifdef LINGYAO_FCITX5_XKB_STATE_MASK
       if (!caret_forward_event_) {
         caret_forward_event_ = loop_->addTimeEvent(CLOCK_MONOTONIC, fcitx::now(CLOCK_MONOTONIC), 0,
             [this](fcitx::EventSourceTime *timer, uint64_t) {
@@ -3018,16 +3018,16 @@ public:
   }
   bool pairedPunctuationEnabled() const {
     return chinese_punctuation_ && paired_punctuation_ &&
-           !msime::linux_host::paired_punctuation_excluded_client(ic_.program());
+           !lingyao::linux_host::paired_punctuation_excluded_client(ic_.program());
   }
   // Typing the closing mark of a pair this host completed steps over the one already in the document instead of adding a second, as Windows and the IBus host do. The tracker only agrees while that mark is still right after the caret.
   bool skipPairedClosing(fcitx::KeySym sym, fcitx::KeyStates states) {
     if (!pairedPunctuationEnabled()) return false;
     const auto typed = fcitx::Key::keySymToUTF8(sym);
     if (typed.size() != 1) return false;
-    const auto closing = msime::linux_host::paired_closing_for_key(typed[0], fullwidthOutput());
+    const auto closing = lingyao::linux_host::paired_closing_for_key(typed[0], fullwidthOutput());
     if (!closing) return false;
-    using Modifier = msime::linux_host::PairedPunctuationModifier;
+    using Modifier = lingyao::linux_host::PairedPunctuationModifier;
     std::uint32_t modifiers = 0;
     if (states.test(fcitx::KeyState::Ctrl)) modifiers |= static_cast<std::uint32_t>(Modifier::Control);
     if (states.test(fcitx::KeyState::Alt)) modifiers |= static_cast<std::uint32_t>(Modifier::Alt);
@@ -3037,7 +3037,7 @@ public:
     if (states.test(fcitx::KeyState::Mod5)) modifiers |= static_cast<std::uint32_t>(Modifier::Mod5);
     const auto following = followingCharacter();
     if (!paired_tracker_.consume(*closing, following.value_or(""), following.has_value(),
-                                 msime::linux_host::paired_closing_modifiers_allowed(modifiers)))
+                                 lingyao::linux_host::paired_closing_modifiers_allowed(modifiers)))
       return false;
     forgetSmartPunctuationRepeat();
     forwardCaret(FcitxKey_Right);
@@ -3046,7 +3046,7 @@ public:
   // Brackets, the book title, braces and quotes are completed with their closing mark and the caret is stepped back between the two, following the Windows host. `{` goes out as the literal brace, as it does in the IBus host.
   // std::nullopt: not a paired key here, route it as ordinary punctuation.
   std::optional<bool> pairedPunctuation(char ascii, bool composing) {
-    using Mode = msime::linux_host::PunctuationPairMode;
+    using Mode = lingyao::linux_host::PunctuationPairMode;
     Mode mode = Mode::Unpaired;
     if (ascii == '"') mode = Mode::DoubleQuote;
     else if (ascii == '\'' && !composing) mode = Mode::SingleQuote;
@@ -3055,10 +3055,10 @@ public:
     if (mode == Mode::Unpaired || !pairedPunctuationEnabled()) return std::nullopt;
     const auto value = static_cast<uint8_t>(ascii);
     bool handled = mode == Mode::Brace
-                       ? apply(msime_client_punctuation_ascii(session_, value), std::nullopt, mode)
+                       ? apply(lingyao_client_punctuation_ascii(session_, value), std::nullopt, mode)
                        : punctuation(value, mode);
     if (handled && pair_inserted_ && ascii == '<')
-      (void)response(msime_client_balance_paired_punctuation_after_auto_close(session_, value));
+      (void)response(lingyao_client_balance_paired_punctuation_after_auto_close(session_, value));
     if (!handled && mode == Mode::Brace) {
       const auto text = fullwidthOutput() ? std::string("｛｝") : std::string("{}");
       commitText(text);
@@ -3082,10 +3082,10 @@ public:
         composingOrCandidates())
       return false;
     const auto replacement =
-        msime::linux_host::space_conversion_ascii_text(mark);
+        lingyao::linux_host::space_conversion_ascii_text(mark);
     const auto characters = precedingCharacters(2);
     if (replacement.empty() || !characters ||
-        !msime::linux_host::space_conversion_matches_document(mark, expected,
+        !lingyao::linux_host::space_conversion_matches_document(mark, expected,
                                                               *characters))
       return false;
     ic_.deleteSurroundingText(-1, 1);
@@ -3094,22 +3094,22 @@ public:
   }
   void select(uint64_t session, uint64_t generation, size_t index) {
     if (translation_candidates_active_) {
-      if (session_ == session && msime::linux_host::strict_json_value(view_, "generation", uint64_t{}) == generation)
+      if (session_ == session && lingyao::linux_host::strict_json_value(view_, "generation", uint64_t{}) == generation)
         commitTranslationCandidate(index);
       return;
     }
-    if (!ensure() || session_ != session || msime::linux_host::strict_json_value(view_, "generation", uint64_t{}) != generation) return;
-    apply(msime_client_select(session_, generation, index));
+    if (!ensure() || session_ != session || lingyao::linux_host::strict_json_value(view_, "generation", uint64_t{}) != generation) return;
+    apply(lingyao_client_select(session_, generation, index));
   }
   bool translationCandidatesActive() const { return translation_candidates_active_; }
   void translationPage(uint32_t command) {
     if (!translation_candidates_active_) return;
     const auto pageSize = std::clamp(
-        msime::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
+        lingyao::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
     const auto pageCount = (translation_options_.size() + pageSize - 1) / pageSize;
-    if (command == MSIME_PREVIOUS_PAGE && translation_page_ > 0)
+    if (command == LINGYAO_PREVIOUS_PAGE && translation_page_ > 0)
       --translation_page_;
-    else if (command == MSIME_NEXT_PAGE && translation_page_ + 1 < pageCount)
+    else if (command == LINGYAO_NEXT_PAGE && translation_page_ + 1 < pageCount)
       ++translation_page_;
     else
       return;
@@ -3117,7 +3117,7 @@ public:
     renderTranslationCandidates();
   }
   bool enterTranslationCandidates(const std::string &gloss) {
-    const auto senses = msime::linux_host::split_translation_gloss(gloss);
+    const auto senses = lingyao::linux_host::split_translation_gloss(gloss);
     if (senses.size() <= 1) return false;
     translation_saved_view_ = view_;
     translation_options_ = senses;
@@ -3141,7 +3141,7 @@ public:
     if (!translation_candidates_active_ || !translation_saved_view_.is_object() ||
         translation_options_.empty()) return;
     const auto pageSize = std::clamp(
-        msime::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
+        lingyao::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
     const auto pageCount = (translation_options_.size() + pageSize - 1) / pageSize;
     translation_page_ = std::min(translation_page_, pageCount - 1);
     const auto start = translation_page_ * pageSize;
@@ -3160,7 +3160,7 @@ public:
       candidate["fixed_position"] = 0;
       candidate["annotation"] = "";
       candidate["id"] = {{"session", session_},
-                          {"generation", msime::linux_host::strict_json_value(
+                          {"generation", lingyao::linux_host::strict_json_value(
                                              overlay, "generation", uint64_t{})},
                           {"index", index}};
       overlay["candidates"].push_back(std::move(candidate));
@@ -3172,8 +3172,8 @@ public:
     if (!translation_candidates_active_ || index >= translation_options_.size()) return;
     const auto text = translation_options_.at(index);
     exitTranslationCandidates();
-    commitText(text, msime::linux_host::TypingSource::Reply);
-    command(MSIME_CANCEL);
+    commitText(text, lingyao::linux_host::TypingSource::Reply);
+    command(LINGYAO_CANCEL);
   }
   void render();
   std::string candidateAux() const;
@@ -3183,22 +3183,22 @@ public:
     if (!candidates.is_array() || slot >= candidates.size()) return false;
     const auto &candidate = candidates.at(slot);
     if (!candidate.is_object() ||
-        !msime::linux_host::candidate_dictionary_removal_available(
-            msime::linux_host::strict_json_value(view_, "scheme", 0u), msime::linux_host::strict_json_value(candidate, "source", uint64_t{}),
+        !lingyao::linux_host::candidate_dictionary_removal_available(
+            lingyao::linux_host::strict_json_value(view_, "scheme", 0u), lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{}),
             candidate.value("text", std::string{}))) return false;
     const auto &id = candidate.value("id", Json::object());
     if (!id.is_object() || !id.contains("generation") || !id.contains("index")) return false;
-    return apply(msime_client_remove_candidate(
-        session_, msime::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
-        msime::linux_host::strict_json_required_integer<size_t>(id.at("index"))));
+    return apply(lingyao_client_remove_candidate(
+        session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
+        lingyao::linux_host::strict_json_required_integer<size_t>(id.at("index"))));
   }
   bool resetCache() {
     if (!ensure() || restricted() || privateInput() || !ic_.hasFocus()) return false;
-    return apply(msime_client_reset_cache(session_));
+    return apply(lingyao_client_reset_cache(session_));
   }
-  // 繁体输出转换只用于简体中文（`script_conversion_applies`）：日文（假名和 Engine 选的汉字）与韩文（谚文和用户选的汉字）原样通过，粤拼和注音本来就写繁体字，笔画候选按 msime-stroke.db 里存的字形原样取用，越南文和藏文不是中文。候选行、上屏和状态区动作都问这同一道关口，所以候选行显示的字永远就是它上屏的字（s2t 会把汉字 后 画成 後）。
+  // 繁体输出转换只用于简体中文（`script_conversion_applies`）：日文（假名和 Engine 选的汉字）与韩文（谚文和用户选的汉字）原样通过，粤拼和注音本来就写繁体字，笔画候选按 lingyao-stroke.db 里存的字形原样取用，越南文和藏文不是中文。候选行、上屏和状态区动作都问这同一道关口，所以候选行显示的字永远就是它上屏的字（s2t 会把汉字 后 画成 後）。
   bool scriptConversionApplies() const {
-    return msime::linux_host::scheme::ScriptConversionApplies(msime::linux_host::strict_json_value(view_, "scheme", 0));
+    return lingyao::linux_host::scheme::ScriptConversionApplies(lingyao::linux_host::strict_json_value(view_, "scheme", 0));
   }
   bool traditionalApplies() const {
     return traditional_ && scriptConversionApplies();
@@ -3233,7 +3233,7 @@ public:
   void countPassthroughKey(const fcitx::KeyEvent &event) const {
     if (event.isRelease() || !ic_.hasFocus() || restricted() || !fcitx_typing_statistics.enabled()) return;
     const auto states = event.key().states();
-    msime::linux_host::PassthroughModifiers held;
+    lingyao::linux_host::PassthroughModifiers held;
     held.control = states.test(fcitx::KeyState::Ctrl);
     held.alt = states.test(fcitx::KeyState::Alt);
     held.super = states.test(fcitx::KeyState::Super);
@@ -3241,17 +3241,17 @@ public:
     held.meta = states.test(fcitx::KeyState::Meta);
     const auto character =
         static_cast<char32_t>(fcitx::Key::keySymToUnicode(event.key().sym()));
-    if (!msime::linux_host::should_count_passthrough_character(character, held)) return;
+    if (!lingyao::linux_host::should_count_passthrough_character(character, held)) return;
     recordTypingStatistics(fcitx::utf8::UCS4ToUTF8(character),
                            input_enabled_ ? typingSource()
-                                          : msime::linux_host::TypingSource::English);
+                                          : lingyao::linux_host::TypingSource::English);
   }
   // Background music may play while this input method is active in a focused field that is not a secure one, and not while a recording would pick it up. The player serves the whole fcitx5 process, so this only tells it about a change (KeySound.h); close() tells it the music is over before the session goes away.
   void syncMusic() {
     music_.sync(session_, ic_.hasFocus() && !restricted() && !privateInput() && !voice_loading_,
-                msime_client_music_set_active);
+                lingyao_client_music_set_active);
   }
-  // The key sound of one press: every typing key while Chinese input is on in a field that is not a secure one, whether the Engine or the application takes the key, and none while a recording is running. This runs inside the fcitx5 daemon, so it only posts a request: the Host API opens no audio device and starts no thread until it finds a sound switched on, and an audio failure turns sound off for the process with one line on stderr instead of reaching this addon (msime_client.h).
+  // The key sound of one press: every typing key while Chinese input is on in a field that is not a secure one, whether the Engine or the application takes the key, and none while a recording is running. This runs inside the fcitx5 daemon, so it only posts a request: the Host API opens no audio device and starts no thread until it finds a sound switched on, and an audio failure turns sound off for the process with one line on stderr instead of reaching this addon (lingyao_client.h).
   void playKeySound(const fcitx::KeyEvent &event) {
     syncMusic();
     const auto sym = static_cast<std::uint32_t>(event.key().sym());
@@ -3262,13 +3262,13 @@ public:
     const bool shortcut = event.rawKey().states().testAny(fcitx::KeyStates{
         fcitx::KeyState::Ctrl, fcitx::KeyState::Alt, fcitx::KeyState::Super,
         fcitx::KeyState::Hyper, fcitx::KeyState::Meta});
-    if (!msime::linux_host::key_press_sounds(event.isRelease(), event.key().isModifier(), shortcut))
+    if (!lingyao::linux_host::key_press_sounds(event.isRelease(), event.key().isModifier(), shortcut))
       return;
-    const auto keyClass = msime::linux_host::key_sound_class(sym);
-    msime_client_key_sound(session_, keyClass);
+    const auto keyClass = lingyao::linux_host::key_sound_class(sym);
+    lingyao_client_key_sound(session_, keyClass);
     // The typing effect of the same press, from the same session: Linux shows only the combo count, in the candidate aux line (setAuxDown; the voice, emoji search and configuration notices own setAuxUp). The key was rendered before this point, so a count that moved redraws that line alone.
-    const auto combo = msime::linux_host::typing_effect_combo(msime_client_typing_effect(
-        session_, keyClass | (key_repeat_.press(sym) ? msime::linux_host::kTypingEffectRepeat : 0)));
+    const auto combo = lingyao::linux_host::typing_effect_combo(lingyao_client_typing_effect(
+        session_, keyClass | (key_repeat_.press(sym) ? lingyao::linux_host::kTypingEffectRepeat : 0)));
     if (combo == typing_combo_) return;
     typing_combo_ = combo;
     if (view_.is_object() && view_.contains("candidates") && !view_.at("candidates").empty()) {
@@ -3277,11 +3277,11 @@ public:
     }
   }
   // What the process's sound player was last told about background music; see syncMusic.
-  msime::linux_host::MusicActivity music_;
-  // The combo count the session last answered msime_client_typing_effect with, and the key held down, so an auto-repeat is drawn but not counted.
+  lingyao::linux_host::MusicActivity music_;
+  // The combo count the session last answered lingyao_client_typing_effect with, and the key held down, so an auto-repeat is drawn but not counted.
   std::uint32_t typing_combo_ = 0;
-  msime::linux_host::KeyRepeat key_repeat_;
-  // Every key event MSIME receives passes through here before key() routes it, so the heatmap counts keys the IME consumes for a composition as well as keys it hands back to the application. Only key downs count, once per physical press; a raw code below 8 has no evdev key behind it (a synthetic event, such as a panel's typed key).
+  lingyao::linux_host::KeyRepeat key_repeat_;
+  // Every key event LINGYAO receives passes through here before key() routes it, so the heatmap counts keys the IME consumes for a composition as well as keys it hands back to the application. Only key downs count, once per physical press; a raw code below 8 has no evdev key behind it (a synthetic event, such as a panel's typed key).
   void countKeyPress(const fcitx::KeyEvent &event) {
     const auto code = event.rawKey().code();
     if (code < 8) return;
@@ -3297,31 +3297,31 @@ public:
     // With statistics off nothing is buffered; restricted (password, number) and private contexts are never counted, the same contexts commits are not recorded in.
     if (!fcitx_typing_statistics.enabled() || !ic_.hasFocus() || restricted() || privateInput()) return;
     const auto id = key_presses_.down(evdev, at,
-                                      stamped ? msime::linux_host::KeyPressCounter::kEventRepeatGapMicroseconds
-                                              : msime::linux_host::KeyPressCounter::kArrivalRepeatGapMicroseconds);
+                                      stamped ? lingyao::linux_host::KeyPressCounter::kEventRepeatGapMicroseconds
+                                              : lingyao::linux_host::KeyPressCounter::kArrivalRepeatGapMicroseconds);
     if (id.empty() || options_path_.empty() || options_path_.front() != '/') return;
-    const auto day = msime::linux_host::local_day(std::time(nullptr));
+    const auto day = lingyao::linux_host::local_day(std::time(nullptr));
     if (day.empty()) return;
     flushKeyPresses(key_presses_.add(id, options_path_, day, now));
   }
   // Writes the pending key presses now, for FcitxEngine's teardown.
   void flushPendingKeyPresses() { flushKeyPresses(key_presses_.take()); }
   // Sends one batch to the store's record_keys operation on the calling thread.
-  static void writeKeyPresses(const msime::linux_host::KeyPressBatch &pending) {
+  static void writeKeyPresses(const lingyao::linux_host::KeyPressBatch &pending) {
     try {
       const auto request = Json{
           {"directory", pending.directory},
           {"action", Json{{"operation", "record_keys"}, {"day", pending.day}, {"keys", pending.keys}}}}
                                .dump();
-      if (auto *raw = msime_client_typing_statistics(
+      if (auto *raw = lingyao_client_typing_statistics(
               reinterpret_cast<const uint8_t *>(request.data()), request.size()))
-        msime_client_string_free(raw);
+        lingyao_client_string_free(raw);
     } catch (...) {
       // Statistics are best effort and must never affect typing.
     }
   }
   // Writes a batch of key press counts on its own thread, as recordTypingStatistics does for commits, or on the loop once the addon is unloading (see ~FcitxEngine).
-  static void flushKeyPresses(std::optional<msime::linux_host::KeyPressBatch> batch) {
+  static void flushKeyPresses(std::optional<lingyao::linux_host::KeyPressBatch> batch) {
     // Presses counted before statistics were turned off are dropped rather than sent; the store would not write them either.
     if (!batch || !fcitx_typing_statistics.enabled()) return;
     if (fcitx_key_presses_shutting_down) {
@@ -3340,12 +3340,12 @@ public:
   Json navigation_ = Json::object();
   std::string options_path_;
   // Per-key press counts for the key heatmap, written in batches; see KeyPressCounter.
-  msime::linux_host::KeyPressCounter key_presses_;
+  lingyao::linux_host::KeyPressCounter key_presses_;
   std::string dictionary_user_data_;
   std::string resources_;
   std::optional<std::string> scheme_override_;
   // The language dictionaries the runtime options named when this context last read them, which decide whether Cantonese, Zhuyin and Stroke can run (noteSchemeOptions).
-  msime::linux_host::LanguageDictionaryAvailability scheme_dictionaries_;
+  lingyao::linux_host::LanguageDictionaryAvailability scheme_dictionaries_;
   bool caps_lock_ = false;
   std::string mode_indicator_label_;
   std::optional<std::string> shuangpin_profile_override_;
@@ -3376,9 +3376,9 @@ public:
   uint64_t applied_preferences_revision_ = 0;
   bool paired_punctuation_ = true;
   // Closing marks this host inserted after the caret, innermost last; whether the last apply() completed a pair.
-  msime::linux_host::PairedPunctuationTracker paired_tracker_;
+  lingyao::linux_host::PairedPunctuationTracker paired_tracker_;
   // Quote and book-title state for Chinese marks committed in English mode under the Chinese punctuation lock or after Ctrl+.; reset on every mode switch.
-  msime::linux_host::EnglishPunctuationState english_punctuation_;
+  lingyao::linux_host::EnglishPunctuationState english_punctuation_;
   // Ctrl+. pressed in English mode under the "follow" lock: English mode types Chinese punctuation until the next Chinese/English switch, as Windows does with its punctuation compartment on and the IME closed. Session-only and kept apart from chinese_punctuation_, which a preference refresh re-derives from the saved preference.
   bool english_chinese_punctuation_ = false;
   bool pair_inserted_ = false;
@@ -3386,8 +3386,8 @@ public:
   std::vector<fcitx::KeySym> pending_caret_;
   std::unique_ptr<fcitx::EventSourceTime> caret_forward_event_;
   // Japanese converts with Space and commits with Enter; see ../src/core/JapaneseConversion.h.
-  msime::linux_host::JapaneseConversion japanese_conversion_;
-  msime::linux_host::BackspaceHoldPolicy backspace_hold_;
+  lingyao::linux_host::JapaneseConversion japanese_conversion_;
+  lingyao::linux_host::BackspaceHoldPolicy backspace_hold_;
   bool smart_punctuation_ = true;
   bool smart_punctuation_repeat_ = true;
   bool smart_punctuation_space_convert_ = false;
@@ -3446,18 +3446,18 @@ public:
   bool emoji_groups_loaded_ = false;
   size_t emoji_group_index_ = 0;
   // 已安装符号集插件的组（插件目录是 preferences_directory 下的 plugins），在切换目录、开始搜索和读取分组时重新读取，装卸插件后下次打开就能看到。
-  std::vector<msime::linux_host::PluginSymbolGroup> emoji_plugin_groups_;
+  std::vector<lingyao::linux_host::PluginSymbolGroup> emoji_plugin_groups_;
   bool emoji_plugins_stale_ = true;
   // 分组循环选中的插件组；选中内置分组或「全部」时为空。
-  std::optional<msime::linux_host::PluginGroupKey> emoji_plugin_group_;
-  msime::linux_host::EmojiPageCursor emoji_offset_;
-  msime::linux_host::EmojiPageCursor emoji_next_offset_;
+  std::optional<lingyao::linux_host::PluginGroupKey> emoji_plugin_group_;
+  lingyao::linux_host::EmojiPageCursor emoji_offset_;
+  lingyao::linux_host::EmojiPageCursor emoji_next_offset_;
   bool emoji_complete_ = false;
-  std::vector<msime::linux_host::EmojiPageCursor> emoji_previous_offsets_;
+  std::vector<lingyao::linux_host::EmojiPageCursor> emoji_previous_offsets_;
   std::string voice_socket_;
   std::string voice_language_ = "zh-cn";
   Json voice_options_ = Json::object();
-  // The HostOptions document of the current session, for msime_client_voice_hotwords.
+  // The HostOptions document of the current session, for lingyao_client_voice_hotwords.
   Json voice_host_options_;
   bool voice_enabled_ = true;
   bool voice_hotkey_ctrl_f9_ = true;
@@ -3499,8 +3499,8 @@ public:
   bool shift_in_combination_ = false;
   bool ctrl_in_combination_ = false;
   fcitx::EventLoop *loop_ = nullptr;
-#ifdef MSIME_FCITX5_MODE_BADGE
-  std::unique_ptr<msime::linux_host::ModeBadgeSurface> mode_badge_;
+#ifdef LINGYAO_FCITX5_MODE_BADGE
+  std::unique_ptr<lingyao::linux_host::ModeBadgeSurface> mode_badge_;
   bool mode_badge_unavailable_ = false;
   std::unique_ptr<fcitx::EventSourceTime> mode_badge_timer_;
 #endif
@@ -3518,8 +3518,8 @@ public:
   bool voice_cancelled_ = false;
   std::string voice_phase_ = "录音中";
   uint8_t voice_level_ = 0;
-  msime::linux_host::WaveOverlayModel wave_overlay_;
-  std::unique_ptr<msime::linux_host::WaveOverlaySurface> wave_overlay_surface_;
+  lingyao::linux_host::WaveOverlayModel wave_overlay_;
+  std::unique_ptr<lingyao::linux_host::WaveOverlaySurface> wave_overlay_surface_;
   bool wave_overlay_visible_ = false;
   bool wave_overlay_failed_ = false;
   bool system_dark_ = false;
@@ -3535,12 +3535,12 @@ public:
 // The row as the panel draws it.
 fcitx::Text candidateRowText(const Json &candidate, bool traditional, bool annotations,
                              const std::string &hanjaGloss) {
-  fcitx::Text row((traditional ? msime_linux_simplified_to_traditional(candidate.at("text").get<std::string>())
+  fcitx::Text row((traditional ? lingyao_linux_simplified_to_traditional(candidate.at("text").get<std::string>())
                                : candidate.at("text").get<std::string>()) +
       // Engine-corrected spellings carry the same light marker Windows and the IBus host draw. Only the displayed row gets it: selection goes by session/generation/index, and text_ below, which the candidate actions (dictionary removal) read, stays the Engine's text.
       (candidate.value("corrected", false) ? "*" : "") +
-      (msime::linux_host::strict_json_value(candidate, "source", uint64_t{}) == 2 ? "  ☁️" :
-       msime::linux_host::strict_json_value(candidate, "source", uint64_t{}) == 3 ? "  🤖" : "") +
+      (lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{}) == 2 ? "  ☁️" :
+       lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{}) == 3 ? "  🤖" : "") +
       (!hanjaGloss.empty() || !annotations || candidate.value("annotation", std::string()).empty() ? "" :
        "  " + candidate.at("annotation").get<std::string>()));
   // A Hanja row's 훈음 takes the translation's place after the candidate whatever the translation settings say, and the classic UI sets it in italics, so it reads as the row's secondary gloss rather than as part of the Hanja; a Fcitx5 panel has no second line for it. It is display text only, which DontCommit states as well: the row is chosen by index.
@@ -3557,12 +3557,12 @@ public:
   FcitxCandidate(fcitx::FactoryFor<FcitxState> *factory, const Json &candidate, bool traditional,
                  bool annotations, const std::string &hanjaGloss)
       : CandidateWord(candidateRowText(candidate, traditional, annotations, hanjaGloss)), factory_(factory),
-        session_(msime::linux_host::strict_json_required_integer<uint64_t>(candidate.at("id").at("session"))),
-        generation_(msime::linux_host::strict_json_required_integer<uint64_t>(candidate.at("id").at("generation"))),
-        index_(msime::linux_host::strict_json_required_integer<size_t>(candidate.at("id").at("index"))),
-        source_(msime::linux_host::strict_json_value(candidate, "source", uint64_t{})),
+        session_(lingyao::linux_host::strict_json_required_integer<uint64_t>(candidate.at("id").at("session"))),
+        generation_(lingyao::linux_host::strict_json_required_integer<uint64_t>(candidate.at("id").at("generation"))),
+        index_(lingyao::linux_host::strict_json_required_integer<size_t>(candidate.at("id").at("index"))),
+        source_(lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{})),
         text_(candidate.at("text").get<std::string>()),
-        fixed_position_(msime::linux_host::strict_json_value(candidate, "fixed_position", uint8_t{})) {}
+        fixed_position_(lingyao::linux_host::strict_json_value(candidate, "fixed_position", uint8_t{})) {}
   void select(fcitx::InputContext *ic) const override {
     try { ic->propertyFor(factory_)->select(session_, generation_, index_); } catch (...) {}
   }
@@ -3584,21 +3584,21 @@ private:
 // The runtime already pages candidates. Never page its current page a second time.
 class FcitxPage : public fcitx::CandidateList,
                   public fcitx::PageableCandidateList
-#ifdef MSIME_FCITX_ACTIONS
+#ifdef LINGYAO_FCITX_ACTIONS
                   , public fcitx::ActionableCandidateList
 #endif
 {
 public:
   FcitxPage(FcitxState &state, fcitx::FactoryFor<FcitxState> *factory) : state_(state),
       session_(state.session_),
-      generation_(msime::linux_host::strict_json_required_integer<uint64_t>(state.view_.at("generation"))),
-      page_(msime::linux_host::strict_json_required_integer<int>(state.view_.at("page"))),
-      pages_(msime::linux_host::strict_json_required_integer<int>(state.view_.at("page_count"))),
+      generation_(lingyao::linux_host::strict_json_required_integer<uint64_t>(state.view_.at("generation"))),
+      page_(lingyao::linux_host::strict_json_required_integer<int>(state.view_.at("page"))),
+      pages_(lingyao::linux_host::strict_json_required_integer<int>(state.view_.at("page_count"))),
       layout_(state.preferences_.value("candidate_layout", std::string("vertical")) == "horizontal"
           ? fcitx::CandidateLayoutHint::Horizontal : fcitx::CandidateLayoutHint::Vertical) {
     const bool annotations = state.showCandidateAnnotations();
     setPageable(this);
-#ifdef MSIME_FCITX_ACTIONS
+#ifdef LINGYAO_FCITX_ACTIONS
     setActionable(this);
 #endif
     const auto &candidates = state.view_.at("candidates");
@@ -3608,7 +3608,7 @@ public:
       if (candidate.value("highlighted", false)) cursor_ = words_.size();
       words_.push_back(std::make_unique<FcitxCandidate>(
           factory, candidate, state.traditionalApplies(), annotations,
-          msime::linux_host::korean_hanja_gloss(state.view_, candidate)));
+          lingyao::linux_host::korean_hanja_gloss(state.view_, candidate)));
       labels_.emplace_back(std::to_string(words_.size()) + ". ");
     }
   }
@@ -3622,17 +3622,17 @@ public:
   bool usedNextBefore() const override { return page_ > 0; }
   int totalPages() const override { return pages_; }
   int currentPage() const override { return page_; }
-  void prev() override { move(MSIME_PREVIOUS_PAGE); }
-  void next() override { move(MSIME_NEXT_PAGE); }
-#ifdef MSIME_FCITX_ACTIONS
+  void prev() override { move(LINGYAO_PREVIOUS_PAGE); }
+  void next() override { move(LINGYAO_NEXT_PAGE); }
+#ifdef LINGYAO_FCITX_ACTIONS
   bool hasAction(const fcitx::CandidateWord &candidate) const override {
     const auto *item = dynamic_cast<const FcitxCandidate *>(&candidate);
     if (state_.translationCandidatesActive() || !item) return false;
     if (!state_.ic_.hasFocus() || !state_.input_enabled_ || state_.restricted() ||
         state_.privateInput() || state_.session_ != item->session() ||
-        msime::linux_host::strict_json_value(state_.view_, "generation", uint64_t{}) != item->generation())
+        lingyao::linux_host::strict_json_value(state_.view_, "generation", uint64_t{}) != item->generation())
       return false;
-    return msime::linux_host::candidate_dictionary_actions_available(msime::linux_host::strict_json_value(state_.view_, "scheme", 0u), item->source());
+    return lingyao::linux_host::candidate_dictionary_actions_available(lingyao::linux_host::strict_json_value(state_.view_, "scheme", 0u), item->source());
   }
   std::vector<fcitx::CandidateAction>
   candidateActions(const fcitx::CandidateWord &candidate) const override {
@@ -3642,9 +3642,9 @@ public:
     if (!item) return actions;
     if (!state_.ic_.hasFocus() || !state_.input_enabled_ || state_.restricted() ||
         state_.privateInput() || state_.session_ != item->session() ||
-        msime::linux_host::strict_json_value(state_.view_, "generation", uint64_t{}) != item->generation()) return actions;
-    const auto scheme = msime::linux_host::strict_json_value(state_.view_, "scheme", 0u);
-    if (!msime::linux_host::candidate_dictionary_actions_available(scheme, item->source()))
+        lingyao::linux_host::strict_json_value(state_.view_, "generation", uint64_t{}) != item->generation()) return actions;
+    const auto scheme = lingyao::linux_host::strict_json_value(state_.view_, "scheme", 0u);
+    if (!lingyao::linux_host::candidate_dictionary_actions_available(scheme, item->source()))
       return actions;
     // One pin, one optional removal, five fixed positions, and one optional clear.
     actions.reserve(8);
@@ -3654,15 +3654,15 @@ public:
       action.setText(text);
       return action;
     };
-    actions.push_back(make(1, msime::linux_host::candidate_pin_label));
+    actions.push_back(make(1, lingyao::linux_host::candidate_pin_label));
     const auto source = item->source();
     const auto fixedPosition = item->fixedPosition();
-    if (msime::linux_host::candidate_dictionary_removal_available(
+    if (lingyao::linux_host::candidate_dictionary_removal_available(
             scheme, source,
             item->text()))
       actions.push_back(make(2, "删除候选"));
     for (int slot = 1; slot <= 5; ++slot)
-      actions.push_back(make(10 + slot, msime::linux_host::candidate_fix_label(slot).c_str()));
+      actions.push_back(make(10 + slot, lingyao::linux_host::candidate_fix_label(slot).c_str()));
     if (fixedPosition > 0) actions.push_back(make(20, "取消固定"));
     return actions;
   }
@@ -3679,13 +3679,13 @@ public:
         [action](const auto &available) { return available.id() == action; })) return;
     try {
       if (!state->ensure() || state->session_ != session ||
-          msime::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) != generation) return;
+          lingyao::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) != generation) return;
       char *raw = nullptr;
-      if (action == 1) raw = msime_client_pin_candidate(session, generation, index);
-      else if (action == 2) raw = msime_client_remove_candidate(session, generation, index);
+      if (action == 1) raw = lingyao_client_pin_candidate(session, generation, index);
+      else if (action == 2) raw = lingyao_client_remove_candidate(session, generation, index);
       else if (action >= 11 && action <= 15)
-        raw = msime_client_fix_candidate_position(session, generation, index, static_cast<uint8_t>(action - 10));
-      else if (action == 20) raw = msime_client_clear_candidate_position(session, generation, index);
+        raw = lingyao_client_fix_candidate_position(session, generation, index, static_cast<uint8_t>(action - 10));
+      else if (action == 20) raw = lingyao_client_clear_candidate_position(session, generation, index);
       if (raw) state->apply(raw);
     } catch (...) {}
   }
@@ -3699,7 +3699,7 @@ private:
       // Rendering replaces this list, but Fcitx may still dispatch an already
       // queued pageable callback after the replacement.
       if (state->session_ != session_ ||
-          msime::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) != generation_)
+          lingyao::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) != generation_)
         return;
       state->translationPage(command);
       return;
@@ -3708,7 +3708,7 @@ private:
     const auto generation = generation_;
     try {
       if (state->ensure() && state->session_ == session &&
-          msime::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) == generation)
+          lingyao::linux_host::strict_json_value(state->view_, "generation", uint64_t{}) == generation)
         state->command(command);
     } catch (...) {}
   }
@@ -3746,7 +3746,7 @@ public:
     try {
       if (!state->ensure()) return;
       if (!state->view_.value("editing_text", std::string{}).empty())
-        state->command(MSIME_COMMIT_RAW);
+        state->command(LINGYAO_COMMIT_RAW);
       if (mode_ == Mode::EnglishCandidates) state->toggleEnglish();
       else state->toggleWidth();
       update(ic);
@@ -3787,13 +3787,13 @@ public:
   std::string shortText(fcitx::InputContext *ic) const override {
     if (!ic) return "输入方案";
     const auto *state = ic->propertyFor(factory_);
-    const auto scheme = msime::linux_host::strict_json_value(state->view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u);
     switch (scheme) {
     case 1: return "输入方案：双拼";
     // 五笔标出当前码表版本（86 或 98），与设置页和托盘一致。
     case 2:
       return std::string("输入方案：") +
-             msime::linux_host::wubi_scheme_label(
+             lingyao::linux_host::wubi_scheme_label(
                  state->preferences_.value("wubi_profile", std::string("wubi86")));
     case 3: return "输入方案：日文";
     case 4: return "输入方案：韩文";
@@ -3832,7 +3832,7 @@ public:
   std::string shortText(fcitx::InputContext *ic) const override {
     // 五笔一项跟随存储的码表版本显示「86 五笔」或「98 五笔」。
     if (ic && std::string_view(FcitxState::kSchemes[index_]) == "wubi")
-      return msime::linux_host::wubi_scheme_label(
+      return lingyao::linux_host::wubi_scheme_label(
           ic->propertyFor(factory_)->preferences_.value("wubi_profile", std::string("wubi86")));
     return label_;
   }
@@ -3840,7 +3840,7 @@ public:
   bool isChecked(fcitx::InputContext *ic) const override {
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
-    return state->session_ && msime::linux_host::strict_json_value(state->view_, "scheme", 0u) == index_;
+    return state->session_ && lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u) == index_;
   }
   void activate(fcitx::InputContext *ic) override {
     if (!ic || !ic->hasFocus() || isChecked(ic)) return;
@@ -3867,7 +3867,7 @@ public:
     if (!ic) return "双拼方案";
     const auto *state = ic->propertyFor(factory_);
     const auto current = state->preferences_.value("shuangpin_profile", std::string("xiaohe"));
-    for (const auto &profile : msime::linux_host::kShuangpinProfileNames)
+    for (const auto &profile : lingyao::linux_host::kShuangpinProfileNames)
       if (current == profile.value) return std::string("双拼方案：") + profile.label;
     return "双拼方案";
   }
@@ -3897,7 +3897,7 @@ public:
   bool isChecked(fcitx::InputContext *ic) const override {
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
-    return state->session_ && msime::linux_host::strict_json_value(state->view_, "scheme", 0u) == 0 &&
+    return state->session_ && lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u) == 0 &&
            state->view_.value("nine_key", false);
   }
   void activate(fcitx::InputContext *ic) override {
@@ -3905,7 +3905,7 @@ public:
     auto *state = ic->propertyFor(factory_);
     if (!state->session_ || state->restricted() || state->privateInput()) return;
     try {
-      if (state->ensure() && msime::linux_host::strict_json_value(state->view_, "scheme", 0u) == 0) {
+      if (state->ensure() && lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u) == 0) {
         state->toggleNineKey();
         update(ic);
       }
@@ -3951,7 +3951,7 @@ public:
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
     if (!state->session_) return false;
-    const auto scheme = msime::linux_host::strict_json_value(state->view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u);
     if (scheme != 0 && scheme != 1) return false;
     const auto section = scheme == 1 ? "shuangpin_helpcode" : "quanpin_helpcode";
     return state->preferences_.value(section, Json::object()).value("enabled", true);
@@ -3983,7 +3983,7 @@ public:
   bool isChecked(fcitx::InputContext *ic) const override {
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
-    const auto scheme = msime::linux_host::strict_json_value(state->view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u);
     if (kind_ == Kind::ShuangpinPreedit && scheme != 1) return false;
     if (kind_ == Kind::WubiCodeHint && scheme != 2) return false;
     const auto key = kind_ == Kind::ShuangpinPreedit
@@ -3993,7 +3993,7 @@ public:
   void activate(fcitx::InputContext *ic) override {
     if (!ic || !ic->hasFocus()) return;
     auto *state = ic->propertyFor(factory_);
-    const auto scheme = msime::linux_host::strict_json_value(state->view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u);
     if ((kind_ == Kind::ShuangpinPreedit && scheme != 1) ||
         (kind_ == Kind::WubiCodeHint && scheme != 2) ||
         state->restricted() || state->privateInput()) return;
@@ -4017,11 +4017,11 @@ public:
   std::string shortText(fcitx::InputContext *ic) const override {
     if (!ic) return "辅助码方案";
     const auto *state = ic->propertyFor(factory_);
-    const auto scheme = msime::linux_host::strict_json_value(state->view_, "scheme", 0u);
+    const auto scheme = lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u);
     const auto section = scheme == 1 ? "shuangpin_helpcode" : "quanpin_helpcode";
     const auto value = state->preferences_.value(section, Json::object())
         .value("schema", scheme == 1 ? std::string("lantian") : std::string("ziranma"));
-    return std::string("辅助码：") + std::string(msime::linux_host::helpcode_schema_label(value));
+    return std::string("辅助码：") + std::string(lingyao::linux_host::helpcode_schema_label(value));
   }
   std::string icon(fcitx::InputContext *) const override { return "input-keyboard"; }
   void activate(fcitx::InputContext *ic) override {
@@ -4050,7 +4050,7 @@ public:
   bool isChecked(fcitx::InputContext *ic) const override {
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
-    if (!state->session_ || msime::linux_host::strict_json_value(state->view_, "scheme", 0u) != 0) return false;
+    if (!state->session_ || lingyao::linux_host::strict_json_value(state->view_, "scheme", 0u) != 0) return false;
     const auto key = mode_ == Mode::Transposition ? "autocorrect_transposition" : "autocorrect_neighbor";
     return state->preferences_.value("quanpin", Json::object()).value(key, true);
   }
@@ -4140,7 +4140,7 @@ public:
     if (!ic) return false;
     const auto *state = ic->propertyFor(factory_);
     return state->session_ && state->preferences_.value("local_modes", Json::object())
-        .value(key_, msime::linux_host::local_mode_enabled_by_default(key_));
+        .value(key_, lingyao::linux_host::local_mode_enabled_by_default(key_));
   }
   void activate(fcitx::InputContext *ic) override {
     if (!ic || !ic->hasFocus()) return;
@@ -4401,7 +4401,7 @@ public:
     if (!ic) return "主题";
     const auto *state = ic->propertyFor(factory_);
     const auto choices = state->themeChoices();
-    const auto *current = msime::linux_host::find_theme_choice(choices, state->currentThemeChoice());
+    const auto *current = lingyao::linux_host::find_theme_choice(choices, state->currentThemeChoice());
     return current ? "主题：" + current->title : "主题";
   }
   std::string icon(fcitx::InputContext *) const override { return "preferences-desktop-theme"; }
@@ -4418,7 +4418,7 @@ public:
   std::string shortText(fcitx::InputContext *ic) const override {
     if (ic) {
       const auto *state = ic->propertyFor(factory_);
-      if (msime::linux_host::strict_json_value(state->view_, "page_size", uint8_t{}) == size_)
+      if (lingyao::linux_host::strict_json_value(state->view_, "page_size", uint8_t{}) == size_)
         return std::to_string(size_) + " 个候选 ✓";
     }
     return std::to_string(size_) + " 个候选";
@@ -4743,7 +4743,7 @@ public:
   explicit FcitxReloadServiceAction(fcitx::FactoryFor<FcitxState> *factory)
       : factory_(factory) {
     setShortText("重载输入法服务");
-    setLongText("重置" MSIME_EDITION_DISPLAY_NAME "：关闭所有输入会话并重新读取运行配置");
+    setLongText("重置" LINGYAO_EDITION_DISPLAY_NAME "：关闭所有输入会话并重新读取运行配置");
   }
   void activate(fcitx::InputContext *ic) override {
     if (!ic || !ic->hasFocus()) return;
@@ -5210,20 +5210,20 @@ private:
   fcitx::FactoryFor<FcitxState> *factory_;
 };
 
-// classicui's options are shared by every input method, so before one changes, the value it replaces is recorded for msime-linux-setup --unregister to put back (see PanelRestoreRecord.h). A failed record does not hold the change back.
+// classicui's options are shared by every input method, so before one changes, the value it replaces is recorded for lingyao-linux-setup --unregister to put back (see PanelRestoreRecord.h). A failed record does not hold the change back.
 void record_classicui_takeover(const fcitx::RawConfig &current, const fcitx::RawConfig &written) {
-  const auto file = msime::linux_host::panel_restore_file(std::getenv("XDG_STATE_HOME"), std::getenv("HOME"));
+  const auto file = lingyao::linux_host::panel_restore_file(std::getenv("XDG_STATE_HOME"), std::getenv("HOME"));
   if (!file) return;
   for (const auto &key : written.subItems()) {
     const auto *value = written.valueByPath(key);
     if (!value) continue;
     const auto *prior = current.valueByPath(key);
     const auto replaced = prior ? Json(*prior) : Json(nullptr);
-    // MSIME only takes the theme over from Fcitx5's stock ones and uninstall removes its own, so a theme option already naming it is recorded as the stock theme it stands in for.
+    // LINGYAO only takes the theme over from Fcitx5's stock ones and uninstall removes its own, so a theme option already naming it is recorded as the stock theme it stands in for.
     auto restore = replaced;
-    if (prior && *prior == msime::linux_host::kFcitxCandidateTheme && (key == "Theme" || key == "DarkTheme"))
+    if (prior && *prior == lingyao::linux_host::kFcitxCandidateTheme && (key == "Theme" || key == "DarkTheme"))
       restore = key == "Theme" ? "default" : "default-dark";
-    msime::linux_host::record_panel_takeover(*file, "fcitx5", key, replaced, *value, restore);
+    lingyao::linux_host::record_panel_takeover(*file, "fcitx5", key, replaced, *value, restore);
   }
 }
 void set_classicui_config(fcitx::AddonInstance &classicui, const fcitx::RawConfig &config) {
@@ -5242,7 +5242,7 @@ public:
   // it in classicui.conf, where Fcitx5's configuration tool shows the same value. A front end
   // without the classic UI (kimpanel on Plasma draws with the desktop's font) is left alone.
   void applyCandidatePanelFont(const Json &preferences) {
-    const auto description = candidate_font_sync_.next(msime::linux_host::read_candidate_font(preferences));
+    const auto description = candidate_font_sync_.next(lingyao::linux_host::read_candidate_font(preferences));
     if (!description) return;
     auto *classicui = instance_->addonManager().addon("classicui", true);
     if (!classicui) return;
@@ -5250,9 +5250,9 @@ public:
     config.setValueByPath("Font", *description);
     set_classicui_config(*classicui, config);
   }
-  // The candidate colours reach the classic UI as a theme named "msime" in the user's Fcitx5 data directory (see candidates/CandidateFcitxTheme.h). The addon is pointed at it only while it shows one of Fcitx5's stock themes or MSIME's own; a theme the user chose is left in place and MSIME's colours simply don't apply. Setting the configuration also makes the addon read the theme file again, which is how a changed palette appears without a restart.
+  // The candidate colours reach the classic UI as a theme named "lingyao" in the user's Fcitx5 data directory (see candidates/CandidateFcitxTheme.h). The addon is pointed at it only while it shows one of Fcitx5's stock themes or LINGYAO's own; a theme the user chose is left in place and LINGYAO's colours simply don't apply. Setting the configuration also makes the addon read the theme file again, which is how a changed palette appears without a restart.
   void applyCandidatePanelTheme(const Json &preferences, bool system_dark, const Json &catalog) {
-    namespace host = msime::linux_host;
+    namespace host = lingyao::linux_host;
     const auto resolved = resolveCandidateTheme(preferences, system_dark, catalog);
     const auto &colors = resolved.colors;
     const auto decoration = host::candidate_skin_decoration(catalog, resolved.candidate_skin);
@@ -5261,7 +5261,7 @@ public:
     const bool user_radius = host::candidate_corner_radius_preference(preferences).has_value();
     // The decoration's stamp stands in for its image, so an unchanged skin costs a stat per refresh, not a copy.
     // Read once: the icon only changes with the package, and a reinstall restarts Fcitx5 with it.
-    static const auto logo = host::load_fcitx_theme_logo(MSIME_ICON_DIR);
+    static const auto logo = host::load_fcitx_theme_logo(LINGYAO_ICON_DIR);
     auto theme = host::fcitx_candidate_theme(colors, resolved.dark, std::nullopt, corner_radius, logo, user_radius) +
                  host::fcitx_overlay_stamp(decoration);
     if (theme == candidate_theme_applied_) return;
@@ -5276,7 +5276,7 @@ public:
     if (!file || !host::write_fcitx_candidate_theme(*file, colors, resolved.dark, decoration, corner_radius, logo, user_radius)) return;
     fcitx::RawConfig config;
     config.setValueByPath("Theme", std::string(host::kFcitxCandidateTheme));
-    // Fcitx5 releases with a separate dark-mode theme would otherwise switch to their stock dark theme; MSIME already resolves "follow" against the system appearance itself.
+    // Fcitx5 releases with a separate dark-mode theme would otherwise switch to their stock dark theme; LINGYAO already resolves "follow" against the system appearance itself.
     if (selected_dark && host::fcitx_theme_replaceable(*selected_dark))
       config.setValueByPath("DarkTheme", std::string(host::kFcitxCandidateTheme));
     set_classicui_config(*classicui, config);
@@ -5284,7 +5284,7 @@ public:
   }
   // Tell the settings page whether the classic UI draws the candidate font, colours and skin (see candidates/CandidatePanelStatus.h). Asked on every theme sync because the user can switch the UI or theme in fcitx5-configtool at any time; the file is rewritten only when the answer changes.
   void publishCandidatePanelStatus() {
-    namespace host = msime::linux_host;
+    namespace host = lingyao::linux_host;
     const auto file = host::candidate_panel_status_file(std::getenv("XDG_RUNTIME_DIR"));
     if (!file) return;
     bool replaceable = true;
@@ -5304,18 +5304,18 @@ public:
   static void refreshOptions() {
     try {
       const auto path = optionsPath();
-      if (path == MSIME_SYSTEM_OPTIONS) return;
-      if (msime::linux_host::refresh_runtime_options(path))
-        msime_linux_diagnostic_write("dictionary_generation_refreshed");
+      if (path == LINGYAO_SYSTEM_OPTIONS) return;
+      if (lingyao::linux_host::refresh_runtime_options(path))
+        lingyao_linux_diagnostic_write("dictionary_generation_refreshed");
     } catch (const OptionsNotConfigured &) {
       // Nothing to refresh before first-run setup; activation shows the setup hint.
-    } catch (const msime::linux_host::DictionaryOutdated &) {
+    } catch (const lingyao::linux_host::DictionaryOutdated &) {
       // Downloaded dictionaries an upgrade did not replace: the previous generation keeps working, and the guide script (throttled to once per login session) tells the user how to fetch the new ones.
-      msime_linux_diagnostic_write("operation_failed operation=dictionary_generation_refresh reason=dictionary_outdated");
-      const auto guide = std::string(MSIME_BINDIR "/") + std::string(msime::linux_host::kFirstRunGuideProgram);
+      lingyao_linux_diagnostic_write("operation_failed operation=dictionary_generation_refresh reason=dictionary_outdated");
+      const auto guide = std::string(LINGYAO_BINDIR "/") + std::string(lingyao::linux_host::kFirstRunGuideProgram);
       if (access(guide.c_str(), X_OK) == 0) fcitx::startProcess({guide, "--reason", "dictionary-outdated"});
     } catch (...) {
-      msime_linux_diagnostic_write("operation_failed operation=dictionary_generation_refresh");
+      lingyao_linux_diagnostic_write("operation_failed operation=dictionary_generation_refresh");
     }
   }
   // At startup, before any context has a session: the first commits should not wait for a preference tick to learn whether statistics are on.
@@ -5329,9 +5329,9 @@ public:
       // No options yet (first run) or a document being replaced; the preference ticks refresh the switch once a context has a session.
     }
   }
-  // Windows answers "restart the input method" by exiting its Server for the watchdog to start a fresh one. This addon shares the Fcitx5 process with every other input method, so the equivalent stays in process: end every MSIME composition and session the way focus-out does (close() also cancels a voice recording and fences in-flight online, AI and translation replies), bring the options up to date as startup does before the first session, and give the focused context a new session at once. Other contexts open theirs on their next key or activation. The input mode each context was in is kept.
+  // Windows answers "restart the input method" by exiting its Server for the watchdog to start a fresh one. This addon shares the Fcitx5 process with every other input method, so the equivalent stays in process: end every LINGYAO composition and session the way focus-out does (close() also cancels a voice recording and fences in-flight online, AI and translation replies), bring the options up to date as startup does before the first session, and give the focused context a new session at once. Other contexts open theirs on their next key or activation. The input mode each context was in is kept.
   void resetSessions() {
-    msime_linux_diagnostic_write("sessions_reset");
+    lingyao_linux_diagnostic_write("sessions_reset");
     std::vector<fcitx::InputContext *> focused;
     instance_->inputContextManager().foreach([this, &focused](fcitx::InputContext *ic) {
       auto *state = ic->propertyFor(&factory_);
@@ -5359,7 +5359,7 @@ public:
   void reloadConfig() override { resetSessions(); }
   void applyCandidateWheelPaging(const Json &preferences) {
     const auto enabled =
-        candidate_wheel_paging_sync_.next(msime::linux_host::read_candidate_wheel_paging(preferences));
+        candidate_wheel_paging_sync_.next(lingyao::linux_host::read_candidate_wheel_paging(preferences));
     if (!enabled) return;
     auto *classicui = instance_->addonManager().addon("classicui", true);
     if (!classicui) return;
@@ -5372,15 +5372,15 @@ public:
     fcitx_key_presses_shutting_down = false;
     refreshOptions();
     refreshTypingStatistics();
-    // 输入上下文属性名在整个 fcitx5 进程里唯一：两个版本的插件同时加载时，后注册的同名属性会失败、factory_ 拿不到槽位，第一次 propertyFor 就越界。名字随插件名，full 仍是 msimeState。
-    if (!instance->inputContextManager().registerProperty(MSIME_EDITION_FCITX5_ADDON "State", &factory_))
-      throw std::runtime_error("Fcitx5 input context property " MSIME_EDITION_FCITX5_ADDON "State is already registered");
-    english_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-english-candidates", &instance->userInterfaceManager());
-    input_mode_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-input-mode", &instance->userInterfaceManager());
-    scheme_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-scheme", &instance->userInterfaceManager());
-    shuangpin_profile_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-shuangpin-profile", &instance->userInterfaceManager());
-    width_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-fullwidth", &instance->userInterfaceManager());
-    nine_key_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-nine-key", &instance->userInterfaceManager());
+    // 输入上下文属性名在整个 fcitx5 进程里唯一：两个版本的插件同时加载时，后注册的同名属性会失败、factory_ 拿不到槽位，第一次 propertyFor 就越界。名字随插件名，full 仍是 lingyaoState。
+    if (!instance->inputContextManager().registerProperty(LINGYAO_EDITION_FCITX5_ADDON "State", &factory_))
+      throw std::runtime_error("Fcitx5 input context property " LINGYAO_EDITION_FCITX5_ADDON "State is already registered");
+    english_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-english-candidates", &instance->userInterfaceManager());
+    input_mode_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-input-mode", &instance->userInterfaceManager());
+    scheme_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-scheme", &instance->userInterfaceManager());
+    shuangpin_profile_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-shuangpin-profile", &instance->userInterfaceManager());
+    width_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-fullwidth", &instance->userInterfaceManager());
+    nine_key_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-nine-key", &instance->userInterfaceManager());
     nine_key_action_.setMenu(&nine_key_menu_);
     nine_key_menu_.addAction(&nine_key_spelling1_);
     nine_key_menu_.addAction(&nine_key_spelling2_);
@@ -5391,47 +5391,47 @@ public:
     nine_key_menu_.addAction(&nine_key_spelling7_);
     nine_key_menu_.addAction(&nine_key_spelling8_);
     nine_key_menu_.addAction(&nine_key_spelling9_);
-    helpcode_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-helpcode", &instance->userInterfaceManager());
-    mixed_english_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-mixed-english", &instance->userInterfaceManager());
-    mixed_emoji_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-mixed-emoji", &instance->userInterfaceManager());
-    mixed_kaomoji_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-mixed-kaomoji", &instance->userInterfaceManager());
-    local_unicode_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-unicode", &instance->userInterfaceManager());
-    local_date_time_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-date-time", &instance->userInterfaceManager());
-    local_quick_phrase_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-quick-phrase", &instance->userInterfaceManager());
-    local_emoji_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-emoji", &instance->userInterfaceManager());
-    local_kaomoji_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-kaomoji", &instance->userInterfaceManager());
-    local_super_jianpin_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-super-jianpin", &instance->userInterfaceManager());
-    local_temporary_english_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-temporary-english", &instance->userInterfaceManager());
-    local_temporary_japanese_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-temporary-japanese", &instance->userInterfaceManager());
-    local_expression_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-expression", &instance->userInterfaceManager());
-    local_command_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-command", &instance->userInterfaceManager());
-    local_mention_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-local-mention", &instance->userInterfaceManager());
-    english_gloss_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-english-gloss", &instance->userInterfaceManager());
-    word_character_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-word-character", &instance->userInterfaceManager());
-    number_row_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-number-row", &instance->userInterfaceManager());
-    shuangpin_preedit_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-shuangpin-preedit", &instance->userInterfaceManager());
-    wubi_code_hint_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-wubi-code-hint", &instance->userInterfaceManager());
-    helpcode_schema_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-helpcode-schema", &instance->userInterfaceManager());
-    maintenance_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-candidate-tools", &instance->userInterfaceManager());
-    clipboard_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-clipboard", &instance->userInterfaceManager());
-    clipboard_history_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-clipboard-history", &instance->userInterfaceManager());
-    cloud_clipboard_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-cloud-clipboard", &instance->userInterfaceManager());
-    emoji_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-emoji", &instance->userInterfaceManager());
-    emoji_search_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-emoji-search", &instance->userInterfaceManager());
-    emoji_category_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-emoji-category", &instance->userInterfaceManager());
-    emoji_group_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-emoji-group", &instance->userInterfaceManager());
-    voice_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-voice", &instance->userInterfaceManager());
-    voice_cancel_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-voice-cancel", &instance->userInterfaceManager());
-    desktop_tools_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-desktop-tools", &instance->userInterfaceManager());
-    toolbar_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-toolbar", &instance->userInterfaceManager());
-    traditional_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-traditional", &instance->userInterfaceManager());
-    chinese_punctuation_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-chinese-punctuation", &instance->userInterfaceManager());
-    paired_punctuation_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-paired-punctuation", &instance->userInterfaceManager());
-    smart_punctuation_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-smart-punctuation", &instance->userInterfaceManager());
-    smart_punctuation_repeat_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-smart-punctuation-repeat", &instance->userInterfaceManager());
-    candidate_layout_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-candidate-layout", &instance->userInterfaceManager());
-    candidate_theme_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-candidate-theme", &instance->userInterfaceManager());
-    global_theme_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-global-theme", &instance->userInterfaceManager());
+    helpcode_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-helpcode", &instance->userInterfaceManager());
+    mixed_english_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-mixed-english", &instance->userInterfaceManager());
+    mixed_emoji_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-mixed-emoji", &instance->userInterfaceManager());
+    mixed_kaomoji_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-mixed-kaomoji", &instance->userInterfaceManager());
+    local_unicode_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-unicode", &instance->userInterfaceManager());
+    local_date_time_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-date-time", &instance->userInterfaceManager());
+    local_quick_phrase_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-quick-phrase", &instance->userInterfaceManager());
+    local_emoji_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-emoji", &instance->userInterfaceManager());
+    local_kaomoji_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-kaomoji", &instance->userInterfaceManager());
+    local_super_jianpin_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-super-jianpin", &instance->userInterfaceManager());
+    local_temporary_english_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-temporary-english", &instance->userInterfaceManager());
+    local_temporary_japanese_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-temporary-japanese", &instance->userInterfaceManager());
+    local_expression_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-expression", &instance->userInterfaceManager());
+    local_command_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-command", &instance->userInterfaceManager());
+    local_mention_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-local-mention", &instance->userInterfaceManager());
+    english_gloss_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-english-gloss", &instance->userInterfaceManager());
+    word_character_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-word-character", &instance->userInterfaceManager());
+    number_row_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-number-row", &instance->userInterfaceManager());
+    shuangpin_preedit_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-shuangpin-preedit", &instance->userInterfaceManager());
+    wubi_code_hint_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-wubi-code-hint", &instance->userInterfaceManager());
+    helpcode_schema_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-helpcode-schema", &instance->userInterfaceManager());
+    maintenance_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-candidate-tools", &instance->userInterfaceManager());
+    clipboard_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-clipboard", &instance->userInterfaceManager());
+    clipboard_history_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-clipboard-history", &instance->userInterfaceManager());
+    cloud_clipboard_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-cloud-clipboard", &instance->userInterfaceManager());
+    emoji_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-emoji", &instance->userInterfaceManager());
+    emoji_search_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-emoji-search", &instance->userInterfaceManager());
+    emoji_category_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-emoji-category", &instance->userInterfaceManager());
+    emoji_group_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-emoji-group", &instance->userInterfaceManager());
+    voice_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-voice", &instance->userInterfaceManager());
+    voice_cancel_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-voice-cancel", &instance->userInterfaceManager());
+    desktop_tools_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-desktop-tools", &instance->userInterfaceManager());
+    toolbar_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-toolbar", &instance->userInterfaceManager());
+    traditional_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-traditional", &instance->userInterfaceManager());
+    chinese_punctuation_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-chinese-punctuation", &instance->userInterfaceManager());
+    paired_punctuation_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-paired-punctuation", &instance->userInterfaceManager());
+    smart_punctuation_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-smart-punctuation", &instance->userInterfaceManager());
+    smart_punctuation_repeat_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-smart-punctuation-repeat", &instance->userInterfaceManager());
+    candidate_layout_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-candidate-layout", &instance->userInterfaceManager());
+    candidate_theme_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-candidate-theme", &instance->userInterfaceManager());
+    global_theme_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-global-theme", &instance->userInterfaceManager());
     global_theme_action_.setMenu(&global_theme_menu_);
     if (const auto themes = themeCatalog().find("themes"); themes != themeCatalog().end() && themes->is_array())
       for (const auto &theme : *themes) {
@@ -5441,10 +5441,10 @@ public:
         global_theme_items_.push_back(
             std::make_unique<FcitxGlobalThemeItemAction>(&factory_, id, theme.at("title").get<std::string>()));
         // Registered so the D-Bus menus (StatusNotifierItem, kimpanel), which address items by their registered id, can trigger them too.
-        global_theme_items_.back()->registerAction(MSIME_EDITION_FCITX5_ADDON "-global-theme-" + id, &instance->userInterfaceManager());
+        global_theme_items_.back()->registerAction(LINGYAO_EDITION_FCITX5_ADDON "-global-theme-" + id, &instance->userInterfaceManager());
         global_theme_menu_.addAction(global_theme_items_.back().get());
       }
-    candidate_page_size_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-candidate-page-size", &instance->userInterfaceManager());
+    candidate_page_size_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-candidate-page-size", &instance->userInterfaceManager());
     candidate_page_size_action_.setMenu(&candidate_page_size_menu_);
     candidate_page_size_menu_.addAction(&candidate_page_size1_);
     candidate_page_size_menu_.addAction(&candidate_page_size2_);
@@ -5455,17 +5455,17 @@ public:
     candidate_page_size_menu_.addAction(&candidate_page_size7_);
     candidate_page_size_menu_.addAction(&candidate_page_size8_);
     candidate_page_size_menu_.addAction(&candidate_page_size9_);
-    learning_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-learning", &instance->userInterfaceManager());
-    frequency_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-frequency", &instance->userInterfaceManager());
-    frequency_trigger_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-frequency-trigger", &instance->userInterfaceManager());
-    frequency_step_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-frequency-step", &instance->userInterfaceManager());
-    mode_scope_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-mode-scope", &instance->userInterfaceManager());
-    candidate_translation_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-candidate-translations", &instance->userInterfaceManager());
-    sentence_translation_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-translate-sentence", &instance->userInterfaceManager());
-    punctuation_lock_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-punctuation-lock", &instance->userInterfaceManager());
-    translation_language_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-translation-language", &instance->userInterfaceManager());
-    cloud_candidates_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-cloud-candidates", &instance->userInterfaceManager());
-    ai_candidates_action_.registerAction(MSIME_EDITION_FCITX5_ADDON "-ai-candidates", &instance->userInterfaceManager());
+    learning_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-learning", &instance->userInterfaceManager());
+    frequency_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-frequency", &instance->userInterfaceManager());
+    frequency_trigger_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-frequency-trigger", &instance->userInterfaceManager());
+    frequency_step_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-frequency-step", &instance->userInterfaceManager());
+    mode_scope_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-mode-scope", &instance->userInterfaceManager());
+    candidate_translation_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-candidate-translations", &instance->userInterfaceManager());
+    sentence_translation_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-translate-sentence", &instance->userInterfaceManager());
+    punctuation_lock_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-punctuation-lock", &instance->userInterfaceManager());
+    translation_language_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-translation-language", &instance->userInterfaceManager());
+    cloud_candidates_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-cloud-candidates", &instance->userInterfaceManager());
+    ai_candidates_action_.registerAction(LINGYAO_EDITION_FCITX5_ADDON "-ai-candidates", &instance->userInterfaceManager());
     clipboard_action_.setMenu(&clipboard_menu_);
     clipboard_menu_.addAction(&clipboard_item1_);
     clipboard_menu_.addAction(&clipboard_item2_);
@@ -5486,8 +5486,8 @@ public:
     cloud_clipboard_menu_.addAction(&cloud_clipboard_item5_);
     toolbar_action_.setMenu(&toolbar_menu_);
     desktop_tools_action_.setMenu(&desktop_tools_menu_);
-    // 手写识别板只认汉字，不提供手写的版本（日文、越南文和藏文版，LinuxEdition.h 的 MSIME_EDITION_HANDWRITING 为 0）菜单里没有它。
-    if (MSIME_EDITION_HANDWRITING != 0) desktop_tools_menu_.addAction(&handwriting_action_);
+    // 手写识别板只认汉字，不提供手写的版本（日文、越南文和藏文版，LinuxEdition.h 的 LINGYAO_EDITION_HANDWRITING 为 0）菜单里没有它。
+    if (LINGYAO_EDITION_HANDWRITING != 0) desktop_tools_menu_.addAction(&handwriting_action_);
     desktop_tools_menu_.addAction(&keyboard_action_);
     desktop_tools_menu_.addAction(&desktop_emoji_action_);
     desktop_tools_menu_.addAction(&desktop_clipboard_action_);
@@ -5502,38 +5502,38 @@ public:
     desktop_tools_menu_.addAction(&preference_save_retry_action_);
     // The D-Bus menus (StatusNotifierItem, kimpanel) address entries by their registered name and skip an unregistered one, so every entry of the menus below is registered, separators included.
     for (auto [action, name] : std::initializer_list<std::pair<fcitx::Action *, const char *>>{
-             {&handwriting_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-handwriting"},
-             {&keyboard_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-keyboard"},
-             {&desktop_emoji_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-emoji"},
-             {&desktop_clipboard_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-clipboard"},
-             {&desktop_voice_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-voice"},
-             {&cloud_dictionary_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-cloud-dictionary"},
-             {&desktop_cloud_clipboard_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-cloud-clipboard"},
-             {&help_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-help"},
-             {&feedback_action_, MSIME_EDITION_FCITX5_ADDON "-desktop-feedback"},
-             {&reload_service_action_, MSIME_EDITION_FCITX5_ADDON "-reload-service"},
-             {&toolbar_enabled_action_, MSIME_EDITION_FCITX5_ADDON "-toolbar-enabled"},
-             {&voice_enabled_action_, MSIME_EDITION_FCITX5_ADDON "-voice-enabled"},
-             {&preference_save_retry_action_, MSIME_EDITION_FCITX5_ADDON "-preference-save-retry"},
-             {&dictionary_action_, MSIME_EDITION_FCITX5_ADDON "-dictionary"},
-             {&settings_action_, MSIME_EDITION_FCITX5_ADDON "-settings"},
-             {&about_action_, MSIME_EDITION_FCITX5_ADDON "-about"},
-             {&scheme_quanpin_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-quanpin"},
-             {&scheme_shuangpin_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-shuangpin"},
-             {&scheme_wubi_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-wubi"},
-             {&scheme_japanese_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-japanese"},
-             {&scheme_korean_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-korean"},
-             {&scheme_cantonese_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-cantonese"},
-             {&scheme_zhuyin_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-zhuyin"},
-             {&scheme_stroke_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-stroke"},
-             {&scheme_vietnamese_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-vietnamese"},
-             {&scheme_tibetan_action_, MSIME_EDITION_FCITX5_ADDON "-scheme-tibetan"},
-             {&input_group_action_, MSIME_EDITION_FCITX5_ADDON "-group-input"},
-             {&input_group_separator_, MSIME_EDITION_FCITX5_ADDON "-group-input-separator"},
-             {&punctuation_group_action_, MSIME_EDITION_FCITX5_ADDON "-group-punctuation"},
-             {&punctuation_group_separator_, MSIME_EDITION_FCITX5_ADDON "-group-punctuation-separator"},
-             {&candidate_group_action_, MSIME_EDITION_FCITX5_ADDON "-group-candidate"},
-             {&candidate_group_separator_, MSIME_EDITION_FCITX5_ADDON "-group-candidate-separator"}})
+             {&handwriting_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-handwriting"},
+             {&keyboard_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-keyboard"},
+             {&desktop_emoji_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-emoji"},
+             {&desktop_clipboard_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-clipboard"},
+             {&desktop_voice_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-voice"},
+             {&cloud_dictionary_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-cloud-dictionary"},
+             {&desktop_cloud_clipboard_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-cloud-clipboard"},
+             {&help_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-help"},
+             {&feedback_action_, LINGYAO_EDITION_FCITX5_ADDON "-desktop-feedback"},
+             {&reload_service_action_, LINGYAO_EDITION_FCITX5_ADDON "-reload-service"},
+             {&toolbar_enabled_action_, LINGYAO_EDITION_FCITX5_ADDON "-toolbar-enabled"},
+             {&voice_enabled_action_, LINGYAO_EDITION_FCITX5_ADDON "-voice-enabled"},
+             {&preference_save_retry_action_, LINGYAO_EDITION_FCITX5_ADDON "-preference-save-retry"},
+             {&dictionary_action_, LINGYAO_EDITION_FCITX5_ADDON "-dictionary"},
+             {&settings_action_, LINGYAO_EDITION_FCITX5_ADDON "-settings"},
+             {&about_action_, LINGYAO_EDITION_FCITX5_ADDON "-about"},
+             {&scheme_quanpin_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-quanpin"},
+             {&scheme_shuangpin_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-shuangpin"},
+             {&scheme_wubi_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-wubi"},
+             {&scheme_japanese_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-japanese"},
+             {&scheme_korean_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-korean"},
+             {&scheme_cantonese_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-cantonese"},
+             {&scheme_zhuyin_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-zhuyin"},
+             {&scheme_stroke_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-stroke"},
+             {&scheme_vietnamese_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-vietnamese"},
+             {&scheme_tibetan_action_, LINGYAO_EDITION_FCITX5_ADDON "-scheme-tibetan"},
+             {&input_group_action_, LINGYAO_EDITION_FCITX5_ADDON "-group-input"},
+             {&input_group_separator_, LINGYAO_EDITION_FCITX5_ADDON "-group-input-separator"},
+             {&punctuation_group_action_, LINGYAO_EDITION_FCITX5_ADDON "-group-punctuation"},
+             {&punctuation_group_separator_, LINGYAO_EDITION_FCITX5_ADDON "-group-punctuation-separator"},
+             {&candidate_group_action_, LINGYAO_EDITION_FCITX5_ADDON "-group-candidate"},
+             {&candidate_group_separator_, LINGYAO_EDITION_FCITX5_ADDON "-group-candidate-separator"}})
       action->registerAction(name, &instance->userInterfaceManager());
     // 输入方案 lists the schemes rather than stepping through them on each click. Cantonese, Zhuyin and Stroke join it once a context has read runtime options naming their dictionaries (rebuildSchemeMenu).
     scheme_action_.setMenu(&scheme_menu_);
@@ -5549,9 +5549,9 @@ public:
              &local_super_jianpin_action_, &local_temporary_english_action_, &local_temporary_japanese_action_,
              &local_expression_action_, &local_command_action_, &local_mention_action_}) {
       // 不带临时日文的版本（五笔版）不列这个本地模式：宿主库在这些版本里总是把它关掉，列出来也打不开。
-      if (!MSIME_EDITION_TEMPORARY_JAPANESE && action == &local_temporary_japanese_action_) continue;
+      if (!LINGYAO_EDITION_TEMPORARY_JAPANESE && action == &local_temporary_japanese_action_) continue;
       // 不带双拼的版本（五笔版）不列双拼键位方案。
-      if (action == &shuangpin_profile_action_ && !msime::linux_host::edition_offers_scheme("shuangpin")) continue;
+      if (action == &shuangpin_profile_action_ && !lingyao::linux_host::edition_offers_scheme("shuangpin")) continue;
       input_group_menu_.addAction(action);
     }
     punctuation_group_action_.setMenu(&punctuation_group_menu_);
@@ -5566,8 +5566,8 @@ public:
              &shuangpin_preedit_action_, &wubi_code_hint_action_, &candidate_group_separator_, &learning_action_,
              &frequency_action_, &frequency_trigger_action_, &frequency_step_action_}) {
       // 双拼原始预编辑只在双拼下生效、五笔剩余编码只在五笔下生效，本版本没有那个方案就不列。
-      if (action == &shuangpin_preedit_action_ && !msime::linux_host::edition_offers_scheme("shuangpin")) continue;
-      if (action == &wubi_code_hint_action_ && !msime::linux_host::edition_offers_scheme("wubi")) continue;
+      if (action == &shuangpin_preedit_action_ && !lingyao::linux_host::edition_offers_scheme("shuangpin")) continue;
+      if (action == &wubi_code_hint_action_ && !lingyao::linux_host::edition_offers_scheme("wubi")) continue;
       candidate_group_menu_.addAction(action);
     }
     emoji_action_.setMenu(&emoji_menu_);
@@ -5592,7 +5592,7 @@ public:
         fcitx::EventWatcherPhase::PreInputMethod, [this](fcitx::Event &event) {
           auto *ic = static_cast<fcitx::InputContextEvent &>(event).inputContext();
           auto *state = ic->propertyFor(&factory_);
-          // Never activate MSIME or clear another input method's panel here.
+          // Never activate LINGYAO or clear another input method's panel here.
           if (!state->session_) return;
           if (state->restricted() || state->private_ != state->privateInput()) {
             state->close();
@@ -5611,7 +5611,7 @@ public:
           // 离开客户端时上屏打开的韩文音节、注音转换、越南文单词或藏文音节串。失焦时 Fcitx5 会自己上屏客户端预编辑（或由客户端用 ClientUnfocusCommit 上屏），所以这里只上屏画在面板里的组字，即不支持预编辑的客户端的组字。
           if (state->commitsOnBlur() && !state->view_.value("editing_text", std::string{}).empty()) {
             if (!ic->capabilityFlags().test(fcitx::CapabilityFlag::Preedit)) {
-              try { state->apply(msime_client_focus(state->session_, false)); } catch (...) {}
+              try { state->apply(lingyao_client_focus(state->session_, false)); } catch (...) {}
             } else {
               // The composition reaches the document through the preedit rather than through commitText, so it is counted here as typed text.
               state->recordTypingStatistics(state->view_.value("preedit", std::string{}), state->typingSource());
@@ -5639,7 +5639,7 @@ public:
           timer->setOneShot();
           return true;
         });
-#ifdef MSIME_FCITX5_TELEMETRY
+#ifdef LINGYAO_FCITX5_TELEMETRY
     startTelemetry();
 #endif
   }
@@ -5653,11 +5653,11 @@ public:
     });
     fcitx_key_press_writes.wait_idle(std::chrono::seconds(2));
     if (system_theme_job_.valid()) system_theme_job_.wait_for(std::chrono::seconds(2));
-#ifdef MSIME_FCITX5_TELEMETRY
+#ifdef LINGYAO_FCITX5_TELEMETRY
     stopTelemetry();
 #endif
   }
-#ifdef MSIME_FCITX5_TELEMETRY
+#ifdef LINGYAO_FCITX5_TELEMETRY
   // Usage reporting (see platforms/common/Telemetry.h): one session per addon lifetime in this Fcitx5 process, in a directory of its own so it never shares a session marker with an IBus host of the same user. Crash capture only writes the record and then hands the signal to whatever handler Fcitx5 installed before. Nothing touches the network on the loop: the session starts and the queue is sent on a worker, again every 30 minutes, and the switch is read from the shared preferences on every round.
   void startTelemetry() {
     std::filesystem::path preferences;
@@ -5666,14 +5666,14 @@ public:
       if (!directory.empty() && directory.front() == '/') preferences = directory;
     } catch (...) {
     }
-    auto root = msime::telemetry::default_directory();
+    auto root = lingyao::telemetry::default_directory();
     if (root.empty()) return;
-    // 与 IBus 宿主相同，使用统计目录按版本分开（LinuxEdition.h）：full 仍是 $XDG_STATE_HOME/msime，其他版本是同级的 msime-<id>。
-    root = root.parent_path() / MSIME_EDITION_TELEMETRY_DIRECTORY;
-    msime::telemetry::install_crash_handlers();
-    telemetry_job_ = detachedJob([host = msime::telemetry::Host{"linux", MSIME_LINUX_VERSION, root / "fcitx5", std::nullopt, preferences}] {
-      msime::telemetry::begin(host);
-      msime::telemetry::flush();
+    // 与 IBus 宿主相同，使用统计目录按版本分开（LinuxEdition.h）：full 仍是 $XDG_STATE_HOME/lingyao，其他版本是同级的 lingyao-<id>。
+    root = root.parent_path() / LINGYAO_EDITION_TELEMETRY_DIRECTORY;
+    lingyao::telemetry::install_crash_handlers();
+    telemetry_job_ = detachedJob([host = lingyao::telemetry::Host{"linux", LINGYAO_LINUX_VERSION, root / "fcitx5", std::nullopt, preferences}] {
+      lingyao::telemetry::begin(host);
+      lingyao::telemetry::flush();
       return Json();
     });
     telemetry_timer_ = instance_->eventLoop().addTimeEvent(
@@ -5682,7 +5682,7 @@ public:
           // One round at a time; a slow endpoint just skips a turn.
           if (!telemetry_job_.valid() || telemetry_job_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
             telemetry_job_ = detachedJob([] {
-              msime::telemetry::flush();
+              lingyao::telemetry::flush();
               return Json();
             });
           timer->setNextInterval(kTelemetryIntervalUs);
@@ -5694,8 +5694,8 @@ public:
   void stopTelemetry() {
     telemetry_timer_.reset();
     if (telemetry_job_.valid()) telemetry_job_.wait_for(std::chrono::seconds(2));
-    msime::telemetry::end();
-    msime::telemetry::remove_crash_handlers();
+    lingyao::telemetry::end();
+    lingyao::telemetry::remove_crash_handlers();
   }
   static constexpr uint64_t kTelemetryIntervalUs = 30ull * 60 * 1000000;
   std::shared_future<Json> telemetry_job_;
@@ -5719,7 +5719,7 @@ public:
     if (dark.is_boolean()) applySystemTheme(dark.get<bool>());
     return kProbeIntervalUs;
   }
-  // Runs on the loop. Every context, whichever input method owns it, keeps the value so that it is current when MSIME activates there; each one redraws its voice overlay and candidate theme exactly as its own probe used to.
+  // Runs on the loop. Every context, whichever input method owns it, keeps the value so that it is current when LINGYAO activates there; each one redraws its voice overlay and candidate theme exactly as its own probe used to.
   void applySystemTheme(bool dark) {
     if (dark == system_dark_) return;
     system_dark_ = dark;
@@ -5731,20 +5731,20 @@ public:
   // The desktop panels type through the focused input context; see PanelInputChannel.h.
   void listenPanelInput() {
     if (panel_input_socket_.listening() ||
-        !panel_input_socket_.open(msime::linux_host::panel_input_socket_path()))
+        !panel_input_socket_.open(lingyao::linux_host::panel_input_socket_path()))
       return;
     panel_input_io_ = instance_->eventLoop().addIOEvent(
         panel_input_socket_.fd(), fcitx::IOEventFlag::In,
         [this](fcitx::EventSourceIO *, int, fcitx::IOEventFlags) {
           if (auto accepted = panel_input_socket_.accept_request()) {
-            if (auto request = msime::linux_host::parse_panel_input_request(accepted->second)) {
+            if (auto request = lingyao::linux_host::parse_panel_input_request(accepted->second)) {
               if (!panel_input_broker_.submit(accepted->first, std::move(*request),
-                                              msime::linux_host::panel_input_monotonic_us()))
-                msime::linux_host::PanelInputSocket::reply_and_close(
-                    accepted->first, msime::linux_host::panel_input_error_reply("no_focus"));
+                                              lingyao::linux_host::panel_input_monotonic_us()))
+                lingyao::linux_host::PanelInputSocket::reply_and_close(
+                    accepted->first, lingyao::linux_host::panel_input_error_reply("no_focus"));
             } else
-              msime::linux_host::PanelInputSocket::reply_and_close(
-                  accepted->first, msime::linux_host::panel_input_error_reply("invalid"));
+              lingyao::linux_host::PanelInputSocket::reply_and_close(
+                  accepted->first, lingyao::linux_host::panel_input_error_reply("invalid"));
             pumpPanelInput();
           }
           return true;
@@ -5752,13 +5752,13 @@ public:
   }
   void pumpPanelInput() {
     panel_input_broker_.pump(
-        msime::linux_host::panel_input_monotonic_us(),
+        lingyao::linux_host::panel_input_monotonic_us(),
         [this] {
           auto *ic = instance_->mostRecentInputContext();
-          return msime::linux_host::PanelInputFocus{ic && ic->hasFocus(), panel_input_generation_};
+          return lingyao::linux_host::PanelInputFocus{ic && ic->hasFocus(), panel_input_generation_};
         },
-        [this](const msime::linux_host::PanelInputRequest &request) { return deliverPanelInput(request); },
-        msime::linux_host::PanelInputSocket::reply_and_close);
+        [this](const lingyao::linux_host::PanelInputRequest &request) { return deliverPanelInput(request); },
+        lingyao::linux_host::PanelInputSocket::reply_and_close);
     if (panel_input_broker_.empty()) return;
     if (!panel_input_timer_) {
       panel_input_timer_ = instance_->eventLoop().addTimeEvent(
@@ -5776,15 +5776,15 @@ public:
       panel_input_timer_->setOneShot();
     }
   }
-  msime::linux_host::PanelInputDelivery deliverPanelInput(
-      const msime::linux_host::PanelInputRequest &request) {
-    using msime::linux_host::PanelInputDelivery;
+  lingyao::linux_host::PanelInputDelivery deliverPanelInput(
+      const lingyao::linux_host::PanelInputRequest &request) {
+    using lingyao::linux_host::PanelInputDelivery;
     auto *ic = instance_->mostRecentInputContext();
     if (!ic || !ic->hasFocus()) return PanelInputDelivery::NoFocus;
     if (ic->capabilityFlags().testAny(fcitx::CapabilityFlags{
             fcitx::CapabilityFlag::Password, fcitx::CapabilityFlag::Disable}))
       return PanelInputDelivery::Restricted;
-    if (request.kind == msime::linux_host::PanelInputRequest::Kind::Text) {
+    if (request.kind == lingyao::linux_host::PanelInputRequest::Kind::Text) {
       ic->commitString(request.text);
       return PanelInputDelivery::Delivered;
     }
@@ -5807,7 +5807,7 @@ public:
     // Fcitx5 key codes are X keycodes, the evdev code plus eight.
     const fcitx::Key key(sym, states, request.keycode ? static_cast<int>(request.keycode) + 8 : 0);
     // Through the context's input method first, the way SendInput passes through the IME on Windows: letters compose, and digits, Space and BackSpace act on an open composition.
-    msime::linux_host::deliver_panel_key_stroke(
+    lingyao::linux_host::deliver_panel_key_stroke(
         [&](bool release) {
           fcitx::KeyEvent event(ic, key, release);
           return ic->keyEvent(event);
@@ -5855,7 +5855,7 @@ public:
     // 切换到别的输入法时，把打开的韩文音节、注音转换、越南文单词或藏文音节串作为文字结束，因为它已经是用户写下的内容。失焦不需要在这里处理：那时 Fcitx5 会自己上屏客户端预编辑（见 focus_watch_）。
     if (event.type() == fcitx::EventType::InputContextSwitchInputMethod && state->session_ &&
         state->commitsOnBlur() && !state->view_.value("editing_text", std::string{}).empty()) {
-      try { state->command(MSIME_FINISH_COMPOSITION); } catch (...) {}
+      try { state->command(LINGYAO_FINISH_COMPOSITION); } catch (...) {}
     }
     // Everything activate() or a later voice or toolbar refresh may have added.
     for (auto *action : std::initializer_list<fcitx::Action *>{
@@ -5880,7 +5880,7 @@ public:
         state->session_ && state->commitsOnBlur() && !state->view_.value("editing_text", std::string{}).empty() &&
         !event.inputContext()->capabilityFlags().test(fcitx::CapabilityFlag::Preedit);
     try {
-      if (state->session_) state->command(koreanPanelSyllable ? MSIME_FINISH_COMPOSITION : MSIME_CANCEL);
+      if (state->session_) state->command(koreanPanelSyllable ? LINGYAO_FINISH_COMPOSITION : LINGYAO_CANCEL);
     } catch (...) { state->close(); }
     state->clearPanel();
   }
@@ -5904,29 +5904,29 @@ public:
   static void unavailable(FcitxState &state) {
     // The label names the host operation only; the error itself can carry input
     // or paths and is never written.
-    msime_linux_diagnostic_write("operation_failed operation=fcitx_event");
+    lingyao_linux_diagnostic_write("operation_failed operation=fcitx_event");
     state.close(); state.clearPanel();
-    state.ic_.inputPanel().setAuxUp(fcitx::Text("MSIME：请检查运行配置"));
+    state.ic_.inputPanel().setAuxUp(fcitx::Text("LINGYAO：请检查运行配置"));
     state.ic_.updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   }
   // dpkg renames a new build over this addon's shared object on upgrade and deletes it on removal, and fcitx5 keeps running the one it loaded until it restarts. The addon cannot restart itself the way the IBus host does without taking every other input method down with the process, and the reload behind the settings page's restart button loads no new code, so the first activation that finds the addon replaced or removed tells the user how to finish, once for each change of state, so a reinstall after a removal is announced as an upgrade; the next composition's render replaces the message. It takes precedence over the configuration hints, which a removed or half-upgraded installation would otherwise show.
   static void noticeReplacedAddon(FcitxState &state) {
-    using msime::linux_host::ProgramFileState;
+    using lingyao::linux_host::ProgramFileState;
     static ProgramFileState shown = ProgramFileState::Current;
-    const auto current = msime::linux_host::mapped_file_state(reinterpret_cast<const void *>(&noticeReplacedAddon));
+    const auto current = lingyao::linux_host::mapped_file_state(reinterpret_cast<const void *>(&noticeReplacedAddon));
     if (current == ProgramFileState::Current || current == shown) return;
     shown = current;
-    msime_linux_diagnostic_write(current == ProgramFileState::Replaced ? "addon_replaced_notice" : "addon_removed_notice");
-    const auto restart = msime::linux_host::fcitx5_restart_command();
+    lingyao_linux_diagnostic_write(current == ProgramFileState::Replaced ? "addon_replaced_notice" : "addon_removed_notice");
+    const auto restart = lingyao::linux_host::fcitx5_restart_command();
     state.ic_.inputPanel().setAuxUp(fcitx::Text(current == ProgramFileState::Replaced
-        ? MSIME_EDITION_DISPLAY_NAME "已升级：执行 " + restart + " 或注销后重新登录即可使用新版本"
-        : MSIME_EDITION_DISPLAY_NAME "已卸载：执行 " + restart + " 或注销后重新登录即可完成卸载"));
+        ? LINGYAO_EDITION_DISPLAY_NAME "已升级：执行 " + restart + " 或注销后重新登录即可使用新版本"
+        : LINGYAO_EDITION_DISPLAY_NAME "已卸载：执行 " + restart + " 或注销后重新登录即可完成卸载"));
     state.ic_.updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   }
   // Keys still reach the application: the addon never filters an event it could not route, so the user can keep typing while the hint is up. Only activation may open the settings window; a key never does, because a window that appears mid-typing can take the keyboard focus and swallow what follows.
   static void notConfigured(FcitxState &state, bool guide) {
     state.close(); state.clearPanel();
-    state.ic_.inputPanel().setAuxUp(fcitx::Text(std::string(msime::linux_host::kFirstRunHint)));
+    state.ic_.inputPanel().setAuxUp(fcitx::Text(std::string(lingyao::linux_host::kFirstRunHint)));
     state.ic_.updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
     if (guide) launchFirstRunGuide();
   }
@@ -5936,14 +5936,14 @@ public:
     const auto now = std::chrono::steady_clock::now();
     if (last_launch && now - *last_launch < std::chrono::seconds(30)) return;
     last_launch = now;
-    const auto guide = std::string(MSIME_BINDIR "/") + std::string(msime::linux_host::kFirstRunGuideProgram);
+    const auto guide = std::string(LINGYAO_BINDIR "/") + std::string(lingyao::linux_host::kFirstRunGuideProgram);
     if (access(guide.c_str(), X_OK) != 0) return;
     fcitx::startProcess({guide, "--host", "fcitx5"});
   }
   fcitx::Instance *instance_;
-  msime::linux_host::CandidateFontSync candidate_font_sync_;
+  lingyao::linux_host::CandidateFontSync candidate_font_sync_;
   std::string candidate_theme_applied_;
-  msime::linux_host::CandidateWheelPagingSync candidate_wheel_paging_sync_;
+  lingyao::linux_host::CandidateWheelPagingSync candidate_wheel_paging_sync_;
   // Last appearance the addon-wide probe reported; see stepSystemTheme.
   bool system_dark_ = false;
   std::shared_future<Json> system_theme_job_;
@@ -5954,8 +5954,8 @@ public:
   std::unique_ptr<fcitx::HandlerTableEntry<fcitx::EventHandler>> capability_watch_;
   std::unique_ptr<fcitx::HandlerTableEntry<fcitx::EventHandler>> focus_watch_;
   // Declared in this order so the event sources go before the socket and the connections they serve.
-  msime::linux_host::PanelInputSocket panel_input_socket_;
-  msime::linux_host::PanelInputBroker panel_input_broker_;
+  lingyao::linux_host::PanelInputSocket panel_input_socket_;
+  lingyao::linux_host::PanelInputBroker panel_input_broker_;
   uint64_t panel_input_generation_ = 0;
   std::unique_ptr<fcitx::HandlerTableEntry<fcitx::EventHandler>> panel_focus_watch_;
   std::unique_ptr<fcitx::EventSourceIO> panel_input_io_;
@@ -6081,13 +6081,13 @@ public:
   FcitxCloudClipboardItemAction cloud_clipboard_item3_{&factory_, 2};
   FcitxCloudClipboardItemAction cloud_clipboard_item4_{&factory_, 3};
   FcitxCloudClipboardItemAction cloud_clipboard_item5_{&factory_, 4};
-  FcitxMaintenanceAction pin_action_{&factory_, 1, msime::linux_host::candidate_pin_label};
+  FcitxMaintenanceAction pin_action_{&factory_, 1, lingyao::linux_host::candidate_pin_label};
   FcitxMaintenanceAction remove_action_{&factory_, 2, "删除候选"};
-  FcitxMaintenanceAction fix1_action_{&factory_, 11, msime::linux_host::candidate_fix_label(1).c_str()};
-  FcitxMaintenanceAction fix2_action_{&factory_, 12, msime::linux_host::candidate_fix_label(2).c_str()};
-  FcitxMaintenanceAction fix3_action_{&factory_, 13, msime::linux_host::candidate_fix_label(3).c_str()};
-  FcitxMaintenanceAction fix4_action_{&factory_, 14, msime::linux_host::candidate_fix_label(4).c_str()};
-  FcitxMaintenanceAction fix5_action_{&factory_, 15, msime::linux_host::candidate_fix_label(5).c_str()};
+  FcitxMaintenanceAction fix1_action_{&factory_, 11, lingyao::linux_host::candidate_fix_label(1).c_str()};
+  FcitxMaintenanceAction fix2_action_{&factory_, 12, lingyao::linux_host::candidate_fix_label(2).c_str()};
+  FcitxMaintenanceAction fix3_action_{&factory_, 13, lingyao::linux_host::candidate_fix_label(3).c_str()};
+  FcitxMaintenanceAction fix4_action_{&factory_, 14, lingyao::linux_host::candidate_fix_label(4).c_str()};
+  FcitxMaintenanceAction fix5_action_{&factory_, 15, lingyao::linux_host::candidate_fix_label(5).c_str()};
   FcitxMaintenanceAction clear_action_{&factory_, 20, "取消固定"};
   fcitx::Menu desktop_tools_menu_;
   FcitxDesktopPanelAction handwriting_action_{&factory_, "handwriting", "手写识别板"};
@@ -6105,7 +6105,7 @@ public:
   std::vector<fcitx::Action *> toolbar_entries_;
   bool toolbarEnabled(fcitx::InputContext *ic);
   void rebuildToolbarMenu(fcitx::InputContext *ic);
-  FcitxDesktopPanelAction about_action_{&factory_, "about", "关于" MSIME_EDITION_DISPLAY_NAME};
+  FcitxDesktopPanelAction about_action_{&factory_, "about", "关于" LINGYAO_EDITION_DISPLAY_NAME};
   FcitxDesktopPanelAction help_action_{&factory_, "help", "帮助"};
   FcitxDesktopPanelAction feedback_action_{&factory_, "feedback", "反馈"};
   FcitxToolbarEnabledAction toolbar_enabled_action_{&factory_};
@@ -6179,25 +6179,25 @@ void FcitxState::refreshToolbar() {
 
 // The aux line below a candidate page: the page number, the local mode, the reading when the candidate preedit shows it, and the typing combo while there is one.
 std::string FcitxState::candidateAux() const {
-  const auto page = msime::linux_host::strict_json_required_integer<int>(view_.at("page"));
+  const auto page = lingyao::linux_host::strict_json_required_integer<int>(view_.at("page"));
   const auto page_count =
-      msime::linux_host::strict_json_required_integer<int>(view_.at("page_count"));
+      lingyao::linux_host::strict_json_required_integer<int>(view_.at("page_count"));
   std::string aux = std::to_string(page + 1) + "/" + std::to_string(page_count);
   if (!preferences_.value("show_candidate_page_number", true)) aux.clear();
   const auto mode = view_.value("local_mode", std::string("none"));
-  if (const char *modeLabel = msime::linux_host::candidate_local_mode_label(mode))
+  if (const char *modeLabel = lingyao::linux_host::candidate_local_mode_label(mode))
     aux += (aux.empty() ? "" : " · ") + std::string(modeLabel);
   if (preferences_.value("candidate_preedit_style", std::string("pinyin")) == "pinyin") {
     const auto candidatePreedit = view_.value("preedit", std::string{});
     if (!candidatePreedit.empty()) {
       const auto editing = view_.value("editing_text", std::string());
-      const auto caret = std::min(editing.size(), msime::linux_host::strict_json_value(view_, "caret_position", editing.size()));
-      const auto displayed = msime::linux_host::candidate_preedit_with_caret(
+      const auto caret = std::min(editing.size(), lingyao::linux_host::strict_json_value(view_, "caret_position", editing.size()));
+      const auto displayed = lingyao::linux_host::candidate_preedit_with_caret(
           candidatePreedit, editing, caret);
       if (!displayed.empty()) aux += (aux.empty() ? "" : " · ") + displayed;
     }
   }
-  const auto combo = msime::linux_host::typing_combo_label(typing_combo_);
+  const auto combo = lingyao::linux_host::typing_combo_label(typing_combo_);
   if (!combo.empty()) aux += (aux.empty() ? "" : " · ") + combo;
   return aux;
 }
@@ -6212,7 +6212,7 @@ void FcitxState::render() {
   const auto editing = view_.value("editing_text", std::string());
   const auto style = preferences_.value("tsf_preedit_style", std::string("raw"));
   const int inlineScheme = typingScheme();
-  const bool alwaysInline = inlineScheme >= 0 && msime::linux_host::scheme::AlwaysInlinePreedit(inlineScheme);
+  const bool alwaysInline = inlineScheme >= 0 && lingyao::linux_host::scheme::AlwaysInlinePreedit(inlineScheme);
   if (!voice_preedit_.empty()) {
     fcitx::Text preedit(voice_preedit_, fcitx::TextFormatFlag::Underline);
     preedit.setCursor(static_cast<int>(voice_preedit_.size()));
@@ -6226,15 +6226,15 @@ void FcitxState::render() {
     // A Japanese composition is かな, not the letters that produced it; see
     // ../src/core/PhrasePreedit.h for the one case that keeps the letters.
     const auto kana = view_.value("reading", std::string{});
-    if (msime::linux_host::composition_shows_reading(
-            kana, msime::linux_host::strict_json_value(view_, "caret_position", size_t{}), editing.size()))
+    if (lingyao::linux_host::composition_shows_reading(
+            kana, lingyao::linux_host::strict_json_value(view_, "caret_position", size_t{}), editing.size()))
       reading = kana;
     // The piece already picked for the phrase leads the reading, the way the reference draws
     // `word_for_creating_word`. fcitx5 takes the cursor as a byte offset into the string it is
     // given, which is why the offset comes from the same place the text does.
-    const auto composed = msime::linux_host::compose_phrase_preedit(
+    const auto composed = lingyao::linux_host::compose_phrase_preedit(
         view_.value("phrase_prefix", std::string{}), reading,
-        msime::linux_host::strict_json_value(view_, "caret_position", size_t{}));
+        lingyao::linux_host::strict_json_value(view_, "caret_position", size_t{}));
     fcitx::Text preedit(composed.text, fcitx::TextFormatFlag::Underline);
     if (reading == editing)
       preedit.setCursor(static_cast<int>(composed.caret_bytes));
@@ -6264,53 +6264,53 @@ void FcitxState::maintenance(int operation) {
     if (!candidate.value("highlighted", false)) continue;
     const auto &id = candidate.at("id");
     const auto generation =
-        msime::linux_host::strict_json_required_integer<uint64_t>(id.at("generation"));
-    const auto index = msime::linux_host::strict_json_required_integer<size_t>(id.at("index"));
+        lingyao::linux_host::strict_json_required_integer<uint64_t>(id.at("generation"));
+    const auto index = lingyao::linux_host::strict_json_required_integer<size_t>(id.at("index"));
     char *raw = nullptr;
-    if (operation == 1) raw = msime_client_pin_candidate(session_, generation, index);
-    else if (operation == 2 && msime::linux_host::candidate_dictionary_removal_available(
-                 msime::linux_host::strict_json_value(view_, "scheme", 0u), msime::linux_host::strict_json_value(candidate, "source", uint64_t{}),
+    if (operation == 1) raw = lingyao_client_pin_candidate(session_, generation, index);
+    else if (operation == 2 && lingyao::linux_host::candidate_dictionary_removal_available(
+                 lingyao::linux_host::strict_json_value(view_, "scheme", 0u), lingyao::linux_host::strict_json_value(candidate, "source", uint64_t{}),
                  candidate.value("text", std::string{})))
-      raw = msime_client_remove_candidate(session_, generation, index);
+      raw = lingyao_client_remove_candidate(session_, generation, index);
     else if (operation >= 11 && operation <= 15)
-      raw = msime_client_fix_candidate_position(session_, generation, index,
+      raw = lingyao_client_fix_candidate_position(session_, generation, index,
                                                  static_cast<uint8_t>(operation - 10));
     else if (operation == 20)
-      raw = msime_client_clear_candidate_position(session_, generation, index);
+      raw = lingyao_client_clear_candidate_position(session_, generation, index);
     if (raw) apply(raw);
     return;
   }
 }
 
 // The badge's theme, by the macOS badge's rule: its mode is toolbar_theme when that names one, otherwise the global mode, whose "system" (跟随系统) default follows the desktop. A global theme with a fixed appearance (灵耀 is dark, 纸白 light) decides it either way, and the colours are that theme's palette as the floating toolbar takes it.
-msime::linux_host::CandidateTheme fcitx_mode_badge_theme(const Json &preferences, bool system_dark, const Json &catalog) {
-  const bool dark = msime::linux_host::surface_dark_theme(preferences, "toolbar_theme", system_dark);
+lingyao::linux_host::CandidateTheme fcitx_mode_badge_theme(const Json &preferences, bool system_dark, const Json &catalog) {
+  const bool dark = lingyao::linux_host::surface_dark_theme(preferences, "toolbar_theme", system_dark);
   return resolveThemeInMode(preferences, dark, catalog);
 }
 
 void FcitxState::showInputModeHud() {
-#ifdef MSIME_FCITX5_CUSTOM_IM_INFORMATION
+#ifdef LINGYAO_FCITX5_CUSTOM_IM_INFORMATION
   // 共享偏好 input_mode_hud 控制，默认开启。不自己画窗口——Fcitx5 的面板本来就提供这个
   // 弹出物，而且它明说是给「输入法内部开关」用的：由面板负责定位、不抢焦点、到时自动
   // 消失，正是这个提示需要的三件事。
   if (!preferences_.value("input_mode_hud", true)) return;
   if (restricted() || privateInput() || !ic_.hasFocus()) return;
   const std::string label = input_enabled_ ? "中" : "英";
-#ifdef MSIME_FCITX5_MODE_BADGE
+#ifdef LINGYAO_FCITX5_MODE_BADGE
   // 自绘徽章带产品 logo，面板那个提示只能显示文字。连不上合成器或没有 layer-shell 时
   // 记下来不再重试，回退到文字提示——提示少一张图，好过没有提示。
   if (!mode_badge_ && !mode_badge_unavailable_) {
-    mode_badge_ = msime::linux_host::ModeBadgeSurface::create();
+    mode_badge_ = lingyao::linux_host::ModeBadgeSurface::create();
     mode_badge_unavailable_ = !mode_badge_;
   }
   // 两个提示各补一半：面板那个由合成器按光标矩形定位，跟着输入点走，但只能显示文字；
   // 自绘徽章带得了 logo，却只能用屏幕坐标固定在一个角上。两者同时发是所有者的选择。
   // Sized by the shared floating toolbar preferences and coloured by the resolved theme, both read at every switch so a settings change shows at the next one.
-  const msime::linux_host::ModeBadgeStyle style{
-      msime::linux_host::mode_badge_metrics(preferences_),
-      msime::linux_host::floating_surface_colors(
+  const lingyao::linux_host::ModeBadgeStyle style{
+      lingyao::linux_host::mode_badge_metrics(preferences_),
+      lingyao::linux_host::floating_surface_colors(
           fcitx_mode_badge_theme(preferences_, system_dark_, candidate_skin_document_))};
-  if (mode_badge_ && mode_badge_->show(label, MSIME_MODE_BADGE_ICON, style)) scheduleModeBadgeHide();
+  if (mode_badge_ && mode_badge_->show(label, LINGYAO_MODE_BADGE_ICON, style)) scheduleModeBadgeHide();
 #endif
   if (auto *instance = engine_->instance())
     instance->showCustomInputMethodInformation(&ic_, label);
@@ -6318,7 +6318,7 @@ void FcitxState::showInputModeHud() {
 }
 
 std::optional<bool> FcitxState::caretShiftHeld() const {
-#ifdef MSIME_FCITX5_XKB_STATE_MASK
+#ifdef LINGYAO_FCITX5_XKB_STATE_MASK
   if (const auto mask = engine_->instance()->xkbStateMask(ic_.display())) {
     const auto [depressed, latched, locked] = *mask;
     // XKB 核心修饰位的 Shift 与 Fcitx 的 ShiftMask 均为最低位；锁定及粘滞 Shift 也须等待。
@@ -6547,7 +6547,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
   }
   if (event.isRelease() || key.isModifier()) return false;
   // A held phrase piece with no reading left is still a composition (core/PhrasePreedit.h): Enter commits it, Escape discards it and Ctrl+Backspace deletes it.
-  const bool composing = msime::linux_host::view_has_composition(
+  const bool composing = lingyao::linux_host::view_has_composition(
       view_.value("editing_text", std::string()), false,
       view_.value("phrase_prefix", std::string()));
   const bool ctrl = states.test(fcitx::KeyState::Ctrl);
@@ -6598,13 +6598,13 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
   if (sym == FcitxKey_space && ctrl && !shift &&
       (alt ? mode_ctrl_alt_space_enabled_ : true)) {
     if (!alt && !mode_ctrl_space_enabled_) return false;
-    if (composing) command(MSIME_COMMIT_RAW);
+    if (composing) command(LINGYAO_COMMIT_RAW);
     if (!toggleInputMode()) return false;
     toggle_chord_held_ = sym;
     return true;
   }
   if (sym == FcitxKey_space && ctrl && shift && !alt) {
-    if (composing) command(MSIME_COMMIT_RAW);
+    if (composing) command(LINGYAO_COMMIT_RAW);
     if (!toggleWidth()) return false;
     toggle_chord_held_ = sym;
     return true;
@@ -6627,12 +6627,12 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
         !ic_.hasFocus() || restricted())
       return false;
     const bool keypad = sym >= FcitxKey_KP_Space && sym <= FcitxKey_KP_9;
-    const auto text = msime::linux_host::english_mode_output(
+    const auto text = lingyao::linux_host::english_mode_output(
         static_cast<char32_t>(fcitx::Key::keySymToUnicode(sym)), keypad,
         punctuation_lock_ == 1 || (punctuation_lock_ == 0 && english_chinese_punctuation_),
         fullwidthOutput(), english_punctuation_);
     if (text.empty()) return false;
-    commitText(text, msime::linux_host::TypingSource::English);
+    commitText(text, lingyao::linux_host::TypingSource::English);
     return true;
   }
   if (character_set_shortcut_enabled_ && ctrl && shift && !alt &&
@@ -6643,7 +6643,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
     return true;
   }
   if (ctrl && shift && !alt && (sym == FcitxKey_e || sym == FcitxKey_E)) {
-    if (composing) command(MSIME_COMMIT_RAW);
+    if (composing) command(LINGYAO_COMMIT_RAW);
     return toggleEnglish();
   }
   // Ctrl+. switches Chinese and English punctuation, as it does on Windows and in the IBus engine. The composition is left alone: only punctuation typed from here on changes.
@@ -6674,7 +6674,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
       if (!emoji_items_.empty()) {
         const auto &item = emoji_items_.front();
         const auto text = item.is_string() ? item.get<std::string>() : item.value("text", std::string{});
-        if (!text.empty()) commitText(text, msime::linux_host::TypingSource::Local);
+        if (!text.empty()) commitText(text, lingyao::linux_host::TypingSource::Local);
       }
       endEmojiSearch();
       return true;
@@ -6697,7 +6697,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
   }
   if (sym == FcitxKey_Escape && voice_loading_) {
     cancelVoice();
-    return composing ? command(MSIME_CANCEL) : true;
+    return composing ? command(LINGYAO_CANCEL) : true;
   }
   if (translation_candidates_active_) {
     if (ctrl && !alt && !shift &&
@@ -6705,10 +6705,10 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
       return true;
     if (sym == FcitxKey_Escape) {
       exitTranslationCandidates();
-      return command(MSIME_CANCEL);
+      return command(LINGYAO_CANCEL);
     }
     const auto pageSize = std::clamp(
-        msime::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
+        lingyao::linux_host::strict_json_value(translation_saved_view_, "page_size", size_t{9}), size_t{1}, size_t{9});
     const auto pageStart = translation_page_ * pageSize;
     const auto pageEnd = std::min(pageStart + pageSize, translation_options_.size());
     if (!ctrl && !alt && !shift && (sym == FcitxKey_space ||
@@ -6737,7 +6737,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
         (sym == FcitxKey_Page_Up || sym == FcitxKey_KP_Page_Up ||
          sym == FcitxKey_Page_Down || sym == FcitxKey_KP_Page_Down)) {
       translationPage(sym == FcitxKey_Page_Up || sym == FcitxKey_KP_Page_Up
-                          ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE);
+                          ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE);
       return true;
     }
     // Tab pages the senses the way it pages an ordinary candidate list below; leaving the overlay first would page the Engine's hidden list instead. Fcitx normalises ISO_Left_Tab to Tab, so the raw key tells a Shift-less back-tab apart.
@@ -6745,7 +6745,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
         !states.testAny(fcitx::KeyStates{fcitx::KeyState::Super, fcitx::KeyState::Hyper, fcitx::KeyState::Mod5}) &&
         (sym == FcitxKey_Tab || sym == FcitxKey_KP_Tab || sym == FcitxKey_ISO_Left_Tab)) {
       translationPage(shift || event.rawKey().sym() == FcitxKey_ISO_Left_Tab
-                          ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE);
+                          ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE);
       return true;
     }
     // Other editing keys first restore the Engine-owned candidate page below.
@@ -6766,10 +6766,10 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
         const auto translation = candidate.value("translation", std::string{});
         if (!translation.empty() && translation.size() <= 4096) {
           if (enterTranslationCandidates(translation)) return true;
-          const auto senses = msime::linux_host::split_translation_gloss(translation);
+          const auto senses = lingyao::linux_host::split_translation_gloss(translation);
           if (!senses.empty()) {
-            commitText(senses.front(), msime::linux_host::TypingSource::Reply);
-            command(MSIME_CANCEL);
+            commitText(senses.front(), lingyao::linux_host::TypingSource::Reply);
+            command(LINGYAO_CANCEL);
             return true;
           }
         }
@@ -6784,13 +6784,13 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
     const auto spelled = static_cast<char32_t>(fcitx::Key::keySymToUnicode(sym));
     // The XKB keycode (evdev + 8) of the number row is 10..19; Fcitx5 drops Shift from a normalised symbol, so ask the raw event.
     const auto rowCode = event.rawKey().code();
-    const bool picks = msime::linux_host::shifted_number_row_picks(
+    const bool picks = lingyao::linux_host::shifted_number_row_picks(
         view_, spelled, event.rawKey().states().test(fcitx::KeyState::Shift), rowCode >= 10 && rowCode <= 19,
         preferences_.value("number_row_selection", true) && !view_.value("nine_key", false) &&
             !view_.value("candidates", Json::array()).empty());
-    if ((!picks && msime::linux_host::engine_spelling(view_, spelled)) ||
-        (spelled == U' ' && !states.test(fcitx::KeyState::Shift) && msime::linux_host::spelling_space(view_)))
-      return apply(msime_client_character(session_, static_cast<uint8_t>(spelled),
+    if ((!picks && lingyao::linux_host::engine_spelling(view_, spelled)) ||
+        (spelled == U' ' && !states.test(fcitx::KeyState::Shift) && lingyao::linux_host::spelling_space(view_)))
+      return apply(lingyao_client_character(session_, static_cast<uint8_t>(spelled),
                                           event.rawKey().states().test(fcitx::KeyState::Shift)));
   }
   if (skipPairedClosing(sym, states)) return true;
@@ -6812,40 +6812,40 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
       !states.testAny(fcitx::KeyStates{fcitx::KeyState::Ctrl, fcitx::KeyState::Alt,
                                        fcitx::KeyState::Super, fcitx::KeyState::Hyper}) &&
       !fcitx::Key::keySymToUTF8(sym).empty()) {
-    if (composing) command(MSIME_COMMIT_RAW);
+    if (composing) command(LINGYAO_COMMIT_RAW);
     return false;
   }
   // 只按 Ctrl 的分段编辑与 IBus 和 Windows 组字编辑器保持一致。实际的分段边界由共享运行时决定，局部模式下也能安全退回。韩文音节、注音转换、越南文单词和藏文音节串没有分段，所以这些组合键在下面结束组字，并仍然作为应用的快捷键。
   if (ctrl && !alt && !shift && composing && !commitsOnBlur()) {
-    if (sym == FcitxKey_BackSpace) return command(MSIME_BACKSPACE_SEGMENT);
+    if (sym == FcitxKey_BackSpace) return command(LINGYAO_BACKSPACE_SEGMENT);
     if (sym == FcitxKey_Left || sym == FcitxKey_KP_Left)
-      return command(MSIME_MOVE_LEFT_SEGMENT);
+      return command(LINGYAO_MOVE_LEFT_SEGMENT);
     if (sym == FcitxKey_Right || sym == FcitxKey_KP_Right)
-      return command(MSIME_MOVE_RIGHT_SEGMENT);
+      return command(LINGYAO_MOVE_RIGHT_SEGMENT);
   }
   if (states.testAny(fcitx::KeyStates{fcitx::KeyState::Ctrl, fcitx::KeyState::Alt,
                                       fcitx::KeyState::Super, fcitx::KeyState::Hyper,
                                       fcitx::KeyState::Mod5})) {
     // 韩文音节、注音转换、越南文单词或藏文音节串已经是文字，所以快捷键结束它而不是丢弃它。
-    if (composing) command(commitsOnBlur() ? MSIME_FINISH_COMPOSITION : MSIME_CANCEL);
+    if (composing) command(commitsOnBlur() ? LINGYAO_FINISH_COMPOSITION : LINGYAO_CANCEL);
     return false;
   }
   // 还没开始新组字时，CapsLock 打出的大写字母属于编辑器，与 Windows 和 IBus 宿主的按键路由一致。韩文按键不论 CapsLock 如何都是谚文字母，越南文单词可以以大写开头，藏文威利转写的大写字母是另一个字母，所以这三个方案仍然组字。
-  if (!(typingScheme() >= 0 && msime::linux_host::scheme::CapsLockBypassExempt(typingScheme())) &&
+  if (!(typingScheme() >= 0 && lingyao::linux_host::scheme::CapsLockBypassExempt(typingScheme())) &&
       states.test(fcitx::KeyState::CapsLock) && !shift &&
       sym >= FcitxKey_A && sym <= FcitxKey_Z &&
       view_.value("editing_text", std::string{}).empty() &&
       view_.value("candidates", Json::array()).empty())
     return false;
-  // Hangul_Hanja, or a bare F9, converts the composing Korean syllable to Hanja, the keys of fcitx5-hangul and ibus-hangul; pressed again with the list open it closes it (msime_client.h, MSIME_OPEN_CANDIDATE_LIST). A composing Zhuyin conversion opens its candidate list with the same keys. Ctrl+F9 is the voice toggle above. While a composition is open the key stays the input method's whatever the Engine answers: a lone jamo has no Hanja, and the tail of this function would write the composition out and hand the key to the application. With nothing composing it is the application's as before.
-  static_assert(msime::linux_host::kKeysymHangulHanja == FcitxKey_Hangul_Hanja &&
-                msime::linux_host::kKeysymF9 == FcitxKey_F9);
-  if (composing && msime::linux_host::korean_hanja_key(sym) &&
+  // Hangul_Hanja, or a bare F9, converts the composing Korean syllable to Hanja, the keys of fcitx5-hangul and ibus-hangul; pressed again with the list open it closes it (lingyao_client.h, LINGYAO_OPEN_CANDIDATE_LIST). A composing Zhuyin conversion opens its candidate list with the same keys. Ctrl+F9 is the voice toggle above. While a composition is open the key stays the input method's whatever the Engine answers: a lone jamo has no Hanja, and the tail of this function would write the composition out and hand the key to the application. With nothing composing it is the application's as before.
+  static_assert(lingyao::linux_host::kKeysymHangulHanja == FcitxKey_Hangul_Hanja &&
+                lingyao::linux_host::kKeysymF9 == FcitxKey_F9);
+  if (composing && lingyao::linux_host::korean_hanja_key(sym) &&
       !states.testAny(fcitx::KeyStates{fcitx::KeyState::Ctrl, fcitx::KeyState::Alt, fcitx::KeyState::Shift,
                                        fcitx::KeyState::Super, fcitx::KeyState::Hyper, fcitx::KeyState::Meta,
                                        fcitx::KeyState::Mod5}) &&
-      msime::linux_host::candidate_list_composition(view_)) {
-    command(MSIME_OPEN_CANDIDATE_LIST);
+      lingyao::linux_host::candidate_list_composition(view_)) {
+    command(LINGYAO_OPEN_CANDIDATE_LIST);
     return true;
   }
   // Down opens the list of a composing Zhuyin conversion, as in libchewing; with the list open it moves the highlight below like in any list.
@@ -6853,64 +6853,64 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
       !states.testAny(fcitx::KeyStates{fcitx::KeyState::Ctrl, fcitx::KeyState::Alt, fcitx::KeyState::Shift,
                                        fcitx::KeyState::Super, fcitx::KeyState::Hyper, fcitx::KeyState::Meta,
                                        fcitx::KeyState::Mod5}) &&
-      msime::linux_host::zhuyin_list_down_key(view_)) {
-    command(MSIME_OPEN_CANDIDATE_LIST);
+      lingyao::linux_host::zhuyin_list_down_key(view_)) {
+    command(LINGYAO_OPEN_CANDIDATE_LIST);
     return true;
   }
   // With its Hanja list open a Korean syllable has candidates, and the candidate block below takes the keys as it does for any list; so does a Zhuyin conversion with its list open.
-  const bool koreanHanjaList = msime::linux_host::korean_hanja_list_open(view_);
-  const bool openedList = msime::linux_host::opened_candidate_list(view_);
+  const bool koreanHanjaList = lingyao::linux_host::korean_hanja_list_open(view_);
+  const bool openedList = lingyao::linux_host::opened_candidate_list(view_);
   // 除此之外韩文音节没有候选。结束它的按键把它作为上屏交给应用，再在应用里做自己的事（转换结果为未处理），和所有韩文输入法一样；Esc 丢弃它，Backspace 退回一个字母。其他按键继续往下走：字母组字，数字或标点经运行时结束音节，其余按键在本函数末尾结束它。列表未打开的注音转换和越南文单词也这样结束。藏文音节串同样走这里，只是 Engine 吞掉结束它的空格和回车（空格带音节点上屏，回车只上屏藏文），转换结果为已处理，按键不再交给应用。
   if (composing && commitsOnBlur() && !openedList) {
     switch (sym) {
-    case FcitxKey_Escape: return command(MSIME_CANCEL);
-    case FcitxKey_BackSpace: return command(MSIME_BACKSPACE);
-    case FcitxKey_Delete: case FcitxKey_KP_Delete: return command(MSIME_DELETE_FORWARD);
-    case FcitxKey_Return: case FcitxKey_KP_Enter: return command(MSIME_COMMIT_RAW);
-    case FcitxKey_space: return command(MSIME_COMMIT_CANDIDATE);
-    case FcitxKey_Left: case FcitxKey_KP_Left: return command(MSIME_MOVE_LEFT);
-    case FcitxKey_Right: case FcitxKey_KP_Right: return command(MSIME_MOVE_RIGHT);
-    case FcitxKey_Home: case FcitxKey_KP_Home: return command(MSIME_MOVE_HOME);
-    case FcitxKey_End: case FcitxKey_KP_End: return command(MSIME_MOVE_END);
+    case FcitxKey_Escape: return command(LINGYAO_CANCEL);
+    case FcitxKey_BackSpace: return command(LINGYAO_BACKSPACE);
+    case FcitxKey_Delete: case FcitxKey_KP_Delete: return command(LINGYAO_DELETE_FORWARD);
+    case FcitxKey_Return: case FcitxKey_KP_Enter: return command(LINGYAO_COMMIT_RAW);
+    case FcitxKey_space: return command(LINGYAO_COMMIT_CANDIDATE);
+    case FcitxKey_Left: case FcitxKey_KP_Left: return command(LINGYAO_MOVE_LEFT);
+    case FcitxKey_Right: case FcitxKey_KP_Right: return command(LINGYAO_MOVE_RIGHT);
+    case FcitxKey_Home: case FcitxKey_KP_Home: return command(LINGYAO_MOVE_HOME);
+    case FcitxKey_End: case FcitxKey_KP_End: return command(LINGYAO_MOVE_END);
     default: break;
     }
   }
   if (composing && (!commitsOnBlur() || openedList)) {
-    const bool japanese = msime::linux_host::strict_json_value(view_, "scheme", 0u) == 3;
+    const bool japanese = lingyao::linux_host::strict_json_value(view_, "scheme", 0u) == 3;
     // The marks among these keys stay punctuation while a Korean Hanja list is open, as they are with no list (core/KoreanHanja.h): the Engine closes the list and writes the Hangul with the mark. Page Up, Page Down and Tab still page.
     if (!shift && !view_.at("candidates").empty() && !koreanHanjaList) {
       if (word_character_enabled_ && !japanese &&
           ((word_character_minus_equal_ && sym == FcitxKey_minus) ||
            (!word_character_minus_equal_ && sym == FcitxKey_bracketleft)))
-        return selectEdge(MSIME_FIRST_HAN);
+        return selectEdge(LINGYAO_FIRST_HAN);
       if (word_character_enabled_ && !japanese &&
           ((word_character_minus_equal_ && sym == FcitxKey_equal) ||
            (!word_character_minus_equal_ && sym == FcitxKey_bracketright)))
-        return selectEdge(MSIME_LAST_HAN);
+        return selectEdge(LINGYAO_LAST_HAN);
       if ((sym == FcitxKey_minus && !japanese && navigation_.value("minus_equal", true)) ||
           (sym == FcitxKey_comma && navigation_.value("comma_period", true)) ||
           (sym == FcitxKey_bracketleft && navigation_.value("brackets", false)))
-        return command(MSIME_PREVIOUS_PAGE);
+        return command(LINGYAO_PREVIOUS_PAGE);
       if ((sym == FcitxKey_equal && !japanese && navigation_.value("minus_equal", true)) ||
           (sym == FcitxKey_period && navigation_.value("comma_period", true)) ||
           (sym == FcitxKey_bracketright && navigation_.value("brackets", false)))
-        return command(MSIME_NEXT_PAGE);
+        return command(LINGYAO_NEXT_PAGE);
     }
     // Japanese converts with Space and commits the kana with Enter. Sending the Engine's
     // raw-input command here commits the romaji, and committing the first candidate on Space
     // leaves no way to reach the second. See ../src/core/JapaneseConversion.h.
     if (japanese && composing &&
         (sym == FcitxKey_Return || sym == FcitxKey_KP_Enter || sym == FcitxKey_space)) {
-      using Action = msime::linux_host::JapaneseConversion::Action;
+      using Action = lingyao::linux_host::JapaneseConversion::Action;
       const auto reading = view_.value("editing_text", std::string{});
       const auto &candidates = view_.at("candidates");
       if (sym == FcitxKey_space) {
-        const int first_source = candidates.empty() ? -1 : msime::linux_host::strict_json_value(candidates[0], "source", -1);
+        const int first_source = candidates.empty() ? -1 : lingyao::linux_host::strict_json_value(candidates[0], "source", -1);
         const auto action = japanese_conversion_.space(reading, candidates.size(), first_source);
         if (action == Action::Start) return true;
         if (action == Action::StepNext || action == Action::StepFirst)
-          return command(action == Action::StepFirst ? MSIME_FIRST_CANDIDATE
-                                                      : MSIME_NEXT_CANDIDATE);
+          return command(action == Action::StepFirst ? LINGYAO_FIRST_CANDIDATE
+                                                      : LINGYAO_NEXT_CANDIDATE);
       } else {
         const auto action = japanese_conversion_.enter(reading);
         const auto index = japanese_conversion_.index();
@@ -6919,54 +6919,54 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
             index < candidates.size()) {
           const auto &id = candidates[index].value("id", Json::object());
           if (id.is_object())
-            return apply(msime_client_select(
-                session_, msime::linux_host::strict_json_value(id, "generation", uint64_t{0}),
-                msime::linux_host::strict_json_value(id, "index", size_t{0})));
+            return apply(lingyao_client_select(
+                session_, lingyao::linux_host::strict_json_value(id, "generation", uint64_t{0}),
+                lingyao::linux_host::strict_json_value(id, "index", size_t{0})));
         }
-        if (action == Action::CommitReading && command(MSIME_COMMIT_READING)) return true;
+        if (action == Action::CommitReading && command(LINGYAO_COMMIT_READING)) return true;
       }
     }
     switch (sym) {
-    case FcitxKey_Escape: return command(MSIME_CANCEL);
-    case FcitxKey_BackSpace: return command(MSIME_BACKSPACE);
-    case FcitxKey_Delete: case FcitxKey_KP_Delete: return command(MSIME_DELETE_FORWARD);
-    // With a Korean Hanja list or a Zhuyin list open Return chooses the highlighted candidate, as Space does; only the session knows the highlight, so the command is the candidate one (msime_client.h).
+    case FcitxKey_Escape: return command(LINGYAO_CANCEL);
+    case FcitxKey_BackSpace: return command(LINGYAO_BACKSPACE);
+    case FcitxKey_Delete: case FcitxKey_KP_Delete: return command(LINGYAO_DELETE_FORWARD);
+    // With a Korean Hanja list or a Zhuyin list open Return chooses the highlighted candidate, as Space does; only the session knows the highlight, so the command is the candidate one (lingyao_client.h).
     case FcitxKey_Return: case FcitxKey_KP_Enter:
-      return command(openedList ? MSIME_COMMIT_CANDIDATE : MSIME_COMMIT_RAW);
-    case FcitxKey_space: return command(MSIME_COMMIT_CANDIDATE);
-    case FcitxKey_Left: case FcitxKey_KP_Left: return command(MSIME_MOVE_LEFT);
-    case FcitxKey_Right: case FcitxKey_KP_Right: return command(MSIME_MOVE_RIGHT);
+      return command(openedList ? LINGYAO_COMMIT_CANDIDATE : LINGYAO_COMMIT_RAW);
+    case FcitxKey_space: return command(LINGYAO_COMMIT_CANDIDATE);
+    case FcitxKey_Left: case FcitxKey_KP_Left: return command(LINGYAO_MOVE_LEFT);
+    case FcitxKey_Right: case FcitxKey_KP_Right: return command(LINGYAO_MOVE_RIGHT);
     case FcitxKey_Home: case FcitxKey_KP_Home:
-      return command(MSIME_FIRST_CANDIDATE);
+      return command(LINGYAO_FIRST_CANDIDATE);
     case FcitxKey_End: case FcitxKey_KP_End:
-      return command(MSIME_LAST_CANDIDATE);
+      return command(LINGYAO_LAST_CANDIDATE);
     case FcitxKey_Tab: case FcitxKey_KP_Tab:
       // Fcitx normalises ISO_Left_Tab to Tab, keeping Shift only when it was held, so a back-tab sent without Shift is recognised by its raw symbol.
       if (navigation_.value("tab", true))
-        return command(shift || event.rawKey().sym() == FcitxKey_ISO_Left_Tab ? MSIME_PREVIOUS_PAGE
-                                                                              : MSIME_NEXT_PAGE);
+        return command(shift || event.rawKey().sym() == FcitxKey_ISO_Left_Tab ? LINGYAO_PREVIOUS_PAGE
+                                                                              : LINGYAO_NEXT_PAGE);
       break;
     case FcitxKey_ISO_Left_Tab:
-      if (navigation_.value("tab", true)) return command(MSIME_PREVIOUS_PAGE);
+      if (navigation_.value("tab", true)) return command(LINGYAO_PREVIOUS_PAGE);
       break;
     case FcitxKey_Page_Up: case FcitxKey_KP_Page_Up:
-      if (navigation_.value("page_up_down", true)) return command(MSIME_PREVIOUS_PAGE);
+      if (navigation_.value("page_up_down", true)) return command(LINGYAO_PREVIOUS_PAGE);
       break;
     case FcitxKey_Page_Down: case FcitxKey_KP_Page_Down:
-      if (navigation_.value("page_up_down", true)) return command(MSIME_NEXT_PAGE);
+      if (navigation_.value("page_up_down", true)) return command(LINGYAO_NEXT_PAGE);
       break;
     case FcitxKey_Up: case FcitxKey_KP_Up:
       if (navigation_.value("candidate_arrow_navigation", navigation_.value("arrows", true)))
-        return command(MSIME_PREVIOUS_CANDIDATE);
+        return command(LINGYAO_PREVIOUS_CANDIDATE);
       break;
     case FcitxKey_Down: case FcitxKey_KP_Down:
       if (navigation_.value("candidate_arrow_navigation", navigation_.value("arrows", true)))
-        return command(MSIME_NEXT_CANDIDATE);
+        return command(LINGYAO_NEXT_CANDIDATE);
       break;
     default: break;
     }
     // Windows selects by virtual key, which does not depend on the layout: the number row picks a candidate on AZERTY too, where it types & é " unshifted. The XKB keycode (evdev + 8) is that physical key. In the modes whose spelling has digits (unicode, expression: the Engine lists them in spelling_symbols) candidates use Shift plus the row, as on Windows and in the IBus host, because the bare digits are input there; a shifted symbol the mode also spells with was sent to the Engine above.
-    const bool spellingDigits = msime::linux_host::spelling_digits(view_);
+    const bool spellingDigits = lingyao::linux_host::spelling_digits(view_);
     // Fcitx5 drops Shift from a normalised symbol such as '!', so ask the raw event.
     const bool rawShift = event.rawKey().states().test(fcitx::KeyState::Shift);
     const auto number = [&]() -> std::optional<size_t> {
@@ -6987,16 +6987,16 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
       const size_t index = *number;
       if (index < view_.at("candidates").size()) {
         const auto id = view_.at("candidates").at(index).at("id");
-        return apply(msime_client_select(
-            session_, msime::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
-            msime::linux_host::strict_json_required_integer<size_t>(id.at("index"))));
+        return apply(lingyao_client_select(
+            session_, lingyao::linux_host::strict_json_required_integer<uint64_t>(id.at("generation")),
+            lingyao::linux_host::strict_json_required_integer<size_t>(id.at("index"))));
       }
       // A digit past the end of a Hanja or Zhuyin page picks nothing and is swallowed, as the runtime swallows it, rather than typed beside the open composition.
       return openedList;
     }
     // With number-row selection off a digit is not a candidate shortcut. Sent to the Engine it would still pick a candidate, since the runtime turns a digit the Engine leaves unhandled into a page selection, so it ends the composition instead, as a digit does with no Hanja list: the composition is written and the digit goes to the application after it.
     if (number && openedList) {
-      command(MSIME_FINISH_COMPOSITION);
+      command(LINGYAO_FINISH_COMPOSITION);
       return false;
     }
   }
@@ -7014,7 +7014,7 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
     }
   }();
   if (keypad && (keypad == '.' || composingOrCandidates())) {
-    if (apply(msime_client_punctuation_ascii(session_, static_cast<uint8_t>(keypad))))
+    if (apply(lingyao_client_punctuation_ascii(session_, static_cast<uint8_t>(keypad))))
       return true;
     if (keypad != '.') return false;
     commitText(fullwidthOutput() && !narrowScheme() ? std::string("．") : std::string("."));
@@ -7024,20 +7024,20 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
   if (text.size() == 1 && text[0] >= 0x20 && text[0] <= 0x7e) {
     if (text[0] == ';' && !shift && view_.value("microsoft_shuangpin", false)) {
       const auto editing = view_.value("editing_text", std::string{});
-      const auto caret = std::min(editing.size(), msime::linux_host::strict_json_value(view_, "caret_position", editing.size()));
+      const auto caret = std::min(editing.size(), lingyao::linux_host::strict_json_value(view_, "caret_position", editing.size()));
       const auto separator = caret ? editing.rfind('\'', caret - 1) : std::string::npos;
       const auto start = separator == std::string::npos ? 0 : separator + 1;
       if ((caret - start) % 2 == 1)
-        return apply(msime_client_character(session_, ';', false));
+        return apply(lingyao_client_character(session_, ';', false));
     }
     const bool asciiPunctuation =
         std::ispunct(static_cast<unsigned char>(text[0])) != 0 &&
         // 正在拼写时，撇号在表情、颜文字和日文模式里是 Engine 的输入字符，与 IBus 路由一致。在韩文、注音和越南文里它和别的标点一样跟在打开的组字后面。藏文的撇号列在 spelling_symbols 里，在前面已经作为字符交给 Engine。
         !(text[0] == '\'' && composing && !commitsOnBlur());
-    const bool japaneseLongVowel = msime::linux_host::strict_json_value(view_, "scheme", 0u) == 3 && !shift &&
+    const bool japaneseLongVowel = lingyao::linux_host::strict_json_value(view_, "scheme", 0u) == 3 && !shift &&
                                    (text[0] == '-' || text[0] == '=');
     if (japaneseLongVowel)
-      return apply(msime_client_character(session_, static_cast<uint8_t>(text[0]), false));
+      return apply(lingyao_client_character(session_, static_cast<uint8_t>(text[0]), false));
     if (asciiPunctuation) {
       if (repeatSmartPunctuationToChinese(text[0]))
         return true;
@@ -7051,14 +7051,14 @@ bool FcitxState::key(fcitx::KeyEvent &event) {
     if (korean() && std::isalpha(static_cast<unsigned char>(text[0])) != 0) {
       const bool rawShift = event.rawKey().states().test(fcitx::KeyState::Shift);
       const auto letter = static_cast<unsigned char>(text[0]);
-      return apply(msime_client_character(
+      return apply(lingyao_client_character(
           session_, static_cast<uint8_t>(rawShift ? std::toupper(letter) : std::tolower(letter)), rawShift));
     }
     // Fcitx5 规范化 Shift+字母时会移除 Shift 位；快捷模式入口必须读取原始事件。
-    return apply(msime_client_character(session_, static_cast<uint8_t>(text[0]),
+    return apply(lingyao_client_character(session_, static_cast<uint8_t>(text[0]),
                                         event.rawKey().states().test(fcitx::KeyState::Shift)));
   }
-  if (composing) command(MSIME_FINISH_COMPOSITION);
+  if (composing) command(LINGYAO_FINISH_COMPOSITION);
   return false;
 }
 
@@ -7085,7 +7085,7 @@ void FcitxEngine::rebuildThemeMenu(fcitx::InputContext *ic) {
   for (const auto &[id, title] : packages) {
     global_theme_package_items_.push_back(std::make_unique<FcitxGlobalThemeItemAction>(&factory_, id, title));
     // Registered under their own prefix, so a package can never take a global theme's name, and reachable from the D-Bus menus like every other entry.
-    global_theme_package_items_.back()->registerAction(MSIME_EDITION_FCITX5_ADDON "-global-theme-package-" + id,
+    global_theme_package_items_.back()->registerAction(LINGYAO_EDITION_FCITX5_ADDON "-global-theme-package-" + id,
                                                        &instance_->userInterfaceManager());
     global_theme_menu_.addAction(global_theme_package_items_.back().get());
   }
@@ -7110,7 +7110,7 @@ void FcitxEngine::rebuildSchemeMenu(fcitx::InputContext *ic, bool cantonese, boo
     const bool offered = id == "cantonese" ? cantonese
                          : id == "zhuyin"  ? zhuyin
                          : id == "stroke"  ? stroke
-                                           : msime::linux_host::edition_offers_scheme(id);
+                                           : lingyao::linux_host::edition_offers_scheme(id);
     if (offered) scheme_menu_entries_.push_back(action);
   }
   for (auto *entry : scheme_menu_entries_) scheme_menu_.addAction(entry);
@@ -7150,6 +7150,6 @@ class FcitxFactory : public fcitx::AddonFactory {
 public:
   fcitx::AddonInstance *create(fcitx::AddonManager *manager) override { return new FcitxEngine(manager->instance()); }
 };
-} // namespace msime::fcitx_host
+} // namespace lingyao::fcitx_host
 
-FCITX_ADDON_FACTORY(msime::fcitx_host::FcitxFactory)
+FCITX_ADDON_FACTORY(lingyao::fcitx_host::FcitxFactory)

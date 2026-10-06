@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "platforms/android/java/app/msime/android/core/NativeClient.java"
+SOURCE = ROOT / "platforms/android/java/app/lingyao/android/core/NativeClient.java"
 text = SOURCE.read_text()
 
 if "ENGLISH_COMPLETION_RESOURCES_LIMIT = 4 * 1024" not in text:

@@ -1,4 +1,4 @@
-import app.msime.android.BackspaceRepeatPolicy;
+import app.lingyao.android.BackspaceRepeatPolicy;
 
 public final class BackspaceRepeatPolicySmoke {
     public static void main(String[] args) {

@@ -2,7 +2,7 @@
 #include "PreviewConfig.h"
 #include <iostream>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 [[noreturn]] void require_failed(int line) {
   throw std::runtime_error("Candidate appearance test failed at line " +

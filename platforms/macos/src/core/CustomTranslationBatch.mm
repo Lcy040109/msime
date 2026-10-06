@@ -1,13 +1,13 @@
 #import "CustomTranslationBatch.h"
 #import "../cloud/CloudCandidateRequest.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 
-@implementation MSIMECustomTranslationBatch {
+@implementation LINGYAOCustomTranslationBatch {
     NSArray<NSDictionary *> *_items;
     NSURLSessionConfiguration *_configuration;
     void (^_completion)(NSArray<NSDictionary *> *);
     NSMutableArray<NSDictionary *> *_results;
-    MSIMECloudCandidateRequest *_request;
+    LINGYAOCloudCandidateRequest *_request;
     NSURLSession *_session;
     NSTimer *_timer;
     NSTimeInterval _deadline;
@@ -35,8 +35,8 @@
     if (self) _niuTrans = YES;
     return self;
 }
-- (MSIMECloudCandidateRequest *)niuTransRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
-    return [[MSIMECloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:_configuration completion:completion];
+- (LINGYAOCloudCandidateRequest *)niuTransRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+    return [[LINGYAOCloudCandidateRequest alloc] initWithNiuTransDescriptor:descriptor configuration:_configuration completion:completion];
 }
 - (instancetype)initWithAIItems:(NSArray<NSDictionary *> *)items
                    configuration:(NSURLSessionConfiguration *)configuration
@@ -118,16 +118,16 @@
 }
 - (NSTimeInterval)currentTime { return NSProcessInfo.processInfo.systemUptime; }
 - (NSTimeInterval)unixTime { return NSDate.date.timeIntervalSince1970; }
-- (MSIMECloudCandidateRequest *)tencentRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
-    return [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:descriptor
+- (LINGYAOCloudCandidateRequest *)tencentRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+    return [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:descriptor
         configuration:_configuration completion:completion];
 }
-- (MSIMECloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
-    return [[MSIMECloudCandidateRequest alloc] initWithAITranslationDescriptor:descriptor
+- (LINGYAOCloudCandidateRequest *)AIRequestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+    return [[LINGYAOCloudCandidateRequest alloc] initWithAITranslationDescriptor:descriptor
         configuration:_configuration completion:completion];
 }
-- (MSIMECloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
-    return [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor
+- (LINGYAOCloudCandidateRequest *)requestForDescriptor:(NSDictionary *)descriptor completion:(void (^)(NSData *))completion {
+    return [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor
         configuration:_configuration completion:completion];
 }
 // One session per NiuTrans or custom batch, so the second word onwards reuses the first word's connection instead of paying another TCP and TLS handshake out of the six-second budget. It carries the same hardening as a request's own session, and no delegate: each task reports to its own request.
@@ -149,7 +149,7 @@
     if (_started || !_completion) return;
     _started = YES;
     _deadline = [self currentTime] + 6;
-    __weak MSIMECustomTranslationBatch *weakSelf = self;
+    __weak LINGYAOCustomTranslationBatch *weakSelf = self;
     _timer = [NSTimer timerWithTimeInterval:6 repeats:NO block:^(NSTimer *timer) {
         (void)timer;
         [weakSelf finish];
@@ -163,18 +163,18 @@
     NSDictionary *item = _items[_nextIndex++];
     NSString *text = item[@"text"];
     NSUInteger sequence = _nextIndex;
-    __weak MSIMECustomTranslationBatch *weakSelf = self;
+    __weak LINGYAOCustomTranslationBatch *weakSelf = self;
     // `answered` is NO for a transport failure (nothing came back, which includes HTTP errors such as 429) and for a body in which the provider reports a failure: Tencent's Response.Error, NiuTrans' errorCode, a DeepLX code other than 200, or a malformed body. Those items stay unanswered, so the caller asks again rather than hiding the gloss for eight minutes over a rate limit or an outage. A request that could not even be built is an answer: asking again builds the same invalid request.
     void (^handle)(NSData *, BOOL) = ^(NSData *body, BOOL answered) {
-        MSIMECustomTranslationBatch *strongSelf = weakSelf;
+        LINGYAOCustomTranslationBatch *strongSelf = weakSelf;
         if (!strongSelf || !strongSelf->_completion || sequence != strongSelf->_nextIndex) return;
         NSMutableArray<NSDictionary *> *results = [NSMutableArray array];
         if (strongSelf->_niuTrans) {
-            NSString *translation = body ? [MSIMEClientSession parseNiuTransTranslationResponse:body error:nil] : nil;
+            NSString *translation = body ? [LINGYAOClientSession parseNiuTransTranslationResponse:body error:nil] : nil;
             if (translation.length) [results addObject:@{@"text":text, @"translation":translation}];
-            if (body && [MSIMEClientSession niuTransTranslationReplyFailed:body]) answered = NO;
+            if (body && [LINGYAOClientSession niuTransTranslationReplyFailed:body]) answered = NO;
         } else if (strongSelf->_tencent) {
-            NSArray *translations = body ? [MSIMEClientSession parseTencentTranslationResponse:body
+            NSArray *translations = body ? [LINGYAOClientSession parseTencentTranslationResponse:body
                 expectedCount:[item[@"originals"] count] error:nil] : nil;
             // Tencent's parser already tells the two apart: an answer is an array, with NSNull where a text got nothing.
             if (body && !translations) answered = NO;
@@ -186,13 +186,13 @@
         } else if (strongSelf->_ai) {
             NSUInteger limit = [item[@"candidate_limit"] isKindOfClass:NSNumber.class]
                 ? [item[@"candidate_limit"] unsignedIntegerValue] : 10;
-            NSArray *values = body ? [MSIMEClientSession parseAIResponse:body limit:limit error:nil] : nil;
+            NSArray *values = body ? [LINGYAOClientSession parseAIResponse:body limit:limit error:nil] : nil;
             for (NSString *value in values) if ([value isKindOfClass:NSString.class] && value.length)
                 [results addObject:@{@"text":text, @"translation":value}];
         } else {
-            NSString *translation = body ? [MSIMEClientSession parseCustomTranslationResponse:body error:nil] : nil;
+            NSString *translation = body ? [LINGYAOClientSession parseCustomTranslationResponse:body error:nil] : nil;
             if (translation.length) [results addObject:@{@"text":text, @"translation":translation}];
-            if (body && [MSIMEClientSession customTranslationReplyFailed:body]) answered = NO;
+            if (body && [LINGYAOClientSession customTranslationReplyFailed:body]) answered = NO;
         }
         // A Tencent item is a whole language group, answered by its original texts; every other item is one text.
         NSArray<NSString *> *answeredTexts = !answered ? @[] : strongSelf->_tencent ? item[@"originals"] : @[text];
@@ -209,12 +209,12 @@
     if (_niuTrans) {
         NSMutableDictionary *input = [item[@"request"] mutableCopy];
         input[@"timestamp"] = [NSString stringWithFormat:@"%lld", (long long)([self unixTime] * 1000)];
-        NSDictionary *descriptor = [MSIMEClientSession niuTransTranslationHTTPRequest:input error:nil];
+        NSDictionary *descriptor = [LINGYAOClientSession niuTransTranslationHTTPRequest:input error:nil];
         if (!descriptor) { handle(nil, YES); return; }
         if ([self currentTime] >= _deadline) { [self finish]; return; }
         _request = [self niuTransRequestForDescriptor:descriptor completion:reply];
     } else if (_tencent) {
-        NSDictionary *descriptor = [MSIMEClientSession tencentTranslationHTTPRequest:@{
+        NSDictionary *descriptor = [LINGYAOClientSession tencentTranslationHTTPRequest:@{
             @"config":item[@"config"], @"texts":item[@"texts"],
             @"source_language":item[@"source_language"], @"target_language":item[@"target_language"],
             @"timestamp":@((long long)[self unixTime])} error:nil];

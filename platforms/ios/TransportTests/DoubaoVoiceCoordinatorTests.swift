@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import MSIMEDoubaoTransport
+@testable import LINGYAODoubaoTransport
 
 final class DoubaoVoiceCoordinatorTests: XCTestCase {
   func testTransportRefusesWebSocketRedirects() {

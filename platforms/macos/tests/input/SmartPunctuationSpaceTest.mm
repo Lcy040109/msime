@@ -7,7 +7,7 @@
 
 // A document the controller can read back, which is what the conversion depends on: it re-reads the mark
 // before rewriting it rather than trusting what it believes it committed.
-@interface SpaceConvertClient : NSObject <MSIMETextClient>
+@interface SpaceConvertClient : NSObject <LINGYAOTextClient>
 @property(nonatomic, copy) NSString *document;
 @property(nonatomic) NSRange selection;
 @property(nonatomic) NSUInteger replacements;
@@ -38,14 +38,14 @@
 }
 @end
 
-@interface SpaceConvertController : MSIMEInputController
+@interface SpaceConvertController : LINGYAOInputController
 @end
 @implementation SpaceConvertController
 - (void)ensureAppearance {}
 @end
 
 // The candidate panel is driven for real but never put on screen.
-@interface SpaceConvertHiddenPanel : MSIMECandidatePanel
+@interface SpaceConvertHiddenPanel : LINGYAOCandidatePanel
 @property(nonatomic) BOOL requestedVisible;
 @end
 @implementation SpaceConvertHiddenPanel
@@ -81,7 +81,7 @@ static NSEvent *PhysicalKey(unsigned short code, NSString *characters, NSEventMo
 }
 
 // The arm is made where the commit happens, so these cases run real keys through handleEvent: and a real Engine session over the fixture dictionary (the tbl_2_n schema create_fixture_dictionary.py writes), rather than arming by hand.
-static void TestRealKeyArming(MSIMEAppearancePreferences *appearance) {
+static void TestRealKeyArming(LINGYAOAppearancePreferences *appearance) {
     NSString *root = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
     NSMutableDictionary *options = [@{@"api_version" : @1,
         @"preferences" : @{@"scheme" : @"quanpin", @"default_ime_mode" : @"chinese", @"candidate_page_size" : @5,
@@ -92,12 +92,12 @@ static void TestRealKeyArming(MSIMEAppearancePreferences *appearance) {
         options[name] = path;
     }
     sqlite3 *database = nullptr;
-    assert(sqlite3_open([[options[@"dictionaries"] stringByAppendingPathComponent:@"msime-pinyin.db"] fileSystemRepresentation], &database) == SQLITE_OK);
+    assert(sqlite3_open([[options[@"dictionaries"] stringByAppendingPathComponent:@"lingyao-pinyin.db"] fileSystemRepresentation], &database) == SQLITE_OK);
     assert(sqlite3_exec(database, "CREATE TABLE tbl_2_n(key TEXT,jp TEXT,value TEXT,weight INTEGER);"
         "INSERT INTO tbl_2_n VALUES('ni''hao','nh','你好',100);", nullptr, nullptr, nullptr) == SQLITE_OK);
     assert(sqlite3_close(database) == SQLITE_OK);
     NSError *error = nil;
-    MSIMEClientSession *session = [[MSIMEClientSession alloc] initWithOptions:options error:&error];
+    LINGYAOClientSession *session = [[LINGYAOClientSession alloc] initWithOptions:options error:&error];
     assert(session && !error);
     assert([session setFocused:YES error:&error] && !error);
 
@@ -198,9 +198,9 @@ static void TestRealKeyArming(MSIMEAppearancePreferences *appearance) {
 int main() {
     @autoreleasepool {
         [NSApplication sharedApplication];
-        NSString *suite = [@"msime.smart.space." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"lingyao.smart.space." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *appearance = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *appearance = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         // The whole family is off in the source, so both the parent switch and the space rewrite have to be asked for before anything rewrites text.
         assert(!appearance.smartPunctuation && !appearance.smartPunctuationSpaceConvert);
 
@@ -461,7 +461,7 @@ int main() {
         [controller clearSmartPunctuationSpaceRevert];
         TestRealKeyArming(appearance);
 
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
     std::puts("macOS smart punctuation space conversion passed.");
     return 0;

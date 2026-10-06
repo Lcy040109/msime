@@ -8,8 +8,8 @@ private func letterCode(_ prefix: String, _ index: Int) -> String {
 
 final class PersonalDictionaryStoreTests: XCTestCase {
   func testQueueRejectsASymlinkedLockFile() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-dictionary-lock-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-dictionary-lock-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-dictionary-lock-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-dictionary-lock-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -72,7 +72,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
     let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
-    let word = try PersonalWord(kind: .quickPhrase, key: "msimefixture", value: "private fixture text").validated()
+    let word = try PersonalWord(kind: .quickPhrase, key: "lingyaofixture", value: "private fixture text").validated()
     let id = try host.enqueue(previous: nil, replacement: word)
     defer {
       _ = session.cancel()

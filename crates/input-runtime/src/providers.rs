@@ -3,7 +3,7 @@
 //! keystroke path.
 
 use super::*;
-use msime_engine::SchemeType;
+use lingyao_engine::SchemeType;
 
 /// Build the default cloud request for an eligible online query. Hosts perform
 /// the actual network I/O through their injected transport and then submit the
@@ -12,7 +12,7 @@ pub fn cloud_request_url(query: &OnlineQuery) -> Option<String> {
     if !cloud_query_allowed(query) {
         return None;
     }
-    msime_client_core::cloud::candidates::build_google_url(
+    lingyao_client_core::cloud::candidates::build_google_url(
         &query.query_text,
         SchemeType::from_u8(query.scheme) == Some(SchemeType::JapaneseRomaji),
     )
@@ -33,7 +33,7 @@ pub fn cloud_candidate_from_response(
     if !cloud_query_allowed(&query) {
         return None;
     }
-    let text = msime_client_core::cloud::candidates::parse_google_response(response)?;
+    let text = lingyao_client_core::cloud::candidates::parse_google_response(response)?;
     Some(OnlineCandidate {
         query,
         text,
@@ -67,9 +67,9 @@ fn with_terminator(request: &str) -> String {
 #[cfg(unix)]
 fn valid_ai_provider_endpoint(provider: &str, endpoint: &str) -> bool {
     !provider.is_empty()
-        && msime_client_core::is_bounded_text(provider, 64)
+        && lingyao_client_core::is_bounded_text(provider, 64)
         && !endpoint.is_empty()
-        && msime_client_core::is_bounded_text(endpoint, 2048)
+        && lingyao_client_core::is_bounded_text(endpoint, 2048)
 }
 
 #[cfg(unix)]
@@ -80,7 +80,7 @@ fn provider_path_has_no_symlink_ancestors(path: &Path) -> bool {
         }
         match std::fs::symlink_metadata(ancestor) {
             Ok(metadata) if metadata.file_type().is_symlink() => {
-                if msime_path_trust::is_trusted_system_alias(ancestor) {
+                if lingyao_path_trust::is_trusted_system_alias(ancestor) {
                     continue;
                 }
                 return false;
@@ -296,7 +296,7 @@ impl UnixSocketProvider {
         let mut candidates = Vec::with_capacity(replies.len());
         for reply in replies {
             if reply.text.is_empty()
-                || !msime_client_core::is_bounded_text(&reply.text, 4096)
+                || !lingyao_client_core::is_bounded_text(&reply.text, 4096)
                 || reply.source > 1
             {
                 return None;
@@ -329,7 +329,7 @@ impl UnixSocketProvider {
             || query.candidates.len() > candidate_limit
             || query.candidates.iter().any(|text| {
                 text.is_empty()
-                    || !msime_client_core::is_bounded_text(text, 4096)
+                    || !lingyao_client_core::is_bounded_text(text, 4096)
                     || (query.sentence && text.chars().count() > MAX_SENTENCE_CHARS)
             })
         {
@@ -362,9 +362,9 @@ impl UnixSocketProvider {
         let reply: Reply = serde_json::from_str(&line).ok()?;
         if reply.translations.len() > candidate_limit
             || reply.translations.iter().any(|item| {
-                !msime_client_core::is_bounded_text(&item.text, 4096)
+                !lingyao_client_core::is_bounded_text(&item.text, 4096)
                     || item.translation.is_empty()
-                    || !msime_client_core::is_bounded_text(&item.translation, 4096)
+                    || !lingyao_client_core::is_bounded_text(&item.translation, 4096)
                     || !query.candidates.contains(&item.text)
             })
         {
@@ -407,7 +407,7 @@ impl UnixSocketProvider {
         let result = serde_json::from_str::<CredentialTestResult>(&line).ok()?;
         (!result.message.is_empty()
             && result.message.len() <= 1024
-            && !msime_client_core::has_disallowed_control_with_options(&result.message, false))
+            && !lingyao_client_core::has_disallowed_control_with_options(&result.message, false))
         .then_some(result)
     }
 
@@ -446,7 +446,7 @@ impl UnixSocketProvider {
             && reply
                 .models
                 .iter()
-                .all(|model| !model.is_empty() && msime_client_core::is_bounded_text(model, 256)))
+                .all(|model| !model.is_empty() && lingyao_client_core::is_bounded_text(model, 256)))
         .then_some(reply.models)
     }
 
@@ -466,7 +466,7 @@ impl UnixSocketProvider {
     ) -> Option<String> {
         if !valid_ai_provider_endpoint(provider, endpoint)
             || model.is_empty()
-            || !msime_client_core::is_bounded_text(model, 256)
+            || !lingyao_client_core::is_bounded_text(model, 256)
             || text.trim().is_empty()
             || text.len() > 8192
             || prompt.len() > 8192
@@ -503,7 +503,7 @@ impl UnixSocketProvider {
         let polished = reply.text.trim();
         (!polished.is_empty()
             && polished.len() <= 16_384
-            && !msime_client_core::has_disallowed_control_with_allowed(polished, &['\n']))
+            && !lingyao_client_core::has_disallowed_control_with_allowed(polished, &['\n']))
         .then(|| polished.to_owned())
     }
 
@@ -539,12 +539,12 @@ impl UnixSocketProvider {
         let reply: Reply = serde_json::from_str(&line).ok()?;
         if reply.candidates.len() > 12
             || reply.candidates.iter().any(|candidate| {
-                candidate.is_empty() || !msime_client_core::is_bounded_text(candidate, 4096)
+                candidate.is_empty() || !lingyao_client_core::is_bounded_text(candidate, 4096)
             })
         {
             return None;
         }
-        msime_engine::host::handwriting_order_candidates(&reply.candidates).ok()
+        lingyao_engine::host::handwriting_order_candidates(&reply.candidates).ok()
     }
 
     /// Search the user-owned emoji catalog. Results stay outside the IBus
@@ -971,7 +971,7 @@ impl OnlineProviderWorker {
         // signal channel already promises the worker will look again.
         let (wake, incoming) = mpsc::sync_channel::<()>(1);
         let join = thread::Builder::new()
-            .name("msime-online-provider".into())
+            .name("lingyao-online-provider".into())
             .spawn(move || {
                 while incoming.recv().is_ok() {
                     // Windows waits for input to settle instead of querying

@@ -1,7 +1,7 @@
 #pragma once
 #include "FocusGate.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Only a mode bit and its owning focus lease cross into the UI thread.
 class DedicatedEnglishMailbox {
 public:
@@ -21,4 +21,4 @@ private:
   std::mutex mutex_;
   std::optional<std::pair<FocusLease, bool>> latest_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

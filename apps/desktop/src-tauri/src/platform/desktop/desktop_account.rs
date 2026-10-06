@@ -9,12 +9,12 @@ use crate::platform::desktop::desktop_plugin_community::PluginCommunityState;
 use crate::shared::account_dto::{
     providers_response, ChallengeResponse, ProfileResponse, ProvidersResponse, StatusResponse,
 };
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     AccountError, BackendAccountClient, BackendAccountSession, FileAccountSessionStorage,
 };
-use msime_client_core::community::report::BackendCommunityReportService;
-use msime_client_core::plugins::community::BackendCommunityPluginService;
-use msime_client_core::skin::candidate_community::BackendCandidateSkinCommunityService;
+use lingyao_client_core::community::report::BackendCommunityReportService;
+use lingyao_client_core::plugins::community::BackendCommunityPluginService;
+use lingyao_client_core::skin::candidate_community::BackendCandidateSkinCommunityService;
 use std::sync::Arc;
 use tauri::Manager;
 use tauri_plugin_dialog::DialogExt;

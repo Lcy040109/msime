@@ -11,7 +11,7 @@ pub(crate) fn check_directory_ancestors(path: &Path) -> io::Result<()> {
         current.push(component.as_os_str());
         match std::fs::symlink_metadata(&current) {
             Ok(metadata) if metadata.file_type().is_symlink() => {
-                if !msime_path_trust::is_trusted_system_alias(&current) {
+                if !lingyao_path_trust::is_trusted_system_alias(&current) {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
                         "directory has a symbolic-link ancestor",
@@ -72,7 +72,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn rejects_a_symlinked_ancestor_before_creating_the_parent() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let outside = tempfile::tempdir().unwrap();
         let root = tempfile::tempdir().unwrap();

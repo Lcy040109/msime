@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Everything the voice bar needs about the monitor it is about to appear on,
 // resolved once so that placement and scale cannot disagree by landing on two
 // different monitors.
@@ -38,4 +38,4 @@ struct WaveOverlayDpiScope {
   WaveOverlayDpiScope(const WaveOverlayDpiScope &) = delete;
   WaveOverlayDpiScope &operator=(const WaveOverlayDpiScope &) = delete;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

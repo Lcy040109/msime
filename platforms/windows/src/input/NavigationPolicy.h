@@ -1,11 +1,11 @@
 #pragma once
 #include "ReplyCodec.h"
 #include "PipeMetadata.h"
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <nlohmann/json.hpp>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Explicit snapshot supplied by the native dispatch owner. No implicit product
 // defaults or preference persistence here. Only call after TSF context policy
 // has excluded punctuation/word-to-character shortcuts.
@@ -58,8 +58,8 @@ navigation_action(const FanyImeNamedpipeData &packet,
   else if (bindings.tab && key == 0x09)
     previous = (modifiers & 1u) != 0;
   else if (bindings.arrows && (key == 0x26 || key == 0x28))
-    return NavigationAction{key == 0x26 ? MSIME_PREVIOUS_CANDIDATE
-                                        : MSIME_NEXT_CANDIDATE,
+    return NavigationAction{key == 0x26 ? LINGYAO_PREVIOUS_CANDIDATE
+                                        : LINGYAO_NEXT_CANDIDATE,
                             key == 0x26 ? NavigationReply::PreviousCandidate
                                         : NavigationReply::NextCandidate};
   else {
@@ -82,8 +82,8 @@ navigation_action(const FanyImeNamedpipeData &packet,
       return std::nullopt;
     }
   }
-  return NavigationAction{previous ? MSIME_PREVIOUS_PAGE : MSIME_NEXT_PAGE,
+  return NavigationAction{previous ? LINGYAO_PREVIOUS_PAGE : LINGYAO_NEXT_PAGE,
                           previous ? NavigationReply::PreviousPage
                                    : NavigationReply::NextPage};
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

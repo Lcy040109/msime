@@ -1,4 +1,4 @@
-# A minimal sound pack to start from: copy this folder, rename it to your pack's id, change the fields below and replace the two samples. `msime-pack validate <folder>` checks it by the rules the input method imports it by; docs/plugins.md describes every field and limit.
+# A minimal sound pack to start from: copy this folder, rename it to your pack's id, change the fields below and replace the two samples. `lingyao-pack validate <folder>` checks it by the rules the input method imports it by; docs/plugins.md describes every field and limit.
 schema_version = 1
 kind = "sound"
 id = "example-keys"

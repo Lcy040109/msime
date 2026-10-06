@@ -1,12 +1,12 @@
 #pragma once
 
-#include "msimeui/Layout.h"
+#include "lingyaoui/Layout.h"
 #include "NativeTextInput.h"
 
 #include <string>
 #include <vector>
 
-namespace msimeui
+namespace lingyaoui
 {
 class HandwritingPanel final : public Visual
 {
@@ -51,4 +51,4 @@ class HandwritingPanel final : public Visual
     bool lightTheme_ = false;
     NativeTextInputTarget inputTarget_;
 };
-} // namespace msimeui
+} // namespace lingyaoui

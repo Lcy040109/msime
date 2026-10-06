@@ -1,13 +1,13 @@
 #include "WatchdogPolicy.h"
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 void require(bool value) {
   if (!value)
     throw std::runtime_error("Watchdog policy validation failed");
 }
 int main() {
-  using namespace msime::windows::watchdog;
+  using namespace lingyao::windows::watchdog;
 
   // A requested stop ends supervision; nothing restarts behind the user.
   require(watchdog_after_exit(stop_exit_code, 0, initial_restart_delay_milliseconds) ==

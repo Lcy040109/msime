@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { PreeditSettingsSection, type PreeditSettingsPreferences } from "@msime/ui";
+import { PreeditSettingsSection, type PreeditSettingsPreferences } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

@@ -1,4 +1,4 @@
-//! Test fixtures: tiny `msime-pinyin.db` / `msime-english.db` files with the shipped schemas (data-formats.md §4.1, §5).
+//! Test fixtures: tiny `lingyao-pinyin.db` / `lingyao-english.db` files with the shipped schemas (data-formats.md §4.1, §5).
 
 use std::path::{Path, PathBuf};
 
@@ -8,7 +8,7 @@ use rusqlite::Connection;
 pub type PinyinRow<'a> = (&'a str, &'a str, &'a str, i64);
 
 pub fn pinyin_db(directory: &Path, rows: &[PinyinRow<'_>]) -> PathBuf {
-    let path = directory.join("msime-pinyin.db");
+    let path = directory.join("lingyao-pinyin.db");
     let connection = Connection::open(&path).unwrap();
     for (table, key, value, weight) in rows {
         connection
@@ -39,7 +39,7 @@ pub fn english_db(
     en_zh: &[(&str, &str)],
     zh_en: &[(&str, &str)],
 ) -> PathBuf {
-    let path = directory.join("msime-english.db");
+    let path = directory.join("lingyao-english.db");
     super::english::ensure_english_schema(&path).unwrap();
     let connection = Connection::open(&path).unwrap();
     for word in words {
@@ -71,10 +71,10 @@ pub fn english_db(
 
 /// The real resource set for the eval-backed tests, or `None` with the reason printed.
 pub fn eval_resources(test: &str) -> Option<PathBuf> {
-    match std::env::var_os("MSIME_EVAL_RESOURCES") {
+    match std::env::var_os("LINGYAO_EVAL_RESOURCES") {
         Some(path) if !path.is_empty() => Some(PathBuf::from(path)),
         _ => {
-            println!("{test}: skipped, MSIME_EVAL_RESOURCES is not set");
+            println!("{test}: skipped, LINGYAO_EVAL_RESOURCES is not set");
             None
         }
     }

@@ -70,7 +70,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     // from showKeyboard must never send a later key to the old editor.
     const pid_t ownProcess = NSProcessInfo.processInfo.processIdentifier;
     const pid_t foreground = NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier;
-    const pid_t destination = msime::mac::LiveScreenKeyboardTarget(foreground, ownProcess);
+    const pid_t destination = lingyao::mac::LiveScreenKeyboardTarget(foreground, ownProcess);
     NSRunningApplication *target = destination > 0
         ? [NSRunningApplication runningApplicationWithProcessIdentifier:destination]
         : nil;
@@ -103,11 +103,11 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
 }
 }
 
-@interface MSIMEScreenKeyboardButton : NSButton
+@interface LINGYAOScreenKeyboardButton : NSButton
 @property(nonatomic) BOOL keyboardHovered;
 @property(nonatomic) BOOL closeButton;
 @end
-@implementation MSIMEScreenKeyboardButton {
+@implementation LINGYAOScreenKeyboardButton {
     NSTrackingArea *_keyboardTracking;
 }
 - (void)updateTrackingAreas {
@@ -137,10 +137,10 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
 }
 @end
 
-@interface MSIMEScreenKeyboardContent : NSView
+@interface LINGYAOScreenKeyboardContent : NSView
 @property(nonatomic, copy) void (^layoutKeys)(NSSize);
 @end
-@implementation MSIMEScreenKeyboardContent
+@implementation LINGYAOScreenKeyboardContent
 - (BOOL)isFlipped { return YES; }
 - (void)layout { [super layout]; if (self.layoutKeys) self.layoutKeys(self.bounds.size); }
 - (void)updateHeaderColors {
@@ -156,9 +156,9 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
 }
 @end
 
-@implementation MSIMEScreenKeyboardPanel {
-    MSIMEScreenKeyboardSender _sender;
-    MSIMEScreenKeyboardTargetProvider _targetProvider;
+@implementation LINGYAOScreenKeyboardPanel {
+    LINGYAOScreenKeyboardSender _sender;
+    LINGYAOScreenKeyboardTargetProvider _targetProvider;
     pid_t _inputTargetPID;
     NSMutableArray<NSButton *> *_buttons;
     std::vector<Key> _keys;
@@ -166,7 +166,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     NSTextField *_status;
 }
 + (instancetype)sharedPanel {
-    static MSIMEScreenKeyboardPanel *panel;
+    static LINGYAOScreenKeyboardPanel *panel;
     static dispatch_once_t once;
     dispatch_once(&once, ^{ panel = [[self alloc] init]; });
     return panel;
@@ -177,22 +177,22 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
         return frontmost ? frontmost.processIdentifier : 0;
     }];
     if (self) {
-        __weak MSIMEScreenKeyboardPanel *weakSelf = self;
+        __weak LINGYAOScreenKeyboardPanel *weakSelf = self;
         _sender = ^BOOL(unsigned short code, NSEventModifierFlags flags) {
-            MSIMEScreenKeyboardPanel *strongSelf = weakSelf;
+            LINGYAOScreenKeyboardPanel *strongSelf = weakSelf;
             return strongSelf ? PostKey(code, flags, strongSelf->_inputTargetPID) : NO;
         };
     }
     return self;
 }
-- (instancetype)initWithKeySender:(MSIMEScreenKeyboardSender)sender {
+- (instancetype)initWithKeySender:(LINGYAOScreenKeyboardSender)sender {
     return [self initWithKeySender:sender targetProvider:^pid_t {
         NSRunningApplication *frontmost = NSWorkspace.sharedWorkspace.frontmostApplication;
         return frontmost ? frontmost.processIdentifier : 0;
     }];
 }
-- (instancetype)initWithKeySender:(MSIMEScreenKeyboardSender)sender
-                    targetProvider:(MSIMEScreenKeyboardTargetProvider)targetProvider {
+- (instancetype)initWithKeySender:(LINGYAOScreenKeyboardSender)sender
+                    targetProvider:(LINGYAOScreenKeyboardTargetProvider)targetProvider {
     self = [super initWithContentRect:NSMakeRect(0, 0, 1100, 400)
         styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel backing:NSBackingStoreBuffered defer:NO];
     if (!self) return nil;
@@ -207,7 +207,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     self.hidesOnDeactivate = NO;
     self.movableByWindowBackground = YES;
     self.collectionBehavior = NSWindowCollectionBehaviorCanJoinAllSpaces | NSWindowCollectionBehaviorFullScreenAuxiliary;
-    MSIMEScreenKeyboardContent *content = [[MSIMEScreenKeyboardContent alloc] initWithFrame:NSMakeRect(0, 0, 1100, 400)];
+    LINGYAOScreenKeyboardContent *content = [[LINGYAOScreenKeyboardContent alloc] initWithFrame:NSMakeRect(0, 0, 1100, 400)];
     content.wantsLayer = YES;
     self.contentView = content;
     _status = [NSTextField labelWithString:@"灵耀屏幕键盘"];
@@ -215,16 +215,16 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     _status.frame = NSMakeRect(10, 4, 950, 20);
     _status.autoresizingMask = NSViewWidthSizable;
     [content addSubview:_status];
-    MSIMEScreenKeyboardButton *close = [MSIMEScreenKeyboardButton buttonWithTitle:@"×" target:self action:@selector(closeKeyboard:)];
+    LINGYAOScreenKeyboardButton *close = [LINGYAOScreenKeyboardButton buttonWithTitle:@"×" target:self action:@selector(closeKeyboard:)];
     close.closeButton = YES;
     close.accessibilityLabel = @"关闭屏幕键盘";
     close.frame = NSMakeRect(1066, 2, 28, 24);
     close.autoresizingMask = NSViewMinXMargin;
     [content addSubview:close];
     for (const auto &row : Rows()) for (const Key &key : row) {
-        NSButton *button = [MSIMEScreenKeyboardButton buttonWithTitle:@(key.normal) target:self action:@selector(pressKey:)];
+        NSButton *button = [LINGYAOScreenKeyboardButton buttonWithTitle:@(key.normal) target:self action:@selector(pressKey:)];
         button.tag = _keys.size();
-        button.accessibilityIdentifier = [NSString stringWithFormat:@"MSIMEScreenKeyboardKey%ld", (long)button.tag];
+        button.accessibilityIdentifier = [NSString stringWithFormat:@"LINGYAOScreenKeyboardKey%ld", (long)button.tag];
         button.accessibilityLabel = @(key.normal);
         button.font = [NSFont systemFontOfSize:key.normal[1] == '\0' ? 15 : 12];
         button.bezelStyle = NSBezelStyleRegularSquare;
@@ -238,7 +238,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
         _keys.push_back(key);
         [content addSubview:button];
     }
-    __weak MSIMEScreenKeyboardPanel *weakSelf = self;
+    __weak LINGYAOScreenKeyboardPanel *weakSelf = self;
     content.layoutKeys = ^(NSSize size) { [weakSelf layoutKeys:size]; };
     [self layoutKeys:content.bounds.size];
     return self;
@@ -298,7 +298,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
 - (void)closeKeyboard:(id)sender { (void)sender; _modifiers = 0; _inputTargetPID = 0; [self refreshKeys]; [self orderOut:nil]; }
 - (void)showKeyboard {
     pid_t candidate = _targetProvider ? _targetProvider() : 0;
-    _inputTargetPID = msime::mac::CapturedScreenKeyboardTarget(candidate, NSProcessInfo.processInfo.processIdentifier);
+    _inputTargetPID = lingyao::mac::CapturedScreenKeyboardTarget(candidate, NSProcessInfo.processInfo.processIdentifier);
     if (!self.visible) {
         NSRect visible = (NSScreen.mainScreen ?: NSScreen.screens.firstObject).visibleFrame;
         if (!NSIsEmptyRect(visible)) {
@@ -308,7 +308,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     }
     [self orderFrontRegardless];
     // The pid decides where the keys go, so whether one was captured is the first thing to know when they go nowhere.
-    os_log(MSIMEUILog(), "screen_keyboard_shown target_captured=%d", _inputTargetPID != 0);
-    MSIMELogWindowState("screen_keyboard_present", self);
+    os_log(LINGYAOUILog(), "screen_keyboard_shown target_captured=%d", _inputTargetPID != 0);
+    LINGYAOLogWindowState("screen_keyboard_present", self);
 }
 @end

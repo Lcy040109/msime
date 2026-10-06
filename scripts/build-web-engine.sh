@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# 构建网页内置输入法用的引擎包：msime-engine-wasm 编译成 wasm，经 wasm-bindgen 和 wasm-opt 处理，再加上裁剪后的词库、整句模型、NOTICE、清单和校验和，全部写到 target/web-engine/dist/；再把 packages/web-engine 的 SDK 和这些文件组装成 npm 包 target/web-engine/npm/msime-web-engine-<版本>.tgz。
+# 构建网页内置输入法用的引擎包：lingyao-engine-wasm 编译成 wasm，经 wasm-bindgen 和 wasm-opt 处理，再加上裁剪后的词库、整句模型、NOTICE、清单和校验和，全部写到 target/web-engine/dist/；再把 packages/web-engine 的 SDK 和这些文件组装成 npm 包 target/web-engine/npm/lingyao-web-engine-<版本>.tgz。
 #
-# TapTapGo 按 web-engine-manifest.json 里每个文件的 sha256 和大小钉住 release（data/msime/web-engine.lock.json），所以同一提交、同一输入构建出来的文件必须逐字节相同：gzip 用 -n 去掉文件名和时间戳，词库由 `msime-dict-build web` 确定性地生成。
+# TapTapGo 按 web-engine-manifest.json 里每个文件的 sha256 和大小钉住 release（data/lingyao/web-engine.lock.json），所以同一提交、同一输入构建出来的文件必须逐字节相同：gzip 用 -n 去掉文件名和时间戳，词库由 `lingyao-dict-build web` 确定性地生成。
 #
 # 用法：
-#   scripts/build-web-engine.sh --pinyin <msime-pinyin.db> --wubi <msime-wubi.db> --model <sentence-model.safetensors> [--keep-multi N] [--version X.Y.Z]
+#   scripts/build-web-engine.sh --pinyin <lingyao-pinyin.db> --wubi <lingyao-wubi.db> --model <sentence-model.safetensors> [--keep-multi N] [--version X.Y.Z]
 #   scripts/build-web-engine.sh --no-data [--version X.Y.Z]     只构建 wasm、加载代码和 NOTICE（CI 用）
 #
-# --pinyin 和 --wubi 是词库 release 的 msime-pinyin.db 和 msime-wubi.db，与 --keep-multi 一起透传给 `msime-dict-build web`；--keep-multi 是拼音库保留的多字词条数，默认 200000。--version 写进清单，默认取 msime-engine-wasm 的 crate 版本；release-web-engine.yml 传入要发布的版本号。
+# --pinyin 和 --wubi 是词库 release 的 lingyao-pinyin.db 和 lingyao-wubi.db，与 --keep-multi 一起透传给 `lingyao-dict-build web`；--keep-multi 是拼音库保留的多字词条数，默认 200000。--version 写进清单，默认取 lingyao-engine-wasm 的 crate 版本；release-web-engine.yml 传入要发布的版本号。
 #
 # 需要：Rust 的 wasm32-unknown-unknown 目标、能编译 wasm 的 LLVM clang 和 llvm-ar（Apple 的 ar 会产出空的 libwsqlite3.a）、wasm-bindgen 0.2.128（必须与 crates/engine-wasm 钉住的 wasm-bindgen crate 同版本）、binaryen 133 的 wasm-opt、jq、gzip，以及打 npm 包用的 Node.js 和 npm（生成内置皮肤表也用 Node.js）。并行度由 cargo 自己的 CARGO_BUILD_JOBS 控制。
 set -euo pipefail
@@ -110,7 +110,7 @@ if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   echo "warning: the working tree has uncommitted changes; the manifest still names $source_commit"
 fi
 if [ -z "$version" ]; then
-  version="$(cargo metadata --locked --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "msime-engine-wasm") | .version')"
+  version="$(cargo metadata --locked --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "lingyao-engine-wasm") | .version')"
 fi
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || die "version must be X.Y.Z, got '$version'"
 
@@ -121,31 +121,31 @@ rm -rf "$pkg" "$dist"
 mkdir -p "$pkg" "$dist"
 
 step "cargo build (wasm-release)"
-# 2. build_info() 从 MSIME_GIT_SHA 读提交号。
-MSIME_GIT_SHA="$short_commit" cargo build --locked -p msime-engine-wasm --target wasm32-unknown-unknown --profile wasm-release
-raw_wasm="target/wasm32-unknown-unknown/wasm-release/msime_engine_wasm.wasm"
+# 2. build_info() 从 LINGYAO_GIT_SHA 读提交号。
+LINGYAO_GIT_SHA="$short_commit" cargo build --locked -p lingyao-engine-wasm --target wasm32-unknown-unknown --profile wasm-release
+raw_wasm="target/wasm32-unknown-unknown/wasm-release/lingyao_engine_wasm.wasm"
 [ -f "$raw_wasm" ] || die "$raw_wasm was not produced"
 
 step "wasm-bindgen"
-# 3. --omit-default-module-path 去掉加载代码里默认的 new URL('msime_engine_bg.wasm', import.meta.url)：TapTapGo 总是显式传入 wasm 的地址，留着它 Vite 会去解析一个不存在的文件。
-wasm-bindgen --target web --omit-default-module-path --no-typescript --out-name msime_engine --out-dir "$pkg" "$raw_wasm"
+# 3. --omit-default-module-path 去掉加载代码里默认的 new URL('lingyao_engine_bg.wasm', import.meta.url)：TapTapGo 总是显式传入 wasm 的地址，留着它 Vite 会去解析一个不存在的文件。
+wasm-bindgen --target web --omit-default-module-path --no-typescript --out-name lingyao_engine --out-dir "$pkg" "$raw_wasm"
 
 step "wasm-opt"
 # 4. 启用的特性与 wasm-bindgen 0.2.128 和 Rust 默认 wasm32 目标产出的指令一致。
 wasm-opt -Oz --enable-bulk-memory --enable-sign-ext --enable-nontrapping-float-to-int \
   --enable-mutable-globals --enable-reference-types --enable-multivalue \
-  -o "$dist/msime_engine_bg.wasm" "$pkg/msime_engine_bg.wasm"
-cp "$pkg/msime_engine.js" "$dist/msime_engine.js"
+  -o "$dist/lingyao_engine_bg.wasm" "$pkg/lingyao_engine_bg.wasm"
+cp "$pkg/lingyao_engine.js" "$dist/lingyao_engine.js"
 
 if [ "$no_data" -eq 0 ]; then
   step "web dictionaries"
   # 5. 裁出拼音库和五笔 86 库，再把两个库和模型 gzip -9n（不记文件名和时间戳，结果可复现）。
   dict_dir="$out/dict"
   mkdir -p "$dict_dir"
-  cargo run --locked --release -p msime-dict-builder --bin msime-dict-build -- \
+  cargo run --locked --release -p lingyao-dict-builder --bin lingyao-dict-build -- \
     web --pinyin "$pinyin" --wubi "$wubi" --out-dir "$dict_dir" --keep-multi "$keep_multi"
-  gzip -9n -c "$dict_dir/msime-pinyin.db" > "$dist/msime-pinyin.db.gz"
-  gzip -9n -c "$dict_dir/msime-wubi86.db" > "$dist/msime-wubi86.db.gz"
+  gzip -9n -c "$dict_dir/lingyao-pinyin.db" > "$dist/lingyao-pinyin.db.gz"
+  gzip -9n -c "$dict_dir/lingyao-wubi86.db" > "$dist/lingyao-wubi86.db.gz"
   gzip -9n -c "$model" > "$dist/sentence-model.safetensors.gz"
 fi
 
@@ -171,11 +171,11 @@ add_artifact() {
     --argjson size "$(size_of "$file")" --argjson raw "$raw" \
     '{name: $name, role: $role, sha256: $sha256, size: $size, raw_size: $raw}' >> "$artifacts"
 }
-add_artifact msime_engine_bg.wasm wasm
-add_artifact msime_engine.js glue
+add_artifact lingyao_engine_bg.wasm wasm
+add_artifact lingyao_engine.js glue
 if [ "$no_data" -eq 0 ]; then
-  add_artifact msime-pinyin.db.gz pinyin
-  add_artifact msime-wubi86.db.gz wubi86
+  add_artifact lingyao-pinyin.db.gz pinyin
+  add_artifact lingyao-wubi86.db.gz wubi86
   add_artifact sentence-model.safetensors.gz model
   keep_multi_json="$keep_multi"
 else
@@ -196,17 +196,17 @@ mv "$out/SHA256SUMS.txt" "$dist/SHA256SUMS.txt"
 
 step "size gates"
 # 8. 体积门槛。
-wasm_bytes="$(size_of "$dist/msime_engine_bg.wasm")"
-[ "$wasm_bytes" -le "$MAX_WASM_BYTES" ] || die "msime_engine_bg.wasm is $wasm_bytes bytes, over the $MAX_WASM_BYTES byte gate"
-echo "msime_engine_bg.wasm: $wasm_bytes bytes (gate $MAX_WASM_BYTES)"
+wasm_bytes="$(size_of "$dist/lingyao_engine_bg.wasm")"
+[ "$wasm_bytes" -le "$MAX_WASM_BYTES" ] || die "lingyao_engine_bg.wasm is $wasm_bytes bytes, over the $MAX_WASM_BYTES byte gate"
+echo "lingyao_engine_bg.wasm: $wasm_bytes bytes (gate $MAX_WASM_BYTES)"
 if [ "$no_data" -eq 0 ]; then
-  pinyin_bytes="$(size_of "$dist/msime-pinyin.db.gz")"
-  [ "$pinyin_bytes" -le "$MAX_PINYIN_GZ_BYTES" ] || die "msime-pinyin.db.gz is $pinyin_bytes bytes, over the $MAX_PINYIN_GZ_BYTES byte gate"
-  echo "msime-pinyin.db.gz: $pinyin_bytes bytes (gate $MAX_PINYIN_GZ_BYTES)"
+  pinyin_bytes="$(size_of "$dist/lingyao-pinyin.db.gz")"
+  [ "$pinyin_bytes" -le "$MAX_PINYIN_GZ_BYTES" ] || die "lingyao-pinyin.db.gz is $pinyin_bytes bytes, over the $MAX_PINYIN_GZ_BYTES byte gate"
+  echo "lingyao-pinyin.db.gz: $pinyin_bytes bytes (gate $MAX_PINYIN_GZ_BYTES)"
 fi
 
 step "npm package"
-# 9. SDK（packages/web-engine）和这次构建的加载代码、资源组装成 @msime/web-engine，打成 target/web-engine/npm/msime-web-engine-<版本>.tgz。它不进 dist/：dist 的清单和校验和是 TapTapGo 钉住的，多一个文件就会改变它们。assets.js 从清单生成，SDK 靠它知道每个资源的名字和大小，所以 SDK 与 wasm、词库永远是同一次构建。
+# 9. SDK（packages/web-engine）和这次构建的加载代码、资源组装成 @lingyao/web-engine，打成 target/web-engine/npm/lingyao-web-engine-<版本>.tgz。它不进 dist/：dist 的清单和校验和是 TapTapGo 钉住的，多一个文件就会改变它们。assets.js 从清单生成，SDK 靠它知道每个资源的名字和大小，所以 SDK 与 wasm、词库永远是同一次构建。
 npm_dir="$out/npm"
 npm_pkg="$npm_dir/package"
 rm -rf "$npm_dir"
@@ -215,13 +215,13 @@ sdk="packages/web-engine"
 cp "$sdk/src/index.js" "$sdk/src/index.d.ts" "$sdk/src/keys.js" "$sdk/src/input.js" "$sdk/src/skin.js" "$sdk/src/candidates.js" "$sdk/src/candidates.d.ts" "$sdk/src/worker.js" "$sdk/README.md" "$npm_pkg/"
 # skin.js 导入的内置皮肤表从 packages/ui/src/theme/theme-catalog.json 和 crates/client-core/src/skin/catalog/windows_looks.rs 生成，SDK 里没有手写的配色副本；来源的格式变了生成器会报错，构建随之失败。
 node "$sdk/tools/theme-catalog.mjs" "$npm_pkg/theme-catalog.js"
-cp "$sdk/bin/msime-web-engine.mjs" "$npm_pkg/bin/"
+cp "$sdk/bin/lingyao-web-engine.mjs" "$npm_pkg/bin/"
 cp LICENSE "$npm_pkg/LICENSE"
-cp "$dist/msime_engine.js" "$npm_pkg/"
+cp "$dist/lingyao_engine.js" "$npm_pkg/"
 # 加载代码在包的根目录（worker.js 旁边）；SHA256SUMS.txt 按 dist 的目录结构列文件，放进 assets/ 就对不上了，包里的校验信息以 web-engine-manifest.json 为准。
 for file in "$dist"/*; do
   case "$(basename "$file")" in
-    msime_engine.js | SHA256SUMS.txt) ;;
+    lingyao_engine.js | SHA256SUMS.txt) ;;
     *) cp "$file" "$npm_pkg/assets/" ;;
   esac
 done
@@ -234,7 +234,7 @@ jq --arg version "$version" '.version = $version' "$sdk/package.json" > "$npm_pk
     "$dist/web-engine-manifest.json"
 } > "$npm_pkg/assets.js"
 npm pack --silent --pack-destination "$npm_dir" "$npm_pkg" > /dev/null
-npm_tgz="$npm_dir/msime-web-engine-$version.tgz"
+npm_tgz="$npm_dir/lingyao-web-engine-$version.tgz"
 [ -f "$npm_tgz" ] || die "npm pack did not produce $npm_tgz"
 echo "$npm_tgz: $(size_of "$npm_tgz") bytes"
 
@@ -242,4 +242,4 @@ step "done"
 jq -r '.artifacts[] | "\(.name)\t\(.size)\t\(.raw_size)\t\(.sha256)"' "$dist/web-engine-manifest.json" |
   awk -F '\t' '{ printf "  %-32s %10d B  (raw %10d B)  %s\n", $1, $2, $3, $4 }'
 echo "web engine $version ($short_commit) written to $dist"
-echo "npm package @msime/web-engine $version written to $npm_tgz"
+echo "npm package @lingyao/web-engine $version written to $npm_tgz"

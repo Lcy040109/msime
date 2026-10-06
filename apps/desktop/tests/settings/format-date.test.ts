@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatZhDate, formatZhMonthDay } from "@msime/ui";
+import { formatZhDate, formatZhMonthDay } from "@lingyao/ui";
 
 test("formats valid dates with the shared Chinese date locale", () => {
   expect(formatZhDate("2026-10-04T12:00:00Z")).toBe(

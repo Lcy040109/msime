@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Footer label for the Engine's local input mode, shared by the IBus auxiliary text and the Fcitx5 aux-down line. The keys are the names the Engine emits in `local_mode` (crates/engine/src/types.rs LocalInputMode::name); "none" and any unknown name have no label.
 inline const char *candidate_local_mode_label(std::string_view mode) {
@@ -23,4 +23,4 @@ inline const char *candidate_local_mode_label(std::string_view mode) {
   return nullptr;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

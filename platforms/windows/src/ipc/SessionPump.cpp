@@ -1,7 +1,7 @@
 #include "SessionPump.h"
 #include "InternalEventFlags.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 SessionPump::SessionPump(MainTransport &transport, InputQueue &input,
                          FocusGate &focus, KeyHandler key, EventHandler event,
                          Presentation presentation,
@@ -234,4 +234,4 @@ PumpResult SessionPump::run(const PipeTicket &ticket) {
     return PumpResult::DispatchFailed;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

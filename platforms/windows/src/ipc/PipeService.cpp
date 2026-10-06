@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace msime::windows {
+namespace lingyao::windows {
 PipeService::PipeService(PipeServiceOptions options,
                          PipeIntake::Completion completion)
     : registry_(options.max_clients) {
@@ -94,4 +94,4 @@ void PipeService::listen(uint32_t role) {
     request_stop(); // Joining belongs to the control thread, not this listener.
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

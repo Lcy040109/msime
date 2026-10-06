@@ -6,7 +6,7 @@
 #include <memory>
 #include <windows.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Server-side binding of a connected local pipe to its client process.
 // The caller owns the pipe, prevents concurrent disconnect/close/reconnect,
 // and must enforce its DACL and PIPE_REJECT_REMOTE_CLIENTS before this check.
@@ -39,4 +39,4 @@ bool pipe_client_in_session(HANDLE pipe, ULONG &pid, DWORD &error);
 // SID, not in an AppContainer, and at least medium integrity. Any failure to
 // tell is a rejection.
 bool pipe_client_is_desktop_user(HANDLE pipe, DWORD &error);
-} // namespace msime::windows
+} // namespace lingyao::windows

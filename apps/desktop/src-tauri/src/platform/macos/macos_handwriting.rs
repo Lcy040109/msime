@@ -22,7 +22,7 @@ pub(crate) fn bundled_model(executable: &Path) -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_input_runtime::{HandwritingPoint, HandwritingQuery};
+    use lingyao_input_runtime::{HandwritingPoint, HandwritingQuery};
 
     /// The Engine's ordered-stroke 中 fixture, mapped through `place`.
     fn zhong_strokes(place: impl Fn((f32, f32)) -> (f32, f32)) -> Vec<Vec<(f32, f32)>> {
@@ -52,9 +52,9 @@ mod tests {
         }
     }
 
-    /// The pinned model (resources/handwriting-model.lock.json): `MSIME_HANDWRITING_MODEL`, else where `scripts/fetch_handwriting_model.py` puts it. It is a 26.8 MB download, so the recognition cases are skipped, with the reason printed, when it has not been fetched.
+    /// The pinned model (resources/handwriting-model.lock.json): `LINGYAO_HANDWRITING_MODEL`, else where `scripts/fetch_handwriting_model.py` puts it. It is a 26.8 MB download, so the recognition cases are skipped, with the reason printed, when it has not been fetched.
     fn engine_model() -> Option<PathBuf> {
-        let path = std::env::var_os("MSIME_HANDWRITING_MODEL")
+        let path = std::env::var_os("LINGYAO_HANDWRITING_MODEL")
             .filter(|value| !value.is_empty())
             .map(PathBuf::from)
             .unwrap_or_else(|| {
@@ -65,7 +65,7 @@ mod tests {
             return Some(path);
         }
         eprintln!(
-            "skipped: no handwriting model at {}; run scripts/fetch_handwriting_model.py or set MSIME_HANDWRITING_MODEL",
+            "skipped: no handwriting model at {}; run scripts/fetch_handwriting_model.py or set LINGYAO_HANDWRITING_MODEL",
             path.display()
         );
         None
@@ -95,7 +95,7 @@ mod tests {
         // Synthetic 中, the same ordered-stroke fixture used by the engine.
         let query = query(zhong_strokes(|(x, y)| (x, y)));
         let candidates =
-            msime_host_api::handwriting_local_candidates(resolved.to_str().unwrap(), &query)
+            lingyao_host_api::handwriting_local_candidates(resolved.to_str().unwrap(), &query)
                 .unwrap();
         assert!(candidates.iter().any(|candidate| candidate == "中"));
         assert!(candidates.len() <= 12);
@@ -114,7 +114,7 @@ mod tests {
             return;
         };
         let candidates =
-            msime_host_api::handwriting_local_candidates(model.to_str().unwrap(), &query(strokes))
+            lingyao_host_api::handwriting_local_candidates(model.to_str().unwrap(), &query(strokes))
                 .unwrap();
         assert_eq!(candidates.first().map(String::as_str), Some("中中"));
         assert!(candidates.len() <= 12);

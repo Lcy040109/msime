@@ -2,7 +2,7 @@
 //!
 //! These are the JSON shapes `packages/ui/src/account/account-page.tsx` declares as `AccountUser`, `AccountProviders`, `AccountChallenge` and `AccountProfile`, plus the `{ user }` status wrapper. Tokens, nonces and authorization URLs never reach them. The Android host reuses the same provider DTO while omitting the optional `apple` and `google` fields; the page only offers either button when the host client also implements that sign-in.
 
-use msime_client_core::account::{
+use lingyao_client_core::account::{
     AccountChallenge, AccountChatModels, AccountPreferenceSchema, AccountProfile, AccountUser,
 };
 use serde::Serialize;
@@ -35,7 +35,7 @@ impl From<AccountUser> for UserResponse {
         // A URL this client would never fetch is not passed on either, so the page cannot show a placeholder for an avatar that will not load.
         let avatar_url = user
             .avatar_url
-            .filter(|url| msime_client_core::account::account_avatar_url_allowed(url));
+            .filter(|url| lingyao_client_core::account::account_avatar_url_allowed(url));
         Self {
             id: user.id,
             display_name: user.display_name,
@@ -43,7 +43,7 @@ impl From<AccountUser> for UserResponse {
             email: user.email,
             avatar_uploaded: avatar_url
                 .as_deref()
-                .is_some_and(msime_client_core::account::account_avatar_is_uploaded),
+                .is_some_and(lingyao_client_core::account::account_avatar_is_uploaded),
             avatar_url,
         }
     }
@@ -170,7 +170,7 @@ pub struct ChatResponse {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreferenceSchemaResponse {
-    fields: BTreeMap<String, msime_client_core::account::AccountPreferenceField>,
+    fields: BTreeMap<String, lingyao_client_core::account::AccountPreferenceField>,
     maximum_bytes: usize,
     update_mode: String,
     revision_required: bool,
@@ -190,7 +190,7 @@ impl From<AccountPreferenceSchema> for PreferenceSchemaResponse {
 #[cfg(test)]
 mod tests {
     use super::{providers_response, ChallengeResponse, ProfileResponse, StatusResponse};
-    use msime_client_core::account::{
+    use lingyao_client_core::account::{
         AccountChallenge, AccountProfile, AccountProfileIdentity, AccountUser,
     };
     use serde_json::json;

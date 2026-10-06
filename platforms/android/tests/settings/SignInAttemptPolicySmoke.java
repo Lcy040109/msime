@@ -1,4 +1,4 @@
-import app.msime.android.home.SignInAttemptPolicy;
+import app.lingyao.android.home.SignInAttemptPolicy;
 
 /** A sign-in row may own only one provider flow at a time. */
 public final class SignInAttemptPolicySmoke {

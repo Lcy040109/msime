@@ -1,5 +1,5 @@
 [package]
-name = "msime-host-macos"
+name = "lingyao-host-macos"
 description = "macOS InputMethodKit host support for the shared client."
 version.workspace = true
 edition.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-msime-client-core = { path = "../client-core" }
+lingyao-client-core = { path = "../client-core" }
 serde.workspace = true
 serde_json.workspace = true
 socket2 = "0.6"

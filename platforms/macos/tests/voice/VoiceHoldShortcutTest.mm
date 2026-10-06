@@ -6,9 +6,9 @@ static NSEvent *Event(unsigned short key, NSEventModifierFlags flags, NSEventTyp
 }
 int main() {
     @autoreleasepool {
-        using Action = MSIMEVoiceHoldShortcut::Action;
-        MSIMEVoiceHoldShortcut shortcut;
-        MSIMEVoiceHoldShortcut::Options all{true, true, true, true};
+        using Action = LINGYAOVoiceHoldShortcut::Action;
+        LINGYAOVoiceHoldShortcut shortcut;
+        LINGYAOVoiceHoldShortcut::Options all{true, true, true, true};
         const auto ro = NSEventModifierFlagOption | NX_DEVICERALTKEYMASK;
         const auto lo = NSEventModifierFlagOption | NX_DEVICELALTKEYMASK;
         const auto rc = NSEventModifierFlagControl | NX_DEVICERCTLKEYMASK;

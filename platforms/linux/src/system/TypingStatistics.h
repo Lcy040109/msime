@@ -17,7 +17,7 @@
 #include <string_view>
 #include <utility>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 enum class TypingSource {
   Quanpin,
@@ -160,7 +160,7 @@ constexpr bool should_count_passthrough_character(char32_t character,
 // Until a read succeeds the switch is off, the privacy-preserving default the macOS host uses too. Commits made between turning statistics on and the next tick are not recorded.
 class TypingStatisticsSwitch {
 public:
-  // msime_client_typing_statistics_enabled in the hosts: 1 on, 0 off, negative when the store cannot be read.
+  // lingyao_client_typing_statistics_enabled in the hosts: 1 on, 0 off, negative when the store cannot be read.
   using Query = int32_t (*)(const uint8_t *directory, std::size_t length);
 
   explicit TypingStatisticsSwitch(Query query) : query_(query) {}
@@ -464,4 +464,4 @@ private:
   std::size_t running_ = 0;
 };
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

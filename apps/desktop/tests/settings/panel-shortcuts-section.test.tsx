@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { PanelShortcutsSection } from "@msime/ui";
+import { PanelShortcutsSection } from "@lingyao/ui";
 
 afterEach(cleanup);
 

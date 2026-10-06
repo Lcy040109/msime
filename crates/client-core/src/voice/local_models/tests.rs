@@ -527,7 +527,7 @@ fn symlinked_root_ancestors_are_rejected_before_installing() {
     let target = tempfile::tempdir().unwrap();
     let parent = tempfile::tempdir().unwrap();
     let linked = parent.path().join("linked");
-    msime_path_trust::untrusted_symlink(target.path(), &linked).unwrap();
+    lingyao_path_trust::untrusted_symlink(target.path(), &linked).unwrap();
     let root = linked.join("missing").join("models");
     let archive = good_archive();
     let model = fixture_model(&archive);
@@ -552,7 +552,7 @@ fn symlinked_root_ancestors_with_existing_descendants_are_rejected() {
     let parent = tempfile::tempdir().unwrap();
     fs::create_dir_all(target.path().join("inner/models")).unwrap();
     let linked = parent.path().join("linked");
-    msime_path_trust::untrusted_symlink(target.path(), &linked).unwrap();
+    lingyao_path_trust::untrusted_symlink(target.path(), &linked).unwrap();
     let root = linked.join("inner/models");
     let archive = good_archive();
     let model = fixture_model(&archive);
@@ -907,14 +907,14 @@ fn installed_manifest_rejects_a_symlinked_root() {
 }
 
 /// Downloads the real default model once. Not run in CI; run by hand with
-/// `MSIME_LOCAL_MODEL_ROOT=/tmp/msime-models-rs cargo test -p msime-client-core --lib real_install -- --ignored --nocapture`.
+/// `LINGYAO_LOCAL_MODEL_ROOT=/tmp/lingyao-models-rs cargo test -p lingyao-client-core --lib real_install -- --ignored --nocapture`.
 #[test]
 #[ignore = "downloads the default model from GitHub"]
 fn real_install_of_the_default_model() {
     let root =
-        std::env::var("MSIME_LOCAL_MODEL_ROOT").unwrap_or_else(|_| "/tmp/msime-models-rs".into());
+        std::env::var("LINGYAO_LOCAL_MODEL_ROOT").unwrap_or_else(|_| "/tmp/lingyao-models-rs".into());
     let root = Path::new(&root);
-    let mirror = std::env::var("MSIME_LOCAL_MODEL_MIRROR").unwrap_or_default();
+    let mirror = std::env::var("LINGYAO_LOCAL_MODEL_MIRROR").unwrap_or_default();
     let mut last_stage = "";
     let path = install(
         root,

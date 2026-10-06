@@ -1,18 +1,18 @@
 //! 网页内置输入法的宿主编排：按键路由、候选排序、翻页和上屏上文。
 //!
-//! 这一层是纯 Rust，不碰浏览器，原生测试可以直接驱动它（`tests/routing.rs`、`tests/parity.rs`）。它做的事和桌面宿主里的 `msime_input_runtime::Runtime` 相同——每次选择都经过 `engine_order` 座位映射，排序决策调用 `msime_engine::ordering` 里同一组函数——只是去掉了网页用不到的部分（在线候选、九键、本地模式、词组暂存），并多了网页自己要管的东西：英文模式开关、引号状态和慢帧熔断。
+//! 这一层是纯 Rust，不碰浏览器，原生测试可以直接驱动它（`tests/routing.rs`、`tests/parity.rs`）。它做的事和桌面宿主里的 `lingyao_input_runtime::Runtime` 相同——每次选择都经过 `engine_order` 座位映射，排序决策调用 `lingyao_engine::ordering` 里同一组函数——只是去掉了网页用不到的部分（在线候选、九键、本地模式、词组暂存），并多了网页自己要管的东西：英文模式开关、引号状态和慢帧熔断。
 //!
-//! 引擎用的是核心 `msime_engine::Session`，不是 `msime_engine::host::Session`：后者构造时要写翻译 sidecar，在 wasm 上没有文件系统可写。
+//! 引擎用的是核心 `lingyao_engine::Session`，不是 `lingyao_engine::host::Session`：后者构造时要写翻译 sidecar，在 wasm 上没有文件系统可写。
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-use msime_engine::ordering::{
+use lingyao_engine::ordering::{
     rerank_pick, rotate_to_front, runner_up_order, OrderRow, Reranker, SentenceModel,
 };
-use msime_engine::time::Instant;
-use msime_engine::{
+use lingyao_engine::time::Instant;
+use lingyao_engine::{
     Command, EnglishInputOptions, FrequencyAdjustmentOptions, FuzzyPinyinOptions, KeyResult,
     LocalInputMode, LocalModeOptions, MixedExpressiveOptions, RuntimePaths, SchemeType,
     SentenceAssociationOptions, Session, SessionOptions, SessionSnapshot, ShuangpinProfileKind,
@@ -256,7 +256,7 @@ pub struct WebHost {
 }
 
 impl WebHost {
-    /// 主库必须已在 /res/msime-pinyin.db（wasm 上由 import_database 放入；原生测试用真实路径构造，见 new_with_paths）。路径必须是 `assets::MAIN_DICTIONARY` 的现名：wasm32-unknown-unknown 上读不到文件元数据，`RuntimePaths` 退回旧名 msime.db 的逻辑不会生效
+    /// 主库必须已在 /res/lingyao-pinyin.db（wasm 上由 import_database 放入；原生测试用真实路径构造，见 new_with_paths）。路径必须是 `assets::MAIN_DICTIONARY` 的现名：wasm32-unknown-unknown 上读不到文件元数据，`RuntimePaths` 退回旧名 lingyao.db 的逻辑不会生效
     pub fn new(scheme: Scheme, page_size: usize, model: Option<&[u8]>) -> Result<WebHost, String> {
         let resources = PathBuf::from("/res");
         let scratch = PathBuf::from("/scratch");

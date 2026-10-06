@@ -9,7 +9,7 @@ final class CandidatePageSizeTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-page-size-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-page-size-\(UUID().uuidString)", isDirectory: true)
     storedPreference = CandidatePageSizePreference.defaults.object(forKey: CandidatePageSizePreference.key)
   }
 

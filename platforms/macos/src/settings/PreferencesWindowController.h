@@ -1,17 +1,17 @@
 #pragma once
 #import <AppKit/AppKit.h>
 
-FOUNDATION_EXPORT NSNotificationName const MSIMEStandalonePreferencesDidCloseNotification;
+FOUNDATION_EXPORT NSNotificationName const LINGYAOStandalonePreferencesDidCloseNotification;
 
 /// Native preferences entry point; pages are added incrementally to this controller.
-@interface MSIMEPreferencesWindowController : NSWindowController <NSWindowDelegate>
+@interface LINGYAOPreferencesWindowController : NSWindowController <NSWindowDelegate>
 + (instancetype)sharedController;
 + (NSString *)storedGlobalTheme;
 + (void)setStoredGlobalTheme:(NSString *)themeId;
 /// The catalog title of a global theme id (系统, 灵耀, …), or the id itself when the catalog does not know it. The account page's settings list shows theme ids through this.
 + (NSString *)themeTitleForIdentifier:(NSString *)themeId;
 - (void)showAndActivate;
-/// Presents the window on a named page — see -[MSIMEAppearancePreferences showSettingsPageWithIdentifier:]
+/// Presents the window on a named page — see -[LINGYAOAppearancePreferences showSettingsPageWithIdentifier:]
 /// for the names. This is the entry point for a native fallback whose desktop route names a page;
 /// an entry point that just says "open settings" uses -showAndActivate, so the window opens where
 /// the user left it.
@@ -24,4 +24,4 @@ FOUNDATION_EXPORT NSNotificationName const MSIMEStandalonePreferencesDidCloseNot
 + (NSNumber *)validateCloudSettingsSnapshot:(NSDictionary<NSString *, id> *)values;
 + (NSNumber *)applyCloudSettingsSnapshot:(NSDictionary<NSString *, id> *)values;
 @end
-#define LingyaoPreferencesWindowController MSIMEPreferencesWindowController
+#define LingyaoPreferencesWindowController LINGYAOPreferencesWindowController

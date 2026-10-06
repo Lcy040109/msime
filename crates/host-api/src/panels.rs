@@ -1,6 +1,6 @@
 //! Host-side validation and dispatch for platform panel capabilities.
 
-use msime_client_core::panels::{
+use lingyao_client_core::panels::{
     HandwritingPlatform, HandwritingRecognitionRequest, HandwritingRecognitionResult,
     KeyboardInputRequest, KeyboardInputSink, PanelContractError,
 };
@@ -37,7 +37,7 @@ pub fn submit_handwriting_candidate<H: HandwritingPlatform>(
     platform: &mut H,
     candidate: &str,
 ) -> Result<(), PanelContractError> {
-    msime_client_core::panels::validate_candidate(candidate)?;
+    lingyao_client_core::panels::validate_candidate(candidate)?;
     platform
         .submit_candidate(candidate)
         .map_err(|_| PanelContractError::InvalidCandidate)
@@ -46,7 +46,7 @@ pub fn submit_handwriting_candidate<H: HandwritingPlatform>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use msime_client_core::panels::{InkPoint, InkStroke, KeyboardModifiers};
+    use lingyao_client_core::panels::{InkPoint, InkStroke, KeyboardModifiers};
 
     struct KeyboardStub {
         remembered: bool,

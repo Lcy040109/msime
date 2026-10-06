@@ -4,7 +4,7 @@
 #include <string>
 #include <utility>
 
-namespace msime::windows {
+namespace lingyao::windows {
 class PipeListener;
 class PipeConnection final {
 public:
@@ -44,4 +44,4 @@ private:
   PSECURITY_DESCRIPTOR security_ = nullptr;
   HANDLE pending_ = INVALID_HANDLE_VALUE;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

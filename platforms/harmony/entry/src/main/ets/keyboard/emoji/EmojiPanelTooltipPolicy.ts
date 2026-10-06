@@ -1,5 +1,5 @@
 /**
- * What the 2in1 emoji panel shows when the pointer rests on an item, ported from `ClipboardTooltipText`, `DisplayNameForItem` and `ArmTooltip` in MSIME-Windows/server/src/emoji-panel/EmojiPanel.cpp.
+ * What the 2in1 emoji panel shows when the pointer rests on an item, ported from `ClipboardTooltipText`, `DisplayNameForItem` and `ArmTooltip` in LINGYAO-Windows/server/src/emoji-panel/EmojiPanel.cpp.
  *
  * A clipboard row shows two lines, so long entries that start the same way cannot be told apart without inserting them; Windows answers that with a preview of the whole entry after the pointer rests for a moment. Emoji, kaomoji and symbol cells show a name the same way. A phone has no pointer to rest, so this is only used on a 2in1.
  */

@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
@@ -41,37 +41,37 @@ public final class MicrosoftShuangpinDeviceSmoke extends DeviceSmoke {
                 .getBytes(StandardCharsets.UTF_8));
             restartIme();
             openEditor();
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
 
             stage = "Microsoft ing key visibility";
             await(microsoftKey());
             stage = "Microsoft ing key Engine route";
             tap(key("b"));
             tap(microsoftKey());
-            await(field("msime-test-plain").and(node -> equalsText("", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("", node.getText())));
             await(imeTextContains("b;"));
         } finally {
-            shell("am start -W -n app.msime.android/app.msime.android.home.HomeActivity");
+            shell("am start -W -n app.lingyao.android/app.lingyao.android.home.HomeActivity");
             if (original == null) Files.deleteIfExists(preferences.toPath());
             else publish(preferences, original);
         }
     }
 
     private Predicate<AccessibilityNodeInfo> microsoftKey() {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText("微软双拼 ing", node.getContentDescription())
             && node.isClickable() && node.isVisibleToUser();
     }
 
     private void restartIme() throws Exception {
-        shell("ime disable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime enable app.msime.android/app.msime.android.MSIMEInputService");
-        shell("ime set app.msime.android/app.msime.android.MSIMEInputService");
+        shell("ime disable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime enable app.lingyao.android/app.lingyao.android.LINGYAOInputService");
+        shell("ime set app.lingyao.android/app.lingyao.android.LINGYAOInputService");
         SystemClock.sleep(1000);
     }
 
     private void openEditor() throws Exception {
-        shell("am start -W -f 0x10008000 -n app.msime.android.test/app.msime.android.test.EditorActivity");
+        shell("am start -W -f 0x10008000 -n app.lingyao.android.test/app.lingyao.android.test.EditorActivity");
     }
 
     private void shell(String command) throws Exception {

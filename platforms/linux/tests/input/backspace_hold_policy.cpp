@@ -6,7 +6,7 @@ void require(bool condition, const char *message) {
 }
 
 int main() {
-  msime::linux_host::BackspaceHoldPolicy hold;
+  lingyao::linux_host::BackspaceHoldPolicy hold;
 
   require(!hold.press(true), "the first composing press must reach the runtime");
   require(hold.armed(), "a composing press did not claim the physical hold");

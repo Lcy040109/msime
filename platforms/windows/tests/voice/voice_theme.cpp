@@ -3,10 +3,10 @@
 #include <string_view>
 
 int main() {
-  using msime::windows::SurfaceThemeMode;
-  using msime::windows::surface_theme_is_light;
-  using msime::windows::surface_theme_mode;
-  using msime::windows::voice_theme_is_light;
+  using lingyao::windows::SurfaceThemeMode;
+  using lingyao::windows::surface_theme_is_light;
+  using lingyao::windows::surface_theme_mode;
+  using lingyao::windows::voice_theme_is_light;
   for (bool system_dark : {false, true}) {
     for (std::string_view global : {"dark", "light", "system"}) {
       assert(voice_theme_is_light("light", global, system_dark));
@@ -24,10 +24,10 @@ int main() {
   assert(!surface_theme_is_light(SurfaceThemeMode::System, true));
 
   // The overlay draws the theme palette of its mode rather than colours of its own: surface, border, accent for the waveform and text for the transcript and glyphs, with the action discs a faint wash of the text.
-  using msime::windows::candidate_native_palette;
-  using msime::windows::candidate_palette;
-  using msime::windows::candidate_rgb;
-  using msime::windows::voice_overlay_colors;
+  using lingyao::windows::candidate_native_palette;
+  using lingyao::windows::candidate_palette;
+  using lingyao::windows::candidate_rgb;
+  using lingyao::windows::voice_overlay_colors;
   for (bool dark : {false, true}) {
     const auto palette = candidate_native_palette(dark);
     const auto colors = voice_overlay_colors(palette);
@@ -40,7 +40,7 @@ int main() {
   assert(voice_overlay_colors(candidate_native_palette(false)) !=
          voice_overlay_colors(candidate_native_palette(true)));
   // A theme's slots reach the overlay, so a skin that recolours the card recolours it too.
-  msime::windows::CandidatePaletteOverrides themed;
+  lingyao::windows::CandidatePaletteOverrides themed;
   themed.surface = "#102030";
   themed.accent = "#ff8800";
   themed.text = "#fafafa";

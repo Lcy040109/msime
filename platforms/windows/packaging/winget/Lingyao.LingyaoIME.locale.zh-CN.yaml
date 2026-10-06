@@ -14,9 +14,9 @@ License: GPL-3.0-only
 LicenseUrl: https://github.com/Lcy040109/msime/blob/develop/LICENSE
 ShortDescription: 灵耀输入法（Lingyao IME）：Windows 中文输入法
 Description: |-
-  灵耀输入法（MSIME，Lingyao IME）是面向 Windows、macOS、Linux、Android、iOS 与 HarmonyOS 的中文输入法。Windows 版是基于文本服务框架（TSF）的输入法，带独立的 Server 进程、原生候选窗和设置程序。
+  灵耀输入法（LINGYAO，Lingyao IME）是面向 Windows、macOS、Linux、Android、iOS 与 HarmonyOS 的中文输入法。Windows 版是基于文本服务框架（TSF）的输入法，带独立的 Server 进程、原生候选窗和设置程序。
 
-  MSIME 是 Lingyao IME 的缩写，与 Microsoft IME 无关。
+  LINGYAO 是 Lingyao IME 的缩写，与 Microsoft IME 无关。
 Tags:
   - chinese
   - ime

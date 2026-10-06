@@ -16,7 +16,7 @@ import XCTest
 /// runs where it is set up and something really did break.
 @MainActor
 final class KeyboardExtensionEditorUITests: XCTestCase {
-  private let keyboardIdentifier = "app.msime.ios.keyboard"
+  private let keyboardIdentifier = "app.lingyao.ios.keyboard"
 
   override func setUp() {
     super.setUp()

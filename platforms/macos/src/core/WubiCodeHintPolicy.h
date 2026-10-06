@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::mac {
+namespace lingyao::mac {
 
 constexpr int kWubiScheme = 2;
 constexpr std::size_t kWubiCodeHintMaxLength = 64;
@@ -20,4 +20,4 @@ inline std::string WubiCodeHint(std::string_view code, std::string_view typed, b
     return std::string(code.substr(typed.size()));
 }
 
-} // namespace msime::mac
+} // namespace lingyao::mac

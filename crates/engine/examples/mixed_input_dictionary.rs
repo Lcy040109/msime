@@ -8,7 +8,7 @@
 //! threshold not being met, and the dictionary having no word with that prefix - and a test that
 //! cannot tell them apart would pass with the feature switched off. Every negative case here is
 //! paired with a positive one over the same letters.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 struct Probe {
     resources: std::path::PathBuf,

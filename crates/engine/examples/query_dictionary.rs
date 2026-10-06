@@ -1,5 +1,5 @@
 //! Real dictionary integration probe; temporary user/cache directories are isolated.
-use msime_engine::host::{prepare_options, CandidateEdge, Session};
+use lingyao_engine::host::{prepare_options, CandidateEdge, Session};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resources = std::env::args_os()

@@ -1,4 +1,4 @@
-import app.msime.android.JapaneseSpacePolicy;
+import app.lingyao.android.JapaneseSpacePolicy;
 
 public final class JapaneseSpacePolicySmoke {
     public static void main(String[] args) {

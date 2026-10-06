@@ -46,9 +46,9 @@ def poisoned_run(install: Path, entitlements: Path) -> int:
             entitlements.write_bytes(plistlib.dumps({RESTRICTED_PREFIX + "applesignin": value}))
             environment = os.environ.copy()
             environment.update({
-                "MSIME_VOICE_ENTITLEMENTS": str(entitlements),
-                "MSIME_INPUT_METHODS_DIR": str(destination),
-                "MSIME_SIGNING_IDENTITY": "Developer ID Application: Test",
+                "LINGYAO_VOICE_ENTITLEMENTS": str(entitlements),
+                "LINGYAO_INPUT_METHODS_DIR": str(destination),
+                "LINGYAO_SIGNING_IDENTITY": "Developer ID Application: Test",
             })
             result = subprocess.run(["bash", str(install), str(bundle)], env=environment,
                                     capture_output=True, text=True)

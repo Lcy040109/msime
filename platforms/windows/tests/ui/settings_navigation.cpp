@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-using namespace msime::settings;
-using msime::windows::ShellSurfaceRequest;
+using namespace lingyao::settings;
+using lingyao::windows::ShellSurfaceRequest;
 void require_at(bool value, int line) {
   if (!value)
     throw std::runtime_error("Settings navigation test failed at line " +
@@ -26,8 +26,8 @@ bool launchable(const ShellTarget &target) {
   try {
     const auto request = request_for(target);
     static constexpr wchar_t inherited[] = L"PATH=C:\\Windows\0";
-    (void)msime::windows::shell_environment_block(inherited, request);
-    (void)msime::windows::shell_route_argument(request);
+    (void)lingyao::windows::shell_environment_block(inherited, request);
+    (void)lingyao::windows::shell_route_argument(request);
     return true;
   } catch (const std::invalid_argument &) {
     return false;
@@ -89,21 +89,21 @@ int main() {
       require(find_page(id)->host == PageHost::Native);
     for (const auto &target : shell_links::all)
       require(launchable(target));
-    require(msime::windows::shell_route_argument(
+    require(lingyao::windows::shell_route_argument(
                 request_for(find_page("clip")->shell)) == L"settings:tools");
-    require(msime::windows::shell_route_argument(
+    require(lingyao::windows::shell_route_argument(
                 request_for(shell_links::appearance)) == L"settings:appearance");
-    require(msime::windows::shell_route_argument(
+    require(lingyao::windows::shell_route_argument(
                 request_for(shell_links::keyboard_panel)) == L"keyboard");
-    require(msime::windows::shell_route_argument(request_for(
+    require(lingyao::windows::shell_route_argument(request_for(
                 shell_links::handwriting_panel)) == L"handwriting");
-    require(msime::windows::shell_route_argument(request_for(
+    require(lingyao::windows::shell_route_argument(request_for(
                 find_page("stats")->shell)) == L"settings:typing-statistics");
-    require(msime::windows::shell_route_argument(request_for(
+    require(lingyao::windows::shell_route_argument(request_for(
                 find_page("plugins")->shell)) == L"settings:plugins");
-    require(msime::windows::shell_route_argument(request_for(
+    require(lingyao::windows::shell_route_argument(request_for(
                 find_page("ai")->shell)) == L"settings:ai");
-    require(msime::windows::shell_route_argument(
+    require(lingyao::windows::shell_route_argument(
                 request_for(shell_links::input)) == L"settings:input");
 
     // Every settings category the shared routes know still opens a page here, and the ids the tray sends land where the features moved.

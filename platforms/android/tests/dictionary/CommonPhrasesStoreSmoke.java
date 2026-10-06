@@ -1,4 +1,4 @@
-import app.msime.android.CommonPhrasesStore;
+import app.lingyao.android.CommonPhrasesStore;
 import java.util.List;
 
 public final class CommonPhrasesStoreSmoke {

@@ -1,5 +1,5 @@
-import app.msime.android.HttpAsrPolicy;
-import app.msime.android.WavAudio;
+import app.lingyao.android.HttpAsrPolicy;
+import app.lingyao.android.WavAudio;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
@@ -63,11 +63,11 @@ public final class HttpAsrPolicySmoke {
             "an absent language stays absent");
 
         String boundary = HttpAsrPolicy.boundary("ime-abc-123");
-        check(boundary.startsWith("msime") && boundary.contains("ime-abc-123"),
+        check(boundary.startsWith("lingyao") && boundary.contains("ime-abc-123"),
             "the boundary is derived from the request id");
-        check(HttpAsrPolicy.boundary("a\r\nContent-Disposition: x").equals("msimeaContent-Dispositionx"),
+        check(HttpAsrPolicy.boundary("a\r\nContent-Disposition: x").equals("lingyaoaContent-Dispositionx"),
             "anything that could break out of the body is dropped from the boundary");
-        check(HttpAsrPolicy.boundary(null).equals("msime"), "a missing id still yields a boundary");
+        check(HttpAsrPolicy.boundary(null).equals("lingyao"), "a missing id still yields a boundary");
 
         byte[] wav = WavAudio.wrap(new byte[] {1, 2, 3, 4}, 4, WavAudio.SAMPLE_RATE);
         check(wav != null && wav.length == WavAudio.HEADER_BYTES + 4, "the WAV wraps the samples");

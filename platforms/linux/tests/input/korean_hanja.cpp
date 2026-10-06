@@ -6,17 +6,17 @@
 #include <initializer_list>
 
 int main() {
-  using msime::linux_host::korean_composition;
-  using msime::linux_host::korean_hanja_gloss;
-  using msime::linux_host::korean_hanja_key;
-  using msime::linux_host::korean_hanja_list_open;
-  using msime::linux_host::korean_hanja_punctuation_key;
-  using msime::linux_host::korean_rules;
+  using lingyao::linux_host::korean_composition;
+  using lingyao::linux_host::korean_hanja_gloss;
+  using lingyao::linux_host::korean_hanja_key;
+  using lingyao::linux_host::korean_hanja_list_open;
+  using lingyao::linux_host::korean_hanja_punctuation_key;
+  using lingyao::linux_host::korean_rules;
   using Json = nlohmann::json;
 
   // The keysyms are X's, so they are the IBus key values (and the Fcitx5 symbols, checked where FcitxEngine.cpp uses them).
-  static_assert(msime::linux_host::kKeysymHangulHanja == static_cast<uint32_t>(IBUS_Hangul_Hanja));
-  static_assert(msime::linux_host::kKeysymF9 == static_cast<uint32_t>(IBUS_F9));
+  static_assert(lingyao::linux_host::kKeysymHangulHanja == static_cast<uint32_t>(IBUS_Hangul_Hanja));
+  static_assert(lingyao::linux_host::kKeysymF9 == static_cast<uint32_t>(IBUS_F9));
   assert(korean_hanja_key(IBUS_Hangul_Hanja));
   assert(korean_hanja_key(IBUS_F9));
   for (uint32_t other : std::initializer_list<uint32_t>{IBUS_F8, IBUS_F10, IBUS_Hangul, IBUS_Return, IBUS_space, 'h'})

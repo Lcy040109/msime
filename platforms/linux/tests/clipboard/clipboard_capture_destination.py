@@ -11,7 +11,7 @@ import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
-loader = importlib.machinery.SourceFileLoader("clipboard_monitor", str(ROOT / "scripts" / "msime-linux-clipboard-monitor"))
+loader = importlib.machinery.SourceFileLoader("clipboard_monitor", str(ROOT / "scripts" / "lingyao-linux-clipboard-monitor"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 monitor = importlib.util.module_from_spec(spec)
 loader.exec_module(monitor)
@@ -19,7 +19,7 @@ loader.exec_module(monitor)
 
 class CaptureDestination(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix="msime-clipboard-")
+        directory = tempfile.TemporaryDirectory(prefix="lingyao-clipboard-")
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
         self.options = self.root / "runtime.json"

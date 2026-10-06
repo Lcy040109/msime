@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { AiApiTokenSection } from "@msime/ui";
+import { AiApiTokenSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

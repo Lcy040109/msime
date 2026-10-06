@@ -6,7 +6,7 @@ int main() {
     @autoreleasepool {
         for (id invalid in @[@YES, @1.5, @1e30, @(-1)]) {
             __block NSUInteger invalidSaves = 0;
-            NSDictionary *result = MSIMEEnableClipboardHistory(^NSDictionary *{
+            NSDictionary *result = LINGYAOEnableClipboardHistory(^NSDictionary *{
                 return @{ @"revision": invalid,
                     @"preferences": @{ @"clipboard_history": @NO } };
             }, ^NSDictionary *(uint64_t, NSDictionary *) {
@@ -18,7 +18,7 @@ int main() {
         NSDictionary *snapshot = @{ @"format_version": @1, @"revision": @7,
             @"preferences": @{ @"clipboard_history": @NO, @"theme": @"light", @"synthetic_setting": @42 } };
         __block NSUInteger saves = 0;
-        NSDictionary *result = MSIMEEnableClipboardHistory(^NSDictionary *{ return snapshot; },
+        NSDictionary *result = LINGYAOEnableClipboardHistory(^NSDictionary *{ return snapshot; },
             ^NSDictionary *(uint64_t revision, NSDictionary *next) {
                 ++saves;
                 assert(revision == 7);
@@ -30,13 +30,13 @@ int main() {
             });
         assert([result[@"enabled"] isEqual:@YES] && saves == 1);
         assert([snapshot[@"preferences"][@"clipboard_history"] isEqual:@NO]);
-        result = MSIMEEnableClipboardHistory(^NSDictionary *{ return snapshot; },
+        result = LINGYAOEnableClipboardHistory(^NSDictionary *{ return snapshot; },
             ^NSDictionary *(uint64_t, NSDictionary *) { return nil; });
         assert(result[@"error"]);
-        result = MSIMEEnableClipboardHistory(^NSDictionary *{ return nil; },
+        result = LINGYAOEnableClipboardHistory(^NSDictionary *{ return nil; },
             ^NSDictionary *(uint64_t, NSDictionary *) { assert(false); return nil; });
         assert(result[@"error"]);
-        result = MSIMEEnableClipboardHistory(^NSDictionary *{
+        result = LINGYAOEnableClipboardHistory(^NSDictionary *{
             return @{ @"revision": @8, @"preferences": @{ @"clipboard_history": @YES } };
         }, ^NSDictionary *(uint64_t, NSDictionary *) { assert(false); return nil; });
         assert([result[@"enabled"] isEqual:@YES]);

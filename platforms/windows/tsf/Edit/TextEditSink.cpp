@@ -37,7 +37,7 @@ void CLingyaoIME::_DebugCompositionRecovery(_In_z_ const WCHAR *reason, HRESULT 
     WCHAR message[512] = {};
     const WCHAR *processName = Global::current_process_name.empty() ? L"unknown" : Global::current_process_name.c_str();
     StringCchPrintfW(message, ARRAYSIZE(message),
-                     L"[msime][composition-recovery] reason=%s hr=0x%08lX epoch=%llu focus_token=%llu process=%s\n",
+                     L"[lingyao][composition-recovery] reason=%s hr=0x%08lX epoch=%llu focus_token=%llu process=%s\n",
                      reason, static_cast<unsigned long>(hr),
                      static_cast<unsigned long long>(_CaptureCompositionEpoch()),
                      static_cast<unsigned long long>(_CaptureFocusSessionToken()), processName);

@@ -18,11 +18,11 @@ void require(bool value, int line) {
 #define REQUIRE(value) require((value), __LINE__)
 }
 int main() {
-  const auto directory = std::filesystem::temp_directory_path() / "msime-clipboard-history-test";
+  const auto directory = std::filesystem::temp_directory_path() / "lingyao-clipboard-history-test";
   const auto path = directory / "history.json";
   std::error_code error; std::filesystem::remove_all(directory, error);
   std::filesystem::create_directory(directory);
-  msime::windows::ClipboardHistory history(path);
+  lingyao::windows::ClipboardHistory history(path);
 
   // Newlines and whitespace are user content and survive the round trip
   // exactly: `normalize_clipboard_text` removes only what CF_UNICODETEXT adds.
@@ -66,13 +66,13 @@ int main() {
   // count in.
   REQUIRE(history.add(std::string(5000, 'x')));
   const auto capped = history.load().front();
-  REQUIRE(capped.size() == msime::windows::ClipboardHistory::max_chars);
+  REQUIRE(capped.size() == lingyao::windows::ClipboardHistory::max_chars);
   REQUIRE(capped.find('\0') == std::string::npos && capped.back() == 'x');
   history.clear();
 
-  for (size_t index = 0; index < msime::windows::ClipboardHistory::max_items + 10; ++index)
+  for (size_t index = 0; index < lingyao::windows::ClipboardHistory::max_items + 10; ++index)
     REQUIRE(history.add("item-" + std::to_string(index)));
-  REQUIRE(history.load().size() == msime::windows::ClipboardHistory::max_items);
+  REQUIRE(history.load().size() == lingyao::windows::ClipboardHistory::max_items);
 
   {
     std::ofstream output(path, std::ios::trunc);
@@ -80,25 +80,25 @@ int main() {
   }
   const auto reserved = history.load();
   REQUIRE(reserved.size() == 1);
-  REQUIRE(reserved.capacity() >= msime::windows::ClipboardHistory::max_items);
+  REQUIRE(reserved.capacity() >= lingyao::windows::ClipboardHistory::max_items);
 
   // Records that normalise to nothing must not consume capacity or hide the
   // entries after them. A lone carriage return is the whole of such a record.
   {
     std::ofstream output(path, std::ios::trunc);
     output << "[";
-    for (size_t index = 0; index < msime::windows::ClipboardHistory::max_items; ++index)
+    for (size_t index = 0; index < lingyao::windows::ClipboardHistory::max_items; ++index)
       output << "\"\\r\",";
-    for (size_t index = 0; index < msime::windows::ClipboardHistory::max_items + 1; ++index) {
+    for (size_t index = 0; index < lingyao::windows::ClipboardHistory::max_items + 1; ++index) {
       if (index) output << ",";
       output << "\"synthetic-" << index << "\"";
     }
     output << "]";
   }
   const auto filtered = history.load();
-  REQUIRE(filtered.size() == msime::windows::ClipboardHistory::max_items);
+  REQUIRE(filtered.size() == lingyao::windows::ClipboardHistory::max_items);
   REQUIRE(filtered.front() == "synthetic-0");
-  REQUIRE(filtered.back() == "synthetic-" + std::to_string(msime::windows::ClipboardHistory::max_items - 1));
+  REQUIRE(filtered.back() == "synthetic-" + std::to_string(lingyao::windows::ClipboardHistory::max_items - 1));
 
   { std::ofstream output(path, std::ios::trunc); output << "not-json"; }
   REQUIRE(history.load().empty());
@@ -116,14 +116,14 @@ int main() {
   // archive, or final store outside the state root.
   const auto outside_directory =
       directory.parent_path() /
-      ("msime-clipboard-history-outside-" +
+      ("lingyao-clipboard-history-outside-" +
        std::to_string(GetCurrentProcessId()) + "-" +
        std::to_string(GetTickCount64()));
   REQUIRE(std::filesystem::create_directory(outside_directory));
   const auto linked_directory = directory / "linked";
   if (CreateSymbolicLinkW(linked_directory.c_str(), outside_directory.c_str(),
                           SYMBOLIC_LINK_FLAG_DIRECTORY)) {
-    msime::windows::ClipboardHistory linked_history(
+    lingyao::windows::ClipboardHistory linked_history(
         linked_directory / "history.json");
     REQUIRE(!linked_history.add("synthetic-reparse"));
     REQUIRE(!std::filesystem::exists(outside_directory / "history.json"));
@@ -139,7 +139,7 @@ int main() {
     output << "[\"synthetic-outside\"]";
   }
   if (CreateSymbolicLinkW(linked_store.c_str(), outside_store.c_str(), 0)) {
-    msime::windows::ClipboardHistory linked_history(linked_store);
+    lingyao::windows::ClipboardHistory linked_history(linked_store);
     REQUIRE(linked_history.load().empty());
     REQUIRE(!linked_history.add("synthetic-reparse"));
     REQUIRE(!linked_history.remove("synthetic-outside"));

@@ -1,11 +1,11 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import app.msime.android.AndroidAccountSessionStorage;
+import app.lingyao.android.AndroidAccountSessionStorage;
 
 /** Verifies encrypted session persistence inside the isolated fixture package. */
 public final class AccountStorageDeviceSmoke extends Instrumentation {
@@ -41,10 +41,10 @@ public final class AccountStorageDeviceSmoke extends Instrumentation {
             }
             if (!rejected) throw new AssertionError("payload bound");
             result.putString("stream",
-                "MSIME_DEVICE_SMOKE_PASSED: encrypted account storage roundtrip, plaintext exclusion, clear and bound\n");
+                "LINGYAO_DEVICE_SMOKE_PASSED: encrypted account storage roundtrip, plaintext exclusion, clear and bound\n");
             finish(Activity.RESULT_OK, result);
         } catch (Exception | AssertionError error) {
-            result.putString("stream", "MSIME_DEVICE_SMOKE_FAILED: account secure storage ("
+            result.putString("stream", "LINGYAO_DEVICE_SMOKE_FAILED: account secure storage ("
                 + error.getClass().getSimpleName() + ")\n");
             finish(Activity.RESULT_CANCELED, result);
         } finally {

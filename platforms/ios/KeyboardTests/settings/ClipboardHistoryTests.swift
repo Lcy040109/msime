@@ -81,7 +81,7 @@ final class ClipboardHistoryTests: XCTestCase {
 
   /// 键盘读取剪贴板内容会触发系统粘贴提示，所以只凭 changeCount 提示「有新复制的内容」，保存仍由用户点按。
   func testNewCopyPromptFollowsTheChangeCountSinceTheLastSave() throws {
-    let suite = "msime-clipboard-prompt-\(UUID().uuidString)"
+    let suite = "lingyao-clipboard-prompt-\(UUID().uuidString)"
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     XCTAssertTrue(ClipboardCapturePrompt.hasNewCopy(changeCount: 3, hasStrings: true, defaults: defaults))

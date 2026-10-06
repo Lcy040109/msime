@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { appearanceSettingsPreferences, type Preferences } from "@msime/ui";
+import { appearanceSettingsPreferences, type Preferences } from "@lingyao/ui";
 
 function preferences(candidate_english_font?: string): Preferences {
   return {

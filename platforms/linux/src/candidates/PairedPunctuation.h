@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Shift is intentionally absent from the rejected mask: on common layouts it
 // is part of the key stroke for ), }, >, and quotes. The other modifiers must
@@ -178,4 +178,4 @@ inline bool paired_punctuation_excluded_client(std::string_view client) {
          normalized == "org.kde.calligrasheets";
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

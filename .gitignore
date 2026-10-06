@@ -19,7 +19,7 @@ dist/
 !/apps/desktop/src-tauri/gen/android/
 !/apps/desktop/src-tauri/gen/apple/
 /platforms/ios/Pods/
-/platforms/ios/MSIMEClient.xcworkspace/
+/platforms/ios/LINGYAOClient.xcworkspace/
 /platforms/harmony/.hvigor/
 /platforms/harmony/entry/build/
 /platforms/harmony/entry/libs/

@@ -7,7 +7,7 @@ or only the latter - leaves litter on every machine that ever runs the suite, fo
 else ever looks at those files again. 185 of them had piled up on the machine this was written on,
 and `TestPreferenceSuite.h` records an earlier count of 3257.
 
-So: every test source that opens a suite must also call `MSIMERemoveTestPreferenceSuite`, which
+So: every test source that opens a suite must also call `LINGYAORemoveTestPreferenceSuite`, which
 removes the domain *and* the file. This checks the pairing rather than the count, because the count
 is a property of how often the suite has been run.
 """
@@ -21,7 +21,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TESTS = ROOT / "platforms/macos/tests"
 OPENS = "initWithSuiteName:"
-REMOVES = "MSIMERemoveTestPreferenceSuite"
+REMOVES = "LINGYAORemoveTestPreferenceSuite"
 # A test may hand the suite name to a helper that removes it; name the helper's file so the pairing
 # is still visible. Empty today, and an entry here should say which helper and why.
 ALLOWED: dict[str, str] = {}

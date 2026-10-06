@@ -31,13 +31,13 @@ void require(bool ok, const char *message) {
 
 int main() {
   try {
-    const auto result = msime::fcitx_host::preceding_characters("甲乙丙丁", 4, 3);
+    const auto result = lingyao::fcitx_host::preceding_characters("甲乙丙丁", 4, 3);
     require(result && *result == std::vector<std::string>{"乙", "丙", "丁"},
             "preceding characters preserve order");
 
     using TrackedVector = std::vector<std::string, CountingAllocator<std::string>>;
     CountingAllocator<std::string>::allocations = 0;
-    const auto tracked = msime::fcitx_host::preceding_characters_with_storage<TrackedVector>(
+    const auto tracked = lingyao::fcitx_host::preceding_characters_with_storage<TrackedVector>(
         "甲乙丙丁", 4, 3);
     require(tracked && tracked->size() == 3 && tracked->at(0) == "乙" &&
                 tracked->at(1) == "丙" && tracked->at(2) == "丁",
@@ -46,23 +46,23 @@ int main() {
             "preceding characters reserve before appending");
 
     const auto validated =
-        msime::fcitx_host::preceding_characters_with_validated_length<
+        lingyao::fcitx_host::preceding_characters_with_validated_length<
             std::vector<std::string>>("甲乙丙丁", 4, 2, 4);
     require(validated && *validated == std::vector<std::string>{"丙", "丁"},
             "validated preceding characters preserve order");
     const auto validatedBeyond =
-        msime::fcitx_host::preceding_characters_with_validated_length<
+        lingyao::fcitx_host::preceding_characters_with_validated_length<
             std::vector<std::string>>("甲乙", 3, 1, 2);
     require(!validatedBeyond,
             "validated preceding characters reject a caret beyond the document");
 
-    const auto shorter = msime::fcitx_host::preceding_characters("甲乙", 2, 5);
+    const auto shorter = lingyao::fcitx_host::preceding_characters("甲乙", 2, 5);
     require(shorter && *shorter == std::vector<std::string>{"甲", "乙"},
             "preceding characters stop at the document start");
 
-    const auto invalid = msime::fcitx_host::preceding_characters(std::string("\xff", 1), 1, 1);
+    const auto invalid = lingyao::fcitx_host::preceding_characters(std::string("\xff", 1), 1, 1);
     require(!invalid, "preceding characters reject invalid UTF-8");
-    const auto beyond = msime::fcitx_host::preceding_characters("甲乙", 3, 1);
+    const auto beyond = lingyao::fcitx_host::preceding_characters("甲乙", 3, 1);
     require(!beyond, "preceding characters reject a caret beyond the document");
   } catch (const std::exception &error) {
     return (std::fprintf(stderr, "%s\n", error.what()), 1);

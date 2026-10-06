@@ -239,7 +239,7 @@ const TOOL_ICON_VP: number = 18;
 const ENGLISH_CARD_POSITION: number = 2;
 // English has no entry in KeyboardScheme to take its name from, being a mode rather than a scheme.
 const ENGLISH_TITLES: string[] = ['英文 26 键', '英文 9 键'];
-const HANDWRITING_CANVAS_ID: string = 'msime-harmony-handwriting-canvas';
+const HANDWRITING_CANVAS_ID: string = 'lingyao-harmony-handwriting-canvas';
 const HANDWRITING_RECOGNITION_DELAY_MS: number = 550;
 const SCHEME_BADGE_VP: number = 26;
 const SCHEME_GLYPH_SIZE: number = 15;

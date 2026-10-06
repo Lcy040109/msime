@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
-namespace msime::windows {
-// Streaming microphone capture: mono 32-bit float at 16 kHz, delivered buffer by buffer on the device thread while a recording lasts. The bounded msime_client_voice_capture call cannot serve a push-to-talk recording of unknown length that feeds a live recognizer, so the Server keeps its own capture over miniaudio (third_party/miniaudio), the library the cue sounds already use.
+namespace lingyao::windows {
+// Streaming microphone capture: mono 32-bit float at 16 kHz, delivered buffer by buffer on the device thread while a recording lasts. The bounded lingyao_client_voice_capture call cannot serve a push-to-talk recording of unknown length that feeds a live recognizer, so the Server keeps its own capture over miniaudio (third_party/miniaudio), the library the cue sounds already use.
 class AudioCapture {
 public:
   using AudioCallback = std::function<void(const float *, std::size_t)>;
@@ -24,4 +24,4 @@ private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

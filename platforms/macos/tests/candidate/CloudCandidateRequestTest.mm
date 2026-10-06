@@ -1,7 +1,7 @@
 #import "../../src/cloud/CloudCandidateRequest.h"
-#import "MSIMEClientSession.h"
+#import "LINGYAOClientSession.h"
 #include <cassert>
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 static NSInteger ResponseStatus = 200;
 static NSUInteger ResponseBytes = 8;
@@ -78,7 +78,7 @@ static void TestTranslationTransport() {
             __block BOOL done = NO;
             NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
             configuration.protocolClasses = @[SyntheticCloudProtocol.class];
-            MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
+            LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
                 assert(NSThread.isMainThread && !done);
                 assert((body != nil) == (ResponseStatus < 300 && ResponseBytes <= 1048576));
                 done = YES;
@@ -97,20 +97,20 @@ static void TestTranslationTransport() {
         @{@"headers":@{@"Content-Type":@"application/json", @"Authorization":@"synthetic\r\nX: bad"}}, @{@"timeout_ms":@9999}, @{@"method":@"GET"}]) {
         NSMutableDictionary *invalid = [descriptor mutableCopy]; [invalid addEntriesFromDictionary:override];
         __block BOOL rejected = NO;
-        MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:invalid configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); rejected = YES; }];
+        LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:invalid configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); rejected = YES; }];
         [request start];
         assert(rejected && ![request valueForKey:@"session"]);
     }
     NSMutableDictionary *loopback = [descriptor mutableCopy];
     loopback[@"url"] = @"http://127.0.0.1:8765/translate";
-    MSIMECloudCandidateRequest *local = [[MSIMECloudCandidateRequest alloc]
+    LINGYAOCloudCandidateRequest *local = [[LINGYAOCloudCandidateRequest alloc]
         initWithTranslationDescriptor:loopback
         configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration
         completion:^(NSData *body) { assert(!body); }];
     assert([[(NSURLRequest *)[local valueForKey:@"translationRequest"] URL].host isEqual:@"127.0.0.1"]);
     NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
     configuration.protocolClasses = @[SyntheticCloudProtocol.class];
-    MSIMECloudCandidateRequest *cancelled = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false && "cancelled translation must not complete"); }];
+    LINGYAOCloudCandidateRequest *cancelled = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false && "cancelled translation must not complete"); }];
     [cancelled start];
     [cancelled cancel];
     assert(![cancelled valueForKey:@"translationRequest"]);
@@ -123,7 +123,7 @@ static void TestAIRejectsPlainHTTP() {
         @"headers":@{@"Content-Type":@"application/json", @"Authorization":@"Bearer synthetic"},
         @"body":@{@"model":@"synthetic"}, @"timeout_ms":@8000, @"connect_timeout_ms":@2500,
         @"max_response_bytes":@1048576};
-    MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc]
+    LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc]
         initWithAITranslationDescriptor:descriptor
         configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration
         completion:^(NSData *body) { assert(!body); }];
@@ -132,7 +132,7 @@ static void TestAIRejectsPlainHTTP() {
     assert(![request valueForKey:@"session"]);
     NSMutableDictionary *mutableDescriptor = [descriptor mutableCopy];
     mutableDescriptor[@"url"] = @"http://localhost:8765/chat";
-    request = [[MSIMECloudCandidateRequest alloc]
+    request = [[LINGYAOCloudCandidateRequest alloc]
         initWithAITranslationDescriptor:mutableDescriptor
         configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration
         completion:^(NSData *body) { assert(!body); }];
@@ -141,7 +141,7 @@ static void TestAIRejectsPlainHTTP() {
 
 static void TestTencentTransport() {
     NSError *error = nil;
-    NSDictionary *descriptor = [MSIMEClientSession tencentTranslationHTTPRequest:@{
+    NSDictionary *descriptor = [LINGYAOClientSession tencentTranslationHTTPRequest:@{
         @"config":@{@"enabled":@YES, @"secret_id":@"AKIDsynthetic", @"secret_key":@"synthetic", @"region":@""},
         @"texts":@[@"测试", @"line quote\"😀"], @"source_language":@"zh", @"target_language":@"en", @"timestamp":@1704067200} error:&error];
     assert(descriptor && !error);
@@ -154,7 +154,7 @@ static void TestTencentTransport() {
         for (NSNumber *status in @[@200, @201, @503]) {
             ResponseBytes = bytes.unsignedIntegerValue; ResponseStatus = status.integerValue;
             __block BOOL done = NO;
-            MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
+            LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
                 assert(NSThread.isMainThread && !done);
                 assert((body != nil) == (ResponseStatus < 300 && ResponseBytes <= 1048576)); done = YES;
             }];
@@ -172,7 +172,7 @@ static void TestTencentTransport() {
         @{@"body_utf8":[@"x" stringByPaddingToLength:16385 withString:@"x" startingAtIndex:0]}, @{@"timeout_ms":@5000}]) {
         NSMutableDictionary *invalid = [descriptor mutableCopy]; [invalid addEntriesFromDictionary:override];
         __block BOOL done = NO;
-        MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); done = YES; }];
+        LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); done = YES; }];
         [request start]; assert(done && ![request valueForKey:@"session"]);
     }
     for (NSDictionary *override in @[@{@"Authorization":@"Bearer wrong"}, @{@"X-TC-Region":@"region\r\nInjected"},
@@ -180,11 +180,11 @@ static void TestTencentTransport() {
         NSMutableDictionary *invalid = [descriptor mutableCopy], *headers = [descriptor[@"headers"] mutableCopy];
         [headers addEntriesFromDictionary:override]; invalid[@"headers"] = headers;
         __block BOOL done = NO;
-        MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); done = YES; }];
+        LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:invalid configuration:configuration completion:^(NSData *body) { assert(!body); done = YES; }];
         [request start]; assert(done && ![request valueForKey:@"session"]);
     }
     __block NSUInteger completions = 0;
-    MSIMECloudCandidateRequest *redirected = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); ++completions; }];
+    LINGYAOCloudCandidateRequest *redirected = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); ++completions; }];
     [redirected start];
     NSURLSession *redirectSession = [redirected valueForKey:@"session"];
     NSURL *originalURL = [NSURL URLWithString:@"https://tmt.tencentcloudapi.com"];
@@ -195,9 +195,9 @@ static void TestTencentTransport() {
     [redirected start]; assert(completions == 1 && ![redirected valueForKey:@"translationRequest"]);
     FailWithTimeout = YES;
     __block BOOL timedOut = NO;
-    MSIMECloudCandidateRequest *timeout = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); timedOut = YES; }];
+    LINGYAOCloudCandidateRequest *timeout = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); timedOut = YES; }];
     [timeout start]; Wait(^BOOL { return timedOut; }); FailWithTimeout = NO;
-    MSIMECloudCandidateRequest *cancelled = [[MSIMECloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false); }];
+    LINGYAOCloudCandidateRequest *cancelled = [[LINGYAOCloudCandidateRequest alloc] initWithTencentDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false); }];
     [cancelled start]; [cancelled cancel];
     assert(![cancelled valueForKey:@"translationRequest"]);
     [NSRunLoop.mainRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
@@ -216,7 +216,7 @@ static void TestSharedSessionTransport() {
         ResponseStatus = reply[0].integerValue; ResponseBytes = reply[1].unsignedIntegerValue;
         __block NSUInteger calls = 0;
         __block NSData *received = nil;
-        MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
+        LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) {
             assert(NSThread.isMainThread); ++calls; received = body;
         }];
         [request startInSession:session];
@@ -229,22 +229,22 @@ static void TestSharedSessionTransport() {
     ResponseStatus = 200; ResponseBytes = 8;
     RedirectMode = YES;
     __block NSUInteger redirects = 0;
-    MSIMECloudCandidateRequest *redirected = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); ++redirects; }];
+    LINGYAOCloudCandidateRequest *redirected = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(!body); ++redirects; }];
     [redirected startInSession:session];
     Wait(^BOOL { return redirects > 0; });
     [NSRunLoop.mainRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
     assert(redirects == 1);
     @synchronized(SyntheticCloudProtocol.class) { assert(![LoadedURLs containsObject:@"https://untrusted.invalid/"]); }
     RedirectMode = NO;
-    MSIMECloudCandidateRequest *cancelled = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false && "cancelled translation must not complete"); }];
+    LINGYAOCloudCandidateRequest *cancelled = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { (void)body; assert(false && "cancelled translation must not complete"); }];
     [cancelled startInSession:session];
     [cancelled cancel];
     __block BOOL after = NO;
-    MSIMECloudCandidateRequest *next = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(body.length == 8); after = YES; }];
+    LINGYAOCloudCandidateRequest *next = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:descriptor configuration:configuration completion:^(NSData *body) { assert(body.length == 8); after = YES; }];
     [next startInSession:session];
     Wait(^BOOL { return after; });
     __block BOOL rejected = NO;
-    MSIMECloudCandidateRequest *invalid = [[MSIMECloudCandidateRequest alloc] initWithTranslationDescriptor:@{} configuration:configuration completion:^(NSData *body) { assert(!body); rejected = YES; }];
+    LINGYAOCloudCandidateRequest *invalid = [[LINGYAOCloudCandidateRequest alloc] initWithTranslationDescriptor:@{} configuration:configuration completion:^(NSData *body) { assert(!body); rejected = YES; }];
     [invalid startInSession:session];
     assert(rejected);
     [session invalidateAndCancel];
@@ -264,7 +264,7 @@ int main() {
                 __block NSUInteger calls = 0;
                 NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
                 configuration.protocolClasses = @[SyntheticCloudProtocol.class];
-                MSIMECloudCandidateRequest *request = [[MSIMECloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:configuration completion:^(NSData *body) {
+                LINGYAOCloudCandidateRequest *request = [[LINGYAOCloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:configuration completion:^(NSData *body) {
                     assert(NSThread.isMainThread);
                     ++calls;
                     assert((body != nil) == (ResponseStatus == 200 && ResponseBytes <= 262144));
@@ -276,7 +276,7 @@ int main() {
                 assert(!effective.URLCache && !effective.HTTPCookieStorage && !effective.URLCredentialStorage);
                 // The deadline is the shared one, not this host's own: a cloud reply that arrives
                 // inside the budget the reference allows is a candidate the user is meant to see.
-                const NSTimeInterval budget = MSIME_CLOUD_REQUEST_TIMEOUT_MS / 1000.0;
+                const NSTimeInterval budget = LINGYAO_CLOUD_REQUEST_TIMEOUT_MS / 1000.0;
                 assert(!effective.HTTPShouldSetCookies && effective.timeoutIntervalForResource == budget &&
                        effective.timeoutIntervalForRequest == budget);
                 Wait(^BOOL { return done; });
@@ -289,11 +289,11 @@ int main() {
         NSURLSessionConfiguration *timeoutConfiguration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
         timeoutConfiguration.protocolClasses = @[SyntheticCloudProtocol.class];
         __block BOOL timedOut = NO;
-        MSIMECloudCandidateRequest *timeout = [[MSIMECloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:timeoutConfiguration completion:^(NSData *body) { assert(!body); timedOut = YES; }];
+        LINGYAOCloudCandidateRequest *timeout = [[LINGYAOCloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:timeoutConfiguration completion:^(NSData *body) { assert(!body); timedOut = YES; }];
         [timeout start];
         Wait(^BOOL { return timedOut; });
         FailWithTimeout = NO;
-        MSIMECloudCandidateRequest *cancelled = [[MSIMECloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { (void)body; ++calls; }];
+        LINGYAOCloudCandidateRequest *cancelled = [[LINGYAOCloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:@"https://inputtools.google.com/synthetic"] configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { (void)body; ++calls; }];
         [cancelled cancel];
         [cancelled start];
         NSURL *syntheticURL = [NSURL URLWithString:@"https://invalid.example/"];
@@ -302,11 +302,11 @@ int main() {
         [cancelled URLSession:unusedSession task:unusedTask didCompleteWithError:nil];
         assert(calls == 0);
         for (NSString *url in @[@"http://inputtools.google.com/", @"https://invalid.example/", @"https://user@inputtools.google.com/"]) {
-            MSIMECloudCandidateRequest *invalid = [[MSIMECloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:url] configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); ++calls; }];
+            LINGYAOCloudCandidateRequest *invalid = [[LINGYAOCloudCandidateRequest alloc] initWithURL:[NSURL URLWithString:url] configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); ++calls; }];
             [invalid start];
         }
         assert(calls == 3);
-        MSIMECloudCandidateRequest *redirect = [[MSIMECloudCandidateRequest alloc] initWithURL:nil configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); ++calls; }];
+        LINGYAOCloudCandidateRequest *redirect = [[LINGYAOCloudCandidateRequest alloc] initWithURL:nil configuration:NSURLSessionConfiguration.ephemeralSessionConfiguration completion:^(NSData *body) { assert(!body); ++calls; }];
         NSHTTPURLResponse *redirectResponse = [[NSHTTPURLResponse alloc] initWithURL:syntheticURL statusCode:302 HTTPVersion:@"HTTP/1.1" headerFields:@{}];
         [redirect URLSession:unusedSession task:unusedTask willPerformHTTPRedirection:redirectResponse newRequest:[NSURLRequest requestWithURL:syntheticURL] completionHandler:^(NSURLRequest *next) { assert(!next); }];
         assert(calls == 4);

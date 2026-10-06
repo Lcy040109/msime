@@ -5,7 +5,7 @@
 #include <optional>
 #include <utility>
 
-namespace msime::voice {
+namespace lingyao::voice {
 
 // A FIFO whose retained input size is bounded independently of the number of
 // commands. The caller supplies the serialized size that caused each item to
@@ -50,4 +50,4 @@ private:
   std::size_t bytes_ = 0;
 };
 
-} // namespace msime::voice
+} // namespace lingyao::voice

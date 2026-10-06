@@ -1,4 +1,4 @@
-#include "msime_client.h"
+#include "lingyao_client.h"
 #include <array>
 #include <iostream>
 #include <memory>
@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
   try {
     const auto request = nlohmann::json{
         {"directory", argv[1]}, {"text", std::string(input.data(), size)}}.dump();
-    std::unique_ptr<char, decltype(&msime_client_string_free)> result(
-        msime_client_capture_clipboard_history(
+    std::unique_ptr<char, decltype(&lingyao_client_string_free)> result(
+        lingyao_client_capture_clipboard_history(
             reinterpret_cast<const uint8_t *>(request.data()), request.size()),
-        msime_client_string_free);
+        lingyao_client_string_free);
     if (!result) return 1;
     const auto document = nlohmann::json::parse(result.get());
     if (!document.value("ok", false)) return 1;

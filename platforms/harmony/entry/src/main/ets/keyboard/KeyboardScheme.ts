@@ -1,6 +1,6 @@
 /**
  * Keyboard schemes the host exposes, ported from
- * platforms/android/java/app/msime/android/KeyboardScheme.java.
+ * platforms/android/java/app/lingyao/android/KeyboardScheme.java.
  *
  * Java spells this as an enum carrying fields. ArkTS enums hold only a value, so each scheme is a
  * frozen record and SCHEMES preserves the declaration order the Apple hosts also rely on.
@@ -333,13 +333,13 @@ export class KeyboardScheme {
   /** The dictionary file an Engine scheme (by wire name) cannot type without, or null when it needs none. Cantonese, Zhuyin and Stroke read their own lexicon from the language-dictionaries directory beside the Engine resources; the file names are the ones the Engine looks for. */
   static languageDictionary(engineScheme: string): string | null {
     if (engineScheme === "cantonese") {
-      return "msime-cantonese.db";
+      return "lingyao-cantonese.db";
     }
     if (engineScheme === "zhuyin") {
-      return "msime-zhuyin.db";
+      return "lingyao-zhuyin.db";
     }
     if (engineScheme === "stroke") {
-      return "msime-stroke.db";
+      return "lingyao-stroke.db";
     }
     return null;
   }

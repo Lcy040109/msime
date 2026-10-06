@@ -3,7 +3,7 @@
 
 The TSF DLL and the Server resolve their state root through `platforms/windows/common/StateDirectory.h`. The Rust host (`crates/host-windows`, `server_state_directory`) keeps its own copy of the same order, and the shell it serves has to land on the directory the Server chose. A renamed environment variable, registry key, value or folder on one side would split state silently, so this compares the two lookups and fails on any drift. It also fails when the TSF or the Server grows its own copy of the lookup again instead of calling the shared header.
 
-环境变量名、注册表键和目录名按版本取：C++ 侧来自 `shared/contracts/msime_edition.h` 的宏，Rust 侧来自版本表 `platforms.windows` 解析出的 `WindowsIdentity`，两边都从 `shared/contracts/editions.json` 生成或读取。所以这里核对的是两边各自读的是版本表里的哪个字段，再核对生成的头文件里每个版本的宏值就是版本表里那个字段的值。
+环境变量名、注册表键和目录名按版本取：C++ 侧来自 `shared/contracts/lingyao_edition.h` 的宏，Rust 侧来自版本表 `platforms.windows` 解析出的 `WindowsIdentity`，两边都从 `shared/contracts/editions.json` 生成或读取。所以这里核对的是两边各自读的是版本表里的哪个字段，再核对生成的头文件里每个版本的宏值就是版本表里那个字段的值。
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 HEADER = ROOT / "platforms/windows/common/StateDirectory.h"
-EDITION_HEADER = ROOT / "shared/contracts/msime_edition.h"
+EDITION_HEADER = ROOT / "shared/contracts/lingyao_edition.h"
 EDITIONS = ROOT / "shared/contracts/editions.json"
 RUST = ROOT / "crates/host-windows/src/lib.rs"
 CALLERS = [
@@ -24,9 +24,9 @@ CALLERS = [
 ]
 # StateDirectory.h 的常量、它取值的宏，以及这个宏对应的版本表字段和 Rust 侧 `WindowsIdentity` 的字段（两者同名）。
 NAMES = {
-    "state_directory_environment_variable": ("MSIME_EDITION_DATA_DIR_ENVIRONMENT_VARIABLE", "data_dir_environment_variable"),
-    "state_directory_registry_key": ("MSIME_EDITION_REGISTRY_KEY", "registry_key"),
-    "state_directory_folder_name": ("MSIME_EDITION_STATE_DIRECTORY", "state_directory"),
+    "state_directory_environment_variable": ("LINGYAO_EDITION_DATA_DIR_ENVIRONMENT_VARIABLE", "data_dir_environment_variable"),
+    "state_directory_registry_key": ("LINGYAO_EDITION_REGISTRY_KEY", "registry_key"),
+    "state_directory_folder_name": ("LINGYAO_EDITION_STATE_DIRECTORY", "state_directory"),
 }
 REGISTRY_VALUE = "DataDir"
 
@@ -50,7 +50,7 @@ def edition_macros(source: str) -> dict[str, dict[str, str]]:
     branches: dict[str, dict[str, str]] = {}
     current: dict[str, str] | None = None
     for line in source.splitlines():
-        selector = re.match(r"#(?:el)?if defined\(MSIME_EDITION_([A-Z0-9]+)\)", line)
+        selector = re.match(r"#(?:el)?if defined\(LINGYAO_EDITION_([A-Z0-9]+)\)", line)
         if selector:
             current = branches.setdefault(selector.group(1).lower(), {})
             continue
@@ -78,8 +78,8 @@ def main() -> int:
     registry = rust_body(rust, "installed_data_directory")
     failures: list[str] = []
 
-    if '#include "../../../shared/contracts/msime_edition.h"' not in header:
-        failures.append(f"{HEADER.relative_to(ROOT)} no longer includes shared/contracts/msime_edition.h")
+    if '#include "../../../shared/contracts/lingyao_edition.h"' not in header:
+        failures.append(f"{HEADER.relative_to(ROOT)} no longer includes shared/contracts/lingyao_edition.h")
     for constant, (macro, field) in NAMES.items():
         if header_constant(header, constant) != macro:
             failures.append(f"{HEADER.relative_to(ROOT)}: {constant} must be {macro}, the edition's {field}")
@@ -115,7 +115,7 @@ def main() -> int:
         text = caller.read_text(encoding="utf-8")
         relative = caller.relative_to(ROOT)
         if "resolve_state_directory()" not in text:
-            failures.append(f"{relative} no longer calls msime::windows::resolve_state_directory")
+            failures.append(f"{relative} no longer calls lingyao::windows::resolve_state_directory")
         for entry in table["editions"]:
             windows = entry["platforms"].get("windows")
             if windows is None:

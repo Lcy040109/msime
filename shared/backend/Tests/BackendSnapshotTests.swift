@@ -1,10 +1,10 @@
 import Foundation
 import CryptoKit
 import XCTest
-@testable import MSIMEBackend
+@testable import LINGYAOBackend
 
 final class BackendSnapshotTests: XCTestCase {
-  private let header = #"{"type":"header","format":"msime-dictionary-snapshot","version":1,"revision":10000}"#
+  private let header = #"{"type":"header","format":"lingyao-dictionary-snapshot","version":1,"revision":10000}"#
   private func framed(_ lines: [String]) throws -> Data {
     let body = Data((lines.joined(separator: "\n") + "\n").utf8)
     let digest = SHA256.hash(data: body).map { String(format: "%02x", $0) }.joined()

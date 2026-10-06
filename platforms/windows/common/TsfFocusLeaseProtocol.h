@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <array>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Separate versioned contract for the future TSF focus-lease request. It is
 // deliberately not encoded as an existing FanyIme frame.
 struct TsfFocusLeaseRequest {
@@ -124,4 +124,4 @@ private:
   std::uint64_t epoch_ = 0;
   std::uint64_t token_ = 0;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

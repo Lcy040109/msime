@@ -1,21 +1,21 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="app.msime.android.test" android:versionCode="1" android:versionName="1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="app.lingyao.android.test" android:versionCode="1" android:versionName="1">
     <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="35" />
-    <instrumentation android:name="app.msime.android.test.DeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.CandidatePanelDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.MoreToolsDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.EmojiPickerDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.HandwritingDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.PreferencesDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.KeyboardHeightDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.FuzzyPinyinDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.CandidateGlossDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.NineKeyEnglishDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.SettingsDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.SettingsLifecycleSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.test.TypingStatisticsDeviceSmoke" android:targetPackage="app.msime.android" />
-    <instrumentation android:name="app.msime.android.test.AccountStorageDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <instrumentation android:name="app.msime.android.BackendAccountRefreshDeviceSmoke" android:targetPackage="app.msime.android.test" />
-    <application android:label="MSIME Editor Fixture" android:allowBackup="false">
-        <activity android:name="app.msime.android.test.EditorActivity" android:exported="true" android:windowSoftInputMode="adjustResize" />
+    <instrumentation android:name="app.lingyao.android.test.DeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.CandidatePanelDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.MoreToolsDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.EmojiPickerDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.HandwritingDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.PreferencesDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.KeyboardHeightDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.FuzzyPinyinDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.CandidateGlossDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.NineKeyEnglishDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.SettingsDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.SettingsLifecycleSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.test.TypingStatisticsDeviceSmoke" android:targetPackage="app.lingyao.android" />
+    <instrumentation android:name="app.lingyao.android.test.AccountStorageDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <instrumentation android:name="app.lingyao.android.BackendAccountRefreshDeviceSmoke" android:targetPackage="app.lingyao.android.test" />
+    <application android:label="LINGYAO Editor Fixture" android:allowBackup="false">
+        <activity android:name="app.lingyao.android.test.EditorActivity" android:exported="true" android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>

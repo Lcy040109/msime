@@ -227,7 +227,7 @@ function AiSkinGeneration({
           <div className={doc.mysteryCards} aria-hidden="true">
             {["leaf", "moon", "sparkles"].map((icon, index) => (
               <div key={icon} className={doc.mysteryCard(index)}>
-                MSIME<span>{icon === "leaf" ? "♧" : icon === "moon" ? "☾" : "✦"}</span>等待揭晓
+                LINGYAO<span>{icon === "leaf" ? "♧" : icon === "moon" ? "☾" : "✦"}</span>等待揭晓
               </div>
             ))}
           </div>

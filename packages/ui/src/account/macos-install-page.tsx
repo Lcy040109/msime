@@ -104,7 +104,7 @@ export function MacosInstallPage({
       <div className="absolute inset-x-0 top-0 h-10" data-tauri-drag-region="" />
       <div className="grid size-[88px] place-items-center rounded-[22px] bg-raised shadow-card">
         <img
-          src={new URL("../assets/msime.svg", import.meta.url).href}
+          src={new URL("../assets/lingyao.svg", import.meta.url).href}
           alt=""
           className="size-[60px]"
         />

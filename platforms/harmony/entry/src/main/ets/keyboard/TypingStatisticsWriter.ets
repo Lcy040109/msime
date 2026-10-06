@@ -1,4 +1,4 @@
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 
 /**
  * The typing-statistics calls that run on a TaskPool thread rather than the keyboard's UI thread.

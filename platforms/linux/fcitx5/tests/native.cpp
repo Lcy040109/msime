@@ -14,12 +14,12 @@
 #include <cstring>
 #include <poll.h>
 
-using namespace msime::fcitx_host;
+using namespace lingyao::fcitx_host;
 class FixtureContext : public fcitx::InputContext {
 public:
-  explicit FixtureContext(fcitx::InputContextManager &manager) : InputContext(manager, "msime-test") { created(); }
+  explicit FixtureContext(fcitx::InputContextManager &manager) : InputContext(manager, "lingyao-test") { created(); }
   ~FixtureContext() override { destroy(); }
-  const char *frontend() const override { return "msime-test"; }
+  const char *frontend() const override { return "lingyao-test"; }
   void commitStringImpl(const std::string &text) override { committed += text; }
   void deleteSurroundingTextImpl(int, unsigned int) override {}
   void forwardKeyImpl(const fcitx::ForwardKeyEvent &event) override {
@@ -81,10 +81,10 @@ void koreanHanjaGlossRow() {
               shown(word(Json{{"text", "你"}, {"annotation", "ab"}}, false, std::string())).toString() == "你",
           "annotations off still hide a helpcode");
 }
-// An installed skin's decoration reaches the classic UI as the msime theme's overlay, with the image copied beside theme.conf; a built-in skin, or a switch back to one, leaves no image behind. This composes the theme exactly as applyCandidatePanelTheme does, against the shared layer's built-in catalogue, but writes it without the classic UI addon, which the fixture instance does not load. Runs before the resource fixture.
+// An installed skin's decoration reaches the classic UI as the lingyao theme's overlay, with the image copied beside theme.conf; a built-in skin, or a switch back to one, leaves no image behind. This composes the theme exactly as applyCandidatePanelTheme does, against the shared layer's built-in catalogue, but writes it without the classic UI addon, which the fixture instance does not load. Runs before the resource fixture.
 void candidateThemeDecoration() {
-  namespace host = msime::linux_host;
-  char temporary[] = "/tmp/msime-fcitx5-theme-XXXXXX";
+  namespace host = lingyao::linux_host;
+  char temporary[] = "/tmp/lingyao-fcitx5-theme-XXXXXX";
   const auto *directory = mkdtemp(temporary);
   require(directory != nullptr, "theme fixture directory");
   const std::filesystem::path root(directory);
@@ -111,7 +111,7 @@ void candidateThemeDecoration() {
     std::ifstream in(*file, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(in), {});
   };
-  const auto themeDirectory = root / "data" / "fcitx5" / "themes" / "msime";
+  const auto themeDirectory = root / "data" / "fcitx5" / "themes" / "lingyao";
   const auto copies = [&] {
     std::vector<std::string> names;
     for (const auto &entry : std::filesystem::directory_iterator(themeDirectory))
@@ -163,7 +163,7 @@ void modeBadgeTheme() {
   require(!dark(Json{{"global_theme", "paper"}, {"toolbar_theme", "dark"}}, true), "a light global theme gives a light badge");
   // The colours are the resolved theme's card, the same the candidate panel draws in that mode.
   for (const auto &preferences : {Json{{"global_theme", "ink"}}, Json{{"global_theme", "paper"}}, Json::object()}) {
-    const auto badge = msime::linux_host::floating_surface_colors(fcitx_mode_badge_theme(preferences, false, Json()));
+    const auto badge = lingyao::linux_host::floating_surface_colors(fcitx_mode_badge_theme(preferences, false, Json()));
     const auto panel = resolveCandidateTheme(preferences, false, Json()).colors;
     require(badge.surface == *panel.background && badge.text == *panel.text && badge.accent == *panel.accent,
             "the badge draws the panel's surface, text and accent");
@@ -173,16 +173,16 @@ void modeBadgeTheme() {
   const auto voice = resolveVoiceOverlayTheme(Json{{"global_theme", "ink"}, {"voice_theme", "light"}}, false, Json());
   require(voice.dark, "a fixed-appearance theme overrides the voice overlay's mode too");
 }
-// classicui's options belong to every input method, so the first takeover records what it replaced for msime-linux-setup --unregister, and a later write keeps that value while the option still holds MSIME's. Runs against a scratch XDG_STATE_HOME before the resource fixture; the fixture instance does not load classicui, so this drives the recording step the addon's writes go through.
+// classicui's options belong to every input method, so the first takeover records what it replaced for lingyao-linux-setup --unregister, and a later write keeps that value while the option still holds LINGYAO's. Runs against a scratch XDG_STATE_HOME before the resource fixture; the fixture instance does not load classicui, so this drives the recording step the addon's writes go through.
 void classicuiTakeoverRecord() {
-  char temporary[] = "/tmp/msime-fcitx5-restore-XXXXXX";
+  char temporary[] = "/tmp/lingyao-fcitx5-restore-XXXXXX";
   const auto *directory = mkdtemp(temporary);
   require(directory != nullptr, "restore fixture directory");
   const std::filesystem::path root(directory);
   const auto *saved = std::getenv("XDG_STATE_HOME");
   const std::optional<std::string> savedStateHome = saved ? std::optional<std::string>(saved) : std::nullopt;
   setenv("XDG_STATE_HOME", (root / "state").c_str(), 1);
-  const auto record = root / "state" / "msime-client" / "panel-restore.json";
+  const auto record = root / "state" / "lingyao-client" / "panel-restore.json";
   const auto read = [&] {
     std::ifstream in(record);
     return Json::parse(in);
@@ -192,35 +192,35 @@ void classicuiTakeoverRecord() {
   stock.setValueByPath("DarkTheme", "default-dark");
   stock.setValueByPath("Font", "Sans 10");
   fcitx::RawConfig theme;
-  theme.setValueByPath("Theme", std::string(msime::linux_host::kFcitxCandidateTheme));
+  theme.setValueByPath("Theme", std::string(lingyao::linux_host::kFcitxCandidateTheme));
   record_classicui_takeover(stock, theme);
-  require(read() == Json{{"fcitx5", {{"Theme", {{"prior", "default"}, {"written", "msime"}}}}}},
+  require(read() == Json{{"fcitx5", {{"Theme", {{"prior", "default"}, {"written", "lingyao"}}}}}},
           "first takeover records the stock theme it replaced");
   // A skin change writes the theme again: the stock theme is still the one to restore.
   fcitx::RawConfig taken;
-  taken.setValueByPath("Theme", "msime");
+  taken.setValueByPath("Theme", "lingyao");
   taken.setValueByPath("DarkTheme", "default-dark");
   taken.setValueByPath("Font", "Sans 10");
-  theme.setValueByPath("DarkTheme", "msime");
+  theme.setValueByPath("DarkTheme", "lingyao");
   record_classicui_takeover(taken, theme);
   fcitx::RawConfig font;
   font.setValueByPath("Font", "Noto Sans SC 18px");
   record_classicui_takeover(taken, font);
   require(read() == Json{{"fcitx5",
-                          {{"Theme", {{"prior", "default"}, {"written", "msime"}}},
-                           {"DarkTheme", {{"prior", "default-dark"}, {"written", "msime"}}},
+                          {{"Theme", {{"prior", "default"}, {"written", "lingyao"}}},
+                           {"DarkTheme", {{"prior", "default-dark"}, {"written", "lingyao"}}},
                            {"Font", {{"prior", "Sans 10"}, {"written", "Noto Sans SC 18px"}}}}}},
           "later writes keep the replaced values and record each option on its first change");
-  // An earlier build set MSIME's theme without keeping a record: the stock themes it stands in for are recorded, since uninstall removes MSIME's.
+  // An earlier build set LINGYAO's theme without keeping a record: the stock themes it stands in for are recorded, since uninstall removes LINGYAO's.
   std::filesystem::remove(record);
   fcitx::RawConfig upgraded;
-  upgraded.setValueByPath("Theme", "msime");
-  upgraded.setValueByPath("DarkTheme", "msime");
+  upgraded.setValueByPath("Theme", "lingyao");
+  upgraded.setValueByPath("DarkTheme", "lingyao");
   record_classicui_takeover(upgraded, theme);
   require(read() == Json{{"fcitx5",
-                          {{"Theme", {{"prior", "default"}, {"written", "msime"}}},
-                           {"DarkTheme", {{"prior", "default-dark"}, {"written", "msime"}}}}}},
-          "a theme option already naming MSIME's theme records the stock theme");
+                          {{"Theme", {{"prior", "default"}, {"written", "lingyao"}}},
+                           {"DarkTheme", {{"prior", "default-dark"}, {"written", "lingyao"}}}}}},
+          "a theme option already naming LINGYAO's theme records the stock theme");
   if (savedStateHome) setenv("XDG_STATE_HOME", savedStateHome->c_str(), 1);
   else unsetenv("XDG_STATE_HOME");
   std::filesystem::remove_all(root);
@@ -238,11 +238,11 @@ int main(int argc, char **argv) {
             "usage: fcitx5-native-test <verified-resources> [--ai|--ctrl-space|--local-modes]");
     const bool ai = argc == 3 && std::string(argv[2]) == "--ai";
     const std::string suggestion = ai ? "合成候选" : "在线";
-    char temporary[] = "/tmp/msime-fcitx5-test-XXXXXX";
+    char temporary[] = "/tmp/lingyao-fcitx5-test-XXXXXX";
     const auto *directory = mkdtemp(temporary);
     require(directory != nullptr, "fixture directory");
     const auto request = Json{{"resources", argv[1]}, {"state_root", directory}}.dump();
-    auto options = response(msime_client_prepare_host(
+    auto options = response(lingyao_client_prepare_host(
         reinterpret_cast<const uint8_t *>(request.data()), request.size()));
     options["preferences"]["learning"] = false;
     options["preferences"]["candidate_page_size"] = 2;
@@ -379,7 +379,7 @@ int main(int argc, char **argv) {
       close(client); close(voiceServer);
       return valid && partialSent && statusSent && levelSent && finalSent;
     });
-    setenv("MSIME_FCITX5_OPTIONS", path.c_str(), 1);
+    setenv("LINGYAO_FCITX5_OPTIONS", path.c_str(), 1);
     char name[] = "fcitx5-native-test";
     char disable[] = "--disable=all";
     char *args[] = {name, disable, nullptr};
@@ -387,23 +387,23 @@ int main(int argc, char **argv) {
     instance.initialize();
     FcitxEngine engine(&instance);
     {
-      // First-run state: no override, an empty config home and no system file (this target's MSIME_SYSTEM_OPTIONS points into the build tree). The addon must show the setup hint instead of the generic error, pass keys through, open the guide only on activation and not again within its throttle, and log no refresh or event failure. MSIME_BINDIR also points into the build tree, where a stub stands in for the guide script.
-      require(!std::filesystem::exists(MSIME_SYSTEM_OPTIONS), "first-run fixture needs an absent system options file");
+      // First-run state: no override, an empty config home and no system file (this target's LINGYAO_SYSTEM_OPTIONS points into the build tree). The addon must show the setup hint instead of the generic error, pass keys through, open the guide only on activation and not again within its throttle, and log no refresh or event failure. LINGYAO_BINDIR also points into the build tree, where a stub stands in for the guide script.
+      require(!std::filesystem::exists(LINGYAO_SYSTEM_OPTIONS), "first-run fixture needs an absent system options file");
       const auto *configHome = std::getenv("XDG_CONFIG_HOME");
       const std::optional<std::string> savedConfigHome = configHome ? std::optional<std::string>(configHome) : std::nullopt;
       const auto firstRunConfig = std::string(directory) + "/first-run-config";
       const auto firstRunDiagnostics = std::string(directory) + "/first-run-diagnostics";
       std::filesystem::create_directory(firstRunConfig);
       std::filesystem::create_directory(firstRunDiagnostics);
-      unsetenv("MSIME_FCITX5_OPTIONS");
+      unsetenv("LINGYAO_FCITX5_OPTIONS");
       setenv("XDG_CONFIG_HOME", firstRunConfig.c_str(), 1);
       const auto guideLog = std::string(directory) + "/first-run-guide.log";
-      setenv("MSIME_TEST_FIRST_RUN_LOG", guideLog.c_str(), 1);
+      setenv("LINGYAO_TEST_FIRST_RUN_LOG", guideLog.c_str(), 1);
       // The context and AI runs share the build tree and may run in parallel; a rename replaces the stub without ever exposing a half-written file.
-      std::filesystem::create_directories(MSIME_BINDIR);
-      const auto guidePath = std::filesystem::path(MSIME_BINDIR) / std::string(msime::linux_host::kFirstRunGuideProgram);
+      std::filesystem::create_directories(LINGYAO_BINDIR);
+      const auto guidePath = std::filesystem::path(LINGYAO_BINDIR) / std::string(lingyao::linux_host::kFirstRunGuideProgram);
       const auto stagedGuide = guidePath.string() + "." + std::to_string(getpid());
-      std::ofstream(stagedGuide) << "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$MSIME_TEST_FIRST_RUN_LOG\"\n";
+      std::ofstream(stagedGuide) << "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$LINGYAO_TEST_FIRST_RUN_LOG\"\n";
       require(chmod(stagedGuide.c_str(), 0755) == 0, "first-run guide stub permissions");
       std::filesystem::rename(stagedGuide, guidePath);
       const auto guideCalls = [&guideLog] {
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
         std::ifstream file(firstRunDiagnostics + "/diagnostic.log");
         return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
       };
-      msime_linux_diagnostic_configure(firstRunDiagnostics, true);
+      lingyao_linux_diagnostic_configure(firstRunDiagnostics, true);
       FcitxEngine::refreshOptions();
       require(diagnosticText().find("dictionary_generation_refresh") == std::string::npos,
               "first-run state is not a refresh failure");
@@ -425,8 +425,8 @@ int main(int argc, char **argv) {
         firstRun.setCapabilityFlags(fcitx::CapabilityFlags{fcitx::CapabilityFlag::Preedit,
                                                            fcitx::CapabilityFlag::SurroundingText});
         firstRun.focusIn();
-        fcitx::InputMethodEntry firstRunEntry("msime", "MSIME", "zh_CN", "msime");
-        const auto hint = std::string(msime::linux_host::kFirstRunHint);
+        fcitx::InputMethodEntry firstRunEntry("lingyao", "LINGYAO", "zh_CN", "lingyao");
+        const auto hint = std::string(lingyao::linux_host::kFirstRunHint);
         fcitx::KeyEvent typed(&firstRun, fcitx::Key(FcitxKey_n));
         engine.keyEvent(firstRunEntry, typed);
         require(!typed.filtered() && !typed.accepted(), "first-run keys reach the application");
@@ -453,7 +453,7 @@ int main(int argc, char **argv) {
                 "first-run state is not reported as an event failure");
       }
       // Positive control: the log above was live, so an actual failure does show up in it.
-      setenv("MSIME_FCITX5_OPTIONS", "relative-runtime-options.json", 1);
+      setenv("LINGYAO_FCITX5_OPTIONS", "relative-runtime-options.json", 1);
       FcitxEngine::refreshOptions();
       require(diagnosticText().find("operation_failed operation=dictionary_generation_refresh") != std::string::npos,
               "diagnostic log records a real refresh failure");
@@ -467,7 +467,7 @@ int main(int argc, char **argv) {
         const auto outdated = std::filesystem::path(directory) / "outdated";
         std::filesystem::create_directories(outdated / "resources");
         std::filesystem::create_directories(outdated / "state");
-        std::ofstream(outdated / "resources/msime-pinyin.db") << "previous generation";
+        std::ofstream(outdated / "resources/lingyao-pinyin.db") << "previous generation";
         const auto outdatedOptions = outdated / "state/runtime-options.json";
         const auto document = Json{{"api_version", 1},
                                    {"resources", (outdated / "resources").string()},
@@ -477,7 +477,7 @@ int main(int argc, char **argv) {
                                    {"preferences_directory", (outdated / "state").string()},
                                    {"preferences", Json::object()}}.dump(2);
         std::ofstream(outdatedOptions) << document;
-        setenv("MSIME_FCITX5_OPTIONS", outdatedOptions.c_str(), 1);
+        setenv("LINGYAO_FCITX5_OPTIONS", outdatedOptions.c_str(), 1);
         FcitxEngine::refreshOptions();
         require(diagnosticText().find("operation_failed operation=dictionary_generation_refresh reason=dictionary_outdated") !=
                     std::string::npos,
@@ -493,11 +493,11 @@ int main(int argc, char **argv) {
         require(std::string(std::istreambuf_iterator<char>(written), std::istreambuf_iterator<char>()) == document,
                 "outdated dictionaries leave the runtime options unchanged");
       }
-      msime_linux_diagnostic_configure(std::string(), false);
-      unsetenv("MSIME_TEST_FIRST_RUN_LOG");
+      lingyao_linux_diagnostic_configure(std::string(), false);
+      unsetenv("LINGYAO_TEST_FIRST_RUN_LOG");
       if (savedConfigHome) setenv("XDG_CONFIG_HOME", savedConfigHome->c_str(), 1);
       else unsetenv("XDG_CONFIG_HOME");
-      setenv("MSIME_FCITX5_OPTIONS", path.c_str(), 1);
+      setenv("LINGYAO_FCITX5_OPTIONS", path.c_str(), 1);
     }
     {
       // The desktop appearance is probed once for the addon, on a worker, and handed to every context on the loop; a context opened later starts in the last probed value. The fixture never runs the loop, so this drives the timer's step and the hand-off directly.
@@ -530,7 +530,7 @@ int main(int argc, char **argv) {
     ic.setCapabilityFlags(fcitx::CapabilityFlags{fcitx::CapabilityFlag::Preedit,
                                                fcitx::CapabilityFlag::SurroundingText});
     ic.focusIn();
-    fcitx::InputMethodEntry entry("msime", "MSIME", "zh_CN", "msime");
+    fcitx::InputMethodEntry entry("lingyao", "LINGYAO", "zh_CN", "lingyao");
     fcitx::InputContextEvent focus(&ic, fcitx::EventType::InputContextFocusIn);
     engine.activate(entry, focus);
     auto *state = ic.propertyFor(&engine.factory_);
@@ -612,12 +612,12 @@ int main(int argc, char **argv) {
       require(chord() && !state->input_enabled_ && chord() && state->input_enabled_,
               "Default Ctrl+Space does not switch in both directions");
       const auto set_binding = [&](bool enabled) {
-        auto snapshot = response(msime_client_load_preferences(
+        auto snapshot = response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
         const auto revision = snapshot.at("revision").get<uint64_t>();
         snapshot["preferences"]["keybindings"]["switch_language_ctrl_space"] = enabled;
         const auto document = snapshot.dump();
-        response(msime_client_save_preferences(
+        response(lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(),
             revision, reinterpret_cast<const uint8_t *>(document.data()), document.size()));
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
@@ -662,13 +662,13 @@ int main(int argc, char **argv) {
     const auto setStatistics = [&](bool enabled) {
       const auto request = Json{{"directory", preferenceDirectory},
                                 {"action", Json{{"operation", "set_enabled"}, {"enabled", enabled}}}}.dump();
-      const auto result = response(msime_client_typing_statistics(
+      const auto result = response(lingyao_client_typing_statistics(
           reinterpret_cast<const uint8_t *>(request.data()), request.size()));
       require(result.value("enabled", !enabled) == enabled, "typing statistics store switch");
     };
     const auto statisticsTotal = [&] {
       const auto request = Json{{"directory", preferenceDirectory}, {"action", Json{{"operation", "load"}}}}.dump();
-      return response(msime_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size()))
+      return response(lingyao_client_typing_statistics(reinterpret_cast<const uint8_t *>(request.data()), request.size()))
           .value("total", uint64_t{});
     };
     const auto statisticsDocument = preferenceDirectory + "/typing-statistics.json";
@@ -710,16 +710,16 @@ int main(int argc, char **argv) {
       const auto enable = Json{{"directory", preferenceDirectory},
                                {"action", Json{{"operation", "set_enabled"},
                                                {"enabled", true}}}}.dump();
-      response(msime_client_typing_statistics(
+      response(lingyao_client_typing_statistics(
           reinterpret_cast<const uint8_t *>(enable.data()), enable.size()));
     }
-    const auto currentSnapshot = response(msime_client_load_preferences(
+    const auto currentSnapshot = response(lingyao_client_load_preferences(
         reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
     const auto changed = Json{{"format_version", 1},
                               {"revision", currentSnapshot.value("revision", uint64_t{}) + 1},
                               {"preferences", changedPreferences}};
     const auto changedDocument = changed.dump();
-    auto saved = response(msime_client_save_preferences(
+    auto saved = response(lingyao_client_save_preferences(
         reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(),
         currentSnapshot.value("revision", uint64_t{}),
         reinterpret_cast<const uint8_t *>(changedDocument.data()), changedDocument.size()));
@@ -1031,10 +1031,10 @@ int main(int argc, char **argv) {
     const auto routeScript = std::string(directory) + "/route-helper.sh";
     const auto routeOutput = std::string(directory) + "/route-output";
     // The helper renames a finished file into place so the poll below never reads a half-written one.
-    std::ofstream(routeScript) << "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$MSIME_TEST_ROUTE_OUTPUT.tmp\" && mv \"$MSIME_TEST_ROUTE_OUTPUT.tmp\" \"$MSIME_TEST_ROUTE_OUTPUT\"\n";
+    std::ofstream(routeScript) << "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$LINGYAO_TEST_ROUTE_OUTPUT.tmp\" && mv \"$LINGYAO_TEST_ROUTE_OUTPUT.tmp\" \"$LINGYAO_TEST_ROUTE_OUTPUT\"\n";
     require(chmod(routeScript.c_str(), 0700) == 0, "desktop route helper permissions");
-    setenv("MSIME_CLIENT_SETTINGS_COMMAND", routeScript.c_str(), 1);
-    setenv("MSIME_TEST_ROUTE_OUTPUT", routeOutput.c_str(), 1);
+    setenv("LINGYAO_CLIENT_SETTINGS_COMMAND", routeScript.c_str(), 1);
+    setenv("LINGYAO_TEST_ROUTE_OUTPUT", routeOutput.c_str(), 1);
     const auto launchedRoute = [&](FcitxDesktopPanelAction &action, const std::string &label) {
       std::filesystem::remove(routeOutput);
       action.activate(&ic);
@@ -1101,8 +1101,8 @@ int main(int argc, char **argv) {
     require(ic.committed != beforeSearchCommit && !state->emoji_search_mode_,
             "emoji search commits the first result and exits");
     require(!engine.english_action_.isChecked(&ic), "English candidates initially disabled");
-    require(msime_linux_simplified_to_traditional("汉语") == "漢語", "traditional conversion available");
-    require(msime_linux_simplified_to_traditional("头发") == "頭髮", "traditional conversion is phrase-level OpenCC, not character by character");
+    require(lingyao_linux_simplified_to_traditional("汉语") == "漢語", "traditional conversion available");
+    require(lingyao_linux_simplified_to_traditional("头发") == "頭髮", "traditional conversion is phrase-level OpenCC, not character by character");
     engine.traditional_action_.activate(&ic);
     require(state->traditional_, "traditional status action enables conversion");
     require(state->preferences_.value("traditional_chinese_output", false),
@@ -1114,7 +1114,7 @@ int main(int argc, char **argv) {
     Json savedTraditional;
     while (std::chrono::steady_clock::now() < traditionalSaveDeadline) {
       state->refreshPreferences();
-      savedTraditional = response(msime_client_load_preferences(
+      savedTraditional = response(lingyao_client_load_preferences(
           reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       if (savedTraditional.value("preferences", Json::object())
               .value("traditional_chinese_output", false)) break;
@@ -1138,7 +1138,7 @@ int main(int argc, char **argv) {
     const auto widthSaveDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
     Json savedWidth;
     while (std::chrono::steady_clock::now() < widthSaveDeadline) {
-      savedWidth = response(msime_client_load_preferences(
+      savedWidth = response(lingyao_client_load_preferences(
           reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       if (savedWidth.value("preferences", Json::object()).value("character_width", std::string{}) ==
           "fullwidth") break;
@@ -1157,7 +1157,7 @@ int main(int argc, char **argv) {
     const auto finalWidthDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
     Json finalWidth;
     while (std::chrono::steady_clock::now() < finalWidthDeadline) {
-      finalWidth = response(msime_client_load_preferences(
+      finalWidth = response(lingyao_client_load_preferences(
           reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       if (finalWidth.value("preferences", Json::object()).value("character_width", std::string{}) ==
           "halfwidth") break;
@@ -1233,7 +1233,7 @@ int main(int argc, char **argv) {
               "Ctrl+Shift+F keeps the composition instead of committing it");
       require(ic.inputPanel().candidateList() && ic.inputPanel().candidateList()->size() > 0 &&
                   ic.inputPanel().candidateList()->candidate(0).text().toString().rfind(
-                      msime_linux_simplified_to_traditional(first), 0) == 0,
+                      lingyao_linux_simplified_to_traditional(first), 0) == 0,
               "Ctrl+Shift+F rewrites the open candidates in traditional characters");
       fcitx::KeyEvent back(&ic, fcitx::Key(FcitxKey_F, ctrlShift));
       engine.keyEvent(entry, back);
@@ -1244,7 +1244,7 @@ int main(int argc, char **argv) {
       require(key(FcitxKey_Escape) && ic.inputPanel().clientPreedit().toString().empty(),
               "Escape clears the Ctrl+Shift+F test composition");
     }
-    // Resetting MSIME is what Windows gets by restarting its Server: the controller's ReloadAddonConfig (the settings page's restart button), Ctrl+Shift+Alt+R and the status-menu action all end the composition, destroy the Engine session and give the focused context a new one at once. None of them may depend on a helper program, so a fcitx5-remote that fails and records being run stands first on PATH.
+    // Resetting LINGYAO is what Windows gets by restarting its Server: the controller's ReloadAddonConfig (the settings page's restart button), Ctrl+Shift+Alt+R and the status-menu action all end the composition, destroy the Engine session and give the focused context a new one at once. None of them may depend on a helper program, so a fcitx5-remote that fails and records being run stands first on PATH.
     {
       const auto *pathVariable = std::getenv("PATH");
       const std::string savedPath = pathVariable ? pathVariable : "";
@@ -1257,7 +1257,7 @@ int main(int argc, char **argv) {
       setenv("PATH", (stubDirectory + ":" + savedPath).c_str(), 1);
       const auto sessionGone = [](uint64_t handle) {
         try {
-          response(msime_client_view(handle));
+          response(lingyao_client_view(handle));
           return false;
         } catch (...) {
           return true;
@@ -1543,7 +1543,7 @@ int main(int argc, char **argv) {
     for (const auto sym : {FcitxKey_n, FcitxKey_i, FcitxKey_h, FcitxKey_a, FcitxKey_o,
                            FcitxKey_j, FcitxKey_i, FcitxKey_e})
       require(key(sym), "composition after refocus");
-    const auto onlineQuery = response(msime_client_online_query(state->session_));
+    const auto onlineQuery = response(lingyao_client_online_query(state->session_));
     state->refreshClipboard();
     const auto clipboardDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
     while (state->clipboard_items_.empty() && std::chrono::steady_clock::now() < clipboardDeadline) {
@@ -1592,12 +1592,12 @@ int main(int argc, char **argv) {
     }
     require(!state->online_socket_.empty(), "AI provider socket configured");
     const auto onlineDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-    while (response(msime_client_all_candidates(state->session_)).dump().find(suggestion) == std::string::npos &&
+    while (response(lingyao_client_all_candidates(state->session_)).dump().find(suggestion) == std::string::npos &&
            std::chrono::steady_clock::now() < onlineDeadline) {
       state->refreshOnline();
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    require(response(msime_client_all_candidates(state->session_)).dump().find(suggestion) != std::string::npos,
+    require(response(lingyao_client_all_candidates(state->session_)).dump().find(suggestion) != std::string::npos,
             "provider candidate applied to full candidate list");
     provider.join();
     auto page = ic.inputPanel().candidateList();
@@ -1684,7 +1684,7 @@ int main(int argc, char **argv) {
               "Escape leaves the translation senses and the composition");
       // Turning navigation.tab off through the store reaches the open context on the next preference tick, the same reload the settings page triggers.
       const auto loadStore = [&] {
-        return response(msime_client_load_preferences(
+        return response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       };
       const auto setTabPaging = [&](bool enabled) {
@@ -1693,7 +1693,7 @@ int main(int argc, char **argv) {
         snapshot["preferences"]["navigation"]["tab"] = enabled;
         snapshot["revision"] = revision + 1;
         const auto document = snapshot.dump();
-        const auto saved = response(msime_client_save_preferences(
+        const auto saved = response(lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(),
             revision, reinterpret_cast<const uint8_t *>(document.data()), document.size()));
         require(saved.value("revision", uint64_t{}) > revision, "navigation.tab saved");
@@ -1780,7 +1780,7 @@ int main(int argc, char **argv) {
     while (std::chrono::steady_clock::now() < statisticsDeadline) {
       const auto request = Json{{"directory", preferenceDirectory},
                                 {"action", Json{{"operation", "load"}}}}.dump();
-      statistics = response(msime_client_typing_statistics(
+      statistics = response(lingyao_client_typing_statistics(
           reinterpret_cast<const uint8_t *>(request.data()), request.size()));
       if (statistics.value("total", uint64_t{}) > 0) break;
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1820,13 +1820,13 @@ int main(int argc, char **argv) {
     require(ic.committed == committedBeforeCancel, "cancelled voice result is not committed");
     // A native surface that cannot show (GNOME Wayland has no layer-shell) hands the recording's status to the auxiliary text, as the IBus FallbackSurface does, instead of leaving the recording invisible.
     {
-      struct UnavailableSurface final : msime::linux_host::WaveOverlaySurface {
+      struct UnavailableSurface final : lingyao::linux_host::WaveOverlaySurface {
         explicit UnavailableSurface(int &count) : shows(count) {}
-        bool show(const msime::linux_host::WaveOverlayModel &) override {
+        bool show(const lingyao::linux_host::WaveOverlayModel &) override {
           ++shows;
           return false;
         }
-        void update(const msime::linux_host::WaveOverlayModel &) override {}
+        void update(const lingyao::linux_host::WaveOverlayModel &) override {}
         void hide() override {}
         int &shows;
       };
@@ -1921,10 +1921,10 @@ int main(int argc, char **argv) {
             "CapsLock does not begin composition");
     state->close();
     state->clearPanel();
-    // Screen keyboard keys go through the context's input method before the editor; the daemon test covers the MSIME composition this leads to. This fixture's instance has no input method of its own (the engine above is driven directly), so here nothing consumes the key: it has to reach the editor as one whole stroke, with the evdev code turned into an X keycode. Panel text still commits as it is.
+    // Screen keyboard keys go through the context's input method before the editor; the daemon test covers the LINGYAO composition this leads to. This fixture's instance has no input method of its own (the engine above is driven directly), so here nothing consumes the key: it has to reach the editor as one whole stroke, with the evdev code turned into an X keycode. Panel text still commits as it is.
     {
-      using msime::linux_host::PanelInputDelivery;
-      using msime::linux_host::PanelInputRequest;
+      using lingyao::linux_host::PanelInputDelivery;
+      using lingyao::linux_host::PanelInputRequest;
       PanelInputRequest panelKey;
       panelKey.kind = PanelInputRequest::Kind::Key;
       panelKey.key = "BackSpace";
@@ -2028,7 +2028,7 @@ int main(int argc, char **argv) {
     // Cycling through the schemes has to leave a way back to Chinese: the shared settings page and the IBus host both offer "中文", and it returns to last_chinese_scheme. Leaving for Japanese or Korean must not overwrite it.
     {
       const auto savedScheme = [&](const char *key) {
-        const auto snapshot = response(msime_client_load_preferences(
+        const auto snapshot = response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()),
             preferenceDirectory.size()));
         return snapshot.at("preferences").value(key, std::string("quanpin"));
@@ -2085,7 +2085,7 @@ int main(int argc, char **argv) {
     // A status-bar choice outranked the store for the rest of the context's life, so a scheme picked later in the settings page never reached that window, and a helpcode schema picked under quanpin followed the user into shuangpin.
     {
       const auto loadStore = [&] {
-        return response(msime_client_load_preferences(
+        return response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       };
       // What the settings page does: write the store, then mirror it into the runtime options file. Another window's status bar writes the store alone.
@@ -2095,7 +2095,7 @@ int main(int argc, char **argv) {
         snapshot["preferences"]["scheme"] = scheme;
         snapshot["revision"] = revision + 1;
         const auto document = snapshot.dump();
-        const auto saved = response(msime_client_save_preferences(
+        const auto saved = response(lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(),
             revision, reinterpret_cast<const uint8_t *>(document.data()), document.size()));
         require(saved.value("revision", uint64_t{}) > revision, "settings page scheme saved");
@@ -2188,7 +2188,7 @@ int main(int argc, char **argv) {
     // 全角 is a saved preference like any other: a session opens at the saved width, a focus change keeps it, and a reload moves the open session without one. The host's English-mode width is read back from the session's view, so the letter below proves the host and the runtime agree.
     {
       const auto loadStore = [&] {
-        return response(msime_client_load_preferences(
+        return response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
       };
       const auto saveStore = [&](const auto &edit) {
@@ -2197,7 +2197,7 @@ int main(int argc, char **argv) {
         edit(snapshot["preferences"]);
         snapshot["revision"] = revision + 1;
         const auto document = snapshot.dump();
-        const auto saved = response(msime_client_save_preferences(
+        const auto saved = response(lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(),
             revision, reinterpret_cast<const uint8_t *>(document.data()), document.size()));
         require(saved.value("revision", uint64_t{}) > revision, "store saved");
@@ -2277,14 +2277,14 @@ int main(int argc, char **argv) {
       const auto diagnosticSession = state->session_;
       saveStore([](Json &preferences) { preferences["diagnostic_log"]["server"] = true; });
       require(reloadUntil([&] {
-                msime_linux_diagnostic_write("native_probe");
+                lingyao_linux_diagnostic_write("native_probe");
                 return std::filesystem::exists(diagnosticLog);
               }) && state->session_ == diagnosticSession,
               "turning the diagnostic log on reaches the open session");
       saveStore([](Json &preferences) { preferences["diagnostic_log"]["server"] = false; });
       require(reloadUntil([&] {
                 const auto before = std::filesystem::file_size(diagnosticLog);
-                msime_linux_diagnostic_write("native_probe");
+                lingyao_linux_diagnostic_write("native_probe");
                 return std::filesystem::file_size(diagnosticLog) == before;
               }) && state->session_ == diagnosticSession,
               "turning the diagnostic log off stops it without a focus change");
@@ -2345,7 +2345,7 @@ int main(int argc, char **argv) {
               "Enter commits the syllable and reaches the application");
       require(press(FcitxKey_r) && press(FcitxKey_apostrophe) && ic.committed == before + "가가ㄱ'",
               "an apostrophe is a mark after the syllable");
-      // Hangul_Hanja or a bare F9 converts the composing syllable to Hanja (msime_client.h, MSIME_CONVERT_HANJA). With the list open the candidate keys choose, Escape and Backspace only close it, a letter closes it and composes, a mark writes the Hangul with it, and a trigger is never passed on while a syllable composes.
+      // Hangul_Hanja or a bare F9 converts the composing syllable to Hanja (lingyao_client.h, LINGYAO_CONVERT_HANJA). With the list open the candidate keys choose, Escape and Backspace only close it, a letter closes it and composes, a mark writes the Hangul with it, and a trigger is never passed on while a syllable composes.
       {
         const auto candidates = [&] { return state->view_.value("candidates", Json::array()); };
         const auto first = [&] {
@@ -2449,14 +2449,14 @@ int main(int argc, char **argv) {
       std::ofstream(path) << options.dump();
       // The store outranks the options file for the scheme and the width, as the status bar saves them there.
       {
-        auto snapshot = response(msime_client_load_preferences(
+        auto snapshot = response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
         const auto revision = snapshot.at("revision").get<uint64_t>();
         snapshot["preferences"]["scheme"] = "zhuyin";
         snapshot["preferences"]["character_width"] = "halfwidth";
         snapshot["revision"] = revision + 1;
         const auto document = snapshot.dump();
-        const auto saved = response(msime_client_save_preferences(
+        const auto saved = response(lingyao_client_save_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size(), revision,
             reinterpret_cast<const uint8_t *>(document.data()), document.size()));
         require(saved.value("revision", uint64_t{}) > revision, "Zhuyin saved as the scheme");
@@ -2487,7 +2487,7 @@ int main(int argc, char **argv) {
       require(!state->selectScheme("stroke") && state->view_.value("scheme", 10u) == 0,
               "Stroke cannot be selected without its dictionary");
       const auto fixture =
-          std::string("python3 '") + MSIME_ZHUYIN_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
+          std::string("python3 '") + LINGYAO_ZHUYIN_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
       require(std::system(fixture.c_str()) == 0, "Zhuyin dictionary fixture written");
       state->close();
       state->clearPanel();
@@ -2639,9 +2639,9 @@ int main(int argc, char **argv) {
       engine.deactivate(entry, tibetanSwitch);
       require(ic.committed == before + "ཀག", "switching input methods commits the open syllable");
       engine.activate(entry, focus);
-      // 装好 msime-stroke.db 并重新读取选项后，笔画进入菜单；它是中文方案，选中后记为最后使用的中文方案。
+      // 装好 lingyao-stroke.db 并重新读取选项后，笔画进入菜单；它是中文方案，选中后记为最后使用的中文方案。
       const auto strokeFixture =
-          std::string("python3 '") + MSIME_STROKE_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
+          std::string("python3 '") + LINGYAO_STROKE_DICTIONARY_FIXTURE + "' '" + dictionaries.string() + "'";
       require(std::system(strokeFixture.c_str()) == 0, "Stroke dictionary fixture written");
       state->close();
       state->clearPanel();
@@ -2654,7 +2654,7 @@ int main(int argc, char **argv) {
                   engine.scheme_stroke_action_.isChecked(&ic) && state->modeIndicatorLabel() == "笔",
               "the scheme menu selects Stroke");
       {
-        const auto stored = response(msime_client_load_preferences(
+        const auto stored = response(lingyao_client_load_preferences(
             reinterpret_cast<const uint8_t *>(preferenceDirectory.data()), preferenceDirectory.size()));
         require(stored.at("preferences").value("last_chinese_scheme", std::string()) == "stroke",
                 "Stroke is recorded as the last Chinese scheme");

@@ -8,7 +8,7 @@
 
 // Dictionary maintenance from the settings window, driven through real sessions: every controller holding one lets go while the quiesce lease is live, keys pass through meanwhile, and the next key after the lease is gone opens a new session with the mode the Engine held put back.
 
-@interface QuiesceClient : NSObject <MSIMETextClient>
+@interface QuiesceClient : NSObject <LINGYAOTextClient>
 @property(nonatomic, copy) NSString *marked;
 @property(nonatomic, strong) NSMutableArray<NSString *> *insertions;
 @end
@@ -31,7 +31,7 @@
 }
 @end
 
-@interface QuiescePanel : MSIMECandidatePanel
+@interface QuiescePanel : LINGYAOCandidatePanel
 @property(nonatomic) BOOL requestedVisible;
 @end
 @implementation QuiescePanel
@@ -43,7 +43,7 @@
 static NSDictionary *QuiesceOptions;
 
 // The options file is the only thing replaced: session opening, release and reopening are the controller's own.
-@interface QuiesceController : MSIMEInputController
+@interface QuiesceController : LINGYAOInputController
 @end
 @implementation QuiesceController
 - (NSDictionary *)runtimeOptions { return QuiesceOptions; }
@@ -56,7 +56,7 @@ static NSEvent *Key(unsigned short code, NSString *characters, NSEventModifierFl
 
 // What the settings window's maintenance request needs: the exclusive lock beside the user journal.
 static bool MaintenanceLockAvailable(NSString *userData) {
-    NSString *path = [userData stringByAppendingPathComponent:@".msime-dictionary-access.lock"];
+    NSString *path = [userData stringByAppendingPathComponent:@".lingyao-dictionary-access.lock"];
     const int descriptor = open(path.fileSystemRepresentation, O_RDWR | O_CREAT, 0600);
     assert(descriptor >= 0);
     const bool acquired = flock(descriptor, LOCK_EX | LOCK_NB) == 0;
@@ -65,10 +65,10 @@ static bool MaintenanceLockAvailable(NSString *userData) {
 }
 
 static void AnnounceMaintenance() {
-    [NSNotificationCenter.defaultCenter postNotificationName:MSIMEDictionaryMaintenanceWillBeginNotification object:nil];
+    [NSNotificationCenter.defaultCenter postNotificationName:LINGYAODictionaryMaintenanceWillBeginNotification object:nil];
 }
 
-static QuiesceController *Controller(MSIMEAppearancePreferences *appearance, QuiesceClient *client) {
+static QuiesceController *Controller(LINGYAOAppearancePreferences *appearance, QuiesceClient *client) {
     QuiesceController *controller = [QuiesceController alloc];
     [controller setValue:appearance forKey:@"appearance"];
     [controller setValue:client forKey:@"activeClient"];
@@ -93,10 +93,10 @@ int main() {
         const std::string leaseRoot(userData.fileSystemRepresentation);
         std::string raised;
 
-        NSString *suite = [@"msime.dictionary-quiesce." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"lingyao.dictionary-quiesce." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *appearance =
-            [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults
+        LINGYAOAppearancePreferences *appearance =
+            [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults
                                                        skinsRoot:[NSURL fileURLWithPath:root]];
 
         // Two clients, as IMK creates a controller per text input client; each holds its own session.
@@ -123,7 +123,7 @@ int main() {
         assert([typing.marked isEqual:@"U4e2d"]);
 
         // With it, every controller lets go at once and what was typed is committed, not lost.
-        assert(msime::dictionary_lease::raise_dictionary_quiesce_lease(leaseRoot, raised));
+        assert(lingyao::dictionary_lease::raise_dictionary_quiesce_lease(leaseRoot, raised));
         AnnounceMaintenance();
         assert(![first valueForKey:@"session"] && ![second valueForKey:@"session"]);
         assert(typing.marked.length == 0 && typing.insertions.count == 1);
@@ -136,7 +136,7 @@ int main() {
         assert(MaintenanceLockAvailable(userData));
 
         // Lease gone: the next key opens a session again, and dedicated English is what it was.
-        msime::dictionary_lease::lower_dictionary_quiesce_lease(leaseRoot, raised);
+        lingyao::dictionary_lease::lower_dictionary_quiesce_lease(leaseRoot, raised);
         [second handleEvent:Key(0, @"a", 0) client:english];
         assert([second valueForKey:@"session"]);
         assert([[second valueForKey:@"view"][@"dedicated_english"] isEqual:@YES]);
@@ -146,15 +146,15 @@ int main() {
         assert(!MaintenanceLockAvailable(userData));
 
         // A missed notification: the preferences timer's check finds the lease and releases every holder.
-        assert(msime::dictionary_lease::raise_dictionary_quiesce_lease(leaseRoot, raised));
-        [MSIMEInputController releaseQuiescedDictionarySessions];
+        assert(lingyao::dictionary_lease::raise_dictionary_quiesce_lease(leaseRoot, raised));
+        [LINGYAOInputController releaseQuiescedDictionarySessions];
         assert(![first valueForKey:@"session"] && ![second valueForKey:@"session"]);
         assert(MaintenanceLockAvailable(userData));
-        msime::dictionary_lease::lower_dictionary_quiesce_lease(leaseRoot, raised);
+        lingyao::dictionary_lease::lower_dictionary_quiesce_lease(leaseRoot, raised);
 
         // A lease that has run out (a settings process that died) no longer keeps input off.
         {
-            NSString *lease = [userData stringByAppendingPathComponent:@".msime-dictionary-quiesce"];
+            NSString *lease = [userData stringByAppendingPathComponent:@".lingyao-dictionary-quiesce"];
             const long long expired = (long long)(NSDate.date.timeIntervalSince1970 * 1000) - 1;
             NSString *contents = [NSString stringWithFormat:@"%lld\n", expired];
             assert([contents writeToFile:lease atomically:YES encoding:NSUTF8StringEncoding error:nil]);
@@ -163,10 +163,10 @@ int main() {
             [NSFileManager.defaultManager removeItemAtPath:lease error:nil];
         }
 
-        [(MSIMEClientSession *)[first valueForKey:@"session"] closeWithError:nil];
-        [(MSIMEClientSession *)[second valueForKey:@"session"] closeWithError:nil];
+        [(LINGYAOClientSession *)[first valueForKey:@"session"] closeWithError:nil];
+        [(LINGYAOClientSession *)[second valueForKey:@"session"] closeWithError:nil];
         [NSFileManager.defaultManager removeItemAtPath:root error:nil];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
     return 0;
 }

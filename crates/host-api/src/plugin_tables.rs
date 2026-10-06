@@ -2,15 +2,15 @@
 //!
 //! 它们都是设置页在输入进程运行期间写的文件：导入的指令表包、短语表包、辅助码表包和 `mentions.json`。 A session remembers the modification time and length of every file it read, checks them again when a field gains focus and when preferences are applied, and reads the files only when something moved. Nothing is read for a mode that is switched off.
 
-use msime_client_core::plugins::{
+use lingyao_client_core::plugins::{
     command_table, helpcode_pack, kind_directory, mentions, phrase_table, PluginKind, MANIFEST_FILE,
 };
-use msime_client_core::preferences::PluginPreferences;
-use msime_engine::host::{
+use lingyao_client_core::preferences::PluginPreferences;
+use lingyao_engine::host::{
     load_helpcode_keymap, CommandTableEntry, EngineOptions, HelpcodeKeymap, MentionEntry,
     QuickPhraseEntry, SharedKeymap,
 };
-use msime_engine::SchemeType;
+use lingyao_engine::SchemeType;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::SystemTime;
@@ -140,12 +140,12 @@ impl PluginTables {
             Ok(codes) => return Some(Arc::new(HelpcodeKeymap::from_codes(codes))),
             Err(error) => error,
         };
-        eprintln!("msime: helpcode pack {id} unavailable, falling back to {schema}: {error}");
+        eprintln!("lingyao: helpcode pack {id} unavailable, falling back to {schema}: {error}");
         match load_helpcode_keymap(Path::new(&options.resources), schema) {
             Ok(_) => None,
             Err(error) => {
                 eprintln!(
-                    "msime: helpcode schema {schema} unavailable, using an empty table: {error}"
+                    "lingyao: helpcode schema {schema} unavailable, using an empty table: {error}"
                 );
                 Some(Arc::new(HelpcodeKeymap::default()))
             }
@@ -197,7 +197,7 @@ impl PluginTables {
             .into_iter()
             .map(|entry| {
                 let key = if entry.key.is_empty() && !entry.text.is_ascii() {
-                    msime_engine::host::hanzi_to_pinyin(options, &entry.text)
+                    lingyao_engine::host::hanzi_to_pinyin(options, &entry.text)
                 } else {
                     entry.key
                 };

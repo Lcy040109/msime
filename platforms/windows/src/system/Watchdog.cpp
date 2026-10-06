@@ -11,17 +11,17 @@
 #include <vector>
 #include <windows.h>
 
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
 namespace {
 constexpr wchar_t server_file_name[] = L"LingyaoImeServer.exe";
-// 互斥量带版本后缀，CLSID、profile 和语言按版本取（shared/contracts/msime_edition.h，与 TSF 的 Globals.cpp 同源）：每个版本的看门狗只看护、只等待自己版本的 TIP 和 Server。
-constexpr wchar_t watchdog_mutex[] = L"Local\\MSIMEClientWatchdog.SingleInstance" MSIME_EDITION_NAME_SUFFIX;
+// 互斥量带版本后缀，CLSID、profile 和语言按版本取（shared/contracts/lingyao_edition.h，与 TSF 的 Globals.cpp 同源）：每个版本的看门狗只看护、只等待自己版本的 TIP 和 Server。
+constexpr wchar_t watchdog_mutex[] = L"Local\\LINGYAOClientWatchdog.SingleInstance" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr DWORD profile_ready_timeout_milliseconds = 30'000;
 constexpr DWORD profile_ready_retry_milliseconds = 1'000;
-constexpr CLSID client_clsid = MSIME_EDITION_CLSID;
-constexpr GUID client_profile = MSIME_EDITION_PROFILE_GUID;
-constexpr LANGID client_language = MSIME_EDITION_LANGID;
+constexpr CLSID client_clsid = LINGYAO_EDITION_CLSID;
+constexpr GUID client_profile = LINGYAO_EDITION_PROFILE_GUID;
+constexpr LANGID client_language = LINGYAO_EDITION_LANGID;
 
 struct Apartment {
   bool owned = false;
@@ -128,7 +128,7 @@ HANDLE start_server(const std::wstring &server_path,
   execute.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
   execute.lpVerb = L"open";
   execute.lpFile = server_path.c_str();
-  execute.lpParameters = msime::windows::watchdog_protocol::managed_argument;
+  execute.lpParameters = lingyao::windows::watchdog_protocol::managed_argument;
   execute.lpDirectory = working_directory.c_str();
   execute.nShow = SW_SHOWNOACTIVATE;
   if (!ShellExecuteExW(&execute) || !execute.hProcess)
@@ -157,13 +157,13 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR command_line, int) {
   if (directory.empty())
     return 1;
   const std::wstring server_path = directory + L"\\" + server_file_name;
-  uint32_t delay = msime::windows::watchdog::initial_restart_delay_milliseconds;
+  uint32_t delay = lingyao::windows::watchdog::initial_restart_delay_milliseconds;
   for (;;) {
     HANDLE server = find_running_server(server_path);
     if (!server)
       server = start_server(server_path, directory);
     if (!server) {
-      const auto decision = msime::windows::watchdog_after_failed_start(delay);
+      const auto decision = lingyao::windows::watchdog_after_failed_start(delay);
       delay = decision.delay_milliseconds;
       Sleep(delay);
       continue;
@@ -173,7 +173,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR command_line, int) {
     DWORD exit_code = 0;
     GetExitCodeProcess(server, &exit_code);
     CloseHandle(server);
-    const auto decision = msime::windows::watchdog_after_exit(
+    const auto decision = lingyao::windows::watchdog_after_exit(
         exit_code, GetTickCount64() - started_at, delay);
     if (!decision.keep_running)
       return 0;

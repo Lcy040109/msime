@@ -6,8 +6,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 READERS = (
-    ROOT / "platforms/android/java/app/msime/android/voice/VoicePolisher.java",
-    ROOT / "platforms/android/java/app/msime/android/voice/HttpAsrRecognizer.java",
+    ROOT / "platforms/android/java/app/lingyao/android/voice/VoicePolisher.java",
+    ROOT / "platforms/android/java/app/lingyao/android/voice/HttpAsrRecognizer.java",
 )
 
 

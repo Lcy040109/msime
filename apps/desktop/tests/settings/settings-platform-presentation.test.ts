@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { settingsPlatformPresentation } from "@msime/ui";
+import { settingsPlatformPresentation } from "@lingyao/ui";
 
 test("derives desktop platform presentation values", () => {
   const presentation = settingsPlatformPresentation({

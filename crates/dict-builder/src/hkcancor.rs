@@ -1,4 +1,4 @@
-//! `hkcancor-counts`: generates msime-dictionary's `sources/cantonese/hkcancor-word-counts.txt`, how often each word of two or more Han characters occurs in the Hong Kong Cantonese Corpus (HKCanCor, K. K. Luke and May L. Y. Wong, CC BY 4.0), from the corpus transcriptions pinned under `hkcancor/` in the sources lock (`data/utf8/*` of https://github.com/fcbond/hkcancor).
+//! `hkcancor-counts`: generates lingyao-dictionary's `sources/cantonese/hkcancor-word-counts.txt`, how often each word of two or more Han characters occurs in the Hong Kong Cantonese Corpus (HKCanCor, K. K. Luke and May L. Y. Wong, CC BY 4.0), from the corpus transcriptions pinned under `hkcancor/` in the sources lock (`data/utf8/*` of https://github.com/fcbond/hkcancor).
 //!
 //! The corpus is conversational Hong Kong Cantonese from 1997–98, word-segmented and tagged, about 160 thousand tokens. rime-cantonese's essay is mostly written Chinese and lacks the commonest colloquial words (我哋, 佢哋, 嗰啲, 有冇), so `cantonese.rs` weighs a word the essay does not list by its count here.
 //!
@@ -74,7 +74,7 @@ pub fn count(files: &[(&str, &str)]) -> Result<Counts> {
 
 pub struct Provenance<'a> {
     pub upstream_commit: &'a str,
-    /// 运行生成器的 msime 提交；构建器有未提交改动时带 `-dirty` 后缀。
+    /// 运行生成器的 lingyao 提交；构建器有未提交改动时带 `-dirty` 后缀。
     pub generator_commit: &'a str,
 }
 
@@ -87,7 +87,7 @@ pub fn render(counts: &Counts, provenance: &Provenance) -> String {
         .collect();
     ordered.sort_unstable();
     let mut out = String::new();
-    let _ = writeln!(out, "# 香港粤语语料库（HKCanCor）词频表，由 msime 仓库提交 {} 的 crates/dict-builder/src/hkcancor.rs 以 `msime-dict-build hkcancor-counts --cache <dir> --out {OUTPUT}` 生成；不要手工编辑。", provenance.generator_commit);
+    let _ = writeln!(out, "# 香港粤语语料库（HKCanCor）词频表，由 lingyao 仓库提交 {} 的 crates/dict-builder/src/hkcancor.rs 以 `lingyao-dict-build hkcancor-counts --cache <dir> --out {OUTPUT}` 生成；不要手工编辑。", provenance.generator_commit);
     let _ = writeln!(out, "# 上游：https://github.com/fcbond/hkcancor 提交 {} 的 data/utf8/ 下 {} 个转写文件（K. K. Luke and May L. Y. Wong, The Hong Kong Cantonese Corpus: Design and Uses, Journal of Chinese Linguistics Monograph Series 25, 2015；CC BY 4.0，见上游 data/LICENSE）。", provenance.upstream_commit, counts.files);
     let _ = writeln!(out, "# 计数：<sent_tag> 块里每行一个 词/词性/粤拼/ 标注，一行计一次，不分词性、跨文件相加；拆不成这三段加空尾段的行（转写者的 ○/#/#/@ 占位等）不计。共 {} 个标注，跳过 {} 行。只写出两个及以上汉字组成的词，单字、字母、数字与标点不写；不与其他文件对照去重，每个词一行。", counts.tokens, counts.skipped);
     for (count, word) in ordered {
@@ -148,7 +148,7 @@ mod tests {
         );
         let first = rendered.lines().next().unwrap();
         assert!(
-            first.contains("msime 仓库提交 0123456789abcdef0123456789abcdef01234567"),
+            first.contains("lingyao 仓库提交 0123456789abcdef0123456789abcdef01234567"),
             "{first}"
         );
         assert!(!first.contains("dictionary-sources.lock.json"));

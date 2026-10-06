@@ -816,7 +816,7 @@ fn enabled_in_preference_list(domain: &str, key: &str) -> Option<bool> {
     enabled_in_input_source_list(&preference_list_json(domain, key)?)
 }
 
-/// 输入法列表里本输入法各个模式的标识符，例如 `app.msime.inputmethod.LingyaoIME.Cantonese`。
+/// 输入法列表里本输入法各个模式的标识符，例如 `app.lingyao.inputmethod.LingyaoIME.Cantonese`。
 fn enabled_modes_in_input_source_list(json: &[u8]) -> Option<Vec<String>> {
     let list: serde_json::Value = serde_json::from_slice(json).ok()?;
     Some(
@@ -975,7 +975,7 @@ mod tests {
     #[test]
     fn only_a_nonstandard_options_override_is_a_development_run() {
         let standard = Path::new(
-            "/Users/dev/Library/Application Support/app.msime.macos/runtime-options.json",
+            "/Users/dev/Library/Application Support/app.lingyao.macos/runtime-options.json",
         );
         assert!(!development_options_override(None, Some(standard)));
         assert!(!development_options_override(
@@ -983,7 +983,7 @@ mod tests {
             Some(standard)
         ));
         assert!(development_options_override(
-            Some(OsStr::new("/Users/dev/msime/target/dev-options.json")),
+            Some(OsStr::new("/Users/dev/lingyao/target/dev-options.json")),
             Some(standard),
         ));
         // Without a standard locator to compare with, any override is treated as development.
@@ -1154,7 +1154,7 @@ mod tests {
 
     #[test]
     fn enabled_list_matches_this_bundle_only() {
-        let enabled = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
+        let enabled = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","Input Mode":"app.lingyao.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(enabled_in_input_source_list(enabled), Some(true));
         let absent = br#"[{"Bundle ID":"com.apple.inputmethod.Kotoeri.RomajiTyping"}]"#;
         assert_eq!(enabled_in_input_source_list(absent), Some(false));
@@ -1163,10 +1163,10 @@ mod tests {
 
     #[test]
     fn listed_means_the_input_method_entry_not_an_orphaned_mode() {
-        let listed = br#"[{"Bundle ID":"app.msime.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
+        let listed = br#"[{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","Input Mode":"app.lingyao.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(input_method_in_input_source_list(listed), Some(true));
         // What System Settings left after the user removed every visible entry: a mode whose input method entry is gone.
-        let orphan = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
+        let orphan = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","Input Mode":"app.lingyao.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(input_method_in_input_source_list(orphan), Some(false));
         let other =
             br#"[{"Bundle ID":"com.example.other","InputSourceKind":"Keyboard Input Method"}]"#;
@@ -1176,12 +1176,12 @@ mod tests {
 
     #[test]
     fn enabled_modes_lists_this_bundles_input_modes_only() {
-        let list = br#"[{"Bundle ID":"app.msime.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"},{"Bundle ID":"com.example.other","Input Mode":"com.example.other.hans","InputSourceKind":"Input Mode"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
+        let list = br#"[{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","Input Mode":"app.lingyao.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"},{"Bundle ID":"com.example.other","Input Mode":"com.example.other.hans","InputSourceKind":"Input Mode"},{"Bundle ID":"app.lingyao.inputmethod.LingyaoIME","Input Mode":"app.lingyao.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(
             enabled_modes_in_input_source_list(list),
             Some(vec![
-                "app.msime.inputmethod.LingyaoIME.Cantonese".to_owned(),
-                "app.msime.inputmethod.LingyaoIME.Hans".to_owned(),
+                "app.lingyao.inputmethod.LingyaoIME.Cantonese".to_owned(),
+                "app.lingyao.inputmethod.LingyaoIME.Hans".to_owned(),
             ])
         );
         assert_eq!(enabled_modes_in_input_source_list(b"[]"), Some(Vec::new()));
@@ -1199,7 +1199,7 @@ mod tests {
 
     #[test]
     fn launch_services_parser_keeps_only_paths_for_the_requested_identifier() {
-        let dump = "path: /old/灵耀输入法.app (0x10)\nidentifier:                 app.msime.inputmethod.LingyaoIME\npath: /other.app (0x11)\nidentifier:                 com.example.other\npath: /new/灵耀输入法.app (0x12)\nidentifier:                 app.msime.inputmethod.LingyaoIME\n";
+        let dump = "path: /old/灵耀输入法.app (0x10)\nidentifier:                 app.lingyao.inputmethod.LingyaoIME\npath: /other.app (0x11)\nidentifier:                 com.example.other\npath: /new/灵耀输入法.app (0x12)\nidentifier:                 app.lingyao.inputmethod.LingyaoIME\n";
         assert_eq!(
             launch_services_paths_for_identifier(dump, input_source_bundle_id()),
             vec![
@@ -1394,15 +1394,15 @@ mod tests {
             "/Applications/MSIME.app/Contents/Resources"
         )));
         assert!(!is_packaged_resource_directory(Path::new(
-            "/Users/dev/msime/target/debug"
+            "/Users/dev/lingyao/target/debug"
         )));
         assert!(!is_packaged_resource_directory(Path::new(
-            "/Users/dev/msime/target/debug/Resources"
+            "/Users/dev/lingyao/target/debug/Resources"
         )));
         assert!(!is_packaged_resource_directory(Path::new(
             "/Users/dev/Other.app/Resources"
         )));
-        let result = ensure_current(Path::new("/Users/dev/msime/target/debug"), true);
+        let result = ensure_current(Path::new("/Users/dev/lingyao/target/debug"), true);
         assert!(matches!(result, Err(InstallError::SourceUnavailable)));
     }
 

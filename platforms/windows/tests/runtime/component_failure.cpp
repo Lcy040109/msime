@@ -4,7 +4,7 @@
 #include <vector>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   assert(describe_failure_site(failure_at_stage("refresh", 5)) == "refresh, error 5");
   assert(describe_failure_site(failure_in_message(0x000F, 0)) == "window message 0x000F, error 0");
   // 消息号超过四位时照实写出，不截断。

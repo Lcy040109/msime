@@ -4,13 +4,13 @@ use super::{
     edit_personal_dictionary, invalid_dictionary_entry, require_dictionary_kind, response,
     DictionaryAccess, HostOptions, DICTIONARY_REQUEST_LIMIT,
 };
-use msime_client_core::dictionary::import::{dictionary_row_matches, PageSelector};
-use msime_client_core::dictionary::is_han_character;
-use msime_client_core::dictionary::personal::{
+use lingyao_client_core::dictionary::import::{dictionary_row_matches, PageSelector};
+use lingyao_client_core::dictionary::is_han_character;
+use lingyao_client_core::dictionary::personal::{
     PersonalDictionaryError, PersonalDictionaryStore, PersonalWord, PersonalWordApplied,
     PersonalWordKind, PersonalWordRequestStatus,
 };
-use msime_engine::host::{DictionaryEntry, DictionaryKind};
+use lingyao_engine::host::{DictionaryEntry, DictionaryKind};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::ffi::c_char;
@@ -112,7 +112,7 @@ impl From<Entry> for DictionaryEntry {
     }
 }
 
-impl From<Kind> for msime_engine::host::DictionaryKind {
+impl From<Kind> for lingyao_engine::host::DictionaryKind {
     fn from(kind: Kind) -> Self {
         match kind {
             Kind::Pinyin => Self::Pinyin,
@@ -230,7 +230,7 @@ fn parse_personal_dictionary_import(text: &str) -> Result<Vec<PersonalWord>, Str
     }
     let file: PersonalDictionaryImport =
         serde_json::from_str(text).map_err(|_| "invalid personal dictionary file".to_owned())?;
-    if file.format != "msime-personal-dictionary" || file.version != 1 {
+    if file.format != "lingyao-personal-dictionary" || file.version != 1 {
         return Err("unsupported personal dictionary file".into());
     }
     if file.entries.is_empty() || file.entries.len() > 128 {
@@ -255,7 +255,7 @@ fn parse_personal_dictionary_import(text: &str) -> Result<Vec<PersonalWord>, Str
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary(request: *const u8, length: usize) -> *mut c_char {
+pub unsafe extern "C" fn lingyao_client_dictionary(request: *const u8, length: usize) -> *mut c_char {
     response(|| {
         if request.is_null() || length > DICTIONARY_REQUEST_LIMIT {
             return Err("invalid dictionary buffer".into());
@@ -269,7 +269,7 @@ pub unsafe extern "C" fn msime_client_dictionary(request: *const u8, length: usi
 /// The queued personal dictionary, for a host that cannot take the Engine's
 /// maintenance lock when the request arrives.
 ///
-/// `msime_client_dictionary` edits the Engine dictionary directly, which needs
+/// `lingyao_client_dictionary` edits the Engine dictionary directly, which needs
 /// the maintenance lock and therefore needs the keyboard not to be holding a
 /// session. That is the right route for an edit made in a settings window while
 /// nothing is being typed, and the wrong one for importing a file: the user is
@@ -285,7 +285,7 @@ pub unsafe extern "C" fn msime_client_dictionary(request: *const u8, length: usi
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_personal_dictionary_request(
+pub unsafe extern "C" fn lingyao_client_personal_dictionary_request(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -307,7 +307,7 @@ pub unsafe extern "C" fn msime_client_personal_dictionary_request(
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary_validate(
+pub unsafe extern "C" fn lingyao_client_dictionary_validate(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -319,11 +319,11 @@ pub unsafe extern "C" fn msime_client_dictionary_validate(
         let bytes = unsafe { std::slice::from_raw_parts(request, length) };
         let entry: Entry =
             serde_json::from_slice(bytes).map_err(|_| "invalid dictionary entry".to_owned())?;
-        let normalized = msime_engine::host::dictionary_validate(&entry.into())
+        let normalized = lingyao_engine::host::dictionary_validate(&entry.into())
             .map_err(|_| "invalid dictionary entry".to_owned())?;
         let normalized = Entry::try_from(normalized)?;
         if matches!(normalized.kind, Kind::QuickPhrase)
-            && !msime_client_core::dictionary::quick_phrase_code_is_well_formed(&normalized.key)
+            && !lingyao_client_core::dictionary::quick_phrase_code_is_well_formed(&normalized.key)
         {
             return Err(invalid_dictionary_entry(
                 "code contains characters this dictionary does not accept",
@@ -335,11 +335,11 @@ pub unsafe extern "C" fn msime_client_dictionary_validate(
 
 /// Read plain Chinese words, one per line, and answer the pinyin entries they would import as, without opening or changing any dictionary state.
 ///
-/// For a host whose settings surface cannot take the Engine's maintenance lock or run `msime_client_prepare_host` while the keyboard may hold a session: iOS shows the result for confirmation and then queues it itself. The readings come from the packaged main dictionary under `resources`, opened read-only, and follow the same rules as the `hans` import format.
+/// For a host whose settings surface cannot take the Engine's maintenance lock or run `lingyao_client_prepare_host` while the keyboard may hold a session: iOS shows the result for confirmation and then queues it itself. The readings come from the packaged main dictionary under `resources`, opened read-only, and follow the same rules as the `hans` import format.
 /// # Safety
 /// Both pointers must reference readable buffers of the stated lengths. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary_hans_entries(
+pub unsafe extern "C" fn lingyao_client_dictionary_hans_entries(
     text: *const u8,
     text_length: usize,
     resources: *const u8,
@@ -348,7 +348,7 @@ pub unsafe extern "C" fn msime_client_dictionary_hans_entries(
     response(|| {
         if text.is_null()
             || resources.is_null()
-            || text_length > msime_client_core::cloud::dictionary::MAX_IMPORT_BYTES
+            || text_length > lingyao_client_core::cloud::dictionary::MAX_IMPORT_BYTES
             || resources_length > 4096
         {
             return Err("invalid dictionary buffer".into());
@@ -379,7 +379,7 @@ fn hans_entries_json(text: &str, resources: &str) -> Result<serde_json::Value, S
 /// # Safety
 /// Both pointers must reference readable buffers of the stated lengths. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_dictionary_import_entries(
+pub unsafe extern "C" fn lingyao_client_dictionary_import_entries(
     request: *const u8,
     request_length: usize,
     resources: *const u8,
@@ -440,7 +440,7 @@ fn read_only_options(resources: &str) -> Result<HostOptions, String> {
         "user_data": resources,
         "cache": resources,
         "dictionaries": resources,
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
     }))
     .map_err(|_| "invalid dictionary options".into())
 }
@@ -455,7 +455,7 @@ fn queued_import(
     kind: &Kind,
     format: &str,
     text: &str,
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
 ) -> Result<(Vec<PersonalWord>, serde_json::Value), String> {
     let (entries, report) = if format == "hans" {
         (parse_hans_import(kind, text, options)?, None)
@@ -472,7 +472,7 @@ fn queued_import(
             lines
         })
         .unwrap_or_default();
-    let mut report = report.unwrap_or(msime_client_core::dictionary::import::ImportReport {
+    let mut report = report.unwrap_or(lingyao_client_core::dictionary::import::ImportReport {
         entries: Vec::new(),
         failed: 0,
         first_failures: Vec::new(),
@@ -611,7 +611,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
                 let (entries, report) = parse_import(&kind, &format, &text, Some(&options))?;
                 (entries, Some(report))
             };
-            if !msime_client_core::is_bounded_ascii_identifier(&request_id, 120) {
+            if !lingyao_client_core::is_bounded_ascii_identifier(&request_id, 120) {
                 return Err("invalid dictionary request ID".into());
             }
             let _access = DictionaryAccess::try_maintenance(
@@ -643,7 +643,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
                 let receipt = format!("{request_id}-{index}");
                 // The batch already owns the maintenance lock; call the Engine directly.
                 let result =
-                    msime_engine::host::dictionary_edit(&options, None, Some(entry), &receipt);
+                    lingyao_engine::host::dictionary_edit(&options, None, Some(entry), &receipt);
                 if result.is_err() {
                     // A hans import has no parsed report, so its rows have no
                     // line to name; they are still counted.
@@ -658,7 +658,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
                 return Err("dictionary import rejected".into());
             }
             let mut report =
-                report.unwrap_or(msime_client_core::dictionary::import::ImportReport {
+                report.unwrap_or(lingyao_client_core::dictionary::import::ImportReport {
                     entries: Vec::new(),
                     failed: 0,
                     first_failures: Vec::new(),
@@ -687,7 +687,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
             )
             .map_err(|_| "dictionary access unavailable")?
             .ok_or("dictionary maintenance busy")?;
-            msime_engine::host::reset_learned_data(&options)
+            lingyao_engine::host::reset_learned_data(&options)
                 .map_err(|_| "learned-data reset rejected")?;
             Ok(json!({ "reset": true }))
         }
@@ -716,7 +716,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
             let mut source_has_more = true;
             while source_has_more && matching.len() < offset.saturating_add(limit) {
                 // The pinyin export also carries the weights learned or set for bundled words, and leaves out single characters, as the reference's does; the other dictionaries export the user's own words only.
-                let page = msime_engine::host::dictionary_export_entries(
+                let page = lingyao_engine::host::dictionary_export_entries(
                     &options,
                     cursor,
                     1000,
@@ -787,7 +787,7 @@ pub fn dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Value, String
 
 /// `count` 的实现：分页扫完整个用户词库，最多扫一百万行。
 fn count_entries(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     kind: Option<Kind>,
     user_only: bool,
 ) -> Result<serde_json::Value, String> {
@@ -798,9 +798,9 @@ fn count_entries(
     let mut complete = true;
     loop {
         let page = if user_only {
-            msime_engine::host::dictionary_entries(options, scanned, CHUNK)
+            lingyao_engine::host::dictionary_entries(options, scanned, CHUNK)
         } else {
-            msime_engine::host::dictionary_export_entries(
+            lingyao_engine::host::dictionary_export_entries(
                 options,
                 scanned,
                 CHUNK,
@@ -1025,7 +1025,7 @@ pub fn personal_dictionary_request_json(bytes: &[u8]) -> Result<serde_json::Valu
             Ok(json!({ "pending_count": state.pending_count() }))
         }
         Operation::Count { .. } | Operation::ExportSnapshot { .. } => {
-            Err("dictionary read operations require msime_client_dictionary".into())
+            Err("dictionary read operations require lingyao_client_dictionary".into())
         }
         Operation::DismissFailure { request_id } => {
             store
@@ -1046,14 +1046,14 @@ fn names_a_code(kind: Kind, prefix: &str) -> bool {
 
 /// One page of the dictionary table of `kind` under code `prefix`, bundled rows included and each marked with where it comes from. The caller holds dictionary access.
 fn table_entries_page(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     kind: Kind,
     prefix: &str,
     offset: usize,
     limit: usize,
 ) -> Result<(Vec<Entry>, bool), String> {
     let page =
-        msime_engine::host::dictionary_table_entries(options, kind.into(), prefix, offset, limit)
+        lingyao_engine::host::dictionary_table_entries(options, kind.into(), prefix, offset, limit)
             .map_err(|_| "dictionary read rejected")?;
     let entries = page
         .entries
@@ -1072,7 +1072,7 @@ fn table_entries_page(
 
 /// One page of the user's own words, optionally within one dictionary and under one code prefix. The caller holds dictionary access.
 fn user_entries_page(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     offset: usize,
     limit: usize,
     kind: Option<Kind>,
@@ -1080,7 +1080,7 @@ fn user_entries_page(
 ) -> Result<(Vec<Entry>, bool), String> {
     // Unfiltered pages still go straight through, so the common case costs exactly what it did before.
     if kind.is_none() && prefix.is_empty() {
-        let page = msime_engine::host::dictionary_entries(options, offset, limit)
+        let page = lingyao_engine::host::dictionary_entries(options, offset, limit)
             .map_err(|_| "dictionary read rejected")?;
         let entries: Vec<Entry> = page
             .entries
@@ -1098,7 +1098,7 @@ fn user_entries_page(
     const SCAN_BUDGET: usize = 20_000;
     const CHUNK: usize = 500;
     loop {
-        let page = msime_engine::host::dictionary_entries(options, scanned, CHUNK)
+        let page = lingyao_engine::host::dictionary_entries(options, scanned, CHUNK)
             .map_err(|_| "dictionary read rejected")?;
         let count = page.entries.len();
         for raw in page.entries {
@@ -1130,7 +1130,7 @@ fn user_entries_page(
 /// only after its Engine session has been destroyed; the shared dictionary lock
 /// then prevents races with any other host.
 ///
-/// The request is the bare HostOptions a host passes to `msime_client_create`, as the C header documents and as both the Android and HarmonyOS hosts send it. Parsing it as an `{options, action}` envelope refused every call, which Android swallowed and HarmonyOS answered by rebuilding its session every two seconds.
+/// The request is the bare HostOptions a host passes to `lingyao_client_create`, as the C header documents and as both the Android and HarmonyOS hosts send it. Parsing it as an `{options, action}` envelope refused every call, which Android swallowed and HarmonyOS answered by rebuilding its session every two seconds.
 pub fn personal_dictionary_sync_json(bytes: &[u8]) -> Result<serde_json::Value, String> {
     if bytes.len() > DICTIONARY_REQUEST_LIMIT {
         return Err("invalid dictionary buffer".into());
@@ -1185,7 +1185,7 @@ pub fn personal_dictionary_sync_json(bytes: &[u8]) -> Result<serde_json::Value, 
                     request.kind.map(personal_to_kind),
                     &request.query,
                 )?;
-                Ok(msime_client_core::dictionary::personal::PersonalWordPage {
+                Ok(lingyao_client_core::dictionary::personal::PersonalWordPage {
                     entries: entries
                         .into_iter()
                         .map(|entry| PersonalWord {
@@ -1208,19 +1208,19 @@ pub fn personal_dictionary_sync_json(bytes: &[u8]) -> Result<serde_json::Value, 
     }))
 }
 
-/// The request id prefix `msime_client_core::dictionary::collections` gives what it queues.
+/// The request id prefix `lingyao_client_core::dictionary::collections` gives what it queues.
 const COLLECTION_REQUEST_PREFIX: &str = "collections-";
 
 /// Identities of the user's own rows (`user_inserted`), the ones a dictionary collection must neither overwrite nor later remove. A store the Engine cannot read answers empty, so the addition is written as it was before this check existed.
 fn user_word_identities(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
 ) -> std::collections::HashSet<String> {
     const CHUNK: usize = 1000;
     const SCAN_LIMIT: usize = 1_000_000;
     let mut identities = std::collections::HashSet::new();
     let mut offset = 0usize;
     loop {
-        let Ok(page) = msime_engine::host::dictionary_entries(options, offset, CHUNK) else {
+        let Ok(page) = lingyao_engine::host::dictionary_entries(options, offset, CHUNK) else {
             return std::collections::HashSet::new();
         };
         let count = page.entries.len();
@@ -1241,7 +1241,7 @@ fn user_word_present(
     identities: &std::collections::HashSet<String>,
     entry: &DictionaryEntry,
 ) -> bool {
-    msime_engine::host::dictionary_validate(entry)
+    lingyao_engine::host::dictionary_validate(entry)
         .is_ok_and(|normalized| identities.contains(&engine_identity(&normalized)))
 }
 
@@ -1260,7 +1260,7 @@ fn engine_identity(entry: &DictionaryEntry) -> String {
 /// # Safety
 /// `request` must point to `length` readable bytes. Null is rejected.
 #[no_mangle]
-pub unsafe extern "C" fn msime_client_personal_dictionary_sync(
+pub unsafe extern "C" fn lingyao_client_personal_dictionary_sync(
     request: *const u8,
     length: usize,
 ) -> *mut c_char {
@@ -1291,7 +1291,7 @@ fn personal_from_entry(entry: Entry) -> Result<PersonalWord, String> {
 }
 
 fn normalize_personal_word(word: PersonalWord) -> Result<PersonalWord, String> {
-    let entry = msime_engine::host::dictionary_validate(&personal_engine_entry(&word))
+    let entry = lingyao_engine::host::dictionary_validate(&personal_engine_entry(&word))
         .map_err(|_| "invalid personal dictionary entry".to_owned())?;
     Ok(PersonalWord {
         kind: personal_kind(entry.kind),
@@ -1301,8 +1301,8 @@ fn normalize_personal_word(word: PersonalWord) -> Result<PersonalWord, String> {
     })
 }
 
-fn personal_engine_entry(word: &PersonalWord) -> msime_engine::host::DictionaryEntry {
-    msime_engine::host::DictionaryEntry {
+fn personal_engine_entry(word: &PersonalWord) -> lingyao_engine::host::DictionaryEntry {
+    lingyao_engine::host::DictionaryEntry {
         kind: match word.kind {
             PersonalWordKind::Pinyin => DictionaryKind::Pinyin,
             PersonalWordKind::Wubi => DictionaryKind::Wubi,
@@ -1346,7 +1346,7 @@ fn bundled_weight(previous: &Entry, replacement: Option<&Entry>) -> Result<Optio
 
 /// Re-weight or delete a bundled row under the maintenance lock, journaled so the change survives replay onto a fresh dictionary. Engine diagnostics are withheld, as for a user entry.
 fn edit_bundled_entry(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     previous: &Entry,
     weight: Option<i64>,
     request_id: &str,
@@ -1367,7 +1367,7 @@ fn edit_bundled_entry(
         value: previous.value.clone(),
         weight: previous.weight,
     };
-    msime_engine::host::dictionary_edit_bundled(options, &previous, weight, request_id)
+    lingyao_engine::host::dictionary_edit_bundled(options, &previous, weight, request_id)
         .map_err(|_| "dictionary edit rejected")?;
     Ok(json!({ "applied": true }))
 }
@@ -1399,7 +1399,7 @@ fn replacement_for_engine(entry: Entry) -> Result<Entry, String> {
     validate_entry(&entry)?;
     // `validate_entry` also checks the previous row, which may be a stored quick phrase whose code has a digit; new input follows the reference's letters-only rule.
     if matches!(entry.kind, Kind::QuickPhrase)
-        && !msime_client_core::dictionary::quick_phrase_code_is_well_formed(&entry.key)
+        && !lingyao_client_core::dictionary::quick_phrase_code_is_well_formed(&entry.key)
     {
         return Err(invalid_dictionary_entry(
             "code contains characters this dictionary does not accept",
@@ -1426,14 +1426,14 @@ fn validate_entry_up_to(entry: &Entry, max_weight: i64) -> Result<(), String> {
         Kind::English => 64,
     };
     let key_valid = match entry.kind {
-        Kind::Pinyin => msime_client_core::dictionary::pinyin_code_is_well_formed(&entry.key, true),
+        Kind::Pinyin => lingyao_client_core::dictionary::pinyin_code_is_well_formed(&entry.key, true),
         Kind::Wubi | Kind::Wubi98 => {
-            msime_client_core::dictionary::wubi_code_is_well_formed(&entry.key)
+            lingyao_client_core::dictionary::wubi_code_is_well_formed(&entry.key)
         }
         Kind::QuickPhrase => {
-            msime_client_core::dictionary::quick_phrase_transport_code_is_well_formed(&entry.key)
+            lingyao_client_core::dictionary::quick_phrase_transport_code_is_well_formed(&entry.key)
         }
-        Kind::English => msime_client_core::dictionary::english_code_is_well_formed(&entry.key),
+        Kind::English => lingyao_client_core::dictionary::english_code_is_well_formed(&entry.key),
     };
     let allowed_controls: &[char] = if matches!(entry.kind, Kind::QuickPhrase) {
         &['\n', '\t']
@@ -1441,7 +1441,7 @@ fn validate_entry_up_to(entry: &Entry, max_weight: i64) -> Result<(), String> {
         &[]
     };
     let value_has_invalid_control =
-        msime_client_core::has_disallowed_control_with_allowed(&entry.value, allowed_controls);
+        lingyao_client_core::has_disallowed_control_with_allowed(&entry.value, allowed_controls);
     let reason = if entry.key.is_empty() || entry.key.len() > key_limit {
         "code is empty or too long"
     } else if !key_valid {
@@ -1467,16 +1467,16 @@ fn full_pinyin_key(key: &str, value: &str) -> Option<String> {
     if !(1..=128).contains(&expected_syllables) {
         return None;
     }
-    Some(msime_engine::host::normalize_full_pinyin(
+    Some(lingyao_engine::host::normalize_full_pinyin(
         key,
         expected_syllables,
     ))
     .filter(|normalized| !normalized.is_empty())
 }
 
-impl From<&Kind> for msime_client_core::dictionary::import::ImportKind {
+impl From<&Kind> for lingyao_client_core::dictionary::import::ImportKind {
     fn from(kind: &Kind) -> Self {
-        use msime_client_core::dictionary::import::ImportKind;
+        use lingyao_client_core::dictionary::import::ImportKind;
         match kind {
             Kind::Pinyin => ImportKind::Pinyin,
             Kind::Wubi => ImportKind::Wubi,
@@ -1490,7 +1490,7 @@ impl From<&Kind> for msime_client_core::dictionary::import::ImportKind {
 /// Entries ready for the Engine, plus what the shared parser skipped.
 type ParsedImport = (
     Vec<DictionaryEntry>,
-    msime_client_core::dictionary::import::ImportReport,
+    lingyao_client_core::dictionary::import::ImportReport,
 );
 
 /// Parse a submitted dictionary file through the shared parser. Unusable rows
@@ -1500,13 +1500,13 @@ fn parse_import(
     kind: &Kind,
     format: &str,
     text: &str,
-    engine_options: Option<&msime_engine::host::EngineOptions>,
+    engine_options: Option<&lingyao_engine::host::EngineOptions>,
 ) -> Result<ParsedImport, String> {
-    let mut report = msime_client_core::dictionary::import::parse(
+    let mut report = lingyao_client_core::dictionary::import::parse(
         kind.into(),
         format,
         text,
-        msime_client_core::cloud::dictionary::MAX_IMPORT_BYTES,
+        lingyao_client_core::cloud::dictionary::MAX_IMPORT_BYTES,
     )
     .map_err(|error| error.to_string())?;
     if matches!(kind, Kind::Pinyin) && engine_options.is_some() {
@@ -1516,9 +1516,9 @@ fn parse_import(
                 report.failed += 1;
                 if report.first_failures.len() < 5 {
                     report.first_failures.push(
-                        msime_client_core::dictionary::import::ImportFailure {
+                        lingyao_client_core::dictionary::import::ImportFailure {
                             line: entry.line,
-                            issue: msime_client_core::dictionary::import::ImportIssue::Pinyin,
+                            issue: lingyao_client_core::dictionary::import::ImportIssue::Pinyin,
                         },
                     );
                 }
@@ -1545,13 +1545,13 @@ fn parse_import(
 fn parse_hans_import(
     kind: &Kind,
     text: &str,
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
 ) -> Result<Vec<DictionaryEntry>, String> {
     if !matches!(kind, Kind::Pinyin)
         || text.is_empty()
-        || text.len() > msime_client_core::cloud::dictionary::MAX_IMPORT_BYTES
+        || text.len() > lingyao_client_core::cloud::dictionary::MAX_IMPORT_BYTES
         || text.contains('\0')
-        || msime_client_core::has_disallowed_control_with_line_breaks(text)
+        || lingyao_client_core::has_disallowed_control_with_line_breaks(text)
     {
         return Err("invalid dictionary import".into());
     }
@@ -1564,7 +1564,7 @@ fn parse_hans_import(
         if entries.len() >= 1000 || word.len() > 1024 || !word.chars().all(is_han_character) {
             return Err("invalid dictionary import".into());
         }
-        let key = msime_engine::host::hanzi_to_pinyin(options, word);
+        let key = lingyao_engine::host::hanzi_to_pinyin(options, word);
         if key.is_empty() || key.len() > 256 {
             return Err("dictionary pinyin unavailable".into());
         }
@@ -1581,8 +1581,8 @@ fn parse_hans_import(
     Ok(entries)
 }
 
-/// Host options for a caller that manages the dictionary in-process rather than through the C ABI, such as the MCP server. Built from the same runtime-options document a host passes to `msime_client_create`.
-pub struct DictionaryOptions(msime_engine::host::EngineOptions);
+/// Host options for a caller that manages the dictionary in-process rather than through the C ABI, such as the MCP server. Built from the same runtime-options document a host passes to `lingyao_client_create`.
+pub struct DictionaryOptions(lingyao_engine::host::EngineOptions);
 
 impl DictionaryOptions {
     /// Parse a runtime-options document. The Linux desktop publishes the candidate skin catalog into the same file, and the Host API refuses that field, so it is dropped here the way the IBus and Fcitx5 hosts drop it.
@@ -1639,13 +1639,13 @@ const QUICK_PHRASE_SCAN_LIMIT: usize = 1_000_000;
 
 /// Walk the user's own quick phrases in store order, stopping when `visit` returns false. Only rows the user added: the Engine never learns a quick phrase from typing, and the bundled table is not the user's.
 fn scan_user_quick_phrases(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     mut visit: impl FnMut(Entry) -> bool,
 ) -> Result<(), String> {
     const CHUNK: usize = 1000;
     let mut scanned = 0usize;
     while scanned < QUICK_PHRASE_SCAN_LIMIT {
-        let page = msime_engine::host::dictionary_entries(options, scanned, CHUNK)
+        let page = lingyao_engine::host::dictionary_entries(options, scanned, CHUNK)
             .map_err(|_| "dictionary read rejected")?;
         let count = page.entries.len();
         for raw in page.entries {
@@ -1706,7 +1706,7 @@ pub fn user_quick_phrases(
 
 /// The stored row for `phrase`, looked up by its folded code and exact text. The Engine only edits a row it is handed exactly as stored, weight included.
 fn stored_quick_phrase(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     phrase: &QuickPhrase,
 ) -> Result<Option<Entry>, String> {
     let _access = DictionaryAccess::try_session(
@@ -1906,7 +1906,7 @@ fn comparable_code(kind: WordKind, code: &str) -> String {
 
 /// The stored row typing `code` offers `word` from, the user's own or bundled, exactly as stored. The caller holds dictionary access.
 fn stored_word(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     kind: WordKind,
     code: &str,
     word: &str,
@@ -1937,7 +1937,7 @@ fn stored_word(
 
 /// The entry a new word is stored as, its pinyin code resolved from the word when it has none.
 fn new_word_entry(
-    options: &msime_engine::host::EngineOptions,
+    options: &lingyao_engine::host::EngineOptions,
     kind: WordKind,
     word: &NewWord,
 ) -> Result<Entry, String> {
@@ -1949,7 +1949,7 @@ fn new_word_entry(
                     "a word without a code must be Han characters only",
                 ));
             }
-            let reading = msime_engine::host::hanzi_to_pinyin(options, &word.word);
+            let reading = lingyao_engine::host::hanzi_to_pinyin(options, &word.word);
             if reading.is_empty() {
                 return Err(invalid_dictionary_entry("the word has no known reading"));
             }
@@ -2044,7 +2044,7 @@ pub fn import_dictionary_words(
     if words.is_empty() || words.len() > MAX_WORD_IMPORT {
         return Err("invalid dictionary import".into());
     }
-    if !msime_client_core::is_bounded_ascii_identifier(request_id, 120) {
+    if !lingyao_client_core::is_bounded_ascii_identifier(request_id, 120) {
         return Err("invalid dictionary request ID".into());
     }
     let options = &options.0;
@@ -2074,7 +2074,7 @@ pub fn import_dictionary_words(
         }
         let receipt = format!("{request_id}-{index}");
         // The import already holds the maintenance lock; call the Engine directly.
-        match msime_engine::host::dictionary_edit(options, None, Some(&entry.into()), &receipt) {
+        match lingyao_engine::host::dictionary_edit(options, None, Some(&entry.into()), &receipt) {
             Ok(()) => outcome.added += 1,
             Err(_) => outcome
                 .rejected
@@ -2092,7 +2092,7 @@ pub enum LookupScheme {
     Wubi,
 }
 
-/// Where a looked-up candidate came from: the Engine's `msime_engine::CandidateSource`, with a dictionary candidate told apart by the row it was found as.
+/// Where a looked-up candidate came from: the Engine's `lingyao_engine::CandidateSource`, with a dictionary candidate told apart by the row it was found as.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CandidateOrigin {
     /// A row shipped with the dictionary or learned from typing.
@@ -2147,7 +2147,7 @@ pub fn lookup_candidates(
         return Err("candidates can only be looked up in pinyin, double pinyin or wubi".into());
     }
     // 本版本的 Engine 跑不了这个方案（例如五笔版查全拼），直接说明原因，不要让建会话失败报成词库打不开。
-    if !msime_engine::SchemeType::from_u8(options.scheme)
+    if !lingyao_engine::SchemeType::from_u8(options.scheme)
         .is_some_and(|scheme| options.enabled_schemes.contains(scheme))
     {
         return Err("this edition does not offer that scheme".into());
@@ -2179,9 +2179,9 @@ pub fn lookup_candidates(
     .map_err(|_| "dictionary access unavailable")?
     .ok_or("dictionary maintenance busy")?;
     let session =
-        msime_engine::host::Session::new(&options).map_err(|_| "cannot open the dictionaries")?;
+        lingyao_engine::host::Session::new(&options).map_err(|_| "cannot open the dictionaries")?;
     let mut runtime =
-        msime_input_runtime::Runtime::new(session, 9).map_err(|error| error.to_string())?;
+        lingyao_input_runtime::Runtime::new(session, 9).map_err(|error| error.to_string())?;
     // An unfocused runtime drops every keystroke.
     runtime.focus(true).map_err(|error| error.to_string())?;
     // 五笔四码唯一时，第四键直接上屏（`input-runtime` 的自动上屏），之后候选列表是空的。这时上屏的那个词就是这串编码给出的唯一候选，要照样报告。`committed` 只留最后一键的上屏，连同它的编码从哪一键开始。
@@ -2189,7 +2189,7 @@ pub fn lookup_candidates(
     let mut start = 0;
     for (index, value) in code.bytes().enumerate() {
         let transition = runtime
-            .dispatch(msime_input_runtime::Action::Character {
+            .dispatch(lingyao_input_runtime::Action::Character {
                 value,
                 shift: false,
             })

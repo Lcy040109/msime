@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { communityDestinationView } from "@msime/ui";
+import { communityDestinationView } from "@lingyao/ui";
 
 test.each([
   ["all", { category: "skin", scope: "", initialMine: false }],

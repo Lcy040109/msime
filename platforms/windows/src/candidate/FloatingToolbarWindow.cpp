@@ -14,11 +14,11 @@
 #include <string>
 #include <windowsx.h>
 #include <vector>
-#include "../../../../shared/contracts/msime_edition.h"
+#include "../../../../shared/contracts/lingyao_edition.h"
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
-constexpr wchar_t kClassName[] = L"MSIME.Client.Preview.FloatingToolbar" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t kClassName[] = L"LINGYAO.Client.Preview.FloatingToolbar" LINGYAO_EDITION_NAME_SUFFIX;
 constexpr int kWidth = 732;
 constexpr int kHeight = 52;
 int dpi_scale(HWND window, int value) {
@@ -71,7 +71,7 @@ FloatingToolbarWindow::FloatingToolbarWindow(Reader reader, Click click)
   if (!RegisterClassExW(&type) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
     throw std::runtime_error("Toolbar class unavailable");
   window_ = CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-                            kClassName, L"MSIME toolbar", WS_POPUP, 0, 0,
+                            kClassName, L"LINGYAO toolbar", WS_POPUP, 0, 0,
                             kWidth, kHeight, nullptr, nullptr, type.hInstance,
                             this);
   if (!window_) throw std::runtime_error("Toolbar window unavailable");
@@ -87,7 +87,7 @@ ID2D1Bitmap *FloatingToolbarWindow::logo_bitmap(int pixels) {
     // LR_SHARED would hand back a cached system copy at the standard size and
     // ignore the one asked for, which is exactly the resampling to avoid.
     const HANDLE loaded =
-        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_MSIME_LOGO),
+        LoadImageW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_LINGYAO_LOGO),
                    IMAGE_ICON, pixels, pixels, LR_DEFAULTCOLOR);
     if (!loaded) return nullptr;
     if (logo_) DestroyIcon(logo_);
@@ -278,7 +278,7 @@ void FloatingToolbarWindow::paint() {
     // a missing mark costs nothing, a placeholder box would look like a bug.
     const auto mark = toolbar_logo(layout);
     // Loaded at the size it is drawn at, in real pixels rather than Direct2D's
-    // DIPs: msime.ico carries frames from 16 to 256, and asking for the right
+    // DIPs: lingyao.ico carries frames from 16 to 256, and asking for the right
     // one is the difference between a crisp mark and a resampled one.
     const double pixels = (mark.right - mark.left) *
                           toolbar_pixel_unit(GetDpiForWindow(window_), scale_);
@@ -598,4 +598,4 @@ LRESULT CALLBACK FloatingToolbarWindow::procedure(HWND window, UINT message,
   }} catch (...) { self->fail(failure_in_message(message, static_cast<uint32_t>(GetLastError()))); return 0; }
   return DefWindowProcW(window, message, w, l);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

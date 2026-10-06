@@ -1,6 +1,6 @@
 //! First-run preparation from the settings window.
 //!
-//! The packaged `msime-linux-setup` script owns the whole preparation: it verifies the dictionary lock, optionally downloads what is missing, runs `msime-linux-prepare`, enables the user units and adds the input method to the running Fcitx5 or IBus input method list, falling back to printing the manual steps. This module only locates that script, runs it for the state directory this window already reads, and streams its output to the page, so the terminal and the graphical paths cannot drift apart.
+//! The packaged `lingyao-linux-setup` script owns the whole preparation: it verifies the dictionary lock, optionally downloads what is missing, runs `lingyao-linux-prepare`, enables the user units and adds the input method to the running Fcitx5 or IBus input method list, falling back to printing the manual steps. This module only locates that script, runs it for the state directory this window already reads, and streams its output to the page, so the terminal and the graphical paths cannot drift apart.
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
 use std::fs;
@@ -16,15 +16,15 @@ use tauri::{AppHandle, Emitter, State};
 
 use crate::RuntimeOptionsState;
 
-/// 本安装包所属版本的首次配置命令名（full 是 `msime-linux-setup`，其他版本是 `msime-linux-<id>-setup`）：设置应用只配置自己的版本。
+/// 本安装包所属版本的首次配置命令名（full 是 `lingyao-linux-setup`，其他版本是 `lingyao-linux-<id>-setup`）：设置应用只配置自己的版本。
 fn setup_program_name() -> String {
-    msime_client_core::edition::Edition::linux_package_identity_or_full().setup_program()
+    lingyao_client_core::edition::Edition::linux_package_identity_or_full().setup_program()
 }
 /// The first download is about 170 MB; a stalled mirror must still end the run rather than leave the page busy forever.
 const SETUP_TIMEOUT: Duration = Duration::from_secs(30 * 60);
 const MAX_LINE_BYTES: usize = 2048;
 const MAX_LINES: usize = 2000;
-/// 安装包的 postinst 会在首次配置之前为每个登录用户注册匿名账号，所以状态目录在首次配置时通常已经存在、里面只有这两份文件。`msime-linux-setup` 接受只含这些文件的目录（脚本里的 `ANONYMOUS_ACCOUNT_FILES`），这里的清单必须与它一致。
+/// 安装包的 postinst 会在首次配置之前为每个登录用户注册匿名账号，所以状态目录在首次配置时通常已经存在、里面只有这两份文件。`lingyao-linux-setup` 接受只含这些文件的目录（脚本里的 `ANONYMOUS_ACCOUNT_FILES`），这里的清单必须与它一致。
 const ANONYMOUS_ACCOUNT_FILES: [&str; 2] = ["anonymous-account.json", "anonymous-session.json"];
 pub const SETUP_OUTPUT_EVENT: &str = "linux-setup-output";
 
@@ -59,9 +59,9 @@ impl LinuxSetupError {
 #[derive(Default)]
 pub struct LinuxSetupState(Arc<AtomicBool>);
 
-/// The fixed locator every Linux frontend reads: `$XDG_CONFIG_HOME/msime-client/runtime-options.json`. A relative XDG value is ignored, as the specification requires.
+/// The fixed locator every Linux frontend reads: `$XDG_CONFIG_HOME/lingyao-client/runtime-options.json`. A relative XDG value is ignored, as the specification requires.
 ///
-/// 目录名随本安装包所属的版本（full 是 `msime-client`），与同一版本的宿主和脚本读的是同一份。
+/// 目录名随本安装包所属的版本（full 是 `lingyao-client`），与同一版本的宿主和脚本读的是同一份。
 pub fn user_runtime_options() -> Option<PathBuf> {
     super::config_home(
         std::env::var_os("XDG_CONFIG_HOME").as_deref(),
@@ -70,7 +70,7 @@ pub fn user_runtime_options() -> Option<PathBuf> {
     .map(|directory| {
         directory
             .join(
-                &msime_client_core::edition::Edition::linux_package_identity_or_full()
+                &lingyao_client_core::edition::Edition::linux_package_identity_or_full()
                     .client_directory,
             )
             .join("runtime-options.json")
@@ -102,7 +102,7 @@ fn setup_program() -> Option<PathBuf> {
     )
 }
 
-/// 与 `msime-linux-prepare` 的 `installer_account_state` 同一判定（它比脚本的 `anonymous_account_state` 多查属主和权限，以更严的为准）：属于当前用户、不对组和其他用户开放的非空目录，不是符号链接，其中每一项都是同样属主和权限的匿名账号普通文件。
+/// 与 `lingyao-linux-prepare` 的 `installer_account_state` 同一判定（它比脚本的 `anonymous_account_state` 多查属主和权限，以更严的为准）：属于当前用户、不对组和其他用户开放的非空目录，不是符号链接，其中每一项都是同样属主和权限的匿名账号普通文件。
 fn only_anonymous_account(directory: &Path) -> bool {
     let private = |metadata: &fs::Metadata| {
         metadata.uid() == rustix::process::geteuid().as_raw() && metadata.mode() & 0o077 == 0
@@ -312,7 +312,7 @@ mod tests {
 
     fn scratch(name: &str) -> PathBuf {
         let path = std::env::temp_dir().join(format!(
-            "msime-linux-setup-{name}-{}-{}",
+            "lingyao-linux-setup-{name}-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -349,8 +349,8 @@ mod tests {
     #[test]
     fn status_distinguishes_missing_prepared_and_occupied_state() {
         let root = scratch("status");
-        let options = root.join("msime-client/runtime-options.json");
-        let program = Path::new("/usr/bin/msime-linux-setup");
+        let options = root.join("lingyao-client/runtime-options.json");
+        let program = Path::new("/usr/bin/lingyao-linux-setup");
         let missing = status_for(Some(&options), None);
         assert!(!missing.prepared && !missing.directory_occupied && !missing.setup_available);
         std::fs::create_dir_all(options.parent().unwrap()).unwrap();
@@ -361,7 +361,7 @@ mod tests {
         assert!(prepared.prepared && !prepared.directory_occupied);
         assert_eq!(
             prepared.state_directory.as_deref(),
-            Some(root.join("msime-client").to_str().unwrap())
+            Some(root.join("lingyao-client").to_str().unwrap())
         );
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -369,9 +369,9 @@ mod tests {
     #[test]
     fn status_lets_setup_continue_over_the_installer_anonymous_account() {
         let root = scratch("anonymous");
-        let directory = root.join("msime-client");
+        let directory = root.join("lingyao-client");
         let options = directory.join("runtime-options.json");
-        let program = Path::new("/usr/bin/msime-linux-setup");
+        let program = Path::new("/usr/bin/lingyao-linux-setup");
         let mode = |path: &Path, mode| {
             std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode)).unwrap()
         };
@@ -384,7 +384,7 @@ mod tests {
         let status = status_for(Some(&options), Some(program));
         assert!(!status.prepared && !status.directory_occupied);
 
-        // `msime-linux-prepare` 拒绝其他用户可读的状态，页面也不能在这种目录上提供配置。
+        // `lingyao-linux-prepare` 拒绝其他用户可读的状态，页面也不能在这种目录上提供配置。
         mode(&directory.join("anonymous-session.json"), 0o644);
         assert!(status_for(Some(&options), Some(program)).directory_occupied);
         mode(&directory.join("anonymous-session.json"), 0o600);
@@ -407,7 +407,7 @@ mod tests {
         use std::os::unix::fs::symlink;
 
         let root = scratch("symlink-status");
-        let options = root.join("msime-client/runtime-options.json");
+        let options = root.join("lingyao-client/runtime-options.json");
         std::fs::create_dir_all(options.parent().unwrap()).unwrap();
         let outside = root.join("outside.json");
         std::fs::write(&outside, b"{}").unwrap();
@@ -439,25 +439,25 @@ mod tests {
 
     #[test]
     fn download_is_only_requested_when_the_user_allowed_it() {
-        let state = Path::new("/home/user/.config/msime-client");
+        let state = Path::new("/home/user/.config/lingyao-client");
         assert_eq!(
             setup_arguments(state, false, false),
-            ["--state", "/home/user/.config/msime-client"]
+            ["--state", "/home/user/.config/lingyao-client"]
         );
         assert_eq!(
             setup_arguments(state, true, false),
-            ["--state", "/home/user/.config/msime-client", "--download"]
+            ["--state", "/home/user/.config/lingyao-client", "--download"]
         );
     }
 
     #[test]
     fn cloud_candidates_are_only_requested_when_the_user_allowed_them() {
-        let state = Path::new("/home/user/.config/msime-client");
+        let state = Path::new("/home/user/.config/lingyao-client");
         assert_eq!(
             setup_arguments(state, false, true),
             [
                 "--state",
-                "/home/user/.config/msime-client",
+                "/home/user/.config/lingyao-client",
                 "--cloud-candidates"
             ]
         );

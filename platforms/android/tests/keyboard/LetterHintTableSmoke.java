@@ -1,4 +1,4 @@
-import app.msime.android.LetterHintTable;
+import app.lingyao.android.LetterHintTable;
 
 public final class LetterHintTableSmoke {
     public static void main(String[] args) {

@@ -4,20 +4,20 @@
 
 int main() {
     for (const auto *provider : {"openai", "groq"}) {
-        assert(msime::windows::transcription_language(provider, "zh-CN") == "zh");
-        assert(msime::windows::transcription_language(provider, "zh-cn") == "zh");
-        assert(msime::windows::transcription_language(provider, "en-US") == "en");
-        assert(msime::windows::transcription_language(provider, "ja_JP") == "ja");
-        assert(msime::windows::transcription_language(provider, "zh-Hant-TW") == "zh");
-        assert(msime::windows::transcription_language(provider, "en") == "en");
-        assert(msime::windows::transcription_language(provider, "AUTO").empty());
-        assert(msime::windows::transcription_language(provider, "").empty());
+        assert(lingyao::windows::transcription_language(provider, "zh-CN") == "zh");
+        assert(lingyao::windows::transcription_language(provider, "zh-cn") == "zh");
+        assert(lingyao::windows::transcription_language(provider, "en-US") == "en");
+        assert(lingyao::windows::transcription_language(provider, "ja_JP") == "ja");
+        assert(lingyao::windows::transcription_language(provider, "zh-Hant-TW") == "zh");
+        assert(lingyao::windows::transcription_language(provider, "en") == "en");
+        assert(lingyao::windows::transcription_language(provider, "AUTO").empty());
+        assert(lingyao::windows::transcription_language(provider, "").empty());
     }
-    assert(msime::windows::transcription_language("siliconflow", "zh-CN").empty());
-    assert(msime::windows::transcription_language("SILICONFLOW", "en-US").empty());
-    using namespace msime::voice;
+    assert(lingyao::windows::transcription_language("siliconflow", "zh-CN").empty());
+    assert(lingyao::windows::transcription_language("SILICONFLOW", "en-US").empty());
+    using namespace lingyao::voice;
     // What the language field of a request carries is checked on the wire by tests/transport.py.
-    static_assert(std::is_same_v<decltype(&recognize_cloud_asr), decltype(&msime::windows::recognize_cloud_asr)>);
+    static_assert(std::is_same_v<decltype(&recognize_cloud_asr), decltype(&lingyao::windows::recognize_cloud_asr)>);
     assert(normalize_voice_provider("SILICONFLOW") == "siliconflow");
     // 旧的 `cloud` 别名已删除（#2830），它只是一个未知的服务商名，不再当作硅基流动。
     assert(normalize_voice_provider("CLOUD") == "cloud");

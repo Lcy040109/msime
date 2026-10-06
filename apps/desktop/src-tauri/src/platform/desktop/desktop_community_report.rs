@@ -5,8 +5,8 @@
 use crate::platform::account_helpers::{community_id, community_service_call};
 use crate::platform::desktop::desktop_account::Storage;
 use crate::CommandError;
-use msime_client_core::account::BackendAccountClient;
-use msime_client_core::community::report::{
+use lingyao_client_core::account::BackendAccountClient;
+use lingyao_client_core::community::report::{
     BackendCommunityReportService, CommunityReport, CommunityReportKind, CommunityReportReason,
 };
 use std::sync::Arc;

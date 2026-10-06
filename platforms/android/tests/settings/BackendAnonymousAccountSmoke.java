@@ -1,4 +1,4 @@
-import app.msime.android.AccountSessionRoutingPolicy;
+import app.lingyao.android.AccountSessionRoutingPolicy;
 
 public final class BackendAnonymousAccountSmoke {
     public static void main(String[] args) {

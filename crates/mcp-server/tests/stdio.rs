@@ -20,7 +20,7 @@ fn fixture(root: &Path) -> std::path::PathBuf {
     for name in ["resources", "dictionaries"] {
         let path = root.join(name);
         std::fs::create_dir(&path).unwrap();
-        rusqlite::Connection::open(path.join("msime-pinyin.db"))
+        rusqlite::Connection::open(path.join("lingyao-pinyin.db"))
             .unwrap()
             .execute_batch(tables)
             .unwrap();
@@ -34,7 +34,7 @@ fn fixture(root: &Path) -> std::path::PathBuf {
         "user_data": format!("{text}/user"),
         "cache": format!("{text}/cache"),
         "dictionaries": format!("{text}/dictionaries"),
-        "preferences": msime_client_core::preferences::Preferences::default(),
+        "preferences": lingyao_client_core::preferences::Preferences::default(),
         "preferences_directory": text,
     });
     std::fs::write(&options, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
@@ -42,13 +42,13 @@ fn fixture(root: &Path) -> std::path::PathBuf {
 }
 
 async fn start(options: &Path, flags: &[&str]) -> (RunningService<RoleClient, ()>, Child) {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_msime-mcp"));
+    let mut command = Command::new(env!("CARGO_BIN_EXE_lingyao-mcp"));
     command.arg("--options").arg(options).args(flags);
     // The test machine's own input method must not leak in.
     for name in [
-        "MSIME_CLIENT_HOST_OPTIONS",
-        "MSIME_IBUS_OPTIONS",
-        "MSIME_CLIENT_STATE_DIR",
+        "LINGYAO_CLIENT_HOST_OPTIONS",
+        "LINGYAO_IBUS_OPTIONS",
+        "LINGYAO_CLIENT_STATE_DIR",
     ] {
         command.env_remove(name);
     }
@@ -128,7 +128,7 @@ async fn read_only_by_default() {
     let (client, _child) = start(&options, &[]).await;
 
     let info = client.peer_info().unwrap();
-    assert_eq!(info.server_info.as_ref().unwrap().name, "msime");
+    assert_eq!(info.server_info.as_ref().unwrap().name, "lingyao");
     assert_eq!(
         tool_names(&client).await,
         [
@@ -511,7 +511,7 @@ async fn an_agent_turns_on_and_reads_the_diagnostic_log() {
         &file,
         "2026-09-25 09:00:00 [p1] focus_in\n\
          2026-09-25 10:00:00 [p1] candidate_window_slow stage=layout elapsed_ms=180\n\
-         2026-09-25 10:00:01 [p1:t2] [msime][issue47] seq=1 stage=key-down vk=0x41 wch=U+0061 key=a key_class=letter\n\
+         2026-09-25 10:00:01 [p1:t2] [lingyao][issue47] seq=1 stage=key-down vk=0x41 wch=U+0061 key=a key_class=letter\n\
          2026-09-25 10:00:02 [p1] focus_out\n",
     )
     .unwrap();
@@ -528,7 +528,7 @@ async fn an_agent_turns_on_and_reads_the_diagnostic_log() {
     assert_eq!(
         view["lines"],
         json!([
-            "2026-09-25 10:00:01 [p1:t2] [msime][issue47] seq=1 stage=key-down vk=- wch=- key=- key_class=letter",
+            "2026-09-25 10:00:01 [p1:t2] [lingyao][issue47] seq=1 stage=key-down vk=- wch=- key=- key_class=letter",
             "2026-09-25 10:00:02 [p1] focus_out"
         ])
     );
@@ -573,12 +573,12 @@ fn run_cli(options: &Path, args: &[&str], stdin: Option<&str>) -> (i32, Value, S
 
 fn run_cli_text(options: &Path, args: &[&str], stdin: Option<&str>) -> (i32, String, String) {
     use std::io::Write;
-    let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_msime-mcp"));
+    let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_lingyao-mcp"));
     command.arg("--options").arg(options).args(args);
     for name in [
-        "MSIME_CLIENT_HOST_OPTIONS",
-        "MSIME_IBUS_OPTIONS",
-        "MSIME_CLIENT_STATE_DIR",
+        "LINGYAO_CLIENT_HOST_OPTIONS",
+        "LINGYAO_IBUS_OPTIONS",
+        "LINGYAO_CLIENT_STATE_DIR",
     ] {
         command.env_remove(name);
     }
@@ -816,7 +816,7 @@ fn expand_and_config_print_lines_for_testing_by_hand() {
     assert!(lines[1]["error"].is_string());
 }
 
-/// `--version` 报告输入法本身的版本：所编平台的 `version.txt`（构建时没有显式的 `MSIME_VERSION`），而不是 crate 的 0.1.0。
+/// `--version` 报告输入法本身的版本：所编平台的 `version.txt`（构建时没有显式的 `LINGYAO_VERSION`），而不是 crate 的 0.1.0。
 #[test]
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 fn the_version_is_the_input_method_s() {
@@ -827,7 +827,7 @@ fn the_version_is_the_input_method_s() {
     } else {
         "windows"
     };
-    let expected = option_env!("MSIME_VERSION")
+    let expected = option_env!("LINGYAO_VERSION")
         .map(str::to_owned)
         .unwrap_or_else(|| {
             std::fs::read_to_string(
@@ -838,14 +838,14 @@ fn the_version_is_the_input_method_s() {
             )
             .unwrap()
         });
-    let output = std::process::Command::new(env!("CARGO_BIN_EXE_msime-mcp"))
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_lingyao-mcp"))
         .arg("--version")
         .output()
         .unwrap();
     assert!(output.status.success());
     assert_eq!(
         String::from_utf8(output.stderr).unwrap().trim(),
-        format!("msime-mcp {}", expected.trim())
+        format!("lingyao-mcp {}", expected.trim())
     );
 }
 
@@ -913,7 +913,7 @@ fn the_command_line_prints_the_prompts() {
     assert_eq!(code, 0);
     assert!(text.contains("候选窗不见了"), "{text}");
     assert!(text.contains("read_diagnostic_log"), "{text}");
-    assert!(text.contains("msime-mcp <the same flags> call"), "{text}");
+    assert!(text.contains("lingyao-mcp <the same flags> call"), "{text}");
 
     let (code, _, error) = run_cli_text(&options, &["prompt", "make-skin"], None);
     assert_eq!(code, 1);

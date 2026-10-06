@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 using Json = nlohmann::json;
 namespace {
 void require(bool value) {
@@ -86,12 +86,12 @@ int main() {
     segment.keycode = 0x25;
     segment.modifiers_down = 2;
     require(translate_key(segment).kind == KeyKind::Command &&
-            translate_key(segment).value == MSIME_MOVE_LEFT_SEGMENT);
+            translate_key(segment).value == LINGYAO_MOVE_LEFT_SEGMENT);
     segment.modifiers_down = 1;
-    require(translate_key(segment).value != MSIME_MOVE_LEFT_SEGMENT);
+    require(translate_key(segment).value != LINGYAO_MOVE_LEFT_SEGMENT);
     segment.modifiers_down = 2;
     require(translate_key(segment).kind == KeyKind::Command &&
-            translate_key(segment).value == MSIME_MOVE_LEFT_SEGMENT);
+            translate_key(segment).value == LINGYAO_MOVE_LEFT_SEGMENT);
     segment.modifiers_down = 3;
     require(translate_key(segment).kind == KeyKind::CancelAndForward);
     FanyImeNamedpipeData enter{};
@@ -100,7 +100,7 @@ int main() {
     enter.modifiers_down = FanyImePipeFlags::UiLess |
                            PipeMetadata::CandidateActive;
     require(translate_key(enter).kind == KeyKind::Command &&
-                translate_key(enter).value == MSIME_COMMIT_RAW &&
+                translate_key(enter).value == LINGYAO_COMMIT_RAW &&
                 PipeMetadata::key_modifiers(enter.modifiers_down) == 0);
     enter.modifiers_down |= 1u;
     require(PipeMetadata::key_modifiers(enter.modifiers_down) == 1u);
@@ -108,7 +108,7 @@ int main() {
     edge_packet.event_type = FanyImePipeEventType::KeyEvent;
     edge_packet.keycode = 0xDB;
     edge_packet.wch = '[';
-    require(word_character_edge(edge_packet, WordCharacterBinding::Brackets) == MSIME_FIRST_HAN);
+    require(word_character_edge(edge_packet, WordCharacterBinding::Brackets) == LINGYAO_FIRST_HAN);
     require(!word_character_edge(edge_packet, WordCharacterBinding::Disabled));
     require(!word_character_edge(edge_packet, WordCharacterBinding::MinusEqual));
     for (uint32_t modifiers : {1u, 2u, 4u, 8u}) {
@@ -116,7 +116,7 @@ int main() {
       require(!word_character_edge(edge_packet, WordCharacterBinding::Brackets));
     }
     edge_packet.modifiers_down = FanyImePipeFlags::UiLess;
-    require(word_character_edge(edge_packet, WordCharacterBinding::Brackets) == MSIME_FIRST_HAN);
+    require(word_character_edge(edge_packet, WordCharacterBinding::Brackets) == LINGYAO_FIRST_HAN);
     edge_packet.modifiers_down |= PipeMetadata::CandidateActive;
     require(!word_character_edge(edge_packet, WordCharacterBinding::Brackets));
     edge_packet.modifiers_down = FanyImePipeFlags::UiLess;

@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-static inline BOOL MSIMEClipboardStrictRevision(id value, uint64_t *result) {
+static inline BOOL LINGYAOClipboardStrictRevision(id value, uint64_t *result) {
     if (![value isKindOfClass:NSNumber.class] ||
         CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() ||
         CFNumberIsFloatType((__bridge CFNumberRef)value)) return NO;
@@ -13,13 +13,13 @@ static inline BOOL MSIMEClipboardStrictRevision(id value, uint64_t *result) {
 }
 
 // Only change this preference. The supplied save must enforce the loaded revision.
-static inline NSDictionary *MSIMEEnableClipboardHistory(
+static inline NSDictionary *LINGYAOEnableClipboardHistory(
     NSDictionary *(^load)(void),
     NSDictionary *(^save)(uint64_t, NSDictionary *)) {
     NSDictionary *current = load();
     uint64_t revision = 0;
     if (![current isKindOfClass:NSDictionary.class] ||
-        !MSIMEClipboardStrictRevision(current[@"revision"], &revision) ||
+        !LINGYAOClipboardStrictRevision(current[@"revision"], &revision) ||
         ![current[@"preferences"] isKindOfClass:NSDictionary.class]) return @{ @"error": @YES };
     NSDictionary *preferences = current[@"preferences"];
     if (![preferences[@"clipboard_history"] isKindOfClass:NSNumber.class]) return @{ @"error": @YES };

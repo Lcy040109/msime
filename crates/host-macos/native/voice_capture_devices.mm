@@ -3,14 +3,14 @@
 #include <cstddef>
 
 extern "C" {
-typedef void (*MSIMEVoiceCaptureDeviceCallback)(const char *uid, const char *name,
+typedef void (*LINGYAOVoiceCaptureDeviceCallback)(const char *uid, const char *name,
                                                 bool is_default, void *context);
 
-void msime_macos_list_voice_capture_devices(MSIMEVoiceCaptureDeviceCallback callback,
+void lingyao_macos_list_voice_capture_devices(LINGYAOVoiceCaptureDeviceCallback callback,
                                              void *context) {
     if (!callback) return;
     @autoreleasepool {
-        for (NSDictionary *device in MSIMEListVoiceCaptureDevices()) {
+        for (NSDictionary *device in LINGYAOListVoiceCaptureDevices()) {
             NSString *uid = device[@"uid"];
             NSString *name = device[@"name"];
             if (![uid isKindOfClass:NSString.class] ||

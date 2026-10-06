@@ -1,4 +1,4 @@
-import app.msime.android.HttpBodyPolicy;
+import app.lingyao.android.HttpBodyPolicy;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

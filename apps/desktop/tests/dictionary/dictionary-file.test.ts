@@ -83,7 +83,7 @@ describe("personal dictionary JSON", () => {
   it("allows tabs only in quick phrases and enforces the Engine byte bound", () => {
     const envelope = (kind: string, value: string) =>
       JSON.stringify({
-        format: "msime-personal-dictionary",
+        format: "lingyao-personal-dictionary",
         version: 1,
         entries: [{ kind, key: "fixture", value, weight: 100000 }],
       });
@@ -99,7 +99,7 @@ describe("personal dictionary JSON", () => {
 
   it("refuses a quick phrase code with a digit, naming the row", () => {
     const file = JSON.stringify({
-      format: "msime-personal-dictionary",
+      format: "lingyao-personal-dictionary",
       version: 1,
       entries: [
         { kind: "quickPhrase", key: "nh", value: "你好", weight: 100000 },

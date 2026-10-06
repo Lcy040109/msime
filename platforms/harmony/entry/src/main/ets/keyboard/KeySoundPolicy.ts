@@ -1,10 +1,10 @@
 /**
  * What the 2in1 key sounds, typing melody, commit and achievement sounds play, decided without a device.
  *
- * The desktop hosts play through host-api's player (`crates/host-api/src/key_sound`), which HarmonyOS does not link; this host plays the same packs through SoundPool instead. Which pack answers which event, how a melody steps and when it starts over are that player's rules (`Selection::of`, `sounds_for`, `Melody::step`), ported here so the two cannot hear different things in the same preferences. Validating a pack is not ported: `msime_client_key_sound_pack` answers with the files client-core's validation accepted.
+ * The desktop hosts play through host-api's player (`crates/host-api/src/key_sound`), which HarmonyOS does not link; this host plays the same packs through SoundPool instead. Which pack answers which event, how a melody steps and when it starts over are that player's rules (`Selection::of`, `sounds_for`, `Melody::step`), ported here so the two cannot hear different things in the same preferences. Validating a pack is not ported: `lingyao_client_key_sound_pack` answers with the files client-core's validation accepted.
  */
 
-/** A key's sound class, numbered as `msime_client_key_sound` numbers them. */
+/** A key's sound class, numbered as `lingyao_client_key_sound` numbers them. */
 export enum KeySoundClass {
   DEFAULT = 0,
   SPACE = 1,
@@ -92,7 +92,7 @@ export interface KeySoundManifestStat {
   readonly mtime: number;
 }
 
-/** `sounds` of `msime_client_key_sound_pack`: absolute paths, null where the pack has none. */
+/** `sounds` of `lingyao_client_key_sound_pack`: absolute paths, null where the pack has none. */
 export interface KeySoundPackSounds {
   default: string | null;
   space: string | null;
@@ -109,7 +109,7 @@ export interface KeySoundPackSequence {
   advance: string;
 }
 
-/** The value `msime_client_key_sound_pack` answers with. */
+/** The value `lingyao_client_key_sound_pack` answers with. */
 export interface KeySoundPackFiles {
   id: string;
   name: string;

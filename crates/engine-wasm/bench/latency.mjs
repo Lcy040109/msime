@@ -85,11 +85,11 @@ function percentile(sorted, p) {
 
 const options = parseArgs(process.argv.slice(2));
 const isWubi = options.scheme === "wubi86";
-const glue = await import(pathToFileURL(resolve(options.dist, "msime_engine.js")).href);
-glue.initSync({ module: readFileSync(resolve(options.dist, "msime_engine_bg.wasm")) });
+const glue = await import(pathToFileURL(resolve(options.dist, "lingyao_engine.js")).href);
+glue.initSync({ module: readFileSync(resolve(options.dist, "lingyao_engine_bg.wasm")) });
 
-const dbFile = isWubi ? "msime-wubi86.db.gz" : "msime-pinyin.db.gz";
-glue.import_database("/res/msime-pinyin.db", new Uint8Array(gunzipSync(readFileSync(resolve(options.dist, dbFile)))));
+const dbFile = isWubi ? "lingyao-wubi86.db.gz" : "lingyao-pinyin.db.gz";
+glue.import_database("/res/lingyao-pinyin.db", new Uint8Array(gunzipSync(readFileSync(resolve(options.dist, dbFile)))));
 const model =
   options.model && !isWubi ? new Uint8Array(gunzipSync(readFileSync(resolve(options.dist, "sentence-model.safetensors.gz")))) : undefined;
 

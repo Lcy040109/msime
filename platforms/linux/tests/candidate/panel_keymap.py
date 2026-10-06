@@ -48,7 +48,7 @@ for vk, kernel, keysym in keys:
 checks += ['assert_eq!(ydotool_key_code(0), None);', 'assert_eq!(xdotool_key_name(0), None);']
 program = function('ydotool_key_code') + '\n' + function('xdotool_key_name')
 program += '\nfn main() {\n' + '\n'.join(checks) + '\n}\n'
-with tempfile.TemporaryDirectory(prefix='msime-panel-keymap-') as directory:
+with tempfile.TemporaryDirectory(prefix='lingyao-panel-keymap-') as directory:
     path = Path(directory)
     (path / 'main.rs').write_text(program)
     subprocess.run([os.environ.get('RUSTC', 'rustc'), '--edition=2021', '-Dwarnings',

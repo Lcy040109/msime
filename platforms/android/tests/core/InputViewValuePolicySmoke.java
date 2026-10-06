@@ -1,4 +1,4 @@
-import app.msime.android.core.InputViewValuePolicy;
+import app.lingyao.android.core.InputViewValuePolicy;
 
 public final class InputViewValuePolicySmoke {
     static void check(boolean condition, String message) {

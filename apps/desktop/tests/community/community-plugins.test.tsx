@@ -12,7 +12,7 @@ import {
   type CommunityPluginClient,
   type PluginCatalogResult,
   type PluginPackage,
-} from "@msime/ui";
+} from "@lingyao/ui";
 import { createDesktopPluginCommunity } from "../../src/core/desktop-host-services";
 import { settingsFormReady } from "../support/settings-form";
 

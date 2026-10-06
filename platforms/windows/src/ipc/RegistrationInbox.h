@@ -7,7 +7,7 @@
 #include <optional>
 #include <stdexcept>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Handshake completion mailbox. No cancellation, Engine work or pipe I/O under
 // its lock. A false push lets PipeIntake remove the matching registration.
 class RegistrationInbox final {
@@ -57,4 +57,4 @@ private:
   std::deque<PipeTicket> tickets_;
   bool closed_ = false;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

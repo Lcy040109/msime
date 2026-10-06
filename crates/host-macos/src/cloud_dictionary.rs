@@ -32,7 +32,7 @@ pub fn read_export(
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(unavailable)?;
-    let suffix = name.strip_prefix("msime-export-").ok_or_else(unavailable)?;
+    let suffix = name.strip_prefix("lingyao-export-").ok_or_else(unavailable)?;
     if suffix.len() != 36
         || !suffix
             .bytes()
@@ -99,7 +99,7 @@ mod tests {
         let temporary = tempfile::tempdir().unwrap();
         let root = temporary
             .path()
-            .join("msime-export-00000000-0000-0000-0000-000000000000");
+            .join("lingyao-export-00000000-0000-0000-0000-000000000000");
         std::fs::create_dir(&root).unwrap();
         std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700)).unwrap();
         let file = root.join("dictionary-pinyin.tsv");

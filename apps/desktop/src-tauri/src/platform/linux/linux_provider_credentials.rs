@@ -1,13 +1,13 @@
 //! Linux provider credential files.
 //!
-//! Windows and macOS keep AI tokens, translation secrets and speech keys in the shared preferences document, because the shell itself sends those requests. On Linux the network requests belong to the user's provider services: `msime-linux-online-provider` reads `ai-provider.json` and `tencent-provider.json`, and `msime-linux-voice-provider` reads `voice-provider.json`, all from `$XDG_CONFIG_HOME/msime-client` and on every request. This module lets the settings page write those files instead of asking the user to hand-edit JSON: the provider picks the change up on the next request, without a restart. The voice service starts without the file, because on-device recognition (`local`) reads no credential and polishing credentials alone are a file it accepts; saving a voice credential still enables its socket unit, so a socket left disabled by an earlier setup or version comes back once the user configures voice input.
+//! Windows and macOS keep AI tokens, translation secrets and speech keys in the shared preferences document, because the shell itself sends those requests. On Linux the network requests belong to the user's provider services: `lingyao-linux-online-provider` reads `ai-provider.json` and `tencent-provider.json`, and `lingyao-linux-voice-provider` reads `voice-provider.json`, all from `$XDG_CONFIG_HOME/lingyao-client` and on every request. This module lets the settings page write those files instead of asking the user to hand-edit JSON: the provider picks the change up on the next request, without a restart. The voice service starts without the file, because on-device recognition (`local`) reads no credential and polishing credentials alone are a file it accepts; saving a voice credential still enables its socket unit, so a socket left disabled by an earlier setup or version comes back once the user configures voice input.
 //!
 //! The files follow the provider's own reader (`load_private_config`, `load_ai_config`, `load_tencent_config`): a regular file owned by this user with no group or other bits, at most 16 KiB, published by rename so the provider never reads a half-written document. Validation mirrors the provider's, so a document this module writes is one the provider accepts - the AI file is validated as a whole, and a single bad profile would disable every provider in it.
 //!
 //! The React surface only learns which providers have a credential and the endpoint and model each one is bound to. Secrets travel from the webview into this process and never back.
 
 use super::config_home;
-use msime_client_core::{has_disallowed_control_with_options, is_ascii_graphic, is_bounded_chars};
+use lingyao_client_core::{has_disallowed_control_with_options, is_ascii_graphic, is_bounded_chars};
 use reqwest::Url;
 use serde::Serialize;
 use serde_json::{Map, Value};
@@ -175,7 +175,7 @@ pub(crate) struct VoiceCredential<'a> {
     pub auth_mode: &'a str,
 }
 
-/// `$XDG_CONFIG_HOME/msime-client`, resolved the way `msime-linux-provider-session` resolves it: a relative `XDG_CONFIG_HOME` is an error, not a fallback.
+/// `$XDG_CONFIG_HOME/lingyao-client`, resolved the way `lingyao-linux-provider-session` resolves it: a relative `XDG_CONFIG_HOME` is an error, not a fallback.
 fn config_directory() -> Result<PathBuf, CredentialError> {
     let xdg = std::env::var_os("XDG_CONFIG_HOME").filter(|value| !value.is_empty());
     if xdg
@@ -187,7 +187,7 @@ fn config_directory() -> Result<PathBuf, CredentialError> {
     config_home(xdg.as_deref(), std::env::var_os("HOME").as_deref())
         .map(|base| {
             base.join(
-                &msime_client_core::edition::Edition::linux_package_identity_or_full()
+                &lingyao_client_core::edition::Edition::linux_package_identity_or_full()
                     .client_directory,
             )
         })
@@ -780,7 +780,7 @@ pub(crate) fn clear_voice_in(
     write_private(&path, Some(&Value::Object(document)))
 }
 
-/// Enable the voice socket unit, clearing a failed earlier start so the next connection tries again. The unit is never disabled from here: without any credential the service still serves on-device recognition, and `msime-linux-setup` enables it for that reason.
+/// Enable the voice socket unit, clearing a failed earlier start so the next connection tries again. The unit is never disabled from here: without any credential the service still serves on-device recognition, and `lingyao-linux-setup` enables it for that reason.
 pub(crate) fn enable_voice_service() -> bool {
     let systemctl = |arguments: &[&str]| {
         std::process::Command::new("systemctl")
@@ -792,8 +792,8 @@ pub(crate) fn enable_voice_service() -> bool {
             .status()
             .is_ok_and(|status| status.success())
     };
-    // 单元名随本安装包所属的版本（full 是 msime-linux-voice.*），只启用本版本的语音服务。
-    let identity = msime_client_core::edition::Edition::linux_package_identity_or_full();
+    // 单元名随本安装包所属的版本（full 是 lingyao-linux-voice.*），只启用本版本的语音服务。
+    let identity = lingyao_client_core::edition::Edition::linux_package_identity_or_full();
     let _ = systemctl(&["reset-failed", identity.user_unit("voice.service").as_str()]);
     systemctl(&[
         "enable",
@@ -1049,7 +1049,7 @@ mod tests {
     #[test]
     fn saves_an_owner_only_ai_profile_the_provider_reads() {
         let temp = directory();
-        let root = temp.path().join("msime-client");
+        let root = temp.path().join("lingyao-client");
         save_ai_in(
             &root,
             "deepseek",
@@ -1213,7 +1213,7 @@ mod tests {
         let real = parent.path().join("real");
         std::fs::create_dir(&real).unwrap();
         let linked = real.join("linked");
-        msime_path_trust::untrusted_symlink(outside.path(), &linked).unwrap();
+        lingyao_path_trust::untrusted_symlink(outside.path(), &linked).unwrap();
 
         assert_eq!(
             save_ai_in(

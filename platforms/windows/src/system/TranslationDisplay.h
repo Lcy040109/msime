@@ -2,7 +2,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Host ABI forbids controls and bounds this UTF-8 field to 4096 bytes. Preserve
 // complete rows instead of truncating bytes through a possible UTF-8 codepoint.
 inline std::string append_translation_display(std::string first,
@@ -21,4 +21,4 @@ inline std::string append_translation_display(std::string first,
   }
   return first;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -31,7 +31,7 @@ HEADERS = (
     ROOT / "platforms/windows/common/InputSchemeTraits.h",
     ROOT / "platforms/linux/src/core/InputSchemeTraits.h",
 )
-ANDROID = ROOT / "platforms/android/java/app/msime/android/policy/InputSchemeTraits.java"
+ANDROID = ROOT / "platforms/android/java/app/lingyao/android/policy/InputSchemeTraits.java"
 HARMONY = ROOT / "platforms/harmony/entry/src/main/ets/keyboard/SchemeTraits.ts"
 OPTIONS = ROOT / "packages/ui/src/settings/input-scheme-options.ts"
 UI_TYPES = ROOT / "packages/ui/src/index.tsx"

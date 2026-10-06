@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createSettingsDraftActions, type Preferences } from "@msime/ui";
+import { createSettingsDraftActions, type Preferences } from "@lingyao/ui";
 import { defaultTouchKeyboardSkinDesign } from "../../../../packages/ui/src/keyboard/touch-keyboard-skin-design";
 
 test("updates nested AI and voice preferences while preserving the rest of the draft", () => {

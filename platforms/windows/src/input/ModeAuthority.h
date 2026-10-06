@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // Cross-application CN/EN authority.
 //
 // With input.ime_mode_scope set to "global" the user expects one Chinese or
@@ -67,4 +67,4 @@ mode_authority_step(const ModeAuthorityState &state, bool global, bool focused,
   decision.next.chinese = reported;
   return decision;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

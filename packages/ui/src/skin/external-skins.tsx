@@ -89,20 +89,20 @@ export function skinGeometryStyle(
   const width = dimension(skin.decorationWidthDip, 1000);
   const decorated = top > 0 && width > 0;
   const style: Record<string, string> = {
-    "--msime-skin-min-width": `${dimension(skin.minWidthDip, 1000)}px`,
-    "--msime-skin-decoration-top": `${decorated ? top : 0}px`,
-    "--msime-skin-decoration-width": `${decorated ? width : 0}px`,
+    "--lingyao-skin-min-width": `${dimension(skin.minWidthDip, 1000)}px`,
+    "--lingyao-skin-decoration-top": `${decorated ? top : 0}px`,
+    "--lingyao-skin-decoration-width": `${decorated ? width : 0}px`,
   };
   if (typeof skin.cornerRadiusDip === "number")
-    style["--msime-skin-radius"] = `${dimension(skin.cornerRadiusDip, 32)}px`;
+    style["--lingyao-skin-radius"] = `${dimension(skin.cornerRadiusDip, 32)}px`;
   const toolbar = skin.toolbar;
   if (typeof toolbar?.cornerRadiusDip === "number")
-    style["--msime-toolbar-radius"] = `${dimension(toolbar.cornerRadiusDip, 32)}px`;
+    style["--lingyao-toolbar-radius"] = `${dimension(toolbar.cornerRadiusDip, 32)}px`;
   const colors = toolbar?.[theme] ?? {};
   for (const key of ["background", "border", "handle", "divider", "icon", "hover"] as const) {
     const value = colors[key];
     const color = typeof value === "string" ? normalizedColor(value) : null;
-    if (color) style[`--msime-toolbar-${key}`] = color;
+    if (color) style[`--lingyao-toolbar-${key}`] = color;
   }
   return style;
 }

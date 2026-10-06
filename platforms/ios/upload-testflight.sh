@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
-# 把 build-app.sh testflight 准备好的 MSIMEApp（资源、真机原生库、语音运行时、xcodegen 工程和 CocoaPods 都已就绪）签名归档、导出 ipa 并上传 App Store Connect。由 build-app.sh 在 testflight 模式下调用，不单独运行。
+# 把 build-app.sh testflight 准备好的 LINGYAOApp（资源、真机原生库、语音运行时、xcodegen 工程和 CocoaPods 都已就绪）签名归档、导出 ipa 并上传 App Store Connect。由 build-app.sh 在 testflight 模式下调用，不单独运行。
 #
-# 签名用 App Store 发布证书（调用方已导入钥匙串）和两份描述文件：App（app.msime.ios）与键盘扩展（app.msime.ios.keyboard）。描述文件名通过 MSIME_IOS_APP_PROFILE、MSIME_IOS_KEYBOARD_PROFILE 传给 project.yml 里对应 target 的 PROVISIONING_PROFILE_SPECIFIER。
+# 签名用 App Store 发布证书（调用方已导入钥匙串）和两份描述文件：App（app.lingyao.ios）与键盘扩展（app.lingyao.ios.keyboard）。描述文件名通过 LINGYAO_IOS_APP_PROFILE、LINGYAO_IOS_KEYBOARD_PROFILE 传给 project.yml 里对应 target 的 PROVISIONING_PROFILE_SPECIFIER。
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/../.." && pwd)
-: "${MSIME_IOS_TEAM_ID:?MSIME_IOS_TEAM_ID is required}"
-: "${MSIME_IOS_AUTH_KEY_ID:?MSIME_IOS_AUTH_KEY_ID is required}"
-: "${MSIME_IOS_AUTH_KEY_ISSUER_ID:?MSIME_IOS_AUTH_KEY_ISSUER_ID is required}"
-: "${MSIME_IOS_AUTH_KEY_PATH:?MSIME_IOS_AUTH_KEY_PATH is required}"
-: "${MSIME_IOS_APP_PROFILE_PATH:?MSIME_IOS_APP_PROFILE_PATH is required}"
-: "${MSIME_IOS_KEYBOARD_PROFILE_PATH:?MSIME_IOS_KEYBOARD_PROFILE_PATH is required}"
-: "${MSIME_IOS_VERSION:?MSIME_IOS_VERSION is required}"
-: "${MSIME_IOS_BUILD_NUMBER:?MSIME_IOS_BUILD_NUMBER is required}"
-[[ "$MSIME_IOS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid version: $MSIME_IOS_VERSION" >&2; exit 1; }
-[[ "$MSIME_IOS_BUILD_NUMBER" =~ ^[1-9][0-9]{0,8}$ ]] || { echo "Invalid build number: $MSIME_IOS_BUILD_NUMBER" >&2; exit 1; }
-for file in "$MSIME_IOS_AUTH_KEY_PATH" "$MSIME_IOS_APP_PROFILE_PATH" "$MSIME_IOS_KEYBOARD_PROFILE_PATH"; do
+: "${LINGYAO_IOS_TEAM_ID:?LINGYAO_IOS_TEAM_ID is required}"
+: "${LINGYAO_IOS_AUTH_KEY_ID:?LINGYAO_IOS_AUTH_KEY_ID is required}"
+: "${LINGYAO_IOS_AUTH_KEY_ISSUER_ID:?LINGYAO_IOS_AUTH_KEY_ISSUER_ID is required}"
+: "${LINGYAO_IOS_AUTH_KEY_PATH:?LINGYAO_IOS_AUTH_KEY_PATH is required}"
+: "${LINGYAO_IOS_APP_PROFILE_PATH:?LINGYAO_IOS_APP_PROFILE_PATH is required}"
+: "${LINGYAO_IOS_KEYBOARD_PROFILE_PATH:?LINGYAO_IOS_KEYBOARD_PROFILE_PATH is required}"
+: "${LINGYAO_IOS_VERSION:?LINGYAO_IOS_VERSION is required}"
+: "${LINGYAO_IOS_BUILD_NUMBER:?LINGYAO_IOS_BUILD_NUMBER is required}"
+[[ "$LINGYAO_IOS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid version: $LINGYAO_IOS_VERSION" >&2; exit 1; }
+[[ "$LINGYAO_IOS_BUILD_NUMBER" =~ ^[1-9][0-9]{0,8}$ ]] || { echo "Invalid build number: $LINGYAO_IOS_BUILD_NUMBER" >&2; exit 1; }
+for file in "$LINGYAO_IOS_AUTH_KEY_PATH" "$LINGYAO_IOS_APP_PROFILE_PATH" "$LINGYAO_IOS_KEYBOARD_PROFILE_PATH"; do
   [[ -s "$file" ]] || { echo "Missing $file" >&2; exit 1; }
 done
-workspace="$repo_root/platforms/ios/MSIMEClient.xcworkspace"
+workspace="$repo_root/platforms/ios/LINGYAOClient.xcworkspace"
 [[ -d "$workspace" ]] || { echo "Missing $workspace; run build-app.sh testflight, which installs the pods" >&2; exit 1; }
 
 build_root="$repo_root/target/ios/testflight"
-archive_path="$build_root/MSIMEApp.xcarchive"
+archive_path="$build_root/LINGYAOApp.xcarchive"
 export_path="$build_root/export"
 rm -rf -- "$build_root"
 mkdir -p "$export_path"
@@ -31,37 +31,37 @@ mkdir -p "$export_path"
 profiles_dir="$HOME/Library/MobileDevice/Provisioning Profiles"
 mkdir -p "$profiles_dir"
 profile_field() { security cms -D -i "$1" | plutil -extract "$2" raw -o - -; }
-for profile in "$MSIME_IOS_APP_PROFILE_PATH" "$MSIME_IOS_KEYBOARD_PROFILE_PATH"; do
+for profile in "$LINGYAO_IOS_APP_PROFILE_PATH" "$LINGYAO_IOS_KEYBOARD_PROFILE_PATH"; do
   cp "$profile" "$profiles_dir/$(profile_field "$profile" UUID).mobileprovision"
 done
-app_profile=$(profile_field "$MSIME_IOS_APP_PROFILE_PATH" Name)
-keyboard_profile=$(profile_field "$MSIME_IOS_KEYBOARD_PROFILE_PATH" Name)
+app_profile=$(profile_field "$LINGYAO_IOS_APP_PROFILE_PATH" Name)
+keyboard_profile=$(profile_field "$LINGYAO_IOS_KEYBOARD_PROFILE_PATH" Name)
 
 # CODE_SIGN_STYLE=Manual 与证书在命令行上对所有 target 生效；描述文件只由 App 与键盘两个 target 的 PROVISIONING_PROFILE_SPECIFIER 引用，Pods 的静态库不签名。
 xcodebuild archive \
   -workspace "$workspace" \
-  -scheme MSIMEApp \
+  -scheme LINGYAOApp \
   -configuration Release \
   -destination 'generic/platform=iOS' \
   -archivePath "$archive_path" \
   -derivedDataPath "$repo_root/target/ios/derived-testflight" \
-  MARKETING_VERSION="$MSIME_IOS_VERSION" \
-  CURRENT_PROJECT_VERSION="$MSIME_IOS_BUILD_NUMBER" \
+  MARKETING_VERSION="$LINGYAO_IOS_VERSION" \
+  CURRENT_PROJECT_VERSION="$LINGYAO_IOS_BUILD_NUMBER" \
   CODE_SIGN_STYLE=Manual \
   CODE_SIGN_IDENTITY="Apple Distribution" \
-  DEVELOPMENT_TEAM="$MSIME_IOS_TEAM_ID" \
-  MSIME_IOS_APP_PROFILE="$app_profile" \
-  MSIME_IOS_KEYBOARD_PROFILE="$keyboard_profile"
+  DEVELOPMENT_TEAM="$LINGYAO_IOS_TEAM_ID" \
+  LINGYAO_IOS_APP_PROFILE="$app_profile" \
+  LINGYAO_IOS_KEYBOARD_PROFILE="$keyboard_profile"
 
-app="$archive_path/Products/Applications/MSIMEApp.app"
-keyboard="$app/PlugIns/MSIMEKeyboardExtension.appex"
-[[ -d "$app" && -d "$keyboard" ]] || { echo "The archive lacks MSIMEApp.app or its keyboard extension" >&2; exit 1; }
+app="$archive_path/Products/Applications/LINGYAOApp.app"
+keyboard="$app/PlugIns/LINGYAOKeyboardExtension.appex"
+[[ -d "$app" && -d "$keyboard" ]] || { echo "The archive lacks LINGYAOApp.app or its keyboard extension" >&2; exit 1; }
 for bundle in "$app" "$keyboard"; do
-  test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$bundle/Info.plist")" = "$MSIME_IOS_BUILD_NUMBER"
-  test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$bundle/Info.plist")" = "$MSIME_IOS_VERSION"
+  test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$bundle/Info.plist")" = "$LINGYAO_IOS_BUILD_NUMBER"
+  test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$bundle/Info.plist")" = "$LINGYAO_IOS_VERSION"
 done
 # 键盘扩展读粤语、注音和笔画词库；发布包必须带着它们（与 build-app.sh 对 simulator/device 产物的检查相同）。
-for pair in msime-cantonese.db:msime-rime_cantonese_LICENSE.txt msime-zhuyin.db:msime-libchewing_data_LICENSE.txt msime-stroke.db:msime-rime_stroke_LICENSE.txt; do
+for pair in lingyao-cantonese.db:lingyao-rime_cantonese_LICENSE.txt lingyao-zhuyin.db:lingyao-libchewing_data_LICENSE.txt lingyao-stroke.db:lingyao-rime_stroke_LICENSE.txt; do
   [[ -f "$repo_root/target/ios/language-dictionaries/${pair%%:*}" ]] || continue
   [[ -s "$keyboard/language-dictionaries/${pair%%:*}" && -f "$keyboard/language-dictionaries/${pair#*:}" ]] \
     || { echo "The archived keyboard extension lacks ${pair%%:*} or ${pair#*:}" >&2; exit 1; }
@@ -77,12 +77,12 @@ cat > "$build_root/ExportOptions.plist" <<EOF
     <key>signingStyle</key>
     <string>manual</string>
     <key>teamID</key>
-    <string>$MSIME_IOS_TEAM_ID</string>
+    <string>$LINGYAO_IOS_TEAM_ID</string>
     <key>provisioningProfiles</key>
     <dict>
-        <key>app.msime.ios</key>
+        <key>app.lingyao.ios</key>
         <string>$app_profile</string>
-        <key>app.msime.ios.keyboard</key>
+        <key>app.lingyao.ios.keyboard</key>
         <string>$keyboard_profile</string>
     </dict>
     <key>uploadSymbols</key>
@@ -102,13 +102,13 @@ keys_dir="$build_root/private_keys"
 mkdir -p "$keys_dir"
 chmod 700 "$keys_dir"
 trap 'rm -rf -- "$keys_dir"' EXIT
-install -m 600 "$MSIME_IOS_AUTH_KEY_PATH" "$keys_dir/AuthKey_$MSIME_IOS_AUTH_KEY_ID.p8"
+install -m 600 "$LINGYAO_IOS_AUTH_KEY_PATH" "$keys_dir/AuthKey_$LINGYAO_IOS_AUTH_KEY_ID.p8"
 # altool 上传被 App Store Connect 校验拒收时仍以 0 退出（2026-10-02 一次 409 Invalid bundle 就被当成了上传成功），所以按它的输出判断。
 upload_log="$build_root/altool.log"
 API_PRIVATE_KEYS_DIR="$keys_dir" xcrun altool --upload-app --file "$ipa" --type ios \
-  --apiKey "$MSIME_IOS_AUTH_KEY_ID" --apiIssuer "$MSIME_IOS_AUTH_KEY_ISSUER_ID" 2>&1 | tee "$upload_log"
+  --apiKey "$LINGYAO_IOS_AUTH_KEY_ID" --apiIssuer "$LINGYAO_IOS_AUTH_KEY_ISSUER_ID" 2>&1 | tee "$upload_log"
 if ! grep -q 'UPLOAD SUCCEEDED' "$upload_log" || grep -q 'UPLOAD FAILED' "$upload_log"; then
   echo "altool did not report a successful upload; see the output above" >&2
   exit 1
 fi
-echo "Uploaded MSIMEApp $MSIME_IOS_VERSION ($MSIME_IOS_BUILD_NUMBER) to App Store Connect"
+echo "Uploaded LINGYAOApp $LINGYAO_IOS_VERSION ($LINGYAO_IOS_BUILD_NUMBER) to App Store Connect"

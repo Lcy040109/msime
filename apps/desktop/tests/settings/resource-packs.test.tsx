@@ -11,7 +11,7 @@ import {
   type ResourcePackId,
   type ResourcePackStatus,
   type Snapshot,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

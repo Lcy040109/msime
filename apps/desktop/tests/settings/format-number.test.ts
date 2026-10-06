@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatZhNumber, formatZhPercent } from "@msime/ui";
+import { formatZhNumber, formatZhPercent } from "@lingyao/ui";
 
 test("formats shared Chinese UI counts", () => {
   expect(formatZhNumber(0)).toBe("0");

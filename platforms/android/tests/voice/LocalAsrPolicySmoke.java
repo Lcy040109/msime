@@ -1,4 +1,4 @@
-import app.msime.android.LocalAsrPolicy;
+import app.lingyao.android.LocalAsrPolicy;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,14 +17,14 @@ public final class LocalAsrPolicySmoke {
     }
 
     public static void main(String[] args) throws IOException {
-        check(LocalAsrPolicy.usable("local", "/data/user/0/app.msime.android/files/models/sense-voice-small"), "an absolute model directory is usable");
+        check(LocalAsrPolicy.usable("local", "/data/user/0/app.lingyao.android/files/models/sense-voice-small"), "an absolute model directory is usable");
         check(!LocalAsrPolicy.usable("openai", "/models/x"), "another provider is not local recognition");
         check(!LocalAsrPolicy.usable("local", null) && !LocalAsrPolicy.usable("local", ""), "an unset model path is not usable");
         check(!LocalAsrPolicy.usable("local", "models/x"), "a relative path is refused");
         check(!LocalAsrPolicy.usable("local", "/models/x\n/other"), "a control character is refused");
         check(!LocalAsrPolicy.usable("local", "/" + "a".repeat(LocalAsrPolicy.MAX_PATH_LENGTH)), "an overlong path is refused");
 
-        Path root = Files.createTempDirectory("msime-local-asr");
+        Path root = Files.createTempDirectory("lingyao-local-asr");
         try {
             Path model = root.resolve("model");
             Files.createDirectories(model);
@@ -45,7 +45,7 @@ public final class LocalAsrPolicySmoke {
             Files.createDirectories(nestedModel);
             Files.writeString(nestedModel.resolve(LocalAsrPolicy.MANIFEST), "external");
             check(!LocalAsrPolicy.installed(nestedModel.toString(), root), "a model below a symlinked parent is refused");
-            Path outsideRoot = Files.createTempDirectory("msime-local-asr-outside");
+            Path outsideRoot = Files.createTempDirectory("lingyao-local-asr-outside");
             try {
                 Path outsidePath = outsideRoot.resolve("model");
                 Files.createDirectories(outsidePath);

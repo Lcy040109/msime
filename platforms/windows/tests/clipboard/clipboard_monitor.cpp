@@ -12,10 +12,10 @@ int main() {
   std::cout << "Clipboard monitor requires Windows\n";
   return 0;
 #else
-  using msime::windows::ClipboardHistory;
-  using msime::windows::ClipboardMonitor;
+  using lingyao::windows::ClipboardHistory;
+  using lingyao::windows::ClipboardMonitor;
   ClipboardHistory history(std::filesystem::temp_directory_path() /
-                           "msime-clipboard-monitor-native-test.json");
+                           "lingyao-clipboard-monitor-native-test.json");
   int callbacks = 0;
   ClipboardMonitor monitor(history, [&](std::string) { ++callbacks; });
 

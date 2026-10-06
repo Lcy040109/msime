@@ -1,4 +1,4 @@
-import client from 'libmsimeclient.so';
+import client from 'liblingyaoclient.so';
 import { AccountCloudBridge } from './AccountCloudBridge';
 import {
   AiSkinCancelled,
@@ -32,7 +32,7 @@ interface PlanReply {
 }
 
 /**
- * The three request shapes `msime_client_ai_skin_plan` accepts.
+ * The three request shapes `lingyao_client_ai_skin_plan` accepts.
  *
  * One interface rather than three because ArkTS requires every object literal to name a declared
  * type, and the alternative — three near-identical interfaces — would put the difference between

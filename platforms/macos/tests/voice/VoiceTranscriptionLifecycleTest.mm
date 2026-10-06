@@ -43,7 +43,7 @@ int main() {
         Method recognize = class_getInstanceMethod(SFSpeechRecognizer.class, @selector(recognitionTaskWithRequest:resultHandler:));
         IMP oldAuth = method_setImplementation(auth, (IMP)Authorized);
         IMP oldRecognize = method_setImplementation(recognize, (IMP)Recognize);
-        MSIMEVoiceInputService *service = [MSIMEVoiceInputService new];
+        LINGYAOVoiceInputService *service = [LINGYAOVoiceInputService new];
         __block NSUInteger delivered = 0;
         void (^handler)(NSString *, BOOL) = ^(NSString *text, BOOL final) {
             (void)final;

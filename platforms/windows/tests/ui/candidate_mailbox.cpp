@@ -3,7 +3,7 @@
 #include "ModeMailbox.h"
 #include <future>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 class ModeTransport final : public MainTransport {
 public:

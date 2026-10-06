@@ -2,8 +2,8 @@
 
 NSNotificationName const LingyaoCandidateSkinDidChangeNotification =
     @"LingyaoCandidateSkinDidChangeNotification";
-// The same key MSIMEAppearancePreferences writes, so the retained panel and the toolbar fallback draw the theme the settings window chose.
-static NSString *const kGlobalThemePreferenceKey = @"MSIMEClientGlobalTheme";
+// The same key LINGYAOAppearancePreferences writes, so the retained panel and the toolbar fallback draw the theme the settings window chose.
+static NSString *const kGlobalThemePreferenceKey = @"LINGYAOClientGlobalTheme";
 
 NSColor *LingyaoColorFromRgba(lingyao::mac::Rgba color)
 {
@@ -64,16 +64,16 @@ lingyao::mac::CustomTheme LingyaoStoredCustomTheme(void)
         return std::string(value.UTF8String ?: "");
     };
     lingyao::mac::CustomTheme custom;
-    const std::string base = read(@"MSIMEClientCustomThemeBase");
+    const std::string base = read(@"LINGYAOClientCustomThemeBase");
     custom.base = lingyao::mac::IsThemeBaseId(base) ? base : "system";
-    custom.candidateSkin = read(@"MSIMEClientCustomCandidateSkin");
-    custom.candidateColors.text = read(@"MSIMEClientCandidateTextColor");
-    custom.candidateColors.number = read(@"MSIMEClientCandidateNumberColor");
-    custom.candidateColors.accent = read(@"MSIMEClientCandidateAccentColor");
-    custom.candidateColors.selected = read(@"MSIMEClientCandidateSelectedColor");
-    custom.candidateColors.hover = read(@"MSIMEClientCandidateHoverColor");
-    custom.candidateColors.surface = read(@"MSIMEClientCandidateSurfaceColor");
-    custom.candidateColors.border = read(@"MSIMEClientCandidateBorderColor");
+    custom.candidateSkin = read(@"LINGYAOClientCustomCandidateSkin");
+    custom.candidateColors.text = read(@"LINGYAOClientCandidateTextColor");
+    custom.candidateColors.number = read(@"LINGYAOClientCandidateNumberColor");
+    custom.candidateColors.accent = read(@"LINGYAOClientCandidateAccentColor");
+    custom.candidateColors.selected = read(@"LINGYAOClientCandidateSelectedColor");
+    custom.candidateColors.hover = read(@"LINGYAOClientCandidateHoverColor");
+    custom.candidateColors.surface = read(@"LINGYAOClientCandidateSurfaceColor");
+    custom.candidateColors.border = read(@"LINGYAOClientCandidateBorderColor");
     return custom;
 }
 

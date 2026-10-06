@@ -6,13 +6,13 @@
 #
 # 设了 DESTDIR 的暂存安装不刷新：那时写入的不是目标系统的缓存，由打包脚本负责。
 if("$ENV{DESTDIR}" STREQUAL "")
-  find_program(MSIME_ICON_CACHE_TOOL NAMES gtk-update-icon-cache gtk4-update-icon-cache)
-  if(MSIME_ICON_CACHE_TOOL)
+  find_program(LINGYAO_ICON_CACHE_TOOL NAMES gtk-update-icon-cache gtk4-update-icon-cache)
+  if(LINGYAO_ICON_CACHE_TOOL)
     execute_process(
-      COMMAND "${MSIME_ICON_CACHE_TOOL}" -f -t "@MSIME_SYSTEM_FULL_DATADIR@/icons/hicolor"
-      RESULT_VARIABLE msime_icon_cache_result OUTPUT_QUIET ERROR_QUIET)
-    if(NOT msime_icon_cache_result EQUAL 0)
-      message(STATUS "跳过：图标缓存未刷新，gtk-update-icon-cache 返回 ${msime_icon_cache_result}")
+      COMMAND "${LINGYAO_ICON_CACHE_TOOL}" -f -t "@LINGYAO_SYSTEM_FULL_DATADIR@/icons/hicolor"
+      RESULT_VARIABLE lingyao_icon_cache_result OUTPUT_QUIET ERROR_QUIET)
+    if(NOT lingyao_icon_cache_result EQUAL 0)
+      message(STATUS "跳过：图标缓存未刷新，gtk-update-icon-cache 返回 ${lingyao_icon_cache_result}")
     endif()
   else()
     message(STATUS "跳过：找不到 gtk-update-icon-cache，图标在缓存刷新前不会显示")

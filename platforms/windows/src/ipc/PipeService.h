@@ -2,7 +2,7 @@
 #include "PipeIntake.h"
 #include <atomic>
 
-namespace msime::windows {
+namespace lingyao::windows {
 struct PipeServiceOptions {
   // Explicit names indexed by the upstream Main/ToTsf/Worker roles. Tests must
   // use isolated names. No implicit production namespace is published.
@@ -37,4 +37,4 @@ private:
   std::mutex stop_mutex_;
   std::atomic<DWORD> failure_{ERROR_SUCCESS};
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

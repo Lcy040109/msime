@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 
 // The capture callback must remain non-blocking, so a local recognizer gets a
 // finite amount of audio to wait through model loading or a slow decode. At
@@ -113,4 +113,4 @@ private:
   bool overflowed_ = false;
 };
 
-} // namespace msime::windows
+} // namespace lingyao::windows

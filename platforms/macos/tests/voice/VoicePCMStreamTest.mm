@@ -16,14 +16,14 @@ static AVAudioPCMBuffer *Audio(double rate, AVAudioFrameCount frames) {
         for (NSUInteger i = 0; i < frames; ++i) buffer.floatChannelData[channel][i] = 0.125f;
     return buffer;
 }
-@interface PCMStreamCapture : MSIMEVoiceInputService
-@property(copy) MSIMEVoiceAudioBuffer capture;
+@interface PCMStreamCapture : LINGYAOVoiceInputService
+@property(copy) LINGYAOVoiceAudioBuffer capture;
 @property(copy) NSString *device;
 @property BOOL failStart;
 @property NSUInteger stops;
 @end
 @implementation PCMStreamCapture
-- (BOOL)startMicrophoneCapture:(MSIMEVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
+- (BOOL)startMicrophoneCapture:(LINGYAOVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
     (void)error; self.capture = handler; self.device = device; return !self.failStart;
 }
 - (void)stopMicrophoneCapture { self.capture = nil; ++self.stops; }
@@ -31,7 +31,7 @@ static AVAudioPCMBuffer *Audio(double rate, AVAudioFrameCount frames) {
 int main() {
     @autoreleasepool {
         for (NSNumber *rate in @[@16000, @44100, @48000, @96000]) {
-            MSIMEVoicePCMBuffer *recording = [[MSIMEVoicePCMBuffer alloc] initWithSampleLimit:NSUIntegerMax];
+            LINGYAOVoicePCMBuffer *recording = [[LINGYAOVoicePCMBuffer alloc] initWithSampleLimit:NSUIntegerMax];
             NSMutableData *streamed = [NSMutableData data];
             AVAudioPCMBuffer *chunk = Audio(rate.doubleValue, 137);
             for (NSUInteger i = 0; i < 101; ++i) {
@@ -48,17 +48,17 @@ int main() {
             assert(tail && [[recording drainWithError:nil] isEqual:tail]);
             [streamed appendData:tail];
             assert([recording drainWithError:nil].length == 0 && [recording finishWithError:nil].length == 0);
-            MSIMEVoicePCMBuffer *whole = [MSIMEVoicePCMBuffer new];
+            LINGYAOVoicePCMBuffer *whole = [LINGYAOVoicePCMBuffer new];
             for (NSUInteger i = 0; i < 101; ++i) assert([whole append:chunk error:nil]);
             assert([streamed isEqual:[whole finishWithError:nil]]);
             [recording cancel];
             assert(![recording drainWithError:nil]);
         }
-        // A stream has no length cap, as the MSIME-Windows Doubao client has none: well past the batch limit every sample is still delivered, while the buffer only ever holds what has not been drained.
-        MSIMEVoicePCMBuffer *endless = [[MSIMEVoicePCMBuffer alloc] initWithSampleLimit:NSUIntegerMax];
+        // A stream has no length cap, as the LINGYAO-Windows Doubao client has none: well past the batch limit every sample is still delivered, while the buffer only ever holds what has not been drained.
+        LINGYAOVoicePCMBuffer *endless = [[LINGYAOVoicePCMBuffer alloc] initWithSampleLimit:NSUIntegerMax];
         AVAudioPCMBuffer *second = Audio(16000, 16000);
         NSUInteger endlessSamples = 0;
-        const NSUInteger endlessSeconds = msime::voice::batch_capture_sample_limit / 16000 + 2;
+        const NSUInteger endlessSeconds = lingyao::voice::batch_capture_sample_limit / 16000 + 2;
         for (NSUInteger i = 0; i < endlessSeconds; ++i) {
             assert([endless append:second error:nil]);
             endlessSamples += [endless drainWithError:nil].length / sizeof(float);
@@ -69,19 +69,19 @@ int main() {
         AVAudioPCMBuffer *chunk = Audio(48000, 4800);
         NSMutableData *streamed = [NSMutableData data];
         __block NSUInteger callbacks = 0;
-        MSIMEVoicePCMChunk handler = ^(NSData *pcm, NSError *error) {
+        LINGYAOVoicePCMChunk handler = ^(NSData *pcm, NSError *error) {
             assert(pcm.length && !error); [streamed appendData:pcm]; ++callbacks;
         };
         assert([service startPCMStreaming:handler deviceUID:@"synthetic-device" error:nil]);
         assert([service.device isEqual:@"synthetic-device"]);
         assert(![service startPCMStreaming:handler deviceUID:nil error:nil]);
-        MSIMEVoiceAudioBuffer old = service.capture;
+        LINGYAOVoiceAudioBuffer old = service.capture;
         old(chunk);
         assert(callbacks == 1 && streamed.length > 0);
         NSData *tail = [service finishPCMStreamingWithError:nil];
         assert(tail && service.stops == 1);
         [streamed appendData:tail];
-        MSIMEVoicePCMBuffer *whole = [MSIMEVoicePCMBuffer new];
+        LINGYAOVoicePCMBuffer *whole = [LINGYAOVoicePCMBuffer new];
         assert([whole append:chunk error:nil]);
         assert([streamed isEqual:[whole finishWithError:nil]]);
         assert(![service finishPCMStreamingWithError:nil]);
@@ -129,7 +129,7 @@ int main() {
             dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
             [concurrent appendData:pcm];
         } deviceUID:nil error:nil]);
-        MSIMEVoiceAudioBuffer tap = service.capture;
+        LINGYAOVoiceAudioBuffer tap = service.capture;
         std::thread producer([&] { @autoreleasepool { tap(chunk); } });
         assert(dispatch_semaphore_wait(entered, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)) == 0);
         std::thread releaser([&] {

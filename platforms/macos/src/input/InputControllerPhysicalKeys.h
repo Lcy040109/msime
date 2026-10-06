@@ -1,6 +1,6 @@
 #pragma once
 
-namespace msime::mac
+namespace lingyao::mac
 {
 enum class MaintenanceShortcutAction
 {
@@ -81,7 +81,7 @@ constexpr char PhysicalCandidateDigitCharacter(int slot)
     return slot >= 0 && slot <= 8 ? static_cast<char>('1' + slot) : '\0';
 }
 
-// The key class msime_client_key_sound takes: 1 space, 2 enter (main or keypad), 3 backspace, 0 any other key.
+// The key class lingyao_client_key_sound takes: 1 space, 2 enter (main or keypad), 3 backspace, 0 any other key.
 constexpr unsigned PhysicalKeySoundClass(unsigned short keyCode)
 {
     switch (keyCode)
@@ -190,4 +190,4 @@ constexpr bool JapaneseSpaceCommitsFallback(unsigned long candidateCount, int fi
 {
     return candidateCount == 1 && firstCandidateSource == CandidateSourceFallback;
 }
-} // namespace msime::mac
+} // namespace lingyao::mac

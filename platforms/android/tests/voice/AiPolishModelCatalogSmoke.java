@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 import java.net.URI;
 import java.net.URLEncoder;

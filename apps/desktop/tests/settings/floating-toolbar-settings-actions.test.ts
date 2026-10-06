@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { createFloatingToolbarSettingsActions, type Preferences } from "@msime/ui";
+import { createFloatingToolbarSettingsActions, type Preferences } from "@lingyao/ui";
 
 const draft = {
   scheme: "quanpin",

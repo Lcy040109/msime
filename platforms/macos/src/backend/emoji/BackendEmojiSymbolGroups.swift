@@ -18,7 +18,7 @@ struct MacEmojiSymbolGroup: Hashable, Sendable {
   }
 }
 
-/// 已安装符号集插件的一组符号，来自 `msime_client_emoji_catalog_request` 的 `list_plugin_symbol_groups`。
+/// 已安装符号集插件的一组符号，来自 `lingyao_client_emoji_catalog_request` 的 `list_plugin_symbol_groups`。
 /// `symbols` 组以插件包为上级分类排在内置分类之后，`kaomoji` 组排在内置颜文字 All 之后；不与内置目录或其他插件包去重。
 struct MacEmojiPluginSymbolGroup: Equatable, Sendable {
   enum Tab: String, Sendable { case symbols, kaomoji }

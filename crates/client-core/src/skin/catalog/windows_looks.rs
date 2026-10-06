@@ -1,8 +1,8 @@
-//! msime-windows 的内置外观作为清单 `base` 时的配色。
+//! lingyao-windows 的内置外观作为清单 `base` 时的配色。
 //!
 //! Windows 的皮肤包把 `base` 写成它自己的内置外观（`fluent`、`wechat`、`graphite`、`willow_green`、`autumn_osmanthus`、`microsoft`），跨平台的包写全局主题；两边接受同一套清单，同一个包在哪个平台都能加载。全局主题之外的外观在这里画在 `system` 之上：包没写的候选框和工具栏颜色、两处圆角，按该外观在 Windows 上的样子补齐，深浅两套各补各的。`fluent` 就是 Windows 的原生配色，与 `system` 相同，不补任何东西。
 //!
-//! 颜色抄自 msime-windows 的 D2D 渲染端（`server/src/window/candidate_presenter.cpp` 的 `CandSkinTokens`、`candidate_skin_palette.cpp`、`floating_toolbar_skin.cpp`），它们本身对齐 `ui-html/webview2/candwnd/skins/<外观>/` 的 CSS；带透明度的值已换算成 `#RRGGBBAA`。`selected_text` 取自仓库里那份 CSS 的副本 `packages/ui/src/upstream/candidate-themes/skins/<外观>/`（`autumn_osmanthus`、`microsoft` 没有副本，留空）。Windows 改了这些外观的配色，这里要一起改。
+//! 颜色抄自 lingyao-windows 的 D2D 渲染端（`server/src/window/candidate_presenter.cpp` 的 `CandSkinTokens`、`candidate_skin_palette.cpp`、`floating_toolbar_skin.cpp`），它们本身对齐 `ui-html/webview2/candwnd/skins/<外观>/` 的 CSS；带透明度的值已换算成 `#RRGGBBAA`。`selected_text` 取自仓库里那份 CSS 的副本 `packages/ui/src/upstream/candidate-themes/skins/<外观>/`（`autumn_osmanthus`、`microsoft` 没有副本，留空）。Windows 改了这些外观的配色，这里要一起改。
 
 use super::{CandidatePalette, SkinToolbar, ToolbarPalette};
 
@@ -263,7 +263,7 @@ const WINDOWS_LOOKS: [WindowsLook; 5] = [
     },
 ];
 
-/// msime-windows 的内置外观 ID，清单 `base` 可以写它们。外部皮肤也不能用这些 ID 当文件夹名，否则在 Windows 上会与内置外观冲突。
+/// lingyao-windows 的内置外观 ID，清单 `base` 可以写它们。外部皮肤也不能用这些 ID 当文件夹名，否则在 Windows 上会与内置外观冲突。
 pub const WINDOWS_LOOK_IDS: [&str; 6] = [
     "fluent",
     "wechat",
@@ -273,7 +273,7 @@ pub const WINDOWS_LOOK_IDS: [&str; 6] = [
     "microsoft",
 ];
 
-/// msime-windows 在皮肤目录里放内置外观设置清单的子目录名，外部皮肤同样不能占用。
+/// lingyao-windows 在皮肤目录里放内置外观设置清单的子目录名，外部皮肤同样不能占用。
 pub const WINDOWS_DEFAULTS_FOLDER: &str = "default";
 
 fn fill(slot: &mut Option<String>, value: &str) {
@@ -309,7 +309,7 @@ fn fill_toolbar(palette: &mut ToolbarPalette, look: &LookToolbar) {
     fill(&mut palette.hover, look.hover);
 }
 
-/// `base` 是不是 msime-windows 的内置外观。
+/// `base` 是不是 lingyao-windows 的内置外观。
 pub fn is_windows_look(base: &str) -> bool {
     WINDOWS_LOOK_IDS.contains(&base)
 }

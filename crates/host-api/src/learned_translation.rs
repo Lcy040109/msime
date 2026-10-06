@@ -1,6 +1,6 @@
 //! Bounded worker-thread operations on the private learned-gloss store.
-use msime_client_core::is_bounded_text;
-use msime_client_core::translation::{
+use lingyao_client_core::is_bounded_text;
+use lingyao_client_core::translation::{
     format_translation_gloss, is_cloud_translatable_chinese, is_cloud_translatable_english,
     is_supported_translation_language, is_valid_source_text, should_persist_translation,
 };
@@ -10,7 +10,7 @@ use std::fs;
 use std::path::Path;
 
 fn reject_symlinked_path(path: &Path) -> Result<(), &'static str> {
-    msime_path_trust::reject_symlinked_components(path)
+    lingyao_path_trust::reject_symlinked_components(path)
         .map_err(|_| "learned translation storage unavailable")
 }
 
@@ -108,7 +108,7 @@ pub fn execute(bytes: &[u8]) -> Result<Value, &'static str> {
                 let mut keys = vec![key];
                 if chinese {
                     let simplified =
-                        msime_client_core::chinese_conversion::traditional_to_simplified_characters(
+                        lingyao_client_core::chinese_conversion::traditional_to_simplified_characters(
                             &item.text,
                         );
                     if simplified != item.text {
@@ -117,7 +117,7 @@ pub fn execute(bytes: &[u8]) -> Result<Value, &'static str> {
                 }
                 let mut found = None;
                 for key in keys {
-                    let learned = msime_engine::host::candidate_glosses_with_user(
+                    let learned = lingyao_engine::host::candidate_glosses_with_user(
                         "",
                         &request.directory,
                         &[(key.clone(), if chinese { 0 } else { 4 })],
@@ -157,7 +157,7 @@ pub fn execute(bytes: &[u8]) -> Result<Value, &'static str> {
                     Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
                     Err(_) => return Err("learned translation storage unavailable"),
                 }
-                if !msime_engine::host::save_candidate_gloss(
+                if !lingyao_engine::host::save_candidate_gloss(
                     &request.directory,
                     chinese,
                     &key,
@@ -283,11 +283,11 @@ mod tests {
         );
         assert_eq!(run(&write).unwrap()["saved"], 1);
         assert_eq!(
-            msime_engine::host::candidate_glosses_with_user("", directory, &[("hello".into(), 4)])
+            lingyao_engine::host::candidate_glosses_with_user("", directory, &[("hello".into(), 4)])
                 .unwrap(),
             vec!["新释义"]
         );
-        assert!(msime_engine::host::save_candidate_gloss(
+        assert!(lingyao_engine::host::save_candidate_gloss(
             directory, true, "测试", "test"
         ));
         assert_eq!(
@@ -357,7 +357,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn rejects_a_symlinked_ancestor_before_creating_the_engine_database() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let outside = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();
@@ -377,7 +377,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn rejects_an_existing_directory_below_a_symlinked_ancestor() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let outside = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();

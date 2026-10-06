@@ -1,6 +1,6 @@
 /**
  * Bounded space-drag distance accumulator tied to one editor connection, ported from
- * platforms/android/java/app/msime/android/SpaceCursorMovement.java.
+ * platforms/android/java/app/lingyao/android/SpaceCursorMovement.java.
  *
  * The document identity matters: a drag that started against one editor must not keep moving a
  * cursor in another, so every advance re-checks it. Anything implausible cancels rather than

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""检查提交的韩文 Hanja 表（crates/engine/src/korean/hanja.tsv）是否符合 msime-dict-build hanja 的生成规则。
+"""检查提交的韩文 Hanja 表（crates/engine/src/korean/hanja.tsv）是否符合 lingyao-dict-build hanja 的生成规则。
 
-表由 msime-dictionary 原样收录的 libhangul hanja.txt（`sources/korean/hanja.txt`）生成并提交，供引擎内嵌；CI 不会重新生成，因此这里在无网络的情况下检查所有不变量，以及锁文件的 `libhangul` 引用。设置了 `MSIME_DICTIONARY=<msime-dictionary checkout>` 时，还会从它的源文件重新生成并逐字节比较。
+表由 lingyao-dictionary 原样收录的 libhangul hanja.txt（`sources/korean/hanja.txt`）生成并提交，供引擎内嵌；CI 不会重新生成，因此这里在无网络的情况下检查所有不变量，以及锁文件的 `libhangul` 引用。设置了 `LINGYAO_DICTIONARY=<lingyao-dictionary checkout>` 时，还会从它的源文件重新生成并逐字节比较。
 
 表按 BSD-3-Clause 授权，所有平台都必须随引擎分发对应许可证文件。
 """
@@ -29,7 +29,7 @@ NOTICE_CHANNELS = {
 }
 SOURCE = "sources/korean/hanja.txt"
 COMMIT = "717409ce61524bb3d8426060a384822f21354c62"
-# `COMMIT` 处 libhangul `data/hanja/hanja.txt` 原样文件的大小与 SHA-256，msime-dictionary 的 `sources/korean/hanja.txt` 必须是这份文件。
+# `COMMIT` 处 libhangul `data/hanja/hanja.txt` 原样文件的大小与 SHA-256，lingyao-dictionary 的 `sources/korean/hanja.txt` 必须是这份文件。
 SOURCE_SIZE = 6452537
 SOURCE_SHA256 = "b1004034589f1357daaea3534a6136f6b5ef825afa8779886b20f0b7908bbe3b"
 failures = []
@@ -104,23 +104,23 @@ def main() -> int:
 
     lock = json.loads(LOCK.read_text(encoding="utf-8"))
     check(lock["references"].get("libhangul", {}).get("commit") == COMMIT, f"the sources lock's libhangul reference is not {COMMIT}; update COMMIT, SOURCE_SIZE and SOURCE_SHA256 together with the table")
-    check(not any(entry["path"] == SOURCE for entry in lock["files"]), f"the sources lock pins {SOURCE}; msime-dictionary data reaches msime only through dict-v release assets")
+    check(not any(entry["path"] == SOURCE for entry in lock["files"]), f"the sources lock pins {SOURCE}; lingyao-dictionary data reaches lingyao only through dict-v release assets")
     check(LICENSE.is_file() and "Choe Hwanjin" in LICENSE.read_text(encoding="utf-8"), "the libhangul BSD-3-Clause text is missing from resources/licenses")
     for channel, description in NOTICE_CHANNELS.items():
         live = [line for line in (ROOT / channel).read_text(encoding="utf-8").splitlines() if not line.lstrip().startswith("#")]
         check(any(LICENSE.name in line for line in live), f"{channel} ({description}) does not ship {LICENSE.name}")
-    dictionary = os.environ.get("MSIME_DICTIONARY")
+    dictionary = os.environ.get("LINGYAO_DICTIONARY")
     source = Path(dictionary) / SOURCE if dictionary else None
     if source is None:
-        print("skipped: regeneration, set MSIME_DICTIONARY=<msime-dictionary checkout> (msime-dict-build hanja --dictionary reads the same file)")
+        print("skipped: regeneration, set LINGYAO_DICTIONARY=<lingyao-dictionary checkout> (lingyao-dict-build hanja --dictionary reads the same file)")
     elif not source.is_file():
-        print(f"skipped: regeneration, {source} does not exist (MSIME_DICTIONARY must be a msime-dictionary checkout)")
+        print(f"skipped: regeneration, {source} does not exist (LINGYAO_DICTIONARY must be a lingyao-dictionary checkout)")
     else:
         data = source.read_bytes()
         if len(data) != SOURCE_SIZE or hashlib.sha256(data).hexdigest() != SOURCE_SHA256:
             check(False, f"{source} is not libhangul {COMMIT}; update COMMIT, SOURCE_SIZE and SOURCE_SHA256 with the table")
         else:
-            check(generate(data.decode("utf-8")) == table, "the committed table differs from what the libhangul source generates; rerun msime-dict-build hanja")
+            check(generate(data.decode("utf-8")) == table, "the committed table differs from what the libhangul source generates; rerun lingyao-dict-build hanja")
 
     if failures:
         for failure in failures:

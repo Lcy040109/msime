@@ -10,7 +10,7 @@
 #
 # Chains were resolved from Cargo.lock, not guessed:
 #   unic-*           urlpattern -> tauri-utils -> tauri-build -> Tauri
-#   glib             gtk/gio/gdk -> wry/tao -> tauri -> msime-desktop   (Linux GTK stack only)
+#   glib             gtk/gio/gdk -> wry/tao -> tauri -> lingyao-desktop   (Linux GTK stack only)
 #   proc-macro-error glib-macros / gtk3-macros -> glib / gtk -> ... -> tauri  (build-time macros)
 
 [advisories]

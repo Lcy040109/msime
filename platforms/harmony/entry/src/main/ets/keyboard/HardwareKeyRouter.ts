@@ -78,7 +78,7 @@ export enum HardwareKeyAction {
   COMMIT_THEN_TYPE,
   /** Korean: commit the open syllable, then hand the key to the application to do its own work (Return, a caret key, Delete, Tab). */
   COMMIT_THEN_RELEASE,
-  /** Korean: list the Hanja of the composing syllable, or close the open list (MSIME_CONVERT_HANJA). */
+  /** Korean: list the Hanja of the composing syllable, or close the open list (LINGYAO_CONVERT_HANJA). */
   CONVERT_HANJA,
   /** 藏文：把 `character` 交给引擎，引擎没处理时在上屏内容之后插入它（空格结束音节串时由引擎补音节点；Esc 锁定原文后引擎只上屏原文，空格照常输入）。 */
   PRESS_THEN_TYPE,
@@ -590,7 +590,7 @@ export class HardwareKeyRouter {
    *
    * Vietnamese takes the same path with `korean` false: a word composes from its letters in the case they were typed, VNI's mark digits spell while a word is composing (the Engine lists them as spelling symbols), punctuation is ASCII, and every other key ends the word the way it ends a syllable. It has no list, so the Hanja key is not claimed.
    *
-   * 藏文同样走这条路径（`korean` 为 false，`tibetan` 为 true），威利转写的字母按输入时的大小写进入组字。与越南语不同的有三处：引擎列出的拼写符号在没有组字时也是输入（`'` 开头 achung 音节，`/` 单独上屏垂符），所以先于「没有组字就交给应用」判断；组字时空格作为字符交给引擎，由引擎上屏藏文加音节点（Esc 锁定原文后引擎只上屏原文、不处理空格，空格再由键盘插入）；回车发 MSIME_COMMIT_RAW，只上屏藏文、不换行，由引擎吞掉（msime_client.h）。
+   * 藏文同样走这条路径（`korean` 为 false，`tibetan` 为 true），威利转写的字母按输入时的大小写进入组字。与越南语不同的有三处：引擎列出的拼写符号在没有组字时也是输入（`'` 开头 achung 音节，`/` 单独上屏垂符），所以先于「没有组字就交给应用」判断；组字时空格作为字符交给引擎，由引擎上屏藏文加音节点（Esc 锁定原文后引擎只上屏原文、不处理空格，空格再由键盘插入）；回车发 LINGYAO_COMMIT_RAW，只上屏藏文、不换行，由引擎吞掉（lingyao_client.h）。
    *
    * Letters always compose, in the case the caller normalized them to (Shift gives ㄲ ㄸ ㅃ ㅆ ㅉ ㅒ ㅖ). With nothing composed every other key is the application's, punctuation included: Korean writes it as half-width ASCII, so the application typing the key is exactly right, and fullwidth does not apply. With a syllable open, Backspace takes one jamo back and Escape discards the syllable; a punctuation mark goes through the Engine, which commits the syllable and the mark as one; Space and the other printable keys commit the syllable and are typed after it by the keyboard, so their order against the commit is not left to the editor; and Return, the caret keys, Delete, Tab and the page keys, with or without a modifier, commit the syllable and then do their own work in the application. Any other chord, and a modifier on its own, leaves the syllable open, as it does for every other scheme.
    *
@@ -623,7 +623,7 @@ export class HardwareKeyRouter {
     if (!modified && HardwareKeyRouter.spells(spelling, character)) {
       return decision(HardwareKeyAction.COMPOSE, character);
     }
-    // Claimed while composing whatever the Engine answers: a lone jamo has no Hanja, and the key handed on would reach the editor beside a syllable still composing (msime_client.h).
+    // Claimed while composing whatever the Engine answers: a lone jamo has no Hanja, and the key handed on would reach the editor beside a syllable still composing (lingyao_client.h).
     if (
       korean &&
       !modified &&
@@ -672,7 +672,7 @@ export class HardwareKeyRouter {
   /**
    * A key that means something to the open Hanja list of a Korean syllable, or undefined for one that keeps its plain Korean meaning.
    *
-   * Space and Return choose the highlighted Hanja; Return sends the candidate command because only the session knows the highlight (msime_client.h). The number row picks from the visible page while `number_row_selection` is on; with it off a digit commits the syllable and is typed as it is without the list. Up and Down, the page keys and Tab move through the list as their navigation bindings say, and Left and Right move the highlight while the arrow binding is on, since a syllable has no caret inside it to move. A binding turned off leaves its key with its plain Korean meaning rather than eating it, and so do Home and End. The marks - = [ ] , . stay punctuation rather than paging or taking a character from a word: a Hanja is one character already, and the Engine closes the list and writes the Hangul with the mark, as every other host does with the list open. Backspace and Escape need nothing here: the Engine has them close the list and keep the syllable.
+   * Space and Return choose the highlighted Hanja; Return sends the candidate command because only the session knows the highlight (lingyao_client.h). The number row picks from the visible page while `number_row_selection` is on; with it off a digit commits the syllable and is typed as it is without the list. Up and Down, the page keys and Tab move through the list as their navigation bindings say, and Left and Right move the highlight while the arrow binding is on, since a syllable has no caret inside it to move. A binding turned off leaves its key with its plain Korean meaning rather than eating it, and so do Home and End. The marks - = [ ] , . stay punctuation rather than paging or taking a character from a word: a Hanja is one character already, and the Engine closes the list and writes the Hangul with the mark, as every other host does with the list open. Backspace and Escape need nothing here: the Engine has them close the list and keep the syllable.
    */
   private static routeHanjaList(
     key: HardwareKey,
@@ -731,7 +731,7 @@ export class HardwareKeyRouter {
     return RELEASE;
   }
 
-  /** 触屏符号键是否作为字符交给 Engine：组字中或本地模式里 Engine 列为拼写的符号（网址模式的数字和网址符号、`www` 之后的 `.`、U/V 模式的数字）。标点入口 `msime_client_punctuation_with_context` 只收 ASCII 标点，数字走那条路会被拒绝而丢掉。没有组字时列出的 `/` 和 `@` 不在此列，照旧走标点路由。 */
+  /** 触屏符号键是否作为字符交给 Engine：组字中或本地模式里 Engine 列为拼写的符号（网址模式的数字和网址符号、`www` 之后的 `.`、U/V 模式的数字）。标点入口 `lingyao_client_punctuation_with_context` 只收 ASCII 标点，数字走那条路会被拒绝而丢掉。没有组字时列出的 `/` 和 `@` 不在此列，照旧走标点路由。 */
   static touchSpells(spelling: HardwareSpelling, character: number): boolean {
     return (
       (spelling.localMode !== "none" || spelling.editing.length > 0) &&

@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$fixture = Join-Path ([IO.Path]::GetTempPath()) ('msime-package-' + [Guid]::NewGuid())
+$fixture = Join-Path ([IO.Path]::GetTempPath()) ('lingyao-package-' + [Guid]::NewGuid())
 function Write-Fixture([string]$Relative, [string]$Text = 'fixture') {
     $path = Join-Path $fixture $Relative
     New-Item -ItemType Directory -Force -Path (Split-Path $path) | Out-Null
@@ -11,7 +11,7 @@ try {
     New-Item -ItemType Directory -Force -Path $installer | Out-Null
     Copy-Item (Join-Path $PSScriptRoot '../Prepare-PackageFiles.ps1') $installer
     Copy-Item (Join-Path $PSScriptRoot '../Get-VerifiedDesktopResources.ps1') $installer
-    Copy-Item (Join-Path $PSScriptRoot '../msime_setup.iss') $installer
+    Copy-Item (Join-Path $PSScriptRoot '../lingyao_setup.iss') $installer
     Copy-Item (Join-Path $PSScriptRoot '../config.default.toml') $installer
     Copy-Item (Join-Path $PSScriptRoot '../assets') $installer -Recurse
     # Prepare-PackageFiles.ps1 从版本表取本次打包的版本，fixture 用仓库里的那一份。
@@ -30,8 +30,8 @@ try {
         'server/build-release/bin/Release/LingyaoImeServer.pdb',
         'server/build-release/bin/Release/LingyaoImeWatchdog.exe',
         'server/build-release/bin/Release/LingyaoImeWatchdog.pdb',
-        'server/build-release/bin/Release/msime-mcp.exe',
-        'server/build-release/bin/Release/msime-mcp.pdb',
+        'server/build-release/bin/Release/lingyao-mcp.exe',
+        'server/build-release/bin/Release/lingyao-mcp.pdb',
         'server/build-release/bin/Release/LingyaoImeServerTests.exe',
         'server/build-release/bin/Release/LingyaoImeServerTests.pdb',
         'server/build-release/bin/Release/test_webview_contract.exe',
@@ -39,12 +39,12 @@ try {
         'server/build-release/bin/Release/windows-first-run.exe',
         'server/build-release/bin/Release/nested/windows-server-launch.exe',
         'server/build-release/bin/Release/nested/windows-server-launch.pdb',
-        'server/build-release/bin/Release/msime-client-prepare.exe',
-        'server/build-release/bin/Release/msime-client-prepare.pdb',
-        'server/build-release/bin/Release/msime-client-settings.exe',
-        'server/build-release/bin/Release/msime-client-settings.pdb',
-        'server/build-release/bin/Release/MSIME.exe',
-        'server/build-release/bin/Release/MSIME.pdb',
+        'server/build-release/bin/Release/lingyao-client-prepare.exe',
+        'server/build-release/bin/Release/lingyao-client-prepare.pdb',
+        'server/build-release/bin/Release/lingyao-client-settings.exe',
+        'server/build-release/bin/Release/lingyao-client-settings.pdb',
+        'server/build-release/bin/Release/LINGYAO.exe',
+        'server/build-release/bin/Release/LINGYAO.pdb',
         'server/build-release/bin/Release/RestartAgent.exe',
         'windows/build32-release/Release/LingyaoImeTsf.dll',
         'windows/build32-release/Release/LingyaoImeTsf.pdb',
@@ -52,15 +52,15 @@ try {
         'windows/build64-release/Release/LingyaoImeTsf.pdb',
         'THIRD_PARTY_NOTICES.txt',
         'LICENSE',
-        'target/release/msime-desktop.exe',
+        'target/release/lingyao-desktop.exe',
         'target/handwriting-model/handwriting-zh_CN.model',
         'target/handwriting-model/HandwritingModel-LICENSE.txt',
         'target/settled-model/sentence-model-desktop.safetensors',
         'target/neural-model/sentence-model-desktop.safetensors',
-        'target/language-dictionaries/msime-zhuyin.db',
-        'target/language-dictionaries/msime-libchewing_data_LICENSE.txt',
-        'target/language-dictionaries/msime-stroke.db',
-        'target/language-dictionaries/msime-rime_stroke_LICENSE.txt',
+        'target/language-dictionaries/lingyao-zhuyin.db',
+        'target/language-dictionaries/lingyao-libchewing_data_LICENSE.txt',
+        'target/language-dictionaries/lingyao-stroke.db',
+        'target/language-dictionaries/lingyao-rime_stroke_LICENSE.txt',
         'resources/helpcodes/helpcode.txt',
         'resources/helpcodes/NOTICE.md',
         'resources/sound-packs/default/plugin.toml',
@@ -68,8 +68,8 @@ try {
         'target/offline-glosses/zh-fr.db',
         'target/offline-glosses/offline-glosses-NOTICE.txt'
     )) { Write-Fixture $file }
-    Write-Fixture 'windows/build32-release/Release/msime_host_api.dll' 'synthetic x86 host'
-    Write-Fixture 'windows/build64-release/Release/msime_host_api.dll' 'synthetic x64 host'
+    Write-Fixture 'windows/build32-release/Release/lingyao_host_api.dll' 'synthetic x86 host'
+    Write-Fixture 'windows/build64-release/Release/lingyao_host_api.dll' 'synthetic x64 host'
     Write-Fixture 'windows/build32-release/Release/synthetic-runtime.dll' 'synthetic x86 dependency'
     Write-Fixture 'windows/build64-release/Release/synthetic-runtime.dll' 'synthetic x64 dependency'
     # Build-Client.ps1 的 Arm64X TIP、它的 PDB 和 ARM64 宿主 DLL；宿主 DLL 的 PDB 也留在这里，从不暂存。
@@ -77,18 +77,18 @@ try {
         $suffix = if ($edition -eq 'full') { '' } else { "_$edition" }
         Write-Fixture "target/windows-$edition/arm64/bin/LingyaoImeTsf.dll" "synthetic $edition Arm64X TIP"
         Write-Fixture "target/windows-$edition/arm64/bin/LingyaoImeTsf.pdb" "synthetic $edition Arm64X TIP symbols"
-        Write-Fixture "target/windows-$edition/arm64/bin/msime_host_api$($suffix)_arm64.dll" "synthetic $edition ARM64 host"
-        Write-Fixture "target/windows-$edition/arm64/bin/msime_host_api.pdb" "synthetic $edition ARM64 host symbols"
+        Write-Fixture "target/windows-$edition/arm64/bin/lingyao_host_api$($suffix)_arm64.dll" "synthetic $edition ARM64 host"
+        Write-Fixture "target/windows-$edition/arm64/bin/lingyao_host_api.pdb" "synthetic $edition ARM64 host symbols"
     }
-    $english = Join-Path $fixture 'target/desktop-resources/msime-english.db'
+    $english = Join-Path $fixture 'target/desktop-resources/lingyao-english.db'
     New-Item -ItemType Directory -Force (Split-Path -Parent $english) | Out-Null
     python -c "import sqlite3,sys; sqlite3.connect(sys.argv[1]).execute('CREATE TABLE english_words(word TEXT,display TEXT,weight INTEGER,PRIMARY KEY(word,display))')" $english
     if ($LASTEXITCODE -ne 0) { throw 'Failed to create packaging fixture' }
     $artifacts = @(
-        foreach ($name in @('msime-pinyin.db', 'msime-english.db', 'msime-scowl_Copyright.txt', 'msime-others.db',
-                            'msime-japanese.dat', 'msime-mozc_dictionary_oss_README.txt', 'msime-mozc_LICENSE.txt',
-                            'msime-dictionary-manifest.json')) {
-            if ($name -ne 'msime-english.db') { Write-Fixture "target/desktop-resources/$name" "synthetic pinned $name" }
+        foreach ($name in @('lingyao-pinyin.db', 'lingyao-english.db', 'lingyao-scowl_Copyright.txt', 'lingyao-others.db',
+                            'lingyao-japanese.dat', 'lingyao-mozc_dictionary_oss_README.txt', 'lingyao-mozc_LICENSE.txt',
+                            'lingyao-dictionary-manifest.json')) {
+            if ($name -ne 'lingyao-english.db') { Write-Fixture "target/desktop-resources/$name" "synthetic pinned $name" }
             $path = Join-Path $fixture "target/desktop-resources/$name"
             @{ name = $name; size = (Get-Item $path).Length; sha256 = (Get-FileHash $path).Hash.ToLowerInvariant() }
         }
@@ -101,9 +101,9 @@ try {
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -TargetVersion '2026.9.1'
     # tsf_dll\arm64 只有 Arm64X TIP、它的 PDB 和 ARM64 宿主 DLL：TIP 的 ARM64EC 那一半用的 x64 宿主由 tsf_dll\64 装进同一个版本目录。
     $arm64Staged = @(Get-ChildItem -LiteralPath (Join-Path $installer 'tsf_dll/arm64') -File | ForEach-Object Name | Sort-Object)
-    if (($arm64Staged -join ',') -ne 'LingyaoImeTsf.dll,LingyaoImeTsf.pdb,msime_host_api_arm64.dll' -or
+    if (($arm64Staged -join ',') -ne 'LingyaoImeTsf.dll,LingyaoImeTsf.pdb,lingyao_host_api_arm64.dll' -or
         [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/LingyaoImeTsf.dll')) -ne 'synthetic full Arm64X TIP' -or
-        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/msime_host_api_arm64.dll')) -ne 'synthetic full ARM64 host') {
+        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/lingyao_host_api_arm64.dll')) -ne 'synthetic full ARM64 host') {
         throw "tsf_dll/arm64 is not the Arm64X TIP and its ARM64 host: $($arm64Staged -join ', ')"
     }
     $arm64Tip = Join-Path $fixture 'target/windows-full/arm64/bin/LingyaoImeTsf.dll'
@@ -122,14 +122,14 @@ try {
     if (Test-Path (Join-Path $installer 'server_exe/resources/stale.txt')) {
         throw 'Packaged unverified native build resources'
     }
-    $pinned = Join-Path $fixture 'target/desktop-resources/msime-pinyin.db'
+    $pinned = Join-Path $fixture 'target/desktop-resources/lingyao-pinyin.db'
     $originalPinned = [IO.File]::ReadAllText($pinned)
     foreach ($bad in @('short', ('x' * $originalPinned.Length))) {
         [IO.File]::WriteAllText($pinned, $bad)
         $rejected = $false
         try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $true }
         if (-not $rejected) { throw 'Invalid pinned resource accepted' }
-        if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/resources/msime-pinyin.db')) -ne $originalPinned) {
+        if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/resources/lingyao-pinyin.db')) -ne $originalPinned) {
             throw 'Failed resource preflight damaged previous staging'
         }
     }
@@ -139,14 +139,14 @@ try {
                          'server_exe/LingyaoImeServer.pdb',
                          'server_exe/LingyaoImeWatchdog.exe',
                          'server_exe/LingyaoImeWatchdog.pdb',
-                         'server_exe/msime-mcp.exe',
-                         'server_exe/msime-mcp.pdb',
-                         'server_exe/msime-client-settings.exe',
-                         'server_exe/msime-client-settings.pdb',
-                         'server_exe/MSIME.exe',
-                         'server_exe/MSIME.pdb',
-                         'server_exe/msime-client-prepare.exe',
-                         'server_exe/msime-client-prepare.pdb',
+                         'server_exe/lingyao-mcp.exe',
+                         'server_exe/lingyao-mcp.pdb',
+                         'server_exe/lingyao-client-settings.exe',
+                         'server_exe/lingyao-client-settings.pdb',
+                         'server_exe/LINGYAO.exe',
+                         'server_exe/LINGYAO.pdb',
+                         'server_exe/lingyao-client-prepare.exe',
+                         'server_exe/lingyao-client-prepare.pdb',
                          'server_exe/RestartAgent.exe',
                          'server_exe/offline-glosses/zh-fr.db',
                          'server_exe/offline-glosses/offline-glosses-NOTICE.txt',
@@ -158,15 +158,15 @@ try {
     Assert-NoOnDemandModels 'Full package'
     if (Test-Path (Join-Path $installer 'app_data/helpcodes/NOTICE.md')) { throw 'Staged a helpcode notice as a table' }
     # The Zhuyin and Stroke dictionaries travel beside resources with their licences; the absent Cantonese one leaves that scheme unavailable, and a dictionary without its licence is refused.
-    foreach ($name in @('msime-zhuyin.db', 'msime-libchewing_data_LICENSE.txt', 'msime-stroke.db', 'msime-rime_stroke_LICENSE.txt')) {
+    foreach ($name in @('lingyao-zhuyin.db', 'lingyao-libchewing_data_LICENSE.txt', 'lingyao-stroke.db', 'lingyao-rime_stroke_LICENSE.txt')) {
         if (-not (Test-Path (Join-Path $installer "server_exe/language-dictionaries/$name"))) { throw "Missing language dictionary file: $name" }
     }
-    if (Test-Path (Join-Path $installer 'server_exe/language-dictionaries/msime-cantonese.db')) { throw 'Packaged a Cantonese dictionary that was not provided' }
-    Write-Fixture 'target/language-dictionaries/msime-cantonese.db'
+    if (Test-Path (Join-Path $installer 'server_exe/language-dictionaries/lingyao-cantonese.db')) { throw 'Packaged a Cantonese dictionary that was not provided' }
+    Write-Fixture 'target/language-dictionaries/lingyao-cantonese.db'
     $rejected = $false
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $_.Exception.Message -match 'rime_cantonese_LICENSE' }
     if (-not $rejected) { throw 'A language dictionary without its licence was accepted' }
-    Remove-Item (Join-Path $fixture 'target/language-dictionaries/msime-cantonese.db') -Force
+    Remove-Item (Join-Path $fixture 'target/language-dictionaries/lingyao-cantonese.db') -Force
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture
     foreach ($testFile in @(
         'server_exe/LingyaoImeServerTests.exe',
@@ -185,16 +185,16 @@ try {
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $_.Exception.Message -match 'PDB' }
     if (-not $rejected) { throw 'Missing production PDB was accepted' }
     [IO.File]::WriteAllText($serverPdbFixture, 'fixture')
-    # 发布时 Server 输出目录同时作为 x64 TIP 目录传入，所以自包含的 Windows App SDK 和语音运行时就在 64 位 TIP 旁边。tsf_dll\64 只取 TIP、它的宿主 DLL 和 32 位 TIP 也有的那些依赖；Server 暂存目录去掉 TIP 以及 msime_setup.iss 从 tsf_dll\64 装进 Server 目录的那些文件。
+    # 发布时 Server 输出目录同时作为 x64 TIP 目录传入，所以自包含的 Windows App SDK 和语音运行时就在 64 位 TIP 旁边。tsf_dll\64 只取 TIP、它的宿主 DLL 和 32 位 TIP 也有的那些依赖；Server 暂存目录去掉 TIP 以及 lingyao_setup.iss 从 tsf_dll\64 装进 Server 目录的那些文件。
     $sharedOutput = 'server/build-release/bin/Release'
-    $sharedTipFiles = @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', 'msime_host_api.dll', 'synthetic-runtime.dll')
+    $sharedTipFiles = @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', 'lingyao_host_api.dll', 'synthetic-runtime.dll')
     foreach ($name in $sharedTipFiles) {
         Copy-Item (Join-Path $fixture "windows/build64-release/Release/$name") (Join-Path $fixture $sharedOutput)
     }
     $serverOnlyFiles = @('Microsoft.UI.Xaml.dll', 'Microsoft.WindowsAppRuntime.dll', 'sherpa-onnx-c-api.dll', 'onnxruntime.dll', 'onnxruntime_providers_shared.dll')
     foreach ($name in $serverOnlyFiles) { Write-Fixture "$sharedOutput/$name" "server-only $name" }
     # Build-Client.ps1 把宿主 DLL 的 PDB 留在这个目录里供发布的符号包使用；它从不暂存。
-    Write-Fixture "$sharedOutput/msime_host_api.pdb" 'synthetic x64 host symbols'
+    Write-Fixture "$sharedOutput/lingyao_host_api.pdb" 'synthetic x64 host symbols'
     $rootNotices = Join-Path $fixture 'THIRD_PARTY_NOTICES.txt'
     [IO.File]::WriteAllText($rootNotices, 'fixture sherpa-onnx ONNX Runtime')
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Tsf64ReleaseDirectory $sharedOutput
@@ -210,7 +210,7 @@ try {
     foreach ($name in $sharedTipFiles) {
         if (Test-Path (Join-Path $installer "server_exe/$name")) { throw "server_exe duplicates tsf_dll/64: $name" }
     }
-    if (Test-Path (Join-Path $installer 'server_exe/msime_host_api.pdb')) { throw 'server_exe stages the host DLL PDB' }
+    if (Test-Path (Join-Path $installer 'server_exe/lingyao_host_api.pdb')) { throw 'server_exe stages the host DLL PDB' }
     foreach ($name in $serverOnlyFiles) {
         if (-not (Test-Path (Join-Path $installer "server_exe/$name"))) { throw "server_exe lost a Server file: $name" }
     }
@@ -220,7 +220,7 @@ try {
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $_.Exception.Message -match 'synthetic-runtime\.dll' }
     if (-not $rejected) { throw 'Conflicting Server and TSF copies of a shared DLL were accepted' }
     if (-not (Test-Path (Join-Path $installer 'server_exe/Microsoft.UI.Xaml.dll'))) { throw 'Shared DLL conflict damaged previous staging' }
-    foreach ($name in $sharedTipFiles + $serverOnlyFiles + @('msime_host_api.pdb')) { Remove-Item -LiteralPath (Join-Path $fixture "$sharedOutput/$name") }
+    foreach ($name in $sharedTipFiles + $serverOnlyFiles + @('lingyao_host_api.pdb')) { Remove-Item -LiteralPath (Join-Path $fixture "$sharedOutput/$name") }
     [IO.File]::WriteAllText($rootNotices, 'fixture')
     # 32 位 TIP 旁边的每个 DLL 都必须在 64 位 TIP 旁边有对应的 x64 版本。
     $x64Dependency = Join-Path $fixture 'windows/build64-release/Release/synthetic-runtime.dll'
@@ -234,18 +234,18 @@ try {
     [IO.File]::WriteAllText($database, 'preserved user data')
     foreach ($arch in @('32', '64')) {
         $expected = if ($arch -eq '32') { 'synthetic x86 host' } else { 'synthetic x64 host' }
-        $packagedHost = Join-Path $installer "tsf_dll/$arch/msime_host_api.dll"
+        $packagedHost = Join-Path $installer "tsf_dll/$arch/lingyao_host_api.dll"
         $expectedDependency = if ($arch -eq '32') { 'synthetic x86 dependency' } else { 'synthetic x64 dependency' }
         if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$arch/synthetic-runtime.dll")) -ne $expectedDependency) {
             throw 'Full package lost matching runtime dependency'
         }
         if ([IO.File]::ReadAllText($packagedHost) -ne $expected) { throw 'TSF Host DLL architecture mapping mismatch' }
-        $sourceHost = Join-Path $fixture "windows/build$arch-release/Release/msime_host_api.dll"
+        $sourceHost = Join-Path $fixture "windows/build$arch-release/Release/lingyao_host_api.dll"
         Remove-Item -LiteralPath $sourceHost
         foreach ($lightMode in @($false, $true)) {
             $rejected = $false
             try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light:$lightMode }
-            catch { $rejected = $_.Exception.Message -match 'msime_host_api.dll' }
+            catch { $rejected = $_.Exception.Message -match 'lingyao_host_api.dll' }
             if (-not $rejected) { throw 'Missing TSF Host DLL accepted' }
             if ([IO.File]::ReadAllText($database) -ne 'preserved user data' -or
                 [IO.File]::ReadAllText($packagedHost) -ne $expected) { throw 'Missing Host DLL damaged previous staging' }
@@ -259,8 +259,8 @@ try {
     if (-not $rejected) { throw 'Missing watchdog was accepted' }
     if ([IO.File]::ReadAllText($database) -ne 'preserved user data') { throw 'Missing watchdog damaged previous staging' }
     [IO.File]::WriteAllText($watchdog, 'fixture')
-    $desktop = Join-Path $fixture 'target/release/msime-desktop.exe'
-    $nativeDesktop = Join-Path $fixture 'server/build-release/bin/Release/msime-client-settings.exe'
+    $desktop = Join-Path $fixture 'target/release/lingyao-desktop.exe'
+    $nativeDesktop = Join-Path $fixture 'server/build-release/bin/Release/lingyao-client-settings.exe'
     Remove-Item -LiteralPath $nativeDesktop
     $rejected = $false
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light } catch { $rejected = $_.Exception.Message -match 'WinUI' }
@@ -269,10 +269,10 @@ try {
     [IO.File]::WriteAllText($nativeDesktop, 'fixture')
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -TsfDirectory windows -ServerDirectory server -NoticesDirectory . -Light
     if ([IO.File]::ReadAllText($database) -ne 'preserved user data') { throw 'Light package replaced dictionary data' }
-    if (-not (Test-Path (Join-Path $installer 'server_exe/msime-client-settings.exe'))) { throw 'Light package lost WinUI settings shell' }
+    if (-not (Test-Path (Join-Path $installer 'server_exe/lingyao-client-settings.exe'))) { throw 'Light package lost WinUI settings shell' }
     foreach ($arch in @('32', '64')) {
         $expected = if ($arch -eq '32') { 'synthetic x86 host' } else { 'synthetic x64 host' }
-        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$arch/msime_host_api.dll")) -ne $expected) {
+        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$arch/lingyao_host_api.dll")) -ne $expected) {
             throw 'Light package lost matching TSF Host DLL'
         }
         $expectedDependency = if ($arch -eq '32') { 'synthetic x86 dependency' } else { 'synthetic x64 dependency' }
@@ -280,35 +280,35 @@ try {
             throw 'Light package lost matching runtime dependency'
         }
     }
-    if (-not (Test-Path (Join-Path $installer 'server_exe/msime-client-prepare.exe'))) { throw 'Light package lost preparation tool' }
+    if (-not (Test-Path (Join-Path $installer 'server_exe/lingyao-client-prepare.exe'))) { throw 'Light package lost preparation tool' }
     foreach ($testFile in @('windows-first-run.exe', 'nested/windows-server-launch.exe', 'nested/windows-server-launch.pdb')) {
         if (Test-Path (Join-Path $installer "server_exe/$testFile")) { throw 'Light package contains a Client test artifact' }
     }
     if (Test-Path (Join-Path $installer 'server_exe/resources')) { throw 'Light package unexpectedly carries dictionaries' }
     Write-Fixture 'custom build/shell.exe' 'synthetic alternate shell'
-    Write-Fixture 'server/build-release/bin/Release/msime-client-settings.exe' 'synthetic native shell'
-    Write-Fixture 'server/build-release/bin/Release/msime-client-settings.pdb' 'synthetic native symbols'
+    Write-Fixture 'server/build-release/bin/Release/lingyao-client-settings.exe' 'synthetic native shell'
+    Write-Fixture 'server/build-release/bin/Release/lingyao-client-settings.pdb' 'synthetic native symbols'
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light
-    if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/msime-client-settings.exe')) -ne 'synthetic native shell') {
+    if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/lingyao-client-settings.exe')) -ne 'synthetic native shell') {
         throw 'Native WinUI output did not take precedence over old Cargo output'
     }
     Remove-Item -LiteralPath $desktop
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light
-    if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/msime-client-settings.pdb')) -ne 'synthetic native symbols') {
+    if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/lingyao-client-settings.pdb')) -ne 'synthetic native symbols') {
         throw 'Native WinUI shell symbols were not packaged'
     }
     $rejected = $false
-    try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light -DesktopExecutable 'target/release/msime-desktop.exe' }
+    try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light -DesktopExecutable 'target/release/lingyao-desktop.exe' }
     catch { $rejected = $_.Exception.Message -match 'WinUI' }
     if (-not $rejected) { throw 'Missing explicit shell silently fell back to native output' }
     [IO.File]::WriteAllText($desktop, 'fixture')
     foreach ($shellPath in @('custom build/shell.exe', (Join-Path $fixture 'custom build/shell.exe'))) {
         & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light -DesktopExecutable $shellPath
-        if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/msime-client-settings.exe')) -ne 'synthetic alternate shell') {
+        if ([IO.File]::ReadAllText((Join-Path $installer 'server_exe/lingyao-client-settings.exe')) -ne 'synthetic alternate shell') {
             throw 'Explicit settings shell path was not packaged'
         }
         if ([IO.File]::ReadAllText($database) -ne 'preserved user data') { throw 'Shell override replaced dictionary data' }
-        if (Test-Path (Join-Path $installer 'server_exe/msime-client-settings.pdb')) {
+        if (Test-Path (Join-Path $installer 'server_exe/lingyao-client-settings.pdb')) {
             throw 'Explicit shell inherited unrelated native symbols'
         }
     }
@@ -333,11 +333,11 @@ try {
         foreach ($name in @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb')) {
             Copy-Item (Join-Path $fixture "windows/build$($mapping[0])-release/Release/$name") $native
         }
-        [IO.File]::WriteAllText((Join-Path $native 'msime_host_api.dll'), "native $($mapping[1]) host")
+        [IO.File]::WriteAllText((Join-Path $native 'lingyao_host_api.dll'), "native $($mapping[1]) host")
     }
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light -ServerReleaseDirectory 'server/build-release/bin/Release'
     foreach ($mapping in @(@('32', 'x86'), @('64', 'x64'))) {
-        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$($mapping[0])/msime_host_api.dll")) -ne "native $($mapping[1]) host") {
+        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$($mapping[0])/lingyao_host_api.dll")) -ne "native $($mapping[1]) host") {
             throw 'Native build directory default was not selected'
         }
     }
@@ -345,7 +345,7 @@ try {
         -ServerReleaseDirectory 'server/build-release/bin/Release' `
         -Tsf32ReleaseDirectory 'windows/build32-release/Release' -Tsf64ReleaseDirectory 'windows/build64-release/Release'
     foreach ($mapping in @(@('32', 'x86'), @('64', 'x64'))) {
-        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$($mapping[0])/msime_host_api.dll")) -ne "synthetic $($mapping[1]) host") {
+        if ([IO.File]::ReadAllText((Join-Path $installer "tsf_dll/$($mapping[0])/lingyao_host_api.dll")) -ne "synthetic $($mapping[1]) host") {
             throw 'Explicit TSF directory override was ignored'
         }
     }
@@ -437,9 +437,9 @@ try {
             Remove-Item -LiteralPath (Join-Path $fixture "$partial/$library") -ErrorAction SilentlyContinue
         }
     }
-    Write-Fixture 'windows/build32-release/Release/msime_host_api_wubi.dll' 'synthetic x86 wubi host'
-    Write-Fixture 'windows/build64-release/Release/msime_host_api_wubi.dll' 'synthetic x64 wubi host'
-    $wubiArtifacts = @($artifacts | Where-Object { $_.name -in @('msime-pinyin.db', 'msime-wubi.db', 'msime-english.db', 'msime-scowl_Copyright.txt', 'msime-others.db', 'msime-dictionary-manifest.json') })
+    Write-Fixture 'windows/build32-release/Release/lingyao_host_api_wubi.dll' 'synthetic x86 wubi host'
+    Write-Fixture 'windows/build64-release/Release/lingyao_host_api_wubi.dll' 'synthetic x64 wubi host'
+    $wubiArtifacts = @($artifacts | Where-Object { $_.name -in @('lingyao-pinyin.db', 'lingyao-wubi.db', 'lingyao-english.db', 'lingyao-scowl_Copyright.txt', 'lingyao-others.db', 'lingyao-dictionary-manifest.json') })
     Write-Fixture 'resources/editions/wubi.lock.json' (@{
         source_commit = ('a' * 40); artifacts = $wubiArtifacts
     } | ConvertTo-Json -Depth 5)
@@ -452,13 +452,13 @@ try {
     }
     if (Test-Path (Join-Path $installer 'server_exe/language-dictionaries')) { throw 'Edition without Zhuyin packaged the Zhuyin dictionary' }
     foreach ($arch in @('32', '64')) {
-        if (-not (Test-Path (Join-Path $installer "tsf_dll/$arch/msime_host_api_wubi.dll")) -or
-            (Test-Path (Join-Path $installer "tsf_dll/$arch/msime_host_api.dll"))) {
+        if (-not (Test-Path (Join-Path $installer "tsf_dll/$arch/lingyao_host_api_wubi.dll")) -or
+            (Test-Path (Join-Path $installer "tsf_dll/$arch/lingyao_host_api.dll"))) {
             throw "Edition host DLL not packaged under its own name ($arch)"
         }
     }
-    if (-not (Test-Path (Join-Path $installer 'tsf_dll/arm64/msime_host_api_wubi_arm64.dll')) -or
-        (Test-Path (Join-Path $installer 'tsf_dll/arm64/msime_host_api_arm64.dll')) -or
+    if (-not (Test-Path (Join-Path $installer 'tsf_dll/arm64/lingyao_host_api_wubi_arm64.dll')) -or
+        (Test-Path (Join-Path $installer 'tsf_dll/arm64/lingyao_host_api_arm64.dll')) -or
         [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/LingyaoImeTsf.dll')) -ne 'synthetic wubi Arm64X TIP') {
         throw 'Edition Arm64X TIP or ARM64 host not packaged from the edition build'
     }
@@ -466,9 +466,9 @@ try {
     if (-not (Test-Path (Join-Path $installer 'server_exe/offline-glosses/zh-fr.db'))) { throw 'Chinese edition lost server_exe/offline-glosses/zh-fr.db' }
     Assert-NoOnDemandModels 'Chinese edition package'
     # 越南文版没有中文方案（版本表 features.offline_glosses 为 false）：非英文离线释义不装，即使构建目录里有它们。
-    Write-Fixture 'windows/build32-release/Release/msime_host_api_vietnamese.dll' 'synthetic x86 vietnamese host'
-    Write-Fixture 'windows/build64-release/Release/msime_host_api_vietnamese.dll' 'synthetic x64 vietnamese host'
-    $vietnameseArtifacts = @($artifacts | Where-Object { $_.name -in @('msime-english.db', 'msime-scowl_Copyright.txt', 'msime-others.db', 'msime-dictionary-manifest.json') })
+    Write-Fixture 'windows/build32-release/Release/lingyao_host_api_vietnamese.dll' 'synthetic x86 vietnamese host'
+    Write-Fixture 'windows/build64-release/Release/lingyao_host_api_vietnamese.dll' 'synthetic x64 vietnamese host'
+    $vietnameseArtifacts = @($artifacts | Where-Object { $_.name -in @('lingyao-english.db', 'lingyao-scowl_Copyright.txt', 'lingyao-others.db', 'lingyao-dictionary-manifest.json') })
     Write-Fixture 'resources/editions/vietnamese.lock.json' (@{
         source_commit = ('a' * 40); artifacts = $vietnameseArtifacts
     } | ConvertTo-Json -Depth 5)

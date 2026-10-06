@@ -1,7 +1,7 @@
 #pragma once
 #include "WaveOverlayModel.h"
 #include <functional>
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 class WaveOverlaySurface {
  public:
   using ActionHandler = std::function<void(WaveOverlayModel::Action)>;

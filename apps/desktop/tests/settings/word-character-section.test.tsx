@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { WordCharacterSection, type NavigationPreferences } from "@msime/ui";
+import { WordCharacterSection, type NavigationPreferences } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

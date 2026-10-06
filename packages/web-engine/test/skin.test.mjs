@@ -143,14 +143,14 @@ test("a skin object over system draws its highlighted text in its own text colou
   assert.equal(purple.palette.selectedNumber, purple.palette.number);
 });
 
-test("Windows looks match msime-windows over system", () => {
+test("Windows looks match lingyao-windows over system", () => {
   const dark = resolveSkin("wechat", { dark: true });
   assert.equal(dark.palette.surface, "#151515");
   assert.equal(dark.palette.selected, "#07C160");
   assert.equal(dark.palette.showSelectedBar, false);
-  assert.equal(dark.variables["--msime-skin-selected-bar"], "none");
+  assert.equal(dark.variables["--lingyao-skin-selected-bar"], "none");
   assert.equal(dark.geometry.cornerRadius, 5);
-  assert.equal(dark.variables["--msime-skin-radius"], "5px");
+  assert.equal(dark.variables["--lingyao-skin-radius"], "5px");
   assert.equal(resolveSkin("wechat").palette.surface, "#F7F7F7");
   // 高亮候选的文字和序号色取 Windows 版样式表的 `.first .text, .first .num`：微信绿和杨柳青是绿底白字，石墨没有选中底色，只靠字色标出高亮。
   for (const dark of [false, true]) {
@@ -186,7 +186,7 @@ test("Windows looks match msime-windows over system", () => {
   assert.deepEqual(resolveSkin({ base: "fluent" }).palette, resolveSkin({ base: "system" }).palette);
 });
 
-test("the Windows looks' highlighted text colour matches the vendored msime-windows stylesheets", () => {
+test("the Windows looks' highlighted text colour matches the vendored lingyao-windows stylesheets", () => {
   // 仓库里有副本的外观逐一核对 `.first .text` 的颜色：横排的 `.first .num`、竖排的 `.first .cand-no` 与它同色，所以序号也用这一个颜色。
   const skins = resolve(repoRoot, "packages/ui/src/upstream/candidate-themes/skins");
   let checked = 0;
@@ -229,7 +229,7 @@ test("supports.layouts and themes decide whether the package is drawn, as resolv
   assert.equal(off.drawn, false);
   assert.notEqual(off.palette.accent, "#00AA00");
   assert.deepEqual(off.geometry, { cornerRadius: null, minWidth: null, decoration: null, background: null });
-  assert.equal(off.variables["--msime-skin-radius"], undefined);
+  assert.equal(off.variables["--lingyao-skin-radius"], undefined);
   // SkinSummary 的顶层 layouts/themes 与清单的 supports 等价。
   const lightOnly = { ...base, layouts: ["horizontal"], themes: ["light"] };
   assert.equal(resolveSkin(lightOnly, { dark: true }).drawn, false);
@@ -266,9 +266,9 @@ test("geometry follows dimension, decorationImage and the background rules", () 
     decoration: { url: "https://example.com/mascot.png", top: 40, width: 120, align: "center" },
     background: { url: "skins/bg.webp", fit: "stretch", opacity: 0.5 },
   });
-  assert.equal(result.variables["--msime-skin-decoration-image"], 'url("https://example.com/mascot.png")');
-  assert.equal(result.variables["--msime-skin-background-fit"], "fill");
-  assert.equal(result.variables["--msime-skin-decoration-top"], "40px");
+  assert.equal(result.variables["--lingyao-skin-decoration-image"], 'url("https://example.com/mascot.png")');
+  assert.equal(result.variables["--lingyao-skin-background-fit"], "fill");
+  assert.equal(result.variables["--lingyao-skin-decoration-top"], "40px");
   // 没有 decorationImage 时用 preview；清单不写透明度时是 1。
   const legacy = resolveSkin({ decorationTopDip: 10, decorationWidthDip: 10, preview: "data:image/png;base64,AAAA", background: { image: "blob:https://a.test/1" } });
   assert.equal(legacy.geometry.decoration.url, "data:image/png;base64,AAAA");

@@ -9,8 +9,8 @@
 //!
 //! usage: phrase_progress <verified-dictionary-directory>
 
-use msime_engine::host::{prepare_options, Command, Session};
-use msime_input_runtime::{Action, Runtime};
+use lingyao_engine::host::{prepare_options, Command, Session};
+use lingyao_input_runtime::{Action, Runtime};
 
 /// Pinyin for a phrase whose leading part is a word of its own, so the first candidate list holds
 /// something that consumes only part of the input.
@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Ok(())
     };
-    let leading = |runtime: &Runtime<Session>| -> Result<msime_input_runtime::CandidateId, Box<dyn std::error::Error>> {
+    let leading = |runtime: &Runtime<Session>| -> Result<lingyao_input_runtime::CandidateId, Box<dyn std::error::Error>> {
         let view = runtime.view();
         let index = view
             .candidates

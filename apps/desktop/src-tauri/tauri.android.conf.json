@@ -1,5 +1,5 @@
 {
-  "identifier": "app.msime.android",
+  "identifier": "app.lingyao.android",
   "bundle": {
     "android": { "minSdkVersion": 28, "versionCode": 1 }
   }

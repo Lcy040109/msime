@@ -8,9 +8,9 @@ int main(int argc, char **argv) {
   try {
     const auto cancelled = std::make_shared<std::atomic_bool>(false);
     const auto result = std::string(argv[1]) == "asr"
-        ? msime::voice::recognize_cloud_asr({0.0f}, argv[2], argv[3],
+        ? lingyao::voice::recognize_cloud_asr({0.0f}, argv[2], argv[3],
               "fixture", "synthetic-token", "zh-CN", cancelled)
-        : msime::voice::polish_cloud_text("synthetic transcript", argv[2],
+        : lingyao::voice::polish_cloud_text("synthetic transcript", argv[2],
               argv[3], "fixture", "synthetic-token", "fixture prompt", cancelled);
     return expected && result == "synthetic result" ? 0 : 1;
   } catch (const std::exception &) {

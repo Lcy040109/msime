@@ -7,8 +7,8 @@ plugins { id("com.android.application") }
 // only the build. Nothing is copied or generated into it.
 val hostRoot = rootDir.parentFile
 
-// The release version: platforms/android/version.txt, or -PmsimeVersion from build-apk.sh when the release workflow is dispatched with another one. Usage reports, 关于 and 反馈 all read versionName, so a fixed value here made every release report the same version.
-val releaseVersion = (findProperty("msimeVersion") as String?)?.trim()?.takeIf { it.isNotEmpty() }
+// The release version: platforms/android/version.txt, or -PlingyaoVersion from build-apk.sh when the release workflow is dispatched with another one. Usage reports, 关于 and 反馈 all read versionName, so a fixed value here made every release report the same version.
+val releaseVersion = (findProperty("lingyaoVersion") as String?)?.trim()?.takeIf { it.isNotEmpty() }
     ?: hostRoot.resolve("version.txt").readText().trim()
 val releaseVersionParts = Regex("""^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$""").matchEntire(releaseVersion)
     ?.groupValues?.drop(1)?.map { it.toInt() }
@@ -23,7 +23,7 @@ data class AndroidEdition(
     val temporaryJapanese: Boolean,
 )
 
-val baseApplicationId = "app.msime.android"
+val baseApplicationId = "app.lingyao.android"
 @Suppress("UNCHECKED_CAST")
 val androidEditions = (JsonSlurper().parse(hostRoot.resolve("../../shared/contracts/editions.json")) as Map<String, Any?>)
     .let { table -> table["editions"] as List<Map<String, Any?>> }
@@ -41,22 +41,22 @@ check(androidEditions.firstOrNull()?.let { it.id == "full" && it.applicationId =
     "shared/contracts/editions.json must list full first, with application_id $baseApplicationId"
 }
 
-// APK 携带的 ABI：默认 arm64-v8a，或者 build-apk.sh 从 MSIME_ANDROID_ABIS 转交的逗号分隔的 -PmsimeAbis（x86_64 模拟器用 x86_64）。abiFilters 负责把第三方原生库（ML Kit 还带 x86、x86_64 和 armeabi-v7a）限制在已构建 msime 库的那些 ABI 上；没有它，APK 会装到这些设备上，然后因为缺少宿主库而崩溃。
-val nativeAbis = (findProperty("msimeAbis") as String?)
+// APK 携带的 ABI：默认 arm64-v8a，或者 build-apk.sh 从 LINGYAO_ANDROID_ABIS 转交的逗号分隔的 -PlingyaoAbis（x86_64 模拟器用 x86_64）。abiFilters 负责把第三方原生库（ML Kit 还带 x86、x86_64 和 armeabi-v7a）限制在已构建 lingyao 库的那些 ABI 上；没有它，APK 会装到这些设备上，然后因为缺少宿主库而崩溃。
+val nativeAbis = (findProperty("lingyaoAbis") as String?)
     ?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() }
     ?: listOf("arm64-v8a")
 check(nativeAbis.all { it == "arm64-v8a" || it == "x86_64" }) {
-    "msimeAbis supports arm64-v8a and x86_64, got $nativeAbis"
+    "lingyaoAbis supports arm64-v8a and x86_64, got $nativeAbis"
 }
 
 android {
-    namespace = "app.msime.android"
+    namespace = "app.lingyao.android"
     compileSdk = 36
     // 与 build-native.sh 固定的 NDK 相同。AGP 用这个 NDK 的 llvm-strip 处理打包进去的 .so；不配置 NDK 时它会把未 strip 的 .so 原样打包。
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
-        applicationId = "app.msime.android"
+        applicationId = "app.lingyao.android"
         minSdk = 28
         targetSdk = 35
         // Grows with every release, as the platform requires for an update to install: 0.1.0 is 1000, 1.2.3 is 1002003.

@@ -51,7 +51,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_app_explains_microphone_access_for_voice_input(self):
         explanation = "仅在你开始语音输入时录音：本地模型在本机识别，系统语音识别交由 iOS 处理，其他识别服务会把录音发送到你配置的服务。"
         project = (IOS_ROOT / "project.yml").read_text()
-        generated = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()
+        generated = (IOS_ROOT / "LINGYAOClient.xcodeproj/project.pbxproj").read_text()
         self.assertIn(f'INFOPLIST_KEY_NSMicrophoneUsageDescription: "{explanation}"', project)
         self.assertEqual(
             generated.count(f'INFOPLIST_KEY_NSMicrophoneUsageDescription = "{explanation}";'),
@@ -82,13 +82,13 @@ class ProjectConfigurationTests(unittest.TestCase):
         ])
         project = (IOS_ROOT / "project.yml").read_text()
         self.assertEqual(project.count("path: SharedResources/PrivacyInfo.xcprivacy"), 2)
-        generated = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()
+        generated = (IOS_ROOT / "LINGYAOClient.xcodeproj/project.pbxproj").read_text()
         self.assertIn("path = PrivacyInfo.xcprivacy", generated)
         self.assertEqual(generated.count("PrivacyInfo.xcprivacy in Resources"), 4)
 
     def test_app_ships_the_licences_of_the_embedded_speech_runtime(self):
         project = (IOS_ROOT / "project.yml").read_text()
-        generated = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()
+        generated = (IOS_ROOT / "LINGYAOClient.xcodeproj/project.pbxproj").read_text()
         self.assertIn("SherpaOnnxC.xcframework", project)
         notices = (IOS_ROOT / "SharedResources/VoiceRuntime-NOTICES.txt").read_text()
         self.assertIn("Apache License", notices)
@@ -100,7 +100,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_app_ships_the_licence_of_the_embedded_hanja_table(self):
         # The engine linked into the app and its keyboard extension embeds libhangul's Hanja table, which is BSD-3-Clause.
         project = (IOS_ROOT / "project.yml").read_text()
-        app = dict(target_blocks(project))["MSIMEApp"]
+        app = dict(target_blocks(project))["LINGYAOApp"]
         blocks = source_path_blocks(app, "../../resources/licenses/libhangul-hanja-BSD-3-Clause.txt")
         self.assertEqual(len(blocks), 1)
         self.assertIn("buildPhase: resources", blocks[0])
@@ -109,7 +109,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_app_ships_the_licences_of_the_language_dictionary_data(self):
         # The engine linked into the app and its keyboard extension has Cantonese, Zhuyin and Stroke schemes whose data derives from rime-cantonese (CC BY 4.0), libchewing-data (LGPL-2.1-or-later) and rime-stroke (LGPL-3.0, with the CNS11643 attribution).
         project = (IOS_ROOT / "project.yml").read_text()
-        app = dict(target_blocks(project))["MSIMEApp"]
+        app = dict(target_blocks(project))["LINGYAOApp"]
         for licence, holder in (("rime-cantonese-CC-BY-4.0.txt", "CanCLID"), ("libchewing-data-LGPL-2.1.txt", "libchewing Core Team"), ("rime-stroke-LGPL-3.0.txt", "CNS11643中文標準交換碼全字庫網站")):
             path = f"../../resources/licenses/{licence}"
             blocks = source_path_blocks(app, path)
@@ -120,7 +120,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_app_ships_the_licences_of_the_vietnamese_and_tibetan_crates(self):
         # 链接进 App 和键盘扩展的 Engine 编入了越南文方案的 vi crate 和藏文方案的 ewts crate，二者都按 MIT 使用。
         project = (IOS_ROOT / "project.yml").read_text()
-        app = dict(target_blocks(project))["MSIMEApp"]
+        app = dict(target_blocks(project))["LINGYAOApp"]
         for licence, holder in (("vi-MIT.txt", "Hung Nguyen"), ("ewts-MIT.txt", "Maxim Zommer")):
             path = f"../../resources/licenses/{licence}"
             blocks = source_path_blocks(app, path)
@@ -129,18 +129,18 @@ class ProjectConfigurationTests(unittest.TestCase):
             self.assertIn(holder, (IOS_ROOT / path).read_text())
 
     def test_app_and_keyboard_share_the_declared_app_group(self):
-        expected = "group.app.msime.ios"
-        app = (IOS_ROOT / "App/Resources/MSIMEApp.entitlements").read_text()
-        keyboard = (IOS_ROOT / "KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements").read_text()
+        expected = "group.app.lingyao.ios"
+        app = (IOS_ROOT / "App/Resources/LINGYAOApp.entitlements").read_text()
+        keyboard = (IOS_ROOT / "KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements").read_text()
         self.assertIn(expected, app)
         self.assertIn(expected, keyboard)
         project = (IOS_ROOT / "project.yml").read_text()
-        self.assertIn("CODE_SIGN_ENTITLEMENTS: App/Resources/MSIMEApp.entitlements", project)
-        self.assertIn("CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements", project)
+        self.assertIn("CODE_SIGN_ENTITLEMENTS: App/Resources/LINGYAOApp.entitlements", project)
+        self.assertIn("CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/LINGYAOKeyboardExtension.entitlements", project)
 
     def test_app_group_identifier_is_written_once(self):
-        # App Group 标识只写在 MSIMEAppEdition 一处，其他 Swift 代码都引用它；漏掉的那一处会因为 `?? .standard` 悄悄读写另一份数据，其他版本也会读到 full 的数据。测试和 Tauri 公共组件（只有 full）不在检查范围内。
-        literal = '"group.app.msime.ios"'
+        # App Group 标识只写在 LINGYAOAppEdition 一处，其他 Swift 代码都引用它；漏掉的那一处会因为 `?? .standard` 悄悄读写另一份数据，其他版本也会读到 full 的数据。测试和 Tauri 公共组件（只有 full）不在检查范围内。
+        literal = '"group.app.lingyao.ios"'
         repo = IOS_ROOT.parents[1]
         owner = repo / "shared/backend/account/BackendAccountClient.swift"
         self.assertIn(f"static let fullAppGroupIdentifier = {literal}", owner.read_text())
@@ -154,26 +154,26 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_url_scheme_is_derived_from_the_edition(self):
-        # 键盘拉起 App 的 URL scheme 只写在 MSIMEAppEdition 一处，按版本推出；多个版本装在同一台设备上时，写死的 msime 会让系统任选一个 App 打开，语音交接和设置入口就落到另一个版本。full 的 project.yml 注册的仍是 msime。
+        # 键盘拉起 App 的 URL scheme 只写在 LINGYAOAppEdition 一处，按版本推出；多个版本装在同一台设备上时，写死的 lingyao 会让系统任选一个 App 打开，语音交接和设置入口就落到另一个版本。full 的 project.yml 注册的仍是 lingyao。
         repo = IOS_ROOT.parents[1]
         owner = repo / "shared/backend/account/BackendAccountClient.swift"
-        self.assertIn('static let fullURLScheme = "msime"', owner.read_text())
+        self.assertIn('static let fullURLScheme = "lingyao"', owner.read_text())
         project = (IOS_ROOT / "project.yml").read_text()
-        self.assertIn("CFBundleURLSchemes: [msime]", project)
+        self.assertIn("CFBundleURLSchemes: [lingyao]", project)
         roots = [IOS_ROOT / "App", IOS_ROOT / "KeyboardExtension", IOS_ROOT / "SharedUI", repo / "shared/backend"]
         offenders = [
             str(path.relative_to(repo))
             for root in roots
             for path in sorted(root.rglob("*.swift"))
             if path != owner and "Tests" not in path.relative_to(repo).parts
-            and re.search(r'"msime://|scheme == "msime"', path.read_text())
+            and re.search(r'"lingyao://|scheme == "lingyao"', path.read_text())
         ]
         self.assertEqual(offenders, [])
         launcher = (IOS_ROOT / "KeyboardExtension/Sources/keyboard/KeyboardAppLauncher.swift").read_text()
-        self.assertIn('URL(string: "\\(MSIMEAppEdition.urlScheme)://settings")', launcher)
-        self.assertIn('URL(string: "\\(MSIMEAppEdition.urlScheme)://voice")', launcher)
+        self.assertIn('URL(string: "\\(LINGYAOAppEdition.urlScheme)://settings")', launcher)
+        self.assertIn('URL(string: "\\(LINGYAOAppEdition.urlScheme)://voice")', launcher)
         app = (IOS_ROOT / "App/Sources/LingyaoImeApp.swift").read_text()
-        self.assertIn("url.scheme == MSIMEAppEdition.urlScheme", app)
+        self.assertIn("url.scheme == LINGYAOAppEdition.urlScheme", app)
 
     def test_scheme_choices_are_narrowed_by_edition(self):
         # 首次引导和方案页都只列本版本的入口；写共享文档的 schemeMapping 也丢掉本版本没有的入口，任何调用方都写不进 host-api 会回退掉的方案。
@@ -200,7 +200,7 @@ class ProjectConfigurationTests(unittest.TestCase):
 
     # A `swift build` under shared/backend leaves 2000+ files in .build, and every target that takes
     # that directory as a source path would otherwise compile them into the app: the archive fails
-    # with dozens of "Multiple commands produce" errors naming MSIMEBackend.o and precompiled
+    # with dozens of "Multiple commands produce" errors naming LINGYAOBackend.o and precompiled
     # modules.
     def test_every_shared_backend_source_path_excludes_swiftpm_output(self):
         project = (IOS_ROOT / "project.yml").read_text()
@@ -229,7 +229,7 @@ class ProjectConfigurationTests(unittest.TestCase):
             if "GENERATE_INFOPLIST_FILE: YES" in body and "info:\n      path:" not in body:
                 self.assertIn('INFOPLIST_FILE: ""', body, name)
 
-    # The developer account carries app.msime.ios and app.msime.ios.keyboard with the App Group the
+    # The developer account carries app.lingyao.ios and app.lingyao.ios.keyboard with the App Group the
     # entitlements declare. A bundle identifier outside that prefix has no profile that satisfies
     # the App Groups entitlement, and signing fails before anything reaches a device.
     def test_bundle_identifiers_match_the_provisioned_app_ids(self):
@@ -237,11 +237,11 @@ class ProjectConfigurationTests(unittest.TestCase):
         identifiers = re.findall(r"PRODUCT_BUNDLE_IDENTIFIER: (\S+)", project)
         self.assertTrue(identifiers)
         for identifier in identifiers:
-            self.assertTrue(identifier == "app.msime.ios" or identifier.startswith("app.msime.ios."),
+            self.assertTrue(identifier == "app.lingyao.ios" or identifier.startswith("app.lingyao.ios."),
                             identifier)
-        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios\n", project)
-        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: app.msime.ios.keyboard\n", project)
-        self.assertIn("bundleIdPrefix: app.msime.ios", project)
+        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios\n", project)
+        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: app.lingyao.ios.keyboard\n", project)
+        self.assertIn("bundleIdPrefix: app.lingyao.ios", project)
         self.assertIn("DEVELOPMENT_TEAM: LXCL4Z68GU", project)
 
     def test_device_uses_real_handwriting_and_simulator_keeps_buildable_fallback(self):
@@ -251,7 +251,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertIn("SWIFT_OBJC_BRIDGING_HEADER", project)
         podfile = (IOS_ROOT / "Podfile").read_text()
         self.assertIn("pod 'MLKitDigitalInkRecognition', '8.0.0'", podfile)
-        self.assertIn("target 'MSIMEKeyboardExtension'", podfile)
+        self.assertIn("target 'LINGYAOKeyboardExtension'", podfile)
         fallback = (IOS_ROOT / "SharedUI/input/HandwritingInputViewFallback.swift").read_text()
         self.assertIn("var onResults: (([String]) -> Void)?", fallback)
         self.assertIn("func use(at index: Int) -> Bool { false }", fallback)
@@ -276,16 +276,16 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_about_and_download_links_use_the_shared_client_repository(self):
         source = (IOS_ROOT / "App/Sources/settings/AboutAndDownloadViews.swift").read_text()
         feedback = (IOS_ROOT / "App/Sources/settings/HelpAndFeedbackViews.swift").read_text()
-        self.assertEqual(source.count('"msime"'), 1)
-        self.assertNotIn("MSIME-Apple", source)
-        self.assertNotIn("MSIME-Windows", source)
-        self.assertNotIn("MSIME-Linux", source)
+        self.assertEqual(source.count('"lingyao"'), 1)
+        self.assertNotIn("LINGYAO-Apple", source)
+        self.assertNotIn("LINGYAO-Windows", source)
+        self.assertNotIn("LINGYAO-Linux", source)
         self.assertEqual(
             source.count("https://github.com/Lcy040109/msime")
             + feedback.count("https://github.com/Lcy040109/msime"),
             2,
         )
-        project = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()
+        project = (IOS_ROOT / "LINGYAOClient.xcodeproj/project.pbxproj").read_text()
         self.assertIn("path = HelpAndFeedbackViews.swift", project)
         self.assertEqual(project.count("HelpAndFeedbackViews.swift in Sources"), 2)
 
@@ -293,32 +293,32 @@ class ProjectConfigurationTests(unittest.TestCase):
         script = (IOS_ROOT / "build-app.sh").read_text()
         self.assertIn('tauri_target=aarch64-sim', script)
         self.assertIn('tauri_target=aarch64', script)
-        guard = 'if [ "${MSIME_IOS_TAURI_COMPONENT:-0}" = 1 ]; then'
+        guard = 'if [ "${LINGYAO_IOS_TAURI_COMPONENT:-0}" = 1 ]; then'
         self.assertIn(guard, script)
         component, shipping = script.split(guard, 1)[1].split("\nfi\n", 1)
         # The Tauri iOS build is the shared component, reachable only behind the explicit opt-in.
-        self.assertIn('pnpm --filter @msime/desktop tauri ios build \\', component)
+        self.assertIn('pnpm --filter @lingyao/desktop tauri ios build \\', component)
         self.assertIn('--target "$tauri_target" --no-sign --ci', component)
         self.assertNotIn('tauri ios build', shipping)
         # The default product is the native host under platforms/ios.
         self.assertIn('xcodegen generate', shipping)
-        self.assertIn('-scheme MSIMEApp', shipping)
-        self.assertNotIn('MSIME_IOS_LEGACY_APP', script)
+        self.assertIn('-scheme LINGYAOApp', shipping)
+        self.assertNotIn('LINGYAO_IOS_LEGACY_APP', script)
 
     def test_on_device_speech_runtime_is_fetched_and_embedded_only_in_the_app(self):
         project = (IOS_ROOT / "project.yml").read_text()
         blocks = dict(target_blocks(project))
         framework = "- framework: ../../target/voice-runtime/ios/SherpaOnnxC.xcframework"
         # The keyboard extension's memory limit cannot hold a model, so only the app links the runtime.
-        self.assertEqual([name for name, body in blocks.items() if "SherpaOnnxC" in body], ["MSIMEApp"])
-        app = blocks["MSIMEApp"]
+        self.assertEqual([name for name, body in blocks.items() if "SherpaOnnxC" in body], ["LINGYAOApp"])
+        app = blocks["LINGYAOApp"]
         self.assertIn(framework, app)
         self.assertRegex(app.split(framework, 1)[1], r"^\n\s+embed: true\n\s+codeSign: true\n")
         self.assertIn("INFOPLIST_KEY_NSSpeechRecognitionUsageDescription:", app)
         # Only the Swift file that runs the recognizer imports the runtime; everything the unit tests compile stays free of it.
         importers = sorted(path.name for path in (IOS_ROOT / "App").rglob("*.swift") if "import SherpaOnnxC" in path.read_text())
         self.assertEqual(importers, ["LocalSpeechRecognizer.swift"])
-        generated = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()
+        generated = (IOS_ROOT / "LINGYAOClient.xcodeproj/project.pbxproj").read_text()
         self.assertIn("SherpaOnnxC.xcframework in Embed Frameworks", generated)
         self.assertEqual(generated.count("INFOPLIST_KEY_NSSpeechRecognitionUsageDescription"), 2)
         # Fetched and verified at build time, never committed.

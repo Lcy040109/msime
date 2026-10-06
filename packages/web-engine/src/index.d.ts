@@ -1,13 +1,13 @@
-// @msime/web-engine 的类型。帧的字段与 crates/engine-wasm/src/bindings.rs 的 frame_to_js 一一对应。
+// @lingyao/web-engine 的类型。帧的字段与 crates/engine-wasm/src/bindings.rs 的 frame_to_js 一一对应。
 
-export type MsimeScheme = "quanpin" | "xiaohe" | "ziranma" | "wubi86";
+export type LingyaoScheme = "quanpin" | "xiaohe" | "ziranma" | "wubi86";
 
-export declare const SCHEMES: readonly MsimeScheme[];
+export declare const SCHEMES: readonly LingyaoScheme[];
 /** 这个包的版本，也是其中 wasm 和词库的 web-engine 版本。 */
 export declare const version: string;
 
 /** 引擎要页面执行的动作，按顺序执行。 */
-export type MsimeOut =
+export type LingyaoOut =
   /** 上屏 text。seat 是候选在排序后列表里的 0 起位置（不是页内下标）；原文上屏、标点本身、五笔顶字和四码唯一自动上屏为 -1。 */
   | { t: "commit"; text: string; seat: number }
   /** 空闲时直接打出的文字：英文模式下的字母、数字、空格，以及引擎不翻译的 ASCII 标点。 */
@@ -17,21 +17,21 @@ export type MsimeOut =
   /** 空闲时的 Esc，含义由页面决定。 */
   | { t: "exit" };
 
-export interface MsimeRow {
+export interface LingyaoRow {
   text: string;
   /** 候选的编码。 */
   code: string;
 }
 
-export interface MsimeFrame {
-  out: MsimeOut[];
+export interface LingyaoFrame {
+  out: LingyaoOut[];
   composing: boolean;
   /** 组字串（拼音或编码）。 */
   preedit: string;
   /** 组字串里的光标位置。 */
   caret: number;
   /** 当前页的候选，最多 pageSize 行。 */
-  page: MsimeRow[];
+  page: LingyaoRow[];
   pageIndex: number;
   hasPrev: boolean;
   /** 本页之后还有候选。 */
@@ -48,7 +48,7 @@ export interface MsimeFrame {
   rerankMs: number;
 }
 
-export interface MsimeAssetRef {
+export interface LingyaoAssetRef {
   url: string;
   /** 传输字节数（.gz 文件是压缩后的大小），用于进度。 */
   size: number;
@@ -56,29 +56,29 @@ export interface MsimeAssetRef {
   rawSize: number;
 }
 
-export interface MsimeAssets {
-  wasm: MsimeAssetRef;
+export interface LingyaoAssets {
+  wasm: LingyaoAssetRef;
   /** 拼音方案用拼音库，五笔用五笔 86 库。 */
-  db: MsimeAssetRef;
+  db: LingyaoAssetRef;
   /** 整句模型；五笔或不需要时为 null。 */
-  model: MsimeAssetRef | null;
+  model: LingyaoAssetRef | null;
 }
 
-export type MsimeLoadPhase = "fetch" | "compile" | "import" | "session";
-export type MsimeErrorCode = "unsupported" | "network" | "csp" | "memory" | "panic" | "engine" | "disposed";
+export type LingyaoLoadPhase = "fetch" | "compile" | "import" | "session";
+export type LingyaoErrorCode = "unsupported" | "network" | "csp" | "memory" | "panic" | "engine" | "disposed";
 
-export declare class MsimeError extends Error {
-  readonly code: MsimeErrorCode;
-  readonly phase: MsimeLoadPhase | "runtime";
+export declare class LingyaoError extends Error {
+  readonly code: LingyaoErrorCode;
+  readonly phase: LingyaoLoadPhase | "runtime";
 }
 
-export interface MsimeEngineOptions {
+export interface LingyaoEngineOptions {
   /** 默认 quanpin。 */
-  scheme?: MsimeScheme;
-  /** 资源文件所在目录的 URL，相对地址按页面解析。默认是本模块旁边的 assets/，SDK 作为静态文件或从 CDN 加载时不用设；经打包器（Vite、webpack）引入时，设为 `npx msime-web-engine copy` 复制到的目录。 */
+  scheme?: LingyaoScheme;
+  /** 资源文件所在目录的 URL，相对地址按页面解析。默认是本模块旁边的 assets/，SDK 作为静态文件或从 CDN 加载时不用设；经打包器（Vite、webpack）引入时，设为 `npx lingyao-web-engine copy` 复制到的目录。 */
   assetBase?: string | URL;
   /** 完全自定义资源地址，优先于 assetBase。 */
-  assets?: MsimeAssets;
+  assets?: LingyaoAssets;
   /** 每页候选数，默认 9。 */
   pageSize?: number;
   /** 拼音方案是否下载整句模型（约 4 MB），默认 true。设为 false 时省流量，候选按词频排序。 */
@@ -91,30 +91,30 @@ export interface MsimeEngineOptions {
   onProgress?: (loaded: number, total: number) => void;
 }
 
-export interface MsimeEngine {
-  readonly scheme: MsimeScheme;
-  /** "msime-engine-wasm <版本> <提交>" */
+export interface LingyaoEngine {
+  readonly scheme: LingyaoScheme;
+  /** "lingyao-engine-wasm <版本> <提交>" */
   readonly build: string;
   readonly memoryBytes: number;
-  readonly timings: Record<MsimeLoadPhase, number> | undefined;
+  readonly timings: Record<LingyaoLoadPhase, number> | undefined;
   /** 发送一个或一批打包按键（keyFromEvent 的结果，null 会被忽略），返回处理完后的帧。 */
-  keys(keys: number | null | ReadonlyArray<number | null>): Promise<MsimeFrame>;
+  keys(keys: number | null | ReadonlyArray<number | null>): Promise<LingyaoFrame>;
   /** 鼠标点选当前页第 slot 个候选。 */
-  pick(slot: number): Promise<MsimeFrame>;
+  pick(slot: number): Promise<LingyaoFrame>;
   /** 取消组字、清空上下文。 */
-  reset(): Promise<MsimeFrame>;
+  reset(): Promise<LingyaoFrame>;
   /** 在 quanpin、xiaohe、ziranma 之间切换；和 wubi86 互换需要新建引擎。 */
-  setScheme(scheme: MsimeScheme): Promise<void>;
+  setScheme(scheme: LingyaoScheme): Promise<void>;
   setModelEnabled(enabled: boolean): void;
   /** 页面空闲时的退格是否真的删字；页面拒绝删除时传 false，引擎的上下文就不会跟着弹出。 */
   setBackspaceDeletes(deletes: boolean): void;
   /** 运行期错误（引擎 panic 等）；之后所有请求都会 reject。 */
-  onError(fn: (error: MsimeError) => void): () => void;
+  onError(fn: (error: LingyaoError) => void): () => void;
   /** 结束 Worker，释放内存。 */
   dispose(): void;
 }
 
-export declare function createMsimeEngine(options?: MsimeEngineOptions): Promise<MsimeEngine>;
+export declare function createLingyaoEngine(options?: LingyaoEngineOptions): Promise<LingyaoEngine>;
 
 export declare const KeyKind: Readonly<{
   Letter: 1;
@@ -140,8 +140,8 @@ export declare function osImeIntercepting(e: KeyboardEvent): boolean;
 /** 单按 Shift 的检测器；up 返回 true 时发送 packKey(KeyKind.ShiftTap)。 */
 export declare function createShiftTap(): { down(e: KeyboardEvent): void; up(e: KeyboardEvent): boolean };
 
-/** 内置皮肤 ID：`system`（网页上画桌面端设置页预览的平台默认配色，跟随明暗）、五个全局主题，以及 msime-windows 的五个内置外观。 */
-export type MsimeSkinId =
+/** 内置皮肤 ID：`system`（网页上画桌面端设置页预览的平台默认配色，跟随明暗）、五个全局主题，以及 lingyao-windows 的五个内置外观。 */
+export type LingyaoSkinId =
   | "system"
   | "lingyao"
   | "light"
@@ -155,15 +155,15 @@ export type MsimeSkinId =
   | "microsoft";
 
 /** SDK 接受的内置皮肤 ID，顺序同设置页。 */
-export declare const SKINS: readonly MsimeSkinId[];
+export declare const SKINS: readonly LingyaoSkinId[];
 /** 不传皮肤时用的皮肤，即 `"lingyao"`。 */
 export declare const DEFAULT_SKIN: "lingyao";
 
-export type MsimeSkinLayout = "horizontal" | "vertical";
-export type MsimeSkinMode = "light" | "dark";
+export type LingyaoSkinLayout = "horizontal" | "vertical";
+export type LingyaoSkinMode = "light" | "dark";
 
 /** 皮肤包在一种明暗下的候选框配色，同桌面 `skin.toml` 的 `[candidate.light]` / `[candidate.dark]`。颜色写成 `#RGB`、`#RRGGBB`、`#RRGGBBAA`、`rgb()`、`rgba()` 或 `transparent`，读不懂的当没写。 */
-export interface MsimeSkinPalette {
+export interface LingyaoSkinPalette {
   accent?: string;
   /** 高亮候选的底色。 */
   selected?: string;
@@ -182,16 +182,16 @@ export interface MsimeSkinPalette {
 }
 
 /** 皮肤对象，形状同桌面设置页的 `SkinSummary` JSON（只取候选框用得到的字段）。尺寸单位 dip 在网页上就是 CSS px；图片写成 http(s)、blob、`data:image/*` 或相对地址（按页面地址解析），其他地址丢弃。 */
-export interface MsimeSkin {
+export interface LingyaoSkin {
   id?: string;
-  /** 画在哪个主题之上：全局主题、`system` 或 msime-windows 的内置外观（`fluent`、`wechat` 等），默认 `system`。base 为全局主题时，皮肤固定画在那个主题的明暗下。 */
+  /** 画在哪个主题之上：全局主题、`system` 或 lingyao-windows 的内置外观（`fluent`、`wechat` 等），默认 `system`。base 为全局主题时，皮肤固定画在那个主题的明暗下。 */
   base?: string;
   /** 皮肤支持的布局，不写时全都支持。不支持当前布局或明暗时只画 base（`ResolvedSkin.drawn` 为 false）。 */
-  layouts?: readonly MsimeSkinLayout[];
+  layouts?: readonly LingyaoSkinLayout[];
   /** 皮肤支持的明暗，不写时全都支持。 */
-  themes?: readonly MsimeSkinMode[];
+  themes?: readonly LingyaoSkinMode[];
   /** 也可以写成清单的形状 `supports: { layouts, themes }`。 */
-  supports?: { layouts?: readonly MsimeSkinLayout[]; themes?: readonly MsimeSkinMode[] };
+  supports?: { layouts?: readonly LingyaoSkinLayout[]; themes?: readonly LingyaoSkinMode[] };
   /** 候选框最小宽度，0 到 1000。 */
   minWidthDip?: number;
   /** 候选框圆角，0 到 32。 */
@@ -207,7 +207,7 @@ export interface MsimeSkin {
   decorationAlign?: "left" | "center" | "right";
   /** 候选框背景图；opacity 默认 1，夹到 0 到 1。 */
   background?: { image?: string; fit?: "cover" | "contain" | "stretch"; opacity?: number } | null;
-  candidate?: { dark?: MsimeSkinPalette; light?: MsimeSkinPalette };
+  candidate?: { dark?: LingyaoSkinPalette; light?: LingyaoSkinPalette };
 }
 
 /** resolveSkin 的结果，整个被冻结。颜色都是大写的 `#RRGGBB` 或 `#RRGGBBAA`。 */
@@ -216,7 +216,7 @@ export interface ResolvedSkin {
   readonly id: string | null;
   /** 实际画的明暗；全局主题和 base 为全局主题的皮肤固定在主题自己的明暗。 */
   readonly dark: boolean;
-  readonly layout: MsimeSkinLayout;
+  readonly layout: LingyaoSkinLayout;
   readonly palette: Readonly<{
     surface: string;
     border: string;
@@ -241,18 +241,18 @@ export interface ResolvedSkin {
     decoration: Readonly<{ url: string; top: number; width: number; align: "left" | "center" | "right" }> | null;
     background: Readonly<{ url: string; fit: "cover" | "contain" | "stretch"; opacity: number }> | null;
   }>;
-  /** 候选栏用的 CSS 自定义属性（`--cand-bg`、`--cand-text`、`--cand-selected`、`--msime-skin-radius` 等），值都已校验，可以直接 `style.setProperty`。 */
+  /** 候选栏用的 CSS 自定义属性（`--cand-bg`、`--cand-text`、`--cand-selected`、`--lingyao-skin-radius` 等），值都已校验，可以直接 `style.setProperty`。 */
   readonly variables: Readonly<Record<string, string>>;
   /** 皮肤对象不支持当前布局或明暗、只画了 base 时为 false。 */
   readonly drawn: boolean;
 }
 
 /** 把内置皮肤 ID 或皮肤对象解析成颜色、几何和 CSS 自定义属性：桌面端 `theme::resolve` 的结果，再补齐它留空的槽位（`system` 留空的用平台默认配色，Windows 外观补上高亮候选的文字色）。自己画候选栏的页面用它取灵耀的配色。未知 ID、base 或 layout 抛 TypeError。 */
-export declare function resolveSkin(skin?: MsimeSkinId | MsimeSkin, options?: { dark?: boolean; layout?: MsimeSkinLayout }): ResolvedSkin;
+export declare function resolveSkin(skin?: LingyaoSkinId | LingyaoSkin, options?: { dark?: boolean; layout?: LingyaoSkinLayout }): ResolvedSkin;
 
 /** 候选栏的宿主元素标签名。 */
-export declare const CANDIDATE_BAR_TAG: "msime-candidates";
-/** 候选栏用 `::part()` 暴露的部分，页面可以写 `msime-candidates::part(highlight) { ... }`。 */
+export declare const CANDIDATE_BAR_TAG: "lingyao-candidates";
+/** 候选栏用 `::part()` 暴露的部分，页面可以写 `lingyao-candidates::part(highlight) { ... }`。 */
 export declare const PARTS: Readonly<{
   /** 整个候选栏（定位的那一层，含装饰带）。 */
   candidates: "candidates";
@@ -282,9 +282,9 @@ export declare const PARTS: Readonly<{
 
 export interface CandidateBarOptions {
   /** 内置皮肤 ID 或皮肤对象，默认 `"lingyao"`。 */
-  skin?: MsimeSkinId | MsimeSkin;
+  skin?: LingyaoSkinId | LingyaoSkin;
   /** 横排或竖排，默认 horizontal。 */
-  layout?: MsimeSkinLayout;
+  layout?: LingyaoSkinLayout;
   /** "auto"（默认）跟随 `prefers-color-scheme` 并在它变化时重画；true、false 强制深色或浅色。只对 `system`、Windows 外观和不固定明暗的皮肤对象起作用。 */
   dark?: boolean | "auto";
   /** 点击当前页第 index 个候选。 */
@@ -296,14 +296,14 @@ export interface CandidateBarOptions {
 }
 
 export interface CandidateBar {
-  /** 宿主元素 `<msime-candidates>`，候选栏画在它的 Shadow DOM 里。 */
+  /** 宿主元素 `<lingyao-candidates>`，候选栏画在它的 Shadow DOM 里。 */
   readonly element: HTMLElement;
   /** 画一帧；frame.composing 为 false 时隐藏。anchorRect 是光标或文本框的视口矩形，候选栏画在它下方，放不下时画在上方，并保持在视口内。 */
-  render(frame: MsimeFrame, anchorRect: Pick<DOMRectReadOnly, "left" | "top" | "bottom" | "right">): void;
+  render(frame: LingyaoFrame, anchorRect: Pick<DOMRectReadOnly, "left" | "top" | "bottom" | "right">): void;
   hide(): void;
   /** 换皮肤；未知 ID 抛 TypeError，原来的皮肤不变。 */
-  setSkin(skin: MsimeSkinId | MsimeSkin | undefined): void;
-  setLayout(layout: MsimeSkinLayout): void;
+  setSkin(skin: LingyaoSkinId | LingyaoSkin | undefined): void;
+  setLayout(layout: LingyaoSkinLayout): void;
   setDark(dark: boolean | "auto"): void;
   /** 移除宿主元素和所有监听。 */
   destroy(): void;
@@ -316,15 +316,15 @@ export interface AttachInputOptions {
   /** 是否画默认候选栏（createCandidateBar），默认 true。 */
   candidates?: boolean;
   /** 候选栏的皮肤，默认 `"lingyao"`。 */
-  skin?: MsimeSkinId | MsimeSkin;
+  skin?: LingyaoSkinId | LingyaoSkin;
   /** 候选栏横排或竖排，默认 horizontal。 */
-  layout?: MsimeSkinLayout;
+  layout?: LingyaoSkinLayout;
   /** 候选栏的明暗，默认 "auto"。 */
   dark?: boolean | "auto";
   /** 候选栏挂在哪个元素里。不传时挂在文本框所在的顶层元素（打开的 `<dialog>`、popover 或全屏元素）里，都不是时挂在 body 上，每次显示前按当时的状态重新选。 */
   container?: Element;
   /** 每一帧都会回调，自己画候选栏时用。 */
-  onFrame?: (frame: MsimeFrame) => void;
+  onFrame?: (frame: LingyaoFrame) => void;
 }
 /** 把引擎接到一个 textarea 或 input 上：组字时拦截按键交给引擎，空闲时的回车、退格、方向键和 Esc 仍由浏览器处理。返回解除绑定的函数；解除绑定时正在组的字被放弃，还没回来的帧不再写进文本框，也不再回调 onFrame。 */
-export declare function attachInput(el: HTMLTextAreaElement | HTMLInputElement, engine: MsimeEngine, options?: AttachInputOptions): () => void;
+export declare function attachInput(el: HTMLTextAreaElement | HTMLInputElement, engine: LingyaoEngine, options?: AttachInputOptions): () => void;

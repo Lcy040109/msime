@@ -12,7 +12,7 @@ struct Item {
 } // namespace
 
 int main() {
-  msime::voice::BoundedCommandQueue<Item> queue(10);
+  lingyao::voice::BoundedCommandQueue<Item> queue(10);
 
   assert(queue.try_push(Item{"first"}, 6));
   assert(queue.bytes() == 6);

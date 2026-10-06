@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use msime_client_core::clipboard::{normalize_text, MAX_TEXT_BYTES};
+use lingyao_client_core::clipboard::{normalize_text, MAX_TEXT_BYTES};
 
 pub fn read_text(program: &str, arguments: &[&str]) -> Option<String> {
     super::linux_process::read_text_prefix(

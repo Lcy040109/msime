@@ -15,7 +15,7 @@
 
 #include "../core/SafePath.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 inline bool clipboard_directory_is_safe(const std::filesystem::path &directory) {
   std::error_code error;
@@ -91,7 +91,7 @@ inline bool write_clipboard_file_atomically(const std::filesystem::path &file,
   const auto directory = file.has_parent_path() ? file.parent_path() : std::filesystem::path(".");
   if (!prepare_clipboard_directory(directory)) return false;
   std::error_code error;
-  std::string pattern = (directory / ".msime-clipboard-XXXXXX").string();
+  std::string pattern = (directory / ".lingyao-clipboard-XXXXXX").string();
   std::vector<char> name(pattern.begin(), pattern.end());
   name.push_back('\0');
   const int descriptor = ::mkstemp(name.data());
@@ -123,4 +123,4 @@ inline bool write_clipboard_file_atomically(const std::filesystem::path &file,
   return true;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

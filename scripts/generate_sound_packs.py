@@ -457,7 +457,7 @@ PACKS: dict[str, tuple[int, dict[str, object]]] = {
             "tone.wav": melody_tone,
         },
     ),
-    "msime-typewriter": (
+    "lingyao-typewriter": (
         LITE,
         {
             "key.wav": lambda: typewriter_key(150.0, 1.0, 0.09, 11),
@@ -467,7 +467,7 @@ PACKS: dict[str, tuple[int, dict[str, object]]] = {
             "commit.wav": typewriter_commit,
         },
     ),
-    "msime-bubble": (
+    "lingyao-bubble": (
         LITE,
         {
             "key.wav": lambda: bubble([(0.0, 520.0, 860.0, 0.03)], 0.12),
@@ -477,7 +477,7 @@ PACKS: dict[str, tuple[int, dict[str, object]]] = {
             "commit.wav": lambda: bubble([(0.0, 600.0, 900.0, 0.03), (0.05, 800.0, 1200.0, 0.03), (0.1, 1050.0, 1580.0, 0.04)], 0.3),
         },
     ),
-    "msime-8bit": (
+    "lingyao-8bit": (
         LITE,
         {
             "key.wav": lambda: chip([(0.045, 880.0, 880.0)]),
@@ -488,7 +488,7 @@ PACKS: dict[str, tuple[int, dict[str, object]]] = {
             "commit.wav": lambda: chip([(0.06, 987.77, 987.77), (0.25, 1318.51, 1318.51)]),
         },
     ),
-    "msime-woodblock": (
+    "lingyao-woodblock": (
         LITE,
         {
             "key.wav": lambda: wood([(0.0, 720.0, 0.035)], 0.12),
@@ -498,34 +498,34 @@ PACKS: dict[str, tuple[int, dict[str, object]]] = {
             "commit.wav": claves,
         },
     ),
-    "msime-pentatonic": (
+    "lingyao-pentatonic": (
         LITE,
         {
             # C5.
             "tone.wav": lambda: lite_melody_tone(523.25, KALIMBA, 1.1),
         },
     ),
-    "msime-canon": (
+    "lingyao-canon": (
         LITE,
         {
             # A5.
             "tone.wav": lambda: lite_melody_tone(880.0, MUSIC_BOX, 1.2),
         },
     ),
-    "msime-ode-to-joy": (
+    "lingyao-ode-to-joy": (
         LITE,
         {
             # C5.
             "tone.wav": lambda: lite_melody_tone(523.25, ELECTRIC_PIANO, 1.2, 0.82 * PEAK),
         },
     ),
-    "msime-music-lofi": (
+    "lingyao-music-lofi": (
         LITE,
         {
             "lofi.wav": lofi_loop,
         },
     ),
-    "msime-music-ambient": (
+    "lingyao-music-ambient": (
         LITE,
         {
             "ambient.wav": ambient_loop,

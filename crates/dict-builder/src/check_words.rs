@@ -1,4 +1,4 @@
-//! `check-words`: the gate for changes to the hand-edited files in the dictionary source repository (metasequoiaime/msime-dictionary): custom/words.txt, custom/translations.txt and custom/english.txt. A change to any of them may only append lines. Every appended entry must pass the parser the build uses and be new: not repeated within the change and not already in the file. Weighted entries (words, English words) must also keep their weight within the range the file already uses, and an entry already in a shipped database (a word in msime-pinyin.db's quanpin table for its pinyin, an English word and display in msime-english.db's english_words) is rejected when that database is given. A translation may override an existing source with a different gloss, as the build's last-line-wins does, but repeating the same source and gloss is a duplicate. Appended blank and `#` comment lines are skipped, as the build skips them.
+//! `check-words`: the gate for changes to the hand-edited files in the dictionary source repository (metasequoiaime/lingyao-dictionary): custom/words.txt, custom/translations.txt and custom/english.txt. A change to any of them may only append lines. Every appended entry must pass the parser the build uses and be new: not repeated within the change and not already in the file. Weighted entries (words, English words) must also keep their weight within the range the file already uses, and an entry already in a shipped database (a word in lingyao-pinyin.db's quanpin table for its pinyin, an English word and display in lingyao-english.db's english_words) is rejected when that database is given. A translation may override an existing source with a different gloss, as the build's last-line-wins does, but repeating the same source and gloss is a duplicate. Appended blank and `#` comment lines are skipped, as the build skips them.
 
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ use serde::Serialize;
 use crate::english::{
     parse_custom_english_line, parse_custom_translation, CUSTOM_ENGLISH, CUSTOM_TRANSLATIONS,
 };
-use crate::msime::{parse_custom_word, pinyin_table};
+use crate::lingyao::{parse_custom_word, pinyin_table};
 use crate::text;
 
 /// Which custom file a base/head pair is.
@@ -21,7 +21,7 @@ pub enum Kind {
 }
 
 impl Kind {
-    /// The file's path in msime-dictionary, as reports name it.
+    /// The file's path in lingyao-dictionary, as reports name it.
     pub fn path(self) -> &'static str {
         match self {
             Kind::Words => "custom/words.txt",
@@ -112,9 +112,9 @@ pub struct Input<'a> {
 /// The shipped databases additions must not repeat; either may be absent.
 #[derive(Default, Clone, Copy)]
 pub struct Shipped<'a> {
-    /// msime-pinyin.db, for custom/words.txt.
-    pub msime: Option<&'a Connection>,
-    /// msime-english.db, for custom/english.txt.
+    /// lingyao-pinyin.db, for custom/words.txt.
+    pub lingyao: Option<&'a Connection>,
+    /// lingyao-english.db, for custom/english.txt.
     pub english: Option<&'a Connection>,
 }
 
@@ -142,7 +142,7 @@ pub struct FileSummary {
 
 #[derive(Debug, Serialize, PartialEq, Eq)]
 pub struct Added {
-    /// The file's path in msime-dictionary.
+    /// The file's path in lingyao-dictionary.
     pub file: &'static str,
     /// 1-based line number in the head file.
     pub line: usize,
@@ -152,7 +152,7 @@ pub struct Added {
 
 #[derive(Debug, Serialize, PartialEq, Eq)]
 pub struct Rejected {
-    /// The file's path in msime-dictionary.
+    /// The file's path in lingyao-dictionary.
     pub file: &'static str,
     /// 1-based line number: in the head file, or in the base file for a removed line.
     pub line: usize,
@@ -286,11 +286,11 @@ fn in_shipped(entry: &Entry, shipped: Shipped) -> Result<Option<String>> {
         (
             Entry::Word { word, pinyin, .. },
             Shipped {
-                msime: Some(connection),
+                lingyao: Some(connection),
                 ..
             },
         ) => in_shipped_quanpin(connection, pinyin, word)?
-            .then(|| "already in the shipped msime-pinyin.db for this pinyin".to_owned()),
+            .then(|| "already in the shipped lingyao-pinyin.db for this pinyin".to_owned()),
         (
             Entry::English { word, display, .. },
             Shipped {
@@ -298,7 +298,7 @@ fn in_shipped(entry: &Entry, shipped: Shipped) -> Result<Option<String>> {
                 ..
             },
         ) => in_shipped_english(connection, word, display)?.then(|| {
-            "already in the shipped msime-english.db for this word and display".to_owned()
+            "already in the shipped lingyao-english.db for this word and display".to_owned()
         }),
         _ => None,
     })
@@ -313,7 +313,7 @@ fn in_shipped_quanpin(connection: &Connection, key: &str, value: &str) -> Result
             |row| row.get(0),
         )
         .with_context(|| {
-            format!("looking up {value:?} in the shipped msime-pinyin.db table {table}")
+            format!("looking up {value:?} in the shipped lingyao-pinyin.db table {table}")
         })
 }
 
@@ -325,7 +325,7 @@ fn in_shipped_english(connection: &Connection, word: &str, display: &str) -> Res
             |row| row.get(0),
         )
         .with_context(|| {
-            format!("looking up {display:?} in the shipped msime-english.db english_words")
+            format!("looking up {display:?} in the shipped lingyao-english.db english_words")
         })
 }
 
@@ -413,7 +413,7 @@ mod tests {
 
     const BASE: &str = "# words\n你好\tni'hao\t1\n宣传\txuan'chuan\t100\n";
 
-    fn words(base: &str, head: &str, msime: Option<&Connection>) -> Result<Report> {
+    fn words(base: &str, head: &str, lingyao: Option<&Connection>) -> Result<Report> {
         let input = Input {
             kind: Kind::Words,
             base,
@@ -422,7 +422,7 @@ mod tests {
         check(
             &[input],
             Shipped {
-                msime,
+                lingyao,
                 english: None,
             },
         )
@@ -563,7 +563,7 @@ mod tests {
         let report = words(BASE, &head, Some(&connection)).unwrap();
         assert_eq!(
             reasons(&report),
-            [(4, "already in the shipped msime-pinyin.db for this pinyin")]
+            [(4, "already in the shipped lingyao-pinyin.db for this pinyin")]
         );
         assert!(matches!(&report.added[0].entry, Entry::Word { word, .. } if word == "心词"));
     }
@@ -663,7 +663,7 @@ mod tests {
             head,
         };
         let shipped = Shipped {
-            msime: None,
+            lingyao: None,
             english: shipped,
         };
         check(&[input], shipped).unwrap()
@@ -726,7 +726,7 @@ mod tests {
             reasons(&report),
             [(
                 4,
-                "already in the shipped msime-english.db for this word and display"
+                "already in the shipped lingyao-english.db for this word and display"
             )]
         );
         assert_eq!(report.added.len(), 1);

@@ -7,9 +7,9 @@
 #include <vector>
 
 int main() {
-  using msime::linux_host::wave_overlay_bottom_center;
-  using msime::linux_host::WaveOverlayWorkArea;
-  using msime::linux_host::x11_placement::work_area_rectangles;
+  using lingyao::linux_host::wave_overlay_bottom_center;
+  using lingyao::linux_host::WaveOverlayWorkArea;
+  using lingyao::linux_host::x11_placement::work_area_rectangles;
 
   const auto bounded_work_areas = work_area_rectangles(
       {0, 0, 100, 100, 100, 100, 200, 200}, 0, 8);
@@ -35,13 +35,13 @@ int main() {
   assert(custom_margin.x == 210);
   assert(custom_margin.y == 464);
 
-  using msime::linux_host::wave_overlay_monitor_bottom_center;
-  using msime::linux_host::wave_overlay_monitor_work;
-  using msime::linux_host::wave_overlay_pick_monitor;
-  using msime::linux_host::wave_overlay_scale;
-  using msime::linux_host::wave_overlay_scaled;
-  using msime::linux_host::WaveOverlayMonitor;
-  using msime::linux_host::WaveOverlayPosition;
+  using lingyao::linux_host::wave_overlay_monitor_bottom_center;
+  using lingyao::linux_host::wave_overlay_monitor_work;
+  using lingyao::linux_host::wave_overlay_pick_monitor;
+  using lingyao::linux_host::wave_overlay_scale;
+  using lingyao::linux_host::wave_overlay_scaled;
+  using lingyao::linux_host::WaveOverlayMonitor;
+  using lingyao::linux_host::WaveOverlayPosition;
 
   // Monitor B sits left of A at a negative x; the focused window's centre decides, not the pointer or the primary flag.
   const std::vector<WaveOverlayMonitor> side_by_side = {
@@ -141,8 +141,8 @@ int main() {
 
   // The Fcitx5 X11 mode badge at the default 24 px, 100 % toolbar size with a 22 px glyph: 74 x 44 logical pixels, 24 in from the right and bottom of the work area of the monitor holding focus. Monitor A is 1920 x 1080 at the origin with a 48 px bottom panel; monitor B is a 2560 x 1440 display to its left with a 64 px dock on its right edge; the work areas come from Mutter's per-monitor list.
   {
-    using msime::linux_host::wave_overlay_bottom_right;
-    const auto badge = msime::linux_host::mode_badge_layout(msime::linux_host::ModeBadgeMetrics{}, 22.0, true);
+    using lingyao::linux_host::wave_overlay_bottom_right;
+    const auto badge = lingyao::linux_host::mode_badge_layout(lingyao::linux_host::ModeBadgeMetrics{}, 22.0, true);
     assert(badge.width == 74 && badge.height == 44);
     const std::vector<WaveOverlayWorkArea> badge_work_areas = {
         {0, 0, 1920, 1032}, {-2560, 0, 2496, 1440}};

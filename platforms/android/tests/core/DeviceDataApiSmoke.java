@@ -1,5 +1,5 @@
-import app.msime.android.CloudApi;
-import app.msime.android.DeviceDataApi;
+import app.lingyao.android.CloudApi;
+import app.lingyao.android.DeviceDataApi;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -48,7 +48,7 @@ public final class DeviceDataApiSmoke {
         check("2 分钟前".equals(DeviceDataApi.relativeTime(now, now - 150_000)), "minutes");
         check("3 小时前".equals(DeviceDataApi.relativeTime(now, now - 3 * 3_600_000L)), "hours");
         check("2 天前".equals(DeviceDataApi.relativeTime(now, now - 50 * 3_600_000L)), "days");
-        check("msime-data-2026-10-05.zip".equals(DeviceDataApi.exportFileName(LocalDate.of(2026, 10, 5))),
+        check("lingyao-data-2026-10-05.zip".equals(DeviceDataApi.exportFileName(LocalDate.of(2026, 10, 5))),
             "export file name");
 
         // 撤销会话走 DELETE /v1/users/me/sessions/{id}，带真实账号的令牌；不合法的 id 不发请求。

@@ -2,7 +2,7 @@
 #include "../core/TestHostOptions.h"
 #include <cassert>
 #include <chrono>
-using namespace msime::windows;
+using namespace lingyao::windows;
 
 namespace {
 FanyImeNamedpipeData key(uint64_t request, uint32_t code, char16_t text, uint32_t modifiers = 0) {
@@ -88,11 +88,11 @@ struct Fixture {
 };
 } // namespace
 
-// argv[1] is tests/input/fixtures/msime-zhuyin.db: the dictionary of crates/engine/tests/golden/scenarios/zh_bpmf_space_opens_list.json, written by Python's sqlite3 from that scenario's SQL with a 512-byte page size. The Windows build links no SQLite of its own, so the file is checked in rather than built here.
+// argv[1] is tests/input/fixtures/lingyao-zhuyin.db: the dictionary of crates/engine/tests/golden/scenarios/zh_bpmf_space_opens_list.json, written by Python's sqlite3 from that scenario's SQL with a 512-byte page size. The Windows build links no SQLite of its own, so the file is checked in rather than built here.
 int main(int argc, char **argv) {
   assert(argc == 2);
   const auto root = std::filesystem::temp_directory_path() /
-                    ("msime-zhuyin-keys-" +
+                    ("lingyao-zhuyin-keys-" +
                      std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
   std::filesystem::create_directory(root);
   struct Cleanup {
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   // A copy beside the resources, where the packaged dictionary goes, so the checked-in file is never opened for writing.
   const auto dictionaries = root / "language-dictionaries";
   std::filesystem::create_directory(dictionaries);
-  std::filesystem::copy_file(std::filesystem::u8path(argv[1]), dictionaries / "msime-zhuyin.db");
+  std::filesystem::copy_file(std::filesystem::u8path(argv[1]), dictionaries / "lingyao-zhuyin.db");
   auto options = test_host_options(root);
   options["language_dictionaries"] = dictionaries.u8string();
   options["preferences"]["scheme"] = "zhuyin";

@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // The composition as the user should see it while a phrase is being assembled.
 //
@@ -42,7 +42,7 @@ inline std::size_t utf8_scalar_count(std::string_view text)
 
 // The composition shows the kana for Japanese; the rule and its reasoning live in
 // shared/input/CompositionDisplay.h, because all three hosts ask the same question.
-using msime::input::composition_shows_reading;
+using lingyao::input::composition_shows_reading;
 
 // Whether the view is composing. A held phrase piece counts on its own: a Ctrl+Backspace that empties the reading of a half-chosen phrase leaves the chosen piece in the composition with no reading and no candidates, as the reference's `keep_creating_word_after_empty_raw` does, and the next Backspace or Ctrl+Backspace edits it. A host that looked at the reading alone would hand Enter, Escape and punctuation to the application while the preedit still shows that piece. Pass `has_candidates = false` where a host's test is about the reading rather than the candidate page.
 inline bool view_has_composition(std::string_view editing, bool has_candidates, std::string_view phrase_prefix)
@@ -67,4 +67,4 @@ inline PhrasePreedit compose_phrase_preedit(std::string_view prefix, std::string
     return composed;
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

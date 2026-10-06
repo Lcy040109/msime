@@ -8,7 +8,7 @@ import time
 class WaylandKeyboard:
     def __init__(self, pump, wait):
         self.pump, self.wait = pump, wait
-        self.process = subprocess.Popen(["msime-test-wayland-keyboard"],
+        self.process = subprocess.Popen(["lingyao-test-wayland-keyboard"],
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         atexit.register(self.close)
         self.reply("ready")

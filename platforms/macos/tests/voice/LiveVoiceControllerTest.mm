@@ -4,8 +4,8 @@
 #import "VoiceMeterFixture.h"
 #include <cassert>
 
-@interface LiveCaptureFixture : MSIMEVoiceInputService
-@property(copy) MSIMEVoiceAudioBuffer bufferHandler;
+@interface LiveCaptureFixture : LINGYAOVoiceInputService
+@property(copy) LINGYAOVoiceAudioBuffer bufferHandler;
 @property NSTimeInterval capturedSeconds;
 @property(copy) void (^transcript)(NSString *, BOOL);
 @property NSUInteger captureStops;
@@ -27,13 +27,13 @@
 - (BOOL)startTranscriptionWithLanguage:(NSString *)language textHandler:(void (^)(NSString *, BOOL))handler error:(NSError **)error {
     (void)language; (void)error; self.transcript = handler; return YES;
 }
-- (BOOL)startMicrophoneCapture:(MSIMEVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
+- (BOOL)startMicrophoneCapture:(LINGYAOVoiceAudioBuffer)handler deviceUID:(NSString *)device error:(NSError **)error {
     (void)device; (void)error; self.bufferHandler = handler; return !self.failCapture;
 }
 - (void)stopMicrophoneCapture { ++self.captureStops; }
 - (void)stopTranscription { ++self.transcriptionStops; }
 @end
-@interface LiveTextFixture : NSObject <MSIMETextClient>
+@interface LiveTextFixture : NSObject <LINGYAOTextClient>
 @property(copy) NSString *marked;
 @property NSMutableArray *commits;
 @end
@@ -72,7 +72,7 @@
 - (void)setListening:(BOOL)listening { self.phase = listening ? 1 : 0; self.failure = 0; self.preview = @""; self.locked = NO; }
 - (void)setRecordingLocked:(BOOL)locked { self.locked = locked; }
 - (void)setTranscript:(NSString *)text { self.preview = text; }
-- (void)showFailure:(MSIMEVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; self.preview = @""; }
+- (void)showFailure:(LINGYAOVoiceFailure)failure detail:(NSString *)detail { self.failure = failure; self.detail = detail; self.phase = 4; ++self.failures; self.preview = @""; }
 - (void)dismissFailure { if (self.failure) [self setListening:NO]; }
 - (void)setProcessing:(BOOL)polishing { self.phase = polishing ? 3 : 2; }
 - (void)applyThemePreferences:(NSDictionary *)preferences { (void)preferences; }
@@ -91,43 +91,43 @@
 }
 - (void)cancel { ++self.cancellations; }
 @end
-@interface LiveControllerFixture : MSIMEInputController
+@interface LiveControllerFixture : LINGYAOInputController
 @property BOOL usePolishFixture;
 @property LivePolishFixture *polishFixture;
 @property(copy) NSDictionary *polishOptions;
 @property NSUInteger externalCommits;
 @end
 @implementation LiveControllerFixture
-- (MSIMEVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const MSIMEVoiceCommitRoute &)route {
+- (LINGYAOVoiceCommitOutcome)postVoiceText:(NSString *)text route:(const LINGYAOVoiceCommitRoute &)route {
     assert([text isEqual:@"synthetic routed"] && ![route.mode isEqual:@"tsf"]);
-    ++self.externalCommits; return MSIMEVoiceCommitOutcome::posted;
+    ++self.externalCommits; return LINGYAOVoiceCommitOutcome::posted;
 }
 - (void)ensureAppearance {}
-- (void)apply:(NSDictionary *)transition { MSIMEApplyTransition(transition, [self valueForKey:@"activeClient"]); }
-- (MSIMEHTTPVoiceRequest *)makeLiveVoicePolishRequest:(NSDictionary *)options {
+- (void)apply:(NSDictionary *)transition { LINGYAOApplyTransition(transition, [self valueForKey:@"activeClient"]); }
+- (LINGYAOHTTPVoiceRequest *)makeLiveVoicePolishRequest:(NSDictionary *)options {
     if (!self.usePolishFixture) return [super makeLiveVoicePolishRequest:options];
     self.polishOptions = options; self.polishFixture = [LivePolishFixture new]; return (id)self.polishFixture;
 }
 @end
 // The socket route only engages when the configured path exists on disk, so the test has to create the file rather than hope one is lying around - without it the controller quietly falls back to native Speech and every provider assertion below fails for a reason that has nothing to do with the code.
-static NSString *MSIMESyntheticVoiceSocket(void)
+static NSString *LINGYAOSyntheticVoiceSocket(void)
 {
-    NSString *path = NSProcessInfo.processInfo.environment[@"MSIME_VOICE_PROVIDER_SOCKET"];
+    NSString *path = NSProcessInfo.processInfo.environment[@"LINGYAO_VOICE_PROVIDER_SOCKET"];
     return path.isAbsolutePath ? path : @"/tmp/synthetic-live.sock";
 }
 
-@interface LiveHostFixture : MSIMEClientSession
+@interface LiveHostFixture : LINGYAOClientSession
 @property(atomic) NSUInteger providerStops;
 @property(atomic) NSUInteger providerCancels;
 @property(atomic) BOOL providerStarted;
-@property(atomic, copy) MSIMEVoiceProviderUpdate providerUpdate;
-@property(atomic, copy) MSIMEVoiceProviderPhase providerPhase;
+@property(atomic, copy) LINGYAOVoiceProviderUpdate providerUpdate;
+@property(atomic, copy) LINGYAOVoiceProviderPhase providerPhase;
 @property dispatch_semaphore_t providerDone;
 @end
 @implementation LiveHostFixture
-- (BOOL)voiceProviderStream:(NSDictionary *)query socket:(NSString *)socket update:(MSIMEVoiceProviderUpdate)update phase:(MSIMEVoiceProviderPhase)phase error:(NSError **)error {
+- (BOOL)voiceProviderStream:(NSDictionary *)query socket:(NSString *)socket update:(LINGYAOVoiceProviderUpdate)update phase:(LINGYAOVoiceProviderPhase)phase error:(NSError **)error {
     (void)error;
-    assert([socket isEqual:MSIMESyntheticVoiceSocket()] && [query[@"generation"] unsignedLongLongValue]);
+    assert([socket isEqual:LINGYAOSyntheticVoiceSocket()] && [query[@"generation"] unsignedLongLongValue]);
     self.providerUpdate = update; self.providerPhase = phase;
     phase(0); phase(0); // Duplicate recording notifications must not replay cues.
     self.providerStarted = YES;
@@ -135,10 +135,10 @@ static NSString *MSIMESyntheticVoiceSocket(void)
     return YES;
 }
 - (BOOL)voiceProviderStopSocket:(NSString *)socket generation:(uint64_t)generation error:(NSError **)error {
-    (void)error; assert([socket isEqual:MSIMESyntheticVoiceSocket()] && generation); self.providerStops += 1; return YES;
+    (void)error; assert([socket isEqual:LINGYAOSyntheticVoiceSocket()] && generation); self.providerStops += 1; return YES;
 }
 - (BOOL)voiceProviderCancelSocket:(NSString *)socket generation:(uint64_t)generation error:(NSError **)error {
-    (void)error; assert([socket isEqual:MSIMESyntheticVoiceSocket()] && generation); self.providerCancels += 1;
+    (void)error; assert([socket isEqual:LINGYAOSyntheticVoiceSocket()] && generation); self.providerCancels += 1;
     if (self.providerDone) dispatch_semaphore_signal(self.providerDone);
     return YES;
 }
@@ -157,22 +157,22 @@ int main(int argc, char **) {
         capture.capturedSeconds = 0.25;
         LiveTextFixture *client = [LiveTextFixture new];
         LivePresentationFixture *presentation = [LivePresentationFixture new];
-        MSIMEVoiceCueFixture *cues = [MSIMEVoiceCueFixture new];
+        LINGYAOVoiceCueFixture *cues = [LINGYAOVoiceCueFixture new];
         [controller setValue:session forKey:@"session"]; [controller setValue:client forKey:@"activeClient"];
         [controller setValue:capture forKey:@"voiceService"];
         for (NSString *key in @[@"voiceOverlay", @"voiceAudioMuter"]) [controller setValue:presentation forKey:key];
         [controller setValue:cues forKey:@"voiceCuePlayer"];
         NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
         NSDictionary *old = [defaults volatileDomainForName:NSArgumentDomain];
-        NSMutableDictionary *voiceArguments = [@{@"MSIMEClientVoiceEnabled": @YES, @"MSIMEClientVoiceASRProvider": @"system", @"MSIMEClientVoiceSoundEnabled": @YES, @"MSIMEClientVoiceStartSound": @YES, @"MSIMEClientVoiceEndSound": @YES, @"MSIMEClientVoiceMuteSystemAudio": @NO, @"MSIMEClientVoiceStreamInlinePreedit": @YES, @"MSIMEClientVoiceHotkeyRightAlt": @YES, @"MSIMEClientVoiceHotkeyHoldSpace": @YES} mutableCopy];
+        NSMutableDictionary *voiceArguments = [@{@"LINGYAOClientVoiceEnabled": @YES, @"LINGYAOClientVoiceASRProvider": @"system", @"LINGYAOClientVoiceSoundEnabled": @YES, @"LINGYAOClientVoiceStartSound": @YES, @"LINGYAOClientVoiceEndSound": @YES, @"LINGYAOClientVoiceMuteSystemAudio": @NO, @"LINGYAOClientVoiceStreamInlinePreedit": @YES, @"LINGYAOClientVoiceHotkeyRightAlt": @YES, @"LINGYAOClientVoiceHotkeyHoldSpace": @YES} mutableCopy];
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         // Never inherit real polish settings in the synthetic capture fixture.
-        voiceArguments[@"MSIMEClientVoicePolish"] = @NO;
-        voiceArguments[@"MSIMEClientVoicePolishText"] = @NO;
-        voiceArguments[@"MSIMEClientVoicePolishToken"] = @"";
+        voiceArguments[@"LINGYAOClientVoicePolish"] = @NO;
+        voiceArguments[@"LINGYAOClientVoicePolishText"] = @NO;
+        voiceArguments[@"LINGYAOClientVoicePolishToken"] = @"";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         if (argc == 2) {
-            NSString *socketPath = MSIMESyntheticVoiceSocket();
+            NSString *socketPath = LINGYAOSyntheticVoiceSocket();
             if (![NSFileManager.defaultManager fileExistsAtPath:socketPath])
                 assert([NSFileManager.defaultManager createFileAtPath:socketPath contents:NSData.data attributes:nil]);
             controller.usePolishFixture = YES;
@@ -204,7 +204,7 @@ int main(int argc, char **) {
             assert(cues.starts == 1 && cues.stops == 1);
             session.providerDone = dispatch_semaphore_create(0);
             session.providerStarted = NO;
-            voiceArguments[@"MSIMEClientVoiceStreamInlinePreedit"] = @NO;
+            voiceArguments[@"LINGYAOClientVoiceStreamInlinePreedit"] = @NO;
             [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
             [controller toggleVoiceInput:nil];
             deadline = [NSDate dateWithTimeIntervalSinceNow:3];
@@ -217,25 +217,25 @@ int main(int argc, char **) {
             dispatch_semaphore_signal(session.providerDone); // Provider exits without a final result.
             while (capture.active && deadline.timeIntervalSinceNow > 0)
                 [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
-            assert(!capture.active && presentation.failure == MSIMEVoiceFailureProvider);
+            assert(!capture.active && presentation.failure == LINGYAOVoiceFailureProvider);
             assert(!presentation.preview.length);
             [defaults setVolatileDomain:old forName:NSArgumentDomain];
             [NSFileManager.defaultManager removeItemAtPath:socketPath error:nil];
             assert([session closeWithError:nil]); assert([NSFileManager.defaultManager removeItemAtPath:root error:nil]);
             return 0;
         }
-        voiceArguments[@"MSIMEClientVoiceCaptureBackend"] = @"windows";
+        voiceArguments[@"LINGYAOClientVoiceCaptureBackend"] = @"windows";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [controller toggleVoiceInput:nil];
-        assert(!capture.active && presentation.failure == MSIMEVoiceFailureCapture);
+        assert(!capture.active && presentation.failure == LINGYAOVoiceFailureCapture);
         assert(capture.captureStops == 0 && capture.transcriptionStops == 0);
-        voiceArguments[@"MSIMEClientVoiceCaptureBackend"] = @"macos";
+        voiceArguments[@"LINGYAOClientVoiceCaptureBackend"] = @"macos";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [presentation dismissFailure];
         [controller toggleVoiceInput:nil]; assert(capture.active);
         assert(cues.starts == 1 && cues.stops == 0);
-        MSIMEVoiceAudioBuffer oldMeter = capture.bufferHandler;
-        oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        LINGYAOVoiceAudioBuffer oldMeter = capture.bufferHandler;
+        oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(presentation.lastLevel > 0.5f && presentation.lastLevel < 0.7f && presentation.levelUpdates == 1);
         void (^first)(NSString *, BOOL) = capture.transcript;
         first(@"synthetic partial", NO);
@@ -246,7 +246,7 @@ int main(int argc, char **) {
         presentation.actionHandler(NO);
         assert(capture.active && capture.captureStops && capture.transcriptionStops == cancelled);
         assert(presentation.phase == 2);
-        oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(presentation.levelUpdates == 1);
         presentation.actionHandler(NO);
         assert(presentation.dismissed && capture.active);
@@ -257,7 +257,7 @@ int main(int argc, char **) {
         assert(cues.starts == 1 && cues.stops == 1);
         [controller toggleVoiceInput:nil];
         oldAction(YES); oldAction(NO);
-        oldMeter(MSIMEVoiceMeterFixtureBuffer()); MSIMEVoiceMeterFixturePump();
+        oldMeter(LINGYAOVoiceMeterFixtureBuffer()); LINGYAOVoiceMeterFixturePump();
         assert(presentation.levelUpdates == 1);
         assert(capture.active && ![[controller valueForKey:@"liveVoiceProcessing"] boolValue]);
         first(@"old callback", YES); assert(capture.active && client.commits.count == 1);
@@ -274,7 +274,7 @@ int main(int argc, char **) {
         uint64_t generation = 0;
         assert([capture startWithSession:session generation:&generation error:nil]);
         [controller setValue:@(generation) forKey:@"voiceGeneration"];
-        id token = [controller beginLiveVoiceWithOptions:@{@"stream": @NO} socket:MSIMESyntheticVoiceSocket()];
+        id token = [controller beginLiveVoiceWithOptions:@{@"stream": @NO} socket:LINGYAOSyntheticVoiceSocket()];
         [controller applyLiveVoiceText:@"hidden partial" final:NO token:token]; assert(!client.marked.length);
         assert([presentation.preview isEqual:@"hidden partial"]);
         [controller applyLiveVoiceText:[@"x" stringByPaddingToLength:65537 withString:@"x" startingAtIndex:0] final:NO token:token];
@@ -325,7 +325,7 @@ int main(int argc, char **) {
         [controller toggleVoiceInput:nil]; assert(capture.active);
         void (^disabledResult)(NSString *, BOOL) = capture.transcript;
         disabledResult(@"synthetic disabled partial", NO);
-        voiceArguments[@"MSIMEClientVoiceEnabled"] = @NO;
+        voiceArguments[@"LINGYAOClientVoiceEnabled"] = @NO;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [NSApplication sharedApplication];
         [controller applySharedToolbarPreferences:@{}];
@@ -342,17 +342,17 @@ int main(int argc, char **) {
         assert(![controller handleEvent:key(61, 0, NSEventTypeFlagsChanged) client:client]);
         assert(![controller handleEvent:key(101, NSEventModifierFlagControl, NSEventTypeKeyDown) client:client]);
         assert(!capture.active);
-        voiceArguments[@"MSIMEClientVoiceEnabled"] = @YES;
+        voiceArguments[@"LINGYAOClientVoiceEnabled"] = @YES;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         // A previously requested permission must not override a later disable.
         capture.needsMicrophonePermission = YES;
         capture.permission = nil;
         [controller toggleVoiceInput:nil]; assert(capture.permission);
-        voiceArguments[@"MSIMEClientVoiceEnabled"] = @NO;
+        voiceArguments[@"LINGYAOClientVoiceEnabled"] = @NO;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         capture.needsMicrophonePermission = NO;
         capture.permission(YES); assert(!capture.active);
-        voiceArguments[@"MSIMEClientVoiceEnabled"] = @YES;
+        voiceArguments[@"LINGYAOClientVoiceEnabled"] = @YES;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [controller setValue:nil forKey:@"activeClient"];
         [controller toggleVoiceInput:nil]; assert(!capture.active);
@@ -361,8 +361,8 @@ int main(int argc, char **) {
         assert(capture.active);
         [controller cancelLiveVoiceInput];
         assert([controller handleEvent:key(61, 0, NSEventTypeFlagsChanged) client:client]);
-        voiceArguments[@"MSIMEClientVoiceHotkeyRightAlt"] = @NO;
-        voiceArguments[@"MSIMEClientVoiceHotkeyCtrlOption"] = @YES;
+        voiceArguments[@"LINGYAOClientVoiceHotkeyRightAlt"] = @NO;
+        voiceArguments[@"LINGYAOClientVoiceHotkeyCtrlOption"] = @YES;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         const auto rightControl = NSEventModifierFlagControl | NX_DEVICERCTLKEYMASK;
         assert(![controller handleEvent:key(62, rightControl, NSEventTypeFlagsChanged) client:client]);
@@ -372,14 +372,14 @@ int main(int argc, char **) {
         const auto failureStarts = cues.starts, failureStops = cues.stops;
         capture.failCapture = YES;
         [controller toggleVoiceInput:nil];
-        assert(presentation.failure == MSIMEVoiceFailureCapture);
+        assert(presentation.failure == LINGYAOVoiceFailureCapture);
         assert(!capture.active && cues.starts == failureStarts && cues.stops == failureStops);
         capture.failCapture = NO;
         // Exercise all shared sound switches at the actual capture entry/exit.
         for (NSNumber *master in @[@NO, @YES]) for (NSNumber *start in @[@NO, @YES]) for (NSNumber *end in @[@NO, @YES]) {
-            voiceArguments[@"MSIMEClientVoiceSoundEnabled"] = master;
-            voiceArguments[@"MSIMEClientVoiceStartSound"] = start;
-            voiceArguments[@"MSIMEClientVoiceEndSound"] = end;
+            voiceArguments[@"LINGYAOClientVoiceSoundEnabled"] = master;
+            voiceArguments[@"LINGYAOClientVoiceStartSound"] = start;
+            voiceArguments[@"LINGYAOClientVoiceEndSound"] = end;
             [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
             const auto starts = cues.starts, stops = cues.stops;
             [controller toggleVoiceInput:nil]; assert(capture.active);
@@ -387,17 +387,17 @@ int main(int argc, char **) {
             assert(cues.starts == starts + (master.boolValue && start.boolValue));
             assert(cues.stops == stops + (master.boolValue && end.boolValue));
         }
-        MSIMEInputController *builder = [MSIMEInputController alloc];
+        LINGYAOInputController *builder = [LINGYAOInputController alloc];
         assert((![builder makeLiveVoicePolishRequest:@{@"polish_enabled": @NO, @"polish_token": @"fixture-only"}]));
         assert(![builder makeLiveVoicePolishRequest:@{@"polish_enabled": @YES}]);
-        MSIMEHTTPVoiceRequest *configured = [builder makeLiveVoicePolishRequest:@{@"polish_enabled": @YES, @"polish_token": @"fixture-only"}];
+        LINGYAOHTTPVoiceRequest *configured = [builder makeLiveVoicePolishRequest:@{@"polish_enabled": @YES, @"polish_token": @"fixture-only"}];
         assert(configured); [configured cancel];
         configured = [builder makeLiveVoicePolishRequest:@{@"polish_enabled": @NO, @"polish_text": @YES, @"polish_token": @"fixture-only"}];
         assert(configured); [configured cancel];
         controller.usePolishFixture = YES;
-        voiceArguments[@"MSIMEClientVoicePolishText"] = @YES;
-        voiceArguments[@"MSIMEClientVoicePolishToken"] = @"fixture-only";
-        voiceArguments[@"MSIMEClientVoicePolishPromptCustom1"] = @"synthetic original prompt";
+        voiceArguments[@"LINGYAOClientVoicePolishText"] = @YES;
+        voiceArguments[@"LINGYAOClientVoicePolishToken"] = @"fixture-only";
+        voiceArguments[@"LINGYAOClientVoicePolishPromptCustom1"] = @"synthetic original prompt";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [controller toggleVoiceInput:nil];
         LivePolishFixture *polish = controller.polishFixture;
@@ -405,7 +405,7 @@ int main(int argc, char **) {
         const auto beforePolishStops = capture.captureStops;
         capture.transcript(@"synthetic partial before polish", NO);
         assert(!polish.submissions);
-        voiceArguments[@"MSIMEClientVoicePolishPromptCustom1"] = @"synthetic later prompt";
+        voiceArguments[@"LINGYAOClientVoicePolishPromptCustom1"] = @"synthetic later prompt";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         capture.transcript(@"synthetic original", YES);
         capture.transcript(@"duplicate final", YES);
@@ -442,7 +442,7 @@ int main(int argc, char **) {
             [controller toggleVoiceInput:nil]; polish = controller.polishFixture;
             capture.transcript(@"synthetic stale focus", YES);
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @999999 : [MSIMEVoiceClientFixture new] forKey:field];
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @999999 : [LINGYAOVoiceClientFixture new] forKey:field];
             polish.completion(@"wrong owner", nil);
             [controller setValue:original forKey:field];
             assert(!capture.active && client.commits.count == beforeStale);
@@ -451,8 +451,8 @@ int main(int argc, char **) {
         capture.transcript(@"", YES);
         assert(!capture.active && !polish.submissions && client.commits.count == beforeStale);
         controller.usePolishFixture = NO;
-        voiceArguments[@"MSIMEClientVoicePolishText"] = @NO;
-        voiceArguments[@"MSIMEClientVoicePolishToken"] = @"";
+        voiceArguments[@"LINGYAOClientVoicePolishText"] = @NO;
+        voiceArguments[@"LINGYAOClientVoicePolishToken"] = @"";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         capture.needsSpeechPermission = YES; capture.needsMicrophonePermission = YES;
         [controller toggleVoiceInput:nil];
@@ -496,7 +496,7 @@ int main(int argc, char **) {
             capture.needsMicrophonePermission = YES;
             [controller toggleVoiceInput:nil]; microphonePermission = capture.permission;
             id original = [controller valueForKey:field];
-            [controller setValue:[field isEqual:@"voiceGeneration"] ? @999999 : [MSIMEVoiceClientFixture new] forKey:field];
+            [controller setValue:[field isEqual:@"voiceGeneration"] ? @999999 : [LINGYAOVoiceClientFixture new] forKey:field];
             capture.needsMicrophonePermission = NO;
             microphonePermission(YES);
             [controller setValue:original forKey:field];
@@ -508,7 +508,7 @@ int main(int argc, char **) {
         [controller applySharedToolbarPreferences:@{@"voice_input": @{@"asr_provider": @"system"}}];
         assert([controller valueForKey:@"voicePermissionToken"] == pending); // Unchanged reload.
         microphonePermission(NO); assert(![controller valueForKey:@"voicePermissionToken"]);
-        assert(presentation.failure == MSIMEVoiceFailureMicrophonePermission);
+        assert(presentation.failure == LINGYAOVoiceFailureMicrophonePermission);
         [controller toggleVoiceInput:nil];
         void (^newPermission)(BOOL) = capture.permission;
         microphonePermission(YES); assert(!capture.active && [controller valueForKey:@"voicePermissionToken"]);
@@ -518,16 +518,16 @@ int main(int argc, char **) {
         capture.needsMicrophonePermission = YES;
         [controller toggleVoiceInput:nil]; microphonePermission = capture.permission;
         id originalGeneration = [controller valueForKey:@"voiceGeneration"];
-        voiceArguments[@"MSIMEClientVoiceASRProvider"] = @"openai";
-        voiceArguments[@"MSIMEClientVoiceASRToken"] = @"";
+        voiceArguments[@"LINGYAOClientVoiceASRProvider"] = @"openai";
+        voiceArguments[@"LINGYAOClientVoiceASRToken"] = @"";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         capture.needsMicrophonePermission = NO;
         microphonePermission(YES);
         assert(!capture.active && [[controller valueForKey:@"voiceGeneration"] isEqual:originalGeneration]);
         // Exercise the exact block registered with AppKit without installing a
         // real global monitor or requesting accessibility/microphone access.
-        voiceArguments[@"MSIMEClientVoiceASRProvider"] = @"system";
-        voiceArguments[@"MSIMEClientVoiceHotkeyCtrlF9"] = @YES;
+        voiceArguments[@"LINGYAOClientVoiceASRProvider"] = @"system";
+        voiceArguments[@"LINGYAOClientVoiceHotkeyCtrlF9"] = @YES;
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         void (^globalHotkey)(NSEvent *) = [controller globalVoiceHotkeyHandler];
         NSEvent *ctrlF9 = key(101, NSEventModifierFlagControl, NSEventTypeKeyDown);
@@ -545,7 +545,7 @@ int main(int argc, char **) {
             globalHotkey(key(101, NSEventModifierFlagControl | extra.unsignedLongLongValue, NSEventTypeKeyDown));
         globalHotkey([NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagControl timestamp:1 windowNumber:0 context:nil characters:@"" charactersIgnoringModifiers:@"" isARepeat:YES keyCode:101]);
         assert(!capture.active);
-        for (NSString *setting in @[@"MSIMEClientVoiceEnabled", @"MSIMEClientVoiceHotkeyCtrlF9"]) {
+        for (NSString *setting in @[@"LINGYAOClientVoiceEnabled", @"LINGYAOClientVoiceHotkeyCtrlF9"]) {
             voiceArguments[setting] = @NO;
             [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
             globalHotkey(ctrlF9); assert(!capture.active);
@@ -569,20 +569,20 @@ int main(int argc, char **) {
         capture.needsSpeechPermission = YES;
         [controller toggleVoiceInput:nil];
         capture.speechPermission(NO);
-        assert(presentation.failure == MSIMEVoiceFailureSpeechPermission && !capture.active);
+        assert(presentation.failure == LINGYAOVoiceFailureSpeechPermission && !capture.active);
         [controller handleEvent:key(53, 0, NSEventTypeKeyDown) client:client];
         assert(presentation.failure == 0);
         capture.needsSpeechPermission = NO;
         [controller toggleVoiceInput:nil];
         id expired = [controller valueForKey:@"liveVoiceToken"];
         [controller expireLiveVoice:expired];
-        assert(presentation.failure == MSIMEVoiceFailureTimeout && !capture.active);
+        assert(presentation.failure == LINGYAOVoiceFailureTimeout && !capture.active);
         [controller toggleVoiceInput:nil];
         const NSUInteger beforeExpired = presentation.failures;
         [controller expireLiveVoice:expired];
         assert(capture.active && presentation.failures == beforeExpired);
         capture.transcript(@"", YES);
-        assert(presentation.failure == MSIMEVoiceFailureNoSpeech && !capture.active);
+        assert(presentation.failure == LINGYAOVoiceFailureNoSpeech && !capture.active);
         [controller voiceProviderSettingsChanged:nil];
         assert(presentation.failure == 0);
         capture.needsMicrophonePermission = YES;
@@ -594,9 +594,9 @@ int main(int argc, char **) {
         [controller setValue:client forKey:@"activeClient"];
         capture.needsMicrophonePermission = NO;
         controller.usePolishFixture = YES;
-        voiceArguments[@"MSIMEClientVoiceStreamInlinePreedit"] = @NO;
-        voiceArguments[@"MSIMEClientVoicePolishText"] = @YES;
-        voiceArguments[@"MSIMEClientVoicePolishToken"] = @"fixture-only";
+        voiceArguments[@"LINGYAOClientVoiceStreamInlinePreedit"] = @NO;
+        voiceArguments[@"LINGYAOClientVoicePolishText"] = @YES;
+        voiceArguments[@"LINGYAOClientVoicePolishToken"] = @"fixture-only";
         [defaults setVolatileDomain:voiceArguments forName:NSArgumentDomain];
         [controller toggleVoiceInput:nil];
         capture.transcript(@"synthetic overlay partial", NO);
@@ -634,7 +634,7 @@ int main(int argc, char **) {
             assert(client.commits.count == imk && controller.externalCommits == external + 1);
         }
         CGEventRef injected = CGEventCreateKeyboardEvent(nullptr, 0, true);
-        CGEventSetIntegerValueField(injected, kCGEventSourceUserData, MSIMEVoiceCommitEventTag);
+        CGEventSetIntegerValueField(injected, kCGEventSourceUserData, LINGYAOVoiceCommitEventTag);
         assert(![controller handleEvent:[NSEvent eventWithCGEvent:injected] client:client]);
         CFRelease(injected);
         assert([session closeWithError:nil]); assert([NSFileManager.defaultManager removeItemAtPath:root error:nil]);

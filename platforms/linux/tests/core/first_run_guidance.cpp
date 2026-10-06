@@ -6,18 +6,18 @@
 #include <string>
 #include <unistd.h>
 
-using msime::linux_host::locate_runtime_options;
-using msime::linux_host::RuntimeOptionsState;
+using lingyao::linux_host::locate_runtime_options;
+using lingyao::linux_host::RuntimeOptionsState;
 
 int main() {
-  char pattern[] = "/tmp/msime-first-run-guidance-XXXXXX";
+  char pattern[] = "/tmp/lingyao-first-run-guidance-XXXXXX";
   const char *created = mkdtemp(pattern);
   assert(created != nullptr);
   const std::filesystem::path root(created);
   const auto config_home = root / "config";
   const auto home = root / "home";
-  const auto user_file = config_home / "msime-client/runtime-options.json";
-  const auto system_file = root / "etc/msime-client/runtime-options.json";
+  const auto user_file = config_home / "lingyao-client/runtime-options.json";
+  const auto system_file = root / "etc/lingyao-client/runtime-options.json";
   const auto config = config_home.string();
   const auto home_value = home.string();
 
@@ -62,11 +62,11 @@ int main() {
          RuntimeOptionsState::Invalid);
   assert(locate_runtime_options(nullptr, nullptr, nullptr, system_file).state == RuntimeOptionsState::Invalid);
 
-  // The hint names the entry users find in their application list and the terminal command, matching the .desktop name and msime-linux-setup.
-  const std::string hint(msime::linux_host::kFirstRunHint);
+  // The hint names the entry users find in their application list and the terminal command, matching the .desktop name and lingyao-linux-setup.
+  const std::string hint(lingyao::linux_host::kFirstRunHint);
   assert(hint.find("「灵耀输入法」") != std::string::npos);
-  assert(hint.find("msime-linux-setup") != std::string::npos);
-  assert(msime::linux_host::kFirstRunGuideProgram == "msime-linux-first-run-guide");
+  assert(hint.find("lingyao-linux-setup") != std::string::npos);
+  assert(lingyao::linux_host::kFirstRunGuideProgram == "lingyao-linux-first-run-guide");
 
   std::error_code error;
   std::filesystem::remove_all(root, error);

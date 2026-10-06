@@ -1,4 +1,4 @@
-use msime_client_core::account::AccountError;
+use lingyao_client_core::account::AccountError;
 #[cfg(any(target_os = "ios", target_os = "android", test))]
 use std::path::Path;
 use std::sync::Arc;
@@ -69,8 +69,8 @@ pub(crate) fn community_error(error: AccountError) -> crate::CommandError {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 pub(crate) fn community_id(
     value: &str,
-) -> Result<msime_client_core::uuid::Uuid, crate::CommandError> {
-    msime_client_core::uuid::Uuid::parse_str(value).map_err(|_| crate::CommandError {
+) -> Result<lingyao_client_core::uuid::Uuid, crate::CommandError> {
+    lingyao_client_core::uuid::Uuid::parse_str(value).map_err(|_| crate::CommandError {
         code: "community_invalid",
     })
 }
@@ -133,7 +133,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn snapshot_directory_rejects_symlinked_ancestors() {
-        use msime_path_trust::untrusted_symlink as symlink;
+        use lingyao_path_trust::untrusted_symlink as symlink;
 
         let outside = tempfile::tempdir().unwrap();
         let parent = tempfile::tempdir().unwrap();

@@ -2,10 +2,10 @@
 
 #include "WaveOverlayIbusSurface.h"
 
-#ifdef MSIME_LINUX_HAS_X11_SURFACE
+#ifdef LINGYAO_LINUX_HAS_X11_SURFACE
 #include "WaveOverlayX11Surface.h"
 #endif
-#ifdef MSIME_LINUX_HAS_WAYLAND_SURFACE
+#ifdef LINGYAO_LINUX_HAS_WAYLAND_SURFACE
 #include "WaveOverlayWaylandSurface.h"
 #endif
 
@@ -13,7 +13,7 @@
 
 #include <utility>
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 namespace {
 
@@ -59,13 +59,13 @@ class FallbackSurface final : public WaveOverlaySurface {
 
 std::unique_ptr<WaveOverlaySurface> create_wave_overlay_surface(
     IBusEngine *engine, WaveOverlaySurface::ActionHandler action_handler) {
-  const auto *requested = g_getenv("MSIME_WAVE_OVERLAY_BACKEND");
+  const auto *requested = g_getenv("LINGYAO_WAVE_OVERLAY_BACKEND");
   const bool force_ibus = requested && g_strcmp0(requested, "ibus") == 0;
   const bool wayland_requested = requested && g_strcmp0(requested, "wayland") == 0;
   const bool x11_requested = requested && g_strcmp0(requested, "x11") == 0;
   (void)force_ibus;
   (void)action_handler;
-#ifdef MSIME_LINUX_HAS_WAYLAND_SURFACE
+#ifdef LINGYAO_LINUX_HAS_WAYLAND_SURFACE
   if (!force_ibus &&
       (wayland_requested || (!x11_requested && g_getenv("WAYLAND_DISPLAY")))) {
     return std::make_unique<FallbackSurface>(
@@ -75,7 +75,7 @@ std::unique_ptr<WaveOverlaySurface> create_wave_overlay_surface(
 #else
   (void)wayland_requested;
 #endif
-#ifdef MSIME_LINUX_HAS_X11_SURFACE
+#ifdef LINGYAO_LINUX_HAS_X11_SURFACE
   if (!force_ibus &&
       (x11_requested || g_getenv("DISPLAY"))) {
     return std::make_unique<FallbackSurface>(
@@ -88,4 +88,4 @@ std::unique_ptr<WaveOverlaySurface> create_wave_overlay_surface(
   return std::make_unique<WaveOverlayIbusSurface>(engine);
 }
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

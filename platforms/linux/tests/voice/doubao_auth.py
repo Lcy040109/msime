@@ -13,11 +13,11 @@ from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-loader = SourceFileLoader("msime_voice_provider", str(ROOT / "scripts" / "msime-linux-voice-provider"))
+loader = SourceFileLoader("lingyao_voice_provider", str(ROOT / "scripts" / "lingyao-linux-voice-provider"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 provider = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(provider)
-from msime_voice_doubao import doubao_headers, normalize_doubao_auth_mode, websocket_dependency
+from lingyao_voice_doubao import doubao_headers, normalize_doubao_auth_mode, websocket_dependency
 
 
 def websockets_stub(installed, arguments=None, receive_timeout=True):

@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <string>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 constexpr UINT_PTR capture_timer_id = 1;
 constexpr UINT capture_debounce_ms = 80;
@@ -81,7 +81,7 @@ LRESULT CALLBACK ClipboardMonitor::window_proc(HWND window, UINT message, WPARAM
 bool ClipboardMonitor::start() {
   if (window_) return true;
   const auto instance = GetModuleHandleW(nullptr);
-  const wchar_t name[] = L"MSIMEClientClipboardMonitor" MSIME_EDITION_NAME_SUFFIX;
+  const wchar_t name[] = L"LINGYAOClientClipboardMonitor" LINGYAO_EDITION_NAME_SUFFIX;
   WNDCLASSW klass{}; klass.hInstance = instance; klass.lpfnWndProc = window_proc; klass.lpszClassName = name;
   // A name collision is the one failure worth distinguishing: everything else
   // surfaces later as a CreateWindowExW failure with no hint of the cause.
@@ -113,5 +113,5 @@ void ClipboardMonitor::stop() {
     change_event_ = nullptr;
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows
 #endif

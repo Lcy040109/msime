@@ -8,7 +8,7 @@ actually sees.
 
 Nothing catches a mismatch. The TypeScript side declares the method on its `NativeBridge` interface
 and type-checks fine; the ArkTS side compiles fine; the settings bundle builds fine. The failure is
-at runtime on a device, as `msimeHarmony.<name> is not a function` — a section that simply does not
+at runtime on a device, as `lingyaoHarmony.<name> is not a function` — a section that simply does not
 work, on the one platform nobody can run here.
 
 That is exactly what happened when the named custom skin library was added: the method was written
@@ -41,7 +41,7 @@ def registered() -> set[str]:
     start = text.index("registerJavaScriptProxy(")
     body = text[start : text.index("[]", start)]
     names = set(re.findall(r"'([A-Za-z][A-Za-z0-9]*)'", body))
-    names.discard("msimeHarmony")
+    names.discard("lingyaoHarmony")
     if not names:
         raise SystemExit(f"no registered names found in {HOST.name}; the extraction is wrong")
     return names

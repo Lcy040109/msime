@@ -3,9 +3,9 @@
 use std::panic::{self, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 
-use msime_engine::assets::USER_JOURNAL;
-use msime_engine::vietnamese::{InputMethod, ToneStyle};
-use msime_engine::{
+use lingyao_engine::assets::USER_JOURNAL;
+use lingyao_engine::vietnamese::{InputMethod, ToneStyle};
+use lingyao_engine::{
     CandidateEdge, CandidateSource, Command, FrequencyAdjustmentMode, PersonalDictionaryEntry,
     PersonalDictionaryKind, RuntimePaths, SchemeType, Session, SessionOptions,
     ShuangpinProfileKind,
@@ -17,19 +17,19 @@ use super::fixture::stage_fixture;
 use super::golden_dir;
 use super::snapshot::{dump_journal, query_rows, result_json, scrub, snapshot_json};
 
-/// The file name a scenario fixture stages `msime-cantonese.db` under, beside the resource set's own files.
-const CANTONESE_DICTIONARY: &str = "msime-cantonese.db";
-/// The file name a scenario fixture stages `msime-zhuyin.db` under, beside the resource set's own files.
-const ZHUYIN_DICTIONARY: &str = "msime-zhuyin.db";
-/// The file name a scenario fixture stages `msime-stroke.db` under, beside the resource set's own files.
-const STROKE_DICTIONARY: &str = "msime-stroke.db";
+/// The file name a scenario fixture stages `lingyao-cantonese.db` under, beside the resource set's own files.
+const CANTONESE_DICTIONARY: &str = "lingyao-cantonese.db";
+/// The file name a scenario fixture stages `lingyao-zhuyin.db` under, beside the resource set's own files.
+const ZHUYIN_DICTIONARY: &str = "lingyao-zhuyin.db";
+/// The file name a scenario fixture stages `lingyao-stroke.db` under, beside the resource set's own files.
+const STROKE_DICTIONARY: &str = "lingyao-stroke.db";
 
-pub const SCENARIO_ENV: &str = "MSIME_GOLDEN_SCENARIO";
+pub const SCENARIO_ENV: &str = "LINGYAO_GOLDEN_SCENARIO";
 
 /// Differences printed per scenario before the rest is summarised as a count.
 const MAX_DIFFS_PER_SCENARIO: usize = 40;
 
-/// Scenario files in name order, limited by `MSIME_GOLDEN_SCENARIO` when set.
+/// Scenario files in name order, limited by `LINGYAO_GOLDEN_SCENARIO` when set.
 pub fn selected_scenarios() -> Vec<PathBuf> {
     let filter = std::env::var(SCENARIO_ENV).ok();
     selected_scenarios_from(filter.as_deref())
@@ -82,7 +82,7 @@ pub fn assert_scenarios(scenarios: &[PathBuf]) {
             panic::catch_unwind(AssertUnwindSafe(|| replay_scenario(&spec, work.path())));
         if replayed.is_err() {
             // The panicking replay skipped its own close, so its connections are still cached. With the engine this far from done the close can panic as well, and that second panic adds nothing to the failure already recorded.
-            let _ = panic::catch_unwind(msime_engine::close_cached_databases);
+            let _ = panic::catch_unwind(lingyao_engine::close_cached_databases);
         }
         let diffs = match replayed {
             Ok(actual) => diff_documents(&expected, &actual, DiffOptions::default()),
@@ -173,7 +173,7 @@ pub fn replay_scenario(spec: &Value, work: &Path) -> Value {
             dump_journal(&scenario.paths.user(USER_JOURNAL)),
         );
     }
-    msime_engine::close_cached_databases();
+    lingyao_engine::close_cached_databases();
     std::fs::remove_dir_all(&scenario.root).unwrap();
     Value::Object(out)
 }
@@ -438,7 +438,7 @@ struct Scenario {
 
 impl Scenario {
     fn open(&mut self) {
-        self.paths = msime_engine::prepare_runtime_paths(
+        self.paths = lingyao_engine::prepare_runtime_paths(
             &self.resources,
             &self.root.join("user"),
             &self.root.join("cache"),
@@ -452,7 +452,7 @@ impl Scenario {
         });
         let mut options = self.options.clone();
         options.paths = self.paths.clone();
-        // `msime-cantonese.db`, `msime-zhuyin.db` and `msime-stroke.db` ship beside the resource set, so a fixture that stages one hands its path to the session as a host would.
+        // `lingyao-cantonese.db`, `lingyao-zhuyin.db` and `lingyao-stroke.db` ship beside the resource set, so a fixture that stages one hands its path to the session as a host would.
         let cantonese = self.resources.join(CANTONESE_DICTIONARY);
         if cantonese.exists() {
             options.cantonese_dictionary = cantonese;
@@ -477,7 +477,7 @@ impl Scenario {
     /// Drop the session, then write the delayed personal-context rows, as the recorder's `close`.
     fn close(&mut self) {
         self.session = None;
-        msime_engine::flush_personal_learning();
+        lingyao_engine::flush_personal_learning();
     }
 
     fn session(&mut self) -> &mut Session {
@@ -541,7 +541,7 @@ impl Scenario {
         out: &mut Map<String, Value>,
     ) -> Option<Value> {
         let roots = self.roots.clone();
-        let keyed = |result: msime_engine::KeyResult| Some(result_json(&result, &roots));
+        let keyed = |result: lingyao_engine::KeyResult| Some(result_json(&result, &roots));
         match op {
             "type" => Some(self.type_text(as_str(arg))),
             "char" => {
@@ -731,8 +731,8 @@ impl Scenario {
                 None
             }
             "query" => {
-                // Read-only SQL against the live generation copy of a dictionary (msime-pinyin.db / msime-english.db) or the journal.
-                msime_engine::flush_personal_learning();
+                // Read-only SQL against the live generation copy of a dictionary (lingyao-pinyin.db / lingyao-english.db) or the journal.
+                lingyao_engine::flush_personal_learning();
                 let db = as_str(&step["db"]);
                 let path = if db == USER_JOURNAL {
                     self.paths.user(db)
@@ -745,7 +745,7 @@ impl Scenario {
             "validate_entry" => {
                 let entry = entry_from(arg).expect("validate_entry takes an entry");
                 Some(
-                    match msime_engine::validate_personal_dictionary_entry(&entry) {
+                    match lingyao_engine::validate_personal_dictionary_entry(&entry) {
                         Ok(entry) => json!({"entry": entry_json(&entry)}),
                         Err(error) => json!({"error": error.to_string()}),
                     },
@@ -755,7 +755,7 @@ impl Scenario {
                 let previous = entry_from(&arg["previous"]);
                 let replacement = entry_from(&arg["replacement"]);
                 let request_id = arg["request_id"].as_str().unwrap_or_default();
-                let edit = msime_engine::edit_personal_dictionary(
+                let edit = lingyao_engine::edit_personal_dictionary(
                     &self.paths,
                     previous.as_ref(),
                     replacement.as_ref(),
@@ -773,7 +773,7 @@ impl Scenario {
                 let limit = arg["limit"].as_u64().map_or(100, to_usize);
                 let include_learned = arg["include_learned"].as_bool().unwrap_or(false);
                 Some(
-                    match msime_engine::personal_dictionary_entries(
+                    match lingyao_engine::personal_dictionary_entries(
                         &self.paths,
                         offset,
                         limit,

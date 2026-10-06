@@ -2,8 +2,8 @@ import XCTest
 
 final class VoiceTextHandoffTests: XCTestCase {
   func testReadRejectsASymlinkedTransferLock() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-lock-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-lock-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-lock-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-lock-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)
@@ -49,8 +49,8 @@ final class VoiceTextHandoffTests: XCTestCase {
   }
 
   func testReadRejectsASymlinkedResultFile() throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-result-test-\(UUID().uuidString)")
-    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("msime-voice-result-target-\(UUID().uuidString)")
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-result-test-\(UUID().uuidString)")
+    let outsideDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("lingyao-voice-result-target-\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: root)
       try? FileManager.default.removeItem(at: outsideDirectory)

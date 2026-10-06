@@ -3,7 +3,7 @@
 //! Synthetic Engine tests prove graph mechanics, but only the pinned production dictionary can
 //! prove that edit-cost tiers win before word frequency and that a corrected head composes with a
 //! jianpin tail. Keep each session isolated so candidate learning cannot influence the ordering.
-use msime_engine::host::{prepare_options, Session};
+use lingyao_engine::host::{prepare_options, Session};
 
 fn candidates(
     resources: &std::path::Path,

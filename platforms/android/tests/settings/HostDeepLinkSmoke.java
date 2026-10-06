@@ -1,13 +1,13 @@
-import app.msime.android.HostDeepLink;
+import app.lingyao.android.HostDeepLink;
 
 /** 宿主深链的契约：extras 名字、flags、tab 取值，以及对外来页面名和参数的过滤。 */
 public final class HostDeepLinkSmoke {
     public static void main(String[] args) {
         // 这几个名字是跨进程契约：键盘进程、旧 Activity 跳板和设备测试都按字面值发。
-        check("app.msime.android.home.HomeActivity".equals(HostDeepLink.HOME_ACTIVITY), "target is the launcher activity");
-        check("msime_open_tab".equals(HostDeepLink.EXTRA_TAB), "tab extra name");
-        check("msime_open_page".equals(HostDeepLink.EXTRA_PAGE), "page extra name");
-        check("msime_page_args".equals(HostDeepLink.EXTRA_ARGS), "args extra name");
+        check("app.lingyao.android.home.HomeActivity".equals(HostDeepLink.HOME_ACTIVITY), "target is the launcher activity");
+        check("lingyao_open_tab".equals(HostDeepLink.EXTRA_TAB), "tab extra name");
+        check("lingyao_open_page".equals(HostDeepLink.EXTRA_PAGE), "page extra name");
+        check("lingyao_page_args".equals(HostDeepLink.EXTRA_ARGS), "args extra name");
 
         // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP
         check(HostDeepLink.FLAGS == (0x10000000 | 0x04000000 | 0x20000000), "flags are new task, clear top and single top");
@@ -25,7 +25,7 @@ public final class HostDeepLinkSmoke {
         check(HostDeepLink.pageName(null) == null, "a missing page is no page");
         check(HostDeepLink.pageName("") == null, "an empty page is no page");
         check(HostDeepLink.pageName("lexicon") == null, "lower case is not an enum name");
-        check(HostDeepLink.pageName("app.msime.android.home.LexiconPage") == null, "a class name is never accepted");
+        check(HostDeepLink.pageName("app.lingyao.android.home.LexiconPage") == null, "a class name is never accepted");
         check(HostDeepLink.pageName("_LEXICON") == null, "a leading underscore is rejected");
         check(HostDeepLink.pageName("1LEXICON") == null, "a leading digit is rejected");
         check(HostDeepLink.pageName("LEXICON ") == null, "trailing whitespace is rejected");

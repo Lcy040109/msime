@@ -33,7 +33,7 @@ impl BackendAccountClient {
         let client = Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .timeout(Duration::from_secs(30))
-            .user_agent("MSIME/Android")
+            .user_agent("LINGYAO/Android")
             .build()
             .map_err(|_| AccountError::Unavailable)?;
         Ok(Self { client, origin })
@@ -464,7 +464,7 @@ impl BackendAccountClient {
             return Err(AccountError::Unavailable);
         }
         let mut temporary = tempfile::Builder::new()
-            .prefix("msime-snapshot-")
+            .prefix("lingyao-snapshot-")
             .tempfile_in(parent)
             .map_err(|_| AccountError::Unavailable)?;
         let bytes = std::io::copy(

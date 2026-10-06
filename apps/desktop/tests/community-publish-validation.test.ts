@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { communityPublishFields } from "@msime/ui";
+import { communityPublishFields } from "@lingyao/ui";
 
 test("community publish fields trim values and enforce publish limits", () => {
   expect(communityPublishFields("  我的皮肤  ", "  一段说明  ")).toEqual({

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { platformCopy, type PlatformCopyContext } from "@msime/ui";
+import { platformCopy, type PlatformCopyContext } from "@lingyao/ui";
 
 const context = (patch: Partial<PlatformCopyContext> = {}): PlatformCopyContext => ({
   android: false,

@@ -15,7 +15,7 @@
 #include <iostream>
 #include <utility>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require_at(bool value, int line) {
   if (!value)
@@ -315,7 +315,7 @@ int main() {
     const auto suffix = std::to_wstring(GetCurrentProcessId()) + L"-" +
                         std::to_wstring(GetTickCount64());
     const auto root = std::filesystem::temp_directory_path() /
-                      (L"msime-server-fixture-" + suffix);
+                      (L"lingyao-server-fixture-" + suffix);
     require(std::filesystem::create_directory(root));
     struct Cleanup {
       std::filesystem::path path;
@@ -337,7 +337,7 @@ int main() {
     {
       StateRootLease reacquired(root);
     }
-    require(std::filesystem::exists(root / L".msime-client-server.lock"));
+    require(std::filesystem::exists(root / L".lingyao-client-server.lock"));
     // 与 Rust 的 `is_symlink` 一致：符号链接、目录联接拒绝，OneDrive 云文件和 App 执行别名这类非名称代理重解析点放行。
     require(is_name_surrogate_reparse_point(FILE_ATTRIBUTE_REPARSE_POINT, IO_REPARSE_TAG_SYMLINK));
     require(is_name_surrogate_reparse_point(FILE_ATTRIBUTE_REPARSE_POINT, IO_REPARSE_TAG_MOUNT_POINT));
@@ -352,7 +352,7 @@ int main() {
                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT,
                            nullptr);
       };
-      const auto lock_file = root / L".msime-client-server.lock";
+      const auto lock_file = root / L".lingyao-client-server.lock";
       HANDLE plain = open_leaf(lock_file);
       require(plain != INVALID_HANDLE_VALUE);
       require(handle_is_trusted_file(plain));
@@ -394,7 +394,7 @@ int main() {
     options.pipes.handshake_timeout = 2000;
     options.write_timeout = 2000;
     for (size_t role = 0; role < 3; ++role)
-      options.pipes.names[role] = L"\\\\.\\pipe\\msime-server-fixture-" +
+      options.pipes.names[role] = L"\\\\.\\pipe\\lingyao-server-fixture-" +
                                   suffix + L"-" + std::to_wstring(role);
     const nlohmann::json launch{{"format_version", 1},
                                 {"resources", host.at("resources")},

@@ -1,12 +1,12 @@
 #pragma once
 #import <AppKit/AppKit.h>
 NS_ASSUME_NONNULL_BEGIN
-FOUNDATION_EXPORT NSNotificationName const MSIMEVoiceProviderSettingsDidChangeNotification;
-FOUNDATION_EXPORT NSArray<NSString *> *MSIMEVoiceASRProviderIDs(void);
-FOUNDATION_EXPORT NSArray<NSString *> *MSIMEVoiceASRProviderTitles(void);
-FOUNDATION_EXPORT NSString *MSIMEVoiceASRProviderDefaultEndpoint(NSString *provider);
-FOUNDATION_EXPORT NSString *MSIMEVoiceASRProviderDefaultModel(NSString *provider);
-FOUNDATION_EXPORT BOOL MSIMEVoiceASRProviderUsesService(NSString *provider);
+FOUNDATION_EXPORT NSNotificationName const LINGYAOVoiceProviderSettingsDidChangeNotification;
+FOUNDATION_EXPORT NSArray<NSString *> *LINGYAOVoiceASRProviderIDs(void);
+FOUNDATION_EXPORT NSArray<NSString *> *LINGYAOVoiceASRProviderTitles(void);
+FOUNDATION_EXPORT NSString *LINGYAOVoiceASRProviderDefaultEndpoint(NSString *provider);
+FOUNDATION_EXPORT NSString *LINGYAOVoiceASRProviderDefaultModel(NSString *provider);
+FOUNDATION_EXPORT BOOL LINGYAOVoiceASRProviderUsesService(NSString *provider);
 @interface LingyaoVoiceProviderSettings : NSObject
 @property(nonatomic, copy) NSString *provider;
 @property(nonatomic, copy) NSString *endpoint;

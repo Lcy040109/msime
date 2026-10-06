@@ -2,7 +2,7 @@
 import { testHost } from "../support/host";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { SettingsPage, type Snapshot } from "@msime/ui";
+import { SettingsPage, type Snapshot } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

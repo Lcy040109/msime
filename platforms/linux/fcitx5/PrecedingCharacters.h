@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace msime::fcitx_host {
+namespace lingyao::fcitx_host {
 
 template <typename StringVector>
 // `length` must be the result of lengthValidated(text); callers use this form
@@ -45,4 +45,4 @@ inline std::optional<std::vector<std::string>> preceding_characters(
       text, cursor, count);
 }
 
-}  // namespace msime::fcitx_host
+}  // namespace lingyao::fcitx_host

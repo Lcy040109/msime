@@ -1,6 +1,6 @@
 #pragma once
 #include <cstddef>
-namespace msime::mac {
+namespace lingyao::mac {
 // How many candidates a page may hold, and what to do with a number outside that.
 //
 // This used to accept 5, 7 and 9 and rewrite everything else to 9 - the set the Apple reference's own

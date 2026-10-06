@@ -82,7 +82,7 @@ export function parsePersonalDictionaryImport(text: string): PersonalDictionaryI
     throw new Error("文件格式不支持，请按示例 JSON 文件填写。");
   const envelope = file as { format?: unknown; version?: unknown; entries?: unknown };
   if (
-    envelope.format !== "msime-personal-dictionary" ||
+    envelope.format !== "lingyao-personal-dictionary" ||
     envelope.version !== 1 ||
     !Array.isArray(envelope.entries)
   ) {
@@ -150,7 +150,7 @@ export function parsePersonalDictionaryImport(text: string): PersonalDictionaryI
 
 export const personalDictionaryExample = JSON.stringify(
   {
-    format: "msime-personal-dictionary",
+    format: "lingyao-personal-dictionary",
     version: 1,
     entries: [
       { kind: "pinyin", key: "ni hao", value: "你好", weight: 100000 },

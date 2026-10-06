@@ -103,10 +103,10 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 
 - (instancetype)initWithFrame:(NSRect)frameRect
 {
-    return [self initWithFrame:frameRect preferences:MSIMEAppearancePreferences.sharedPreferences];
+    return [self initWithFrame:frameRect preferences:LINGYAOAppearancePreferences.sharedPreferences];
 }
 
-- (instancetype)initWithFrame:(NSRect)frameRect preferences:(MSIMEAppearancePreferences *)preferences
+- (instancetype)initWithFrame:(NSRect)frameRect preferences:(LINGYAOAppearancePreferences *)preferences
 {
     self = [super initWithFrame:frameRect];
     if (self == nil)
@@ -116,7 +116,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     self.translatesAutoresizingMaskIntoConstraints = NO;
     _preferences = preferences;
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(preferencesChanged:)
-                                              name:MSIMEAppearanceDidChangeNotification object:preferences];
+                                              name:LINGYAOAppearanceDidChangeNotification object:preferences];
     self.accessibilityLabel = @"皮肤设置页";
     _switches = [NSMutableArray array];
     _previews = [NSMutableArray array];
@@ -146,7 +146,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     _document.alignment = NSLayoutAttributeLeading;
     _document.spacing = 16.0;
     _document.edgeInsets =
-        NSEdgeInsetsMake(0.0, msime::mac::layout::kPageMargin, 20.0, msime::mac::layout::kPageMargin);
+        NSEdgeInsetsMake(0.0, lingyao::mac::layout::kPageMargin, 20.0, lingyao::mac::layout::kPageMargin);
     _document.translatesAutoresizingMaskIntoConstraints = NO;
     // The stack goes inside a flipped container rather than being the document view itself: an
     // unflipped document view is laid out from the bottom, so the page opens showing the last skin
@@ -170,9 +170,9 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     [NSLayoutConstraint activateConstraints:@[
         // The page margins are the ones every other page of the settings window uses, so that
         // landing on this one does not shift the summary and the cards under the pointer.
-        [summary.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:msime::mac::layout::kPageMargin],
-        [summary.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-msime::mac::layout::kPageMargin],
-        [summary.topAnchor constraintEqualToAnchor:self.topAnchor constant:msime::mac::layout::kPageMargin],
+        [summary.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:lingyao::mac::layout::kPageMargin],
+        [summary.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-lingyao::mac::layout::kPageMargin],
+        [summary.topAnchor constraintEqualToAnchor:self.topAnchor constant:lingyao::mac::layout::kPageMargin],
         [scroll.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [scroll.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         [scroll.topAnchor constraintEqualToAnchor:summary.bottomAnchor constant:16.0],
@@ -208,7 +208,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     actions.orientation = NSUserInterfaceLayoutOrientationHorizontal;
     actions.spacing = 8.0;
     NSBox *externalHeader = [[NSBox alloc] initWithFrame:NSZeroRect];
-    MSIMEConfigureCard(externalHeader);
+    LINGYAOConfigureCard(externalHeader);
     externalHeader.accessibilityLabel = @"外部皮肤卡片";
     NSStackView *headerStack =
         [NSStackView stackViewWithViews:@[ externalTitle, externalHelp, _directoryLabel, actions ]];
@@ -269,7 +269,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     [_document addArrangedSubview:view];
     // A card spans the stack minus the margin the stack insets it by on either side.
     [view.widthAnchor constraintEqualToAnchor:_document.widthAnchor
-                                     constant:-2.0 * msime::mac::layout::kPageMargin]
+                                     constant:-2.0 * lingyao::mac::layout::kPageMargin]
         .active = YES;
 }
 
@@ -279,7 +279,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
               compatible:(BOOL)compatible
 {
     NSBox *card = [[NSBox alloc] initWithFrame:NSZeroRect];
-    MSIMEConfigureCard(card);
+    LINGYAOConfigureCard(card);
     card.accessibilityLabel = [name stringByAppendingString:@"皮肤卡片"];
     NSTextField *title = Label(name, 15.0, NSFontWeightSemibold, [NSColor labelColor]);
     title.accessibilityLabel = [name stringByAppendingString:@"标题"];
@@ -357,7 +357,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
         return;
     }
     const std::filesystem::path root = _preferences.skinsRoot.fileSystemRepresentation ?: "";
-    const auto package = msime::mac::LoadSkinPackage(root, skinId.UTF8String);
+    const auto package = lingyao::mac::LoadSkinPackage(root, skinId.UTF8String);
     [_preferences selectExternalSkin:skinId base:package ? @(package->base.c_str()) : @"system"];
 }
 
@@ -368,7 +368,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 }
 
 /// Whether a package can be selected in the current layout. A package over a built-in base is drawn in that base's mode, so the host mode does not rule it out; over a system base it is drawn in the mode the candidate window resolves for a system base (the 候选窗主题 / 主题 light-dark choice, else the system's), which its manifest has to list. This is the React host's rule (external-skins.tsx) and THEME_CONTRACT §5.
-- (BOOL)packageIsCompatible:(const msime::mac::SkinPackage &)package
+- (BOOL)packageIsCompatible:(const lingyao::mac::SkinPackage &)package
 {
     const std::string layout = _preferences.vertical ? "vertical" : "horizontal";
     for (const lingyao::mac::ThemeCatalogEntry &entry : lingyao::mac::ThemeCatalog())
@@ -378,7 +378,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     }
     NSAppearance *appearance = _preferences.systemBaseCandidateAppearanceOverride ?: self.effectiveAppearance;
     NSString *host = LingyaoAppearanceIsDark(appearance) ? @"dark" : @"light";
-    return msime::mac::SupportsSkin(package, layout, host.UTF8String);
+    return lingyao::mac::SupportsSkin(package, layout, host.UTF8String);
 }
 
 - (void)toggleCardTheme:(NSButton *)sender
@@ -429,7 +429,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
         BOOL selected = NO;
         if (index >= _themeCardCount)
         {
-            auto package = msime::mac::LoadSkinPackage(root, _skinIds[index].UTF8String);
+            auto package = lingyao::mac::LoadSkinPackage(root, _skinIds[index].UTF8String);
             compatible = package.has_value() && [self packageIsCompatible:*package];
             _skinCompatibility[index] = @(compatible);
             selected = [_skinIds[index] isEqualToString:activePackage ?: @""];
@@ -485,7 +485,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     for (const lingyao::mac::SkinPackage &package : catalog.packages)
     {
         NSString *description = package.description.empty()
-                                    ? [NSString stringWithFormat:@"基于%s", msime::mac::ThemeTitle(package.base).c_str()]
+                                    ? [NSString stringWithFormat:@"基于%s", lingyao::mac::ThemeTitle(package.base).c_str()]
                                     : @(package.description.c_str());
         const BOOL compatible = [self packageIsCompatible:package];
         if (!compatible) {

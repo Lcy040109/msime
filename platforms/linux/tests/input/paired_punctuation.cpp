@@ -5,11 +5,11 @@
 #include <string>
 
 int main() {
-  using msime::linux_host::PairedPunctuationTracker;
-  using msime::linux_host::PairedPunctuationModifier;
-  using msime::linux_host::paired_closing_modifiers_allowed;
-  using msime::linux_host::paired_closing_for_key;
-  using msime::linux_host::paired_punctuation_excluded_client;
+  using lingyao::linux_host::PairedPunctuationTracker;
+  using lingyao::linux_host::PairedPunctuationModifier;
+  using lingyao::linux_host::paired_closing_modifiers_allowed;
+  using lingyao::linux_host::paired_closing_for_key;
+  using lingyao::linux_host::paired_punctuation_excluded_client;
 
   PairedPunctuationTracker tracker;
   tracker.push("）");
@@ -62,9 +62,9 @@ int main() {
   assert(tracker.matches("）"));
   assert(tracker.consume("）", "）", true));
   {
-    using msime::linux_host::normalize_punctuation_pair;
-    using msime::linux_host::paired_closing_from_text;
-    using Mode = msime::linux_host::PunctuationPairMode;
+    using lingyao::linux_host::normalize_punctuation_pair;
+    using lingyao::linux_host::paired_closing_from_text;
+    using Mode = lingyao::linux_host::PunctuationPairMode;
     std::string text = "（";
     assert(normalize_punctuation_pair(text, Mode::Bracket) && text == "（）");
     assert(paired_closing_from_text(text) == std::optional<std::string>("）"));

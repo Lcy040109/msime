@@ -79,8 +79,8 @@ fn join_current_or_legacy(root: &Path, name: &str) -> PathBuf {
         .unwrap_or(current)
 }
 
-/// 存储路径可以经过的系统链接只在 `msime-path-trust` 里列一次。
-pub(crate) use msime_path_trust::is_trusted_system_alias;
+/// 存储路径可以经过的系统链接只在 `lingyao-path-trust` 里列一次。
+pub(crate) use lingyao_path_trust::is_trusted_system_alias;
 
 /// `join` for a name that came from outside the crate: a `..` component is refused rather than allowed to escape the root (`runtime_paths.cpp:14-23`).
 #[cfg_attr(
@@ -115,10 +115,10 @@ mod tests {
             dictionaries: PathBuf::new(),
         };
         assert_eq!(
-            paths.resource("msime-pinyin.db"),
-            PathBuf::from("/r/msime-pinyin.db")
+            paths.resource("lingyao-pinyin.db"),
+            PathBuf::from("/r/lingyao-pinyin.db")
         );
-        assert_eq!(paths.dictionary("msime-pinyin.db"), PathBuf::new());
+        assert_eq!(paths.dictionary("lingyao-pinyin.db"), PathBuf::new());
         assert_eq!(paths.user("/abs"), PathBuf::new());
         assert!(join_checked(Path::new("/r"), "helpcodes/../x").is_err());
         assert!(paths.validate().is_err());
@@ -138,13 +138,13 @@ mod tests {
         std::fs::create_dir_all(&paths.dictionaries).unwrap();
         assert_eq!(
             paths.dictionary(assets::MAIN_DICTIONARY),
-            paths.dictionaries.join("msime-pinyin.db")
+            paths.dictionaries.join("lingyao-pinyin.db")
         );
-        std::fs::write(paths.dictionaries.join("msime.db"), b"old").unwrap();
+        std::fs::write(paths.dictionaries.join("lingyao.db"), b"old").unwrap();
         std::fs::write(paths.resources.join("others.db"), b"old").unwrap();
         assert_eq!(
             paths.dictionary(assets::MAIN_DICTIONARY),
-            paths.dictionaries.join("msime.db")
+            paths.dictionaries.join("lingyao.db")
         );
         assert_eq!(
             paths.resource(assets::OTHER_DICTIONARY),
@@ -153,12 +153,12 @@ mod tests {
         // 没有旧名的文件照常拼接。
         assert_eq!(
             paths.resource(assets::WUBI_DICTIONARY),
-            paths.resources.join("msime-wubi.db")
+            paths.resources.join("lingyao-wubi.db")
         );
-        std::fs::write(paths.dictionaries.join("msime-pinyin.db"), b"new").unwrap();
+        std::fs::write(paths.dictionaries.join("lingyao-pinyin.db"), b"new").unwrap();
         assert_eq!(
             paths.dictionary(assets::MAIN_DICTIONARY),
-            paths.dictionaries.join("msime-pinyin.db")
+            paths.dictionaries.join("lingyao-pinyin.db")
         );
     }
 }

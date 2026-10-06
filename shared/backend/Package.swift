@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-  name: "MSIMEBackend",
+  name: "LINGYAOBackend",
   platforms: [.macOS(.v12), .iOS(.v15)],
-  products: [.library(name: "MSIMEBackend", targets: ["MSIMEBackend"])],
+  products: [.library(name: "LINGYAOBackend", targets: ["LINGYAOBackend"])],
   targets: [
     .target(
-      name: "MSIMEBackend",
+      name: "LINGYAOBackend",
       path: ".",
       exclude: ["Package.swift", "Tests"],
       sources: [
@@ -28,8 +28,8 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "MSIMEBackendTests",
-      dependencies: ["MSIMEBackend"],
+      name: "LINGYAOBackendTests",
+      dependencies: ["LINGYAOBackend"],
       path: "Tests"
     )
   ]

@@ -3,8 +3,8 @@
 #include <optional>
 #include <string>
 
-// Anonymous usage reporting for the native Windows and Linux hosts: a thin wrapper over the Host API's msime_client_telemetry_* functions, which own the queue, the install id, the daily active event, sessions and delivery to https://api.msime.app/v1/telemetry/events. Nothing here sends anything itself, and nothing on a crash path touches the network: crash handlers only write the session's crash record, which the next start turns into crash and session_crash events.
-namespace msime::telemetry {
+// Anonymous usage reporting for the native Windows and Linux hosts: a thin wrapper over the Host API's lingyao_client_telemetry_* functions, which own the queue, the install id, the daily active event, sessions and delivery to https://api.msime.app/v1/telemetry/events. Nothing here sends anything itself, and nothing on a crash path touches the network: crash handlers only write the session's crash record, which the next start turns into crash and session_crash events.
+namespace lingyao::telemetry {
 struct Host {
   // windows or linux.
   std::string platform;
@@ -17,7 +17,7 @@ struct Host {
   std::filesystem::path preferences_directory;
 };
 
-// %LOCALAPPDATA%\MSIME on Windows; $XDG_STATE_HOME/msime (or ~/.local/state/msime) elsewhere.
+// %LOCALAPPDATA%\LINGYAO on Windows; $XDG_STATE_HOME/lingyao (or ~/.local/state/lingyao) elsewhere.
 std::filesystem::path default_directory();
 
 // Starts this process's reporting session: closes the previous one, queues its crash records and today's active, and arms the crash handlers with this session's crash record path. With reporting off it clears everything queued instead. File I/O only, no network. Returns whether reporting is on.

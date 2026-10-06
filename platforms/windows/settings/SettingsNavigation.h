@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <string_view>
 
-// The page model of the native Windows settings window (main.cpp): which pages exist, in which sidebar group, which of them this process draws, and which it hands to the shared desktop app (MSIME.exe). Kept free of Windows and WinRT headers so a host unit test can check it against the route vocabulary of ShellSurfaces.h. Labels live beside the controls in main.cpp; this header stays ASCII.
-namespace msime::settings {
+// The page model of the native Windows settings window (main.cpp): which pages exist, in which sidebar group, which of them this process draws, and which it hands to the shared desktop app (LINGYAO.exe). Kept free of Windows and WinRT headers so a host unit test can check it against the route vocabulary of ShellSurfaces.h. Labels live beside the controls in main.cpp; this header stays ASCII.
+namespace lingyao::settings {
 
 // Who serves a page. Native pages are drawn by this window. Shell pages belong to the shared desktop app and are opened there on the matching route instead of being rewritten here.
 enum class PageHost { Native, Shell };
@@ -119,7 +119,7 @@ constexpr std::string_view page_for_route(std::string_view route) {
   return default_page;
 }
 
-// 本次构建是否提供这个页面。手写识别器只认汉字，不提供手写的版本（日文、越南文和藏文版的 `MSIME_EDITION_HANDWRITING` 为 0）没有「手写输入」页，其他页面每个版本都有。版本的开关由调用方传进来，这个头文件因此不依赖版本宏，主机上的单元测试也能把两种答案都查到。
+// 本次构建是否提供这个页面。手写识别器只认汉字，不提供手写的版本（日文、越南文和藏文版的 `LINGYAO_EDITION_HANDWRITING` 为 0）没有「手写输入」页，其他页面每个版本都有。版本的开关由调用方传进来，这个头文件因此不依赖版本宏，主机上的单元测试也能把两种答案都查到。
 constexpr bool page_offered(std::string_view id, bool handwriting) {
   return id != "hand" || handwriting;
 }
@@ -130,4 +130,4 @@ constexpr std::string_view offered_page_for_route(std::string_view route, bool h
   return page_offered(page, handwriting) ? page : default_page;
 }
 
-} // namespace msime::settings
+} // namespace lingyao::settings

@@ -18,9 +18,9 @@ fn emoji_group_page_capacity_reserves_the_first_page_size() {
 /// 插件符号组追加在内置组之后：符号以插件名为上级分类，颜文字排在 All 之后；每组带包 id，组的关键词放在组上，各项的关键词仍是符号本身。
 #[test]
 fn plugin_symbol_groups_follow_the_built_in_catalog() {
-    use msime_client_core::plugins::symbol_set::SymbolTab;
+    use lingyao_client_core::plugins::symbol_set::SymbolTab;
     let group =
-        |tab, title: &str, keywords: &str, items: &[&str]| msime_host_api::PluginSymbolGroup {
+        |tab, title: &str, keywords: &str, items: &[&str]| lingyao_host_api::PluginSymbolGroup {
             pack: "arrows".into(),
             pack_name: "箭头大全".into(),
             tab,
@@ -80,18 +80,18 @@ fn session_provider_discovery_rejects_symlinked_or_shared_endpoints() {
 
     let runtime = tempfile::tempdir().unwrap();
     let target = tempfile::tempdir().unwrap();
-    let target_directory = target.path().join("msime-client");
+    let target_directory = target.path().join("lingyao-client");
     std::fs::create_dir(&target_directory).unwrap();
     std::fs::set_permissions(&target_directory, std::fs::Permissions::from_mode(0o700)).unwrap();
     let target_socket = target_directory.join("provider.sock");
     let listener = UnixListener::bind(&target_socket).unwrap();
 
-    let linked_directory = runtime.path().join("msime-client");
+    let linked_directory = runtime.path().join("lingyao-client");
     symlink(&target_directory, &linked_directory).unwrap();
     assert!(super::discover_session_provider_in(runtime.path(), "provider.sock").is_none());
     drop(listener);
 
-    let directory = runtime.path().join("msime-client");
+    let directory = runtime.path().join("lingyao-client");
     std::fs::remove_file(&directory).unwrap();
     std::fs::create_dir(&directory).unwrap();
     std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
@@ -264,12 +264,12 @@ fn linux_runtime_state_directory_treats_a_missing_locator_as_first_run() {
 
 #[test]
 fn cantonese_zhuyin_and_stroke_are_offered_only_with_their_installed_dictionary() {
-    use msime_client_core::host_surface::{HostCapabilities, HostPlatform};
-    use msime_client_core::preferences::InputScheme;
+    use lingyao_client_core::host_surface::{HostCapabilities, HostPlatform};
+    use lingyao_client_core::preferences::InputScheme;
     let root = tempfile::tempdir().unwrap();
     let directory = root.path().join("language-dictionaries");
     std::fs::create_dir_all(&directory).unwrap();
-    std::fs::write(directory.join("msime-zhuyin.db"), b"sqlite").unwrap();
+    std::fs::write(directory.join("lingyao-zhuyin.db"), b"sqlite").unwrap();
     // Every host narrows the schemes the same way.
     for platform in [
         HostPlatform::Macos,
@@ -278,7 +278,7 @@ fn cantonese_zhuyin_and_stroke_are_offered_only_with_their_installed_dictionary(
         HostPlatform::Android,
         HostPlatform::Ios,
     ] {
-        for name in ["msime-cantonese.db", "msime-stroke.db"] {
+        for name in ["lingyao-cantonese.db", "lingyao-stroke.db"] {
             let dictionary = directory.join(name);
             if dictionary.exists() {
                 std::fs::remove_file(&dictionary).unwrap();
@@ -316,11 +316,11 @@ fn cantonese_zhuyin_and_stroke_are_offered_only_with_their_installed_dictionary(
         let mut with_zhuyin = without_both.clone();
         with_zhuyin.insert(5, InputScheme::Zhuyin);
         assert_eq!(offered(Some(&named)), with_zhuyin, "{platform:?}");
-        std::fs::write(directory.join("msime-cantonese.db"), b"sqlite").unwrap();
+        std::fs::write(directory.join("lingyao-cantonese.db"), b"sqlite").unwrap();
         let mut without_stroke = HostCapabilities::for_platform(platform).input_schemes;
         without_stroke.retain(|scheme| *scheme != InputScheme::Stroke);
         assert_eq!(offered(Some(&named)), without_stroke, "{platform:?}");
-        std::fs::write(directory.join("msime-stroke.db"), b"sqlite").unwrap();
+        std::fs::write(directory.join("lingyao-stroke.db"), b"sqlite").unwrap();
         assert_eq!(
             offered(Some(&named)),
             HostCapabilities::for_platform(platform).input_schemes,
@@ -338,9 +338,9 @@ fn cantonese_zhuyin_and_stroke_are_offered_only_with_their_installed_dictionary(
 
 #[test]
 fn macos_offers_only_the_language_schemes_its_download_can_install() {
-    use msime_client_core::host_surface::{HostCapabilities, HostPlatform};
-    use msime_client_core::preferences::InputScheme;
-    use msime_client_core::resource_packs::ResourcePack;
+    use lingyao_client_core::host_surface::{HostCapabilities, HostPlatform};
+    use lingyao_client_core::preferences::InputScheme;
+    use lingyao_client_core::resource_packs::ResourcePack;
     let mut capabilities = HostCapabilities::for_platform(HostPlatform::Macos);
     super::drop_unpinned_language_schemes(&mut capabilities);
     let pinned = ResourcePack::LanguageDictionaries.schemes();
@@ -362,12 +362,12 @@ fn macos_offers_only_the_language_schemes_its_download_can_install() {
 
 #[test]
 fn windows_finds_language_dictionaries_beside_resources_its_options_file_does_not_name() {
-    use msime_client_core::host_surface::{HostCapabilities, HostPlatform};
-    use msime_client_core::preferences::InputScheme;
+    use lingyao_client_core::host_surface::{HostCapabilities, HostPlatform};
+    use lingyao_client_core::preferences::InputScheme;
     let root = tempfile::tempdir().unwrap();
     let directory = root.path().join("language-dictionaries");
     std::fs::create_dir_all(&directory).unwrap();
-    std::fs::write(directory.join("msime-cantonese.db"), b"sqlite").unwrap();
+    std::fs::write(directory.join("lingyao-cantonese.db"), b"sqlite").unwrap();
     let offered = |host_options: &serde_json::Value| {
         let mut capabilities = HostCapabilities::for_platform(HostPlatform::Windows);
         super::drop_uninstalled_language_schemes(&mut capabilities, Some(host_options), true);
@@ -379,7 +379,7 @@ fn windows_finds_language_dictionaries_beside_resources_its_options_file_does_no
     assert!(!schemes.contains(&InputScheme::Stroke));
     assert!(schemes.contains(&InputScheme::Vietnamese));
     assert!(schemes.contains(&InputScheme::Tibetan));
-    std::fs::write(directory.join("msime-stroke.db"), b"sqlite").unwrap();
+    std::fs::write(directory.join("lingyao-stroke.db"), b"sqlite").unwrap();
     let schemes = offered(&serde_json::json!({ "resources": root.path().join("resources") }));
     assert!(schemes.contains(&InputScheme::Stroke));
     // A relative resources directory is not trusted to locate the installed dictionaries.
@@ -444,7 +444,7 @@ fn clipboard_text_validation_enforces_nonempty_nul_free_byte_limit() {
     assert!(!crate::clipboard_history::clipboard_text_is_valid(""));
     assert!(!crate::clipboard_history::clipboard_text_is_valid("a\0b"));
 
-    let at_limit = "x".repeat(msime_client_core::clipboard::MAX_TEXT_BYTES);
+    let at_limit = "x".repeat(lingyao_client_core::clipboard::MAX_TEXT_BYTES);
     assert!(crate::clipboard_history::clipboard_text_is_valid(&at_limit));
 
     let over_limit = format!("{at_limit}x");
@@ -474,17 +474,17 @@ fn linux_restart_targets_the_running_input_method_framework() {
         (program, arguments.join(" "))
     };
     assert_eq!(
-        command(true, "msime"),
+        command(true, "lingyao"),
         (
             "gdbus",
-            "call --session --dest org.fcitx.Fcitx5 --object-path /controller --method org.fcitx.Fcitx.Controller1.ReloadAddonConfig 'msime'".to_owned()
+            "call --session --dest org.fcitx.Fcitx5 --object-path /controller --method org.fcitx.Fcitx.Controller1.ReloadAddonConfig 'lingyao'".to_owned()
         )
     );
     // 五笔版只重置自己的插件。
-    assert!(command(true, "msime-wubi")
+    assert!(command(true, "lingyao-wubi")
         .1
-        .ends_with("ReloadAddonConfig 'msime-wubi'"));
-    assert_eq!(command(false, "msime"), ("ibus", "restart".to_owned()));
+        .ends_with("ReloadAddonConfig 'lingyao-wubi'"));
+    assert_eq!(command(false, "lingyao"), ("ibus", "restart".to_owned()));
 }
 
 #[test]
@@ -517,13 +517,13 @@ fn external_links_require_clean_https_urls() {
 #[test]
 fn ios_clipboard_history_is_permission_gated_not_preference_gated() {
     assert!(!super::clipboard_history_uses_preference(
-        msime_client_core::host_surface::HostPlatform::Ios
+        lingyao_client_core::host_surface::HostPlatform::Ios
     ));
     for platform in [
-        msime_client_core::host_surface::HostPlatform::Windows,
-        msime_client_core::host_surface::HostPlatform::Macos,
-        msime_client_core::host_surface::HostPlatform::Linux,
-        msime_client_core::host_surface::HostPlatform::Android,
+        lingyao_client_core::host_surface::HostPlatform::Windows,
+        lingyao_client_core::host_surface::HostPlatform::Macos,
+        lingyao_client_core::host_surface::HostPlatform::Linux,
+        lingyao_client_core::host_surface::HostPlatform::Android,
     ] {
         assert!(super::clipboard_history_uses_preference(platform));
     }
@@ -577,7 +577,7 @@ fn ios_first_run_host_options_name_the_bundled_language_dictionaries() {
     let empty = super::ios_host_options_document(None, &resources, bundle.path())
         .expect("first-run options");
     assert!(empty.get("language_dictionaries").is_none());
-    std::fs::write(dictionaries.join("msime-zhuyin.db"), b"fixture").expect("msime-zhuyin.db");
+    std::fs::write(dictionaries.join("lingyao-zhuyin.db"), b"fixture").expect("lingyao-zhuyin.db");
     let document = super::ios_host_options_document(None, &resources, bundle.path())
         .expect("first-run options");
     assert_eq!(
@@ -589,10 +589,10 @@ fn ios_first_run_host_options_name_the_bundled_language_dictionaries() {
 #[test]
 fn ios_named_skin_library_shares_the_apple_app_group_root() {
     let root =
-        super::ios_custom_skin_library_root(std::path::Path::new("/fixture/app-group/MSIME"));
+        super::ios_custom_skin_library_root(std::path::Path::new("/fixture/app-group/LINGYAO"));
     assert_eq!(root, std::path::Path::new("/fixture/app-group"));
     assert_eq!(
-        msime_client_core::skin::custom_library::CustomSkinLibraryStore::new(root).path(),
+        lingyao_client_core::skin::custom_library::CustomSkinLibraryStore::new(root).path(),
         std::path::Path::new("/fixture/app-group/CustomSkins/library.json")
     );
 }
@@ -601,7 +601,7 @@ fn ios_named_skin_library_shares_the_apple_app_group_root() {
 fn ios_community_reply_library_shares_the_keyboard_app_group_file() {
     assert_eq!(
         super::ios_community_resource_library_path(std::path::Path::new(
-            "/fixture/app-group/MSIME"
+            "/fixture/app-group/LINGYAO"
         )),
         std::path::Path::new("/fixture/app-group/CommunityLibrary.json")
     );
@@ -628,7 +628,7 @@ fn ios_prepared_host_options_are_preserved_and_malformed_json_is_rejected() {
 
 #[test]
 fn ios_voice_batch_configuration_uses_current_preferences_and_safe_defaults() {
-    let mut preferences = msime_client_core::preferences::Preferences::default();
+    let mut preferences = lingyao_client_core::preferences::Preferences::default();
     preferences.voice_input.asr_provider = "openai".into();
     preferences.voice_input.asr_endpoint.clear();
     preferences.voice_input.asr_model.clear();
@@ -679,7 +679,7 @@ fn ios_voice_batch_configuration_covers_everyapi_and_mistral() {
             "voxtral-mini-latest",
         ),
     ] {
-        let mut preferences = msime_client_core::preferences::Preferences::default();
+        let mut preferences = lingyao_client_core::preferences::Preferences::default();
         preferences.voice_input.asr_provider = provider.into();
         preferences.voice_input.asr_endpoint.clear();
         preferences.voice_input.asr_model.clear();
@@ -702,7 +702,7 @@ fn ios_voice_batch_configuration_covers_everyapi_and_mistral() {
 
 #[test]
 fn ios_keyboard_ai_preferences_resolve_origin_tokens_and_disable_incomplete_drafts() {
-    let mut preferences = msime_client_core::preferences::Preferences::default();
+    let mut preferences = lingyao_client_core::preferences::Preferences::default();
     preferences.ai_assistant.enabled = true;
     preferences.ai_assistant.provider = "deepseek".into();
     preferences.ai_assistant.endpoint = "https://API.Example.invalid/v1/chat/completions".into();
@@ -739,7 +739,7 @@ fn ios_keyboard_ai_preferences_resolve_origin_tokens_and_disable_incomplete_draf
 
 #[test]
 fn ios_voice_doubao_configuration_uses_shared_auth_and_current_preferences() {
-    let mut preferences = msime_client_core::preferences::Preferences::default();
+    let mut preferences = lingyao_client_core::preferences::Preferences::default();
     preferences.voice_input.asr_token = "synthetic-key".into();
     preferences.voice_input.asr_app_key = "stale-app".into();
     preferences.voice_input.doubao_auth_mode = "api_key".into();
@@ -885,7 +885,7 @@ fn credential_tests_route_to_the_configured_provider_without_credentials() {
 
 #[test]
 fn second_launch_routes_are_taken_from_explicit_arguments() {
-    use msime_client_core::host_surface::{SettingsCategory, SurfaceRoute};
+    use lingyao_client_core::host_surface::{SettingsCategory, SurfaceRoute};
 
     assert_eq!(
         super::launch_route_from_args(&["--route=emoji".into()]),
@@ -907,7 +907,7 @@ fn second_launch_routes_are_taken_from_explicit_arguments() {
 #[cfg(target_os = "macos")]
 #[test]
 fn macos_single_instance_admits_only_settings_launches() {
-    use msime_client_core::host_surface::{SettingsCategory, SurfaceRoute};
+    use lingyao_client_core::host_surface::{SettingsCategory, SurfaceRoute};
 
     for route in [
         None,
@@ -937,14 +937,14 @@ fn macos_single_instance_admits_only_settings_launches() {
 /// running instance never comes forward.
 #[test]
 fn second_launch_without_a_route_activates_the_settings_window() {
-    use msime_client_core::host_surface::SurfaceRoute;
+    use lingyao_client_core::host_surface::SurfaceRoute;
 
     assert_eq!(
         super::second_launch_route(&[]),
         SurfaceRoute::Settings(None)
     );
     assert_eq!(
-        super::second_launch_route(&["/opt/msime/msime-desktop".into()]),
+        super::second_launch_route(&["/opt/lingyao/lingyao-desktop".into()]),
         SurfaceRoute::Settings(None)
     );
     // A route that fails to parse is not a request for a different window, so it falls back the
@@ -1083,7 +1083,7 @@ fn macos_restart_targets_the_input_method_bundle() {
         [
             "-n",
             "-b",
-            "app.msime.inputmethod.LingyaoIME",
+            "app.lingyao.inputmethod.LingyaoIME",
             "--args",
             "--reregister-input-source",
         ]
@@ -1106,7 +1106,7 @@ fn on_device_translation_downloadable_keeps_only_choosable_targets() {
 
 #[test]
 fn settings_routes_select_a_page_the_shared_ui_accepts() {
-    use msime_client_core::host_surface::{SettingsCategory, SurfaceRoute};
+    use lingyao_client_core::host_surface::{SettingsCategory, SurfaceRoute};
     for category in SettingsCategory::ALL {
         assert_eq!(
             super::settings_page_from_route(Some(SurfaceRoute::Settings(Some(category)))),
@@ -1179,13 +1179,13 @@ fn ink_handwriting_answer_reports_no_result_when_no_model_can_follow() {
 
 /// 在 `state_root` 下伪造一个已完整安装的手写资源包，返回其中的模型路径。
 fn publish_fake_handwriting_pack(state_root: &std::path::Path) -> std::path::PathBuf {
-    use msime_client_core::resource_packs::{self, ResourcePack};
+    use lingyao_client_core::resource_packs::{self, ResourcePack};
     let pack = resource_packs::root(state_root).join(ResourcePack::Handwriting.id());
     std::fs::create_dir_all(&pack).unwrap();
     let model = pack.join("handwriting-zh_CN.model");
     std::fs::write(&model, b"synthetic").unwrap();
     std::fs::write(
-        pack.join(msime_client_core::voice::local_models::MANIFEST_FILE),
+        pack.join(lingyao_client_core::voice::local_models::MANIFEST_FILE),
         serde_json::to_vec(&ResourcePack::Handwriting.manifest()).unwrap(),
     )
     .unwrap();
@@ -1211,7 +1211,7 @@ fn packaged_handwriting_model_prefers_the_option_over_a_downloaded_pack() {
         Some(downloaded.clone())
     );
     // 只有选项和环境变量都没给、也没有随包模型时，三个桌面平台才用已下载的资源包（macOS 上已下载的还排在旧版本随包的模型之前）。
-    if std::env::var_os("MSIME_HANDWRITING_MODEL").is_none_or(|value| value.is_empty())
+    if std::env::var_os("LINGYAO_HANDWRITING_MODEL").is_none_or(|value| value.is_empty())
         && (cfg!(target_os = "macos") || super::bundled_handwriting_model().is_none())
     {
         let document = serde_json::json!({
@@ -1253,7 +1253,7 @@ fn packaged_handwriting_model_ignores_a_relative_preferences_directory() {
 #[test]
 fn typing_statistics_status_reports_file_availability_without_content() {
     let directory = tempfile::tempdir().unwrap();
-    let store = msime_client_core::typing_statistics::TypingStatisticsStore::new(directory.path());
+    let store = lingyao_client_core::typing_statistics::TypingStatisticsStore::new(directory.path());
     let missing = super::typing_statistics_status(&store, store.load().unwrap())
         .ok()
         .unwrap();
@@ -1330,7 +1330,7 @@ fn csp_lets_the_skin_editor_decode_a_picked_photo() {
 
 #[test]
 fn every_opened_panel_label_can_be_closed() {
-    use msime_client_core::host_surface::{HostPlatform, SurfaceRoute};
+    use lingyao_client_core::host_surface::{HostPlatform, SurfaceRoute};
     let closable = crate::panel_window::CLOSABLE_PANELS;
     for label in [
         "keyboard-panel",
@@ -1475,7 +1475,7 @@ fn scanning_missing_skin_directory_does_not_create_it() {
 #[test]
 fn diagnostic_log_target_resolves_from_the_host_directory() {
     let state = tempfile::tempdir().unwrap();
-    let directory = state.path().join("MSIME");
+    let directory = state.path().join("LINGYAO");
     std::fs::create_dir_all(&directory).unwrap();
     assert_eq!(
         super::diagnostic_log_target(&directory),
@@ -1533,7 +1533,7 @@ fn linux_input_method_reply_separates_delivery_from_refusal() {
 #[cfg(target_os = "linux")]
 #[test]
 fn linux_input_method_key_request_names_the_keysym_and_evdev_code() {
-    let request: msime_client_core::panels::KeyboardInputRequest =
+    let request: lingyao_client_core::panels::KeyboardInputRequest =
         serde_json::from_value(serde_json::json!({
             "virtual_key": 0x41,
             "shift": true,
@@ -1549,7 +1549,7 @@ fn linux_input_method_key_request_names_the_keysym_and_evdev_code() {
         }))
     );
     // Commit and navigation keys leave the sticky modifiers behind.
-    let backspace: msime_client_core::panels::KeyboardInputRequest =
+    let backspace: lingyao_client_core::panels::KeyboardInputRequest =
         serde_json::from_value(serde_json::json!({
             "virtual_key": 0x08,
             "shift": false,
@@ -1715,7 +1715,7 @@ fn write_candidate_skin(skins: &std::path::Path, id: &str, name: &str) {
 #[test]
 fn resolve_theme_reads_the_custom_package_from_the_host_skin_root() {
     use super::{resolve_theme_at, ResolveThemeRequest};
-    use msime_client_core::skin::theme::{GlobalTheme, ThemeSource};
+    use lingyao_client_core::skin::theme::{GlobalTheme, ThemeSource};
     let directory = tempfile::tempdir().expect("temporary directory");
     let package = directory.path().join("sakura");
     std::fs::create_dir_all(&package).unwrap();
@@ -1742,7 +1742,7 @@ fn resolve_theme_reads_the_custom_package_from_the_host_skin_root() {
     // The package's paper base fixes the light mode, so a dark host still gets the light palette.
     assert_eq!(
         resolved.appearance,
-        Some(msime_client_core::skin::theme::ThemeAppearance::Light)
+        Some(lingyao_client_core::skin::theme::ThemeAppearance::Light)
     );
     assert_eq!(candidate.surface.as_deref(), Some("#FFF0F5"));
     assert_eq!(candidate.text.as_deref(), Some("#123456"));
@@ -1794,7 +1794,7 @@ fn resolve_theme_reads_the_custom_package_from_the_host_skin_root() {
     .unwrap();
     assert_eq!(
         based.appearance,
-        Some(msime_client_core::skin::theme::ThemeAppearance::Dark)
+        Some(lingyao_client_core::skin::theme::ThemeAppearance::Dark)
     );
     assert!(based.keyboard.is_some());
     // Retired and misspelt ids are refused, not read as system.
@@ -1867,7 +1867,7 @@ fn runtime_options_sync_publishes_the_installed_skin_catalog() {
 
     // A rescan after the user removes the package publishes the smaller list without a save.
     std::fs::remove_dir_all(skins.join("sakura")).unwrap();
-    publish_candidate_skin_catalog(&state, &msime_client_core::skin::catalog::scan(&skins))
+    publish_candidate_skin_catalog(&state, &lingyao_client_core::skin::catalog::scan(&skins))
         .unwrap();
     let rescanned: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
     assert_eq!(
@@ -1884,7 +1884,7 @@ fn runtime_options_sync_publishes_the_installed_skin_catalog() {
     };
     publish_candidate_skin_catalog(
         &missing,
-        &msime_client_core::skin::catalog::SkinCatalog::default(),
+        &lingyao_client_core::skin::catalog::SkinCatalog::default(),
     )
     .unwrap();
 }
@@ -1901,7 +1901,7 @@ fn runtime_options_skin_catalog_stays_within_what_the_hosts_read() {
             &format!("皮肤 {index:02}"),
         );
     }
-    let catalog = msime_client_core::skin::catalog::scan(&skins);
+    let catalog = lingyao_client_core::skin::catalog::scan(&skins);
     let mut preferences = serde_json::to_value(Preferences::default()).unwrap();
     // The last package by name: beyond the package cap and the first to go when trimming, were the selection not protected in both.
     preferences["custom_theme"]["candidate_skin"] = "skin39".into();
@@ -1969,7 +1969,7 @@ fn runtime_options_sync_keeps_the_screen_keyboard_photo_out_of_the_host_copy() {
         ..Preferences::default()
     };
     preferences.custom_theme.keyboard =
-        Some(msime_client_core::preferences::TouchKeyboardSkinDesign {
+        Some(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
             photo: Some(screen_keyboard_photo()),
             photo_shade: Some(0.5),
             ..Default::default()
@@ -2041,7 +2041,7 @@ fn runtime_options_the_hosts_could_not_read_are_refused_and_the_old_file_kept() 
         skins: Some(skins.clone()),
     };
     assert!(matches!(
-        publish_candidate_skin_catalog(&state, &msime_client_core::skin::catalog::scan(&skins)),
+        publish_candidate_skin_catalog(&state, &lingyao_client_core::skin::catalog::scan(&skins)),
         Err(RuntimeOptionsError::TooLarge)
     ));
     assert_eq!(std::fs::read(&path).unwrap(), oversized);
@@ -2070,7 +2070,7 @@ fn a_save_the_hosts_could_not_read_is_refused_and_the_store_keeps_its_preference
     // Picking a photo for the screen keyboard saves: the store keeps it, and the hosts get a copy they can still read.
     let mut photographed = store.load().unwrap().preferences;
     photographed.custom_theme.keyboard =
-        Some(msime_client_core::preferences::TouchKeyboardSkinDesign {
+        Some(lingyao_client_core::preferences::TouchKeyboardSkinDesign {
             photo: Some(screen_keyboard_photo()),
             ..Default::default()
         });
@@ -2120,7 +2120,7 @@ fn dictionary_requests_do_not_see_the_published_skin_catalog() {
     };
     // The Host API rejects the whole request when the catalog reaches it, which is what every dictionary page hit after the first save.
     assert_eq!(
-        msime_host_api::dictionary_request_json(&request(&document)).unwrap_err(),
+        lingyao_host_api::dictionary_request_json(&request(&document)).unwrap_err(),
         "invalid dictionary request"
     );
 
@@ -2128,7 +2128,7 @@ fn dictionary_requests_do_not_see_the_published_skin_catalog() {
     assert!(options.get("candidate_skin_catalog").is_none());
     assert_eq!(options["user_data"], document["user_data"]);
     assert_ne!(
-        msime_host_api::dictionary_request_json(&request(&options))
+        lingyao_host_api::dictionary_request_json(&request(&options))
             .err()
             .as_deref(),
         Some("invalid dictionary request")
@@ -2156,7 +2156,7 @@ fn skin_rescan_keeps_its_list_when_the_catalog_cannot_be_published() {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 #[test]
 fn desktop_account_storage_round_trips_an_owner_only_session() {
-    use msime_client_core::account::{
+    use lingyao_client_core::account::{
         AccountSessionFileLayout, AccountSessionStorage, AccountTokens, AccountUser,
         FileAccountSessionStorage, SavedAccountSession,
     };
@@ -2229,7 +2229,7 @@ fn desktop_account_storage_round_trips_an_owner_only_session() {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 #[test]
 fn desktop_account_storage_refuses_a_symlinked_or_oversized_store() {
-    use msime_client_core::account::{
+    use lingyao_client_core::account::{
         AccountSessionFileLayout, AccountSessionStorage, FileAccountSessionStorage,
     };
 
@@ -2283,7 +2283,7 @@ fn the_macos_release_is_read_or_left_out() {
 #[cfg(not(target_os = "ios"))]
 #[test]
 fn preferences_recovery_serializes_the_fields_the_settings_page_reads() {
-    use msime_client_core::preferences::PreferencesSnapshot;
+    use lingyao_client_core::preferences::PreferencesSnapshot;
 
     let recovered = serde_json::to_value(super::PreferencesRecovery {
         snapshot: PreferencesSnapshot::default(),
@@ -2473,8 +2473,8 @@ fn sway_container_owner_is_read_from_the_matching_view() {
 /// 不提供手写的版本（日文、越南文和藏文版）不打开手写面板和手写设置页，别的界面照常；提供中文方案的版本什么都不少。
 #[test]
 fn editions_without_handwriting_open_no_handwriting_surface() {
-    use msime_client_core::edition::Edition;
-    use msime_client_core::host_surface::{SettingsCategory, SurfaceRoute};
+    use lingyao_client_core::edition::Edition;
+    use lingyao_client_core::host_surface::{SettingsCategory, SurfaceRoute};
 
     let handwriting = [
         SurfaceRoute::Handwriting,

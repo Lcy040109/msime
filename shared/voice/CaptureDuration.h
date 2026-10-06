@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <mutex>
 
-namespace msime::voice {
-// MSIME-Windows develop 30a22e6f discards captures shorter than 1/4 second.
+namespace lingyao::voice {
+// LINGYAO-Windows develop 30a22e6f discards captures shorter than 1/4 second.
 // Count admitted input frames, not wall time or resampler padding.
 inline bool short_capture(double seconds) {
   return !std::isfinite(seconds) || seconds < 0.25;
@@ -36,4 +36,4 @@ private:
   std::uint64_t frames_ = 0;
   bool stopped_ = false;
 };
-} // namespace msime::voice
+} // namespace lingyao::voice

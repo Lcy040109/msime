@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-@objc(MSIMEClientSession) final class HandwritingSessionStub: NSObject {
+@objc(LINGYAOClientSession) final class HandwritingSessionStub: NSObject {
   static var request: NSDictionary?
 
   @objc class func handwritingProviderRequest(_ request: NSDictionary) -> NSDictionary {
@@ -39,7 +39,7 @@ import SwiftUI
       assertionFailure("empty local handwriting input was accepted")
     } catch { }
 
-    let snapshotDirectory = ProcessInfo.processInfo.environment["MSIME_HANDWRITING_SNAPSHOT_DIR"]
+    let snapshotDirectory = ProcessInfo.processInfo.environment["LINGYAO_HANDWRITING_SNAPSHOT_DIR"]
     for (name, theme) in [("light", "light"), ("dark", "dark")] {
       appearance.apply(["theme": theme, "handwriting_theme": "follow"])
       let renderer = ImageRenderer(content: MacHandwritingToolView(appearance: appearance, snapshotCanvas: true,

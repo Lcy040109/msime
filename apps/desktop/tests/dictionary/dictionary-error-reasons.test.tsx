@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { expect, test } from "vitest";
-import { dictionaryErrorMessage } from "@msime/ui";
+import { dictionaryErrorMessage } from "@lingyao/ui";
 
 const FALLBACK = "全拼保存失败，请稍后重试。";
 

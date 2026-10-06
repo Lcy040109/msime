@@ -21,7 +21,7 @@ template <class F> void await(F ready) {
 } // namespace
 void preference_monitor_tests(const std::string &options,
                               const std::string &directory) {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   auto write = [&](const std::string &value) {
     std::ofstream output(std::filesystem::u8path(directory) /
                          "preferences.json");

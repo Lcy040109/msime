@@ -7,12 +7,12 @@
 // absolute socket in runtime-options.json wins, then the process environment
 // is used as the compatibility fallback.  Invalid or missing paths are not
 // advertised as a live provider, so native Speech remains the safe fallback.
-static inline NSString *MSIMEVoiceProviderSocketFromConfiguration(NSDictionary *options,
+static inline NSString *LINGYAOVoiceProviderSocketFromConfiguration(NSDictionary *options,
                                                                    NSDictionary *environment,
                                                                    NSFileManager *fileManager) {
     NSArray *values = @[
         ([options isKindOfClass:NSDictionary.class] ? options[@"voice_provider_socket"] : nil) ?: NSNull.null,
-        ([environment isKindOfClass:NSDictionary.class] ? environment[@"MSIME_VOICE_PROVIDER_SOCKET"] : nil) ?: NSNull.null,
+        ([environment isKindOfClass:NSDictionary.class] ? environment[@"LINGYAO_VOICE_PROVIDER_SOCKET"] : nil) ?: NSNull.null,
     ];
     for (id value in values) {
         if (![value isKindOfClass:NSString.class]) continue;
@@ -24,19 +24,19 @@ static inline NSString *MSIMEVoiceProviderSocketFromConfiguration(NSDictionary *
     return nil;
 }
 
-static inline NSString *MSIMEVoiceProviderSocketFromOptionsPath(NSString *optionsPath,
+static inline NSString *LINGYAOVoiceProviderSocketFromOptionsPath(NSString *optionsPath,
                                                                 NSDictionary *environment,
                                                                 NSFileManager *fileManager) {
-    if (!optionsPath) optionsPath = MSIMEDefaultRuntimeOptionsPath(fileManager);
-    NSData *data = MSIMEReadRuntimeOptionsData(optionsPath);
+    if (!optionsPath) optionsPath = LINGYAODefaultRuntimeOptionsPath(fileManager);
+    NSData *data = LINGYAOReadRuntimeOptionsData(optionsPath);
     NSDictionary *options = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
-    return MSIMEVoiceProviderSocketFromConfiguration(options, environment, fileManager);
+    return LINGYAOVoiceProviderSocketFromConfiguration(options, environment, fileManager);
 }
 
-static inline NSString *MSIMEVoiceProviderSocket(void) {
-    NSString *optionsPath = NSProcessInfo.processInfo.environment[@"MSIME_CLIENT_HOST_OPTIONS"];
+static inline NSString *LINGYAOVoiceProviderSocket(void) {
+    NSString *optionsPath = NSProcessInfo.processInfo.environment[@"LINGYAO_CLIENT_HOST_OPTIONS"];
     if (![optionsPath isKindOfClass:NSString.class] || !optionsPath.isAbsolutePath)
         optionsPath = [[NSBundle.mainBundle pathForResource:@"runtime-options" ofType:@"json"] copy];
-    return MSIMEVoiceProviderSocketFromOptionsPath(optionsPath, NSProcessInfo.processInfo.environment,
+    return LINGYAOVoiceProviderSocketFromOptionsPath(optionsPath, NSProcessInfo.processInfo.environment,
                                                    NSFileManager.defaultManager);
 }

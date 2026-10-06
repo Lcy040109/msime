@@ -2,7 +2,7 @@
 #include "ReplyCodec.h"
 #include <cstring>
 
-namespace msime::windows {
+namespace lingyao::windows {
 ReverseHandshake accept_reverse(HANDLE pipe, uint32_t role, DWORD timeout,
                                 HANDLE cancel) {
   auto result = verify_reverse(pipe, role, timeout, cancel);
@@ -129,4 +129,4 @@ MainHandshake negotiate_main(HANDLE main_pipe, HANDLE reply_pipe,
                                            : HandshakeStatus::ProtocolRejected;
   return result;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

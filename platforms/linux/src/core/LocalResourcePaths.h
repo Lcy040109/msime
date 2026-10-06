@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 
-#ifndef MSIME_RELATIVE_DATA_DIR
-#define MSIME_RELATIVE_DATA_DIR "../share"
+#ifndef LINGYAO_RELATIVE_DATA_DIR
+#define LINGYAO_RELATIVE_DATA_DIR "../share"
 #endif
 
-namespace msime_linux {
+namespace lingyao_linux {
 // Both tools consume files, even when the Host API takes a containing
-// directory (the Emoji catalog is always resources/msime-others.db).
+// directory (the Emoji catalog is always resources/lingyao-others.db).
 inline bool resource_file(const std::filesystem::path &path) {
   std::error_code error;
   return path.is_absolute() && std::filesystem::is_regular_file(path, error);
@@ -51,7 +51,7 @@ inline std::string local_resource(const char *environment,
   std::error_code error;
   const auto executable = std::filesystem::read_symlink("/proc/self/exe", error);
   if (!error && executable.is_absolute())
-    roots.emplace_back(executable.parent_path() / MSIME_RELATIVE_DATA_DIR);
+    roots.emplace_back(executable.parent_path() / LINGYAO_RELATIVE_DATA_DIR);
 
   const char *data_dirs = std::getenv("XDG_DATA_DIRS");
   const std::string directories = data_dirs && *data_dirs
@@ -73,4 +73,4 @@ inline std::string local_resource(const char *environment,
   }
   return {};
 }
-} // namespace msime_linux
+} // namespace lingyao_linux

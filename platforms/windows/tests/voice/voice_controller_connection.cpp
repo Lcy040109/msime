@@ -3,9 +3,9 @@
 #include <thread>
 
 int main() {
-  using namespace msime::windows;
+  using namespace lingyao::windows;
   using namespace FanyImeVoiceController;
-  const auto name = std::wstring(L"\\\\.\\pipe\\MSIMEControllerFixture-") + std::to_wstring(GetCurrentProcessId());
+  const auto name = std::wstring(L"\\\\.\\pipe\\LINGYAOControllerFixture-") + std::to_wstring(GetCurrentProcessId());
   DWORD error = ERROR_SUCCESS;
   auto listener = PipeListener::create(name, error);
   assert(listener);

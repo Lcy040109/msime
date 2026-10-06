@@ -8,9 +8,9 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
-#include <msimeui/DeviceResources.h>
+#include <lingyaoui/DeviceResources.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The tray menu the shipped language bar opens: a composed card of commands, shown on request and dismissed as soon as it loses the pointer or focus. It owns no input state and never takes focus from the application being typed into, so the mode rows still address the focused TIP.
 class TrayMenuWindow final {
 public:
@@ -61,7 +61,7 @@ private:
     Apartment &operator=(const Apartment &) = delete;
     bool owned = false;
   } apartment_;
-  msimeui::DeviceResources device_;
+  lingyaoui::DeviceResources device_;
   CandidatePalette palette_;
   TrayMenuMetrics metrics_;
   std::vector<TrayMenuItem> items_;
@@ -73,4 +73,4 @@ private:
   unsigned dpi_ = 96;
   bool failed_ = false;
 };
-} // namespace msime::windows
+} // namespace lingyao::windows

@@ -6,8 +6,8 @@
 #include <optional>
 #include <string>
 
-namespace msime::windows {
-// Reads the package assets (decoration, background, geometry and toolbar palette) from the catalog msime_client_skin_catalog returns. Its candidate colours come from msime_client_resolve_theme instead, and the assets are drawn exactly when that resolution names the package in candidate_skin. The catalog serializes SkinSummary in camelCase. The shared catalog already validated the manifest; nothing here trusts it further than the bounds below.
+namespace lingyao::windows {
+// Reads the package assets (decoration, background, geometry and toolbar palette) from the catalog lingyao_client_skin_catalog returns. Its candidate colours come from lingyao_client_resolve_theme instead, and the assets are drawn exactly when that resolution names the package in candidate_skin. The catalog serializes SkinSummary in camelCase. The shared catalog already validated the manifest; nothing here trusts it further than the bounds below.
 // The mascot a package draws above the card, if it has one.
 //
 // The catalog parses these and the settings preview renders them, but the live
@@ -268,4 +268,4 @@ candidate_background_rects(CandidateSkinFit fit, const CandidateSkinRect &card,
   rects.destination.bottom = rects.destination.top + drawn_height;
   return rects;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

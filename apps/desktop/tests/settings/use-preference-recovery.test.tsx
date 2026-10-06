@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import { usePreferenceRecovery, type Preferences, type Snapshot } from "@msime/ui";
+import { usePreferenceRecovery, type Preferences, type Snapshot } from "@lingyao/ui";
 
 afterEach(cleanup);
 

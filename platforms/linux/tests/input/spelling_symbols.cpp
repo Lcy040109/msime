@@ -4,9 +4,9 @@
 #include <cassert>
 
 int main() {
-  using msime::linux_host::local_mode_spelling;
-  using msime::linux_host::spelling_digits;
-  using msime::linux_host::spelling_symbol;
+  using lingyao::linux_host::local_mode_spelling;
+  using lingyao::linux_host::spelling_digits;
+  using lingyao::linux_host::spelling_symbol;
   using Json = nlohmann::json;
 
   // The expression mode spells with digits and operators: every one of them is input, and nothing else is.
@@ -27,7 +27,7 @@ int main() {
   assert(local_mode_spelling(unicode, U'7'));
   assert(!local_mode_spelling(unicode, U'+'));
   // Shift and the number row pick a Unicode candidate even where the chord types the digit (AZERTY), and only then: a bare digit, a key off the row, a symbol or no list to pick from leaves the digit input.
-  using msime::linux_host::shifted_number_row_picks;
+  using lingyao::linux_host::shifted_number_row_picks;
   assert(shifted_number_row_picks(unicode, U'1', true, true, true));
   assert(!shifted_number_row_picks(unicode, U'1', false, true, true));
   assert(!shifted_number_row_picks(unicode, U'1', true, false, true));
@@ -53,8 +53,8 @@ int main() {
   assert(!spelling_symbol(Json{{"spelling_symbols", 12}}, U'1'));
 
   // Outside a local mode, a scheme that opens none spells with every symbol it lists: Zhuyin's keyboard keys idle, while composing (Space is the first tone) and with its list open, where "0" is still a key and 1 to 9 pick candidates.
-  using msime::linux_host::engine_spelling;
-  using msime::linux_host::spelling_space;
+  using lingyao::linux_host::engine_spelling;
+  using lingyao::linux_host::spelling_space;
   const Json zhuyin_idle = {{"scheme", 6}, {"local_mode", "none"}, {"spelling_symbols", "125890,./;-"}};
   for (char32_t character : U"125890,./;-")
     if (character != 0) assert(engine_spelling(zhuyin_idle, character));
@@ -125,7 +125,7 @@ int main() {
   assert(!spelling_symbol(Json{{"spelling_symbols", std::string("0\x01", 2)}}, 1));
 
   // The status menus read a missing switch as its client-core default: the plugin modes are off.
-  using msime::linux_host::local_mode_enabled_by_default;
+  using lingyao::linux_host::local_mode_enabled_by_default;
   for (const char *mode : {"unicode", "date_time", "quick_phrase", "emoji", "kaomoji",
                            "super_jianpin", "temporary_english", "temporary_japanese"})
     assert(local_mode_enabled_by_default(mode));

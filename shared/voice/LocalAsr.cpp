@@ -36,7 +36,7 @@
 #include <mach-o/dyld.h>
 #endif
 
-namespace msime::voice {
+namespace lingyao::voice {
 namespace {
 
 namespace fs = std::filesystem;
@@ -72,7 +72,7 @@ nlohmann::json read_manifest(const fs::path &directory) {
 
 // ---- runtime loading ----
 
-#define MSIME_SHERPA_FUNCTIONS(X)                                                                   \
+#define LINGYAO_SHERPA_FUNCTIONS(X)                                                                   \
   X(SherpaOnnxCreateOnlineRecognizer)                                                             \
   X(SherpaOnnxDestroyOnlineRecognizer)                                                            \
   X(SherpaOnnxCreateOnlineStream)                                                                 \
@@ -104,9 +104,9 @@ nlohmann::json read_manifest(const fs::path &directory) {
   X(SherpaOnnxVoiceActivityDetectorFlush)
 
 struct SherpaApi {
-#define MSIME_SHERPA_POINTER(name) decltype(&::name) name = nullptr;
-  MSIME_SHERPA_FUNCTIONS(MSIME_SHERPA_POINTER)
-#undef MSIME_SHERPA_POINTER
+#define LINGYAO_SHERPA_POINTER(name) decltype(&::name) name = nullptr;
+  LINGYAO_SHERPA_FUNCTIONS(LINGYAO_SHERPA_POINTER)
+#undef LINGYAO_SHERPA_POINTER
 };
 
 #if defined(_WIN32)
@@ -158,14 +158,14 @@ std::vector<fs::path> library_candidates() {
   candidates.reserve(5);
   if (!configured_library.empty())
     candidates.emplace_back(fs::u8path(configured_library));
-  if (const char *overridden = std::getenv("MSIME_SHERPA_ONNX_LIBRARY"); overridden && *overridden)
+  if (const char *overridden = std::getenv("LINGYAO_SHERPA_ONNX_LIBRARY"); overridden && *overridden)
     candidates.emplace_back(fs::u8path(overridden));
   if (const auto directory = executable_directory(); !directory.empty()) {
     candidates.push_back(directory / kLibraryName);
 #if defined(__APPLE__)
     candidates.push_back(directory / ".." / "Frameworks" / kLibraryName);
 #elif !defined(_WIN32)
-    candidates.push_back(directory / ".." / "lib" / "msime" / kLibraryName);
+    candidates.push_back(directory / ".." / "lib" / "lingyao" / kLibraryName);
     candidates.push_back(directory / ".." / "lib" / kLibraryName);
 #endif
   }
@@ -200,14 +200,14 @@ void *find_symbol(void *library, const char *name) {
 }
 
 bool bind(void *library, SherpaApi &api, std::string &error) {
-#define MSIME_SHERPA_BIND(name)                                                                     \
+#define LINGYAO_SHERPA_BIND(name)                                                                     \
   api.name = reinterpret_cast<decltype(api.name)>(find_symbol(library, #name));                   \
   if (!api.name) {                                                                                \
     error = std::string("sherpa-onnx runtime lacks ") + #name;                                    \
     return false;                                                                                 \
   }
-  MSIME_SHERPA_FUNCTIONS(MSIME_SHERPA_BIND)
-#undef MSIME_SHERPA_BIND
+  LINGYAO_SHERPA_FUNCTIONS(LINGYAO_SHERPA_BIND)
+#undef LINGYAO_SHERPA_BIND
   return true;
 }
 
@@ -937,4 +937,4 @@ std::string tidy_local_transcript(std::string_view text) {
   return out;
 }
 
-} // namespace msime::voice
+} // namespace lingyao::voice

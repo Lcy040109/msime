@@ -1,4 +1,4 @@
-import app.msime.android.SelectionEchoTracker;
+import app.lingyao.android.SelectionEchoTracker;
 
 public final class SelectionEchoTrackerSmoke {
     static void check(boolean condition) { if (!condition) throw new AssertionError(); }

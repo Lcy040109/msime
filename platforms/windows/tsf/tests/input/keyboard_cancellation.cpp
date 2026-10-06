@@ -5,7 +5,7 @@
 
 int main()
 {
-    using namespace msime::tsf;
+    using namespace lingyao::tsf;
     const KeyboardCancellationIdentity expected{19, 23};
     assert(keyboard_cancellation_matches(expected, expected, true, true));
     assert(!keyboard_cancellation_matches(expected, expected, false, true));

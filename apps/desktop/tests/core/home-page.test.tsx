@@ -3,7 +3,7 @@ import { testHost } from "../support/host";
 import { settingsFormReady } from "../support/settings-form";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { HomePage, SettingsPage, type Snapshot } from "@msime/ui";
+import { HomePage, SettingsPage, type Snapshot } from "@lingyao/ui";
 
 afterEach(cleanup);
 

@@ -5,7 +5,7 @@
 #include <cstring>
 #include <limits>
 
-namespace msime::windows {
+namespace lingyao::windows {
 namespace {
 IoResult stale() {
   return {IoStatus::Cancelled, ERROR_OPERATION_ABORTED, 0, false, {}};
@@ -411,4 +411,4 @@ void PipeRegistry::shutdown() {
       client->clear(role);
   }
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

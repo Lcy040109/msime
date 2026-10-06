@@ -6,7 +6,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SPEC = importlib.util.spec_from_file_location("msime_voice_doubao", ROOT / "scripts" / "msime_voice_doubao.py")
+SPEC = importlib.util.spec_from_file_location("lingyao_voice_doubao", ROOT / "scripts" / "lingyao_voice_doubao.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(MODULE)

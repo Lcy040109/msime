@@ -1,4 +1,4 @@
-package app.msime.android;
+package app.lingyao.android;
 
 /** 键盘不能把用户要求的本地识别静默切换到系统服务。 */
 public final class VoiceConfigurationSmoke {

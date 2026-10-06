@@ -1,6 +1,6 @@
 //! The candidate skin that follows the Omarchy theme.
 //!
-//! Omarchy (basecamp/omarchy) describes each theme with a `colors.toml` and runs `~/.config/omarchy/hooks/theme-set.d/*` after it switches theme. The hook MSIME installs there runs `msime-linux-settings --sync-omarchy-theme`, which reads the new palette through Omarchy's own resolver (`omarchy-theme-color --all`, the one its templates use, so legacy `colorN` themes resolve the same way), writes it as the `omarchy` package in the skin root and publishes the catalog the Linux hosts read. The package is an ordinary skin: it is listed, chosen and removed like any other, and it only recolours the candidate window once the user picks it.
+//! Omarchy (basecamp/omarchy) describes each theme with a `colors.toml` and runs `~/.config/omarchy/hooks/theme-set.d/*` after it switches theme. The hook LINGYAO installs there runs `lingyao-linux-settings --sync-omarchy-theme`, which reads the new palette through Omarchy's own resolver (`omarchy-theme-color --all`, the one its templates use, so legacy `colorN` themes resolve the same way), writes it as the `omarchy` package in the skin root and publishes the catalog the Linux hosts read. The package is an ordinary skin: it is listed, chosen and removed like any other, and it only recolours the candidate window once the user picks it.
 use std::collections::HashMap;
 use std::io;
 use std::path::Path;
@@ -24,7 +24,7 @@ pub(crate) fn skin_manifest(colors: &HashMap<String, String>) -> Option<String> 
     let color = |key: &str| {
         colors
             .get(key)
-            .and_then(|value| msime_client_core::skin::theme::normalized_color(value))
+            .and_then(|value| lingyao_client_core::skin::theme::normalized_color(value))
     };
     color("background")?;
     color("foreground")?;
@@ -90,7 +90,7 @@ mod tests {
         let manifest = skin_manifest(&parse_resolved_colors(TOKYO_NIGHT)).unwrap();
         let root = tempfile::tempdir().unwrap();
         assert!(install(root.path(), &manifest).unwrap());
-        let catalog = msime_client_core::skin::catalog::scan(root.path());
+        let catalog = lingyao_client_core::skin::catalog::scan(root.path());
         assert!(catalog.issues.is_empty(), "{:?}", catalog.issues);
         let package = &catalog.packages[0];
         assert_eq!(package.id, SKIN_ID);
@@ -114,7 +114,7 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         install(root.path(), &manifest).unwrap();
         assert_eq!(
-            msime_client_core::skin::catalog::scan(root.path())
+            lingyao_client_core::skin::catalog::scan(root.path())
                 .packages
                 .len(),
             1

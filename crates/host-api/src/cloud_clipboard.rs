@@ -1,4 +1,4 @@
-use msime_client_core::{
+use lingyao_client_core::{
     has_disallowed_control_with_options, is_bounded_ascii_identifier, is_bounded_text,
     is_bounded_utf16,
 };

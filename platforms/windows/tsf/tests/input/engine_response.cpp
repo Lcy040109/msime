@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 
-using msime::tsf::EngineResult;
-using msime::tsf::EngineSessionAdapter;
+using lingyao::tsf::EngineResult;
+using lingyao::tsf::EngineSessionAdapter;
 
 int main() {
   EngineResult result;
@@ -27,12 +27,12 @@ int main() {
     if (!EngineSessionAdapter::parse_result(kana, &japanese, &error) ||
         japanese.view.reading != "にほん" || japanese.view.editing_text != "nihon")
       return EXIT_FAILURE;
-    if (!msime::input::composition_shows_reading(japanese.view.reading, japanese.view.caret,
+    if (!lingyao::input::composition_shows_reading(japanese.view.reading, japanese.view.caret,
                                                  japanese.view.editing_text.size()))
       return EXIT_FAILURE;
     // Every other scheme leaves it empty, and then the letters are what there is.
     if (!result.view.reading.empty() ||
-        msime::input::composition_shows_reading(result.view.reading, result.view.caret,
+        lingyao::input::composition_shows_reading(result.view.reading, result.view.caret,
                                                 result.view.editing_text.size()))
       return EXIT_FAILURE;
   }
@@ -45,7 +45,7 @@ int main() {
         !korean.has_commit || korean.commit != "안" || korean.view.reading != "ㄴ" ||
         korean.view.editing_text != "s" || korean.view.scheme != 4 || !korean.view.candidates.empty())
       return EXIT_FAILURE;
-    if (!msime::input::composition_shows_reading(korean.view.reading, korean.view.caret,
+    if (!lingyao::input::composition_shows_reading(korean.view.reading, korean.view.caret,
                                                  korean.view.editing_text.size()))
       return EXIT_FAILURE;
     // A view without the field is read as quanpin.

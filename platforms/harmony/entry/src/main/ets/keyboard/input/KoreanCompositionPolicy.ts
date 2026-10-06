@@ -3,7 +3,7 @@
  *
  * Korean is a syllable automaton. The view's `editing_text` holds only the key letters of the open syllable ("sud" for 녕), so it says whether a syllable is open but is never what the user should see: the syllable itself is `preedit`. A key the automaton does not take (Space, Return, a digit) commits the syllable and is left unhandled, and the host then does that key's normal work after the commit.
  *
- * The only candidates the scheme ever has are the Hanja of the composing syllable, listed after MSIME_CONVERT_HANJA and gone again when the list closes. The table and the list's rules are the Engine's (the Korean contract in msime_client.h); the host only decides which keys and taps reach the list while it is open.
+ * The only candidates the scheme ever has are the Hanja of the composing syllable, listed after LINGYAO_CONVERT_HANJA and gone again when the list closes. The table and the list's rules are the Engine's (the Korean contract in lingyao_client.h); the host only decides which keys and taps reach the list while it is open.
  */
 export const KOREAN_SCHEME: number = 4;
 
@@ -19,14 +19,14 @@ export class KoreanCompositionPolicy {
   }
 
   /**
-   * Whether the Hanja list of the composing syllable is open: the Korean rules hold (see `active`) and the view carries candidates, since the Engine offers none in this scheme until MSIME_CONVERT_HANJA, so no separate view field is needed.
+   * Whether the Hanja list of the composing syllable is open: the Korean rules hold (see `active`) and the view carries candidates, since the Engine offers none in this scheme until LINGYAO_CONVERT_HANJA, so no separate view field is needed.
    */
   static hanjaListOpen(korean: boolean, candidateCount: number): boolean {
     return korean && candidateCount > 0;
   }
 
   /**
-   * Whether MSIME_CONVERT_HANJA applies, which is also when the candidate bar shows its 漢 button: while a syllable composes, its list open or not, since the command closes an open list.
+   * Whether LINGYAO_CONVERT_HANJA applies, which is also when the candidate bar shows its 漢 button: while a syllable composes, its list open or not, since the command closes an open list.
    *
    * A lone jamo composes too and has no Hanja. The Engine answers the command unhandled then and nothing changes; the host does not tell the two apart, because that would take a jamo table of its own.
    */

@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <optional>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // The global maintenance shortcuts the shared settings page documents.
 //
 // These are advertised on the 快捷键 page for every platform, and Linux has
@@ -52,4 +52,4 @@ maintenance_hotkey(uint32_t vk, bool ctrl, bool shift, bool alt,
     return MaintenanceHotkey{MaintenanceAction::Stop, 0};
   return std::nullopt;
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

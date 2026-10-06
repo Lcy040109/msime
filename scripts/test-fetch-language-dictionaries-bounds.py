@@ -45,7 +45,7 @@ def rejects(failures, label, call, reason):
 def main():
     expected = b"abc"
     artifact = {
-        "name": "msime-zhuyin.db",
+        "name": "lingyao-zhuyin.db",
         "url": "https://example.invalid/msime-zhuyin.db",
         "sha256": hashlib.sha256(expected).hexdigest(),
         "size": len(expected),

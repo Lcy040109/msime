@@ -35,7 +35,7 @@
 // a property added to the window without a shared key fails this.
 static void TestEveryEditableFieldHasASharedKey()
 {
-    NSDictionary<NSString *, NSString *> *keys = MSIMEVoiceProviderSharedKeys();
+    NSDictionary<NSString *, NSString *> *keys = LINGYAOVoiceProviderSharedKeys();
     unsigned int count = 0;
     objc_property_t *properties = class_copyPropertyList(LingyaoVoiceProviderSettings.class, &count);
     NSUInteger strings = 0;
@@ -52,7 +52,7 @@ static void TestEveryEditableFieldHasASharedKey()
 
     NSMutableSet *seen = [NSMutableSet set];
     for (NSString *field in keys) {
-        assert([keys[field] hasPrefix:@"MSIMEClientVoice"]);
+        assert([keys[field] hasPrefix:@"LINGYAOClientVoice"]);
         // Two fields sharing one default would make the second silently overwrite the first.
         assert(![seen containsObject:keys[field]]);
         [seen addObject:keys[field]];
@@ -61,47 +61,47 @@ static void TestEveryEditableFieldHasASharedKey()
 
 static void TestSharedSettingReadsTheSharedStoreAndToleratesJunk()
 {
-    assert([MSIMEVoiceProviderSharedSetting(@"openai", @"doubao") isEqual:@"openai"]);
+    assert([LINGYAOVoiceProviderSharedSetting(@"openai", @"doubao") isEqual:@"openai"]);
     // An empty shared value is not a choice; it is a default that was never written.
-    assert([MSIMEVoiceProviderSharedSetting(@"", @"fallback") isEqual:@"fallback"]);
-    assert([MSIMEVoiceProviderSharedSetting(nil, @"fallback") isEqual:@"fallback"]);
+    assert([LINGYAOVoiceProviderSharedSetting(@"", @"fallback") isEqual:@"fallback"]);
+    assert([LINGYAOVoiceProviderSharedSetting(nil, @"fallback") isEqual:@"fallback"]);
     // A number where a string belongs used to reach -length and take the input method down on the next Control+Option+V, so the value is checked rather than trusted.
-    assert([MSIMEVoiceProviderSharedSetting(@7, @"doubao") isEqual:@"doubao"]);
+    assert([LINGYAOVoiceProviderSharedSetting(@7, @"doubao") isEqual:@"doubao"]);
 }
 
 static void TestProviderCredentialIsolation()
 {
     NSArray *knownEndpoints = @[
-        MSIMEVoiceASRProviderDefaultEndpoint(@"openai"),
-        MSIMEVoiceASRProviderDefaultEndpoint(@"groq")
+        LINGYAOVoiceASRProviderDefaultEndpoint(@"openai"),
+        LINGYAOVoiceASRProviderDefaultEndpoint(@"groq")
     ];
-    assert([MSIMEVoiceProviderValueAfterSelection(@"", @"next-default", knownEndpoints)
+    assert([LINGYAOVoiceProviderValueAfterSelection(@"", @"next-default", knownEndpoints)
         isEqual:@"next-default"]);
-    assert([MSIMEVoiceProviderValueAfterSelection(knownEndpoints[0], @"next-default", knownEndpoints)
+    assert([LINGYAOVoiceProviderValueAfterSelection(knownEndpoints[0], @"next-default", knownEndpoints)
         isEqual:@"next-default"]);
-    assert([MSIMEVoiceProviderValueAfterSelection(@"https://private.example/asr", @"next-default", knownEndpoints)
+    assert([LINGYAOVoiceProviderValueAfterSelection(@"https://private.example/asr", @"next-default", knownEndpoints)
         isEqual:@"https://private.example/asr"]);
 
-    NSDictionary *slots = MSIMEVoiceProviderTokenSlotsByUpdating(
+    NSDictionary *slots = LINGYAOVoiceProviderTokenSlotsByUpdating(
         @{@"openai":@"openai-secret", @"groq":@"old-groq"}, @"groq", @"groq-secret", YES);
     assert([slots[@"openai"] isEqual:@"openai-secret"]);
     assert([slots[@"groq"] isEqual:@"groq-secret"]);
-    slots = MSIMEVoiceProviderTokenSlotsByUpdating(slots, @"system", @"must-not-survive", NO);
+    slots = LINGYAOVoiceProviderTokenSlotsByUpdating(slots, @"system", @"must-not-survive", NO);
     assert(!slots[@"system"] && [slots[@"openai"] isEqual:@"openai-secret"]);
 
-    NSString *openAI = MSIMEVoiceProviderCredentialAccount(
+    NSString *openAI = LINGYAOVoiceProviderCredentialAccount(
         @"asr", @"openai", @"https://api.example.test/v1/audio");
-    NSString *groq = MSIMEVoiceProviderCredentialAccount(
+    NSString *groq = LINGYAOVoiceProviderCredentialAccount(
         @"asr", @"groq", @"https://api.example.test/v1/audio");
-    NSString *openAISecondPath = MSIMEVoiceProviderCredentialAccount(
+    NSString *openAISecondPath = LINGYAOVoiceProviderCredentialAccount(
         @"asr", @"openai", @"https://api.example.test/v2/audio");
     assert(![openAI isEqual:groq]);
     assert([openAI isEqual:openAISecondPath]);
-    assert(!MSIMEVoiceProviderShouldDeletePreviousCredential(
+    assert(!LINGYAOVoiceProviderShouldDeletePreviousCredential(
         @"openai", @"https://old.example/asr", @"groq", @"https://new.example/asr"));
-    assert(MSIMEVoiceProviderShouldDeletePreviousCredential(
+    assert(LINGYAOVoiceProviderShouldDeletePreviousCredential(
         @"openai", @"https://old.example/asr", @"openai", @"https://new.example/asr"));
-    assert(!MSIMEVoiceProviderShouldDeletePreviousCredential(
+    assert(!LINGYAOVoiceProviderShouldDeletePreviousCredential(
         @"openai", @"https://same.example/v1", @"openai", @"https://same.example/v2"));
 }
 
@@ -117,21 +117,21 @@ static void TestProviderWindowRestoresTheMatchingDraft()
     NSSecureTextField *token = [form valueForKey:@"token"];
     [form setValue:@"openai" forKey:@"loadedProvider"];
     [form setValue:[@{@"groq":@"", @"mistral":@""} mutableCopy] forKey:@"tokenDrafts"];
-    endpoint.stringValue = MSIMEVoiceASRProviderDefaultEndpoint(@"openai");
-    model.stringValue = MSIMEVoiceASRProviderDefaultModel(@"openai");
+    endpoint.stringValue = LINGYAOVoiceASRProviderDefaultEndpoint(@"openai");
+    model.stringValue = LINGYAOVoiceASRProviderDefaultModel(@"openai");
     token.stringValue = @"openai-secret";
 
-    [provider selectItemAtIndex:[MSIMEVoiceASRProviderIDs() indexOfObject:@"groq"]];
+    [provider selectItemAtIndex:[LINGYAOVoiceASRProviderIDs() indexOfObject:@"groq"]];
     [NSApp sendAction:provider.action to:provider.target from:provider];
-    assert([endpoint.stringValue isEqual:MSIMEVoiceASRProviderDefaultEndpoint(@"groq")]);
+    assert([endpoint.stringValue isEqual:LINGYAOVoiceASRProviderDefaultEndpoint(@"groq")]);
     token.stringValue = @"groq-secret";
-    [provider selectItemAtIndex:[MSIMEVoiceASRProviderIDs() indexOfObject:@"openai"]];
+    [provider selectItemAtIndex:[LINGYAOVoiceASRProviderIDs() indexOfObject:@"openai"]];
     [NSApp sendAction:provider.action to:provider.target from:provider];
     assert([token.stringValue isEqual:@"openai-secret"]);
-    assert([endpoint.stringValue isEqual:MSIMEVoiceASRProviderDefaultEndpoint(@"openai")]);
+    assert([endpoint.stringValue isEqual:LINGYAOVoiceASRProviderDefaultEndpoint(@"openai")]);
 
     endpoint.stringValue = @"https://private.example/asr";
-    [provider selectItemAtIndex:[MSIMEVoiceASRProviderIDs() indexOfObject:@"mistral"]];
+    [provider selectItemAtIndex:[LINGYAOVoiceASRProviderIDs() indexOfObject:@"mistral"]];
     [NSApp sendAction:provider.action to:provider.target from:provider];
     assert([endpoint.stringValue isEqual:@"https://private.example/asr"]);
     NSDictionary *drafts = [form valueForKey:@"tokenDrafts"];
@@ -145,12 +145,12 @@ static void TestLoadUsesTheSelectedProviderSlots()
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
     NSDictionary *oldArguments = [defaults volatileDomainForName:NSArgumentDomain];
     [defaults setVolatileDomain:@{
-        @"MSIMEClientVoiceASRProvider":@"groq",
-        @"MSIMEClientVoiceASRTokens":@{@"openai":@"openai-secret", @"groq":@"groq-secret"},
-        @"MSIMEClientVoiceASRToken":@"wrong-flat-secret",
-        @"MSIMEClientVoicePolishProvider":@"deepseek",
-        @"MSIMEClientVoicePolishTokens":@{@"deepseek":@"polish-secret"},
-        @"MSIMEClientVoicePolishToken":@"wrong-flat-polish"
+        @"LINGYAOClientVoiceASRProvider":@"groq",
+        @"LINGYAOClientVoiceASRTokens":@{@"openai":@"openai-secret", @"groq":@"groq-secret"},
+        @"LINGYAOClientVoiceASRToken":@"wrong-flat-secret",
+        @"LINGYAOClientVoicePolishProvider":@"deepseek",
+        @"LINGYAOClientVoicePolishTokens":@{@"deepseek":@"polish-secret"},
+        @"LINGYAOClientVoicePolishToken":@"wrong-flat-polish"
     } forName:NSArgumentDomain];
     LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.provider isEqual:@"groq"]);
@@ -159,8 +159,8 @@ static void TestLoadUsesTheSelectedProviderSlots()
     assert([settings.polishToken isEqual:@"polish-secret"]);
 
     [defaults setVolatileDomain:@{
-        @"MSIMEClientVoiceASRProvider":@"system",
-        @"MSIMEClientVoiceASRToken":@"stale-cloud-secret"
+        @"LINGYAOClientVoiceASRProvider":@"system",
+        @"LINGYAOClientVoiceASRToken":@"stale-cloud-secret"
     } forName:NSArgumentDomain];
     settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.provider isEqual:@"system"]);
@@ -174,36 +174,36 @@ static void TestUnsetPolishServiceFallsBackToTheSharedDefault()
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
     NSDictionary *oldArguments = [defaults volatileDomainForName:NSArgumentDomain];
     // The argument domain cannot hide a persisted provider, and this test binary never persists one.
-    assert([defaults objectForKey:@"MSIMEClientVoicePolishProvider"] == nil);
+    assert([defaults objectForKey:@"LINGYAOClientVoicePolishProvider"] == nil);
     // An empty shared value is treated as never written, so these stand in for unset keys.
     [defaults setVolatileDomain:@{
         @"voiceInput":@{},
-        @"MSIMEClientVoicePolishEndpoint":@"",
-        @"MSIMEClientVoicePolishModel":@"",
-        @"MSIMEClientVoicePolishTokens":@{@"deepseek":@"deepseek-secret", @"siliconflow":@"siliconflow-secret"}
+        @"LINGYAOClientVoicePolishEndpoint":@"",
+        @"LINGYAOClientVoicePolishModel":@"",
+        @"LINGYAOClientVoicePolishTokens":@{@"deepseek":@"deepseek-secret", @"siliconflow":@"siliconflow-secret"}
     } forName:NSArgumentDomain];
     LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.polishEndpoint isEqual:@"https://api.deepseek.com/chat/completions"]);
     assert([settings.polishModel isEqual:@"deepseek-v4-flash"]);
     assert([settings.polishToken isEqual:@"deepseek-secret"]);
-    assert([MSIMEVoicePolishDefaultProvider isEqual:@"deepseek"]);
+    assert([LINGYAOVoicePolishDefaultProvider isEqual:@"deepseek"]);
     [defaults setVolatileDomain:oldArguments forName:NSArgumentDomain];
 }
 
 static void TestEveryRuntimeProviderIsEditable()
 {
-    NSArray *providers = MSIMEVoiceASRProviderIDs();
+    NSArray *providers = LINGYAOVoiceASRProviderIDs();
     NSArray *expected = @[ @"doubao", @"openai", @"siliconflow", @"groq", @"everyapi", @"mistral",
                            @"system", @"local" ];
     assert([providers isEqual:expected]);
-    assert(MSIMEVoiceASRProviderTitles().count == providers.count);
+    assert(LINGYAOVoiceASRProviderTitles().count == providers.count);
     NSDictionary *defaults = @{
         @"everyapi" : @[ @"https://api.everyapi.ai/v1/audio/transcriptions", @"openai/whisper-large-v3-turbo" ],
         @"mistral" : @[ @"https://api.mistral.ai/v1/audio/transcriptions", @"voxtral-mini-latest" ]
     };
     for (NSString *provider in defaults) {
-        assert([MSIMEVoiceASRProviderDefaultEndpoint(provider) isEqual:defaults[provider][0]]);
-        assert([MSIMEVoiceASRProviderDefaultModel(provider) isEqual:defaults[provider][1]]);
+        assert([LINGYAOVoiceASRProviderDefaultEndpoint(provider) isEqual:defaults[provider][0]]);
+        assert([LINGYAOVoiceASRProviderDefaultModel(provider) isEqual:defaults[provider][1]]);
         LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings new];
         settings.provider = provider;
         settings.endpoint = defaults[provider][0];
@@ -215,7 +215,7 @@ static void TestEveryRuntimeProviderIsEditable()
     }
     LingyaoVoiceProviderSettings *doubao = [LingyaoVoiceProviderSettings new];
     doubao.provider = @"doubao";
-    doubao.endpoint = MSIMEVoiceASRProviderDefaultEndpoint(@"doubao");
+    doubao.endpoint = LINGYAOVoiceASRProviderDefaultEndpoint(@"doubao");
     doubao.model = @"";
     doubao.token = @"synthetic-token";
     doubao.modelPath = @"";
@@ -230,18 +230,18 @@ static void TestEveryRuntimeProviderIsEditable()
     system.modelPath = @"";
     system.polishEnabled = NO;
     assert([system validate:nil]);
-    assert(!MSIMEVoiceASRProviderUsesService(@"system"));
-    assert(!MSIMEVoiceASRProviderUsesService(@"local"));
+    assert(!LINGYAOVoiceASRProviderUsesService(@"system"));
+    assert(!LINGYAOVoiceASRProviderUsesService(@"local"));
 }
 
 static void TestNativeSettingsEntryUsesTheProviderWindowContract()
 {
     VoiceSettingsEntryFixture *fixture = VoiceSettingsEntryFixture.sharedController;
-    assert(MSIMEShowVoiceSettingsWindow(VoiceSettingsEntryFixture.class));
+    assert(LINGYAOShowVoiceSettingsWindow(VoiceSettingsEntryFixture.class));
     assert(fixture.presentations == 1);
-    assert(!MSIMEShowVoiceSettingsWindow(Nil));
-    assert(!MSIMEShowVoiceSettingsWindow(NSObject.class));
-    assert(!MSIMEShowVoiceSettingsWindow(VoiceSettingsEntryMissingPresentationFixture.class));
+    assert(!LINGYAOShowVoiceSettingsWindow(Nil));
+    assert(!LINGYAOShowVoiceSettingsWindow(NSObject.class));
+    assert(!LINGYAOShowVoiceSettingsWindow(VoiceSettingsEntryMissingPresentationFixture.class));
 }
 
 int main()

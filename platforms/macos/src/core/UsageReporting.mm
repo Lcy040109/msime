@@ -3,7 +3,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include "msime_client.h"
+#include "lingyao_client.h"
 
 #include <execinfo.h>
 #include <fcntl.h>
@@ -28,11 +28,11 @@ id CallHost(HostCall call, NSDictionary *request)
     char *raw = call(static_cast<const uint8_t *>(body.bytes), body.length);
     if (!raw) return nil;
     NSData *data = [NSData dataWithBytes:raw length:strlen(raw)];
-    msime_client_string_free(raw);
+    lingyao_client_string_free(raw);
     NSDictionary *envelope = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     if (![envelope isKindOfClass:NSDictionary.class]) return nil;
     if ([envelope[@"ok"] isEqual:@YES]) return envelope[@"value"];
-    NSLog(@"MSIME usage reporting: %@", envelope[@"error"]);
+    NSLog(@"LINGYAO usage reporting: %@", envelope[@"error"]);
     return nil;
 }
 
@@ -51,7 +51,7 @@ char gAlternateStack[64 * 1024];
 NSDictionary *SessionRequest(void)
 {
     NSMutableDictionary *request = [@{
-        @"directory": MSIMEUsageReportingDirectory(),
+        @"directory": LINGYAOUsageReportingDirectory(),
         @"platform": @"macos",
         @"version": [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"unknown",
     } mutableCopy];
@@ -64,7 +64,7 @@ NSDictionary *SessionRequest(void)
 void Flush(void)
 {
     dispatch_async(gQueue, ^{
-        (void)CallHost(msime_client_telemetry_flush, SessionRequest());
+        (void)CallHost(lingyao_client_telemetry_flush, SessionRequest());
     });
 }
 
@@ -106,8 +106,8 @@ void UncaughtException(NSException *exception)
 {
     NSString *summary = [NSString stringWithFormat:@"Uncaught %@: %@", exception.name, exception.reason ?: @""];
     NSString *stack = [exception.callStackSymbols componentsJoinedByString:@"\n"] ?: @"";
-    (void)CallHost(msime_client_telemetry_record_crash,
-                   @{@"directory": MSIMEUsageReportingDirectory(), @"message": summary, @"stack": stack});
+    (void)CallHost(lingyao_client_telemetry_record_crash,
+                   @{@"directory": LINGYAOUsageReportingDirectory(), @"message": summary, @"stack": stack});
     if (gPreviousExceptionHandler) gPreviousExceptionHandler(exception);
 }
 
@@ -134,46 +134,46 @@ void InstallCrashHandlers(NSString *recordPath)
 }
 } // namespace
 
-NSString *MSIMEUsageReportingDirectory(void)
+NSString *LINGYAOUsageReportingDirectory(void)
 {
-#if defined(MSIME_USAGE_REPORTING_TEST_SUPPORT)
-    NSURL *support = [NSURL fileURLWithPath:@MSIME_USAGE_REPORTING_TEST_SUPPORT isDirectory:YES];
+#if defined(LINGYAO_USAGE_REPORTING_TEST_SUPPORT)
+    NSURL *support = [NSURL fileURLWithPath:@LINGYAO_USAGE_REPORTING_TEST_SUPPORT isDirectory:YES];
 #else
     NSURL *support = [[NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] firstObject];
 #endif
     NSURL *base = support ?: [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
-    return [[base URLByAppendingPathComponent:MSIMEUsageReportingDirectoryName() isDirectory:YES] path];
+    return [[base URLByAppendingPathComponent:LINGYAOUsageReportingDirectoryName() isDirectory:YES] path];
 }
 
-void MSIMEUsageReportingStart(NSString *preferencesDirectory)
+void LINGYAOUsageReportingStart(NSString *preferencesDirectory)
 {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         gPreferencesDirectory = [preferencesDirectory copy];
-        gQueue = dispatch_queue_create("app.msime.usage-reporting", DISPATCH_QUEUE_SERIAL);
+        gQueue = dispatch_queue_create("app.lingyao.usage-reporting", DISPATCH_QUEUE_SERIAL);
         // host-api telemetry 存储会在接触队列、标记或崩溃文件前创建并校验目录。
-        NSDictionary *started = CallHost(msime_client_telemetry_begin, SessionRequest());
+        NSDictionary *started = CallHost(lingyao_client_telemetry_begin, SessionRequest());
         if (![started isKindOfClass:NSDictionary.class] || ![started[@"enabled"] isEqual:@YES]) return;
         NSString *recordPath = started[@"crash_record_path"];
         if ([recordPath isKindOfClass:NSString.class]) InstallCrashHandlers(recordPath);
         [NSNotificationCenter.defaultCenter addObserverForName:NSApplicationWillTerminateNotification
                                                         object:nil
                                                          queue:nil
-                                                    usingBlock:^(NSNotification *) { MSIMEUsageReportingStop(); }];
+                                                    usingBlock:^(NSNotification *) { LINGYAOUsageReportingStop(); }];
         Flush();
         // The input method runs for days: flush every few hours so a new UTC day's active and anything a failed send left behind go out. With nothing queued and today's active already sent, a flush does no network I/O.
         gFlushTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, gQueue);
         const uint64_t interval = 3ull * 60 * 60 * NSEC_PER_SEC;
         dispatch_source_set_timer(gFlushTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)interval), interval, 10ull * 60 * NSEC_PER_SEC);
         dispatch_source_set_event_handler(gFlushTimer, ^{
-            (void)CallHost(msime_client_telemetry_flush, SessionRequest());
+            (void)CallHost(lingyao_client_telemetry_flush, SessionRequest());
         });
         dispatch_resume(gFlushTimer);
     });
 }
 
-void MSIMEUsageReportingStop(void)
+void LINGYAOUsageReportingStop(void)
 {
     if (!gQueue) return;
-    (void)CallHost(msime_client_telemetry_end, @{@"directory": MSIMEUsageReportingDirectory()});
+    (void)CallHost(lingyao_client_telemetry_end, @{@"directory": LINGYAOUsageReportingDirectory()});
 }

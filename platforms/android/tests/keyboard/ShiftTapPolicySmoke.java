@@ -1,5 +1,5 @@
-import app.msime.android.ShiftTapPolicy;
-import app.msime.android.ShiftTapPolicy.State;
+import app.lingyao.android.ShiftTapPolicy;
+import app.lingyao.android.ShiftTapPolicy.State;
 
 public final class ShiftTapPolicySmoke {
     public static void main(String[] args) {

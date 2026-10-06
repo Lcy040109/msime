@@ -25,7 +25,7 @@ final class SmartPunctuationTests: XCTestCase {
 
   func testBridgeUsesSmartContextOnlyWhileEngineIsIdle() throws {
     let state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-smart-punctuation-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-smart-punctuation-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
     let bridge = LingyaoInputSessionBridge(stateRoot: state)
 

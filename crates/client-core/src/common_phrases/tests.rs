@@ -347,8 +347,8 @@ fn common_phrases_refuse_a_symlinked_file() {
     );
 }
 
-const CHILD_DIRECTORY: &str = "MSIME_COMMON_PHRASES_CHILD_DIRECTORY";
-const CHILD_PREFIX: &str = "MSIME_COMMON_PHRASES_CHILD_PREFIX";
+const CHILD_DIRECTORY: &str = "LINGYAO_COMMON_PHRASES_CHILD_DIRECTORY";
+const CHILD_PREFIX: &str = "LINGYAO_COMMON_PHRASES_CHILD_PREFIX";
 const CHILD_ADDS: usize = 40;
 
 /// 并发测试的子进程入口：只有父测试设了环境变量时才做事，单独运行时什么也不做。

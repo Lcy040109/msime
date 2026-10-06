@@ -1,10 +1,10 @@
-// Adapted from MSIME-Apple b637828e15eafcb5e459edd270a962dd14517285.
+// Adapted from LINGYAO-Apple b637828e15eafcb5e459edd270a962dd14517285.
 #import "CandidateSkinPreviewView.h"
 #import "../settings/AppearancePreferences.h"
 #import "CandidateTextMetrics.h"
 #import "CandidateTypography.h"
 
-static NSColor *PreviewColor(msime::mac::Rgba color) {
+static NSColor *PreviewColor(lingyao::mac::Rgba color) {
     return [NSColor colorWithSRGBRed:color.r green:color.g blue:color.b alpha:color.a];
 }
 
@@ -38,8 +38,8 @@ NSArray<NSString *> *PreviewPageWords(NSArray<NSString *> *words, NSInteger coun
 }
 
 CGFloat PreviewCandidateHeight(NSArray<NSString *> *words, NSFont *font) {
-    CGFloat height = MSIMECandidateTextHeight(@"", font);
-    for (NSString *sample in words) height = MAX(height, MSIMECandidateTextHeight(sample, font));
+    CGFloat height = LINGYAOCandidateTextHeight(@"", font);
+    for (NSString *sample in words) height = MAX(height, LINGYAOCandidateTextHeight(sample, font));
     return height + 8.0;
 }
 
@@ -51,11 +51,11 @@ NSString *PreviewPendingFooter(NSInteger pageSize)
     const NSInteger pending = MAX(pageSize, (NSInteger)1) - PreviewVisibleRows(pageSize);
     return pending > 0 ? [NSString stringWithFormat:@"另有 %ld 个", static_cast<long>(pending)] : nil;
 }
-CGFloat PreviewPreeditHeight(CGFloat preeditFontSize, MSIMEAppearancePreferences *preferences)
+CGFloat PreviewPreeditHeight(CGFloat preeditFontSize, LINGYAOAppearancePreferences *preferences)
 {
     if (preeditFontSize <= 0) return 0;
     NSFont *font = [preferences candidateFontOfSize:preeditFontSize englishFirst:YES] ?: [NSFont systemFontOfSize:preeditFontSize];
-    return MAX(22.0, MSIMECandidateTextHeight(@"nihao", font) + 6.0);
+    return MAX(22.0, LINGYAOCandidateTextHeight(@"nihao", font) + 6.0);
 }
 
 // The three toolbar settings the preview draws from, in the shape the drawing wants them: one bit per component in the order of FloatingToolbarComponentKeys(), the percentage 工具栏缩放 stores, and the point size 工具栏字号 stores.
@@ -66,7 +66,7 @@ struct ToolbarPreviewInputs
     CGFloat fontSize;
 };
 
-ToolbarPreviewInputs ToolbarInputs(MSIMEAppearancePreferences *preferences)
+ToolbarPreviewInputs ToolbarInputs(LINGYAOAppearancePreferences *preferences)
 {
     // What LingyaoFloatingToolbarPanel -applySizingPreferences: makes of an empty dictionary, which is the state a preview with no preferences behind it is in: 100%, 24pt, and every component but the screen keyboard.
     static const BOOL defaults[10] = {YES, YES, YES, YES, YES, YES, YES, NO, YES, YES};
@@ -99,10 +99,10 @@ NSSize ToolbarPreviewSize(NSUInteger components, CGFloat scalePercent, CGFloat f
                       ceil((fontSize + 20.0) * scale));
 }
 
-// The card, as MSIMECandidateChromeView draws it: the surface, the package background clipped to the rounded outline, then the border.
-void DrawSkinChrome(NSRect rect, const msime::mac::ResolvedSkin &skin)
+// The card, as LINGYAOCandidateChromeView draws it: the surface, the package background clipped to the rounded outline, then the border.
+void DrawSkinChrome(NSRect rect, const lingyao::mac::ResolvedSkin &skin)
 {
-    const msime::mac::SkinTokens &tokens = skin.tokens;
+    const lingyao::mac::SkinTokens &tokens = skin.tokens;
     NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:tokens.radius yRadius:tokens.radius];
     [PreviewColor(tokens.surface) setFill];
     [path fill];
@@ -110,7 +110,7 @@ void DrawSkinChrome(NSRect rect, const msime::mac::ResolvedSkin &skin)
         ? nil
         : [[NSImage alloc] initWithContentsOfFile:@(skin.backgroundPath.c_str())];
     const auto rects = background != nil
-        ? msime::mac::BackgroundRects(skin.backgroundFit, {NSMinX(rect), NSMinY(rect), NSWidth(rect), NSHeight(rect)},
+        ? lingyao::mac::BackgroundRects(skin.backgroundFit, {NSMinX(rect), NSMinY(rect), NSWidth(rect), NSHeight(rect)},
                                       background.size.width, background.size.height)
         : std::nullopt;
     if (rects)
@@ -155,7 +155,7 @@ struct SkinPreviewMetrics
 // `scale` is 整体大小: the panels are measured at 100% and take that much more room, because DrawScaledPreviewCandidates draws them at that size.
 SkinPreviewMetrics MakeShowcaseMetrics(NSInteger pageSize, CGFloat candidateFontSize, CGFloat decorationTop,
                                        CGFloat preeditFontSize, NSArray<NSString *> *words,
-                                       MSIMEAppearancePreferences *preferences, CGFloat scale)
+                                       LINGYAOAppearancePreferences *preferences, CGFloat scale)
 {
     SkinPreviewMetrics metrics;
     metrics.fontSize = MAX(12.0, candidateFontSize);
@@ -184,7 +184,7 @@ SkinPreviewMetrics MakeShowcaseMetrics(NSInteger pageSize, CGFloat candidateFont
 
 SkinPreviewMetrics MakeAppearanceMetrics(NSInteger panelStyle, NSInteger pageSize, CGFloat candidateFontSize,
                                          CGFloat decorationTop, CGFloat preeditFontSize,
-                                         NSArray<NSString *> *words, MSIMEAppearancePreferences *preferences, CGFloat scale)
+                                         NSArray<NSString *> *words, LINGYAOAppearancePreferences *preferences, CGFloat scale)
 {
     SkinPreviewMetrics metrics;
     metrics.fontSize = MAX(12.0, candidateFontSize);
@@ -215,7 +215,7 @@ void DrawAlignedString(NSString *text, NSRect row, CGFloat x, NSDictionary *attr
     [text drawAtPoint:NSMakePoint(x, NSMinY(row) + (NSHeight(row) - size.height) / 2.0) withAttributes:attributes];
 }
 
-void DrawSelectedBar(NSRect row, const msime::mac::SkinTokens &tokens, CGFloat fontSize)
+void DrawSelectedBar(NSRect row, const lingyao::mac::SkinTokens &tokens, CGFloat fontSize)
 {
     if (!tokens.showSelectedBar)
     {
@@ -228,7 +228,7 @@ void DrawSelectedBar(NSRect row, const msime::mac::SkinTokens &tokens, CGFloat f
 }
 
 // Drawn after the card, over its top edge, placed as the candidate window places it; `card` is in this flipped view, with the transparent band above it.
-void DrawDecoration(NSRect card, CGFloat pad, const msime::mac::ResolvedSkin &skin)
+void DrawDecoration(NSRect card, CGFloat pad, const lingyao::mac::ResolvedSkin &skin)
 {
     if (skin.decorationTopDip <= 0.0 || skin.decorationPath.empty())
     {
@@ -236,7 +236,7 @@ void DrawDecoration(NSRect card, CGFloat pad, const msime::mac::ResolvedSkin &sk
     }
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:@(skin.decorationPath.c_str())];
     const auto placed = image == nil ? std::nullopt
-                                     : msime::mac::DecorationPlacement(skin.decorationAlign, NSWidth(card), pad, skin.decorationTopDip,
+                                     : lingyao::mac::DecorationPlacement(skin.decorationAlign, NSWidth(card), pad, skin.decorationTopDip,
                                                                        skin.decorationWidthDip, image.size.width, image.size.height);
     if (!placed)
     {
@@ -253,10 +253,10 @@ void DrawDecoration(NSRect card, CGFloat pad, const msime::mac::ResolvedSkin &sk
 }
 
 // The row height is the caller's rather than this function's own: `words` is the visible page, which a wide candidate or a narrow column can cut short, while the height of a row is measured over the whole sample list. Measuring it here would make the panel shrink as the list it holds is truncated.
-void DrawPreviewCandidates(NSRect rect, const msime::mac::ResolvedSkin &skin, BOOL vertical,
-                           NSArray<NSString *> *words, CGFloat fontSize, CGFloat rowHeight, NSString *footer, CGFloat preeditFontSize, MSIMEAppearancePreferences *preferences)
+void DrawPreviewCandidates(NSRect rect, const lingyao::mac::ResolvedSkin &skin, BOOL vertical,
+                           NSArray<NSString *> *words, CGFloat fontSize, CGFloat rowHeight, NSString *footer, CGFloat preeditFontSize, LINGYAOAppearancePreferences *preferences)
 {
-    const msime::mac::SkinTokens &tokens = skin.tokens;
+    const lingyao::mac::SkinTokens &tokens = skin.tokens;
     const CGFloat decorationTop = MAX(0.0, skin.decorationTopDip);
     NSRect chrome =
         NSMakeRect(NSMinX(rect), NSMinY(rect) + decorationTop, NSWidth(rect), NSHeight(rect) - decorationTop);
@@ -283,19 +283,19 @@ void DrawPreviewCandidates(NSRect rect, const msime::mac::ResolvedSkin &skin, BO
         static NSImage *logo;
         static dispatch_once_t once;
         dispatch_once(&once, ^{
-            NSString *path = [[NSBundle bundleForClass:MSIMECandidatePreviewView.class] pathForResource:@"MSIMEClientInputMethod" ofType:@"icns"];
+            NSString *path = [[NSBundle bundleForClass:LINGYAOCandidatePreviewView.class] pathForResource:@"LINGYAOClientInputMethod" ofType:@"icns"];
             logo = path == nil ? nil : [[NSImage alloc] initWithContentsOfFile:path];
         });
         CGFloat readingX = NSMinX(preeditRow);
         if (logo != nil) {
-            const CGFloat side = MIN(MSIMECandidateLogoSide, NSHeight(preeditRow));
+            const CGFloat side = MIN(LINGYAOCandidateLogoSide, NSHeight(preeditRow));
             [logo drawInRect:NSMakeRect(readingX + 2.0, NSMidY(preeditRow) - side / 2.0, side, side)
                     fromRect:NSZeroRect
                    operation:NSCompositingOperationSourceOver
                     fraction:1.0
               respectFlipped:YES
                        hints:nil];
-            readingX += MSIMECandidateLogoSide + MSIMECandidateLogoGap;
+            readingX += LINGYAOCandidateLogoSide + LINGYAOCandidateLogoGap;
         }
         DrawAlignedString(@"nihao", preeditRow, readingX, preeditAttributes);
         const CGFloat caretX = readingX + [@"nihao" sizeWithAttributes:preeditAttributes].width + 2.0;
@@ -379,9 +379,9 @@ void DrawPreviewCandidates(NSRect rect, const msime::mac::ResolvedSkin &skin, BO
 }
 
 // The panel at 整体大小: laid out at 100% in a rect that much smaller and drawn magnified into `rect`, which is what the candidate window does by multiplying its fonts and lengths. A row that no longer fits the column at the larger size ends in an ellipsis as it would at 100% in a narrower column.
-void DrawScaledPreviewCandidates(NSRect rect, CGFloat scale, const msime::mac::ResolvedSkin &skin, BOOL vertical,
+void DrawScaledPreviewCandidates(NSRect rect, CGFloat scale, const lingyao::mac::ResolvedSkin &skin, BOOL vertical,
                                  NSArray<NSString *> *words, CGFloat fontSize, CGFloat rowHeight, NSString *footer,
-                                 CGFloat preeditFontSize, MSIMEAppearancePreferences *preferences)
+                                 CGFloat preeditFontSize, LINGYAOAppearancePreferences *preferences)
 {
     [NSGraphicsContext saveGraphicsState];
     NSAffineTransform *transform = [NSAffineTransform transform];
@@ -401,7 +401,7 @@ NSArray<NSArray<NSString *> *> *ToolbarPreviewGlyphs()
 }
 
 // The toolbar as the panel would build it for these settings, drawn into `slot` at the panel's own metrics: the logo, the divider, and one button per ticked component, sized (font + 8) x (font + 8) and spaced 2pt before everything is multiplied by the scale. A toolbar wider than the column is drawn down to fit rather than clipped — losing the trailing buttons would hide exactly the thing 工具栏缩放 changes — and the factor comes back so the caller can say so. It is never drawn up: 75% has to look smaller than 100%.
-CGFloat DrawPreviewToolbar(NSRect slot, const msime::mac::SkinTokens &tokens, NSUInteger components,
+CGFloat DrawPreviewToolbar(NSRect slot, const lingyao::mac::SkinTokens &tokens, NSUInteger components,
                            CGFloat scalePercent, CGFloat fontSize)
 {
     const NSSize natural = ToolbarPreviewSize(components, scalePercent, fontSize);
@@ -430,7 +430,7 @@ CGFloat DrawPreviewToolbar(NSRect slot, const msime::mac::SkinTokens &tokens, NS
     static NSImage *logo;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        NSString *path = [[NSBundle bundleForClass:MSIMEToolbarPreviewView.class] pathForResource:@"MSIMEClientInputMethod" ofType:@"icns"];
+        NSString *path = [[NSBundle bundleForClass:LINGYAOToolbarPreviewView.class] pathForResource:@"LINGYAOClientInputMethod" ofType:@"icns"];
         logo = path == nil ? nil : [[NSImage alloc] initWithContentsOfFile:path];
     });
     const CGFloat logoSlot = 38.0 * scale;
@@ -513,7 +513,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
 }
 } // namespace
 
-@implementation MSIMECandidatePreviewView
+@implementation LINGYAOCandidatePreviewView
 {
     NSInteger _panelStyle;
     NSInteger _pageSize;
@@ -524,11 +524,11 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     NSNumber *_forcedDark;
     BOOL _showsLayoutShowcase;
     NSLayoutConstraint *_heightConstraint;
-    msime::mac::ResolvedSkin _lightSkin;
-    msime::mac::ResolvedSkin _darkSkin;
+    lingyao::mac::ResolvedSkin _lightSkin;
+    lingyao::mac::ResolvedSkin _darkSkin;
     // The showcase's 悬浮状态栏 draws the toolbar palette, not the candidate one, so a package's card radius does not reach it.
-    msime::mac::SkinTokens _lightToolbar;
-    msime::mac::SkinTokens _darkToolbar;
+    lingyao::mac::SkinTokens _lightToolbar;
+    lingyao::mac::SkinTokens _darkToolbar;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -552,7 +552,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     return YES;
 }
 
-- (void)setPreferences:(MSIMEAppearancePreferences *)preferences {
+- (void)setPreferences:(LINGYAOAppearancePreferences *)preferences {
     _preferences = preferences;
     [self reloadPreview];
 }
@@ -573,18 +573,18 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
         const std::string_view layout = _preferences.vertical ? "vertical" : "horizontal";
         const std::string id = _previewSkinId.UTF8String ?: "system";
         std::string theme = id;
-        msime::mac::CustomTheme custom;
+        lingyao::mac::CustomTheme custom;
         if (id == "custom" && _preferences != nil) {
             custom = [_preferences customTheme];
-        } else if (!msime::mac::IsGlobalThemeId(id)) {
+        } else if (!lingyao::mac::IsGlobalThemeId(id)) {
             theme = "custom";
             custom.candidateSkin = id;
-            if (const auto package = msime::mac::LoadSkinPackage(root, id)) custom.base = package->base;
+            if (const auto package = lingyao::mac::LoadSkinPackage(root, id)) custom.base = package->base;
         }
-        _lightSkin = msime::mac::ResolveSkin(theme, custom, false, layout, root);
-        _darkSkin = msime::mac::ResolveSkin(theme, custom, true, layout, root);
-        _lightToolbar = msime::mac::ToolbarSkinTokens(_lightSkin, root);
-        _darkToolbar = msime::mac::ToolbarSkinTokens(_darkSkin, root);
+        _lightSkin = lingyao::mac::ResolveSkin(theme, custom, false, layout, root);
+        _darkSkin = lingyao::mac::ResolveSkin(theme, custom, true, layout, root);
+        _lightToolbar = lingyao::mac::ToolbarSkinTokens(_lightSkin, root);
+        _darkToolbar = lingyao::mac::ToolbarSkinTokens(_darkSkin, root);
     }
     self.themeButton.title = [self forcedThemeButtonTitle];
     // A theme with a fixed mode looks the same in both, so there is nothing to preview in the other.
@@ -647,11 +647,11 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
 }
 
 /// The skin as the candidate window draws it, with the user's radius and opacity over it. The scale is left out of it here because the preview draws the whole panel magnified instead, the one place a uniform transform is the same thing as multiplying every length.
-- (msime::mac::ResolvedSkin)previewWindowSkin
+- (lingyao::mac::ResolvedSkin)previewWindowSkin
 {
-    msime::mac::CandidateWindowStyle style = self.preferences != nil ? [self.preferences candidateWindowStyle] : msime::mac::CandidateWindowStyle{};
+    lingyao::mac::CandidateWindowStyle style = self.preferences != nil ? [self.preferences candidateWindowStyle] : lingyao::mac::CandidateWindowStyle{};
     style.scale = 1.0;
-    return msime::mac::StyledCandidateSkin([self previewSkin], style);
+    return lingyao::mac::StyledCandidateSkin([self previewSkin], style);
 }
 
 - (void)setShowsLayoutShowcase:(BOOL)showsLayoutShowcase
@@ -675,7 +675,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     return [match isEqual:NSAppearanceNameDarkAqua];
 }
 
-- (msime::mac::ResolvedSkin)previewSkin
+- (lingyao::mac::ResolvedSkin)previewSkin
 {
     return [self previewUsesDark] ? _darkSkin : _lightSkin;
 }
@@ -702,7 +702,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
 
 - (CGFloat)previewContentHeight
 {
-    const msime::mac::ResolvedSkin skin = [self previewSkin];
+    const lingyao::mac::ResolvedSkin skin = [self previewSkin];
     if (_showsLayoutShowcase)
     {
         return MakeShowcaseMetrics(_pageSize, [self previewFontSize], skin.decorationTopDip,
@@ -758,7 +758,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     [canvasPath addClip];
 
     NSDictionary<NSAttributedStringKey, id> *captionAttributes = PreviewCaptionAttributes();
-    const msime::mac::ResolvedSkin skin = [self previewWindowSkin];
+    const lingyao::mac::ResolvedSkin skin = [self previewWindowSkin];
     const CGFloat scale = [self previewScale];
     NSArray<NSString *> *samples = [self previewWords];
     const CGFloat preeditFontSize = [self previewPreeditFontSize];
@@ -811,7 +811,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
 
 @end
 
-@implementation MSIMEToolbarPreviewView
+@implementation LINGYAOToolbarPreviewView
 {
     NSLayoutConstraint *_heightConstraint;
 }
@@ -836,7 +836,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     return YES;
 }
 
-- (void)setPreferences:(MSIMEAppearancePreferences *)preferences
+- (void)setPreferences:(LINGYAOAppearancePreferences *)preferences
 {
     _preferences = preferences;
     [self reloadPreview];
@@ -905,8 +905,8 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     [canvasPath addClip];
     const ToolbarPreviewInputs toolbar = ToolbarInputs(self.preferences);
     const NSSize size = ToolbarPreviewSize(toolbar.components, toolbar.scalePercent, toolbar.fontSize);
-    const msime::mac::SkinTokens tokens = self.preferences != nil ? [self.preferences toolbarSkinForDark:dark]
-                                                                  : msime::mac::NativeCandidateTokens(dark);
+    const lingyao::mac::SkinTokens tokens = self.preferences != nil ? [self.preferences toolbarSkinForDark:dark]
+                                                                  : lingyao::mac::NativeCandidateTokens(dark);
     const CGFloat top = 14.0 + 16.0 + 4.0;
     const CGFloat fit = DrawPreviewToolbar(NSMakeRect(14.0, top, NSWidth(self.bounds) - 28.0, size.height), tokens,
                                            toolbar.components, toolbar.scalePercent, toolbar.fontSize);

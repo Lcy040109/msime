@@ -1,5 +1,5 @@
-import app.msime.android.KeyboardScheme;
-import app.msime.android.MicrosoftShuangpinKeyPolicy;
+import app.lingyao.android.KeyboardScheme;
+import app.lingyao.android.MicrosoftShuangpinKeyPolicy;
 
 public final class MicrosoftShuangpinKeyPolicySmoke {
     private static void check(boolean value) {

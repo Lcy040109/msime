@@ -17,7 +17,7 @@ static const char *const kExcludedClipboardTypes[] = {
 };
 
 // Pure predicate over a pasteboard type list: capturable only when plain text is present and no excluded marker type is.
-extern "C" bool msime_macos_clipboard_types_capturable(const char *const *types, size_t count) {
+extern "C" bool lingyao_macos_clipboard_types_capturable(const char *const *types, size_t count) {
     if (!types) return false;
     bool hasString = false;
     for (size_t i = 0; i < count; ++i) {
@@ -39,7 +39,7 @@ static bool pasteboardTypesCapturable(NSArray<NSPasteboardType> *types) {
         const char *name = type.UTF8String;
         if (name) names.push_back(name);
     }
-    return msime_macos_clipboard_types_capturable(names.data(), names.size());
+    return lingyao_macos_clipboard_types_capturable(names.data(), names.size());
 }
 
 // Mirrors the source NormalizeClipboardText (server/src/clipboard/clipboard_history.cpp) and client-core `normalize_text`: strip trailing NUL/CR, then keep the first 4000 UTF-16 units without splitting a surrogate pair, so an over-long copy is recorded truncated instead of dropped. The UTF-8 form of 4000 units is at most 12000 bytes, which fits MAX_TEXT_BYTES.
@@ -66,7 +66,7 @@ static bool copyUTF8(NSString *text, unsigned char *buffer, size_t capacity, siz
 }
 
 // Pure entry point over the same normalization, so tests can pin it without touching the general pasteboard.
-extern "C" bool msime_macos_normalize_clipboard_text(
+extern "C" bool lingyao_macos_normalize_clipboard_text(
     const unsigned char *input,
     size_t inputLength,
     unsigned char *buffer,
@@ -81,7 +81,7 @@ extern "C" bool msime_macos_normalize_clipboard_text(
     }
 }
 
-extern "C" bool msime_macos_read_clipboard(
+extern "C" bool lingyao_macos_read_clipboard(
     unsigned char *buffer,
     size_t capacity,
     bool readText,

@@ -216,7 +216,7 @@ mod tests {
             .expect("both tags present");
         assert!(inlined.contains("<script>const schema = 1;</script>"));
         assert!(inlined.contains("<script>const runtime = 2;</script>"));
-        assert!(!inlined.contains("msime-contracts"));
+        assert!(!inlined.contains("lingyao-contracts"));
 
         // Either script empty, or either tag missing: leave the page to fetch as written.
         assert!(inline_protocol_scripts(page, "", "const runtime = 2;").is_none());

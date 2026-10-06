@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { expect, test } from "vitest";
-import { emojiDisplayName } from "@msime/ui";
+import { emojiDisplayName } from "@lingyao/ui";
 
 test("a tooltip is a short name, not the whole keyword blob", () => {
   // Keywords are a space-separated blob; showing all of it is noise.

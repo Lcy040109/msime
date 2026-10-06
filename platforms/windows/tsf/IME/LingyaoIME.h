@@ -202,7 +202,7 @@ class CLingyaoIME : public ITfTextInputProcessorEx,
     HostComposedView _ReadHostComposedView() const;
     // A lone right Ctrl tap while a Korean syllable composes converts it as the Hanja key does: on the release the tap is queued as that key and true is returned. Checked ahead of the single-Ctrl language toggle, which it takes precedence over only in that state.
     bool _QueueKoreanHanjaTap(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam);
-    // 向宿主会话发 MSIME_CANCEL；第一次只关闭了韩文或注音的列表、或只把越南文词或藏文音节串重新显示为原文时再发一次，所以组字无论如何都会被丢弃。没有宿主会话时返回 true。
+    // 向宿主会话发 LINGYAO_CANCEL；第一次只关闭了韩文或注音的列表、或只把越南文词或藏文音节串重新显示为原文时再发一次，所以组字无论如何都会被丢弃。没有宿主会话时返回 true。
     bool _CancelHostComposition();
     // A caret or editing key that ended a Korean syllable behind the deferred-key barrier was eaten to keep its place in the queue; once the syllable is committed it is sent again through the input queue so the application still does its own work with it.
     void _QueueKoreanSyllableKeyReplay(UINT virtualKey);
@@ -582,7 +582,7 @@ class CLingyaoIME : public ITfTextInputProcessorEx,
 
     ITfContext *_pTextEditSinkContext;
     ITfContext *_hostFocusContext = nullptr;
-    msime::tsf::HostFocusState _hostFocusState;
+    lingyao::tsf::HostFocusState _hostFocusState;
     DWORD _textEditSinkCookie;
 
     // The cookie of ActiveLanguageProfileNotifySink

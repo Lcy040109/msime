@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { DefaultImeModeSection } from "@msime/ui";
+import { DefaultImeModeSection } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

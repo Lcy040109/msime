@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require(bool value, int line) {
   if (!value)
@@ -24,7 +24,7 @@ FanyImeNamedpipeData key(unsigned code, unsigned modifiers = 0) {
 
 int main() {
   try {
-    // The classes msime_client_key_sound numbers: 1 space, 2 enter, 3 backspace, 0 any other key.
+    // The classes lingyao_client_key_sound numbers: 1 space, 2 enter, 3 backspace, 0 any other key.
     REQUIRE(key_sound_class(key(0x20)) == 1u);
     REQUIRE(key_sound_class(key(0x0D)) == 2u);
     REQUIRE(key_sound_class(key(0x08)) == 3u);

@@ -7,13 +7,13 @@ import {
   type LinuxSetupClient,
   type LinuxSetupLine,
   type LinuxSetupStatus,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(cleanup);
 
 const missing: LinuxSetupStatus = {
   prepared: false,
-  stateDirectory: "/home/user/.config/msime-client",
+  stateDirectory: "/home/user/.config/lingyao-client",
   directoryOccupied: false,
   setupAvailable: true,
 };
@@ -21,14 +21,14 @@ const missing: LinuxSetupStatus = {
 test("Linux first-run page runs setup with the download choice and streams its output", async () => {
   const client: LinuxSetupClient = {
     run: vi.fn(async (_choices, onLine) => {
-      onLine({ text: "词库已校验：/usr/share/msime-client/resources", error: false });
+      onLine({ text: "词库已校验：/usr/share/lingyao-client/resources", error: false });
       onLine({ text: "启用用户服务失败", error: true });
       return { ...missing, prepared: true };
     }),
   };
   const onComplete = vi.fn();
   render(<LinuxSetupPage status={missing} client={client} onComplete={onComplete} />);
-  expect(screen.getByText(/\/home\/user\/\.config\/msime-client/)).toBeTruthy();
+  expect(screen.getByText(/\/home\/user\/\.config\/lingyao-client/)).toBeTruthy();
   fireEvent.click(screen.getByRole("checkbox", { name: /从固定地址下载/ }));
   fireEvent.click(screen.getByRole("button", { name: "开始配置" }));
   await screen.findByRole("heading", { name: "配置完成" });
@@ -163,6 +163,6 @@ test("Linux first-run page explains why it cannot start instead of offering a fa
       onComplete={vi.fn()}
     />,
   );
-  expect(screen.getByRole("alert").textContent).toContain("msime-linux-setup");
+  expect(screen.getByRole("alert").textContent).toContain("lingyao-linux-setup");
   expect(run).not.toHaveBeenCalled();
 });

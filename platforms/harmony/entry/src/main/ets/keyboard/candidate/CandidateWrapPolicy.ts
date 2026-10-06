@@ -1,6 +1,6 @@
 /**
  * Row allocation for the candidate flow, ported from
- * platforms/android/java/app/msime/android/CandidateWrapPolicy.java.
+ * platforms/android/java/app/lingyao/android/CandidateWrapPolicy.java.
  *
  * Kept separate from the view so the decision is testable without laying anything out: given the
  * measured width of each candidate, it answers which row each one belongs to.

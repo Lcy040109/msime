@@ -69,7 +69,7 @@ export function PersonalDictionaryImportCard({
     if (!entries || !importPersonal || busy) return;
     await runDictionaryAction(
       async (isCurrent) => {
-        const text = JSON.stringify({ format: "msime-personal-dictionary", version: 1, entries });
+        const text = JSON.stringify({ format: "lingyao-personal-dictionary", version: 1, entries });
         const result = await importPersonal(text, `ui-personal-import-${Date.now()}`);
         if (!isCurrent()) return;
         setNotice(
@@ -89,7 +89,7 @@ export function PersonalDictionaryImportCard({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "msime-personal-dictionary-example.json";
+    anchor.download = "lingyao-personal-dictionary-example.json";
     anchor.click();
     URL.revokeObjectURL(url);
   };

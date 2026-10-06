@@ -3,7 +3,7 @@
 //
 // The runtime is loaded at first use with dlopen/LoadLibrary rather than linked, for two reasons. A host whose package does not carry the library still starts and simply reports local recognition as unavailable, instead of failing to load. And the upstream Windows binaries are MSVC builds that the MinGW cross toolchain cannot link against through an import library, while calling through function pointers has no such problem.
 //
-// A model is a directory holding the files of one catalog entry (resources/local-asr-models.json) and an `msime-model.json` copy of that entry, written last by the installer so a half-installed directory never looks usable. Nothing here downloads anything.
+// A model is a directory holding the files of one catalog entry (resources/local-asr-models.json) and an `lingyao-model.json` copy of that entry, written last by the installer so a half-installed directory never looks usable. Nothing here downloads anything.
 
 #include "VoiceError.h"
 
@@ -16,12 +16,12 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::voice {
+namespace lingyao::voice {
 
 // The file the installer writes into a model directory once every other file is in place.
-inline constexpr std::string_view local_model_manifest = "msime-model.json";
+inline constexpr std::string_view local_model_manifest = "lingyao-model.json";
 
-// Overrides where the runtime library is looked for. Call before the first recognition; later calls have no effect once the library is loaded. Without it the library is looked for in MSIME_SHERPA_ONNX_LIBRARY, beside the executable, in the macOS bundle's Frameworks directory, and finally by bare name.
+// Overrides where the runtime library is looked for. Call before the first recognition; later calls have no effect once the library is loaded. Without it the library is looked for in LINGYAO_SHERPA_ONNX_LIBRARY, beside the executable, in the macOS bundle's Frameworks directory, and finally by bare name.
 void set_sherpa_library_path(std::string path);
 // Whether the runtime library could be loaded. Loads it on the first call.
 bool sherpa_runtime_available();
@@ -76,4 +76,4 @@ std::size_t release_local_models();
 // Joins what the models print into what a person would type: no space before or after CJK punctuation, and runs of single capital letters that a BPE model spells out ("P R", "C I") closed up. Exposed for tests.
 std::string tidy_local_transcript(std::string_view text);
 
-} // namespace msime::voice
+} // namespace lingyao::voice

@@ -4,7 +4,7 @@ import CoreFoundation
 // A versioned envelope for user-entered records. Linguistic validation and normalization
 // remain in the public Engine API; this is only the file transport used by the host UI.
 struct PersonalDictionaryImport: Codable, Sendable {
-  var format = "msime-personal-dictionary"
+  var format = "lingyao-personal-dictionary"
   var version = 1
   var entries: [PersonalWord]
   static let maximumBytes = 1_048_576
@@ -17,7 +17,7 @@ struct PersonalDictionaryImport: Codable, Sendable {
   static func decode(_ data: Data) throws -> Self {
     guard data.count <= maximumBytes else { throw ImportError(message: "文件不能超过 1 MB。") }
     guard let file = try? JSONDecoder().decode(Self.self, from: data),
-          file.format == "msime-personal-dictionary", file.version == 1 else {
+          file.format == "lingyao-personal-dictionary", file.version == 1 else {
       throw ImportError(message: "文件格式不支持，请按示例 JSON 文件填写。")
     }
     guard !file.entries.isEmpty, file.entries.count <= 128 else {

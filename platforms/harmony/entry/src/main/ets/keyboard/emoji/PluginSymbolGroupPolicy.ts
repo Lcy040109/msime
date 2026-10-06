@@ -10,7 +10,7 @@ export const MAX_PLUGIN_SYMBOL_KEYWORD_UNITS: number = 1024;
 const SYMBOLS_TAB: string = "symbols";
 const KAOMOJI_TAB: string = "kaomoji";
 
-/** `msime_client_emoji_catalog_request` 在 `list_plugin_symbol_groups` 下回传的一组，字段名与接口一致。 */
+/** `lingyao_client_emoji_catalog_request` 在 `list_plugin_symbol_groups` 下回传的一组，字段名与接口一致。 */
 export interface PluginSymbolGroupDocument {
   pack: string;
   pack_name: string;

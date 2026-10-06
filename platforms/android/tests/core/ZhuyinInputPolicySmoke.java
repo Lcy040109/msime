@@ -1,7 +1,7 @@
 import android.view.KeyEvent;
-import app.msime.android.TibetanInputPolicy;
-import app.msime.android.VietnameseInputPolicy;
-import app.msime.android.ZhuyinInputPolicy;
+import app.lingyao.android.TibetanInputPolicy;
+import app.lingyao.android.VietnameseInputPolicy;
+import app.lingyao.android.ZhuyinInputPolicy;
 
 public final class ZhuyinInputPolicySmoke {
     private static void check(boolean condition, String message) {
@@ -10,7 +10,7 @@ public final class ZhuyinInputPolicySmoke {
 
     public static void main(String[] args) {
         check(ZhuyinInputPolicy.ZHUYIN_SCHEME == 6, "the shared Engine ordinal for Zhuyin is 6");
-        check(ZhuyinInputPolicy.OPEN_CANDIDATE_LIST_COMMAND == 16, "MSIME_OPEN_CANDIDATE_LIST is command 16");
+        check(ZhuyinInputPolicy.OPEN_CANDIDATE_LIST_COMMAND == 16, "LINGYAO_OPEN_CANDIDATE_LIST is command 16");
         check(ZhuyinInputPolicy.active(6, false) && !ZhuyinInputPolicy.active(6, true)
             && !ZhuyinInputPolicy.active(4, false) && !ZhuyinInputPolicy.active(0, false),
             "only the Zhuyin scheme outside dedicated English takes the Dachen keys");

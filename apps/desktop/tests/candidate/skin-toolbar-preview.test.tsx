@@ -5,7 +5,7 @@ import { SkinToolbarPreview } from "../../../../packages/ui/src/skin/skin-toolba
 import { utilityCss } from "../support/utility-css";
 
 const css = utilityCss("skin-card-preview");
-import type { FloatingToolbarPreferences } from "@msime/ui";
+import type { FloatingToolbarPreferences } from "@lingyao/ui";
 
 afterEach(cleanup);
 
@@ -97,10 +97,10 @@ test("toolbar preview contains upstream static icons without scripts, IDs or hos
   }
 });
 
-// jsdom does not substitute custom properties, so the computed value is the declaration itself: a package's `--msime-toolbar-background`, falling back to the upstream colour.
+// jsdom does not substitute custom properties, so the computed value is the declaration itself: a package's `--lingyao-toolbar-background`, falling back to the upstream colour.
 test.each([
-  ["dark", "var(--msime-toolbar-background, #1a1a1a)"],
-  ["light", "var(--msime-toolbar-background, #ffffff)"],
+  ["dark", "var(--lingyao-toolbar-background, #1a1a1a)"],
+  ["light", "var(--lingyao-toolbar-background, #ffffff)"],
 ])("%s toolbar uses the upstream palette", (appearance, surface) => {
   const mounted = render(
     <>

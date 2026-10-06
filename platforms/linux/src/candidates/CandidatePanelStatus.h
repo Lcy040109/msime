@@ -15,7 +15,7 @@
 #include "AtomicWrite.h"
 #include "../core/LinuxEdition.h"
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // Neither Linux host draws its candidate list: IBus hands it to whichever panel the desktop runs and Fcitx5 to whichever user interface it loaded. Some of those ignore the candidate font, colour and skin settings, and only the running host can tell which one is drawing. It says so in a per-session file the settings page reads (HostCapabilities.candidate_panel_limit in client-core host_surface.rs, which parses the same names).
 enum class CandidatePanelLimit {
@@ -49,10 +49,10 @@ inline std::string candidate_panel_status_document(std::string_view host, Candid
          (name ? "\"" + std::string(name) + "\"" : std::string("null")) + "}\n";
 }
 
-// $XDG_RUNTIME_DIR/msime-client/candidate-panel.json, beside the panel input socket. A missing or relative runtime directory yields nothing, as it does for the socket.
+// $XDG_RUNTIME_DIR/lingyao-client/candidate-panel.json, beside the panel input socket. A missing or relative runtime directory yields nothing, as it does for the socket.
 inline std::optional<std::filesystem::path> candidate_panel_status_file(const char *runtime) {
   if (!runtime || runtime[0] != '/') return std::nullopt;
-  return std::filesystem::path(runtime) / MSIME_EDITION_CLIENT_DIRECTORY / "candidate-panel.json";
+  return std::filesystem::path(runtime) / LINGYAO_EDITION_CLIENT_DIRECTORY / "candidate-panel.json";
 }
 
 // XDG_CURRENT_DESKTOP names GNOME Shell's session ("GNOME", "ubuntu:GNOME"). Desktops built on GNOME that run their own panel, and so draw IBus through ibus-ui-gtk3, list GNOME as well and are excluded by their own name.
@@ -73,7 +73,7 @@ inline bool candidate_desktop_is_gnome_shell(const char *current_desktop) {
   return gnome;
 }
 
-// Fcitx5 names its active user interface addon: the classic UI honours the MSIME theme unless the user picked another one; Kimpanel draws nothing of it.
+// Fcitx5 names its active user interface addon: the classic UI honours the LINGYAO theme unless the user picked another one; Kimpanel draws nothing of it.
 inline CandidatePanelLimit fcitx_candidate_panel_limit(std::string_view current_ui, bool theme_replaceable) {
   if (current_ui == "kimpanel") return CandidatePanelLimit::Kimpanel;
   if (current_ui == "classicui" && !theme_replaceable) return CandidatePanelLimit::FcitxTheme;
@@ -102,4 +102,4 @@ inline bool write_candidate_panel_status(const std::filesystem::path &file, cons
   return write_candidate_file_atomically(file, document);
 }
 
-} // namespace msime::linux_host
+} // namespace lingyao::linux_host

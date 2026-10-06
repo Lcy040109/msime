@@ -1,4 +1,4 @@
-import app.msime.android.AccountTokenPolicy;
+import app.lingyao.android.AccountTokenPolicy;
 
 /** Account responses and saved sessions must satisfy the same bearer-token contract. */
 public final class AccountTokenPolicySmoke {

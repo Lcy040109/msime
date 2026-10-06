@@ -15,7 +15,7 @@ struct wl_buffer;
 struct zwlr_layer_shell_v1;
 struct zwlr_layer_surface_v1;
 
-namespace msime::linux_host {
+namespace lingyao::linux_host {
 
 // 中英文切换后短暂显示的徽章：产品 logo 加一个「中」或「英」。
 //
@@ -72,4 +72,4 @@ class ModeBadgeWaylandSurface final : public ModeBadgeSurface {
   bool visible_ = false;
 };
 
-}  // namespace msime::linux_host
+}  // namespace lingyao::linux_host

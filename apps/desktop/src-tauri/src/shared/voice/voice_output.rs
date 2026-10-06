@@ -21,7 +21,7 @@ pub fn submit(
 ) -> Result<(), OutputError> {
     if text.is_empty()
         || text.len() > 4096
-        || msime_client_core::has_disallowed_control_with_options(text, true)
+        || lingyao_client_core::has_disallowed_control_with_options(text, true)
     {
         return Err(OutputError::InvalidText);
     }

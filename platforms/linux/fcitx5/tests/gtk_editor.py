@@ -10,7 +10,7 @@ from gi.repository import Gtk, GdkX11
 from daemon import wait
 
 
-window = Gtk.Window(title="MSIME synthetic GTK editor")
+window = Gtk.Window(title="LINGYAO synthetic GTK editor")
 entry = Gtk.Entry()
 entry.set_property("im-module", "fcitx")
 window.add(entry)
@@ -25,9 +25,9 @@ control = dbus.Interface(bus.get_object("org.fcitx.Fcitx5", "/controller"),
                          "org.fcitx.Fcitx.Controller1")
 # GTK creates/focuses its D-Bus input context asynchronously after X focus.
 wait(lambda: bool(str(control.CurrentInputMethod())))
-control.SetCurrentIM("msime")
+control.SetCurrentIM("lingyao")
 control.Activate()
-wait(lambda: str(control.CurrentInputMethod()) == "msime")
+wait(lambda: str(control.CurrentInputMethod()) == "lingyao")
 typing = subprocess.Popen(["xdotool", "type", "--clearmodifiers", "--delay", "100", "nihao "])
 try:
     wait(lambda: entry.get_text() == "你好")

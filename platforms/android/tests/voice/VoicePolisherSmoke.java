@@ -1,4 +1,4 @@
-import app.msime.android.VoicePolisher;
+import app.lingyao.android.VoicePolisher;
 import java.lang.reflect.Method;
 import java.util.Map;
 

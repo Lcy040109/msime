@@ -1,6 +1,6 @@
-//! The msime-cloud query protocol: one JSON request in, one JSON response out, answered from a resource directory and a per-request scratch directory.
+//! The lingyao-cloud query protocol: one JSON request in, one JSON response out, answered from a resource directory and a per-request scratch directory.
 //!
-//! msime-cloud runs `msime-backend-engine <resources> <scratch>` once per request and writes the request to its stdin (`internal/engine/client.go` there). This module is that process's behaviour; it replaces the C++ bridge `native/main.cpp` that linked the archived MSIME-Engine, and keeps its request and response shapes so the Go server is unchanged. Errors are the four codes the server maps to HTTP statuses: `invalid_request` (400), `invalid_dictionary_entry` (400), `resources_unavailable` (503) and anything else (502).
+//! lingyao-cloud runs `lingyao-backend-engine <resources> <scratch>` once per request and writes the request to its stdin (`internal/engine/client.go` there). This module is that process's behaviour; it replaces the C++ bridge `native/main.cpp` that linked the archived LINGYAO-Engine, and keeps its request and response shapes so the Go server is unchanged. Errors are the four codes the server maps to HTTP statuses: `invalid_request` (400), `invalid_dictionary_entry` (400), `resources_unavailable` (503) and anything else (502).
 //!
 //! Paths only ever come from the process arguments, never from the request, and nothing is kept between requests.
 
@@ -62,7 +62,7 @@ impl From<rusqlite::Error> for BackendError {
 
 pub(crate) type Outcome = std::result::Result<Value, BackendError>;
 
-/// Turns Simplified Chinese text into Traditional. The conversion tables live in `msime-client-core`, which this crate does not depend on, so the process that hosts the protocol supplies it.
+/// Turns Simplified Chinese text into Traditional. The conversion tables live in `lingyao-client-core`, which this crate does not depend on, so the process that hosts the protocol supplies it.
 pub type SimplifiedToTraditional = fn(&str) -> String;
 
 /// Answer one request. `resources` holds the pinned dictionary release; `scratch` is a directory the caller created for this request alone and removes afterwards.

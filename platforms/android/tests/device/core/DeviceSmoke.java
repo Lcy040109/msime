@@ -1,4 +1,4 @@
-package app.msime.android.test;
+package app.lingyao.android.test;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.AccessibilityService;
@@ -28,11 +28,11 @@ public class DeviceSmoke extends Instrumentation {
             info.flags |= AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
             automation.setServiceInfo(info);
             runChecks();
-            result.putString("stream", "MSIME_DEVICE_SMOKE_PASSED: " + successDescription() + "\n");
+            result.putString("stream", "LINGYAO_DEVICE_SMOKE_PASSED: " + successDescription() + "\n");
             finish(Activity.RESULT_OK, result);
         } catch (Exception | AssertionError error) {
             // Only fixed test-stage messages, never serialize editor contents.
-            result.putString("stream", "MSIME_DEVICE_SMOKE_FAILED: " + stage + " (" + error.getClass().getSimpleName() + ")" + (error instanceof AssertionError ? " " + error.getMessage() : "") + "\n");
+            result.putString("stream", "LINGYAO_DEVICE_SMOKE_FAILED: " + stage + " (" + error.getClass().getSimpleName() + ")" + (error instanceof AssertionError ? " " + error.getMessage() : "") + "\n");
             finish(Activity.RESULT_CANCELED, result);
         }
     }
@@ -44,18 +44,18 @@ public class DeviceSmoke extends Instrumentation {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivitySync(intent);
             stage = "plain focus";
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             stage = "typing";
             for (String key : new String[] {"n", "i", "h", "a", "o"}) tap(key(key));
             stage = "phrase composition";
-            await(field("msime-test-plain").and(node -> equalsText("nihao", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("nihao", node.getText())));
             stage = "phrase commit key";
             tap(key("空格"));
             stage = "phrase commit result";
-            await(field("msime-test-plain").and(node -> equalsText("你好", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你好", node.getText())));
             stage = "deletion";
             tap(key("⌫"));
-            await(field("msime-test-plain").and(node -> equalsText("你", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你", node.getText())));
             // 繁体输出 is a setting rather than a toolbar key, the way Apple has it: it moved out
             // of the shortcut bar and into 更多, so this drives it there.
             stage = "simplified output baseline";
@@ -77,7 +77,7 @@ public class DeviceSmoke extends Instrumentation {
             stage = "traditional commit key";
             tap(key("空格"));
             stage = "traditional commit result";
-            await(field("msime-test-plain").and(node -> equalsText("你輸入法", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你輸入法", node.getText())));
             stage = "restore simplified output";
             tap(key("更多"));
             await(toolPanel());
@@ -86,31 +86,31 @@ public class DeviceSmoke extends Instrumentation {
             tap(tool("返回键盘"));
             await(key("n").and(AccessibilityNodeInfo::isClickable));
             stage = "password focus action";
-            tap(field("msime-test-password"));
+            tap(field("lingyao-test-password"));
             stage = "password field focus";
-            await(field("msime-test-password").and(AccessibilityNodeInfo::isFocused));
+            await(field("lingyao-test-password").and(AccessibilityNodeInfo::isFocused));
             stage = "password direct mode";
             await(imeTextContains("直接输入"));
             stage = "password direct input";
             tap(key("n"));
-            await(field("msime-test-password").and(node -> node.getText() != null && node.getText().length() == 1));
+            await(field("lingyao-test-password").and(node -> node.getText() != null && node.getText().length() == 1));
 
             stage = "view-hide composition";
-            tap(field("msime-test-plain"));
+            tap(field("lingyao-test-plain"));
             for (String key : new String[] {"n", "i", "h", "a", "o"}) tap(key(key));
             // The field still holds 你輸入法 from the traditional stage, and getText() includes the
             // composing region, so this is that text with the pinyin still being composed on it.
-            await(field("msime-test-plain").and(node -> equalsText("你輸入法nihao", node.getText())));
+            await(field("lingyao-test-plain").and(node -> equalsText("你輸入法nihao", node.getText())));
             if (!automation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK))
                 throw new AssertionError("Keyboard hide action failed");
             SystemClock.sleep(500);
-            tap(field("msime-test-plain"));
-            await(field("msime-test-plain").and(node -> equalsText("你輸入法你好", node.getText())));
+            tap(field("lingyao-test-plain"));
+            await(field("lingyao-test-plain").and(node -> equalsText("你輸入法你好", node.getText())));
             if (findAnyVisibleImeNode(imeText("nihao")) != null)
                 throw new AssertionError("Hidden keyboard retained composition");
     }
     protected Predicate<AccessibilityNodeInfo> field(String description) {
-        return node -> equalsText("app.msime.android.test", node.getPackageName()) && equalsText(description, node.getContentDescription());
+        return node -> equalsText("app.lingyao.android.test", node.getPackageName()) && equalsText(description, node.getContentDescription());
     }
     /**
      * The key that types `text`, whatever case it is drawn in.
@@ -124,7 +124,7 @@ public class DeviceSmoke extends Instrumentation {
     protected Predicate<AccessibilityNodeInfo> key(String text) {
         boolean letter = text.length() == 1 && Character.isLetter(text.charAt(0))
             && text.charAt(0) < 128;
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && (letter ? node.getText() != null && text.equalsIgnoreCase(node.getText().toString())
                 : equalsText(text, node.getText()));
     }
@@ -136,12 +136,12 @@ public class DeviceSmoke extends Instrumentation {
      * so neither is an identity. The stable part is the prefix.
      */
     protected Predicate<AccessibilityNodeInfo> described(String description) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText(description, node.getContentDescription());
     }
 
     protected Predicate<AccessibilityNodeInfo> describedPrefix(String prefix) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.getContentDescription() != null
             && node.getContentDescription().toString().startsWith(prefix);
     }
@@ -158,15 +158,15 @@ public class DeviceSmoke extends Instrumentation {
     }
 
     protected Predicate<AccessibilityNodeInfo> scriptState() {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.isEnabled() && (equalsText("简", node.getText()) || equalsText("繁", node.getText()));
     }
     protected Predicate<AccessibilityNodeInfo> imeTextContains(String text) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && node.getText() != null && node.getText().toString().contains(text);
     }
     private Predicate<AccessibilityNodeInfo> imeText(String text) {
-        return node -> equalsText("app.msime.android", node.getPackageName())
+        return node -> equalsText("app.lingyao.android", node.getPackageName())
             && equalsText(text, node.getText());
     }
     private AccessibilityNodeInfo findAnyVisibleImeNode(Predicate<AccessibilityNodeInfo> match) {
@@ -225,7 +225,7 @@ public class DeviceSmoke extends Instrumentation {
         target = awaitAny(match);
         // Android 15 can reject synthetic coordinates over IME and instrumentation windows.
         // Accessibility click still invokes the real product control and InputConnection path.
-        if (equalsText("app.msime.android", target.getPackageName())
+        if (equalsText("app.lingyao.android", target.getPackageName())
                 && target.isClickable()) {
             if (!target.performAction(AccessibilityNodeInfo.ACTION_CLICK))
                 throw new AssertionError("Synthetic control action failed");
@@ -258,7 +258,7 @@ public class DeviceSmoke extends Instrumentation {
                 AccessibilityNodeInfo found = find(window.getRoot(), tool(description));
                 if (found != null) return found;
             }
-            AccessibilityNodeInfo grid = awaitAny(node -> equalsText("app.msime.android", node.getPackageName())
+            AccessibilityNodeInfo grid = awaitAny(node -> equalsText("app.lingyao.android", node.getPackageName())
                 && node.isScrollable() && node.getParent() != null
                 && equalsText("更多工具", node.getParent().getContentDescription()));
             int action = attempt < 3 ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
@@ -274,7 +274,7 @@ public class DeviceSmoke extends Instrumentation {
         // A symbol key in Chinese mode wears its Chinese face whatever the engine is configured to
         // insert -- the face follows the mode, the inserted mark follows the punctuation setting,
         // exactly as on Apple. Accept either face and let the caller assert what was inserted.
-        String chinese = app.msime.android.ChineseSymbolFaces.face(symbol, true);
+        String chinese = app.lingyao.android.ChineseSymbolFaces.face(symbol, true);
         tap(key(symbol).or(key(chinese)));
         tap(described("切换到字母键盘"));
     }

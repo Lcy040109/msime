@@ -1,12 +1,12 @@
-msime 的 Debian 源码包
+lingyao 的 Debian 源码包
 ====================
 
 这个 debian/ 目录在上游仓库里位于 platforms/linux/packaging/debian，打源码包时复制到源码树顶层。
 
 源码包由两个 orig tarball 组成，都来自 GitHub 发布页 linux-vVERSION：
 
-- msime_VERSION.orig.tar.xz：发布页上的 msime-VERSION.tar.xz，即该提交的 `git archive`。
-- msime_VERSION.orig-vendor.tar.xz：发布页上的 msime-VERSION-vendor.tar.xz，dpkg-source 解到 vendor/。内容是 `cargo vendor --locked` 的 crate、pnpm 构建好的设置窗口前端及其 npm 许可证汇总，以及按 resources/*.lock.json 取回的语音运行库归档、手写模型、离线释义和方言词库。
+- lingyao_VERSION.orig.tar.xz：发布页上的 lingyao-VERSION.tar.xz，即该提交的 `git archive`。
+- lingyao_VERSION.orig-vendor.tar.xz：发布页上的 lingyao-VERSION-vendor.tar.xz，dpkg-source 解到 vendor/。内容是 `cargo vendor --locked` 的 crate、pnpm 构建好的设置窗口前端及其 npm 许可证汇总，以及按 resources/*.lock.json 取回的语音运行库归档、手写模型、离线释义和方言词库。
 
 两者都由 platforms/linux/packaging/make-source-tarballs.sh 生成。Launchpad 构建时没有网络，所以这些依赖只能随源码包提供；构建时 debian/rules 再用仓库自己的 fetch 脚本对着源码树里的锁文件核对一遍 vendor/ 里的数据，对不上就会去下载并在无网络的构建农场里失败。
 
@@ -20,16 +20,16 @@ msime 的 Debian 源码包
     v=0.9.1
     curl -LO https://github.com/Lcy040109/msime/releases/download/linux-v$v/msime-$v.tar.xz
     curl -LO https://github.com/Lcy040109/msime/releases/download/linux-v$v/msime-$v-vendor.tar.xz
-    ln -s msime-$v.tar.xz msime_$v.orig.tar.xz
-    ln -s msime-$v-vendor.tar.xz msime_$v.orig-vendor.tar.xz
-    tar xf msime_$v.orig.tar.xz
-    mkdir msime-$v/vendor
-    tar xf msime_$v.orig-vendor.tar.xz -C msime-$v/vendor --strip-components=1
-    cp -a msime-$v/platforms/linux/packaging/debian msime-$v/debian
-    python3 msime-$v/platforms/linux/packaging/render-sources.py --version $v \
-      --changelog-out msime-$v/debian/changelog \
+    ln -s lingyao-$v.tar.xz lingyao_$v.orig.tar.xz
+    ln -s lingyao-$v-vendor.tar.xz lingyao_$v.orig-vendor.tar.xz
+    tar xf lingyao_$v.orig.tar.xz
+    mkdir lingyao-$v/vendor
+    tar xf lingyao_$v.orig-vendor.tar.xz -C lingyao-$v/vendor --strip-components=1
+    cp -a lingyao-$v/platforms/linux/packaging/debian lingyao-$v/debian
+    python3 lingyao-$v/platforms/linux/packaging/render-sources.py --version $v \
+      --changelog-out lingyao-$v/debian/changelog \
       --debian-distribution resolute --debian-revision 1~ppa1~ubuntu26.04
-    cd msime-$v && debuild -S -sa -d -k<签名密钥>
-    dput ppa:<launchpad 用户>/msime ../msime_$v-1~ppa1~ubuntu26.04_source.changes
+    cd lingyao-$v && debuild -S -sa -d -k<签名密钥>
+    dput ppa:<launchpad 用户>/lingyao ../lingyao_$v-1~ppa1~ubuntu26.04_source.changes
 
 同一版本上传到多个 Ubuntu 代号时，每个代号换一个 --debian-distribution 和 --debian-revision。PPA 默认只构建 amd64，arm64 要在 PPA 设置里打开。

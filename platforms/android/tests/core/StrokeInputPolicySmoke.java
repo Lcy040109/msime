@@ -1,6 +1,6 @@
-import app.msime.android.KoreanInputPolicy;
-import app.msime.android.StrokeInputPolicy;
-import app.msime.android.ZhuyinInputPolicy;
+import app.lingyao.android.KoreanInputPolicy;
+import app.lingyao.android.StrokeInputPolicy;
+import app.lingyao.android.ZhuyinInputPolicy;
 
 /** 笔画的内联组字是 reading 里的笔画字形，不是 editing_text 里的字母。 */
 public final class StrokeInputPolicySmoke {

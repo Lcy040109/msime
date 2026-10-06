@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-using namespace msime::windows;
+using namespace lingyao::windows;
 namespace {
 void require_at(bool value, int line) {
   if (!value)

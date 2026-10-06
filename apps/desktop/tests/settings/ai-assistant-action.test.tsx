@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import { useAiAssistant, type AiAssistantClient, type AiAssistantPreferences } from "@msime/ui";
+import { useAiAssistant, type AiAssistantClient, type AiAssistantPreferences } from "@lingyao/ui";
 
 afterEach(() => vi.restoreAllMocks());
 

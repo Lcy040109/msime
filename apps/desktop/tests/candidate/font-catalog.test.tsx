@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { SettingsPage, type Snapshot } from "@msime/ui";
+import { SettingsPage, type Snapshot } from "@lingyao/ui";
 import { normalizeFontCatalog } from "../../../../packages/ui/src/candidate/font-catalog";
 afterEach(cleanup);
 const initial: Snapshot = {

@@ -58,12 +58,12 @@
         <!-- Two ids, one place: step 0 shows onboarding_skip and every later step shows onboarding_previous, so either button keeps the id tests and older callers know it by. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/onboarding_skip"
-            style="@style/Widget.MSIME.OnboardingText"
+            style="@style/Widget.LINGYAO.OnboardingText"
             android:text="@string/onboarding_skip" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/onboarding_previous"
-            style="@style/Widget.MSIME.OnboardingText"
+            style="@style/Widget.LINGYAO.OnboardingText"
             android:text="@string/onboarding_previous"
             android:visibility="gone" />
 

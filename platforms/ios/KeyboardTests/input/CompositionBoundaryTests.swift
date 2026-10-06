@@ -7,7 +7,7 @@ final class CompositionBoundaryTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-composition-boundary-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-composition-boundary-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

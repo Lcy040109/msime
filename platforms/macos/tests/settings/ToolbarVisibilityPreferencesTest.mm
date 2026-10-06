@@ -4,15 +4,15 @@
 
 int main() {
     @autoreleasepool {
-        NSString *suite = [@"MSIME.ToolbarVisibilityTest." stringByAppendingString:NSUUID.UUID.UUIDString];
+        NSString *suite = [@"LINGYAO.ToolbarVisibilityTest." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults];
+        LINGYAOAppearancePreferences *preferences = [[LINGYAOAppearancePreferences alloc] initWithDefaults:defaults];
         __block NSUInteger notifications = 0;
-        id token = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
+        id token = [NSNotificationCenter.defaultCenter addObserverForName:LINGYAOAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
         assert(preferences.floatingToolbarEnabled);
         [preferences applySharedToolbarVisibility:NO];
         assert(!preferences.floatingToolbarEnabled && notifications == 0);
-        assert([defaults objectForKey:@"MSIMEClientFloatingToolbarEnabled"] == nil);
+        assert([defaults objectForKey:@"LINGYAOClientFloatingToolbarEnabled"] == nil);
         NSDictionary *merged = [preferences sharedPreferencesByMerging:@{}];
         assert(![merged[@"floating_toolbar"][@"enabled"] boolValue]);
         assert([merged[@"floating_toolbar"][@"english_mode"] boolValue]);
@@ -42,7 +42,7 @@ int main() {
         assert(preferences.floatingToolbarScalePercent == 75 && preferences.floatingToolbarFontSize == 16);
         merged = [preferences sharedPreferencesByMerging:@{}];
         assert(![merged[@"floating_toolbar"][@"english_mode"] boolValue]);
-        assert([defaults objectForKey:@"MSIMEClientFloatingToolbarOptions"] != nil);
+        assert([defaults objectForKey:@"LINGYAOClientFloatingToolbarOptions"] != nil);
         NSUInteger beforeSharedVisibility = notifications;
         [preferences applySharedToolbarVisibility:YES];
         assert(preferences.floatingToolbarEnabled && notifications == beforeSharedVisibility);
@@ -51,6 +51,6 @@ int main() {
         [preferences applySharedToolbarVisibility:YES];
         assert(preferences.floatingToolbarEnabled && notifications == beforeSharedVisibility + 1);
         [NSNotificationCenter.defaultCenter removeObserver:token];
-        MSIMERemoveTestPreferenceSuite(defaults, suite);
+        LINGYAORemoveTestPreferenceSuite(defaults, suite);
     }
 }

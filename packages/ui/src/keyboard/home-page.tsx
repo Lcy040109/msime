@@ -183,7 +183,7 @@ export function HomePage({
         {!touchLayout && (
           <img
             className="size-12 opacity-80"
-            src={new URL("../assets/msime.svg", import.meta.url).href}
+            src={new URL("../assets/lingyao.svg", import.meta.url).href}
             alt=""
           />
         )}

@@ -4,7 +4,7 @@
 #include <string>
 
 int main() {
-  msime::linux_host::ClientInputModeMemory memory;
+  lingyao::linux_host::ClientInputModeMemory memory;
   assert(memory.restore("editor-a", true));
   memory.remember("editor-a", false);
   assert(!memory.restore("editor-a", true));
@@ -23,7 +23,7 @@ int main() {
   assert(memory.restore("editor-c", true));
 
   for (std::size_t index = 0;
-       index < msime::linux_host::ClientInputModeMemory::kMaxClients;
+       index < lingyao::linux_host::ClientInputModeMemory::kMaxClients;
        ++index) {
     memory.remember("client-" + std::to_string(index), true);
   }

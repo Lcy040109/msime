@@ -1,4 +1,4 @@
-"""A stand-in for msime-voice-local speaking its JSON-lines protocol, for the Linux voice service tests.
+"""A stand-in for lingyao-voice-local speaking its JSON-lines protocol, for the Linux voice service tests.
 
 Environment:
   FAKE_HELPER_AVAILABLE=0  report the runtime missing in hello

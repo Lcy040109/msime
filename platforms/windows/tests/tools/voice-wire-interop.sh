@@ -16,6 +16,6 @@ mkdir -p "$output"
   -I"$repo_root/shared/contracts" \
   $(find "$repo_root/platforms/windows/src" -type d -exec printf -- '-I%s ' {} +) \
   "$repo_root/platforms/windows/tests/voice/voice_wire_peer.cpp" -o "$output/peer"
-MSIME_VOICE_WIRE_PEER="$output/peer" \
+LINGYAO_VOICE_WIRE_PEER="$output/peer" \
   cargo test --manifest-path "$repo_root/Cargo.toml" \
-  -p msime-client-core --test voice_wire_interop -- --nocapture
+  -p lingyao-client-core --test voice_wire_interop -- --nocapture

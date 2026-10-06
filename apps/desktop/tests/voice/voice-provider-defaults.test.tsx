@@ -12,7 +12,7 @@ import {
   providerSettingValue,
   polishProviderUpdate,
   type VoiceInputPreferences,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 const doubaoEndpoint = ASR_PROVIDER_DEFAULTS.doubao.endpoint;
 

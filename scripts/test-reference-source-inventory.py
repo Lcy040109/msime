@@ -86,7 +86,7 @@ ANSWERED_BY: dict[str, str] = {
     "ime_windows": "platforms/windows/src/candidate/CandidateWindow.cpp",
     "window_hook": "platforms/windows/src/input/MaintenanceHotkey.cpp",
     "surface_theme_config": "platforms/windows/src/voice/VoiceTheme.h",
-    "svg_path_geometry": "platforms/windows/msimeui/src/Controls.cpp",
+    "svg_path_geometry": "platforms/windows/lingyaoui/src/Controls.cpp",
     # The document side of the reference's second candidate renderer. Its markup is vendored in
     # packages/ui/src/upstream/candidate-themes/; these two are the contracts that fill it.
     "candidate_window_template": "crates/client-core/src/candidate_document.rs",
@@ -205,7 +205,7 @@ def pascal(name: str) -> str:
 def main() -> int:
     resolved = reference_sources()
     if resolved is None:
-        print("skipped: no MSIME-Windows checkout beside this repository to compare against")
+        print("skipped: no LINGYAO-Windows checkout beside this repository to compare against")
         print(f"  expected a git checkout at {REFERENCE}")
         return 0
     sources, ref, sha = resolved

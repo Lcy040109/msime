@@ -1,6 +1,6 @@
 #pragma once
 #import <Foundation/Foundation.h>
-typedef void (^MSIMEAuthCompletion)(NSData *data, NSInteger status, NSError *error);
-FOUNDATION_EXPORT void MSIMEAuthChallenge(NSString *linkToken, MSIMEAuthCompletion completion);
-FOUNDATION_EXPORT void MSIMEAuthLogin(NSString *challenge, NSString *credential, NSString *linkToken, MSIMEAuthCompletion completion);
-FOUNDATION_EXPORT void MSIMEAuthRefresh(NSString *refreshToken, MSIMEAuthCompletion completion);
+typedef void (^LINGYAOAuthCompletion)(NSData *data, NSInteger status, NSError *error);
+FOUNDATION_EXPORT void LINGYAOAuthChallenge(NSString *linkToken, LINGYAOAuthCompletion completion);
+FOUNDATION_EXPORT void LINGYAOAuthLogin(NSString *challenge, NSString *credential, NSString *linkToken, LINGYAOAuthCompletion completion);
+FOUNDATION_EXPORT void LINGYAOAuthRefresh(NSString *refreshToken, LINGYAOAuthCompletion completion);

@@ -2,7 +2,7 @@
 #include <cassert>
 
 int main() {
-  using msime::voice::doubao_auth_headers;
+  using lingyao::voice::doubao_auth_headers;
   const auto api = doubao_auth_headers("api_key", "stale-app", "synthetic-token", "fixture-resource");
   assert(api);
   assert(api->find("x-api-key: synthetic-token\r\n") != std::string::npos);

@@ -48,7 +48,7 @@ class CCompositionProcessorEngine
     BOOL AddVirtualKey(WCHAR wch);
     // The host Engine bridge is introduced behind this accessor so individual
     // TSF paths can migrate without duplicating composition algorithms.
-    msime::tsf::EngineSessionAdapter *GetHostEngineAdapter() const noexcept
+    lingyao::tsf::EngineSessionAdapter *GetHostEngineAdapter() const noexcept
     {
         return _hostEngineAdapter.get();
     }
@@ -287,7 +287,7 @@ class CCompositionProcessorEngine
     ITfThreadMgr *_pOwnerThreadMgr;
     HWND _ownerMsgWndHandle;
     CLingyaoIME *_pTextService;
-    std::unique_ptr<msime::tsf::EngineSessionAdapter> _hostEngineAdapter;
+    std::unique_ptr<lingyao::tsf::EngineSessionAdapter> _hostEngineAdapter;
     BOOL _keyboardOpen;
     BOOL _keyboardOpenKnown;
     BOOL _suppressKeyboardCloseCommit;

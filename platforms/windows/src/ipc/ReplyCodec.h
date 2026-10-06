@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace msime::windows {
+namespace lingyao::windows {
 enum class ReplyError {
   None,
   InvalidRequest,
@@ -131,4 +131,4 @@ EncodedReply partial_selection(uint64_t request, std::string_view remaining_raw,
 EncodedReply uiless_reply(uint64_t request, std::string_view display_preedit,
                           const std::vector<std::string> &page,
                           size_t highlighted);
-} // namespace msime::windows
+} // namespace lingyao::windows

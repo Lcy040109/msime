@@ -2,7 +2,7 @@
 import { expect, test } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach } from "vitest";
-import { DictionaryFormatOptions } from "@msime/ui";
+import { DictionaryFormatOptions } from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

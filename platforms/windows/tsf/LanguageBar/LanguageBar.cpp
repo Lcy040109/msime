@@ -651,12 +651,12 @@ STDAPI CLangBarItemButton::GetIcon(_Out_ HICON *phIcon)
         lightIconIndex = static_cast<DWORD>(IME_MODE_CAP_ICON_INDEX);
     }
     else if (isOn && !(status & TF_LBI_STATUS_DISABLED) && _onIconIndex == static_cast<DWORD>(IME_MODE_ON_ICON_INDEX) &&
-             Global::InputModeScheme.load(std::memory_order_relaxed) == msime::windows::scheme::Japanese)
+             Global::InputModeScheme.load(std::memory_order_relaxed) == lingyao::windows::scheme::Japanese)
     {
         lightIconIndex = static_cast<DWORD>(IME_MODE_ON_JP_ICON_INDEX);
     }
     else if (isOn && !(status & TF_LBI_STATUS_DISABLED) && _onIconIndex == static_cast<DWORD>(IME_MODE_ON_ICON_INDEX) &&
-             Global::InputModeScheme.load(std::memory_order_relaxed) == msime::windows::scheme::Korean)
+             Global::InputModeScheme.load(std::memory_order_relaxed) == lingyao::windows::scheme::Korean)
     {
         lightIconIndex = static_cast<DWORD>(IME_MODE_ON_KR_ICON_INDEX);
     }

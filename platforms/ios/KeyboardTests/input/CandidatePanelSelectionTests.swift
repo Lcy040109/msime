@@ -7,7 +7,7 @@ final class CandidatePanelSelectionTests: XCTestCase {
   override func setUp() {
     super.setUp()
     state = FileManager.default.temporaryDirectory
-      .appendingPathComponent("msime-candidate-panel-\(UUID().uuidString)", isDirectory: true)
+      .appendingPathComponent("lingyao-candidate-panel-\(UUID().uuidString)", isDirectory: true)
   }
 
   override func tearDown() {

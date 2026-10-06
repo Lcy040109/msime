@@ -1,4 +1,4 @@
-"""Resolve the immutable MSIME-Windows source used by parity checks.
+"""Resolve the immutable LINGYAO-Windows source used by parity checks.
 
 The migration compares against one reviewed object, not whatever the reference repository happens
 to publish tomorrow.  The checkout location may vary between machines; the object may not.
@@ -17,7 +17,7 @@ PINNED_REF = "fixed source"
 
 def reference_root(repository_root: pathlib.Path) -> pathlib.Path:
     """Find the sibling reference checkout from either a main or linked worktree."""
-    override = os.environ.get("MSIME_REFERENCE_DIR")
+    override = os.environ.get("LINGYAO_REFERENCE_DIR")
     if override:
         return pathlib.Path(override)
     common = subprocess.run(
@@ -28,8 +28,8 @@ def reference_root(repository_root: pathlib.Path) -> pathlib.Path:
     )
     if common.returncode == 0 and common.stdout.strip():
         main = pathlib.Path(common.stdout.strip()).parent
-        return main.parent / "MSIME-Windows"
-    return repository_root.parent / "MSIME-Windows"
+        return main.parent / "LINGYAO-Windows"
+    return repository_root.parent / "LINGYAO-Windows"
 
 
 def pinned_reference(repository_root: pathlib.Path) -> tuple[pathlib.Path, str, str] | None:
@@ -50,7 +50,7 @@ def pinned_reference(repository_root: pathlib.Path) -> tuple[pathlib.Path, str, 
     )
     if present.returncode != 0:
         print(
-            f"FAIL {checkout} does not contain the fixed MSIME-Windows source {PINNED_SHA}",
+            f"FAIL {checkout} does not contain the fixed LINGYAO-Windows source {PINNED_SHA}",
             file=sys.stderr,
         )
         print("  fetch that exact commit into the reference checkout, then retry", file=sys.stderr)
@@ -71,6 +71,6 @@ def show_file(repository_root: pathlib.Path, path: str) -> tuple[str, str, str] 
         text=True,
     )
     if shown.returncode != 0:
-        print(f"FAIL fixed MSIME-Windows source does not contain {path}", file=sys.stderr)
+        print(f"FAIL fixed LINGYAO-Windows source does not contain {path}", file=sys.stderr)
         raise SystemExit(1)
     return shown.stdout, ref, sha

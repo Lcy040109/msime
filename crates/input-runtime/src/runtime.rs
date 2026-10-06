@@ -2,16 +2,16 @@
 //! providers return asynchronously.
 
 use super::*;
-pub(crate) use msime_engine::ordering::apply_order;
-use msime_engine::ordering::{
+pub(crate) use lingyao_engine::ordering::apply_order;
+use lingyao_engine::ordering::{
     ensure_engine_order, rerank_pick, rotate_to_front, runner_up_order, OrderRow,
 };
-// 排序决策搬进了 `msime_engine::ordering`；`tests.rs` 仍按原来的 crate 内名字引用这几项，这里为它们重新导出。
+// 排序决策搬进了 `lingyao_engine::ordering`；`tests.rs` 仍按原来的 crate 内名字引用这几项，这里为它们重新导出。
 #[cfg(test)]
-pub(crate) use msime_engine::ordering::{
+pub(crate) use lingyao_engine::ordering::{
     reorders_candidates as runtime_reorders_candidates, LATTICE_SOURCE,
 };
-use msime_engine::SchemeType;
+use lingyao_engine::SchemeType;
 
 pub enum Action {
     ResetCache,
@@ -284,7 +284,7 @@ impl Runtime<Session> {
         // subject to the same bounds as the batch path before handing text to
         // Engine; the Windows source rejects empty callback results as well.
         if candidate.is_empty()
-            || !msime_client_core::is_bounded_text(candidate, 4096)
+            || !lingyao_client_core::is_bounded_text(candidate, 4096)
             || source > 1
             // Windows only merges a cloud suggestion into an existing
             // candidate page.  A callback arriving after the local page was
@@ -393,7 +393,7 @@ impl Runtime<Session> {
             || candidates.len() > limit
             || candidates
                 .iter()
-                .any(|text| text.is_empty() || !msime_client_core::is_bounded_text(text, 4096))
+                .any(|text| text.is_empty() || !lingyao_client_core::is_bounded_text(text, 4096))
             || source > 1
             || (source == 0 && self.cached.candidates.is_empty())
             || (source == 0 && (!cloud_candidates || !query.cloud_eligible))
@@ -888,7 +888,7 @@ impl<E: InputEngine> Runtime<E> {
         translation: &str,
     ) -> Result<bool, RuntimeError> {
         if query.generation != self.generation
-            || !msime_client_core::is_bounded_text(translation, 4096)
+            || !lingyao_client_core::is_bounded_text(translation, 4096)
         {
             return Ok(false);
         }
@@ -1469,7 +1469,7 @@ impl<E: InputEngine> Runtime<E> {
 
     /// Keep the leading sentence readings together near the top and move the rest of them behind the list.
     ///
-    /// 规则本身（保留几条整句读法、哪些算整句、为什么挪而不删）见 `msime_engine::ordering::runner_up_order`；这里只把它给出的排列同步应用到八个并行数组上。
+    /// 规则本身（保留几条整句读法、哪些算整句、为什么挪而不删）见 `lingyao_engine::ordering::runner_up_order`；这里只把它给出的排列同步应用到八个并行数组上。
     pub(crate) fn demote_runner_up_readings(&mut self) -> bool {
         let snapshot = &self.cached;
         let count = snapshot.candidates.len();
@@ -2012,7 +2012,7 @@ pub(crate) fn wubi_four_code_is_complete(snapshot: &EngineSnapshot) -> bool {
         && !snapshot.nine_key
         && !snapshot.answered_by_pinyin_fallback
         && snapshot.editing_text.len() == WUBI_COMPLETE_CODE_LENGTH
-        && msime_client_core::is_ascii_alphabetic(&snapshot.editing_text)
+        && lingyao_client_core::is_ascii_alphabetic(&snapshot.editing_text)
         && snapshot.caret_position == WUBI_COMPLETE_CODE_LENGTH
         && !snapshot.candidates.is_empty()
 }

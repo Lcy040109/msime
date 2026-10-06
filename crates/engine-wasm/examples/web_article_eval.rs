@@ -1,6 +1,6 @@
 //! 网页内置输入法在 TapTapGo 跟打文章上的转换质量：逐个分句打拼音，看整句排第几、玩家要选几次。
 //!
-//! 这是 `article_eval`（web-dict 评测分支里驱动 `Runtime` 的那一份）的移植，改成驱动 `WebHost`，资源也换成网页实际发布的那几个文件：目录里只有裁剪后的拼音库（`msime-dict-build web` 输出的 `msime-pinyin.db`，改名为 `msime.db`）和 `sentence-model.safetensors`，没有 english.db、others.db 和 n-gram。每个分句前先 `reset`，再用 `seed_context_for_eval` 放进文章里它前面的文字，和 article_eval 一样。
+//! 这是 `article_eval`（web-dict 评测分支里驱动 `Runtime` 的那一份）的移植，改成驱动 `WebHost`，资源也换成网页实际发布的那几个文件：目录里只有裁剪后的拼音库（`lingyao-dict-build web` 输出的 `lingyao-pinyin.db`，改名为 `lingyao.db`）和 `sentence-model.safetensors`，没有 english.db、others.db 和 n-gram。每个分句前先 `reset`，再用 `seed_context_for_eval` 放进文章里它前面的文字，和 article_eval 一样。
 //!
 //! 分句来自 TapTapGo 的文章数据（`extract_articles.py` 生成），不在本仓库里，所以这是发版前在本地跑的检查，不是 CI 门禁：门槛是 top-1 不低于 40.0%，发版的人把输出的那一行贴进发布说明。`resources/eval/baseline-web-articles.json` 只记录汇总数字和两个输入文件的 sha256，不含任何分句文字。
 //!
@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant};
 
-use msime_engine_wasm::host::{Frame, Key, Out, Scheme, WebHost};
+use lingyao_engine_wasm::host::{Frame, Key, Out, Scheme, WebHost};
 
 /// 一页的候选数，和网页一样。
 const PAGE: usize = 9;
@@ -63,9 +63,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // 只把网页会发布的主库放进会话目录；资源目录本身只读。
-    let database = resources.join("msime.db");
+    let database = resources.join("lingyao.db");
     let dictionaries = tempfile::tempdir()?;
-    std::fs::copy(&database, dictionaries.path().join("msime.db"))?;
+    std::fs::copy(&database, dictionaries.path().join("lingyao.db"))?;
     let user = tempfile::tempdir()?;
     let cache = tempfile::tempdir()?;
     let model_bytes = if model {

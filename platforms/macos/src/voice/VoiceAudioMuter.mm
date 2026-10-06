@@ -7,19 +7,19 @@
 #include <unistd.h>
 #include <filesystem>
 
-static BOOL MSIMEVoiceSafeDirectoryPath(NSURL *url) {
+static BOOL LINGYAOVoiceSafeDirectoryPath(NSURL *url) {
     if (!url || !url.isFileURL) return NO;
-    return msime::mac::StoragePathIsSafe(url.fileSystemRepresentation, true);
+    return lingyao::mac::StoragePathIsSafe(url.fileSystemRepresentation, true);
 }
 // The default output can move mid-recording while the device it left is already gone and cannot be handed back yet, so one journal may owe restores to several devices.
-static const NSUInteger MSIMEVoiceOwnedDeviceLimit = 8;
-static const AudioObjectPropertyAddress MSIMEVoiceDefaultOutputAddress = {kAudioHardwarePropertyDefaultOutputDevice,
+static const NSUInteger LINGYAOVoiceOwnedDeviceLimit = 8;
+static const AudioObjectPropertyAddress LINGYAOVoiceDefaultOutputAddress = {kAudioHardwarePropertyDefaultOutputDevice,
     kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain};
-static BOOL MSIMEVoiceValidUID(id uid) {
+static BOOL LINGYAOVoiceValidUID(id uid) {
     return [uid isKindOfClass:NSString.class] && [uid length] && [uid length] <= 4096;
 }
-@implementation MSIMEVoiceAudioMuter {
-    MSIMEVoiceAudioAPI _api;
+@implementation LINGYAOVoiceAudioMuter {
+    LINGYAOVoiceAudioAPI _api;
     // Devices this object muted and still owes a restore. Only unmuted devices are ever taken, so the original state of each is always unmuted.
     NSMutableArray<NSString *> *_ownedUIDs;
     BOOL _activeMute;
@@ -31,16 +31,16 @@ static BOOL MSIMEVoiceValidUID(id uid) {
 }
 - (instancetype)init {
     _journalFD = -1;
-    NSURL *directory = [MSIMEDefaultClientStateDirectory(NSFileManager.defaultManager)
+    NSURL *directory = [LINGYAODefaultClientStateDirectory(NSFileManager.defaultManager)
         URLByAppendingPathComponent:@"voice-audio-recovery" isDirectory:YES];
     // A missing support directory must not silently disable crash protection.
     if (!directory) return nil;
     return [self initWithAudioAPI:{} recoveryDirectory:directory];
 }
-- (instancetype)initWithAudioAPI:(MSIMEVoiceAudioAPI)api {
+- (instancetype)initWithAudioAPI:(LINGYAOVoiceAudioAPI)api {
     return [self initWithAudioAPI:api recoveryDirectory:nil];
 }
-- (instancetype)initWithAudioAPI:(MSIMEVoiceAudioAPI)api recoveryDirectory:(NSURL *)directory {
+- (instancetype)initWithAudioAPI:(LINGYAOVoiceAudioAPI)api recoveryDirectory:(NSURL *)directory {
     self = [super init];
     if (self) { _api = api; _recoveryDirectory = [directory copy]; _journalFD = -1; _ownedUIDs = [NSMutableArray array]; }
     return self;
@@ -51,7 +51,7 @@ static BOOL MSIMEVoiceValidUID(id uid) {
 }
 - (BOOL)loadJournal {
     if (!_recoveryDirectory || _journalFD >= 0) return YES;
-    if (!MSIMEVoiceSafeDirectoryPath(_recoveryDirectory) ||
+    if (!LINGYAOVoiceSafeDirectoryPath(_recoveryDirectory) ||
         ![NSFileManager.defaultManager createDirectoryAtURL:_recoveryDirectory
             withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:nil]) return NO;
     int directory = open(_recoveryDirectory.fileSystemRepresentation, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
@@ -78,9 +78,9 @@ static BOOL MSIMEVoiceValidUID(id uid) {
         NSArray *uids = nil;
         if (![record isKindOfClass:NSDictionary.class]) { close(fd); return NO; }
         if ([record[@"version"] isEqual:@2] && [record[@"uids"] isKindOfClass:NSArray.class] &&
-            [record[@"uids"] count] && [record[@"uids"] count] <= MSIMEVoiceOwnedDeviceLimit) {
+            [record[@"uids"] count] && [record[@"uids"] count] <= LINGYAOVoiceOwnedDeviceLimit) {
             uids = record[@"uids"];
-            for (id uid in uids) if (!MSIMEVoiceValidUID(uid)) uids = nil;
+            for (id uid in uids) if (!LINGYAOVoiceValidUID(uid)) uids = nil;
         }
         if (!uids) { close(fd); return NO; }
         for (NSString *uid in uids) if (![_ownedUIDs containsObject:uid]) [_ownedUIDs addObject:[uid copy]];
@@ -114,7 +114,7 @@ static BOOL MSIMEVoiceValidUID(id uid) {
 - (AudioDeviceID)defaultOutputDevice {
     AudioDeviceID device = kAudioObjectUnknown;
     UInt32 bytes = sizeof(device);
-    if (_api.get(kAudioObjectSystemObject, &MSIMEVoiceDefaultOutputAddress, 0, nullptr, &bytes, &device) != noErr ||
+    if (_api.get(kAudioObjectSystemObject, &LINGYAOVoiceDefaultOutputAddress, 0, nullptr, &bytes, &device) != noErr ||
         bytes != sizeof(device)) return kAudioObjectUnknown;
     return device;
 }
@@ -157,7 +157,7 @@ static BOOL MSIMEVoiceValidUID(id uid) {
     if (device == kAudioObjectUnknown) return NO;
     NSString *uid = [self deviceUID:device];
     // A device still owed a restore could not be resolved just now, so its current state says nothing about the user's.
-    if (!uid || [_ownedUIDs containsObject:uid] || _ownedUIDs.count >= MSIMEVoiceOwnedDeviceLimit) return NO;
+    if (!uid || [_ownedUIDs containsObject:uid] || _ownedUIDs.count >= LINGYAOVoiceOwnedDeviceLimit) return NO;
     AudioObjectPropertyAddress address = {kAudioDevicePropertyMute, kAudioDevicePropertyScopeOutput,
         kAudioObjectPropertyElementMain};
     UInt32 previous = 0;
@@ -185,25 +185,25 @@ static BOOL MSIMEVoiceValidUID(id uid) {
 }
 - (void)observeDefaultOutputDevice {
     if (_listener || !_api.addListener || !_api.removeListener) return;
-    __weak MSIMEVoiceAudioMuter *weakSelf = self;
+    __weak LINGYAOVoiceAudioMuter *weakSelf = self;
     AudioObjectPropertyListenerBlock listener = ^(UInt32 count, const AudioObjectPropertyAddress *addresses) {
         (void)count; (void)addresses;
         [weakSelf defaultOutputDeviceDidChange];
     };
     // The main queue owns every other call on this object.
-    if (_api.addListener(kAudioObjectSystemObject, &MSIMEVoiceDefaultOutputAddress, dispatch_get_main_queue(), listener) == noErr)
+    if (_api.addListener(kAudioObjectSystemObject, &LINGYAOVoiceDefaultOutputAddress, dispatch_get_main_queue(), listener) == noErr)
         _listener = listener;
 }
 - (void)stopObservingDefaultOutputDevice {
     if (!_listener) return;
-    _api.removeListener(kAudioObjectSystemObject, &MSIMEVoiceDefaultOutputAddress, dispatch_get_main_queue(), _listener);
+    _api.removeListener(kAudioObjectSystemObject, &LINGYAOVoiceDefaultOutputAddress, dispatch_get_main_queue(), _listener);
     _listener = nil;
 }
 - (BOOL)mute:(NSError **)error {
     // Repeated starts must not replace the original device or mute snapshot.
     if (_activeMute) return YES;
     auto fail = [&] {
-        if (error) *error = [NSError errorWithDomain:@"app.msime.client.voice" code:10
+        if (error) *error = [NSError errorWithDomain:@"app.lingyao.client.voice" code:10
             userInfo:@{NSLocalizedDescriptionKey:@"无法静音系统音频"}];
         return NO;
     };
@@ -217,10 +217,10 @@ static BOOL MSIMEVoiceValidUID(id uid) {
     return YES;
 }
 - (void (^)(void))deferredMute {
-    __weak MSIMEVoiceAudioMuter *weakSelf = self;
+    __weak LINGYAOVoiceAudioMuter *weakSelf = self;
     const NSUInteger epoch = _epoch;
     return ^{
-        MSIMEVoiceAudioMuter *muter = weakSelf;
+        LINGYAOVoiceAudioMuter *muter = weakSelf;
         if (muter && muter->_epoch == epoch) [muter mute:nil];
     };
 }

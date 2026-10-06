@@ -1,6 +1,6 @@
 import web_webview from '@ohos.web.webview';
 import common from '@ohos.app.ability.common';
-import client, { DoubaoFrameResult } from 'libmsimeclient.so';
+import client, { DoubaoFrameResult } from 'liblingyaoclient.so';
 import pasteboard from '@ohos.pasteboard';
 import Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
@@ -126,7 +126,7 @@ interface VoiceCaptureDeviceReply {
  * preferences and nothing to keep in sync with the schema.
  */
 
-const BRIDGE_NAME: string = 'msimeHarmony';
+const BRIDGE_NAME: string = 'lingyaoHarmony';
 const PLATFORM: string = 'harmony';
 
 /** `{directory, platform, channel}` for `client.notices`; `{directory, id}` for `client.noticeDismiss`. */
@@ -148,8 +148,8 @@ interface AiSkinAction {
  * The nested action documents for the two native libraries.
  *
  * Declared rather than written inline because ArkTS requires every object literal to name a type.
- * They are the request shapes `msime_client_community_resource_library` and
- * `msime_client_keyboard_skin_trial` parse, so the names say which side owns them.
+ * They are the request shapes `lingyao_client_community_resource_library` and
+ * `lingyao_client_keyboard_skin_trial` parse, so the names say which side owns them.
  */
 interface ResourceLibraryRemove {
   operation: string;
@@ -224,7 +224,7 @@ interface TypingStatisticsAction {
   day?: string;
 }
 
-/** One 插件 page request; only the operation is read here, the rest travels to `msime_client_plugins` as the page wrote it. */
+/** One 插件 page request; only the operation is read here, the rest travels to `lingyao_client_plugins` as the page wrote it. */
 interface PluginPageAction {
   operation: string;
 }
@@ -234,7 +234,7 @@ interface PluginImportRequest {
   source: string;
 }
 
-/** `msime_client_plugins`'s import action, naming the staged copy of what was picked. */
+/** `lingyao_client_plugins`'s import action, naming the staged copy of what was picked. */
 interface PluginImportAction {
   operation: string;
   source: string;
@@ -246,7 +246,7 @@ interface PluginImportCall {
   action: PluginImportAction;
 }
 
-/** 背单词 request, as `msime_client_vocabulary_review` reads it. */
+/** 背单词 request, as `lingyao_client_vocabulary_review` reads it. */
 interface VocabularyRequest {
   directory: string;
   day: string;
@@ -483,7 +483,7 @@ struct Settings {
   private controller: web_webview.WebviewController = new web_webview.WebviewController();
   private context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
   private bridge: SettingsBridge = new SettingsBridge();
-  // Notices from the MSIME service that the user has not dismissed, newest first; the card shows the first.
+  // Notices from the LINGYAO service that the user has not dismissed, newest first; the card shows the first.
   @State notices: NoticeItem[] = [];
   private noticeController: web_webview.WebviewController = new web_webview.WebviewController();
   private noticeAttached: boolean = false;
@@ -747,7 +747,7 @@ class SettingsBridge {
       return;
     }
     this.webview.runJavaScript(
-      `globalThis.msimeHarmonyPreferencesChanged && globalThis.msimeHarmonyPreferencesChanged(${JSON.stringify(reply)})`)
+      `globalThis.lingyaoHarmonyPreferencesChanged && globalThis.lingyaoHarmonyPreferencesChanged(${JSON.stringify(reply)})`)
       .catch((error: Object): void => {
         KeyboardLog.error(`preference change not delivered: ${describeError(error)}`);
       });
@@ -1003,7 +1003,7 @@ class SettingsBridge {
   private deliverVoiceModelProgress(progress: string): void {
     if (this.webview === undefined) return;
     this.webview.runJavaScript(
-      `globalThis.msimeHarmonyVoiceModelProgress && globalThis.msimeHarmonyVoiceModelProgress(`
+      `globalThis.lingyaoHarmonyVoiceModelProgress && globalThis.lingyaoHarmonyVoiceModelProgress(`
       + `${JSON.stringify(progress)})`)
       .catch((error: Object): void => {
         // A progress tick that does not arrive costs the user a moving bar, not the download.
@@ -1017,7 +1017,7 @@ class SettingsBridge {
       return;
     }
     this.webview.runJavaScript(
-      `globalThis.msimeHarmonyBridgeReply && globalThis.msimeHarmonyBridgeReply(${id}, `
+      `globalThis.lingyaoHarmonyBridgeReply && globalThis.lingyaoHarmonyBridgeReply(${id}, `
       + `${JSON.stringify(reply)})`)
       .catch((error: Object): void => {
         KeyboardLog.error(`bridge reply not delivered: ${describeError(error)}`);
@@ -1025,7 +1025,7 @@ class SettingsBridge {
   }
 
   /**
-   * The 插件 page's pack store and @ name list: `catalog`, `remove`, `load_mentions` and `save_mentions`, answered by `msime_client_plugins` with the same rules and failure codes the desktop shell answers with. The page never names a path: the state root and the bundle's built-in sound packs are filled in here, and an import, which has to wait for the system picker, arrives through `startRequest` as `plugin_import` instead.
+   * The 插件 page's pack store and @ name list: `catalog`, `remove`, `load_mentions` and `save_mentions`, answered by `lingyao_client_plugins` with the same rules and failure codes the desktop shell answers with. The page never names a path: the state root and the bundle's built-in sound packs are filled in here, and an import, which has to wait for the system picker, arrives through `startRequest` as `plugin_import` instead.
    */
   plugins(actionDocument: string): string {
     const refused: string = JSON.stringify({ ok: false, error: 'invalid' });
@@ -1053,7 +1053,7 @@ class SettingsBridge {
   /**
    * Installs a pack folder or `.zip` file the user picks with the system picker.
    *
-   * What the picker hands back is a document URI the native library cannot open, so the pick is copied into a private staging directory first, under a fixed name rather than the picked one, and installed from there by `msime_client_plugins` on a worker thread, which checks it by the same rules as every other host and leaves nothing installed when it refuses. The copy stops at client-core's bounds (`PluginImportPolicy`), so a wrong pick is refused before it is copied whole. The staging copy is removed however the import ends, after the worker has finished with it. The reply is the installed pack, or null when the user closed the picker, which is not a failure.
+   * What the picker hands back is a document URI the native library cannot open, so the pick is copied into a private staging directory first, under a fixed name rather than the picked one, and installed from there by `lingyao_client_plugins` on a worker thread, which checks it by the same rules as every other host and leaves nothing installed when it refuses. The copy stops at client-core's bounds (`PluginImportPolicy`), so a wrong pick is refused before it is copied whole. The staging copy is removed however the import ends, after the worker has finished with it. The reply is the installed pack, or null when the user closed the picker, which is not a failure.
    */
   private async importPlugin(document: string): Promise<string> {
     const context: common.UIAbilityContext | undefined = this.context;
@@ -1211,7 +1211,7 @@ class SettingsBridge {
   private deliverAiSkinProgress(requestId: string, completed: number): void {
     if (this.webview === undefined) return;
     this.webview.runJavaScript(
-      `globalThis.msimeHarmonyAiSkinProgress && globalThis.msimeHarmonyAiSkinProgress(`
+      `globalThis.lingyaoHarmonyAiSkinProgress && globalThis.lingyaoHarmonyAiSkinProgress(`
       + `${JSON.stringify(requestId)}, ${completed})`)
       .catch((error: Object): void => {
         // A progress tick that does not arrive costs the user a moving number, not the run.
@@ -2010,7 +2010,7 @@ class SettingsBridge {
       || utf8Length(model) > 256 || TextPolicy.hasControl(model)) {
       return this.credentialReply(false, '请填写有效的 HTTPS 转写接口地址、API Key 和模型名。');
     }
-    const boundary: string = '----MSIMEHarmonyCredentialProbe';
+    const boundary: string = '----LINGYAOHarmonyCredentialProbe';
     const body: ArrayBuffer = this.silentMultipart(boundary, model);
     const request = http.createHttp();
     installNoRedirectGuard(request);

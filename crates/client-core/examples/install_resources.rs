@@ -1,6 +1,6 @@
 //! Development bootstrap for the reviewed desktop dictionary release.
 //! Does not activate a generation or modify an installed input method.
-use msime_client_core::resources::{ResourceSet, ResourceStore};
+use lingyao_client_core::resources::{ResourceSet, ResourceStore};
 use std::io::Read;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

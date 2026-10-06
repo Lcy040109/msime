@@ -2,7 +2,7 @@
 #include <dwrite_2.h>
 #include <wrl/client.h>
 
-namespace msime::windows {
+namespace lingyao::windows {
 // DeviceResources caches formats independently of fallback. Set it explicitly
 // for both measurement and drawing, including null to restore system fallback.
 inline void set_candidate_font_fallback(IDWriteTextFormat *format,
@@ -13,4 +13,4 @@ inline void set_candidate_font_fallback(IDWriteTextFormat *format,
   if (SUCCEEDED(format->QueryInterface(IID_PPV_ARGS(&typed))) && typed)
     typed->SetFontFallback(fallback);
 }
-} // namespace msime::windows
+} // namespace lingyao::windows

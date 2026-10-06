@@ -7,7 +7,7 @@ import gi
 gi.require_version("IBus", "1.0")
 from gi.repository import Gio, GLib, IBus
 
-assert os.environ.get("MSIME_ISOLATED_LINUX_TEST") == "1"
+assert os.environ.get("LINGYAO_ISOLATED_LINUX_TEST") == "1"
 IBus.init()
 admin = IBus.Bus.new()
 
@@ -23,8 +23,8 @@ def wait(predicate):
     raise AssertionError("Expected portal input state was not observed")
 
 
-wait(lambda: any(e.get_name() == "msime-linux" for e in admin.list_active_engines()))
-assert admin.set_global_engine("msime-linux")
+wait(lambda: any(e.get_name() == "lingyao-linux" for e in admin.list_active_engines()))
+assert admin.set_global_engine("lingyao-linux")
 connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 service = "org.freedesktop.portal.IBus"
 
@@ -35,7 +35,7 @@ def call(path, interface, method, arguments=None, source=connection):
 
 
 path = call("/org/freedesktop/IBus", "org.freedesktop.IBus.Portal", "CreateInputContext",
-            GLib.Variant("(s)", ("msime-synthetic-portal",))).unpack()[0]
+            GLib.Variant("(s)", ("lingyao-synthetic-portal",))).unpack()[0]
 interface = "org.freedesktop.IBus.InputContext"
 commits = []
 

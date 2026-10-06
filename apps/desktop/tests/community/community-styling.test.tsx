@@ -8,7 +8,7 @@ import {
   type CommunityResourceClient,
   type CommunitySkin,
   type CommunitySkinClient,
-} from "@msime/ui";
+} from "@lingyao/ui";
 
 afterEach(() => {
   cleanup();

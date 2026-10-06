@@ -1,5 +1,5 @@
 [package]
-name = "msime-mcp-server"
+name = "lingyao-mcp-server"
 description = "Model Context Protocol server over stdio that lets a local agent read and, when allowed, manage the input method's quick phrases, preferences and typing statistics."
 version.workspace = true
 edition.workspace = true
@@ -8,12 +8,12 @@ repository.workspace = true
 rust-version.workspace = true
 
 [[bin]]
-name = "msime-mcp"
+name = "lingyao-mcp"
 path = "src/main.rs"
 
 [dependencies]
-msime-client-core = { path = "../client-core" }
-msime-host-api = { path = "../host-api" }
+lingyao-client-core = { path = "../client-core" }
+lingyao-host-api = { path = "../host-api" }
 # client: the command line calls the server in process, as an MCP client would.
 rmcp = { version = "3.4.1", default-features = false, features = ["server", "client", "macros", "transport-io"] }
 serde.workspace = true
@@ -25,7 +25,7 @@ tokio = { workspace = true, features = ["rt", "macros", "io-std"] }
 
 # Where the Windows Server keeps its runtime options.
 [target.'cfg(windows)'.dependencies]
-msime-host-windows = { path = "../host-windows" }
+lingyao-host-windows = { path = "../host-windows" }
 
 [dev-dependencies]
 rmcp = { version = "3.4.1", default-features = false, features = ["client", "transport-io"] }

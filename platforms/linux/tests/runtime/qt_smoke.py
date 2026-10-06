@@ -19,7 +19,7 @@ else:
     from PyQt5.QtWidgets import QApplication, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget
     qt_version = "Qt5"
 
-assert os.environ.get("MSIME_ISOLATED_LINUX_TEST") == "1"
+assert os.environ.get("LINGYAO_ISOLATED_LINUX_TEST") == "1"
 assert os.environ.get("QT_IM_MODULE") == "ibus"
 app = QApplication([])
 wayland = "--wayland" in sys.argv
@@ -61,7 +61,7 @@ if wayland:
 
 
 wait(lambda: bus.is_connected(), "Qt fixture could not connect to IBus")
-wait(lambda: any(engine.get_name() == "msime-linux" for engine in bus.list_active_engines()),
+wait(lambda: any(engine.get_name() == "lingyao-linux" for engine in bus.list_active_engines()),
      "Native IBus engine was not registered")
 
 
@@ -74,7 +74,7 @@ class Entry(QLineEdit):
 
 
 window = QWidget()
-window.setWindowTitle("MSIME synthetic Qt acceptance")
+window.setWindowTitle("LINGYAO synthetic Qt acceptance")
 layout = QVBoxLayout(window)
 first, second, password = Entry(), Entry(), Entry()
 password.setEchoMode(QLineEdit.EchoMode.Password)
@@ -90,15 +90,15 @@ else:
     subprocess.run(["xdotool", "windowfocus", "--sync", str(int(window.winId()))], check=True)
 first.setFocus()
 pump()
-assert bus.set_global_engine("msime-linux")
+assert bus.set_global_engine("lingyao-linux")
 wait(lambda: bus.get_global_engine() is not None and
-     bus.get_global_engine().get_name() == "msime-linux", "Qt engine activation failed")
+     bus.get_global_engine().get_name() == "lingyao-linux", "Qt engine activation failed")
 # Let the Qt IM module finish its asynchronous input-context setup.
 end = time.monotonic() + 0.3
 while time.monotonic() < end:
     pump()
     time.sleep(0.01)
-if os.environ.get("MSIME_TEST_INITIAL_FOCUS") == "1":
+if os.environ.get("LINGYAO_TEST_INITIAL_FOCUS") == "1":
     first.setText("😀a尾")
     first.setCursorPosition(3)  # Qt positions count the emoji's UTF-16 pair.
     pump()
@@ -172,10 +172,10 @@ password.setFocus()
 pump()
 keys("n", "i", "h", "a", "o", "space")
 wait(lambda: password.text() == "nihao ", "Qt password input was intercepted by the IME")
-if os.environ.get("MSIME_TEST_INITIAL_FOCUS") != "1":
+if os.environ.get("LINGYAO_TEST_INITIAL_FOCUS") != "1":
     # IBus 1.5.27 negotiates FocusId asynchronously without replaying the first
     # focus. Exercise the identified-client path after a separate context transfer.
-    other_context = bus.create_input_context("msime-test-context-transfer")
+    other_context = bus.create_input_context("lingyao-test-context-transfer")
     other_context.set_capabilities(IBus.Capabilite.FOCUS | IBus.Capabilite.PREEDIT_TEXT)
     other_context.focus_in()
     end = time.monotonic() + 0.3

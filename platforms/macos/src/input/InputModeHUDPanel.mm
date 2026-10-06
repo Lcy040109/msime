@@ -24,19 +24,19 @@ CGFloat Clamp(CGFloat value, CGFloat minimum, CGFloat maximum) {
 }
 }
 
-NSString *MSIMEInputModeHUDText(BOOL englishInputMode) { return englishInputMode ? @"英" : @"中"; }
+NSString *LINGYAOInputModeHUDText(BOOL englishInputMode) { return englishInputMode ? @"英" : @"中"; }
 
-BOOL MSIMEInputModeHUDUsableCaretRect(NSRect caretRect) {
+BOOL LINGYAOInputModeHUDUsableCaretRect(NSRect caretRect) {
     return std::isfinite(NSMinX(caretRect)) && std::isfinite(NSMinY(caretRect)) &&
            std::isfinite(NSMaxX(caretRect)) && std::isfinite(NSMaxY(caretRect)) && NSHeight(caretRect) > 0.0;
 }
 
-NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visibleFrame) {
+NSRect LINGYAOInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visibleFrame) {
     const CGFloat minimumX = NSMinX(visibleFrame) + kScreenMargin;
     const CGFloat maximumX = NSMaxX(visibleFrame) - kScreenMargin - panelSize.width;
     const CGFloat minimumY = NSMinY(visibleFrame) + kScreenMargin;
     const CGFloat maximumY = NSMaxY(visibleFrame) - kScreenMargin - panelSize.height;
-    if (!MSIMEInputModeHUDUsableCaretRect(caretRect)) {
+    if (!LINGYAOInputModeHUDUsableCaretRect(caretRect)) {
         const CGFloat centeredX = NSMidX(visibleFrame) - panelSize.width / 2.0;
         const CGFloat lowerThirdY = NSMinY(visibleFrame) + NSHeight(visibleFrame) / 4.0;
         return NSMakeRect(Clamp(centeredX, minimumX, maximumX), Clamp(lowerThirdY, minimumY, maximumY), panelSize.width, panelSize.height);
@@ -47,7 +47,7 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
     return NSMakeRect(x, Clamp(preferredY, minimumY, maximumY), panelSize.width, panelSize.height);
 }
 
-@implementation MSIMEInputModeHUDPanel {
+@implementation LINGYAOInputModeHUDPanel {
     NSTextField *_label;
     NSImageView *_logoView;
     NSTimer *_dismissTimer;
@@ -62,7 +62,7 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
 }
 
 + (instancetype)sharedPanel {
-    static MSIMEInputModeHUDPanel *panel;
+    static LINGYAOInputModeHUDPanel *panel;
     static dispatch_once_t once;
     dispatch_once(&once, ^{ panel = [[self alloc] init]; });
     return panel;
@@ -90,7 +90,7 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
     background.layer.masksToBounds = YES;
     background.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     // The full-colour brand mark the floating toolbar leads with, not the monochrome menu bar template.
-    NSString *logoPath = [[NSBundle bundleForClass:self.class] pathForResource:@"MSIMEClientInputMethod" ofType:@"icns"];
+    NSString *logoPath = [[NSBundle bundleForClass:self.class] pathForResource:@"LINGYAOClientInputMethod" ofType:@"icns"];
     NSImage *logo = logoPath ? [[NSImage alloc] initWithContentsOfFile:logoPath] : nil;
     _logoView = [NSImageView imageViewWithImage:logo ?: [[NSImage alloc] initWithSize:NSZeroSize]];
     _logoView.hidden = logo == nil;
@@ -136,7 +136,7 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
 - (NSSize)panelSize {
     // The wider of the two characters, so switching modes never changes the badge's width.
     CGFloat glyph = 0.0;
-    for (NSString *text in @[MSIMEInputModeHUDText(NO), MSIMEInputModeHUDText(YES)])
+    for (NSString *text in @[LINGYAOInputModeHUDText(NO), LINGYAOInputModeHUDText(YES)])
         glyph = std::max(glyph, [text sizeWithAttributes:@{NSFontAttributeName : _label.font}].width);
     const CGFloat logo = _logoView.hidden ? 0.0 : (kLogoSide + kContentSpacing) * _scale;
     // NSWindow rounds fractional point sizes; round outward so nothing is clipped, as the toolbar does.
@@ -178,7 +178,7 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
 - (NSString *)displayedText { return self.isVisible ? _label.stringValue : nil; }
 
 - (void)showEnglishInputMode:(BOOL)englishInputMode nearCaretRect:(NSRect)caretRect {
-    _label.stringValue = MSIMEInputModeHUDText(englishInputMode);
+    _label.stringValue = LINGYAOInputModeHUDText(englishInputMode);
     NSAccessibilityPostNotificationWithUserInfo(self, NSAccessibilityAnnouncementRequestedNotification,
                                                  @{NSAccessibilityAnnouncementKey : englishInputMode ? @"英文输入" : @"中文输入"});
     NSScreen *screen = NSScreen.mainScreen;
@@ -186,12 +186,12 @@ NSRect MSIMEInputModeHUDFrame(NSRect caretRect, NSSize panelSize, NSRect visible
         if (NSPointInRect(NSMakePoint(NSMidX(caretRect), NSMidY(caretRect)), candidate.frame)) { screen = candidate; break; }
     }
     NSRect visible = screen ? screen.visibleFrame : NSMakeRect(0, 0, 1440, 900);
-    [self setFrame:MSIMEInputModeHUDFrame(caretRect, self.panelSize, visible) display:YES];
+    [self setFrame:LINGYAOInputModeHUDFrame(caretRect, self.panelSize, visible) display:YES];
     [self applyThemeColors];
     [_dismissTimer invalidate];
     self.alphaValue = 1.0;
     [self orderFrontRegardless];
-    __weak MSIMEInputModeHUDPanel *weakSelf = self;
+    __weak LINGYAOInputModeHUDPanel *weakSelf = self;
     _dismissTimer = [NSTimer scheduledTimerWithTimeInterval:kVisibleDuration repeats:NO block:^(NSTimer *timer) {
         (void)timer;
         [weakSelf fadeOut];

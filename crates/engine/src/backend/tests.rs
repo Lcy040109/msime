@@ -146,7 +146,7 @@ fn legacy_file_names_are_still_read() {
     let resources = resources();
     std::fs::rename(
         resources.path().join(assets::MAIN_DICTIONARY),
-        resources.path().join("msime.db"),
+        resources.path().join("lingyao.db"),
     )
     .unwrap();
     let response = run(
