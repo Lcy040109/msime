@@ -19,7 +19,7 @@ final class LocalSpeechModelManager: ObservableObject {
   }()
 
   init() {
-    let voice = MetasequoiaInputSessionBridge.loadSharedPreferences()?["voice_input"] as? [String: Any] ?? [:]
+    let voice = LingyaoInputSessionBridge.loadSharedPreferences()?["voice_input"] as? [String: Any] ?? [:]
     selectedPath = voice["asr_model_path"] as? String ?? ""
     savedMirror = voice["asr_model_mirror"] as? String ?? ""
     mirror = savedMirror
@@ -114,7 +114,7 @@ final class LocalSpeechModelManager: ObservableObject {
   }
 
   private func saveMirror(_ value: String) throws {
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences { preferences in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences { preferences in
       var voice = preferences["voice_input"] as? [String: Any] ?? [:]
       voice["asr_model_mirror"] = value
       preferences["voice_input"] = voice
@@ -129,7 +129,7 @@ final class LocalSpeechModelManager: ObservableObject {
 
   @discardableResult
   private func writeSelection(_ path: String) -> Bool {
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences { preferences in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences { preferences in
       var voice = preferences["voice_input"] as? [String: Any] ?? [:]
       voice["asr_model_path"] = path
       preferences["voice_input"] = voice
@@ -187,7 +187,7 @@ private struct LocalSpeechModelRow: View {
         Spacer()
         if manager.isSelected(model) {
           Label("使用中", systemImage: "checkmark.circle.fill").labelStyle(.titleAndIcon)
-            .font(.caption.weight(.semibold)).foregroundStyle(Color(uiColor: MetasequoiaTheme.forestUIColor))
+            .font(.caption.weight(.semibold)).foregroundStyle(Color(uiColor: LingyaoTheme.forestUIColor))
             .accessibilityIdentifier("localModelInUse_\(model.id)")
         }
       }

@@ -80,14 +80,14 @@
 前面那次符号比对做在固定提交上，而两边此后都前进过，所以在来源 `63c51ed`（比之前的固定检出多出候选行宽适配等改动）与目标当时的 `develop` 上重跑了一遍，方法与结论都记下来，便于下次复核而不是重新发明：
 
 - 从来源 `platforms/macos/src/` 抽出 ObjC 方法、C/C++ 函数与 Swift 函数名共 **572 个**，逐个在目标的 `platforms/macos`、`shared`、`crates`、`packages/ui/src`、`apps/desktop/src` 全文检索。
-- 按名未命中 **173 个**。自动消解 `Metasequoia*` → `MSIME*` 的改名与 camelCase → snake_case 之后，余 **164 个**。
+- 按名未命中 **173 个**。自动消解 `Lingyao*` → `MSIME*` 的改名与 camelCase → snake_case 之后，余 **164 个**。
 - 这 164 个**逐个查出定义它的来源文件**，按文件归属如下（合计 164）：
 
 | 来源文件 | 个数 | 去向 |
 | --- | --- | --- |
 | `PreferencesWindowController.mm/.h` | 78 | 原生设置窗口。目标的设置面在 Tauri，按指令不该有对应物 |
 | `DictionaryInstaller.mm` | 18 | 词库安装。下沉到引擎与共享 Rust |
-| `MetasequoiaInputController.mm` | 15 | 目标当时也有同名文件，**逐条核对见下**（那份是从未参与构建的直连适配器，2026-09-30 随 C++ Engine 删除；下面的对应物都在产品控制器 `platforms/macos/src/input/InputController.mm`） |
+| `LingyaoInputController.mm` | 15 | 目标当时也有同名文件，**逐条核对见下**（那份是从未参与构建的直连适配器，2026-09-30 随 C++ Engine 删除；下面的对应物都在产品控制器 `platforms/macos/src/input/InputController.mm`） |
 | `PersonalDictionaryView.mm`、`PersonalDictionaryStore.mm/.h` | 14 | 原生个人词库界面与存储。目标是 Tauri 词库页 + 共享词库 ABI，且为超集 |
 | `InputBehaviorPreferences.h`、`CandidateAppearancePreferences.h`、`CandidatePageSize.h`、`LocalInputModePreferences.h`、`FloatingToolbarPreferences.h`、`CandidateTranslationLanguage.h` | 16 | 原生偏好读写器。目标的偏好在共享层，由 `platforms/macos/tests/settings/preference_coverage.py` 双向校验 |
 | `FloatingToolbarPanel.mm` | 4 | **逐条核对见下** |
@@ -97,10 +97,10 @@
 | `Uninstaller.h` | 2 | 卸载器五条规则已逐条核过 |
 | `VoiceInputService.mm` | 1 | `beginCapture` → 目标的语音采集 |
 
-- 「目标也有同名文件」的那 **28 个**（控制器 15、悬浮工具栏 6、候选面板 7）逐条对照，全部有对应物：`MetasequoiaTogglePinnedWord` → `MSIMETogglePinnedCandidate`；`availableGlossColumnsPrimary` / `setArmedGlossColumn` → `_armedGlossColumn` 与其夹取；`commitGlossAtVisibleOffset` / `insertGlossForModifiedDigit` → `commitCandidateGlossColumn:` 及其 Option/Control 分支；`handleSolitaryShiftFlags` → `MSIMEModifierTap` 与 #3179 的原样上屏；`translationDictionary` → `candidate_glosses_with_user`；`LocalModeOptionsMatch` → 目标比的是整个 `Preferences` 值；`toolbarWidth` / `visibleButtonCount` / `applyItemVisibility` → `_preferredSize` 与 `_appliedComponentMask`；`MetasequoiaIsUsableCaretRect` → `MSIMEValidCaret`。
+- 「目标也有同名文件」的那 **28 个**（控制器 15、悬浮工具栏 6、候选面板 7）逐条对照，全部有对应物：`LingyaoTogglePinnedWord` → `MSIMETogglePinnedCandidate`；`availableGlossColumnsPrimary` / `setArmedGlossColumn` → `_armedGlossColumn` 与其夹取；`commitGlossAtVisibleOffset` / `insertGlossForModifiedDigit` → `commitCandidateGlossColumn:` 及其 Option/Control 分支；`handleSolitaryShiftFlags` → `MSIMEModifierTap` 与 #3179 的原样上屏；`translationDictionary` → `candidate_glosses_with_user`；`LocalModeOptionsMatch` → 目标比的是整个 `Preferences` 值；`toolbarWidth` / `visibleButtonCount` / `applyItemVisibility` → `_preferredSize` 与 `_appliedComponentMask`；`LingyaoIsUsableCaretRect` → `MSIMEValidCaret`。
 - 唯一没有同名对应物且**确实不该有**的是 `rightMouseDown`：目标把候选菜单挂在按钮的 `menu` 属性上，右键由 AppKit 自带的 `menuForEvent:` 接手，而不是覆写鼠标事件——用的是框架自身的契约。
-- 其中不属于上述两类、最像功能的一组逐个核过并都已覆盖：Option/Control + 数字取释义（`CandidateGlossRequestForModifiers` → `commitCandidateGlossColumn:`）、待上屏列（`setArmedGlossColumn` → `_armedGlossColumn` 与其夹取）、候选置顶（`MetasequoiaTogglePinnedWord` → `MSIMETogglePinnedCandidate` 与 `MSIMECandidatePinCode`）、释义调度（`scheduleCandidateTranslations` → `synchronizeCandidateGloss` / `synchronizeAccountGloss` 与空闲延迟）、反馈诊断（`copyFeedbackReport` → Tauri 反馈页的「复制报告」）、学习数据清除（`ResetMetasequoiaLearnedData` → Tauri「清除学习数据」→ `resetLearnedData` 能力 → `reset_learned_data` → 引擎）。
-- 单点对照另外确认：`ActionForSolitaryShift` 对应 #3179 之后的单击 Shift 行为，`NextArmedGlossColumn` 对应 `cycleArmedGlossColumnBackwards:`，`browseVoiceModel` 对应 #3212 新增的 `pickVoiceModelPath`，`MetasequoiaCandidateWantsOnlineGloss` 对应 #3156 的 `MSIMEOnlineGlossCandidates`。
+- 其中不属于上述两类、最像功能的一组逐个核过并都已覆盖：Option/Control + 数字取释义（`CandidateGlossRequestForModifiers` → `commitCandidateGlossColumn:`）、待上屏列（`setArmedGlossColumn` → `_armedGlossColumn` 与其夹取）、候选置顶（`LingyaoTogglePinnedWord` → `MSIMETogglePinnedCandidate` 与 `MSIMECandidatePinCode`）、释义调度（`scheduleCandidateTranslations` → `synchronizeCandidateGloss` / `synchronizeAccountGloss` 与空闲延迟）、反馈诊断（`copyFeedbackReport` → Tauri 反馈页的「复制报告」）、学习数据清除（`ResetLingyaoLearnedData` → Tauri「清除学习数据」→ `resetLearnedData` 能力 → `reset_learned_data` → 引擎）。
+- 单点对照另外确认：`ActionForSolitaryShift` 对应 #3179 之后的单击 Shift 行为，`NextArmedGlossColumn` 对应 `cycleArmedGlossColumnBackwards:`，`browseVoiceModel` 对应 #3212 新增的 `pickVoiceModelPath`，`LingyaoCandidateWantsOnlineGloss` 对应 #3156 的 `MSIMEOnlineGlossCandidates`。
 
 ## 结论：macOS 迁移已完成
 
@@ -137,7 +137,7 @@
 
 另有一条记录需要收紧。#3182 把「以词定字占用的键不参与翻页」写成宿主侧要处理的一个可达状态，实际不是：`crates/client-core/src/preferences.rs` 的 `validate()` 在 `word_character.enabled` 与对应翻页键同时为真时返回 `ConflictingKeyBindings`，而保存（`preferences.validate()?`）和读取（`snapshot.preferences.validate()?`）两条路径都会调用它——带着这个组合的偏好文件根本加载不进来，设置页也存不下去，`key_conflict` 就是它在界面上的那句提示。所以宿主里那段排除是防御，不是在修一个用户能走到的状态；两个布尔项看着独立，共享层已经把互斥钉死了。
 
-宿主使用的输入源标识（`app.msime.inputmethod.MetasequoiaIME`）在系统里已登记，`platforms/macos/scripts/install.sh` 安装后中文模式注册并启用，可以直接从输入菜单选中使用。读注册结果有两个坑：替换 bundle 之后会有分钟级的一段时间查不到、之后自行恢复，按那段时间里的读数下结论会错；另外某个模式已经是 disabled 时，进程启用不了它，这既不是安装失败也不是重新登录能解决的事。判据与测量过程见下面的《输入源注册的读数怎么看》和《模式启用不了不是安装失败》两节。
+宿主使用的输入源标识（`app.msime.inputmethod.LingyaoIME`）在系统里已登记，`platforms/macos/scripts/install.sh` 安装后中文模式注册并启用，可以直接从输入菜单选中使用。读注册结果有两个坑：替换 bundle 之后会有分钟级的一段时间查不到、之后自行恢复，按那段时间里的读数下结论会错；另外某个模式已经是 disabled 时，进程启用不了它，这既不是安装失败也不是重新登录能解决的事。判据与测量过程见下面的《输入源注册的读数怎么看》和《模式启用不了不是安装失败》两节。
 
 ## 功能分组与目的地入口
 
@@ -145,17 +145,17 @@
 
 | 功能组 | 来源入口 | 目的地证据 | 结论 |
 | --- | --- | --- | --- |
-| IMK 事件路由、候选面板、输入源注册 | `MetasequoiaInputController.mm`、`CandidatePanel.mm`、`InputSourceRegistration.mm`、`InputControllerKeyRouting.h` | `platforms/macos/src/input/InputController.mm`、`candidate/CandidatePanel.mm`、`input/InputSourceRegistration.mm`、`input/InputControllerPhysicalKeys.h` | 有调用链；目标另行处理来源未覆盖的小键盘数字与标点物理键 |
-| 候选翻页、以词定字、方向键导航 | `MetasequoiaCandidateKeyOptions`、`ClassifyConfiguredControllerKey` | 共享 `NavigationPreferences`、`WordCharacterPreferences`；宿主逐项消费 `minus_equal`/`comma_period`/`brackets`/`tab`/`page_up_down`/`arrows`/`mouse_wheel` | 有调用链；来源的互斥开关在目标是各自独立的布尔项，互斥由 `Preferences::validate()` 保证 |
+| IMK 事件路由、候选面板、输入源注册 | `LingyaoInputController.mm`、`CandidatePanel.mm`、`InputSourceRegistration.mm`、`InputControllerKeyRouting.h` | `platforms/macos/src/input/InputController.mm`、`candidate/CandidatePanel.mm`、`input/InputSourceRegistration.mm`、`input/InputControllerPhysicalKeys.h` | 有调用链；目标另行处理来源未覆盖的小键盘数字与标点物理键 |
+| 候选翻页、以词定字、方向键导航 | `LingyaoCandidateKeyOptions`、`ClassifyConfiguredControllerKey` | 共享 `NavigationPreferences`、`WordCharacterPreferences`；宿主逐项消费 `minus_equal`/`comma_period`/`brackets`/`tab`/`page_up_down`/`arrows`/`mouse_wheel` | 有调用链；来源的互斥开关在目标是各自独立的布尔项，互斥由 `Preferences::validate()` 保证 |
 | 设置界面 | `PreferencesWindowController.mm` | 主编辑器为 Tauri `packages/ui/src/index.tsx`；原生回退 `platforms/macos/src/settings/AppearancePreferences.mm`、`platforms/macos/src/voice/VoiceProviderSettings.mm` | 有强制检查（`preference-coverage`、`settings-route-coverage`、`voice-provider-settings-keys`）；按「公共 UI 放 Tauri」重构形态，非逐窗复刻 |
 | 语音输入 | `VoiceInputService.mm`、`VoiceSettings.mm`（云端 + 本地 Whisper） | `platforms/macos/src/voice/`：豆包流式、HTTP 批量（OpenAI、Groq、SiliconFlow、EveryAPI、Mistral）、macOS 系统识别、本地 Whisper（#3014）；`shared/voice/VoiceProviders.cpp` 提供 `recognize_local_asr` | 有强制检查（`bundle-contents` 校验可执行文件确实链接了本地识别器，`http-voice-controller` 校验 provider 路由与会话代次） |
 | 候选释义与翻译 | `TranslationClient.mm`、`CandidateGlossClient.swift`、第二语言、Option/Control 取列上屏 | `platforms/macos/src/core/CustomTranslationBatch.mm`、`platforms/macos/src/cloud/TranslationCache.mm`、`commitCandidateGlossColumn:`、共享 `translation_secondary_language` | 有调用链；目标另有腾讯、NiuTrans、账号释义、离线优先与 macOS 26 系统离线翻译补位 |
 | 智能标点 | `PairedPunctuation.h`、重复标点转中文 | 共享 `punctuation::route` 消费 `direct_digit`/`direct_letter`（#3075）；空格回转 ASCII（#3081） | 有强制检查（`smart-punctuation-space`） |
 | 词库与用户词条 | `DictionaryInstaller.mm`、`PersonalDictionaryStore.mm`、`PersonalDictionaryView.mm` | `dictionary/DictionaryInstaller.mm`、`dictionary/DictionaryWindowController.mm`；词条增删改查与导入导出在 Tauri 词库页；导出文件由 Tauri `save_export` 写进「下载」文件夹，重名时按浏览器的 `name (2).txt` 规则另起，页面提示写入的完整路径（WKWebView 在没有下载处理器时取消下载链接，来源 WebView2 的下载在这里由宿主完成） | 有调用链；`shared/export_file.rs` 单测覆盖文件名校验与重名规则 |
-| 学习数据清除 | `ResetMetasequoiaLearnedData` 及其标记/恢复协议 | `crates/host-api/src/dictionary.rs` 的 `Operation::Reset`，经 `DictionaryAccess::try_maintenance` 加锁后交 `msime_engine_bridge::reset_learned_data` | 有调用链；按「输入算法与词库归 Engine」下沉，宿主不再自建标记恢复协议 |
+| 学习数据清除 | `ResetLingyaoLearnedData` 及其标记/恢复协议 | `crates/host-api/src/dictionary.rs` 的 `Operation::Reset`，经 `DictionaryAccess::try_maintenance` 加锁后交 `msime_engine_bridge::reset_learned_data` | 有调用链；按「输入算法与词库归 Engine」下沉，宿主不再自建标记恢复协议 |
 | 软件更新 | `UpdateController.mm`（Sparkle 2.9.6） | 共享 About 页检查本仓库发行版；`core/UpdateController.mm` 仅在应用 bundle 配置 `SUFeedURL` 时启动 Sparkle，无 feed 的原生降级会说明限制并经用户确认打开固定的官方发布页；非应用进程不显示更新 UI | 有强制检查（`update-controller` 覆盖三种路由、确认、取消与打开失败） |
 | 卸载 | `Uninstaller.mm` | `crates/host-macos/native/uninstaller.mm`，`shared-uninstaller` CTest | 有强制检查 |
-| 输入菜单图标、本地化、TCC 权限 | `MetasequoiaIMEMenuIcon.tiff`、`render_menu_icon.swift`、`Info.plist` 用途字符串 | `platforms/macos/resources/MSIMEClientInputMethodMenuIcon.{svg,tiff}` 与三个模式带角标的 `MSIMEClientInputMethodMenuIcon{Chinese,Japanese,English}.tiff`、`platforms/macos/scripts/render_menu_icon.swift`（#3021）；语音识别用途字符串及其本地化（#3015、#3052）；输入源名称的本地化键与 bundle id 配对 | 有强制检查（`info-plist-icons`、`info-plist-usage`、`info-plist-names`、`bundle-contents`） |
+| 输入菜单图标、本地化、TCC 权限 | `LingyaoIMEMenuIcon.tiff`、`render_menu_icon.swift`、`Info.plist` 用途字符串 | `platforms/macos/resources/MSIMEClientInputMethodMenuIcon.{svg,tiff}` 与三个模式带角标的 `MSIMEClientInputMethodMenuIcon{Chinese,Japanese,English}.tiff`、`platforms/macos/scripts/render_menu_icon.swift`（#3021）；语音识别用途字符串及其本地化（#3015、#3052）；输入源名称的本地化键与 bundle id 配对 | 有强制检查（`info-plist-icons`、`info-plist-usage`、`info-plist-names`、`bundle-contents`） |
 | 账号、云剪贴板、云词库、快照、社区 | `shared/backend/*.swift` | `shared/backend/` 为来源的超集（另有 `BackendAiClient.swift`），并带 Swift 测试 | 有调用链 |
 
 ## 目标具备而来源没有的部分
@@ -177,7 +177,7 @@
 第六次比对看的是截图，只覆盖参考窗口画出来的东西。补两条能机械跑、不依赖截图的：
 
 - **控制项标识**。参考 `PreferencesWindowController.mm` 里所有 `.identifier = @"…"` 共 23 个，逐个在目标的共享偏好与设置页里找对应项，全部有着落。命名从 camelCase 换成 snake_case，对应关系是：`edgeSelection`→`word_character.enabled`、`perApplicationMode`→`ime_mode_scope`、`outputScript`→`traditional_chinese_output`、`mixedEnglish`→`mixed_input.english`、`defaultEnglish`→`default_ime_mode`、`repeatPunctuation`→`smart_punctuation_repeat`，其余同名。
-- **运行时偏好键**。参考在输入路径上读的 `MetasequoiaInput{Flag,Integer,String}(@"…")` 共 27 个，同样逐个有对应。只有 `alwaysChinesePunctuation` / `alwaysEnglishPunctuation` 不是一对一：参考用两个互斥的「钉住」标志加一个跟随状态，目标用 `chinese_punctuation` 这一个状态加独立的 `smart_punctuation` 开关。目标这一侧更能表达（参考没有「钉成英文标点同时开智能标点」这种组合），不是缺口。
+- **运行时偏好键**。参考在输入路径上读的 `LingyaoInput{Flag,Integer,String}(@"…")` 共 27 个，同样逐个有对应。只有 `alwaysChinesePunctuation` / `alwaysEnglishPunctuation` 不是一对一：参考用两个互斥的「钉住」标志加一个跟随状态，目标用 `chinese_punctuation` 这一个状态加独立的 `smart_punctuation` 开关。目标这一侧更能表达（参考没有「钉成英文标点同时开智能标点」这种组合），不是缺口。
 
 两条都没有找到缺失项，这是第六次比对之外对「无已知缺口」这句话的又一次独立交叉检验。
 
@@ -192,19 +192,19 @@
 
 ## 一处刻意的分歧：悬浮工具栏的齿轮
 
-参考的 `MetasequoiaFloatingToolbarItemKeys()` 只有四项——中英文切换、中西文标点、全角半角、简繁输出——齿轮不在其中，并且有一条测试专门钉住「四个开关全关，齿轮还在」。目标把齿轮也做成了可开关的一项，还多出表情与屏幕键盘两项。
+参考的 `LingyaoFloatingToolbarItemKeys()` 只有四项——中英文切换、中西文标点、全角半角、简繁输出——齿轮不在其中，并且有一条测试专门钉住「四个开关全关，齿轮还在」。目标把齿轮也做成了可开关的一项，还多出表情与屏幕键盘两项。
 
 这里不跟。目标的工具栏组件本来就比参考多，把「设置」一并交给用户控制是一致的；关掉齿轮也不会把人困住——输入菜单里的「灵耀输入法设置…」照样能开设置窗口。手写和语音不再恒常存在：它们与 Emoji、屏幕键盘一起改成了默认关（见 `docs/windows-parity.md` 的《工具栏可选按钮改为默认关》），每个按钮都能关掉，工具栏可以只剩兼作拖动柄的 logo（`FloatingToolbarPanel.mm` 在整行为空时隐藏分隔线、保留 logo，面板因此仍可拖动）。记在这里是因为它确实是一处已知的、刻意的行为差异，不该被上面那句「无已知缺口」盖过去。
 
 ## 输入源注册的读数怎么看（2026-09-20 实测）
 
-安装不需要重新登录，原因是 #3270 之后宿主继承了系统已登记的 `app.msime.inputmethod.MetasequoiaIME`。判据本身仍然成立：**一个在本次登录会话开始时不在输入源列表里的 bundle identifier，无论 bundle 内容如何都进不去**；换句话说，更新同一 identifier 可以原地生效，换一个新 identifier 则要等下次登录。
+安装不需要重新登录，原因是 #3270 之后宿主继承了系统已登记的 `app.msime.inputmethod.LingyaoIME`。判据本身仍然成立：**一个在本次登录会话开始时不在输入源列表里的 bundle identifier，无论 bundle 内容如何都进不去**；换句话说，更新同一 identifier 可以原地生效，换一个新 identifier 则要等下次登录。
 
 实测：从 `e215ba7be` 构建、`platforms/macos/scripts/install.sh` 安装之后，`platforms/macos/scripts/check_input_source.swift` 报
 
 ```
-app.msime.inputmethod.MetasequoiaIME.Hans: enabled
-app.msime.inputmethod.MetasequoiaIME: enabled
+app.msime.inputmethod.LingyaoIME.Hans: enabled
+app.msime.inputmethod.LingyaoIME: enabled
 ```
 
 连续 15 次查询全部命中。要注意刚替换 bundle、刚调用 `--register-input-source` 之后有一小段时间查询会时有时无——同一条命令隔几秒跑，会先报 not in the registry 再报 enabled。所以 `install.sh` 只查一次就下结论是不稳的，两个方向的误判都可能出现；判断安装结果时应多查几次再看。

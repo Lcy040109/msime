@@ -12,7 +12,7 @@ export function OtherPlatformDownloadRows() {
     <>
       <LinkRow
         title="其他平台下载"
-        description="在水杉输入法官网的下载页获取其他平台的版本。"
+        description="在灵耀输入法官网的下载页获取其他平台的版本。"
         external
         onClick={() => void openExternalUrl(desktopDownloadUrl)}
       />

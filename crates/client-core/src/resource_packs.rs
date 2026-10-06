@@ -657,10 +657,10 @@ mod tests {
     #[test]
     fn every_url_is_immutable() {
         const RELEASE: &str =
-            "https://github.com/metasequoiaime/msime-dictionary/releases/download/";
+            "https://github.com/Lcy040109/msime-dictionary/releases/download/";
         const MODEL_RELEASE: &str =
             "https://github.com/metasequoiaime/chinese-ime-lm/releases/download/";
-        const ENGINE: &str = "https://raw.githubusercontent.com/metasequoiaime/msime-engine/";
+        const ENGINE: &str = "https://raw.githubusercontent.com/Lcy040109/msime-engine/";
         for pack in ResourcePack::ALL {
             for artifact in &pack.set().artifacts {
                 let url = artifact.url.as_str();

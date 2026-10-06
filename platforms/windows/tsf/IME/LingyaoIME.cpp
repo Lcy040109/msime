@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
 #include "Compartment.h"
@@ -40,10 +40,10 @@ constexpr UINT CONNECT_NAMEDPIPE_MAX_RETRY_INTERVAL_MS = 2000;
 constexpr UINT IPC_FAILURES_BEFORE_SERVER_LAUNCH = 6;
 constexpr UINT SERVER_LAUNCH_RECONNECT_DELAY_MS = 500;
 // 互斥量带版本后缀、注册表键按版本取（shared/contracts/msime_edition.h）：TIP 只认、只拉起自己版本的 Server。full 的名字与引入版本之前相同。
-constexpr wchar_t SERVER_MUTEX_NAME[] = L"Local\\MetasequoiaImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX;
-constexpr wchar_t SERVER_LAUNCH_MUTEX_NAME[] = L"Local\\MetasequoiaImeServer.Launch" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t SERVER_MUTEX_NAME[] = L"Local\\LingyaoImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t SERVER_LAUNCH_MUTEX_NAME[] = L"Local\\LingyaoImeServer.Launch" MSIME_EDITION_NAME_SUFFIX;
 constexpr wchar_t INSTALL_REGISTRY_KEY[] = MSIME_EDITION_REGISTRY_KEY;
-constexpr wchar_t WORKER_WINDOW_CLASS[] = L"MetasequoiaIMEWorkerWnd" MSIME_EDITION_NAME_SUFFIX;
+constexpr wchar_t WORKER_WINDOW_CLASS[] = L"LingyaoIMEWorkerWnd" MSIME_EDITION_NAME_SUFFIX;
 constexpr wchar_t SERVER_PATH_REGISTRY_VALUE[] = L"ServerPath";
 std::atomic<UINT> nextWindowMessageToken{0};
 std::atomic<bool> serverLaunchInFlight{false};
@@ -180,7 +180,7 @@ UINT NextWindowMessageToken()
     return token;
 }
 
-void SendCurrentImeStatusSnapshot(CMetasequoiaIME *pIME, bool assertsFocusOwnership = false)
+void SendCurrentImeStatusSnapshot(CLingyaoIME *pIME, bool assertsFocusOwnership = false)
 {
     if (!Global::g_connected || !pIME || !pIME->GetCompositionProcessorEngine() || !pIME->_GetThreadMgr())
     {
@@ -212,7 +212,7 @@ void SendCurrentImeStatusSnapshot(CMetasequoiaIME *pIME, bool assertsFocusOwners
 class CPunctuationCommitEditSession : public CEditSessionBase
 {
   public:
-    CPunctuationCommitEditSession(CMetasequoiaIME *pTextService, ITfContext *pContext, UINT code, WCHAR wch,
+    CPunctuationCommitEditSession(CLingyaoIME *pTextService, ITfContext *pContext, UINT code, WCHAR wch,
                                   uint64_t requestId, LARGE_INTEGER requestStartQpc, std::wstring prefetchedText,
                                   uint64_t focusToken, uint64_t compositionEpoch, uint64_t deferredReplayToken)
         : CEditSessionBase(pTextService, pContext), _code(code), _wch(wch), _requestId(requestId),
@@ -229,7 +229,7 @@ class CPunctuationCommitEditSession : public CEditSessionBase
     {
         struct Completion
         {
-            CMetasequoiaIME *textService;
+            CLingyaoIME *textService;
             uint64_t token;
             bool applied = false;
             ~Completion()
@@ -280,7 +280,7 @@ class CPunctuationCommitEditSession : public CEditSessionBase
 class CCommitCandidateAndContinueEditSession : public CEditSessionBase
 {
   public:
-    CCommitCandidateAndContinueEditSession(CMetasequoiaIME *pTextService, ITfContext *pContext, std::wstring payload,
+    CCommitCandidateAndContinueEditSession(CLingyaoIME *pTextService, ITfContext *pContext, std::wstring payload,
                                            uint64_t focusToken, uint64_t compositionEpoch)
         : CEditSessionBase(pTextService, pContext), _payload(std::move(payload)), _focusToken(focusToken),
           _compositionEpoch(compositionEpoch)
@@ -306,7 +306,7 @@ class CCommitCandidateAndContinueEditSession : public CEditSessionBase
 class CDeferredApplicationTextEditSession : public CEditSessionBase
 {
   public:
-    CDeferredApplicationTextEditSession(CMetasequoiaIME *pTextService, ITfContext *pContext, WCHAR wch,
+    CDeferredApplicationTextEditSession(CLingyaoIME *pTextService, ITfContext *pContext, WCHAR wch,
                                         uint64_t focusToken, uint64_t focusGeneration, uint64_t replayToken)
         : CEditSessionBase(pTextService, pContext), _wch(wch), _focusToken(focusToken),
           _focusGeneration(focusGeneration), _replayToken(replayToken)
@@ -375,9 +375,9 @@ class CDeferredApplicationTextEditSession : public CEditSessionBase
 //----------------------------------------------------------------------------
 
 /* static */
-HRESULT CMetasequoiaIME::CreateInstance(_In_ IUnknown *pUnkOuter, REFIID riid, _Outptr_ void **ppvObj)
+HRESULT CLingyaoIME::CreateInstance(_In_ IUnknown *pUnkOuter, REFIID riid, _Outptr_ void **ppvObj)
 {
-    CMetasequoiaIME *pMetasequoiaIME = nullptr;
+    CLingyaoIME *pLingyaoIME = nullptr;
     HRESULT hr = S_OK;
 
     if (ppvObj == nullptr)
@@ -392,15 +392,15 @@ HRESULT CMetasequoiaIME::CreateInstance(_In_ IUnknown *pUnkOuter, REFIID riid, _
         return CLASS_E_NOAGGREGATION;
     }
 
-    pMetasequoiaIME = new (std::nothrow) CMetasequoiaIME();
-    if (pMetasequoiaIME == nullptr)
+    pLingyaoIME = new (std::nothrow) CLingyaoIME();
+    if (pLingyaoIME == nullptr)
     {
         return E_OUTOFMEMORY;
     }
 
-    hr = pMetasequoiaIME->QueryInterface(riid, ppvObj);
+    hr = pLingyaoIME->QueryInterface(riid, ppvObj);
 
-    pMetasequoiaIME->Release();
+    pLingyaoIME->Release();
 
     return hr;
 }
@@ -411,7 +411,7 @@ HRESULT CMetasequoiaIME::CreateInstance(_In_ IUnknown *pUnkOuter, REFIID riid, _
 //
 //----------------------------------------------------------------------------
 
-CMetasequoiaIME::CMetasequoiaIME()
+CLingyaoIME::CLingyaoIME()
 {
     DllAddRef();
 
@@ -508,7 +508,7 @@ CMetasequoiaIME::CMetasequoiaIME()
     _bareShiftExpireTick = 0;
 }
 
-thread_local CMetasequoiaIME *CMetasequoiaIME::_bareShiftHookOwner = nullptr;
+thread_local CLingyaoIME *CLingyaoIME::_bareShiftHookOwner = nullptr;
 
 //+---------------------------------------------------------------------------
 //
@@ -516,7 +516,7 @@ thread_local CMetasequoiaIME *CMetasequoiaIME::_bareShiftHookOwner = nullptr;
 //
 //----------------------------------------------------------------------------
 
-CMetasequoiaIME::~CMetasequoiaIME()
+CLingyaoIME::~CLingyaoIME()
 {
     _UninitBareShiftKeyboardHook();
     _ClearDeferredKeyDowns();
@@ -560,7 +560,7 @@ CMetasequoiaIME::~CMetasequoiaIME()
     DllRelease();
 }
 
-HRESULT CMetasequoiaIME::_RequestDeferredApplicationTextEditSession(_In_ ITfContext *pContext, WCHAR wch,
+HRESULT CLingyaoIME::_RequestDeferredApplicationTextEditSession(_In_ ITfContext *pContext, WCHAR wch,
                                                                     uint64_t expectedFocusToken,
                                                                     uint64_t expectedFocusGeneration,
                                                                     uint64_t deferredReplayToken)
@@ -590,7 +590,7 @@ HRESULT CMetasequoiaIME::_RequestDeferredApplicationTextEditSession(_In_ ITfCont
     return FAILED(requestHr) ? requestHr : editSessionHr;
 }
 
-HRESULT CMetasequoiaIME::_RequestDirectPunctuationEditSession(_In_ ITfContext *pContext, UINT code, WCHAR wch,
+HRESULT CLingyaoIME::_RequestDirectPunctuationEditSession(_In_ ITfContext *pContext, UINT code, WCHAR wch,
                                                               uint64_t requestId, std::wstring prefetchedText,
                                                               uint64_t expectedFocusToken,
                                                               uint64_t expectedCompositionEpoch,
@@ -626,7 +626,7 @@ HRESULT CMetasequoiaIME::_RequestDirectPunctuationEditSession(_In_ ITfContext *p
     return FAILED(requestHr) ? requestHr : editSessionHr;
 }
 
-void CMetasequoiaIME::_QueuePendingServerCandidate(UINT msgType, _In_z_ const WCHAR *pCandidateString)
+void CLingyaoIME::_QueuePendingServerCandidate(UINT msgType, _In_z_ const WCHAR *pCandidateString)
 {
     std::lock_guard<std::mutex> lock(_pendingCommitCandidateMutex);
     _hasPendingServerCandidate = true;
@@ -634,7 +634,7 @@ void CMetasequoiaIME::_QueuePendingServerCandidate(UINT msgType, _In_z_ const WC
     _pendingServerCandidateString = pCandidateString ? pCandidateString : L"";
 }
 
-bool CMetasequoiaIME::_TakePendingServerCandidate(_Out_ UINT *pMsgType, _Out_ std::wstring *pCandidateString)
+bool CLingyaoIME::_TakePendingServerCandidate(_Out_ UINT *pMsgType, _Out_ std::wstring *pCandidateString)
 {
     if (pMsgType == nullptr || pCandidateString == nullptr)
     {
@@ -654,7 +654,7 @@ bool CMetasequoiaIME::_TakePendingServerCandidate(_Out_ UINT *pMsgType, _Out_ st
     return true;
 }
 
-bool CMetasequoiaIME::_PostAsyncKeyRequest(UINT message, UINT code, WCHAR wch, uint64_t requestId,
+bool CLingyaoIME::_PostAsyncKeyRequest(UINT message, UINT code, WCHAR wch, uint64_t requestId,
                                            std::wstring prefetchedText, uint64_t expectedFocusToken,
                                            uint64_t expectedCompositionEpoch, uint64_t deferredReplayToken)
 {
@@ -733,22 +733,22 @@ bool CMetasequoiaIME::_PostAsyncKeyRequest(UINT message, UINT code, WCHAR wch, u
     return true;
 }
 
-bool CMetasequoiaIME::_PostServerCandidateCommit(_In_z_ const WCHAR *candidateText)
+bool CLingyaoIME::_PostServerCandidateCommit(_In_z_ const WCHAR *candidateText)
 {
     return _PostServerTextDelivery(WM_CommitCandidate, candidateText);
 }
 
-bool CMetasequoiaIME::_PostServerCandidateCommitAndContinue(_In_z_ const WCHAR *payload)
+bool CLingyaoIME::_PostServerCandidateCommitAndContinue(_In_z_ const WCHAR *payload)
 {
     return _PostServerTextDelivery(WM_CommitCandidateAndContinue, payload);
 }
 
-bool CMetasequoiaIME::_PostServerInsertText(_In_z_ const WCHAR *text)
+bool CLingyaoIME::_PostServerInsertText(_In_z_ const WCHAR *text)
 {
     return _PostServerTextDelivery(WM_InsertText, text);
 }
 
-void CMetasequoiaIME::_ResetVoiceCompositionAssemble()
+void CLingyaoIME::_ResetVoiceCompositionAssemble()
 {
     _voiceCompositionAssemble.clear();
     _voiceCompositionAssembleMsg = 0;
@@ -756,7 +756,7 @@ void CMetasequoiaIME::_ResetVoiceCompositionAssemble()
     _voiceCompositionAssembleActive = false;
 }
 
-void CMetasequoiaIME::_AssembleVoiceCompositionFrame(const FanyImeNamedpipeDataToTsfWorkerThread &buf)
+void CLingyaoIME::_AssembleVoiceCompositionFrame(const FanyImeNamedpipeDataToTsfWorkerThread &buf)
 {
     const FanyImeVoiceCompositionPipe::Frame frame = FanyImeVoiceCompositionPipe::ParseFrame(buf.data);
     if (!frame.valid)
@@ -802,7 +802,7 @@ void CMetasequoiaIME::_AssembleVoiceCompositionFrame(const FanyImeNamedpipeDataT
     }
 }
 
-void CMetasequoiaIME::_DispatchUnsolicitedVoiceText(WPARAM wParam, KEYSTROKE_FUNCTION function)
+void CLingyaoIME::_DispatchUnsolicitedVoiceText(WPARAM wParam, KEYSTROKE_FUNCTION function)
 {
     WorkerCandidateCommit request;
     if (!_TakeServerCandidateCommit(static_cast<UINT>(wParam), request))
@@ -830,7 +830,7 @@ void CMetasequoiaIME::_DispatchUnsolicitedVoiceText(WPARAM wParam, KEYSTROKE_FUN
     }
 }
 
-bool CMetasequoiaIME::_PostServerTextDelivery(UINT windowMessage, _In_z_ const WCHAR *text)
+bool CLingyaoIME::_PostServerTextDelivery(UINT windowMessage, _In_z_ const WCHAR *text)
 {
     constexpr size_t maxPendingServerCommits = 64;
     if (!_workerCommitReady.load(std::memory_order_acquire) ||
@@ -876,7 +876,7 @@ bool CMetasequoiaIME::_PostServerTextDelivery(UINT windowMessage, _In_z_ const W
     return true;
 }
 
-bool CMetasequoiaIME::_TakeServerCandidateCommit(UINT token, _Out_ WorkerCandidateCommit &request)
+bool CLingyaoIME::_TakeServerCandidateCommit(UINT token, _Out_ WorkerCandidateCommit &request)
 {
     std::lock_guard<std::mutex> lock(_pendingCommitCandidateMutex);
     const auto entry = _pendingServerCommitMessages.find(token);
@@ -889,7 +889,7 @@ bool CMetasequoiaIME::_TakeServerCandidateCommit(UINT token, _Out_ WorkerCandida
     return true;
 }
 
-bool CMetasequoiaIME::_PostWorkerCompartmentSwitch(UINT messageType, uint64_t focusToken)
+bool CLingyaoIME::_PostWorkerCompartmentSwitch(UINT messageType, uint64_t focusToken)
 {
     constexpr size_t maxPendingSwitches = 64;
     const bool keyboardCancel = messageType == FanyImeWorkerReplyType::CancelKeyboardComposition;
@@ -939,7 +939,7 @@ bool CMetasequoiaIME::_PostWorkerCompartmentSwitch(UINT messageType, uint64_t fo
     return true;
 }
 
-bool CMetasequoiaIME::_TakeWorkerCompartmentSwitch(UINT token, _Out_ WorkerCompartmentSwitch &request)
+bool CLingyaoIME::_TakeWorkerCompartmentSwitch(UINT token, _Out_ WorkerCompartmentSwitch &request)
 {
     std::lock_guard<std::mutex> lock(_pendingCommitCandidateMutex);
     const auto entry = _pendingWorkerSwitchMessages.find(token);
@@ -952,7 +952,7 @@ bool CMetasequoiaIME::_TakeWorkerCompartmentSwitch(UINT token, _Out_ WorkerCompa
     return true;
 }
 
-bool CMetasequoiaIME::_TakeAsyncKeyRequest(UINT message, UINT token, _Out_ AsyncKeyRequest &request)
+bool CLingyaoIME::_TakeAsyncKeyRequest(UINT message, UINT token, _Out_ AsyncKeyRequest &request)
 {
     std::lock_guard<std::mutex> lock(_pendingCommitCandidateMutex);
     const auto entry = _pendingAsyncKeyMessages.find(token);
@@ -965,7 +965,7 @@ bool CMetasequoiaIME::_TakeAsyncKeyRequest(UINT message, UINT token, _Out_ Async
     return true;
 }
 
-void CMetasequoiaIME::_ClearAsyncKeyRequests()
+void CLingyaoIME::_ClearAsyncKeyRequests()
 {
     std::vector<uint64_t> deferredReplayTokens;
     {
@@ -986,7 +986,7 @@ void CMetasequoiaIME::_ClearAsyncKeyRequests()
     }
 }
 
-void CMetasequoiaIME::_ClearPendingIpcRequests()
+void CLingyaoIME::_ClearPendingIpcRequests()
 {
     _ClearAsyncKeyRequests();
     ResetNamedpipeReplyState();
@@ -999,12 +999,12 @@ void CMetasequoiaIME::_ClearPendingIpcRequests()
     _pendingServerCandidateMsgType = Global::DataFromServerMsgType::OutofRange;
 }
 
-uint64_t CMetasequoiaIME::_CaptureFocusSessionToken() const
+uint64_t CLingyaoIME::_CaptureFocusSessionToken() const
 {
     return _expectedWorkerFocusToken.load(std::memory_order_acquire);
 }
 
-bool CMetasequoiaIME::_IsFocusSessionCurrent(uint64_t focusToken, _In_opt_ ITfContext *expectedContext) const
+bool CLingyaoIME::_IsFocusSessionCurrent(uint64_t focusToken, _In_opt_ ITfContext *expectedContext) const
 {
     if (focusToken == 0 || !Global::g_connected ||
         _expectedWorkerFocusToken.load(std::memory_order_acquire) != focusToken ||
@@ -1038,29 +1038,29 @@ bool CMetasequoiaIME::_IsFocusSessionCurrent(uint64_t focusToken, _In_opt_ ITfCo
     return matches;
 }
 
-uint64_t CMetasequoiaIME::_CaptureCompositionEpoch() const
+uint64_t CLingyaoIME::_CaptureCompositionEpoch() const
 {
     return _compositionEpoch.load(std::memory_order_acquire);
 }
 
-bool CMetasequoiaIME::_IsCompositionEpochCurrent(uint64_t compositionEpoch) const
+bool CLingyaoIME::_IsCompositionEpochCurrent(uint64_t compositionEpoch) const
 {
     return compositionEpoch != 0 && _compositionEpoch.load(std::memory_order_acquire) == compositionEpoch;
 }
 
-bool CMetasequoiaIME::_IsCompositionCurrent(_In_opt_ ITfComposition *expectedComposition) const
+bool CLingyaoIME::_IsCompositionCurrent(_In_opt_ ITfComposition *expectedComposition) const
 {
     return expectedComposition != nullptr && _pComposition == expectedComposition;
 }
 
-bool CMetasequoiaIME::_IsLocalSessionResetCurrent(UINT resetToken) const
+bool CLingyaoIME::_IsLocalSessionResetCurrent(UINT resetToken) const
 {
     return resetToken != 0 && _localResetEditSessionQueued && _queuedLocalResetToken == resetToken &&
            _localSessionResetPending.load(std::memory_order_acquire) &&
            _localSessionResetToken.load(std::memory_order_acquire) == resetToken;
 }
 
-void CMetasequoiaIME::_CompleteLocalSessionReset(UINT resetToken)
+void CLingyaoIME::_CompleteLocalSessionReset(UINT resetToken)
 {
     if (!_localResetEditSessionQueued || _queuedLocalResetToken != resetToken)
     {
@@ -1101,7 +1101,7 @@ void CMetasequoiaIME::_CompleteLocalSessionReset(UINT resetToken)
     }
 }
 
-void CMetasequoiaIME::_RequestLocalSessionReset(_In_opt_ ITfContext *preferredContext, UINT resetToken)
+void CLingyaoIME::_RequestLocalSessionReset(_In_opt_ ITfContext *preferredContext, UINT resetToken)
 {
     if (resetToken == 0 || _localSessionResetToken.load(std::memory_order_acquire) != resetToken ||
         !_localSessionResetPending.load(std::memory_order_acquire))
@@ -1196,7 +1196,7 @@ void CMetasequoiaIME::_RequestLocalSessionReset(_In_opt_ ITfContext *preferredCo
     }
 }
 
-void CMetasequoiaIME::_ScheduleCandidatePresenterCleanup(_In_ CCandidateListUIPresenter *pPresenter)
+void CLingyaoIME::_ScheduleCandidatePresenterCleanup(_In_ CCandidateListUIPresenter *pPresenter)
 {
     if (pPresenter == nullptr)
     {
@@ -1212,7 +1212,7 @@ void CMetasequoiaIME::_ScheduleCandidatePresenterCleanup(_In_ CCandidateListUIPr
     }
 }
 
-void CMetasequoiaIME::_DrainPendingCandidatePresenterCleanup()
+void CLingyaoIME::_DrainPendingCandidatePresenterCleanup()
 {
     PerfTimer timer;
     size_t cleanedCount = 0;
@@ -1235,7 +1235,7 @@ void CMetasequoiaIME::_DrainPendingCandidatePresenterCleanup()
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::QueryInterface(REFIID riid, _Outptr_ void **ppvObj)
+STDAPI CLingyaoIME::QueryInterface(REFIID riid, _Outptr_ void **ppvObj)
 {
     if (ppvObj == nullptr)
     {
@@ -1308,7 +1308,7 @@ STDAPI CMetasequoiaIME::QueryInterface(REFIID riid, _Outptr_ void **ppvObj)
 //
 //----------------------------------------------------------------------------
 
-STDAPI_(ULONG) CMetasequoiaIME::AddRef()
+STDAPI_(ULONG) CLingyaoIME::AddRef()
 {
     return ++_refCount;
 }
@@ -1319,7 +1319,7 @@ STDAPI_(ULONG) CMetasequoiaIME::AddRef()
 //
 //----------------------------------------------------------------------------
 
-STDAPI_(ULONG) CMetasequoiaIME::Release()
+STDAPI_(ULONG) CLingyaoIME::Release()
 {
     LONG cr = --_refCount;
 
@@ -1339,7 +1339,7 @@ STDAPI_(ULONG) CMetasequoiaIME::Release()
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DWORD dwFlags)
+STDAPI CLingyaoIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DWORD dwFlags)
 {
     BOOL hasThreadFocus = FALSE;
     HRESULT threadFocusResult = E_FAIL;
@@ -1386,7 +1386,7 @@ STDAPI CMetasequoiaIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClient
     {
         WNDCLASSEX wcex = {};
         wcex.cbSize = sizeof(WNDCLASSEX);
-        wcex.lpfnWndProc = CMetasequoiaIME_WindowProc;
+        wcex.lpfnWndProc = CLingyaoIME_WindowProc;
         wcex.hInstance = Global::dllInstanceHandle;
         wcex.lpszClassName = WORKER_WINDOW_CLASS;
         wcex.cbWndExtra = sizeof(LONG_PTR);
@@ -1473,7 +1473,7 @@ STDAPI CMetasequoiaIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClient
     Global::CapsLockEnabled.store((GetKeyState(VK_CAPITAL) & 0x0001) != 0, std::memory_order_relaxed);
 
     // Apply configured default CN/EN whenever switching back to this IME
-    _pCompositionProcessorEngine->InitializeMetasequoiaIMECompartment(pThreadMgr, tfClientId);
+    _pCompositionProcessorEngine->InitializeLingyaoIMECompartment(pThreadMgr, tfClientId);
     {
         ITfDocumentMgr *document = nullptr;
         if (SUCCEEDED(pThreadMgr->GetFocus(&document)))
@@ -1509,7 +1509,7 @@ ExitError:
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::Deactivate()
+STDAPI CLingyaoIME::Deactivate()
 {
     // The flush runs on the thread pool under its own loader reference, so it survives this tip going away. It is deliberately not waited for: TSF calls Deactivate the same way for a profile switch as for a closing thread and gives no exit signal to tell them apart, so a wait would stall every ordinary deactivation. A process that exits before the drain finishes loses at most the presses since the last focus-loss flush, capped by the 256-press and 30-second triggers.
     FlushKeyPressStatistics();
@@ -1617,10 +1617,10 @@ STDAPI CMetasequoiaIME::Deactivate()
     CompartmentKeyboardOpen._ClearCompartment();
 
     CCompartment CompartmentDoubleSingleByte(_pThreadMgr, _tfClientId,
-                                             Global::MetasequoiaIMEGuidCompartmentDoubleSingleByte);
+                                             Global::LingyaoIMEGuidCompartmentDoubleSingleByte);
     CompartmentDoubleSingleByte._ClearCompartment();
 
-    CCompartment CompartmentPunctuation(_pThreadMgr, _tfClientId, Global::MetasequoiaIMEGuidCompartmentPunctuation);
+    CCompartment CompartmentPunctuation(_pThreadMgr, _tfClientId, Global::LingyaoIMEGuidCompartmentPunctuation);
     CompartmentPunctuation._ClearCompartment();
 
     if (_pThreadMgr != nullptr)
@@ -1671,7 +1671,7 @@ STDAPI CMetasequoiaIME::Deactivate()
 // 从 Server 端接收消息
 //
 //----------------------------------------------------------------------------
-void CMetasequoiaIME::IpcWorkerThread(CMetasequoiaIME *pIME)
+void CLingyaoIME::IpcWorkerThread(CLingyaoIME *pIME)
 {
     const auto notifyDisconnected = [pIME](HANDLE disconnectedPipe, UINT disconnectedGeneration) {
         if (disconnectedGeneration == 0 ||
@@ -2075,7 +2075,7 @@ void CMetasequoiaIME::IpcWorkerThread(CMetasequoiaIME *pIME)
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_RefreshLanguageBarThemeIcons()
+void CLingyaoIME::_RefreshLanguageBarThemeIcons()
 {
     CCompositionProcessorEngine *pEngine = GetCompositionProcessorEngine();
     if (pEngine)
@@ -2084,7 +2084,7 @@ void CMetasequoiaIME::_RefreshLanguageBarThemeIcons()
     }
 }
 
-void CMetasequoiaIME::_RequestLanguageBarCapsIconRefresh()
+void CLingyaoIME::_RequestLanguageBarCapsIconRefresh()
 {
     if (_msgWndHandle && IsWindow(_msgWndHandle))
     {
@@ -2092,7 +2092,7 @@ void CMetasequoiaIME::_RequestLanguageBarCapsIconRefresh()
     }
 }
 
-void CMetasequoiaIME::_StartThemeRegistryWatcher()
+void CLingyaoIME::_StartThemeRegistryWatcher()
 {
     if (_pThemeWatcherThread)
     {
@@ -2160,7 +2160,7 @@ void CMetasequoiaIME::_StartThemeRegistryWatcher()
     }
 }
 
-void CMetasequoiaIME::_StopThemeRegistryWatcher()
+void CLingyaoIME::_StopThemeRegistryWatcher()
 {
     _stopThemeWatcher.store(true, std::memory_order_release);
     if (_themeRegEvent)
@@ -2198,7 +2198,7 @@ void CMetasequoiaIME::_StopThemeRegistryWatcher()
 // _WakeServerIfNeeded
 //
 //----------------------------------------------------------------------------
-void CMetasequoiaIME::_WakeServerIfNeeded()
+void CLingyaoIME::_WakeServerIfNeeded()
 {
     if (_IsSecureMode() || _IsComLess() || IsServerAlreadyRunning())
         return;
@@ -2218,7 +2218,7 @@ void CMetasequoiaIME::_WakeServerIfNeeded()
 // _NoteKeyEventIpcFailure
 //
 //----------------------------------------------------------------------------
-void CMetasequoiaIME::_NoteKeyEventIpcFailure()
+void CLingyaoIME::_NoteKeyEventIpcFailure()
 {
     // Only a real keystroke counts as evidence that the user wants the Server
     // back. The background reconnect timer must never revive it on its own,
@@ -2249,12 +2249,12 @@ void CMetasequoiaIME::_NoteKeyEventIpcFailure()
 
 //+---------------------------------------------------------------------------
 //
-// CMetasequoiaIME_WindowProc
+// CLingyaoIME_WindowProc
 //
 //----------------------------------------------------------------------------
-LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CLingyaoIME_WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    CMetasequoiaIME *pIME = (CMetasequoiaIME *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+    CLingyaoIME *pIME = (CLingyaoIME *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
     if (!pIME)
     {
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -2263,7 +2263,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
     switch (message)
     {
     case WM_CancelKeyboardComposition: {
-        CMetasequoiaIME::WorkerCompartmentSwitch request;
+        CLingyaoIME::WorkerCompartmentSwitch request;
         if (pIME->_TakeWorkerCompartmentSwitch(static_cast<UINT>(wParam), request) &&
             request.messageType == FanyImeWorkerReplyType::CancelKeyboardComposition)
             pIME->_RequestKeyboardCancellation(request.focusToken, request.compositionEpoch);
@@ -2274,7 +2274,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_CheckGlobalCompartment: {
-        CMetasequoiaIME::WorkerCompartmentSwitch request;
+        CLingyaoIME::WorkerCompartmentSwitch request;
         if (!pIME->_TakeWorkerCompartmentSwitch(static_cast<UINT>(wParam), request))
         {
             break;
@@ -2573,7 +2573,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_CommitCandidate: {
-        CMetasequoiaIME::WorkerCandidateCommit request;
+        CLingyaoIME::WorkerCandidateCommit request;
         if (!pIME->_TakeServerCandidateCommit(static_cast<UINT>(wParam), request))
         {
             break;
@@ -2602,7 +2602,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_CommitCandidateAndContinue: {
-        CMetasequoiaIME::WorkerCandidateCommit request;
+        CLingyaoIME::WorkerCandidateCommit request;
         if (!pIME->_TakeServerCandidateCommit(static_cast<UINT>(wParam), request))
         {
             break;
@@ -2634,7 +2634,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_InsertText: {
-        CMetasequoiaIME::WorkerCandidateCommit request;
+        CLingyaoIME::WorkerCandidateCommit request;
         if (!pIME->_TakeServerCandidateCommit(static_cast<UINT>(wParam), request))
         {
             break;
@@ -2672,7 +2672,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         pIME->_DispatchUnsolicitedVoiceText(wParam, FUNCTION_CANCEL_VOICE_COMPOSITION);
         break;
     case WM_AsyncFinalizeCandidate: {
-        CMetasequoiaIME::AsyncKeyRequest request;
+        CLingyaoIME::AsyncKeyRequest request;
         if (!pIME->_TakeAsyncKeyRequest(WM_AsyncFinalizeCandidate, static_cast<UINT>(wParam), request))
         {
             break;
@@ -2709,7 +2709,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_AsyncPunctuationCommit: {
-        CMetasequoiaIME::AsyncKeyRequest request;
+        CLingyaoIME::AsyncKeyRequest request;
         if (!pIME->_TakeAsyncKeyRequest(WM_AsyncPunctuationCommit, static_cast<UINT>(wParam), request))
         {
             break;
@@ -2761,7 +2761,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_AsyncServerCandidateKey: {
-        CMetasequoiaIME::AsyncKeyRequest request;
+        CLingyaoIME::AsyncKeyRequest request;
         if (!pIME->_TakeAsyncKeyRequest(WM_AsyncServerCandidateKey, static_cast<UINT>(wParam), request))
         {
             break;
@@ -2826,7 +2826,7 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     }
     case WM_AsyncNumberCandidateCommit: {
-        CMetasequoiaIME::AsyncKeyRequest request;
+        CLingyaoIME::AsyncKeyRequest request;
         if (!pIME->_TakeAsyncKeyRequest(WM_AsyncNumberCandidateCommit, static_cast<UINT>(wParam), request))
         {
             break;
@@ -2962,12 +2962,12 @@ LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND hWnd, UINT message, WPARAM wPar
 // ITfFunctionProvider::GetType
 //
 //----------------------------------------------------------------------------
-HRESULT CMetasequoiaIME::GetType(__RPC__out GUID *pguid)
+HRESULT CLingyaoIME::GetType(__RPC__out GUID *pguid)
 {
     HRESULT hr = E_INVALIDARG;
     if (pguid)
     {
-        *pguid = Global::MetasequoiaIMECLSID;
+        *pguid = Global::LingyaoIMECLSID;
         hr = S_OK;
     }
     return hr;
@@ -2978,7 +2978,7 @@ HRESULT CMetasequoiaIME::GetType(__RPC__out GUID *pguid)
 // ITfFunctionProvider::::GetDescription
 //
 //----------------------------------------------------------------------------
-HRESULT CMetasequoiaIME::GetDescription(__RPC__deref_out_opt BSTR *pbstrDesc)
+HRESULT CLingyaoIME::GetDescription(__RPC__deref_out_opt BSTR *pbstrDesc)
 {
     HRESULT hr = E_INVALIDARG;
     if (pbstrDesc != nullptr)
@@ -2994,7 +2994,7 @@ HRESULT CMetasequoiaIME::GetDescription(__RPC__deref_out_opt BSTR *pbstrDesc)
 // ITfFunctionProvider::::GetFunction
 //
 //----------------------------------------------------------------------------
-HRESULT CMetasequoiaIME::GetFunction(__RPC__in REFGUID rguid, __RPC__in REFIID riid,
+HRESULT CLingyaoIME::GetFunction(__RPC__in REFGUID rguid, __RPC__in REFIID riid,
                                      __RPC__deref_out_opt IUnknown **ppunk)
 {
     HRESULT hr = E_NOINTERFACE;
@@ -3019,7 +3019,7 @@ HRESULT CMetasequoiaIME::GetFunction(__RPC__in REFGUID rguid, __RPC__in REFIID r
 // ITfFunction::GetDisplayName
 //
 //----------------------------------------------------------------------------
-HRESULT CMetasequoiaIME::GetDisplayName(_Out_ BSTR *pbstrDisplayName)
+HRESULT CLingyaoIME::GetDisplayName(_Out_ BSTR *pbstrDisplayName)
 {
     HRESULT hr = E_INVALIDARG;
     if (pbstrDisplayName != nullptr)
@@ -3035,7 +3035,7 @@ HRESULT CMetasequoiaIME::GetDisplayName(_Out_ BSTR *pbstrDisplayName)
 // ITfFnGetPreferredTouchKeyboardLayout::GetLayout
 // The touch keyboard layout for the language this edition registers under (TEXTSERVICE_LANGID): the optimized Simplified Chinese Pinyin layout for the Chinese editions, the optimized Japanese layout for the Japanese edition, and the classic layout of the user's keyboard otherwise, since Windows has no optimized layout for Vietnamese or Tibetan.
 //----------------------------------------------------------------------------
-HRESULT CMetasequoiaIME::GetLayout(_Out_ TKBLayoutType *ptkblayoutType, _Out_ WORD *pwPreferredLayoutId)
+HRESULT CLingyaoIME::GetLayout(_Out_ TKBLayoutType *ptkblayoutType, _Out_ WORD *pwPreferredLayoutId)
 {
     HRESULT hr = E_INVALIDARG;
     if ((ptkblayoutType != nullptr) && (pwPreferredLayoutId != nullptr))

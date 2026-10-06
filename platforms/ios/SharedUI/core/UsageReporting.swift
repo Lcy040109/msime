@@ -33,12 +33,12 @@ enum UsageReporting {
     preferences?[preferenceKey] as? Bool ?? true
   }
 
-  static var isEnabled: Bool { isEnabled(in: MetasequoiaInputSessionBridge.loadSharedPreferences()) }
+  static var isEnabled: Bool { isEnabled(in: LingyaoInputSessionBridge.loadSharedPreferences()) }
 
   /// Turns usage reporting on or off in the shared preferences; off also drops everything queued. Returns false when the preference could not be saved.
   @discardableResult
   static func setEnabled(_ enabled: Bool) -> Bool {
-    guard MetasequoiaInputSessionBridge.updateSharedPreferences({ $0[preferenceKey] = enabled }) else { return false }
+    guard LingyaoInputSessionBridge.updateSharedPreferences({ $0[preferenceKey] = enabled }) else { return false }
     if !enabled, let directory { call(msimeClientTelemetryClear, ["directory": directory.path]) }
     return true
   }
@@ -49,7 +49,7 @@ enum UsageReporting {
 
   private static func request(_ directory: URL) -> [String: Any] {
     var request: [String: Any] = ["directory": directory.path, "platform": "ios", "version": version]
-    let preferences = MetasequoiaInputSessionBridge.sharedStateDirectory
+    let preferences = LingyaoInputSessionBridge.sharedStateDirectory
     if preferences.hasPrefix("/") { request["preferences_directory"] = preferences } else { request["enabled"] = true }
     return request
   }

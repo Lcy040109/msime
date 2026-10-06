@@ -4,18 +4,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol MetasequoiaUpdateDriver <NSObject>
+@protocol LingyaoUpdateDriver <NSObject>
 @property(nonatomic, readonly) BOOL canCheckForUpdates;
 @property(nonatomic, readonly) BOOL automaticallyChecksForUpdates;
 - (void)checkForUpdates:(nullable id)sender;
 @end
 
-typedef void (^MetasequoiaUpdateActivationHandler)(void);
+typedef void (^LingyaoUpdateActivationHandler)(void);
 
-typedef NS_ENUM(NSInteger, MetasequoiaUpdateRoute) {
-    MetasequoiaUpdateRouteUnavailable,
-    MetasequoiaUpdateRouteSparkle,
-    MetasequoiaUpdateRouteReleasePage,
+typedef NS_ENUM(NSInteger, LingyaoUpdateRoute) {
+    LingyaoUpdateRouteUnavailable,
+    LingyaoUpdateRouteSparkle,
+    LingyaoUpdateRouteReleasePage,
 };
 
 // Whether Sparkle can be started in this process at all. It needs an application bundle - a feed URL, a
@@ -31,37 +31,37 @@ static inline BOOL MSIMEUpdateHostCanStartSparkle(NSString *_Nullable identifier
 // A shipped application with no Sparkle feed must still give an honest, actionable result when the
 // shared settings bundle cannot be launched. Test binaries and command-line helpers have neither
 // route: presenting AppKit update UI from them would steal focus for an action they did not initiate.
-static inline MetasequoiaUpdateRoute MSIMEUpdateRouteForHost(NSString *_Nullable identifier,
+static inline LingyaoUpdateRoute MSIMEUpdateRouteForHost(NSString *_Nullable identifier,
                                                              NSString *_Nullable path,
                                                              NSString *_Nullable feedURL)
 {
-    if (MSIMEUpdateHostCanStartSparkle(identifier, path, feedURL)) return MetasequoiaUpdateRouteSparkle;
+    if (MSIMEUpdateHostCanStartSparkle(identifier, path, feedURL)) return LingyaoUpdateRouteSparkle;
     if (identifier.length > 0 && [path.pathExtension isEqualToString:@"app"])
-        return MetasequoiaUpdateRouteReleasePage;
-    return MetasequoiaUpdateRouteUnavailable;
+        return LingyaoUpdateRouteReleasePage;
+    return LingyaoUpdateRouteUnavailable;
 }
 
-typedef NSModalResponse (^MetasequoiaUpdateReleaseConfirmation)(NSURL *releaseURL);
-typedef BOOL (^MetasequoiaUpdateReleaseOpener)(NSURL *releaseURL);
-typedef void (^MetasequoiaUpdateReleaseFailure)(void);
+typedef NSModalResponse (^LingyaoUpdateReleaseConfirmation)(NSURL *releaseURL);
+typedef BOOL (^LingyaoUpdateReleaseOpener)(NSURL *releaseURL);
+typedef void (^LingyaoUpdateReleaseFailure)(void);
 
 // Public only so the no-feed failure path can be tested without opening a browser or showing a real
 // alert. Production constructs it with fixed UI blocks and a fixed official release URL.
-@interface MetasequoiaReleasePageUpdateDriver : NSObject <MetasequoiaUpdateDriver>
+@interface LingyaoReleasePageUpdateDriver : NSObject <LingyaoUpdateDriver>
 - (instancetype)initWithReleaseURL:(NSURL *)releaseURL
-                       confirmation:(MetasequoiaUpdateReleaseConfirmation)confirmation
-                             opener:(MetasequoiaUpdateReleaseOpener)opener
-                            failure:(MetasequoiaUpdateReleaseFailure)failure;
+                       confirmation:(LingyaoUpdateReleaseConfirmation)confirmation
+                             opener:(LingyaoUpdateReleaseOpener)opener
+                            failure:(LingyaoUpdateReleaseFailure)failure;
 @end
 
-@interface MetasequoiaUpdateController : NSObject
+@interface LingyaoUpdateController : NSObject
 + (instancetype)sharedController;
-- (instancetype)initWithDriver:(id<MetasequoiaUpdateDriver>)driver
-             activationHandler:(MetasequoiaUpdateActivationHandler)activationHandler;
+- (instancetype)initWithDriver:(id<LingyaoUpdateDriver>)driver
+             activationHandler:(LingyaoUpdateActivationHandler)activationHandler;
 @property(nonatomic, readonly) BOOL canCheckForUpdates;
 @property(nonatomic, readonly) BOOL automaticallyChecksForUpdates;
 - (void)checkForUpdates:(nullable id)sender;
 @end
-#define MSIMEUpdateController MetasequoiaUpdateController
+#define MSIMEUpdateController LingyaoUpdateController
 
 NS_ASSUME_NONNULL_END

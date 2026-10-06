@@ -25,11 +25,11 @@ final class KeyboardSkinDocumentTests: XCTestCase {
   }
 
   func testBuiltInSelectionReachesTheDocument() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     // 触屏键盘的新文档自带薄荷晨光的自定义主题（#2178），所以这里比较的是选择前后，而不是要求它为空。
-    let before = GlobalThemePreference.customTheme(in: MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let before = GlobalThemePreference.customTheme(in: LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertTrue(GlobalThemePreference.save("night", stateRoot: state))
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["global_theme"] as? String, "night")
     // 选择内置主题不改动自定义主题：底色、外部皮肤、取色和键盘设计都原样保留，切回 `custom` 时还是原来那套。
     XCTAssertEqual(GlobalThemePreference.customTheme(in: document) as NSDictionary, before as NSDictionary)
@@ -41,7 +41,7 @@ final class KeyboardSkinDocumentTests: XCTestCase {
 
   /// A photo design is far larger than the 16 KiB other buffers are held to; the document still takes it, and the keyboard reads back the same design.
   func testCustomDesignWithAPhotoRoundTripsThroughTheDocument() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(GlobalThemePreference.save("paper", stateRoot: state))
     var design = CustomKeyboardSkin(background: 0x203040, keyShape: .capsule)
     design.photo = Data([0xFF, 0xD8, 0xFF]) + Data(count: 40_000)
@@ -49,7 +49,7 @@ final class KeyboardSkinDocumentTests: XCTestCase {
 
     XCTAssertTrue(GlobalThemePreference.apply(design, stateRoot: state))
 
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["global_theme"] as? String, "custom")
     let custom = try XCTUnwrap(document["custom_theme"] as? [String: Any])
     // The theme on screen before the design becomes its base (THEME_CONTRACT section 5).
@@ -69,11 +69,11 @@ final class KeyboardSkinDocumentTests: XCTestCase {
 
   /// Selecting another theme keeps the custom theme's design, and a document without one clears the App Group copy.
   func testTheAppGroupFollowsTheDocument() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     let design = CustomKeyboardSkin(background: 0x102030)
     XCTAssertTrue(GlobalThemePreference.apply(design, stateRoot: state))
     XCTAssertTrue(GlobalThemePreference.save("ink", stateRoot: state))
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(GlobalThemePreference.design(in: document), design.normalized)
     XCTAssertEqual(KeyboardTheme.resolve(document: document).design, nil)
     XCTAssertNotNil(KeyboardFeedbackPreference.defaults.data(forKey: CustomKeyboardSkinStore.key))

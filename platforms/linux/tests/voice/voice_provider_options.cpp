@@ -67,11 +67,11 @@ int main() {
 
   // Hotwords travel as one string option, heaviest first, skipping words that would break the packing.
   auto query = Json{{"language", "zh-cn"}, {"generation", 7}, {"options", {{"asr_provider", "local"}}}};
-  msime::linux_host::add_voice_hotwords(query, Json::array({{{"text", "水杉"}, {"pinyin", "shui shan"}},
+  msime::linux_host::add_voice_hotwords(query, Json::array({{{"text", "灵耀"}, {"pinyin", "shui shan"}},
                                                             {{"text", "坏\t词"}, {"pinyin", "huai ci"}},
                                                             {{"pinyin", "no text"}},
                                                             {{"text", "输入法"}, {"pinyin", "shu ru fa"}}}));
-  assert(query.at("options").at("voice_hotwords") == "水杉\tshui shan\n输入法\tshu ru fa");
+  assert(query.at("options").at("voice_hotwords") == "灵耀\tshui shan\n输入法\tshu ru fa");
   query = Json{{"options", Json::object()}};
   msime::linux_host::add_voice_hotwords(query, Json::array());
   assert(!query.at("options").contains("voice_hotwords"));

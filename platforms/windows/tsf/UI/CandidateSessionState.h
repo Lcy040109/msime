@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Private.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 
 class CCandidateSessionState
 {
@@ -38,8 +38,8 @@ class CCandidateSessionState
 
   private:
     UINT _currentSelection;
-    CMetasequoiaImeArray<CCandidateListItem> _candidateList;
-    CMetasequoiaImeArray<UINT> _pageIndex;
+    CLingyaoImeArray<CCandidateListItem> _candidateList;
+    CLingyaoImeArray<UINT> _pageIndex;
     CCandidateRange *_pIndexRange;
     BOOL _dontAdjustOnEmptyItemPage;
 };

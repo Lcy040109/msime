@@ -86,7 +86,7 @@ final class BackendCloudClipboardProvider: NSObject {
     var message: String {
       switch self {
       case .sent: return "已发到云剪贴板"
-      case .signedOut: return "登录水杉账号后可在设备间同步剪贴板"
+      case .signedOut: return "登录灵耀账号后可在设备间同步剪贴板"
       case .disabled: return "云剪贴板未开启"
       case .failed: return "发到云剪贴板失败，请重试"
       }

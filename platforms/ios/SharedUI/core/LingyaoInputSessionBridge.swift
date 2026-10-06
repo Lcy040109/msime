@@ -128,16 +128,16 @@ private func msimeClientSnapshotVersion(_ options: UnsafePointer<MSIMEByte>?, _ 
 @_silgen_name("msime_client_snapshot_activate")
 private func msimeClientSnapshotActivate(_ handle: UInt64, _ expected: UnsafePointer<MSIMEByte>?, _ length: UInt) -> UnsafeMutablePointer<CChar>?
 
-enum MetasequoiaCandidateAction: Equatable {
+enum LingyaoCandidateAction: Equatable {
   /// `position` is 1...5, the range the shared layer accepts and the desktop candidate menu offers.
   case promote, remove, fix(position: UInt8), clearPosition
 }
 
-enum MetasequoiaFrequencyAdjustmentMode: UInt8 {
+enum LingyaoFrequencyAdjustmentMode: UInt8 {
   case pin, halve, linear, promote, disabled
 }
 
-struct MetasequoiaInputSnapshot: Equatable, Sendable {
+struct LingyaoInputSnapshot: Equatable, Sendable {
   let isHandled: Bool
   let commitText: String?
   let preedit: String
@@ -223,7 +223,7 @@ private enum InputBridgeFailure: LocalizedError {
 
 /// Swift keyboard host for the shared Rust/C ABI. The extension owns one session
 /// and never keeps Engine pointers or input text outside the returned snapshot.
-final class MetasequoiaInputSessionBridge: @unchecked Sendable {
+final class LingyaoInputSessionBridge: @unchecked Sendable {
   private var handle: UInt64 = 0
   private var options: [String: Any]
   private var stateRoot: String?
@@ -307,7 +307,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
       let snapshot: [String: Any]?
       do {
         snapshot = try path.withUnsafeBytes { bytes in
-          try MetasequoiaInputSessionBridge.decode(msimeClientLoadPreferences(
+          try LingyaoInputSessionBridge.decode(msimeClientLoadPreferences(
             bytes.bindMemory(to: MSIMEByte.self).baseAddress, UInt(path.count))) as? [String: Any]
         }
       } catch {
@@ -580,22 +580,22 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     }
   }
 
-  func handleCharacter(_ character: String, shifted: Bool = false) -> MetasequoiaInputSnapshot {
+  func handleCharacter(_ character: String, shifted: Bool = false) -> LingyaoInputSnapshot {
     dispatch { pointer(for: character, shift: shifted) }
   }
 
-  func handleCandidateKey(_ character: String) -> MetasequoiaInputSnapshot {
+  func handleCandidateKey(_ character: String) -> LingyaoInputSnapshot {
     guard let index = Int(character), (1...9).contains(index) else { return diagnostic("候选编号无效") }
     return selectCandidate(at: UInt(index - 1))
   }
 
-  func handlePunctuation(_ character: String) -> MetasequoiaInputSnapshot {
+  func handlePunctuation(_ character: String) -> LingyaoInputSnapshot {
     guard let byte = Self.ascii(character) else { return diagnostic("标点输入无效") }
     return dispatch { msimeClientPunctuation(handle, byte) }
   }
 
   func handlePunctuationWithContext(_ character: String,
-                                    preceding: UInt32) -> MetasequoiaInputSnapshot {
+                                    preceding: UInt32) -> LingyaoInputSnapshot {
     guard let byte = Self.ascii(character) else { return diagnostic("标点输入无效") }
     return dispatch { msimeClientPunctuationWithContext(handle, byte, preceding) }
   }
@@ -640,29 +640,29 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return (try? Self.callUpdate(msimeClientSmartPunctuationDecide, handle, request)) ?? [:]
   }
 
-  func handleBackspace() -> MetasequoiaInputSnapshot { command(0) }
-  func commitCandidate() -> MetasequoiaInputSnapshot { command(1) }
-  func commitRaw() -> MetasequoiaInputSnapshot { command(2) }
-  func cancel() -> MetasequoiaInputSnapshot { command(3) }
-  func finishComposition() -> MetasequoiaInputSnapshot { command(9) }
-  func cycleKanaVariant() -> MetasequoiaInputSnapshot { command(10) }
-  func commitReading() -> MetasequoiaInputSnapshot { command(11) }
-  func moveCaretLeft() -> MetasequoiaInputSnapshot { command(4) }
-  func moveCaretRight() -> MetasequoiaInputSnapshot { command(5) }
+  func handleBackspace() -> LingyaoInputSnapshot { command(0) }
+  func commitCandidate() -> LingyaoInputSnapshot { command(1) }
+  func commitRaw() -> LingyaoInputSnapshot { command(2) }
+  func cancel() -> LingyaoInputSnapshot { command(3) }
+  func finishComposition() -> LingyaoInputSnapshot { command(9) }
+  func cycleKanaVariant() -> LingyaoInputSnapshot { command(10) }
+  func commitReading() -> LingyaoInputSnapshot { command(11) }
+  func moveCaretLeft() -> LingyaoInputSnapshot { command(4) }
+  func moveCaretRight() -> LingyaoInputSnapshot { command(5) }
   /// The segment edits the Windows composition binds to Ctrl+Backspace and Ctrl+← / →: a whole syllable (or a held phrase) at a time, on the unit boundaries the Engine owns.
-  func segmentBackspace() -> MetasequoiaInputSnapshot { command(12) }
-  func moveCaretLeftBySegment() -> MetasequoiaInputSnapshot { command(13) }
-  func moveCaretRightBySegment() -> MetasequoiaInputSnapshot { command(14) }
+  func segmentBackspace() -> LingyaoInputSnapshot { command(12) }
+  func moveCaretLeftBySegment() -> LingyaoInputSnapshot { command(13) }
+  func moveCaretRightBySegment() -> LingyaoInputSnapshot { command(14) }
   /// The Home, End and Delete keys of the Windows composition: the caret to either end of the spelling, and the letter after the caret removed.
-  func moveCaretToStart() -> MetasequoiaInputSnapshot { command(6) }
-  func moveCaretToEnd() -> MetasequoiaInputSnapshot { command(7) }
-  func deleteForward() -> MetasequoiaInputSnapshot { command(8) }
+  func moveCaretToStart() -> LingyaoInputSnapshot { command(6) }
+  func moveCaretToEnd() -> LingyaoInputSnapshot { command(7) }
+  func deleteForward() -> LingyaoInputSnapshot { command(8) }
   /// MSIME_CONVERT_HANJA (msime_client.h): lists the Hanja of the composing Korean syllable as candidates, or closes that list when it is open. Unhandled when nothing is composing or the composition is a lone jamo, which has no Hanja.
-  func convertHanja() -> MetasequoiaInputSnapshot { command(16) }
+  func convertHanja() -> LingyaoInputSnapshot { command(16) }
   /// Drops the Engine's cached candidate lookups, which Windows does on Ctrl+Shift+Alt+C.
-  func resetCache() -> MetasequoiaInputSnapshot { dispatch { msimeClientResetCache(handle) } }
+  func resetCache() -> LingyaoInputSnapshot { dispatch { msimeClientResetCache(handle) } }
 
-  func selectCandidate(at index: UInt) -> MetasequoiaInputSnapshot {
+  func selectCandidate(at index: UInt) -> LingyaoInputSnapshot {
     guard let rows = try? currentCandidates(), rows.indices.contains(Int(index)),
           let identity = rows[Int(index)]["id"] as? [String: Any],
           let generation = Self.strictUInt64(identity["generation"]),
@@ -671,13 +671,13 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
       generation: generation, globalIndex: globalIndex)
   }
 
-  func selectCandidate(generation: UInt64, globalIndex: UInt64) -> MetasequoiaInputSnapshot {
+  func selectCandidate(generation: UInt64, globalIndex: UInt64) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
     return dispatch { msimeClientSelect(handle, generation, index) }
   }
 
   /// Select an entry of the expanded panel. Panel positions index the Engine's whole answer, and `selectCandidate(generation:globalIndex:)` only accepts the page the strip is showing, so anything past the ninth candidate came back as stale.
-  func selectAnyCandidate(generation: UInt64, globalIndex: UInt64) -> MetasequoiaInputSnapshot {
+  func selectAnyCandidate(generation: UInt64, globalIndex: UInt64) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
     return dispatch { msimeClientSelectAnyCandidate(handle, generation, index) }
   }
@@ -693,7 +693,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
   }
 
   /// Commit only the first or the last Han character of a candidate (以词定字); the Engine ends the composition with it.
-  func selectCandidateEdge(at index: UInt, last: Bool) -> MetasequoiaInputSnapshot {
+  func selectCandidateEdge(at index: UInt, last: Bool) -> LingyaoInputSnapshot {
     guard let rows = try? currentCandidates(), rows.indices.contains(Int(index)),
           let identity = rows[Int(index)]["id"] as? [String: Any],
           let generation = Self.strictUInt64(identity["generation"]),
@@ -701,7 +701,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return selectCandidateEdge(generation: generation, globalIndex: globalIndex, last: last)
   }
 
-  func selectCandidateEdge(generation: UInt64, globalIndex: UInt64, last: Bool) -> MetasequoiaInputSnapshot {
+  func selectCandidateEdge(generation: UInt64, globalIndex: UInt64, last: Bool) -> LingyaoInputSnapshot {
     guard let index = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
     return dispatch { msimeClientSelectEdge(handle, generation, index, last ? 1 : 0) }
   }
@@ -896,11 +896,11 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     }
   }
 
-  func snapshot(from value: [String: Any]) throws -> MetasequoiaInputSnapshot {
+  func snapshot(from value: [String: Any]) throws -> LingyaoInputSnapshot {
     try Self.snapshot(value)
   }
 
-  func chooseNineKeySpelling(at index: UInt) -> MetasequoiaInputSnapshot {
+  func chooseNineKeySpelling(at index: UInt) -> LingyaoInputSnapshot {
     let generation = (try? view()).flatMap { Self.strictUInt64($0["generation"]) } ?? 0
     return dispatch { msimeClientChooseNineKeySpelling(handle, generation, index) }
   }
@@ -923,7 +923,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     _ = updatePreferences { $0["wubi_mixed_pinyin"] = enabled }
   }
 
-  @discardableResult func setFrequencyAdjustmentMode(_ mode: MetasequoiaFrequencyAdjustmentMode,
+  @discardableResult func setFrequencyAdjustmentMode(_ mode: LingyaoFrequencyAdjustmentMode,
                                                       triggerCount: Int, linearStep: Int) -> Bool {
     let names = ["pin", "halve", "linear", "promote", "disabled"]
     return updatePreferences { $0["frequency"] = ["mode": names[Int(mode.rawValue)],
@@ -931,24 +931,24 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
                                                     "linear_step": linearStep] }
   }
 
-  func `switch`(toShuangpin enabled: Bool) -> MetasequoiaInputSnapshot {
+  func `switch`(toShuangpin enabled: Bool) -> LingyaoInputSnapshot {
     switchScheme(enabled ? "shuangpin" : "quanpin", profile: nil)
   }
-  func `switch`(toShuangpinProfile profile: String) -> MetasequoiaInputSnapshot {
+  func `switch`(toShuangpinProfile profile: String) -> LingyaoInputSnapshot {
     switchScheme("shuangpin", profile: profile)
   }
-  func switchToNineKey() -> MetasequoiaInputSnapshot {
+  func switchToNineKey() -> LingyaoInputSnapshot {
     guard updatePreferences({ $0["scheme"] = "quanpin" }) else { return diagnostic("九键模式切换失败") }
     nineKeyEnabled = true
     return dispatch { msimeClientSetNineKeyMode(handle, true) }
   }
   /// Tell the runtime the width it commits in; from then on every commit it completes arrives already converted.
-  @discardableResult func setCharacterWidth(fullwidth: Bool) -> MetasequoiaInputSnapshot {
+  @discardableResult func setCharacterWidth(fullwidth: Bool) -> LingyaoInputSnapshot {
     self.fullwidth = fullwidth
     return dispatch { msimeClientSetCharacterWidth(handle, fullwidth) }
   }
   /// Chinese or ASCII marks for this session, on top of the document's `chinese_punctuation`; `punctuation_lock` still wins.
-  @discardableResult func setChinesePunctuation(_ enabled: Bool) -> MetasequoiaInputSnapshot {
+  @discardableResult func setChinesePunctuation(_ enabled: Bool) -> LingyaoInputSnapshot {
     chinesePunctuation = enabled
     return dispatch { msimeClientSetChinesePunctuation(handle, enabled) }
   }
@@ -967,24 +967,24 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return response as? Bool == true
   }
   /// 只改 `scheme`，会话里的 `wubi_profile` 不动，所以切过去仍是当前的 86 或 98 五笔。
-  func switchToWubi() -> MetasequoiaInputSnapshot { switchScheme("wubi", profile: nil) }
+  func switchToWubi() -> LingyaoInputSnapshot { switchScheme("wubi", profile: nil) }
   /// 手写面板背后跑本版本的默认方案，与 `schemeMapping` 写进偏好的一致；full 是全拼。
-  func switchToHandwriting() -> MetasequoiaInputSnapshot { switchScheme(MSIMEAppEdition.defaultScheme, profile: nil) }
-  func switchToJapanese() -> MetasequoiaInputSnapshot { switchScheme("japanese", profile: nil) }
+  func switchToHandwriting() -> LingyaoInputSnapshot { switchScheme(MSIMEAppEdition.defaultScheme, profile: nil) }
+  func switchToJapanese() -> LingyaoInputSnapshot { switchScheme("japanese", profile: nil) }
   /// Korean Hangul (Dubeolsik). Switching discards an open syllable, so callers finish the composition first.
-  func switchToKorean() -> MetasequoiaInputSnapshot { switchScheme("korean", profile: nil) }
+  func switchToKorean() -> LingyaoInputSnapshot { switchScheme("korean", profile: nil) }
   /// Cantonese Jyutping. Without msime-cantonese.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed.
-  func switchToCantonese() -> MetasequoiaInputSnapshot { switchScheme("cantonese", profile: nil) }
+  func switchToCantonese() -> LingyaoInputSnapshot { switchScheme("cantonese", profile: nil) }
   /// Dachen Zhuyin with Traditional output. Without msime-zhuyin.db beside EngineResources the runtime keeps running the last Chinese scheme instead, so the keyboard only offers it when the file is installed. Switching discards an open conversion, so callers finish the composition first.
-  func switchToZhuyin() -> MetasequoiaInputSnapshot { switchScheme("zhuyin", profile: nil) }
+  func switchToZhuyin() -> LingyaoInputSnapshot { switchScheme("zhuyin", profile: nil) }
   /// Vietnamese Telex and VNI, composed in place with no candidates. Switching discards an open word, so callers finish the composition first.
-  func switchToVietnamese() -> MetasequoiaInputSnapshot { switchScheme("vietnamese", profile: nil) }
+  func switchToVietnamese() -> LingyaoInputSnapshot { switchScheme("vietnamese", profile: nil) }
   /// 藏文 EWTS 威利转写，就地组字，没有候选。切换会丢掉正在组的音节，所以调用方先结束组字。
-  func switchToTibetan() -> MetasequoiaInputSnapshot { switchScheme("tibetan", profile: nil) }
+  func switchToTibetan() -> LingyaoInputSnapshot { switchScheme("tibetan", profile: nil) }
   /// 笔画输入，按笔顺查单字。缺少 language-dictionaries 里的 msime-stroke.db 时运行时继续用最近一次的中文方案，所以键盘只在文件在时提供它。
-  func switchToStroke() -> MetasequoiaInputSnapshot { switchScheme("stroke", profile: nil) }
+  func switchToStroke() -> LingyaoInputSnapshot { switchScheme("stroke", profile: nil) }
 
-  func editCandidate(at index: UInt, expectedWord: String, action: MetasequoiaCandidateAction) -> MetasequoiaInputSnapshot {
+  func editCandidate(at index: UInt, expectedWord: String, action: LingyaoCandidateAction) -> LingyaoInputSnapshot {
     guard let row = (try? currentCandidates())?[safe: Int(index)],
           row["text"] as? String == expectedWord,
           let identity = row["id"] as? [String: Any],
@@ -1002,7 +1002,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
   /// its positions are not the visible indexes the overload above resolves. It carries the
   /// generation and global index the snapshot gave it, which is what the engine wanted all along.
   func editCandidate(generation: UInt64, globalIndex: UInt64,
-                     action: MetasequoiaCandidateAction) -> MetasequoiaInputSnapshot {
+                     action: LingyaoCandidateAction) -> LingyaoInputSnapshot {
     guard let indexValue = UInt(exactly: globalIndex) else { return diagnostic("候选已失效") }
     switch action {
     case .promote:
@@ -1016,7 +1016,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     }
   }
 
-  func openLocalMode(_ trigger: String) -> MetasequoiaInputSnapshot {
+  func openLocalMode(_ trigger: String) -> LingyaoInputSnapshot {
     guard let byte = Self.ascii(trigger) else { return diagnostic("本地输入模式无效") }
     return dispatch { pointer(for: String(UnicodeScalar(byte)), shift: true) }
   }
@@ -1219,7 +1219,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
 
   private func localMode() throws -> String { try view()["local_mode"] as? String ?? "" }
 
-  private func switchScheme(_ scheme: String, profile: String?) -> MetasequoiaInputSnapshot {
+  private func switchScheme(_ scheme: String, profile: String?) -> LingyaoInputSnapshot {
     let updated = updatePreferences { prefs in
       prefs["scheme"] = scheme
       if let profile { prefs["shuangpin_profile"] = profile }
@@ -1229,7 +1229,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return dispatch { msimeClientSetNineKeyMode(handle, false) }
   }
 
-  private func command(_ value: UInt32) -> MetasequoiaInputSnapshot {
+  private func command(_ value: UInt32) -> LingyaoInputSnapshot {
     dispatch { msimeClientCommand(handle, value) }
   }
 
@@ -1238,7 +1238,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return msimeClientCharacter(handle, byte, shift)
   }
 
-  private func dispatch(_ operation: () -> UnsafeMutablePointer<CChar>?) -> MetasequoiaInputSnapshot {
+  private func dispatch(_ operation: () -> UnsafeMutablePointer<CChar>?) -> LingyaoInputSnapshot {
     guard handle != 0 else {
       return diagnostic(initializationDiagnostic ?? "输入运行时尚未准备完成。")
     }
@@ -1249,8 +1249,8 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     catch { return diagnostic(error.localizedDescription) }
   }
 
-  private func diagnostic(_ message: String) -> MetasequoiaInputSnapshot {
-    MetasequoiaInputSnapshot(diagnosticText: message)
+  private func diagnostic(_ message: String) -> LingyaoInputSnapshot {
+    LingyaoInputSnapshot(diagnosticText: message)
   }
 
   private func view() throws -> [String: Any] {
@@ -1325,7 +1325,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     return CandidateGlossModel.integerValue(number, maximum: UInt64.max)
   }
 
-  private static func snapshot(_ value: [String: Any]) throws -> MetasequoiaInputSnapshot {
+  private static func snapshot(_ value: [String: Any]) throws -> LingyaoInputSnapshot {
     let view = value["view"] as? [String: Any] ?? [:]
     let rows = view["candidates"] as? [[String: Any]] ?? []
     guard rows.allSatisfy({ $0["text"] is String }) else {
@@ -1336,7 +1336,7 @@ final class MetasequoiaInputSessionBridge: @unchecked Sendable {
     let pageCount = try strictInt(view["page_count"], fallback: 0, range: 0...Int.max)
     let editingText = view["editing_text"] as? String ?? ""
     let caretPosition = try strictInt(view["caret_position"], fallback: 0, range: 0...editingText.utf8.count)
-    return MetasequoiaInputSnapshot(isHandled: value["handled"] as? Bool ?? false,
+    return LingyaoInputSnapshot(isHandled: value["handled"] as? Bool ?? false,
       commitText: value["commit"] as? String, preedit: view["preedit"] as? String ?? "",
       reading: view["reading"] as? String ?? "",
       phrasePrefix: view["phrase_prefix"] as? String ?? "",

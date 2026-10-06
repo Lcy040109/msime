@@ -162,7 +162,7 @@ public final class HomeActivity extends AppCompatActivity {
         openDeepLink(intent);
     }
 
-    /** 每次回到前台都按今天的月份重新解析一次应用主题：「水杉四季」跨季节时，开着的页面要换成新季节的颜色。 */
+    /** 每次回到前台都按今天的月份重新解析一次应用主题：「灵耀四季」跨季节时，开着的页面要换成新季节的颜色。 */
     @Override protected void onResume() {
         super.onResume();
         themeWorker.execute(() -> {

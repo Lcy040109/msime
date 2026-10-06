@@ -23,7 +23,7 @@ import org.json.JSONObject;
  * which is what someone opens this tab to do, needs nothing more than the anonymous token. So does
  * reporting an entry to the moderators, the one write this host offers.
  *
- * <p>另一个写操作是作者修改自己皮肤的分类：只有登录了水杉账号、且服务端说这款是你的（`owned`）时才会出现，用的是账号令牌。
+ * <p>另一个写操作是作者修改自己皮肤的分类：只有登录了灵耀账号、且服务端说这款是你的（`owned`）时才会出现，用的是账号令牌。
  *
  * <p>Every call blocks on the network and must not run on the main thread.
  */
@@ -226,7 +226,7 @@ public final class CommunityCatalog {
     }
 
     /**
-     * 读目录用的令牌：登录了水杉账号就用账号的，这样服务端才能把作者自己发布的皮肤标成 `owned`，作者才看得到修改分类的入口；没登录用键盘的匿名身份；两者都拿不到就不带令牌。
+     * 读目录用的令牌：登录了灵耀账号就用账号的，这样服务端才能把作者自己发布的皮肤标成 `owned`，作者才看得到修改分类的入口；没登录用键盘的匿名身份；两者都拿不到就不带令牌。
      */
     private ListingToken listingToken() {
         try {
@@ -248,7 +248,7 @@ public final class CommunityCatalog {
     /**
      * 作者修改自己一款皮肤的分类。Never throws: a failure is an update that says why.
      *
-     * <p>要求登录水杉账号：匿名身份发布不了皮肤，也就不可能是作者。服务端回显的分类和请求的不一致，说明修改没有生效，按失败处理。
+     * <p>要求登录灵耀账号：匿名身份发布不了皮肤，也就不可能是作者。服务端回显的分类和请求的不一致，说明修改没有生效，按失败处理。
      */
     public Update setCategory(Item item, CommunityRequest.Category category) {
         if (item == null || item.kind() != CommunityRequest.Kind.SKIN || category == null) {
@@ -256,7 +256,7 @@ public final class CommunityCatalog {
         }
         BackendAccount account = new BackendAccount(context);
         String token = account.accessToken();
-        if (token.isEmpty()) return new Update(null, "请先登录水杉账号，再修改分类。");
+        if (token.isEmpty()) return new Update(null, "请先登录灵耀账号，再修改分类。");
         for (int attempt = 0; ; attempt++) {
             HttpsURLConnection connection = null;
             try {
@@ -510,7 +510,7 @@ public final class CommunityCatalog {
     /**
      * 获取一款皮肤后在服务端记一次下载（`POST /v1/community/skins/{id}/download`），这就是卡片上的「使用次数」。
      *
-     * <p>尽力而为：皮肤已经在本机皮肤库里，记不上只是计数少一次，不影响使用，所以失败只记日志。身份与举报相同：有水杉账号用账号令牌，否则用键盘的匿名身份；令牌被拒时换新令牌重试一次。
+     * <p>尽力而为：皮肤已经在本机皮肤库里，记不上只是计数少一次，不影响使用，所以失败只记日志。身份与举报相同：有灵耀账号用账号令牌，否则用键盘的匿名身份；令牌被拒时换新令牌重试一次。
      *
      * @return 服务端是否记下了这次下载
      */

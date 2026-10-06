@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "DisplayAttributeInfo.h"
 #include "EnumDisplayAttributeInfo.h"
 

@@ -32,7 +32,7 @@ export enum CloudClipboardSendOutcome {
 
 export const CLOUD_CLIPBOARD_TAB: string = "云端";
 export const CLOUD_CLIPBOARD_SEND: string = "发到云剪贴板";
-export const CLOUD_CLIPBOARD_SIGNED_OUT: string = "登录水杉账号后可在设备间同步剪贴板";
+export const CLOUD_CLIPBOARD_SIGNED_OUT: string = "登录灵耀账号后可在设备间同步剪贴板";
 export const CLOUD_CLIPBOARD_DISABLED: string = "云剪贴板未开启";
 export const CLOUD_CLIPBOARD_LOADING: string = "正在读取云剪贴板…";
 export const CLOUD_CLIPBOARD_FAILED: string = "云剪贴板暂时无法读取，请稍后刷新";

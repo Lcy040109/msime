@@ -103,17 +103,17 @@ final class DiagnosticLogTests: XCTestCase {
 
   /// The App's switch writes `diagnostic_log.server` and leaves the Windows-only field as stored.
   func testSwitchKeepsTheWindowsField() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    _ = LingyaoInputSessionBridge(stateRoot: state)
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["diagnostic_log"] = ["server": false, "tsf": true]
     })
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       var diagnostic = $0["diagnostic_log"] as? [String: Any] ?? [:]
       diagnostic["server"] = true
       $0["diagnostic_log"] = diagnostic
     })
 
-    let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)
+    let preferences = LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)
     XCTAssertTrue(DiagnosticLog.isEnabled(in: preferences))
     XCTAssertEqual((preferences?["diagnostic_log"] as? [String: Any])?["tsf"] as? Bool, true)
   }

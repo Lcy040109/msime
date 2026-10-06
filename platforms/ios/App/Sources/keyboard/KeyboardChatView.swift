@@ -134,8 +134,8 @@ struct KeyboardTryoutView: View {
             if chat.messages.isEmpty {
               VStack(alignment: .leading, spacing: 12) {
                 Label("边聊天，边试键盘", systemImage: "keyboard").font(.title3.bold())
-                Text("长按地球键切换到水杉输入法。试试你的皮肤、输入方案和模糊音，再发一条消息给 AI。").foregroundStyle(.secondary)
-                Text("发送后，本次对话会经水杉后端交由 EveryAPI 处理。").font(.footnote).foregroundStyle(.secondary)
+                Text("长按地球键切换到灵耀输入法。试试你的皮肤、输入方案和模糊音，再发一条消息给 AI。").foregroundStyle(.secondary)
+                Text("发送后，本次对话会经灵耀后端交由 EveryAPI 处理。").font(.footnote).foregroundStyle(.secondary)
               }.padding(20).frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18))
             }
@@ -143,8 +143,8 @@ struct KeyboardTryoutView: View {
               HStack {
                 if message.role == "user" { Spacer(minLength: 36) }
                 Text(message.text).textSelection(.enabled).padding(13)
-                  .foregroundStyle(message.role == "user" ? MetasequoiaTheme.onAccent : Color.primary)
-                  .background(message.role == "user" ? MetasequoiaTheme.accent : Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+                  .foregroundStyle(message.role == "user" ? LingyaoTheme.onAccent : Color.primary)
+                  .background(message.role == "user" ? LingyaoTheme.accent : Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
                 if message.role != "user" { Spacer(minLength: 36) }
               }.id(message.id)
             }

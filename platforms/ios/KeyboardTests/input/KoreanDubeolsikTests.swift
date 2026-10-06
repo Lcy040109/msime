@@ -31,14 +31,14 @@ final class KoreanDubeolsikTests: XCTestCase {
                   "No key labelled \(label).")
   }
 
-  private func koreanBridge() -> MetasequoiaInputSessionBridge {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+  private func koreanBridge() -> LingyaoInputSessionBridge {
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToKorean()
     return bridge
   }
 
-  private func type(_ keys: String, into bridge: MetasequoiaInputSessionBridge) -> MetasequoiaInputSnapshot {
-    var snapshot = MetasequoiaInputSnapshot()
+  private func type(_ keys: String, into bridge: LingyaoInputSessionBridge) -> LingyaoInputSnapshot {
+    var snapshot = LingyaoInputSnapshot()
     for key in keys { snapshot = bridge.handleCharacter(String(key), shifted: key.isUppercase) }
     return snapshot
   }
@@ -295,7 +295,7 @@ final class KoreanDubeolsikTests: XCTestCase {
   }
 
   func testSchemeSelectionWritesKoreanAndKeepsTheChineseScheme() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setTouchKeyboardScheme(.wubi, enabledSchemes: [.quanpin, .wubi, .korean]))
     XCTAssertTrue(bridge.setTouchKeyboardScheme(.korean, enabledSchemes: [.quanpin, .wubi, .korean]))
     let preferences = try XCTUnwrap(bridge.sharedPreferences)

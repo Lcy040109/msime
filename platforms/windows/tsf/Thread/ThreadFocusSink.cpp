@@ -1,6 +1,6 @@
 #include "Ipc.h"
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "KeyPressStatisticsQueue.h"
 #include <debugapi.h>
@@ -44,7 +44,7 @@ bool IsWindowsTextInputHostWindow(HWND window)
 }
 } // namespace
 
-bool CMetasequoiaIME::_CaptureWindowsTextInputHostFocusLoss()
+bool CLingyaoIME::_CaptureWindowsTextInputHostFocusLoss()
 {
     _focusLostToWindowsTextInputHost =
         _focusLostToWindowsTextInputHost || IsWindowsTextInputHostWindow(GetForegroundWindow());
@@ -57,7 +57,7 @@ bool CMetasequoiaIME::_CaptureWindowsTextInputHostFocusLoss()
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnSetThreadFocus()
+STDAPI CLingyaoIME::OnSetThreadFocus()
 {
     if (!IsNamedpipeFocusStateOwner(this))
     {
@@ -100,7 +100,7 @@ STDAPI CMetasequoiaIME::OnSetThreadFocus()
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnKillThreadFocus()
+STDAPI CLingyaoIME::OnKillThreadFocus()
 {
     _backspaceHoldArmed = false;
     // The counts are per process and carry their own day, so any focus loss may hand them over, owner or not.
@@ -143,7 +143,7 @@ STDAPI CMetasequoiaIME::OnKillThreadFocus()
     return S_OK;
 }
 
-BOOL CMetasequoiaIME::_InitThreadFocusSink()
+BOOL CLingyaoIME::_InitThreadFocusSink()
 {
     ITfSource *pSource = nullptr;
 
@@ -163,7 +163,7 @@ BOOL CMetasequoiaIME::_InitThreadFocusSink()
     return TRUE;
 }
 
-void CMetasequoiaIME::_UninitThreadFocusSink()
+void CLingyaoIME::_UninitThreadFocusSink()
 {
     ITfSource *pSource = nullptr;
 

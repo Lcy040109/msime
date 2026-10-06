@@ -34,15 +34,15 @@ enum FuzzyPinyinPreference {
   ///
   /// PreferencesStore replaces the rules with every rule on the first disabled-to-enabled save of a document that is not yet seeded, judging by the stored document rather than the incoming one. A seeded selection therefore marks the document seeded in its own write before the selection is written, or the user's rules would be overwritten by all eleven.
   static func save(_ settings: Settings, stateRoot: URL? = nil) -> Bool {
-    let stored = self.settings(in: MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot))
+    let stored = self.settings(in: LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot))
     if settings.seeded, stored?.seeded != true {
-      guard MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { preferences in
+      guard LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { preferences in
         var fuzzy = preferences[documentKey] as? [String: Any] ?? ["enabled": false, "rules": [String]()]
         fuzzy["seeded"] = true
         preferences[documentKey] = fuzzy
       }) else { return false }
     }
-    return MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { preferences in
+    return LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { preferences in
       preferences[documentKey] = ["enabled": settings.enabled, "seeded": settings.seeded,
                                   "rules": ruleIDs.filter(settings.rules.contains)]
     }

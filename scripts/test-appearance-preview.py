@@ -225,7 +225,7 @@ with sync_playwright() as playwright:
                 toggle.click()
                 expect(card_preview).to_have_attribute("data-preview-theme", "dark")
             else:
-                expect(card_preview).to_have_attribute("data-preview-theme", "dark" if theme_id in ("shuishan", "night", "ink") else "light")
+                expect(card_preview).to_have_attribute("data-preview-theme", "dark" if theme_id in ("lingyao", "night", "ink") else "light")
                 expect(toggle).to_have_count(0)
         set_surface_theme(page, "设置界面主题", "dark")
         open_page(page, "候选窗口")

@@ -68,7 +68,7 @@ BarWidget {
     text: root.label
     fontSize: Style.font.caption
     horizontalMargin: 6
-    tooltipText: "水杉输入法" + (root.scheme ? " · " + (root.schemeNames[root.scheme] || root.scheme) : "")
+    tooltipText: "灵耀输入法" + (root.scheme ? " · " + (root.schemeNames[root.scheme] || root.scheme) : "")
     onPressed: function(pressed) {
       if (pressed === Qt.MiddleButton) root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings"))
       else root.run(Util.shellQuote("@CMAKE_INSTALL_FULL_DATADIR@/msime-client/omarchy/menu"))

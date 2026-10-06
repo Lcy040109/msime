@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "DisplayAttributeInfo.h"
 #include "EnumDisplayAttributeInfo.h"
 
@@ -10,7 +10,7 @@
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::EnumDisplayAttributeInfo(__RPC__deref_out_opt IEnumTfDisplayAttributeInfo **ppEnum)
+STDAPI CLingyaoIME::EnumDisplayAttributeInfo(__RPC__deref_out_opt IEnumTfDisplayAttributeInfo **ppEnum)
 {
     CEnumDisplayAttributeInfo *pAttributeEnum = nullptr;
 
@@ -38,7 +38,7 @@ STDAPI CMetasequoiaIME::EnumDisplayAttributeInfo(__RPC__deref_out_opt IEnumTfDis
 //
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::GetDisplayAttributeInfo(__RPC__in REFGUID guidInfo,
+STDAPI CLingyaoIME::GetDisplayAttributeInfo(__RPC__in REFGUID guidInfo,
                                                 __RPC__deref_out_opt ITfDisplayAttributeInfo **ppInfo)
 {
     if (ppInfo == nullptr)
@@ -49,7 +49,7 @@ STDAPI CMetasequoiaIME::GetDisplayAttributeInfo(__RPC__in REFGUID guidInfo,
     *ppInfo = nullptr;
 
     // Which display attribute GUID?
-    if (IsEqualGUID(guidInfo, Global::MetasequoiaIMEGuidDisplayAttributeInput))
+    if (IsEqualGUID(guidInfo, Global::LingyaoIMEGuidDisplayAttributeInput))
     {
         *ppInfo = new (std::nothrow) CDisplayAttributeInfoInput();
         if ((*ppInfo) == nullptr)
@@ -57,7 +57,7 @@ STDAPI CMetasequoiaIME::GetDisplayAttributeInfo(__RPC__in REFGUID guidInfo,
             return E_OUTOFMEMORY;
         }
     }
-    else if (IsEqualGUID(guidInfo, Global::MetasequoiaIMEGuidDisplayAttributeConverted))
+    else if (IsEqualGUID(guidInfo, Global::LingyaoIMEGuidDisplayAttributeConverted))
     {
         *ppInfo = new (std::nothrow) CDisplayAttributeInfoConverted();
         if ((*ppInfo) == nullptr)

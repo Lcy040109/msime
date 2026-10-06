@@ -10,7 +10,7 @@
 
 namespace {
 // 本次构建的版本的 CLSID：DLL 只为自己版本的 CLSID 给出类工厂。
-constexpr CLSID kMetasequoiaImeClsid = MSIME_EDITION_CLSID;
+constexpr CLSID kLingyaoImeClsid = MSIME_EDITION_CLSID;
 constexpr CLSID kUnknownClsid = {
     0x4c8a4f2b, 0x2c98, 0x4f85, {0x9e, 0x40, 0x62, 0x35, 0x8c, 0x1b, 0x91, 0x77}};
 
@@ -35,7 +35,7 @@ std::wstring module_directory() {
 
 HMODULE load_tip() {
   const auto directory = module_directory();
-  for (const wchar_t *name : {L"libMetasequoiaImeTsf.dll", L"MetasequoiaImeTsf.dll"}) {
+  for (const wchar_t *name : {L"libLingyaoImeTsf.dll", L"LingyaoImeTsf.dll"}) {
     const auto path = directory + name;
     if (auto module = LoadLibraryW(path.c_str()))
       return module;
@@ -73,13 +73,13 @@ int main() {
             "Unknown CLSID must be rejected without returning an interface");
 
     void *unsupported_result = nullptr;
-    require(get_class_object(kMetasequoiaImeClsid, IID_ITfTextInputProcessor, &unsupported_result) ==
+    require(get_class_object(kLingyaoImeClsid, IID_ITfTextInputProcessor, &unsupported_result) ==
                 E_NOINTERFACE &&
                 unsupported_result == nullptr,
             "Known CLSID must reject an unsupported class-factory interface");
 
     IClassFactory *factory = nullptr;
-    require(SUCCEEDED(get_class_object(kMetasequoiaImeClsid, IID_IClassFactory,
+    require(SUCCEEDED(get_class_object(kLingyaoImeClsid, IID_IClassFactory,
                                        reinterpret_cast<void **>(&factory))) &&
                 factory != nullptr,
             "TSF class factory could not be created");

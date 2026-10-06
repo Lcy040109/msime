@@ -35,12 +35,12 @@ final class KeyboardAppearancePreferenceTests: XCTestCase {
 
   /// What the skin page writes is what the shared document accepts and reads back.
   func testSkinPageWritesRoundTrip() {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     let keys = [KeyboardAppearancePreference.keyboardKey] + KeyboardAppearancePreference.panels.map(\.key)
     for (key, value) in zip(keys, ["dark", "light", "follow", "dark"]) {
-      XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0[key] = value }, key)
+      XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0[key] = value }, key)
     }
-    let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)
+    let preferences = LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)
     XCTAssertEqual(KeyboardAppearancePreference.style(KeyboardAppearancePreference.keyboardKey, in: preferences), .dark)
     XCTAssertEqual(KeyboardAppearancePreference.style(KeyboardAppearancePreference.handwritingKey, in: preferences), .light)
     XCTAssertEqual(KeyboardAppearancePreference.style(KeyboardAppearancePreference.voiceKey, in: preferences), .dark)

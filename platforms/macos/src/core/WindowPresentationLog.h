@@ -5,7 +5,7 @@
 
 // Window presentation tracing for the windows the input method opens on the user's behalf: which button or menu asked, whether the settings app was found and launched or the in-process fallback taken, how long a window took to build, and where it stood among the other applications' windows afterwards.
 //
-// The unified log rather than diagnostic.log: that file is only configured once preferences have loaded and is off by default, while a window that opens behind the editor has to be diagnosable on the machine it happened on, after the fact, with `log show --predicate 'subsystem == "app.msime.inputmethod.MetasequoiaIME" && category == "ui"'`. Like diagnostic.log it carries only state: window numbers, classes and titles, policies, flags, timings and error codes - never input text, candidates or paths.
+// The unified log rather than diagnostic.log: that file is only configured once preferences have loaded and is off by default, while a window that opens behind the editor has to be diagnosable on the machine it happened on, after the fact, with `log show --predicate 'subsystem == "app.msime.inputmethod.LingyaoIME" && category == "ui"'`. Like diagnostic.log it carries only state: window numbers, classes and titles, policies, flags, timings and error codes - never input text, candidates or paths.
 
 static inline os_log_t MSIMEUILog(void) {
     static os_log_t log;

@@ -80,7 +80,7 @@ export function CandidateTranslationOptionsSection({
       )}
       {showAccountTranslation && (
         <SwitchRow
-          title="使用水杉账号翻译候选词"
+          title="使用灵耀账号翻译候选词"
           description="当前页的中文候选词会发送到 api.msime.app；匿名账号在 Linux 安装后的用户初始化中自动注册；不开启则不联网翻译"
           disabled={!enabled}
           checked={accountTranslation}

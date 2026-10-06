@@ -47,7 +47,7 @@ import java.util.function.Consumer;
 public final class AboutPage extends DetailPage {
     private static final String SITE = "https://msime.app/";
     private static final String PRIVACY = "https://msime.app/privacy/";
-    private static final String REPOSITORY = "https://github.com/metasequoiaime/msime";
+    private static final String REPOSITORY = "https://github.com/Lcy040109/msime";
     private static final int MAX_NOTICE_CHARS = 200_000;
     /** 按需开线程：几十兆的更新下载不能让云剪贴板、反馈这些短请求排在它后面。 */
     private static final ExecutorService NETWORK = Executors.newCachedThreadPool(runnable -> {
@@ -133,7 +133,7 @@ public final class AboutPage extends DetailPage {
         }
 
         TextView footer = new TextView(context);
-        footer.setText("© 2026 Metasequoia · 输入内容默认只在本机处理");
+        footer.setText("© 2026 Lingyao · 输入内容默认只在本机处理");
         footer.setGravity(Gravity.CENTER);
         Ui.style(footer, 13, 400, Ui.subText(context));
         LinearLayout.LayoutParams footerParams = new LinearLayout.LayoutParams(

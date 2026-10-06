@@ -14,7 +14,7 @@
 //
 //----------------------------------------------------------------------------
 
-CGetTextExtentEditSession::CGetTextExtentEditSession(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext,
+CGetTextExtentEditSession::CGetTextExtentEditSession(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext,
                                                      _In_ ITfContextView *pContextView,
                                                      _In_ ITfRange *pRangeComposition,
                                                      _In_ CTfTextLayoutSink *pTfTextLayoutSink)

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by MetasequoiaIME.rc
+// Used by LingyaoIME.rc
 //
 #define SUBLANG_ENGLISH_US 0x01
 #define LANG_ENGLISH 0x09

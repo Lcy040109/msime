@@ -30,9 +30,9 @@ size_t find(const std::vector<TrayMenuItem> &items, TrayMenuCommand command) {
 }
 int main() {
   TrayMenuCapabilities all{true, true, true, true, true, true, true, true, true};
-  // full 的卡片：全部方案、产品名「水杉输入法」。写明而不是取本次构建的版本，这个测试在哪个版本的构建里都查同一张卡片。
+  // full 的卡片：全部方案、产品名「灵耀输入法」。写明而不是取本次构建的版本，这个测试在哪个版本的构建里都查同一张卡片。
   all.schemes = scheme::all_schemes();
-  all.product_name = "水杉输入法";
+  all.product_name = "灵耀输入法";
   TrayMenuState state;
   state.chinese = true;
   state.fullwidth = false;
@@ -40,7 +40,7 @@ int main() {
   state.translations = true;
   state.scheme = "quanpin";
   state.shuangpin_profile = "xiaohe";
-  state.theme_title = "水杉";
+  state.theme_title = "灵耀";
   state.language_hint = tray_menu_language_hint(true, false, true);
   const auto items = tray_menu_items(all, state);
 
@@ -87,7 +87,7 @@ int main() {
       if (items[index].kind == K::Item || items[index].kind == K::Tool)
         require(items[index].command == expected[index].second);
     }
-    require(items[0].label == "水杉输入法");
+    require(items[0].label == "灵耀输入法");
     require(items[2].label == "中文" && items[3].label == "英文");
     require(items[5].label == "全角字符" && items[6].label == "中文标点" &&
             items[7].label == "显示译文");
@@ -98,7 +98,7 @@ int main() {
             items[16].label == "注音" && items[17].label == "越南文" &&
             items[18].label == "藏文" && items[19].label == "笔画");
     require(items[27].label == "主题" && items[28].label == "词库…" &&
-            items[29].label == "设置…" && items[30].label == "关于水杉输入法");
+            items[29].label == "设置…" && items[30].label == "关于灵耀输入法");
   }
 
   // 只提供五笔的版本：方案组只剩五笔一行，标题和「关于」用这个版本的名字。
@@ -107,12 +107,12 @@ int main() {
     wubi.schemes = scheme::OfferedSchemes{};
     wubi.schemes.offered[scheme::Wubi] = true;
     wubi.schemes.fallback = scheme::Wubi;
-    wubi.product_name = "水杉五笔";
+    wubi.product_name = "灵耀五笔";
     auto wubi_state = state;
     wubi_state.scheme = "wubi";
     const auto rows = tray_menu_items(wubi, wubi_state);
     require(rows.size() == items.size() - 9);
-    require(rows[0].label == "水杉五笔" && rows.back().label == "关于水杉五笔");
+    require(rows[0].label == "灵耀五笔" && rows.back().label == "关于灵耀五笔");
     require(rows[find(rows, TrayMenuCommand::SelectWubi)].checked);
     for (auto command : {TrayMenuCommand::SelectQuanpin, TrayMenuCommand::SelectShuangpin,
                          TrayMenuCommand::SelectJapanese, TrayMenuCommand::SelectTibetan,
@@ -133,7 +133,7 @@ int main() {
           "Ctrl + Shift + Space");
   require(items[find(items, TrayMenuCommand::ToggleChinesePunctuation)].hint ==
           "Ctrl + .");
-  require(items[find(items, TrayMenuCommand::OpenTheme)].hint == "水杉");
+  require(items[find(items, TrayMenuCommand::OpenTheme)].hint == "灵耀");
   require(items[find(items, TrayMenuCommand::OpenSettings)].hint.empty());
   require(tray_menu_language_hint(true, true, true) == "Shift");
   require(tray_menu_language_hint(false, true, true) == "Ctrl");

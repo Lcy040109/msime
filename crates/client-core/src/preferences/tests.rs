@@ -3514,7 +3514,7 @@ fn saving_unchanged_preferences_keeps_the_revision_and_the_file() {
 fn mint_morning_is_the_community_design_and_a_valid_custom_theme() {
     let design = TouchKeyboardSkinDesign::mint_morning();
     assert!(design.validate());
-    // The 水杉精选 design of the same name as the skin community serves it (camelCase, as the Apple editor writes it).
+    // The 灵耀精选 design of the same name as the skin community serves it (camelCase, as the Apple editor writes it).
     let expected = serde_json::json!({
         "accent": 0x245A43, "shadow": 0.08, "pattern": 0, "background": 0xD8F0E4,
         "monospaced": false, "borderWidth": 0.5, "gradientEnd": 0xEEF6DD, "cornerRadius": 14.0,

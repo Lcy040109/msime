@@ -83,13 +83,13 @@ struct PunctuationSettingsView: View {
   private func stored<Value>(_ key: String, _ state: Binding<Value>) -> Binding<Value> {
     Binding(get: { state.wrappedValue }, set: { value in
       state.wrappedValue = value
-      saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences { $0[key] = value }
+      saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences { $0[key] = value }
       if saveFailed { reload() }
     })
   }
 
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     smart = preferences["smart_punctuation"] as? Bool ?? smart
     repeatToChinese = preferences["smart_punctuation_repeat"] as? Bool ?? repeatToChinese
     spaceConvert = preferences["smart_punctuation_space_convert"] as? Bool ?? spaceConvert

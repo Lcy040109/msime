@@ -8,7 +8,7 @@ export type CloudClipboardRequest = (
 
 /** The longest text the cloud clipboard stores, counted in UTF-16 code units the way the server counts it. */
 export const CLOUD_CLIPBOARD_MAX_UTF16 = 4000;
-export const CLOUD_CLIPBOARD_SIGNED_OUT = "登录水杉账号后可在设备间同步剪贴板";
+export const CLOUD_CLIPBOARD_SIGNED_OUT = "登录灵耀账号后可在设备间同步剪贴板";
 export const CLOUD_CLIPBOARD_DISABLED = "云剪贴板未开启";
 export const CLOUD_CLIPBOARD_UNAVAILABLE = "云剪贴板服务暂不可用，请稍后重试";
 

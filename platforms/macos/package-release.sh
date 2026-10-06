@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the installable macOS release: the Tauri settings app with the pinned core dictionaries (EngineResources), the licence files and the InputMethodKit bundle 水杉输入法.app embedded as resources, packed into a DMG with a SHA256SUMS beside it.
+# Build the installable macOS release: the Tauri settings app with the pinned core dictionaries (EngineResources), the licence files and the InputMethodKit bundle 灵耀输入法.app embedded as resources, packed into a DMG with a SHA256SUMS beside it.
 #
 # 包里只带装好就能打中文的核心词库（msime-pinyin.db、msime-wubi.db、bigram/trigram、msime-english.db、SCOWL 许可声明 msime-scowl_Copyright.txt、msime-others.db、sentence-model、helpcodes/、msime-dictionary-manifest.json）。其余三个资源包由 App 在首次用到时下载到 <state_root>/resource-packs/<id>/（state_root 默认 ~/Library/Application Support/app.msime.macos），查找时下载的优先、包内或旧版本记录的副本次之，两者都没有时对应功能显示为不可用：
 #   japanese              msime-japanese.dat 与两份 Mozc 许可文本（mozc_dictionary_oss_README、mozc_LICENSE），用户选日文方案时下载
@@ -248,7 +248,7 @@ import json, sys
 config, edition, bundle_name = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3]
 stage = f"../../../target/macos/edition-{edition}"
 config["bundle"] = {"resources": {
-    "../../../target/macos/水杉输入法.app": None,
+    "../../../target/macos/灵耀输入法.app": None,
     f"../../../target/macos/{bundle_name}": bundle_name,
     "macos/en.lproj/InfoPlist.strings": None,
     "macos/zh-Hans.lproj/InfoPlist.strings": None,
@@ -382,7 +382,7 @@ stage="$work/dmg-$edition"
 mkdir -p "$stage"
 ditto "$app" "$stage/$app_name"
 ln -s /Applications "$stage/Applications"
-# Dragging the app is only half the install: the input method appears once the app has been opened and its install window's 立即安装 pressed, and on macOS 27 the user then adds it in System Settings, which the app walks them through. Finder shows the app by its localised name (水杉输入法 for full, apps/desktop/src-tauri/macos/*.lproj/InfoPlist.strings; each edition's own name otherwise), so the instructions call it that rather than by its file name.
+# Dragging the app is only half the install: the input method appears once the app has been opened and its install window's 立即安装 pressed, and on macOS 27 the user then adds it in System Settings, which the app walks them through. Finder shows the app by its localised name (灵耀输入法 for full, apps/desktop/src-tauri/macos/*.lproj/InfoPlist.strings; each edition's own name otherwise), so the instructions call it that rather than by its file name.
 printf '%s\n' \
   "$display_name macOS 安装说明" \
   '' \

@@ -1492,7 +1492,7 @@ IBusProperty *desktop_tools_property(IBusEngine *engine) {
   return ibus_property_new(
       "DesktopTools", PROP_TYPE_MENU,
       ibus_text_new_from_static_string("桌面工具"), "",
-      ibus_text_new_from_static_string("打开水杉桌面面板"),
+      ibus_text_new_from_static_string("打开灵耀桌面面板"),
       s.focused && !s.blocked, TRUE, PROP_STATE_UNCHECKED, items);
 }
 

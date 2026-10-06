@@ -7,7 +7,7 @@ final class CloudSnapshotStagingTests: XCTestCase {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     let context = try session.dictionarySnapshotContext()
     let user = try XCTUnwrap(context["user"] as? URL)

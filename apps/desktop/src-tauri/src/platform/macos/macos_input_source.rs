@@ -12,7 +12,7 @@ use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-// 输入法 bundle 带的标识、文件名和可执行文件名，随本设置应用所属的版本而变（版本表 `platforms.macos`，见 `crate::platform::macos::macos_identity`）。full 的 bundle id 是 MetasequoiaIME 的那个而不是本客户端新起的：客户端原地接替那个输入源，而不是与它并列。`validate_bundle` 在打包的 Info.plist 里找这个 bundle id，所以它与 platforms/macos/Info.plist.in（及 scripts/edition_bundle.py 生成的其他版本的 plist）不一致时，拒绝的是正确的 bundle，而不是接受一个错误的。版本表保证任何一个版本的 bundle id 都不出现在另一个版本的 Info.plist 里。
+// 输入法 bundle 带的标识、文件名和可执行文件名，随本设置应用所属的版本而变（版本表 `platforms.macos`，见 `crate::platform::macos::macos_identity`）。full 的 bundle id 是 LingyaoIME 的那个而不是本客户端新起的：客户端原地接替那个输入源，而不是与它并列。`validate_bundle` 在打包的 Info.plist 里找这个 bundle id，所以它与 platforms/macos/Info.plist.in（及 scripts/edition_bundle.py 生成的其他版本的 plist）不一致时，拒绝的是正确的 bundle，而不是接受一个错误的。版本表保证任何一个版本的 bundle id 都不出现在另一个版本的 Info.plist 里。
 pub(crate) fn input_source_bundle_id() -> &'static str {
     &crate::platform::macos::macos_identity().input_method_bundle_id
 }
@@ -758,7 +758,7 @@ pub(crate) fn is_packaged_resource_directory(resource_directory: &Path) -> bool 
 }
 
 /// Whether an enabled input source list, as JSON, has any entry for this input method.
-/// Whether the list still has this input method itself, the `Keyboard Input Method` entry, rather than any entry of it. System Settings shows the input method's modes only while that entry is there, and removing the last visible mode there can drop it and leave a mode entry behind, which no page shows and so nobody can remove (measured on macOS 27: an orphaned `.Cantonese` entry with no parent entry, while Input Sources listed nothing of 水杉输入法).
+/// Whether the list still has this input method itself, the `Keyboard Input Method` entry, rather than any entry of it. System Settings shows the input method's modes only while that entry is there, and removing the last visible mode there can drop it and leave a mode entry behind, which no page shows and so nobody can remove (measured on macOS 27: an orphaned `.Cantonese` entry with no parent entry, while Input Sources listed nothing of 灵耀输入法).
 fn input_method_in_input_source_list(json: &[u8]) -> Option<bool> {
     let list: serde_json::Value = serde_json::from_slice(json).ok()?;
     Some(list.as_array()?.iter().any(|entry| {
@@ -816,7 +816,7 @@ fn enabled_in_preference_list(domain: &str, key: &str) -> Option<bool> {
     enabled_in_input_source_list(&preference_list_json(domain, key)?)
 }
 
-/// 输入法列表里本输入法各个模式的标识符，例如 `app.msime.inputmethod.MetasequoiaIME.Cantonese`。
+/// 输入法列表里本输入法各个模式的标识符，例如 `app.msime.inputmethod.LingyaoIME.Cantonese`。
 fn enabled_modes_in_input_source_list(json: &[u8]) -> Option<Vec<String>> {
     let list: serde_json::Value = serde_json::from_slice(json).ok()?;
     Some(
@@ -997,9 +997,9 @@ mod tests {
     fn process_pattern_escapes_regex_characters() {
         assert_eq!(
             literal_process_pattern(Path::new(
-                "/Users/a (b)/Input Methods/水杉输入法.app/Contents/MacOS/水杉输入法"
+                "/Users/a (b)/Input Methods/灵耀输入法.app/Contents/MacOS/灵耀输入法"
             )),
-            "/Users/a \\(b\\)/Input Methods/水杉输入法\\.app/Contents/MacOS/水杉输入法"
+            "/Users/a \\(b\\)/Input Methods/灵耀输入法\\.app/Contents/MacOS/灵耀输入法"
         );
     }
 
@@ -1127,7 +1127,7 @@ mod tests {
         let target = destination.join(input_source_bundle_name());
         plist_bundle(
             &destination,
-            "MetasequoiaIME.app",
+            "LingyaoIME.app",
             "org.example.inputmethod.Upstream",
         );
 
@@ -1154,7 +1154,7 @@ mod tests {
 
     #[test]
     fn enabled_list_matches_this_bundle_only() {
-        let enabled = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","Input Mode":"app.msime.inputmethod.MetasequoiaIME.Hans","InputSourceKind":"Input Mode"}]"#;
+        let enabled = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(enabled_in_input_source_list(enabled), Some(true));
         let absent = br#"[{"Bundle ID":"com.apple.inputmethod.Kotoeri.RomajiTyping"}]"#;
         assert_eq!(enabled_in_input_source_list(absent), Some(false));
@@ -1163,10 +1163,10 @@ mod tests {
 
     #[test]
     fn listed_means_the_input_method_entry_not_an_orphaned_mode() {
-        let listed = br#"[{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","Input Mode":"app.msime.inputmethod.MetasequoiaIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
+        let listed = br#"[{"Bundle ID":"app.msime.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(input_method_in_input_source_list(listed), Some(true));
         // What System Settings left after the user removed every visible entry: a mode whose input method entry is gone.
-        let orphan = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","Input Mode":"app.msime.inputmethod.MetasequoiaIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
+        let orphan = br#"[{"InputSourceKind":"Keyboard Layout","KeyboardLayout Name":"ABC"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(input_method_in_input_source_list(orphan), Some(false));
         let other =
             br#"[{"Bundle ID":"com.example.other","InputSourceKind":"Keyboard Input Method"}]"#;
@@ -1176,12 +1176,12 @@ mod tests {
 
     #[test]
     fn enabled_modes_lists_this_bundles_input_modes_only() {
-        let list = br#"[{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","Input Mode":"app.msime.inputmethod.MetasequoiaIME.Cantonese","InputSourceKind":"Input Mode"},{"Bundle ID":"com.example.other","Input Mode":"com.example.other.hans","InputSourceKind":"Input Mode"},{"Bundle ID":"app.msime.inputmethod.MetasequoiaIME","Input Mode":"app.msime.inputmethod.MetasequoiaIME.Hans","InputSourceKind":"Input Mode"}]"#;
+        let list = br#"[{"Bundle ID":"app.msime.inputmethod.LingyaoIME","InputSourceKind":"Keyboard Input Method"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Cantonese","InputSourceKind":"Input Mode"},{"Bundle ID":"com.example.other","Input Mode":"com.example.other.hans","InputSourceKind":"Input Mode"},{"Bundle ID":"app.msime.inputmethod.LingyaoIME","Input Mode":"app.msime.inputmethod.LingyaoIME.Hans","InputSourceKind":"Input Mode"}]"#;
         assert_eq!(
             enabled_modes_in_input_source_list(list),
             Some(vec![
-                "app.msime.inputmethod.MetasequoiaIME.Cantonese".to_owned(),
-                "app.msime.inputmethod.MetasequoiaIME.Hans".to_owned(),
+                "app.msime.inputmethod.LingyaoIME.Cantonese".to_owned(),
+                "app.msime.inputmethod.LingyaoIME.Hans".to_owned(),
             ])
         );
         assert_eq!(enabled_modes_in_input_source_list(b"[]"), Some(Vec::new()));
@@ -1199,12 +1199,12 @@ mod tests {
 
     #[test]
     fn launch_services_parser_keeps_only_paths_for_the_requested_identifier() {
-        let dump = "path: /old/水杉输入法.app (0x10)\nidentifier:                 app.msime.inputmethod.MetasequoiaIME\npath: /other.app (0x11)\nidentifier:                 com.example.other\npath: /new/水杉输入法.app (0x12)\nidentifier:                 app.msime.inputmethod.MetasequoiaIME\n";
+        let dump = "path: /old/灵耀输入法.app (0x10)\nidentifier:                 app.msime.inputmethod.LingyaoIME\npath: /other.app (0x11)\nidentifier:                 com.example.other\npath: /new/灵耀输入法.app (0x12)\nidentifier:                 app.msime.inputmethod.LingyaoIME\n";
         assert_eq!(
             launch_services_paths_for_identifier(dump, input_source_bundle_id()),
             vec![
-                PathBuf::from("/old/水杉输入法.app"),
-                PathBuf::from("/new/水杉输入法.app")
+                PathBuf::from("/old/灵耀输入法.app"),
+                PathBuf::from("/new/灵耀输入法.app")
             ]
         );
     }

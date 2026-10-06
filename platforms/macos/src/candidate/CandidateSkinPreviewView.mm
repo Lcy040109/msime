@@ -68,7 +68,7 @@ struct ToolbarPreviewInputs
 
 ToolbarPreviewInputs ToolbarInputs(MSIMEAppearancePreferences *preferences)
 {
-    // What MetasequoiaFloatingToolbarPanel -applySizingPreferences: makes of an empty dictionary, which is the state a preview with no preferences behind it is in: 100%, 24pt, and every component but the screen keyboard.
+    // What LingyaoFloatingToolbarPanel -applySizingPreferences: makes of an empty dictionary, which is the state a preview with no preferences behind it is in: 100%, 24pt, and every component but the screen keyboard.
     static const BOOL defaults[10] = {YES, YES, YES, YES, YES, YES, YES, NO, YES, YES};
     ToolbarPreviewInputs inputs = {0, 100.0, 24.0};
     NSArray<NSNumber *> *enabled = preferences == nil
@@ -848,7 +848,7 @@ NSDictionary<NSAttributedStringKey, id> *PreviewCaptionAttributes()
     [self reloadPreview];
 }
 
-/// Dark where the toolbar itself would be dark: a theme with a fixed mode decides, then 悬浮工具栏主题, 颜色模式 decides where that is 跟随颜色模式, and where neither names an appearance the panel follows the system — as this view does, being in a window that follows the system too. It is MetasequoiaFloatingToolbarPanel -applyThemePreferences: read back.
+/// Dark where the toolbar itself would be dark: a theme with a fixed mode decides, then 悬浮工具栏主题, 颜色模式 decides where that is 跟随颜色模式, and where neither names an appearance the panel follows the system — as this view does, being in a window that follows the system too. It is LingyaoFloatingToolbarPanel -applyThemePreferences: read back.
 - (BOOL)previewUsesDark
 {
     // A theme with a mode of its own draws the toolbar in that mode, as InputController tells the panel.

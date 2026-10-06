@@ -17,7 +17,7 @@ constexpr int IID_ITfInputProcessorProfileMgr = 3, TEXTSERVICE_LANGID = 4;
 constexpr int TEXTSERVICE_ICON_INDEX = 5;
 constexpr WCHAR TEXTSERVICE_DESC[] = L"Test IME";
 namespace Global {
-constexpr int dllInstanceHandle = 1, MetasequoiaIMECLSID = 2, MetasequoiaIMEGuidProfile = 3;
+constexpr int dllInstanceHandle = 1, LingyaoIMECLSID = 2, LingyaoIMEGuidProfile = 3;
 }
 constexpr bool FAILED(HRESULT result) { return result < 0; }
 

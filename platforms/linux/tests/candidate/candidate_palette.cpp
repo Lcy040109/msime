@@ -80,15 +80,15 @@ int main() {
   assert(fixed.colors.selected == host::composite_color(0x005FB8u, 0x24, 0xFFFFFFu));
   assert(fixed.colors.selected_text == 0x005FB8u && fixed.colors.selected_number == 0x6A6F76u);
   assert(fixed.colors.border == host::composite_color(0x000000u, 0x1F, 0xFFFFFFu) && fixed.colors.border_width == 1);
-  // 水杉 is dark on a light desktop.
-  const Json shuishan = Json::parse(
-      R"({"id":"shuishan","source":"builtin","appearance":"dark","candidate":{"surface":"#2A2B27","border":"#0000001F",)"
+  // 灵耀 is dark on a light desktop.
+  const Json lingyao = Json::parse(
+      R"({"id":"lingyao","source":"builtin","appearance":"dark","candidate":{"surface":"#2A2B27","border":"#0000001F",)"
       R"("text":"#FFFFFF","number":"#9FB5A3","secondary":"#9FB5A3","accent":"#7FE08E","selected":"#7FE08E24",)"
       R"("selected_text":"#7FE08E","selected_number":"#9FB5A3","hover":"#FFFFFF0F","show_selected_bar":null},)"
       R"("keyboard":null,"candidate_skin":null})");
-  const auto shuishan_colors = host::candidate_theme_colors(shuishan, false);
-  assert(shuishan_colors.dark && shuishan_colors.colors.background == 0x2A2B27u);
-  assert(shuishan_colors.colors.selected_text == 0x7FE08Eu);
+  const auto lingyao_colors = host::candidate_theme_colors(lingyao, false);
+  assert(lingyao_colors.dark && lingyao_colors.colors.background == 0x2A2B27u);
+  assert(lingyao_colors.colors.selected_text == 0x7FE08Eu);
 
   // A custom theme over `system` sets only some slots; the rest are native. An accent without a selected fill is drawn as the design's solid selection, with readable text.
   const Json custom = Json::parse(

@@ -17,11 +17,11 @@ final class LocalModeSettingsTests: XCTestCase {
   }
 
   func testReloadTurnsAModeOffInTheLiveSession() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(opens(bridge, "T"), "date and time ship on")
     XCTAssertTrue(opens(bridge, "U"), "Unicode ships on")
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       var modes = $0["local_modes"] as? [String: Any] ?? [:]
       modes["date_time"] = false
       $0["local_modes"] = modes
@@ -34,12 +34,12 @@ final class LocalModeSettingsTests: XCTestCase {
 
     XCTAssertFalse(opens(bridge, "T"))
     XCTAssertTrue(opens(bridge, "U"), "turning one mode off leaves the others")
-    let stored = MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)?["local_modes"] as? [String: Any]
+    let stored = LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["local_modes"] as? [String: Any]
     XCTAssertEqual(stored?["unicode"] as? Bool, true, "the merge kept the object's other fields")
   }
 
   /// Whether the mode opened by `trigger` is running afterwards; the attempt is then abandoned.
-  private func opens(_ bridge: MetasequoiaInputSessionBridge, _ trigger: String) -> Bool {
+  private func opens(_ bridge: LingyaoInputSessionBridge, _ trigger: String) -> Bool {
     _ = bridge.cancel()
     let opened = bridge.openLocalMode(trigger).isInLocalMode
     _ = bridge.cancel()

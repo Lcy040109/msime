@@ -92,7 +92,7 @@ struct TypingStatisticsView: View {
   /// 扇区颜色:品牌绿的一条明度梯度,不是八个互不相干的色相。
   ///
   /// 原先是 `.teal .blue .indigo .orange .pink .purple .brown .gray`。图表确实需要相邻扇区能分开,但八种色相除了"彼此不同"之外什么都没说,而且这一页因此和应用其余部分不是一套配色。梯度按同一顺序排进图例,所以哪一档对应哪一项仍然读得出来。
-  private let colors: [Color] = MetasequoiaTheme.chartRamp(11)
+  private let colors: [Color] = LingyaoTheme.chartRamp(11)
   @State private var availability = TypingStatisticsStore.Availability.neverWritten
   // The old copy asked for Full Access unconditionally, so it said the same thing whether the
   // setting was the problem or not and carried no information. Each case here is a different
@@ -100,13 +100,13 @@ struct TypingStatisticsView: View {
   private var storageAdvice: String? {
     switch availability {
     case .containerUnavailable:
-      return "无法访问共享存储，键盘与本 app 之间没有可用的数据通道。重装水杉输入法可以重建它。"
+      return "无法访问共享存储，键盘与本 app 之间没有可用的数据通道。重装灵耀输入法可以重建它。"
     case .neverWritten:
-      return "键盘从未写入过统计。请在系统设置 → 通用 → 键盘 → 键盘 → 水杉输入法中开启“允许完全访问”，"
-        + "然后用水杉键盘输入几个字再回来刷新。未开启时仍可正常打字，只是不记录统计。"
+      return "键盘从未写入过统计。请在系统设置 → 通用 → 键盘 → 键盘 → 灵耀输入法中开启“允许完全访问”，"
+        + "然后用灵耀键盘输入几个字再回来刷新。未开启时仍可正常打字，只是不记录统计。"
     case .ready(let lastWritten):
       guard statistics.total == 0 else { return nil }
-      guard let lastWritten else { return "统计文件存在但还没有计数，请用水杉键盘输入几个字再刷新。" }
+      guard let lastWritten else { return "统计文件存在但还没有计数，请用灵耀键盘输入几个字再刷新。" }
       return "统计文件最后写入于 \(lastWritten.formatted(.dateTime.month().day().hour().minute()))，但计数为零。"
         + "若此前清空过统计，这是正常的；否则请附上这条信息反馈。"
     }
@@ -203,7 +203,7 @@ struct TypingStatisticsView: View {
       // 开关、刷新和清空挪到了右上角的菜单:这一页是给人看数的,三个管理项挂在每一屏下面,每换一个标签都要再滚过它们一次。说明留在原处 —— 它解释的是屏幕上这些数字怎么来的。
       Section {
       } footer: {
-        Text("字数只统计水杉键盘提交的字符，含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图另计每个键的按下次数，拼音拼写、删除和功能键都算，密码框里的按键不计；按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。所有统计仅在本机保存计数，不保存输入内容。每日明细默认永久保留，可在右上角菜单里缩短为 30 至 365 天，超期的每日记录随即删除，并同时从累计总数和分类中扣除；要全部删除请用“清空统计”。")
+        Text("字数只统计灵耀键盘提交的字符，含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图另计每个键的按下次数，拼音拼写、删除和功能键都算，密码框里的按键不计；按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。所有统计仅在本机保存计数，不保存输入内容。每日明细默认永久保留，可在右上角菜单里缩短为 30 至 365 天，超期的每日记录随即删除，并同时从累计总数和分类中扣除；要全部删除请用“清空统计”。")
       }
       if let advice = storageAdvice {
         Section("统计没有数据") {
@@ -263,12 +263,12 @@ struct TypingStatisticsView: View {
     return VStack(alignment: .leading, spacing: 14) {
       Text("最高 \(maximum) 字符 / 天").font(.caption).foregroundStyle(.secondary)
       StatisticsTrendChart(days: days, selected: selectedDay,
-                           accent: MetasequoiaTheme.accent, progress: revealed ? 1 : 0)
+                           accent: LingyaoTheme.accent, progress: revealed ? 1 : 0)
         .animation(.easeOut(duration: 0.7), value: revealed)
       // 折线看走势,热力图看「哪天在打字」—— 同一份数据的两个问题,一条线回答不了第二个。
       Text("每天一格，一列一周").font(.caption).foregroundStyle(.secondary)
       StatisticsHeatmap(count: { statistics.count(on: $0) }, selected: selectedDay,
-                        accent: MetasequoiaTheme.accent) { date in
+                        accent: LingyaoTheme.accent) { date in
         selectedDay = selectedDay == date ? nil : date
       }
     }.padding(.vertical, 8).accessibilityElement(children: .contain).accessibilityIdentifier("statisticsTrend")
@@ -278,7 +278,7 @@ struct TypingStatisticsView: View {
   @ViewBuilder private var keySections: some View {
     let heatmap = keyHeatmap
     Section {
-      StatisticsKeyboardHeatmap(heatmap: heatmap, accent: MetasequoiaTheme.accent)
+      StatisticsKeyboardHeatmap(heatmap: heatmap, accent: LingyaoTheme.accent)
         .padding(.vertical, 8)
       if heatmap.total == 0 {
         Text("暂无按键记录").font(.subheadline).foregroundStyle(.secondary)
@@ -340,7 +340,7 @@ struct TypingStatisticsView: View {
       }
     if let hours = activity.todayHours {
       Section {
-        StatisticsHourlyChart(hours: hours, accent: MetasequoiaTheme.accent, progress: revealed ? 1 : 0)
+        StatisticsHourlyChart(hours: hours, accent: LingyaoTheme.accent, progress: revealed ? 1 : 0)
           .animation(.easeOut(duration: 0.6), value: revealed)
           .padding(.vertical, 8)
       } header: { Text("今日时段") }
@@ -351,7 +351,7 @@ struct TypingStatisticsView: View {
     VStack(alignment: .leading, spacing: 6) {
       Text(title).font(.subheadline).foregroundStyle(.secondary)
       Text(value).font(.system(size: 26, weight: .semibold, design: .rounded))
-        .foregroundStyle(MetasequoiaTheme.accent).lineLimit(1).minimumScaleFactor(0.6)
+        .foregroundStyle(LingyaoTheme.accent).lineLimit(1).minimumScaleFactor(0.6)
         .accessibilityIdentifier(identifier)
       Text(unit).font(.caption).foregroundStyle(.secondary)
     }
@@ -407,7 +407,7 @@ struct TypingStatisticsView: View {
     VStack(alignment: .leading, spacing: 6) {
       Text(title).font(.subheadline).foregroundStyle(.secondary)
       Text(count.formatted()).font(.system(size: 36, weight: .bold)).monospacedDigit()
-        .foregroundStyle(MetasequoiaTheme.accent).lineLimit(1).minimumScaleFactor(0.6)
+        .foregroundStyle(LingyaoTheme.accent).lineLimit(1).minimumScaleFactor(0.6)
         .accessibilityIdentifier(identifier)
       Text("字符").font(.caption).foregroundStyle(.secondary)
     }
@@ -530,7 +530,7 @@ struct TypingDailyDetailView: View {
 
   /// 写到临时目录,文件名给分享面板和「存储到文件」用。写不了就不给导出按钮,而不是给一个点了没反应的按钮。
   static func writeExport(_ statistics: TypingStatistics) -> URL? {
-    let url = FileManager.default.temporaryDirectory.appendingPathComponent("水杉IME-打字统计.csv")
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("灵耀IME-打字统计.csv")
     guard (try? Data(statistics.dailyCSV().utf8).write(to: url, options: .atomic)) != nil else { return nil }
     return url
   }

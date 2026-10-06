@@ -97,7 +97,7 @@ enum InputHabitPreference {
   @discardableResult
   static func update(stateRoot: URL? = nil, _ change: (inout InputHabitSettings) -> Void) -> InputHabitSettings? {
     var saved: InputHabitSettings?
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
       var current = Self.settings(in: document)
       change(&current)
       current = normalized(current)

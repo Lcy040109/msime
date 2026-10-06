@@ -1,12 +1,12 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
 #include "KeyHandlerEditSession.h"
 #include "KeyRepeatGuard.h"
 #include "Compartment.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include <debugapi.h>
 #include <cwctype>
 #include <string>
@@ -396,7 +396,7 @@ void ClearReleasedShiftModifierState()
 }
 } // namespace
 
-bool CMetasequoiaIME::_IsCompositionActiveForKeyGuard()
+bool CLingyaoIME::_IsCompositionActiveForKeyGuard()
 {
     if (_IsComposing() != FALSE) return true;
     if (_pCompositionProcessorEngine != nullptr && _pCompositionProcessorEngine->GetVirtualKeyLength() > 0)
@@ -404,7 +404,7 @@ bool CMetasequoiaIME::_IsCompositionActiveForKeyGuard()
     return !GlobalIme::word_for_creating_word.empty();
 }
 
-bool CMetasequoiaIME::_ApplyBackspaceHoldGuard(WPARAM wParam, LPARAM lParam)
+bool CLingyaoIME::_ApplyBackspaceHoldGuard(WPARAM wParam, LPARAM lParam)
 {
     if (static_cast<UINT>(wParam) != VK_BACK) return false;
     if (!IsAutoRepeat(lParam)) {
@@ -414,7 +414,7 @@ bool CMetasequoiaIME::_ApplyBackspaceHoldGuard(WPARAM wParam, LPARAM lParam)
     return ShouldSuppressBackspaceRepeat(_backspaceHoldArmed, _IsCompositionActiveForKeyGuard(), true);
 }
 
-void CMetasequoiaIME::_InitBareShiftKeyboardHook()
+void CLingyaoIME::_InitBareShiftKeyboardHook()
 {
     if (_bareShiftHook != nullptr || _bareShiftHookOwner != nullptr)
     {
@@ -429,7 +429,7 @@ void CMetasequoiaIME::_InitBareShiftKeyboardHook()
     }
 }
 
-void CMetasequoiaIME::_UninitBareShiftKeyboardHook()
+void CLingyaoIME::_UninitBareShiftKeyboardHook()
 {
     HHOOK hook = _bareShiftHook;
     _bareShiftHook = nullptr;
@@ -448,9 +448,9 @@ void CMetasequoiaIME::_UninitBareShiftKeyboardHook()
     _bareShiftExpireTick = 0;
 }
 
-LRESULT CALLBACK CMetasequoiaIME::_BareShiftKeyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CLingyaoIME::_BareShiftKeyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
 {
-    CMetasequoiaIME *owner = _bareShiftHookOwner;
+    CLingyaoIME *owner = _bareShiftHookOwner;
     if (code == HC_ACTION && owner != nullptr &&
         !IsSelfGeneratedSendInputExtraInfo(static_cast<ULONG_PTR>(GetMessageExtraInfo())))
     {
@@ -506,7 +506,7 @@ LRESULT CALLBACK CMetasequoiaIME::_BareShiftKeyboardHookProc(int code, WPARAM wP
     return CallNextHookEx(owner ? owner->_bareShiftHook : nullptr, code, wParam, lParam);
 }
 
-void CMetasequoiaIME::_MarkBareShiftHandled()
+void CLingyaoIME::_MarkBareShiftHandled()
 {
     if (_bareShiftHook != nullptr)
     {
@@ -514,7 +514,7 @@ void CMetasequoiaIME::_MarkBareShiftHandled()
     }
 }
 
-void CMetasequoiaIME::_HandleHookedBareShiftRelease(UINT sequence)
+void CLingyaoIME::_HandleHookedBareShiftRelease(UINT sequence)
 {
     if (_bareShiftHook == nullptr || sequence == 0 || sequence != _bareShiftSequence ||
         sequence == _bareShiftHandledSequence || _bareShiftFocusGeneration != _deferredKeyFocusGeneration ||
@@ -544,7 +544,7 @@ void CMetasequoiaIME::_HandleHookedBareShiftRelease(UINT sequence)
     }
 
     BOOL eaten = FALSE;
-    const bool queued = _QueueInputHotkey(context, Global::MetasequoiaIMEGuidImeModePreserveKey, &eaten);
+    const bool queued = _QueueInputHotkey(context, Global::LingyaoIMEGuidImeModePreserveKey, &eaten);
     DebugTsfIssue47(L"bare-shift-hook-release", FANY_IME_NO_REQUEST_ID, VK_SHIFT, L'\0', 0, 0, queued ? 1 : 0,
                     _IsComposing(),
                     _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetVirtualKeyLength() : 0, S_OK);
@@ -561,7 +561,7 @@ void CMetasequoiaIME::_HandleHookedBareShiftRelease(UINT sequence)
     context->Release();
 }
 
-void CMetasequoiaIME::_TrackModifierHotkeyArming(WPARAM wParam, LPARAM lParam, bool isKeyUp)
+void CLingyaoIME::_TrackModifierHotkeyArming(WPARAM wParam, LPARAM lParam, bool isKeyUp)
 {
     if (isKeyUp)
     {
@@ -606,7 +606,7 @@ void CMetasequoiaIME::_TrackModifierHotkeyArming(WPARAM wParam, LPARAM lParam, b
     _ctrlHotkeyArmed = false;
 }
 
-bool CMetasequoiaIME::_MatchChordInputHotkey(WPARAM wParam, _Out_ GUID *hotkeyGuid) const
+bool CLingyaoIME::_MatchChordInputHotkey(WPARAM wParam, _Out_ GUID *hotkeyGuid) const
 {
     if (hotkeyGuid == nullptr)
     {
@@ -625,30 +625,30 @@ bool CMetasequoiaIME::_MatchChordInputHotkey(WPARAM wParam, _Out_ GUID *hotkeyGu
         {
             return false;
         }
-        *hotkeyGuid = Global::MetasequoiaIMEGuidImeModePreserveKey02;
+        *hotkeyGuid = Global::LingyaoIMEGuidImeModePreserveKey02;
         return true;
     }
     if (code == VK_SPACE && ctrl && shift && !alt)
     {
-        *hotkeyGuid = Global::MetasequoiaIMEGuidDoubleSingleBytePreserveKey;
+        *hotkeyGuid = Global::LingyaoIMEGuidDoubleSingleBytePreserveKey;
         return true;
     }
     if (code == VK_OEM_PERIOD && ctrl && !shift && !alt)
     {
-        *hotkeyGuid = Global::MetasequoiaIMEGuidPunctuationPreserveKey;
+        *hotkeyGuid = Global::LingyaoIMEGuidPunctuationPreserveKey;
         return true;
     }
     // The Korean keyboard's 한/영 key switches between Korean and English as Shift does, committing the open syllable first. VK_HANGUL shares its code with VK_KANA, so it only means this while the Korean scheme is active.
     if (code == msime::tsf::kVirtualKeyHangul && !ctrl && !alt &&
         Global::InputModeScheme.load(std::memory_order_relaxed) == msime::windows::scheme::Korean)
     {
-        *hotkeyGuid = Global::MetasequoiaIMEGuidImeModePreserveKey;
+        *hotkeyGuid = Global::LingyaoIMEGuidImeModePreserveKey;
         return true;
     }
     return false;
 }
 
-bool CMetasequoiaIME::_MatchModifierReleaseHotkey(WPARAM wParam, _Out_ GUID *hotkeyGuid)
+bool CLingyaoIME::_MatchModifierReleaseHotkey(WPARAM wParam, _Out_ GUID *hotkeyGuid)
 {
     if (hotkeyGuid == nullptr)
     {
@@ -667,7 +667,7 @@ bool CMetasequoiaIME::_MatchModifierReleaseHotkey(WPARAM wParam, _Out_ GUID *hot
         _ctrlHotkeyArmed = false;
         if (fire)
         {
-            *hotkeyGuid = Global::MetasequoiaIMEGuidImeModePreserveKey;
+            *hotkeyGuid = Global::LingyaoIMEGuidImeModePreserveKey;
             return true;
         }
         return false;
@@ -680,7 +680,7 @@ bool CMetasequoiaIME::_MatchModifierReleaseHotkey(WPARAM wParam, _Out_ GUID *hot
         _ctrlHotkeyArmed = false;
         if (fire)
         {
-            *hotkeyGuid = Global::MetasequoiaIMEGuidImeModePreserveKey03;
+            *hotkeyGuid = Global::LingyaoIMEGuidImeModePreserveKey03;
             return true;
         }
         return false;
@@ -689,7 +689,7 @@ bool CMetasequoiaIME::_MatchModifierReleaseHotkey(WPARAM wParam, _Out_ GUID *hot
     return false;
 }
 
-bool CMetasequoiaIME::_QueueKoreanHanjaTap(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam)
+bool CLingyaoIME::_QueueKoreanHanjaTap(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam)
 {
     // The arming latch proves the Ctrl was pressed alone, with no other key between press and release.
     if (pContext == nullptr || !_ctrlHotkeyArmed || !IsRightControlKey(wParam, lParam) ||
@@ -728,7 +728,7 @@ bool CMetasequoiaIME::_QueueKoreanHanjaTap(_In_ ITfContext *pContext, WPARAM wPa
     return true;
 }
 
-bool CMetasequoiaIME::_QueueInputHotkey(_In_ ITfContext *pContext, REFGUID hotkeyGuid, _Out_ BOOL *pIsEaten)
+bool CLingyaoIME::_QueueInputHotkey(_In_ ITfContext *pContext, REFGUID hotkeyGuid, _Out_ BOOL *pIsEaten)
 {
     if (pIsEaten == nullptr)
     {
@@ -791,7 +791,7 @@ __inline UINT VKeyFromVKPacketAndWchar(UINT vk, WCHAR wch)
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_IsKeyEaten(         //
+BOOL CLingyaoIME::_IsKeyEaten(         //
     _In_ ITfContext *pContext,             //
     UINT codeIn,                           //
     _Out_ UINT *pCodeOut,                  //
@@ -811,11 +811,11 @@ BOOL CMetasequoiaIME::_IsKeyEaten(         //
 
     BOOL isDoubleSingleByte = FALSE;
     CCompartment CompartmentDoubleSingleByte(_pThreadMgr, _tfClientId,
-                                             Global::MetasequoiaIMEGuidCompartmentDoubleSingleByte);
+                                             Global::LingyaoIMEGuidCompartmentDoubleSingleByte);
     CompartmentDoubleSingleByte._GetCompartmentBOOL(isDoubleSingleByte);
 
     BOOL isPunctuation = FALSE;
-    CCompartment CompartmentPunctuation(_pThreadMgr, _tfClientId, Global::MetasequoiaIMEGuidCompartmentPunctuation);
+    CCompartment CompartmentPunctuation(_pThreadMgr, _tfClientId, Global::LingyaoIMEGuidCompartmentPunctuation);
     CompartmentPunctuation._GetCompartmentBOOL(isPunctuation);
 
     if (pKeyState)
@@ -1115,7 +1115,7 @@ BOOL CMetasequoiaIME::_IsKeyEaten(         //
 //
 //----------------------------------------------------------------------------
 
-WCHAR CMetasequoiaIME::ConvertVKey(UINT code)
+WCHAR CLingyaoIME::ConvertVKey(UINT code)
 {
     //
     // Map virtual key to scan code
@@ -1150,7 +1150,7 @@ WCHAR CMetasequoiaIME::ConvertVKey(UINT code)
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_IsKeyboardDisabled()
+BOOL CLingyaoIME::_IsKeyboardDisabled()
 {
     /* Steal from weasel: https://github.com/rime/weasel */
     ITfCompartmentMgr *pCompMgr = NULL;
@@ -1218,7 +1218,7 @@ Exit:
 // Called by the system whenever this service gets the keystroke device focus.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnSetFocus(BOOL fForeground)
+STDAPI CLingyaoIME::OnSetFocus(BOOL fForeground)
 {
     fForeground;
 
@@ -1227,7 +1227,7 @@ STDAPI CMetasequoiaIME::OnSetFocus(BOOL fForeground)
     return S_OK;
 }
 
-bool CMetasequoiaIME::_HasDeferredKeyBarrier() const
+bool CLingyaoIME::_HasDeferredKeyBarrier() const
 {
     if (_localSessionResetPending.load(std::memory_order_acquire) || _focusResetPending || _activationRequired ||
         _deferredKeyProjectionValid || !_deferredKeyDowns.empty() || _hasDeferredKeyInFlight)
@@ -1243,7 +1243,7 @@ bool CMetasequoiaIME::_HasDeferredKeyBarrier() const
     return false;
 }
 
-bool CMetasequoiaIME::_DeferredKeyQueueHasCapacity() const
+bool CLingyaoIME::_DeferredKeyQueueHasCapacity() const
 {
     size_t deferredCount = _deferredKeyDowns.size() + _deferredAppliedPrefix.size();
     if (_hasDeferredKeyInFlight)
@@ -1253,7 +1253,7 @@ bool CMetasequoiaIME::_DeferredKeyQueueHasCapacity() const
     return deferredCount < MAX_DEFERRED_KEY_DOWN_COUNT;
 }
 
-void CMetasequoiaIME::_EnsureDeferredKeyProjection()
+void CLingyaoIME::_EnsureDeferredKeyProjection()
 {
     if (_deferredKeyProjectionValid)
     {
@@ -1301,7 +1301,7 @@ void CMetasequoiaIME::_EnsureDeferredKeyProjection()
         _IsKoreanHanjaListOpen();
 }
 
-void CMetasequoiaIME::_ApplyDeferredKeyProjection(const _KEYSTROKE_STATE &keyState, WCHAR wch, UINT code)
+void CLingyaoIME::_ApplyDeferredKeyProjection(const _KEYSTROKE_STATE &keyState, WCHAR wch, UINT code)
 {
     _EnsureDeferredKeyProjection();
     DeferredShadowState shadow;
@@ -1339,7 +1339,7 @@ void CMetasequoiaIME::_ApplyDeferredKeyProjection(const _KEYSTROKE_STATE &keySta
         _backspaceHoldArmed = true;
 }
 
-void CMetasequoiaIME::_ApplyDeferredPreservedKeyProjection(REFGUID preservedKey)
+void CLingyaoIME::_ApplyDeferredPreservedKeyProjection(REFGUID preservedKey)
 {
     _EnsureDeferredKeyProjection();
     if (_pCompositionProcessorEngine == nullptr)
@@ -1372,7 +1372,7 @@ void CMetasequoiaIME::_ApplyDeferredPreservedKeyProjection(REFGUID preservedKey)
     }
 }
 
-bool CMetasequoiaIME::_RefreshDeferredRecoveryPrefix(_In_ ITfContext *pContext)
+bool CLingyaoIME::_RefreshDeferredRecoveryPrefix(_In_ ITfContext *pContext)
 {
     while (!_deferredAppliedPrefix.empty())
     {
@@ -1430,7 +1430,7 @@ bool CMetasequoiaIME::_RefreshDeferredRecoveryPrefix(_In_ ITfContext *pContext)
     return true;
 }
 
-void CMetasequoiaIME::_ArmDeferredRecoveryForTransport(_In_opt_ ITfContext *pContext)
+void CLingyaoIME::_ArmDeferredRecoveryForTransport(_In_opt_ ITfContext *pContext)
 {
     // An in-flight key owns its exact retry token.  Its failure path moves the
     // checkpoint in front of that key; moving it here as well would duplicate
@@ -1478,7 +1478,7 @@ void CMetasequoiaIME::_ArmDeferredRecoveryForTransport(_In_opt_ ITfContext *pCon
     _ScheduleDeferredKeyDownDrain();
 }
 
-bool CMetasequoiaIME::_ClassifyDeferredKeyDown(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam,
+bool CLingyaoIME::_ClassifyDeferredKeyDown(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam,
                                                _In_opt_ const WCHAR *translatedWch, _In_opt_ const UINT *modifiersDown,
                                                _Out_ WCHAR *classifiedWch, _Out_ UINT *classifiedCode,
                                                _Out_ _KEYSTROKE_STATE *keyState)
@@ -1844,7 +1844,7 @@ bool CMetasequoiaIME::_ClassifyDeferredKeyDown(_In_ ITfContext *pContext, WPARAM
 // Counts one printable character that this tip hands back to the application. The commit paths never see these keys - the host inserts them - so this is the only capture point for half-width digits, the symbols outside the punctuation table and English-mode letters. Observation only: the eaten result, the deferred queue and the edit path stay untouched, and every failure mode is a dropped count.
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_NotePassthroughStatistics(UINT virtualKey, WCHAR wch, bool keyboardKnownEnabled)
+void CLingyaoIME::_NotePassthroughStatistics(UINT virtualKey, WCHAR wch, bool keyboardKnownEnabled)
 {
     const LONG messageTime = GetMessageTime();
     if (virtualKey != 0 && virtualKey == _passthroughStatsVirtualKey && messageTime == _passthroughStatsMessageTime)
@@ -1888,7 +1888,7 @@ void CMetasequoiaIME::_NotePassthroughStatistics(UINT virtualKey, WCHAR wch, boo
 // Counts one physical key press for the key heatmap: every key while this tip is active, eaten or passed through, Shift and hotkeys included. Only the key's id goes into the count. It runs ahead of every early return in OnTestKeyDown and again in OnKeyDown, for hosts that skip the test probe, so each press is seen at least once and the de-duplication keeps it to once. Observation only: nothing here changes how the key is handled.
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_NoteKeyPressStatistics(WPARAM wParam, LPARAM lParam)
+void CLingyaoIME::_NoteKeyPressStatistics(WPARAM wParam, LPARAM lParam)
 {
     const wchar_t *keyId = KeyPressIdFromKeyDown(static_cast<std::uintptr_t>(wParam), static_cast<std::uintptr_t>(lParam));
     if (keyId == nullptr)
@@ -1918,7 +1918,7 @@ void CMetasequoiaIME::_NoteKeyPressStatistics(WPARAM wParam, LPARAM lParam)
 // Called by the system to query this service wants a potential keystroke.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnTestKeyDown(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
+STDAPI CLingyaoIME::OnTestKeyDown(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
 {
     if (pContext == nullptr || pIsEaten == nullptr)
     {
@@ -2025,7 +2025,7 @@ STDAPI CMetasequoiaIME::OnTestKeyDown(ITfContext *pContext, WPARAM wParam, LPARA
     return S_OK;
 }
 
-bool CMetasequoiaIME::_QueueDeferredKeyDown(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam,
+bool CLingyaoIME::_QueueDeferredKeyDown(_In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam,
                                             WCHAR translatedWch, UINT modifiersDown, const _KEYSTROKE_STATE &keyState)
 {
     // Repeats are owned but do not enqueue another global configuration toggle.
@@ -2063,7 +2063,7 @@ bool CMetasequoiaIME::_QueueDeferredKeyDown(_In_ ITfContext *pContext, WPARAM wP
     return true;
 }
 
-bool CMetasequoiaIME::_QueueDeferredPreservedKey(_In_ ITfContext *pContext, REFGUID preservedKey)
+bool CLingyaoIME::_QueueDeferredPreservedKey(_In_ ITfContext *pContext, REFGUID preservedKey)
 {
     if (pContext == nullptr || !_DeferredKeyQueueHasCapacity())
     {
@@ -2083,7 +2083,7 @@ bool CMetasequoiaIME::_QueueDeferredPreservedKey(_In_ ITfContext *pContext, REFG
     return true;
 }
 
-void CMetasequoiaIME::_ClearDeferredKeyDowns()
+void CLingyaoIME::_ClearDeferredKeyDowns()
 {
     _backspaceHoldArmed = false;
     const size_t queuedCount = _deferredKeyDowns.size();
@@ -2151,7 +2151,7 @@ void CMetasequoiaIME::_ClearDeferredKeyDowns()
     _ctrlHotkeyArmed = false;
 }
 
-void CMetasequoiaIME::_CompleteDeferredKeyReplay(uint64_t replayToken)
+void CLingyaoIME::_CompleteDeferredKeyReplay(uint64_t replayToken)
 {
     if (replayToken == 0 || !_hasDeferredKeyInFlight || _deferredKeyReplayToken != replayToken)
     {
@@ -2248,7 +2248,7 @@ void CMetasequoiaIME::_CompleteDeferredKeyReplay(uint64_t replayToken)
     _ScheduleDeferredKeyDownDrain();
 }
 
-bool CMetasequoiaIME::_IsDeferredKeyReplayCurrent(uint64_t replayToken, uint64_t focusGeneration,
+bool CLingyaoIME::_IsDeferredKeyReplayCurrent(uint64_t replayToken, uint64_t focusGeneration,
                                                   _In_opt_ ITfContext *expectedContext) const
 {
     return replayToken != 0 && _hasDeferredKeyInFlight && _deferredKeyReplayToken == replayToken &&
@@ -2256,7 +2256,7 @@ bool CMetasequoiaIME::_IsDeferredKeyReplayCurrent(uint64_t replayToken, uint64_t
            (expectedContext == nullptr || _deferredKeyInFlight.context == expectedContext);
 }
 
-void CMetasequoiaIME::_RetryDeferredKeyReplay(uint64_t replayToken)
+void CLingyaoIME::_RetryDeferredKeyReplay(uint64_t replayToken)
 {
     if (replayToken == 0 || !_hasDeferredKeyInFlight || _deferredKeyReplayToken != replayToken)
     {
@@ -2319,7 +2319,7 @@ void CMetasequoiaIME::_RetryDeferredKeyReplay(uint64_t replayToken)
     }
 }
 
-void CMetasequoiaIME::_ScheduleDeferredKeyDownDrain()
+void CLingyaoIME::_ScheduleDeferredKeyDownDrain()
 {
     if (!_deferredKeyDowns.empty() && !_hasDeferredKeyInFlight && !_deferredKeyDrainPosted && _msgWndHandle &&
         IsWindow(_msgWndHandle))
@@ -2334,12 +2334,12 @@ void CMetasequoiaIME::_ScheduleDeferredKeyDownDrain()
     }
 }
 
-bool CMetasequoiaIME::_IsServerUnavailableFallbackActive() const
+bool CLingyaoIME::_IsServerUnavailableFallbackActive() const
 {
     return _serverUnavailableFallbackActive;
 }
 
-void CMetasequoiaIME::_TryLeaveServerUnavailableFallback()
+void CLingyaoIME::_TryLeaveServerUnavailableFallback()
 {
     const uint64_t expectedToken = _expectedWorkerFocusToken.load(std::memory_order_acquire);
     if (_serverUnavailableFallbackActive && !_IsComposing() && expectedToken != 0 &&
@@ -2350,7 +2350,7 @@ void CMetasequoiaIME::_TryLeaveServerUnavailableFallback()
     }
 }
 
-void CMetasequoiaIME::_DrainOneDeferredKeyDown()
+void CLingyaoIME::_DrainOneDeferredKeyDown()
 {
     _deferredKeyDrainPosted = false;
     if (_hasDeferredKeyInFlight || _deferredKeyDowns.empty() || !Global::g_connected)
@@ -2503,7 +2503,7 @@ void CMetasequoiaIME::_DrainOneDeferredKeyDown()
 // on exit, the application will not handle the keystroke.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnKeyDown(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
+STDAPI CLingyaoIME::OnKeyDown(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
 {
     if (pContext == nullptr || pIsEaten == nullptr)
     {
@@ -2528,7 +2528,7 @@ STDAPI CMetasequoiaIME::OnKeyDown(ITfContext *pContext, WPARAM wParam, LPARAM lP
     return S_OK;
 }
 
-CMetasequoiaIME::KeyDownDispatchResult CMetasequoiaIME::_DispatchKeyDown(
+CLingyaoIME::KeyDownDispatchResult CLingyaoIME::_DispatchKeyDown(
     _In_ ITfContext *pContext, WPARAM wParam, LPARAM lParam, _Out_ BOOL *pIsEaten, _In_opt_ const WCHAR *translatedWch,
     _In_opt_ const UINT *modifiersDown, _In_opt_ const _KEYSTROKE_STATE *prevalidatedKeyState, bool canDefer,
     uint64_t expectedFocusGeneration, uint64_t deferredReplayToken)
@@ -2951,7 +2951,7 @@ CMetasequoiaIME::KeyDownDispatchResult CMetasequoiaIME::_DispatchKeyDown(
 // Called by the system to query this service wants a potential keystroke.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnTestKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
+STDAPI CLingyaoIME::OnTestKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
 {
     if (pContext == nullptr || pIsEaten == nullptr)
     {
@@ -3037,7 +3037,7 @@ STDAPI CMetasequoiaIME::OnTestKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM 
 // on exit, the application will not handle the keystroke.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
+STDAPI CLingyaoIME::OnKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BOOL *pIsEaten)
 {
     if (pContext == nullptr || pIsEaten == nullptr)
     {
@@ -3110,7 +3110,7 @@ STDAPI CMetasequoiaIME::OnKeyUp(ITfContext *pContext, WPARAM wParam, LPARAM lPar
 // Called when a hotkey (registered by us, or by the system) is typed.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnPreservedKey(ITfContext *pContext, REFGUID rguid, BOOL *pIsEaten)
+STDAPI CLingyaoIME::OnPreservedKey(ITfContext *pContext, REFGUID rguid, BOOL *pIsEaten)
 {
     if (pContext == nullptr || pIsEaten == nullptr)
     {
@@ -3124,7 +3124,7 @@ STDAPI CMetasequoiaIME::OnPreservedKey(ITfContext *pContext, REFGUID rguid, BOOL
     return S_OK;
 }
 
-void CMetasequoiaIME::_DispatchPreservedKey(_In_ ITfContext *pContext, REFGUID preservedKey, _Out_ BOOL *pIsEaten,
+void CLingyaoIME::_DispatchPreservedKey(_In_ ITfContext *pContext, REFGUID preservedKey, _Out_ BOOL *pIsEaten,
                                             uint64_t expectedFocusGeneration, bool isPrevalidated,
                                             uint64_t deferredReplayToken)
 {
@@ -3177,7 +3177,7 @@ void CMetasequoiaIME::_DispatchPreservedKey(_In_ ITfContext *pContext, REFGUID p
 // Advise a keystroke sink.
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_InitKeyEventSink()
+BOOL CLingyaoIME::_InitKeyEventSink()
 {
     ITfKeystrokeMgr *pKeystrokeMgr = nullptr;
     HRESULT hr = S_OK;
@@ -3201,7 +3201,7 @@ BOOL CMetasequoiaIME::_InitKeyEventSink()
 // Unadvise a keystroke sink.  Assumes we have advised one already.
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_UninitKeyEventSink()
+void CLingyaoIME::_UninitKeyEventSink()
 {
     ITfKeystrokeMgr *pKeystrokeMgr = nullptr;
 

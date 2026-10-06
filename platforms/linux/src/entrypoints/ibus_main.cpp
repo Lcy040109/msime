@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
   auto component = ibus_component_new(
       MSIME_EDITION_TAURI_IDENTIFIER, MSIME_EDITION_IBUS_LONGNAME, "0.1.0",
       "GPL-3.0-only", "MSIME contributors",
-      "https://github.com/metasequoiaime/msime", "", "");
+      "https://github.com/Lcy040109/msime", "", "");
   ibus_component_add_engine(
       component,
       ibus_engine_desc_new(MSIME_EDITION_IBUS_ENGINE, MSIME_EDITION_IBUS_LONGNAME,

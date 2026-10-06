@@ -43,7 +43,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   /// first shared-preferences sync; starting at zero discarded the user's height on every load.
   private var sharedKeyboardHeightAdjustment =
     CGFloat(KeyboardLayoutPreference.heightAdjustment)
-  private let session = MetasequoiaInputSessionBridge()
+  private let session = LingyaoInputSessionBridge()
   /// 「全角输入」 for the running keyboard: starts from the shared `character_width`, then the 全角 card switches it.
   private var fullWidthInput = false
   /// The document's `character_width` as last applied, so a reload replaces the card's switch only when that field changed.
@@ -439,7 +439,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     usesTraditionalOutput = ChineseOutputPreference.usesTraditional
     _ = applyInputScheme()
     applyLearningPreferences()
-    view.backgroundColor = MetasequoiaTheme.keyboardBackground
+    view.backgroundColor = LingyaoTheme.keyboardBackground
     skinBackdrop.translatesAutoresizingMaskIntoConstraints = false
     view.insertSubview(skinBackdrop, at: 0)
     NSLayoutConstraint.activate([
@@ -559,8 +559,8 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
 
   /// Point the diagnostic log at the shared directory while `diagnostic_log.server` is on, and stop it writing once it is off.
   private func configureDiagnosticLog() {
-    let preferences = session.sharedPreferences ?? MetasequoiaInputSessionBridge.loadSharedPreferences()
-    DiagnosticLog.shared.configure(directory: session.stateDirectory ?? MetasequoiaInputSessionBridge.sharedStateDirectory,
+    let preferences = session.sharedPreferences ?? LingyaoInputSessionBridge.loadSharedPreferences()
+    DiagnosticLog.shared.configure(directory: session.stateDirectory ?? LingyaoInputSessionBridge.sharedStateDirectory,
                                    enabled: DiagnosticLog.isEnabled(in: preferences))
   }
 
@@ -593,7 +593,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   }
 
   /// 键盘放弃组字时发 MSIME_CANCEL。就地组字的方案第一次取消可能只退一步（msime_client.h）：关闭韩语汉字列表或注音列表，或把越南语单词、藏文音节退回原始按键（藏文是威利原文）。第二次取消再丢掉剩下的内容，否则 Engine 里会一直留着组字，而宿主已经把它当作输入的文字。
-  private func discardComposition() -> MetasequoiaInputSnapshot {
+  private func discardComposition() -> LingyaoInputSnapshot {
     let inPlace = composesInPlace
     let snapshot = session.cancel()
     return inPlace && !snapshot.preedit.isEmpty ? session.cancel() : snapshot
@@ -1044,7 +1044,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     candidateScrollView.addSubview(candidateStack)
 
     diagnosticLabel.font = .preferredFont(forTextStyle: .footnote)
-    diagnosticLabel.textColor = MetasequoiaTheme.coneUIColor
+    diagnosticLabel.textColor = LingyaoTheme.coneUIColor
     diagnosticLabel.adjustsFontForContentSizeCategory = true
     diagnosticLabel.adjustsFontSizeToFitWidth = true
     diagnosticLabel.minimumScaleFactor = 0.7
@@ -2380,7 +2380,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   }
 
   private func applyLearningPreferences() {
-    let nativeMode: MetasequoiaFrequencyAdjustmentMode
+    let nativeMode: LingyaoFrequencyAdjustmentMode
     switch FrequencyAdjustmentPreference.mode {
     case .disabled: nativeMode = .disabled
     case .pin: nativeMode = .pin
@@ -2487,7 +2487,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     return UIFont(descriptor: font.fontDescriptor.addingAttributes([.traits: traits]), size: font.pointSize)
   }
 
-  private func applyInputScheme() -> MetasequoiaInputSnapshot {
+  private func applyInputScheme() -> LingyaoInputSnapshot {
     switch inputScheme {
     case .nineKey: session.switchToNineKey()
     case .ziranma, .microsoft, .shoudao: session.switch(toShuangpinProfile: inputScheme.rawValue)
@@ -3392,7 +3392,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   // always the engine's first and commitCandidate is that candidate. It also reports itself
   // unhandled when there is nothing to commit, which is what tells the caller to insert its space.
   // Return and the language switch end the whole composition through CompositionBoundaryPolicy instead.
-  private func commitVisibleCandidate() -> MetasequoiaInputSnapshot {
+  private func commitVisibleCandidate() -> LingyaoInputSnapshot {
     return session.commitCandidate()
   }
 
@@ -3404,7 +3404,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
 
   private func moveCompositionCaret(by offset: Int, bySegment: Bool = false) {
     guard offset != 0 else { return }
-    var snapshot: MetasequoiaInputSnapshot?
+    var snapshot: LingyaoInputSnapshot?
     for _ in 0..<min(abs(offset), 64) {
       if bySegment {
         snapshot = offset < 0 ? session.moveCaretLeftBySegment() : session.moveCaretRightBySegment()
@@ -3530,7 +3530,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   }
 
   /// Ends an open composition the way `boundary` calls for. An idle session still gets finishComposition, which reports itself unhandled so the caller knows nothing was committed.
-  private func endComposition(at boundary: CompositionBoundary) -> MetasequoiaInputSnapshot {
+  private func endComposition(at boundary: CompositionBoundary) -> LingyaoInputSnapshot {
     switch CompositionBoundaryPolicy.action(composing: hasComposition, scheme: inputScheme, boundary: boundary,
                                             koreanHanjaListOpen: koreanHanjaListOpen) {
     case .commitRaw: session.commitRaw()
@@ -3732,7 +3732,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
     noteOwnEdit()
   }
 
-  private func render(_ snapshot: MetasequoiaInputSnapshot, source originalSource: TypingSource? = nil) {
+  private func render(_ snapshot: LingyaoInputSnapshot, source originalSource: TypingSource? = nil) {
     candidateRevision &+= 1
     let source = originalSource ?? typingSource
     if localModeTrigger != nil && !isInLocalMode {
@@ -4101,7 +4101,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
       }
       queue.async {
         do {
-          let response = try MetasequoiaInputSessionBridge.candidateGlosses(
+          let response = try LingyaoInputSessionBridge.candidateGlosses(
             request: request, resources: targetResources)
           let decoded = try CandidateGlossModel.decode(response)
           guard decoded.generation == generation else { return }
@@ -4126,7 +4126,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
       guard let request = try? CandidateGlossModel.request(generation: generation, candidates: candidates,
                                                           targetLanguage: code) else { continue }
       candidateGlossQueue.async { [weak self] in
-        guard let response = try? MetasequoiaInputSessionBridge.candidateGlosses(request: request, resources: resources),
+        guard let response = try? LingyaoInputSessionBridge.candidateGlosses(request: request, resources: resources),
               let decoded = try? CandidateGlossModel.decode(response), decoded.generation == generation,
               let entries = try? JSONSerialization.jsonObject(with: decoded.translations) as? [[String: String]]
         else { return }
@@ -4439,7 +4439,7 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
 
   /// 以词定字: commit just the first or the last Han character of a longer candidate. Desktop hosts bind it to [ ] or - =; a keyboard extension receives no hardware keys, even on an iPad with one attached, so here it lives in the candidate's long-press menu and follows only the on/off half of the shared `word_character` preference.
   private func wordCharacterMenuElements(
-    candidate: String, select: @escaping (_ last: Bool) -> MetasequoiaInputSnapshot?
+    candidate: String, select: @escaping (_ last: Bool) -> LingyaoInputSnapshot?
   ) -> [UIMenuElement] {
     let stored = session.sharedPreferences?["word_character"] as? [String: Any] ?? [:]
     let han = candidate.filter { $0.unicodeScalars.first?.properties.isUnifiedIdeograph == true }
@@ -4460,9 +4460,9 @@ final class KeyboardViewController: UIInputViewController, UIGestureRecognizerDe
   /// `fixedPosition` is the slot the word is pinned to, zero when it is not: the menu checks that slot and offers 取消固定 only then. Deleting is not offered for a single character, the same as the Windows candidate menu.
   private func candidateMenuElements(
     candidate: String?, fixedPosition: Int,
-    edit: @escaping (MetasequoiaCandidateAction) -> MetasequoiaInputSnapshot?
+    edit: @escaping (LingyaoCandidateAction) -> LingyaoInputSnapshot?
   ) -> [UIMenuElement] {
-    func action(_ title: String, _ symbol: String?, _ operation: MetasequoiaCandidateAction,
+    func action(_ title: String, _ symbol: String?, _ operation: LingyaoCandidateAction,
                 destructive: Bool = false, announcement: String? = nil) -> UIAction {
       UIAction(title: title, image: symbol.flatMap { UIImage(systemName: $0) },
                attributes: destructive ? .destructive : []) { [weak self] _ in

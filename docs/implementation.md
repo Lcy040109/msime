@@ -98,7 +98,7 @@ React 只依赖一个 `SettingsClient` 接口；所有平台动作（读写偏�
 
 ### macOS
 
-InputMethodKit 宿主，产物 bundle 名为 `灵耀输入法.app`，`CFBundleIdentifier` 为 `app.msime.inputmethod.MetasequoiaIME`，最低系统 13.0，控制器类 `MSIMEInputController`（实现在 `src/input/InputController.mm`）。源码按 `src/{backend,candidate,cloud,core,dictionary,input,settings,voice}` 分层；`backend/` 下的 Swift 文件与 `shared/backend`、`shared/backend-ui` 一起编成 `MSIMEBackend.dylib` 再链进 bundle，账号面板等符号以弱链接引入，使不链接 Swift 后端的隔离测试目标仍能成立。
+InputMethodKit 宿主，产物 bundle 名为 `灵耀输入法.app`，`CFBundleIdentifier` 为 `app.msime.inputmethod.LingyaoIME`，最低系统 13.0，控制器类 `MSIMEInputController`（实现在 `src/input/InputController.mm`）。源码按 `src/{backend,candidate,cloud,core,dictionary,input,settings,voice}` 分层；`backend/` 下的 Swift 文件与 `shared/backend`、`shared/backend-ui` 一起编成 `MSIMEBackend.dylib` 再链进 bundle，账号面板等符号以弱链接引入，使不链接 Swift 后端的隔离测试目标仍能成立。
 
 输入源菜单收敛为工具入口加两条出口——中英文、英文候选模式，繁体输出、全角、中文标点、显示译文四个勾选项，输入方案与主题两个子菜单，悬浮工具栏，加表情面板、云剪贴板、屏幕键盘、手写、语音，最后是「灵耀输入法设置…」和「关于灵耀输入法…」。「云剪贴板…」是和表情面板同类的工具：它带着当前输入会话打开共享面板，点选条目直接上屏，安全输入期间不打开。所有管理页（候选、账号、云剪贴板的开关与清空、皮肤目录）统一进设置窗口，不在菜单里各开一条路；设置窗口优先启动共享 Tauri 页面，bundle 不可用时回退到原生视图。
 
@@ -134,7 +134,7 @@ IBus 与 Fcitx5 是**并列的两个系统入口**，不是宿主和它的插件
 
 ### Windows
 
-两个独立目标，边界写在 `tsf/CMakeLists.txt` 的注释里：TSF tip 是注入到每个应用进程里的 DLL（`MetasequoiaImeTsf`），Server 是进程外可执行文件（`MetasequoiaImeServer`），两者刻意是分开的构建目标而不是一个目标的两种配置。DLL 侧按 `Candidate/ Compartment/ Composition/ DisplayAttribute/ Edit/ Global/ IME/ IPC/ Key/ LanguageBar/ Register/ Tf/ Thread/ UI/ Utils/` 组织，导出四个未修饰的 COM 入口；Server 侧按 `entrypoints/ ipc/ input/ candidate/ voice/ clipboard/ system/` 组织。另有 `MetasequoiaImeWatchdog`（对应安装器的登录任务）和 `msime-client-prepare`（准备 `runtime-options.json`）。`msimeui/` 是独立的 Direct2D/DirectWrite UI 静态库，带自己的公开头、demo 和测试。
+两个独立目标，边界写在 `tsf/CMakeLists.txt` 的注释里：TSF tip 是注入到每个应用进程里的 DLL（`LingyaoImeTsf`），Server 是进程外可执行文件（`LingyaoImeServer`），两者刻意是分开的构建目标而不是一个目标的两种配置。DLL 侧按 `Candidate/ Compartment/ Composition/ DisplayAttribute/ Edit/ Global/ IME/ IPC/ Key/ LanguageBar/ Register/ Tf/ Thread/ UI/ Utils/` 组织，导出四个未修饰的 COM 入口；Server 侧按 `entrypoints/ ipc/ input/ candidate/ voice/ clipboard/ system/` 组织。另有 `LingyaoImeWatchdog`（对应安装器的登录任务）和 `msime-client-prepare`（准备 `runtime-options.json`）。`msimeui/` 是独立的 Direct2D/DirectWrite UI 静态库，带自己的公开头、demo 和测试。
 
 IPC 是三角色命名管道（Main / Aux / Diagnostic）。`PipePeer::bind` 校验客户端 PID、登录会话和 TokenUser SID；监听器用账户 SID 构造明确 DACL、保留受限 AppContainer 权限与低完整性标签、拒绝远程连接。注册表为三个角色各维护单调代次，替换反向端点使主注册失效并取消旧读取，旧票据既不能发送也不能清理新端点。握手、写入强制有限超时，主管道的空闲读取必须携带取消事件。
 

@@ -2266,7 +2266,7 @@ struct KeyboardView {
             .objectFit(ImageFit.Contain)
             .margin({ right: CandidateLogoPolicy.GAP_VP })
             .flexShrink(0)
-            .accessibilityText('水杉输入法')
+            .accessibilityText('灵耀输入法')
         }
         if (this.diagnostic.length > 0 || !KeyboardFormFactor.isDesktop()
             || this.settings.candidateShowPreedit) {

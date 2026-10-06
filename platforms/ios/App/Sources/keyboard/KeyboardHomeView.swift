@@ -59,7 +59,7 @@ struct SettingsView: View {
     .onAppear { refresh() }
     .onChange(of: scenePhase) { if $0 == .active { refresh(); Task { await loadNotices() } } }
     .task { await loadNotices() }
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
   }
 
   private func value(for page: SettingsPage) -> String? {
@@ -77,7 +77,7 @@ struct SettingsView: View {
 
   private func refresh() {
     scheme = InputSchemePreference.scheme
-    let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences()
+    let preferences = LingyaoInputSessionBridge.loadSharedPreferences()
     skin = KeyboardTheme.reload(preferences)
     candidateSize = CandidateFontPreference.candidateSize(in: preferences, tablet: UIDevice.current.userInterfaceIdiom == .pad)
   }

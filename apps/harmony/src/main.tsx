@@ -250,7 +250,7 @@ function whenBridgeReady(): Promise<NativeBridge> {
         return;
       }
       if (Date.now() > deadline) {
-        reject(new Error("没有连接到水杉输入法。请从应用中打开设置。"));
+        reject(new Error("没有连接到灵耀输入法。请从应用中打开设置。"));
         return;
       }
       setTimeout(poll, 50);

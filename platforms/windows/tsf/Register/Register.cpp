@@ -14,7 +14,7 @@ static const WCHAR RegInfo_Prefix_CLSID[] = L"CLSID\\";
 static const WCHAR RegInfo_Key_InProSvr32[] = L"InProcServer32";
 static const WCHAR RegInfo_Key_ThreadModel[] = L"ThreadingModel";
 
-// 系统输入法列表里显示的文本服务名，按版本取（版本表 platforms.windows.text_service_description）；full 是「Metasequoia 水杉输入法」。
+// 系统输入法列表里显示的文本服务名，按版本取（版本表 platforms.windows.text_service_description）；full 是「Lingyao 灵耀输入法」。
 static const WCHAR TEXTSERVICE_DESC[] = MSIME_EDITION_TEXT_SERVICE_DESCRIPTION;
 
 static const GUID SupportCategories[] = {
@@ -62,7 +62,7 @@ BOOL RegisterProfiles()
         goto Exit;
     }
     hr = pITfInputProcessorProfileMgr->RegisterProfile(
-        Global::MetasequoiaIMECLSID, TEXTSERVICE_LANGID, Global::MetasequoiaIMEGuidProfile, TEXTSERVICE_DESC,
+        Global::LingyaoIMECLSID, TEXTSERVICE_LANGID, Global::LingyaoIMEGuidProfile, TEXTSERVICE_DESC,
         static_cast<ULONG>(lenOfDesc), achIconFile, cchA, (UINT)TEXTSERVICE_ICON_INDEX, NULL, 0, TRUE, 0);
 
     if (FAILED(hr))
@@ -97,8 +97,8 @@ BOOL UnregisterProfiles()
         goto Exit;
     }
 
-    hr = pITfInputProcessorProfileMgr->UnregisterProfile(Global::MetasequoiaIMECLSID, TEXTSERVICE_LANGID,
-                                                         Global::MetasequoiaIMEGuidProfile, 0);
+    hr = pITfInputProcessorProfileMgr->UnregisterProfile(Global::LingyaoIMECLSID, TEXTSERVICE_LANGID,
+                                                         Global::LingyaoIMEGuidProfile, 0);
     if (FAILED(hr))
     {
         goto Exit;
@@ -133,7 +133,7 @@ BOOL RegisterCategories()
     // for each (GUID guid in SupportCategories)
     for (const auto &guid : SupportCategories)
     {
-        hr = pCategoryMgr->RegisterCategory(Global::MetasequoiaIMECLSID, guid, Global::MetasequoiaIMECLSID);
+        hr = pCategoryMgr->RegisterCategory(Global::LingyaoIMECLSID, guid, Global::LingyaoIMECLSID);
         if (FAILED(hr))
         {
             // Do not report success when a later category happened to mask a
@@ -170,7 +170,7 @@ BOOL UnregisterCategories()
     BOOL complete = TRUE;
     for (const auto &guid : SupportCategories)
     {
-        hr = pCategoryMgr->UnregisterCategory(Global::MetasequoiaIMECLSID, guid, Global::MetasequoiaIMECLSID);
+        hr = pCategoryMgr->UnregisterCategory(Global::LingyaoIMECLSID, guid, Global::LingyaoIMECLSID);
         if (FAILED(hr))
         {
             complete = FALSE;
@@ -239,7 +239,7 @@ BOOL RegisterServer()
     WCHAR achIMEKey[ARRAYSIZE(RegInfo_Prefix_CLSID) + CLSID_STRLEN] = {'\0'};
     WCHAR achFileName[MAX_PATH] = {'\0'};
 
-    if (!CLSIDToString(Global::MetasequoiaIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
+    if (!CLSIDToString(Global::LingyaoIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
     {
         return FALSE;
     }
@@ -306,7 +306,7 @@ BOOL UnregisterServer()
 {
     WCHAR achIMEKey[ARRAYSIZE(RegInfo_Prefix_CLSID) + CLSID_STRLEN] = {'\0'};
 
-    if (!CLSIDToString(Global::MetasequoiaIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
+    if (!CLSIDToString(Global::LingyaoIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
     {
         return FALSE;
     }

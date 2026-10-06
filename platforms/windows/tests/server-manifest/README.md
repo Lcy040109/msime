@@ -2,7 +2,7 @@
 
 The production Server includes `ServerManifest.cmake`. This minimal target uses the same wiring without starting the Server or registering a TSF component, so a manifest change can be checked without a full platform build.
 
-`MSIME_SERVER_UIACCESS` defaults to OFF, which is what a development build wants; `Build-Client.ps1` turns it on for the x64 installation build only. The manifest matches MSIME-Windows commit `342e2b6b2cb265ddc56d9d35cae642a4b696d73b` (`server/MetasequoiaImeServer.manifest`): `asInvoker`, `uiAccess="true"`. UIAccess takes effect only for a trusted-signed binary in a secure installation location — that is what the signed installer produces. The option neither elevates Tauri nor bypasses Windows trust requirements.
+`MSIME_SERVER_UIACCESS` defaults to OFF, which is what a development build wants; `Build-Client.ps1` turns it on for the x64 installation build only. The manifest matches MSIME-Windows commit `342e2b6b2cb265ddc56d9d35cae642a4b696d73b` (`server/LingyaoImeServer.manifest`): `asInvoker`, `uiAccess="true"`. UIAccess takes effect only for a trusted-signed binary in a secure installation location — that is what the signed installer produces. The option neither elevates Tauri nor bypasses Windows trust requirements.
 
 Local cross-link verification, run from the repository root:
 

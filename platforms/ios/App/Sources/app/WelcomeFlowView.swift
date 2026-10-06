@@ -23,11 +23,11 @@ struct WelcomeFlowView: View {
   }
 
   private let steps = [
-    Step(symbol: "keyboard", kicker: "第一步 · 约 30 秒", title: "把水杉加进键盘",
-         body: "在系统设置里添加水杉键盘，再打开「允许完全访问」，云候选、云剪贴板和同步才能工作。"),
+    Step(symbol: "keyboard", kicker: "第一步 · 约 30 秒", title: "把灵耀加进键盘",
+         body: "在系统设置里添加灵耀键盘，再打开「允许完全访问」，云候选、云剪贴板和同步才能工作。"),
     Step(symbol: "textformat", kicker: "第二步 · 随时可以改", title: "选一套输入方案",
          body: WelcomeFlowView.schemeStepBody),
-    Step(symbol: "translate", kicker: "第三步 · 水杉的特点", title: "候选下方就是译文",
+    Step(symbol: "translate", kicker: "第三步 · 灵耀的特点", title: "候选下方就是译文",
          body: "每个候选词下面那行小字是英文释义，本地词库优先，没命中时才联网查询。"),
     Step(symbol: "arrow.triangle.2.circlepath", kicker: "最后一步", title: "登录后多端同步",
          body: "登录后词库、自造词、皮肤和云剪贴板会在手机、平板和电脑之间同步。"),
@@ -49,19 +49,19 @@ struct WelcomeFlowView: View {
       .simultaneousGesture(swipe)
       .accessibilityAction(named: "上一步") { if page > 0 { withAnimation { page -= 1 } } }
     }
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .task { await refreshSignIn() }
     .sheet(isPresented: $showsLogin, onDismiss: { Task { await refreshSignIn() } }) { AccountLoginSheet() }
   }
 
-  private var background: Color { isCard ? MetasequoiaTheme.surface : MetasequoiaTheme.canvas }
+  private var background: Color { isCard ? LingyaoTheme.surface : LingyaoTheme.canvas }
 
   private var topBar: some View {
     HStack {
       Text("\(page + 1) / \(Self.pageCount)").font(.system(size: 13).monospacedDigit()).foregroundStyle(.secondary)
         .accessibilityIdentifier("onboardingProgress")
       Spacer()
-      Button("跳过") { finish() }.font(.system(size: 15)).foregroundStyle(MetasequoiaTheme.accent)
+      Button("跳过") { finish() }.font(.system(size: 15)).foregroundStyle(LingyaoTheme.accent)
         .accessibilityIdentifier("skipOnboardingButton")
     }
     .padding(.horizontal, isCard ? 28 : 24).padding(.top, isCard ? 24 : 16).padding(.bottom, 8)
@@ -70,11 +70,11 @@ struct WelcomeFlowView: View {
   private var content: some View {
     let step = steps[page]
     return VStack(alignment: .leading, spacing: 0) {
-      Image(systemName: step.symbol).font(.system(size: 32, weight: .medium)).foregroundStyle(MetasequoiaTheme.accent)
+      Image(systemName: step.symbol).font(.system(size: 32, weight: .medium)).foregroundStyle(LingyaoTheme.accent)
         .frame(width: 72, height: 72)
-        .background(MetasequoiaTheme.accentSoft, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(LingyaoTheme.accentSoft, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .accessibilityHidden(true)
-      Text(step.kicker).font(.system(size: 13, weight: .semibold)).foregroundStyle(MetasequoiaTheme.accent)
+      Text(step.kicker).font(.system(size: 13, weight: .semibold)).foregroundStyle(LingyaoTheme.accent)
         .padding(.top, 24)
       Text(step.title).font(.system(size: 28, weight: .bold)).padding(.top, 6)
         .accessibilityAddTraits(.isHeader).accessibilityIdentifier("onboardingTitle")
@@ -97,23 +97,23 @@ struct WelcomeFlowView: View {
     VStack(alignment: .leading, spacing: 12) {
       card {
         VStack(alignment: .leading, spacing: 12) {
-          instruction(1, "打开「设置 → 通用 → 键盘 → 键盘」，选择「添加新键盘」里的水杉输入法")
-          instruction(2, "点进水杉输入法，打开「允许完全访问」")
-          instruction(3, "在输入框长按地球键，切换到水杉")
+          instruction(1, "打开「设置 → 通用 → 键盘 → 键盘」，选择「添加新键盘」里的灵耀输入法")
+          instruction(2, "点进灵耀输入法，打开「允许完全访问」")
+          instruction(3, "在输入框长按地球键，切换到灵耀")
         }
       }
       Button {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
       } label: {
-        Text("打开系统设置").font(.system(size: 15, weight: .semibold)).foregroundStyle(MetasequoiaTheme.accent)
+        Text("打开系统设置").font(.system(size: 15, weight: .semibold)).foregroundStyle(LingyaoTheme.accent)
           .frame(maxWidth: .infinity).frame(height: 44)
-          .background(MetasequoiaTheme.accentSoft, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+          .background(LingyaoTheme.accentSoft, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
       .accessibilityIdentifier("openKeyboardSettingsButton")
-      .accessibilityHint("打开水杉输入法的系统设置页面")
+      .accessibilityHint("打开灵耀输入法的系统设置页面")
     }
   }
 
@@ -128,14 +128,14 @@ struct WelcomeFlowView: View {
             }
             Spacer()
             Circle()
-              .strokeBorder(scheme == choice.scheme ? MetasequoiaTheme.accent : Color.secondary.opacity(0.5),
+              .strokeBorder(scheme == choice.scheme ? LingyaoTheme.accent : Color.secondary.opacity(0.5),
                             lineWidth: scheme == choice.scheme ? 6 : 1.5)
               .frame(width: 22, height: 22)
           }
           .padding(16)
-          .background(MetasequoiaTheme.cardBackground(isCard), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+          .background(LingyaoTheme.cardBackground(isCard), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
           .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .strokeBorder(scheme == choice.scheme ? MetasequoiaTheme.accent : .clear, lineWidth: 2))
+            .strokeBorder(scheme == choice.scheme ? LingyaoTheme.accent : .clear, lineWidth: 2))
           .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -157,7 +157,7 @@ struct WelcomeFlowView: View {
           ForEach(Array(Self.glossSample.enumerated()), id: \.offset) { index, item in
             VStack(spacing: 3) {
               Text(item.0).font(.system(size: 18, weight: index == 0 ? .semibold : .regular))
-                .foregroundStyle(index == 0 ? MetasequoiaTheme.accent : Color.primary)
+                .foregroundStyle(index == 0 ? LingyaoTheme.accent : Color.primary)
               if showsGloss {
                 Text(item.1).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
               }
@@ -180,7 +180,7 @@ struct WelcomeFlowView: View {
         Text("先试试键盘").font(.system(size: 15))
       }.padding(.top, 4).accessibilityIdentifier("welcomeTryoutLink")
     }
-    .onAppear { showsGloss = InputHabitPreference.settings(in: MetasequoiaInputSessionBridge.loadSharedPreferences()).glossEnabled }
+    .onAppear { showsGloss = InputHabitPreference.settings(in: LingyaoInputSessionBridge.loadSharedPreferences()).glossEnabled }
   }
 
   private var syncStep: some View {
@@ -198,7 +198,7 @@ struct WelcomeFlowView: View {
       HStack(spacing: 6) {
         ForEach(0..<Self.pageCount, id: \.self) { index in
           RoundedRectangle(cornerRadius: 3)
-            .fill(index == page ? MetasequoiaTheme.accent : Color.secondary.opacity(0.3))
+            .fill(index == page ? LingyaoTheme.accent : Color.secondary.opacity(0.3))
             .frame(width: index == page ? 20 : 6, height: 6)
         }
       }
@@ -212,7 +212,7 @@ struct WelcomeFlowView: View {
         primaryButton("登录", identifier: "onboardingSignInButton") { showsLogin = true }
         // The whole row answers the tap, not only the two words drawn in it.
         Button { finish() } label: {
-          Text("稍后再说").font(.system(size: 15)).foregroundStyle(MetasequoiaTheme.accent)
+          Text("稍后再说").font(.system(size: 15)).foregroundStyle(LingyaoTheme.accent)
             .frame(maxWidth: .infinity).frame(height: 36).contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -225,9 +225,9 @@ struct WelcomeFlowView: View {
 
   private func primaryButton(_ title: String, identifier: String, action: @escaping () -> Void) -> some View {
     Button(action: action) {
-      Text(title).font(.system(size: 17, weight: .semibold)).foregroundStyle(MetasequoiaTheme.onAccent)
+      Text(title).font(.system(size: 17, weight: .semibold)).foregroundStyle(LingyaoTheme.onAccent)
         .frame(maxWidth: .infinity).frame(height: 50)
-        .background(MetasequoiaTheme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(LingyaoTheme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
     .buttonStyle(.plain)
@@ -236,13 +236,13 @@ struct WelcomeFlowView: View {
 
   private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
     content().padding(16).frame(maxWidth: .infinity, alignment: .leading)
-      .background(MetasequoiaTheme.cardBackground(isCard), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+      .background(LingyaoTheme.cardBackground(isCard), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
   }
 
   private func instruction(_ number: Int, _ text: String) -> some View {
     HStack(alignment: .top, spacing: 10) {
-      Text("\(number)").font(.system(size: 13, weight: .semibold)).foregroundStyle(MetasequoiaTheme.accent)
-        .frame(width: 22, height: 22).background(MetasequoiaTheme.accentSoft, in: Circle())
+      Text("\(number)").font(.system(size: 13, weight: .semibold)).foregroundStyle(LingyaoTheme.accent)
+        .frame(width: 22, height: 22).background(LingyaoTheme.accentSoft, in: Circle())
       Text(text).font(.system(size: 15)).fixedSize(horizontal: false, vertical: true)
     }
     .accessibilityElement(children: .combine)
@@ -250,9 +250,9 @@ struct WelcomeFlowView: View {
 
   private func perk(_ symbol: String, _ title: String) -> some View {
     HStack(spacing: 12) {
-      Image(systemName: symbol).font(.system(size: 15, weight: .medium)).foregroundStyle(MetasequoiaTheme.accent)
+      Image(systemName: symbol).font(.system(size: 15, weight: .medium)).foregroundStyle(LingyaoTheme.accent)
         .frame(width: 32, height: 32)
-        .background(MetasequoiaTheme.accentSoft, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(LingyaoTheme.accentSoft, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .accessibilityHidden(true)
       Text(title).font(.system(size: 17))
     }
@@ -342,7 +342,7 @@ struct OnboardingModalCard: View {
   }
 }
 
-private extension MetasequoiaTheme {
+private extension LingyaoTheme {
   /// Option cards sit on the page canvas when full screen, and on the grey grouped canvas inside the white iPad card.
   static func cardBackground(_ inCard: Bool) -> Color { inCard ? canvas : surface }
 }

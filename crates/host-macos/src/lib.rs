@@ -42,7 +42,7 @@ pub const DICTIONARY_MAINTENANCE_NOTIFICATION: &str =
     "MSIMEDictionaryMaintenanceWillBeginNotification";
 /// 打字统计开关变化的通知，与 InputController.mm 收听的一致。
 pub const TYPING_STATISTICS_NOTIFICATION: &str =
-    "MetasequoiaTypingStatisticsEnabledChangedNotification";
+    "LingyaoTypingStatisticsEnabledChangedNotification";
 
 #[cfg(target_os = "macos")]
 pub(crate) fn valid_session_socket_path(path: &str) -> bool {
@@ -647,7 +647,7 @@ mod tests {
                 TYPING_STATISTICS_NOTIFICATION,
                 Edition::by_id("wubi").unwrap()
             ),
-            "MetasequoiaTypingStatisticsEnabledChangedNotification.wubi"
+            "LingyaoTypingStatisticsEnabledChangedNotification.wubi"
         );
     }
 
@@ -655,7 +655,7 @@ mod tests {
     fn a_test_process_is_not_inside_a_package_and_runs_as_full() {
         assert_eq!(
             packaged_macos_identity().unwrap().input_method_bundle_id,
-            "app.msime.inputmethod.MetasequoiaIME"
+            "app.msime.inputmethod.LingyaoIME"
         );
     }
 

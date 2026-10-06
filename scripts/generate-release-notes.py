@@ -121,7 +121,7 @@ def model_notes(label: str, version: str, records: list[dict[str, object]]) -> s
         return None
     endpoint = os.environ.get("EVERYAPI_RELEASE_NOTES_ENDPOINT", "https://api.everyapi.ai/v1/chat/completions")
     model = os.environ.get("EVERYAPI_RELEASE_NOTES_MODEL", "gpt-5.5")
-    prompt = f"""你是水杉输入法的发行说明编辑。请为 {label} {version} 生成简洁的简体中文 Markdown 发布说明。
+    prompt = f"""你是灵耀输入法的发行说明编辑。请为 {label} {version} 生成简洁的简体中文 Markdown 发布说明。
 
 只根据下面的提交生成内容。只写会影响 {label} 用户的改动；纯共享代码改动只有在确实会进入 {label} 产品时才写。绝对不要列出其他平台的功能，不要发明提交中没有的行为，不要写测试过程、内部路径或凭据。
 

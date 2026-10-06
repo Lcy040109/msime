@@ -162,7 +162,7 @@ fn session_hotwords_page_the_users_pinyin_words_heaviest_first() {
         Some(if offset == 0 {
             json!({
                 "entries": [
-                    {"kind": "pinyin", "key": "shui'shan", "value": "水杉", "weight": 10},
+                    {"kind": "pinyin", "key": "shui'shan", "value": "灵耀", "weight": 10},
                     {"kind": "pinyin", "key": "a", "value": "啊", "weight": 900},
                     {"kind": "pinyin", "key": "abc", "value": "abc", "weight": 900},
                 ],
@@ -183,7 +183,7 @@ fn session_hotwords_page_the_users_pinyin_words_heaviest_first() {
     assert_eq!(requests[0]["user_only"], true);
     assert_eq!(requests[1]["offset"], 3);
     let texts: Vec<&str> = hotwords.iter().map(|word| word.text.as_str()).collect();
-    assert_eq!(texts, ["项目", "水杉"]);
+    assert_eq!(texts, ["项目", "灵耀"]);
     assert_eq!(hotwords[1].pinyin, "shui shan");
 
     // A dictionary that cannot be read gives no hotwords rather than failing the session.
@@ -251,7 +251,7 @@ fn desktop_local_sessions_forward_the_model_path_and_hotwords_that_fit() {
                 pinyin: "shui shan".into(),
             },
             msime_client_core::voice::hotwords::Hotword {
-                text: "水杉".into(),
+                text: "灵耀".into(),
                 pinyin: "shui\tshan".into(),
             },
             msime_client_core::voice::hotwords::Hotword {

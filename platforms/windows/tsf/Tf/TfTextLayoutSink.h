@@ -2,14 +2,14 @@
 
 #include "Private.h"
 
-class CMetasequoiaIME;
+class CLingyaoIME;
 
 POINT GetPhysicalTextAnchor(_In_ ITfContextView *pContextView, _In_ const RECT &textExtent);
 
 class CTfTextLayoutSink : public ITfTextLayoutSink
 {
   public:
-    CTfTextLayoutSink(_In_ CMetasequoiaIME *pTextService);
+    CTfTextLayoutSink(_In_ CLingyaoIME *pTextService);
     virtual ~CTfTextLayoutSink();
 
     // IUnknown methods
@@ -48,7 +48,7 @@ class CTfTextLayoutSink : public ITfTextLayoutSink
     ITfRange *_pRangeComposition;
     ITfContext *_pContextDocument;
     TfEditCookie _tfEditCookie;
-    CMetasequoiaIME *_pTextService;
+    CLingyaoIME *_pTextService;
     DWORD _dwCookieTextLayoutSink;
     LONG _refCount;
     bool _hasValidAnchor;

@@ -13,8 +13,8 @@ final class OnlineCandidateProvider {
   static let maxAIResponseBytes = 1024 * 1024
 
   /// Receives the view a provider's candidates were applied to.
-  var onApplied: ((MetasequoiaInputSnapshot) -> Void)?
-  private let session: MetasequoiaInputSessionBridge
+  var onApplied: ((LingyaoInputSnapshot) -> Void)?
+  private let session: LingyaoInputSessionBridge
   private let transport: any OnlineCandidateTransport
   private var signature: String?
   private var epoch: UInt64 = 0
@@ -26,7 +26,7 @@ final class OnlineCandidateProvider {
     (cloudRequested && !cloudApplied) || (aiRequested && !aiApplied)
   }
 
-  init(session: MetasequoiaInputSessionBridge,
+  init(session: LingyaoInputSessionBridge,
        transport: any OnlineCandidateTransport = URLSessionOnlineCandidateTransport()) {
     self.session = session
     self.transport = transport
@@ -75,7 +75,7 @@ final class OnlineCandidateProvider {
     }
     var aiDocument = document
     if let query = Self.object(document), Self.requestsCloud(query),
-       let url = MetasequoiaInputSessionBridge.cloudRequestURL(query: document),
+       let url = LingyaoInputSessionBridge.cloudRequestURL(query: document),
        let body = await transport.fetch(Self.cloudRequest(url)), target == epoch,
        // Applying a cloud result advances the Engine's generation, so the AI request has to be built from the query as it stands afterwards or it arrives stale.
        let refreshed = apply({ try self.session.applyCloudResponse(query: document, body: body) }) {
@@ -88,7 +88,7 @@ final class OnlineCandidateProvider {
           let request = Self.aiRequest(descriptor) else { return }
     aiRequested = true
     guard let body = await transport.fetch(request), target == epoch else { return }
-    let candidates = MetasequoiaInputSessionBridge.parseAIResponse(body, limit: limit)
+    let candidates = LingyaoInputSessionBridge.parseAIResponse(body, limit: limit)
     guard !candidates.isEmpty else { return }
     if apply({ try self.session.applyOnlineCandidates(query: aiDocument, candidates: candidates, source: 1) }) != nil {
       aiApplied = true

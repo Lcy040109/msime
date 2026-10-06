@@ -9,7 +9,7 @@ extern "C" void msime_macos_notify_typing_statistics_enabled(const char *notific
 // 设置应用发出的通知只到同一个版本的输入法：通知名随版本而变，full 不变。这里用一个只为测试存在的版本名收发，不会改动本机正在运行的输入法。
 int main() {
     @autoreleasepool {
-        NSString *const base = @"MetasequoiaTypingStatisticsEnabledChangedNotification";
+        NSString *const base = @"LingyaoTypingStatisticsEnabledChangedNotification";
         assert([MSIMEEditionNotificationNameIn(@{}, base) isEqualToString:base]);
         assert([MSIMEEditionNotificationNameIn(@{@"MSIMEEdition": @"full"}, base) isEqualToString:base]);
         NSString *const name = MSIMEEditionNotificationNameIn(@{@"MSIMEEdition": @"ctestedition"}, base);

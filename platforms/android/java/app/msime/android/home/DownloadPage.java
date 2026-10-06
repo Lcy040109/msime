@@ -115,7 +115,7 @@ public final class DownloadPage extends DetailPage {
     private static void copyLink(Context context) {
         ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
         if (clipboard == null) return;
-        clipboard.setPrimaryClip(ClipData.newPlainText("水杉下载页", DOWNLOAD));
+        clipboard.setPrimaryClip(ClipData.newPlainText("灵耀下载页", DOWNLOAD));
         MsToast.show(context, "链接已复制");
     }
 

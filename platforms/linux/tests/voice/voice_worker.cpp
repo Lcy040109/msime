@@ -7,9 +7,9 @@
 #include <thread>
 
 int main() {
-  assert(msime_voice_bound_result("水杉") == "水杉");
-  auto oversized = msime_voice_bound_result("水杉水杉", 6);
-  assert(oversized == "水杉");
+  assert(msime_voice_bound_result("灵耀") == "灵耀");
+  auto oversized = msime_voice_bound_result("灵耀灵耀", 6);
+  assert(oversized == "灵耀");
   assert(msime_voice_result_or_transcript("最终", "中间", "预编辑") == "最终");
   assert(msime_voice_result_or_transcript("", "中间😀", "预编辑") == "中间😀");
   assert(msime_voice_result_or_transcript("", "", "预编辑") == "预编辑");

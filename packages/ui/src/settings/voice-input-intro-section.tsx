@@ -47,7 +47,7 @@ export function VoiceInputIntroSection({
     return (
       <GroupList title={`${systemVoiceHostName} 系统语音`}>
         <SettingsGroupNote>
-          在目标应用中启用水杉输入法，使用键盘内的语音入口录音。不需要识别 API
+          在目标应用中启用灵耀输入法，使用键盘内的语音入口录音。不需要识别 API
           Key；首次使用需授予麦克风和语音识别权限。服务可用性及是否联网由系统决定，可选文本润色仍使用你配置的云服务。
         </SettingsGroupNote>
       </GroupList>

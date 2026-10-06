@@ -28,7 +28,7 @@ final class KeystrokeLatencyTests: XCTestCase {
   /// The bridge on its own: one C ABI round trip and the parse of what comes back, with no view
   /// work at all. What is left after this is what the keyboard itself costs.
   func testWhatTheBridgeAloneCosts() {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     var samples: [Double] = []
     for _ in 0..<50 {
       _ = bridge.cancel()
@@ -74,7 +74,7 @@ final class KeystrokeLatencyTests: XCTestCase {
     report("crowded-query", samples)
 
     // And the call the gloss scheduler makes on every keystroke, on its own.
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.cancel()
     _ = bridge.handleCharacter("y")
     _ = bridge.handleCharacter("i")

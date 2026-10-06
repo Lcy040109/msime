@@ -15,7 +15,7 @@ import java.util.List;
  * launcher; none removes the app from it entirely, which the user cannot undo from the launcher.
  */
 public enum AppIconStyle {
-    CLASSIC("classic", "", "经典", "深绿描线的水杉"),
+    CLASSIC("classic", "", "经典", "深绿描线的灵耀"),
     FOREST("forest", "MainActivityForest", "林绿", "饱和度更高的森林绿"),
     SKY("sky", "MainActivitySky", "天青", "浅蓝底色"),
     DUSK("dusk", "MainActivityDusk", "暮色", "暗紫与橘的渐层"),

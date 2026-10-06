@@ -112,8 +112,8 @@ final class CandidateFontSizeTests: XCTestCase {
   }
 
   func testTheLiveSessionSeesASizeTheSettingsAppWrote() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0[CandidateFontPreference.candidateKey] = 22
     })
     let reloaded = expectation(description: "reload")

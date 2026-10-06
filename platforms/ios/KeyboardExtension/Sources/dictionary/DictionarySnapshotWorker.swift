@@ -18,7 +18,7 @@ final class DictionarySnapshotWorker {
     }
     deinit { try? DictionarySnapshotBridge.discardInactive(identifier: request.id.uuidString, user: user) }
   }
-  private let session: MetasequoiaInputSessionBridge
+  private let session: LingyaoInputSessionBridge
   private let queue: DictionarySnapshotQueue
   private var task: Task<Void, Never>?
   private var prepared: Prepared?
@@ -28,7 +28,7 @@ final class DictionarySnapshotWorker {
   var report: ((String) -> Void)?
   var applied: (() -> Void)?
 
-  init(session: MetasequoiaInputSessionBridge, queue: DictionarySnapshotQueue = .init()) {
+  init(session: LingyaoInputSessionBridge, queue: DictionarySnapshotQueue = .init()) {
     self.session = session; self.queue = queue
   }
   func stop() { task?.cancel(); prepared = nil; lease = nil }
@@ -105,7 +105,7 @@ final class DictionarySnapshotWorker {
       }
     } catch {
       // Another holder has the snapshot lease: keep the prepared job and retry next tick.
-      if MetasequoiaInputSessionBridge.isSnapshotBusy(error) { return }
+      if LingyaoInputSessionBridge.isSnapshotBusy(error) { return }
       if case DictionarySnapshotQueue.Failure.busy = error { return }
       if let prepared, let version = try? session.localDictionaryStateVersion() {
         if version.hasPrefix("local-v1:" + prepared.request.id.uuidString + ":") {

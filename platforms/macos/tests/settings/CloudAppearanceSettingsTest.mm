@@ -169,7 +169,7 @@ int main() {
     assert(!MSIMEApplyCloudAppearance(values, defaults));
     NSDictionary *invalidThemes = @{@"platform.macos.global_theme": @[@"fluent", @"", @"../unsafe", @1, NSNull.null],
                                     @"platform.macos.custom_theme_base": @[@"custom", @"fluent", @"", @1, NSNull.null],
-                                    @"platform.macos.custom_candidate_skin": @[@"../unsafe", @"shuishan", @"custom", @1, NSNull.null]};
+                                    @"platform.macos.custom_candidate_skin": @[@"../unsafe", @"lingyao", @"custom", @1, NSNull.null]};
     for (NSString *key in invalidThemes) {
       for (id invalid in invalidThemes[key]) {
         NSMutableDictionary *bad = [saved mutableCopy]; bad[key] = invalid;

@@ -261,13 +261,13 @@ private final class AccountFixture: URLProtocol, @unchecked Sendable {
     model.logout(delete: true); try await finished(model)
     try require(model.user != nil && model.message != nil && storage.load() != nil)
     try require(windowClosures == 0)
-    var localSettings: MacSettingsAccess.Values = ["platform.macos.global_theme": .string("shuishan"), "platform.macos.custom_theme_base": .string("system"), "platform.macos.custom_candidate_skin": .string(""), "platform.macos.candidate_font_size": .integer(16), "platform.macos.candidate_learning": .boolean(false), "platform.macos.shuangpin_preedit_uses_raw": .boolean(false)]
+    var localSettings: MacSettingsAccess.Values = ["platform.macos.global_theme": .string("lingyao"), "platform.macos.custom_theme_base": .string("system"), "platform.macos.custom_candidate_skin": .string(""), "platform.macos.candidate_font_size": .integer(16), "platform.macos.candidate_learning": .boolean(false), "platform.macos.shuangpin_preedit_uses_raw": .boolean(false)]
     let settings = MacSettingsModel(accountID: "synthetic-user", client: client, account: session, local: .init(snapshot: { localSettings }, validate: { values in
       guard values.count == 6 else { throw Failure() }
     }, apply: { localSettings = $0 }))
     settings.download(); try await finished(settings)
     try require(settings.preview?["platform.macos.candidate_font_size"] == .integer(18))
-    try require(settings.preview?["platform.macos.global_theme"] == .string("shuishan"))
+    try require(settings.preview?["platform.macos.global_theme"] == .string("lingyao"))
     try require(settings.preview?["platform.macos.shuangpin_preedit_uses_raw"] == .boolean(false))
     AccountFixture.omittedPreferenceKey = "platform.macos.candidate_font_size"
     settings.download(); try await finished(settings)
@@ -287,7 +287,7 @@ private final class AccountFixture: URLProtocol, @unchecked Sendable {
     let credentials = try await session.credentials()
     let savedPreferences = try await client.preferences(token: credentials.token)
     try require(savedPreferences.settings["platform.ios.nine_key"] == .boolean(true))
-    try require(savedPreferences.settings["platform.macos.global_theme"] == .string("shuishan"))
+    try require(savedPreferences.settings["platform.macos.global_theme"] == .string("lingyao"))
     try require(savedPreferences.settings["platform.macos.custom_theme_base"] == .string("system") && savedPreferences.settings["platform.macos.custom_candidate_skin"] == .string(""))
     try require(settings.message == "本机设置已上传，其他平台的云端设置已保留。")
     try require(savedPreferences.settings["platform.macos.shuangpin_preedit_uses_raw"] == .boolean(true))
@@ -307,7 +307,7 @@ private final class AccountFixture: URLProtocol, @unchecked Sendable {
     settings.upload(); try await finished(settings)
     try require(settings.message == "本机设置已上传，其他平台的云端设置已保留。云端暂不支持主题设置，主题没有上传。")
     let themeless = try await client.preferences(token: credentials.token)
-    try require(themeless.settings["platform.macos.candidate_font_size"] == .integer(22) && themeless.settings["platform.macos.global_theme"] == .string("shuishan"))
+    try require(themeless.settings["platform.macos.candidate_font_size"] == .integer(22) && themeless.settings["platform.macos.global_theme"] == .string("lingyao"))
     AccountFixture.themeSchema = true
     settings.close(); try require(settings.preview == nil && settings.cloud == nil)
     let clipboard = MacClipboardModel(accountID: "synthetic-user", client: client, account: session)

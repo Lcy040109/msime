@@ -21,12 +21,12 @@ $staging = $PSScriptRoot
 $bin = Join-Path $RepoRoot "target/windows-$Edition"
 $layout = [ordered]@{
     'server' = @(Get-ChildItem -LiteralPath (Join-Path $staging 'server_exe') -File -Filter '*.pdb')
-    'tsf/x86' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/32/MetasequoiaImeTsf.pdb'))
-    'tsf/x64' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/64/MetasequoiaImeTsf.pdb'))
+    'tsf/x86' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/32/LingyaoImeTsf.pdb'))
+    'tsf/x64' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/64/LingyaoImeTsf.pdb'))
     'host/x86' = @(Get-Item -LiteralPath (Join-Path $bin 'x86/bin/msime_host_api.pdb'))
     'host/x64' = @(Get-Item -LiteralPath (Join-Path $bin 'x64/bin/msime_host_api.pdb'))
     # One PDB covers both halves of the Arm64X TIP.
-    'tsf/arm64x' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/arm64/MetasequoiaImeTsf.pdb'))
+    'tsf/arm64x' = @(Get-Item -LiteralPath (Join-Path $staging 'tsf_dll/arm64/LingyaoImeTsf.pdb'))
     'host/arm64' = @(Get-Item -LiteralPath (Join-Path $bin 'arm64/bin/msime_host_api.pdb'))
 }
 if ($layout['server'].Count -eq 0) { throw '暂存目录里没有 Server 的 PDB' }

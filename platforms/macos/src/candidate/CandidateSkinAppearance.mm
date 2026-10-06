@@ -1,16 +1,16 @@
 #import "CandidateSkinAppearance.h"
 
-NSNotificationName const MetasequoiaCandidateSkinDidChangeNotification =
-    @"MetasequoiaCandidateSkinDidChangeNotification";
+NSNotificationName const LingyaoCandidateSkinDidChangeNotification =
+    @"LingyaoCandidateSkinDidChangeNotification";
 // The same key MSIMEAppearancePreferences writes, so the retained panel and the toolbar fallback draw the theme the settings window chose.
 static NSString *const kGlobalThemePreferenceKey = @"MSIMEClientGlobalTheme";
 
-NSColor *MetasequoiaColorFromRgba(metasequoia::mac::Rgba color)
+NSColor *LingyaoColorFromRgba(metasequoia::mac::Rgba color)
 {
     return [NSColor colorWithSRGBRed:color.r green:color.g blue:color.b alpha:color.a];
 }
 
-BOOL MetasequoiaAppearanceIsDark(NSAppearance *appearance)
+BOOL LingyaoAppearanceIsDark(NSAppearance *appearance)
 {
     NSAppearance *resolved = appearance;
     if (resolved == nil)
@@ -29,7 +29,7 @@ BOOL MetasequoiaAppearanceIsDark(NSAppearance *appearance)
     return [match isEqualToString:NSAppearanceNameDarkAqua];
 }
 
-NSURL *MetasequoiaCandidateSkinsDirectoryURL(void)
+NSURL *LingyaoCandidateSkinsDirectoryURL(void)
 {
     const std::filesystem::path path = metasequoia::mac::DefaultSkinsRoot();
     if (path.empty())
@@ -39,24 +39,24 @@ NSURL *MetasequoiaCandidateSkinsDirectoryURL(void)
     return [NSURL fileURLWithPath:@(path.c_str()) isDirectory:YES];
 }
 
-NSString *MetasequoiaStoredGlobalTheme(void)
+NSString *LingyaoStoredGlobalTheme(void)
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:kGlobalThemePreferenceKey];
     return metasequoia::mac::IsGlobalThemeId(value.UTF8String ?: "") ? value : @"system";
 }
 
-void MetasequoiaSetStoredGlobalTheme(NSString *themeId)
+void LingyaoSetStoredGlobalTheme(NSString *themeId)
 {
     if (!metasequoia::mac::IsGlobalThemeId(themeId.UTF8String ?: ""))
     {
         return;
     }
     [[NSUserDefaults standardUserDefaults] setObject:themeId forKey:kGlobalThemePreferenceKey];
-    [[NSNotificationCenter defaultCenter] postNotificationName:MetasequoiaCandidateSkinDidChangeNotification
+    [[NSNotificationCenter defaultCenter] postNotificationName:LingyaoCandidateSkinDidChangeNotification
                                                         object:themeId];
 }
 
-metasequoia::mac::CustomTheme MetasequoiaStoredCustomTheme(void)
+metasequoia::mac::CustomTheme LingyaoStoredCustomTheme(void)
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     auto read = [defaults](NSString *key) {
@@ -77,8 +77,8 @@ metasequoia::mac::CustomTheme MetasequoiaStoredCustomTheme(void)
     return custom;
 }
 
-metasequoia::mac::ResolvedSkin MetasequoiaResolveStoredTheme(BOOL dark, BOOL vertical)
+metasequoia::mac::ResolvedSkin LingyaoResolveStoredTheme(BOOL dark, BOOL vertical)
 {
-    return metasequoia::mac::ResolveSkin(MetasequoiaStoredGlobalTheme().UTF8String, MetasequoiaStoredCustomTheme(), dark,
+    return metasequoia::mac::ResolveSkin(LingyaoStoredGlobalTheme().UTF8String, LingyaoStoredCustomTheme(), dark,
                                          vertical ? "vertical" : "horizontal", metasequoia::mac::DefaultSkinsRoot());
 }

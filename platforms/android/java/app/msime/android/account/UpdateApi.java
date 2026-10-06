@@ -41,7 +41,7 @@ import org.json.JSONObject;
 public final class UpdateApi {
     public static final String RELEASES_URL = "https://msime.app/api/releases?platform=android";
     /** 发布页下载地址的前缀，后面接 `<tag>/<资产名>`。 */
-    public static final String DOWNLOAD_PREFIX = "https://github.com/metasequoiaime/msime/releases/download/";
+    public static final String DOWNLOAD_PREFIX = "https://github.com/Lcy040109/msime/releases/download/";
     /** 允许连接的主机：msime.app 的发行版列表，GitHub 发布页和它重定向到的两个资产域名。 */
     public static final Set<String> HOSTS = Set.of(
         "msime.app", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com");

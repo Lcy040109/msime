@@ -20,7 +20,7 @@ test("fixed themes keep their own appearance; system and custom resolve candidat
   const view = render(<AppearanceCandidatePreview preferences={preferences} />);
   const preview = () => view.container.querySelector(".appearance-candidate-preview");
   expect(preview()?.getAttribute("data-preview-theme")).toBe("dark");
-  const fixed = { shuishan: "dark", light: "light", paper: "light", night: "dark", ink: "dark" };
+  const fixed = { lingyao: "dark", light: "light", paper: "light", night: "dark", ink: "dark" };
   for (const global_theme of ["system", "custom", ...Object.keys(fixed)] as const) {
     for (const candidate_theme of ["follow", "light", "dark"] as const) {
       view.rerender(

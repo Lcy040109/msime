@@ -106,7 +106,7 @@ export function DictionarySettingsPage() {
           <SettingsManagerBlock>
             {dictionaryPendingCount > 0 && (
               <SettingsInputDescription role="status">
-                {dictionaryPendingCount} 项等待键盘同步。打开水杉键盘后会在空闲时逐条生效。
+                {dictionaryPendingCount} 项等待键盘同步。打开灵耀键盘后会在空闲时逐条生效。
               </SettingsInputDescription>
             )}
             {dictionarySnapshotError && <ErrorAlert>{dictionarySnapshotError}</ErrorAlert>}

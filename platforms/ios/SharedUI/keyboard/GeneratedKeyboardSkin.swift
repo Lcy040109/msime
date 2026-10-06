@@ -53,7 +53,7 @@ enum GeneratedKeyboardSkin {
   }
 
   static let instruction = """
-  你是水杉输入法的键盘设计师。根据用户的风格描述生成原创、精致、可读的键盘皮肤。
+  你是灵耀输入法的键盘设计师。根据用户的风格描述生成原创、精致、可读的键盘皮肤。
   只返回一个 JSON 对象：{"name":"32字以内的中文设计名","design":{"background":"#E8F0EB","keyBackground":"#FFFFFF","keyForeground":"#17251D","accent":"#185C47","actionBackground":"#185C47","gradientEnd":"#DDEADD","customBorderColor":"#AAC6B7","cornerRadius":8,"borderWidth":0.5,"shadow":0.1,"pattern":0,"patternOpacity":0.05,"monospaced":false,"gradientHorizontal":false}}。
   颜色必须是 #RRGGBB。圆角0到20、边框0到2、阴影0到0.4、纹理强度0到0.15。
   pattern仅可为0无纹理、1细点、2网格、3波纹。用键帽、描边、阴影和细纹体现设计感，保持干净。

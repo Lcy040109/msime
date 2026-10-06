@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "EditSession.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 
 //+---------------------------------------------------------------------------
 //
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-CEditSessionBase::CEditSessionBase(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext)
+CEditSessionBase::CEditSessionBase(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext)
 {
     _refCount = 1;
     _pContext = pContext;

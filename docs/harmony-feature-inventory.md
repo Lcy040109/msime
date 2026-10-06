@@ -23,7 +23,7 @@ find "$ref"/platforms/ios/App "$ref"/platforms/ios/SharedUI "$ref"/platforms/ios
 | 来源 | 去处 |
 | --- | --- |
 | `InputSessionAdapter.cpp/.h` | `crates/input-runtime` 的会话编排 + `crates/host-api/src/ffi/session.rs` |
-| `MetasequoiaInputSessionBridge.mm/.h` | 同上；ArkTS 侧的对应物是 `KeyboardSession.ets` |
+| `LingyaoInputSessionBridge.mm/.h` | 同上；ArkTS 侧的对应物是 `KeyboardSession.ets` |
 | `CandidateTranslation.cpp/.h` | `crates/client-core/src/translation.rs` + `ffi/translation.rs` |
 | `DictionaryInstallation.mm/.h` | `crates/client-core/src/resources.rs`（暂存与校验），鸿蒙由 `StagedResources.ets` 调用 |
 | `DictionarySessionLease.mm/.h` | `crates/client-core/src/dictionary/access.rs` 的 `DictionaryAccess` |
@@ -82,7 +82,7 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 
 | 来源 | 去处 |
 | --- | --- |
-| `AppNavigation.swift`、`MetasequoiaImeApp.swift` | `packages/ui/src/index.tsx` 的页面路由与 `apps/harmony/src/main.tsx` |
+| `AppNavigation.swift`、`LingyaoImeApp.swift` | `packages/ui/src/index.tsx` 的页面路由与 `apps/harmony/src/main.tsx` |
 | `KeyboardHomeView.swift` | `packages/ui/src/keyboard/home-page.tsx`（#3343，按平台裁剪为两个动作） |
 | `WelcomeFlowView.swift`、`OnboardingView.swift` | `WelcomeFlowPage` + `OnboardingStatePolicy.ts` |
 | `AccountSettingsView.swift`、`AccountCodeLoginView.swift` | `packages/ui/src/account/account-page.tsx` |
@@ -131,7 +131,7 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 | `KeyboardAIView` | `AiPolishPolicy.ts` + `KeyboardView.polishFace`（#3414） |
 | `KeyboardVoiceView` | **不迁移**：iOS 的语音交接面（App 录音→键盘插入）；鸿蒙键盘自己录音 |
 | `VoiceTextHandoffStore` | **不迁移**：同上，交接机制本身不存在 |
-| `MetasequoiaTheme`、`KeyboardPanelButtonStyle`、`SkinKeySurfaceView`、`KeyboardSkinBackgroundView`、`ScrollEdgeEffects` | SwiftUI 样式层，由 ArkUI 的皮肤绘制与 `packages/ui` 的样式取代 |
+| `LingyaoTheme`、`KeyboardPanelButtonStyle`、`SkinKeySurfaceView`、`KeyboardSkinBackgroundView`、`ScrollEdgeEffects` | SwiftUI 样式层，由 ArkUI 的皮肤绘制与 `packages/ui` 的样式取代 |
 
 ## `platforms/ios/KeyboardExtension/Sources`（26）
 
@@ -153,7 +153,7 @@ Swift 后端客户端。鸿蒙不跑 Swift，这些的契约都在 client-core�
 | `SpaceCursorMovement.swift` | 同名 ArkTS 策略 |
 | `KeyboardInputContext.swift`、`KeyboardHostContext.m/.h` | `KeyboardSession` 的 `editorGeneration` 与 `ReplyContextPolicy.ts` |
 | `HandwritingDownloadSession.m/.h` | **不迁移**：ML Kit 模型下载；鸿蒙用系统 OCR |
-| `MetasequoiaKeyboard-Bridging-Header.h` | ObjC 桥接头，无对应物 |
+| `LingyaoKeyboard-Bridging-Header.h` | ObjC 桥接头，无对应物 |
 
 ## `platforms/ios/KeyboardTestHost`（1）
 

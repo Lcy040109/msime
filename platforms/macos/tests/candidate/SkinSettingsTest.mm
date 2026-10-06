@@ -45,7 +45,7 @@ int main(int argc, const char **argv) {
         NSString *suite = [@"app.msime.test.skin-cards." stringByAppendingString:NSUUID.UUID.UUIDString];
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
         MSIMEAppearancePreferences *preferences = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
-        MetasequoiaSkinSettingsView *cards = [[MetasequoiaSkinSettingsView alloc] initWithFrame:NSMakeRect(0, 0, 700, 700) preferences:preferences];
+        LingyaoSkinSettingsView *cards = [[LingyaoSkinSettingsView alloc] initWithFrame:NSMakeRect(0, 0, 700, 700) preferences:preferences];
         NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 700, 700) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
         [window.contentView addSubview:cards];
         [NSLayoutConstraint activateConstraints:@[
@@ -61,7 +61,7 @@ int main(int argc, const char **argv) {
         NSTextField *empty = [cards valueForKey:@"emptyLabel"];
         // One card per global theme, in the shared catalog's order, ahead of any package.
         assert(switches.count == 7 && previews.count == 7 && !empty.hidden && diagnostics.hidden);
-        NSArray<NSString *> *catalogIds = @[ @"system", @"shuishan", @"light", @"paper", @"night", @"ink", @"custom" ];
+        NSArray<NSString *> *catalogIds = @[ @"system", @"lingyao", @"light", @"paper", @"night", @"ink", @"custom" ];
         for (NSUInteger index = 0; index < 7; ++index) assert([switches[index].identifier isEqual:catalogIds[index]]);
         // A fresh install selects 跟随系统, the default the shared preferences give an unset theme.
         for (NSSwitch *card in switches)
@@ -129,7 +129,7 @@ int main(int argc, const char **argv) {
         assert([preferences.customCandidateSkin isEqual:@"synthetic"] && switches.lastObject.state == NSControlStateValueOn);
         // Leaving for a built-in theme and coming back through the custom card selects the custom theme as it stands: the package is still drawn (THEME_CONTRACT §5).
         [NSApp sendAction:switches[1].action to:switches[1].target from:switches[1]];
-        assert([preferences.globalTheme isEqual:@"shuishan"] && switches.lastObject.state == NSControlStateValueOff);
+        assert([preferences.globalTheme isEqual:@"lingyao"] && switches.lastObject.state == NSControlStateValueOff);
         [NSApp sendAction:switches[6].action to:switches[6].target from:switches[6]];
         assert([preferences.globalTheme isEqual:@"custom"] && [preferences.customCandidateSkin isEqual:@"synthetic"]);
         assert([preferences resolvedSkinForDark:NO].candidateSkin == "synthetic");
@@ -207,8 +207,8 @@ int main(int argc, const char **argv) {
         // The remaining entry is a trip to the shared settings application, not the control that
         // picks a skin: the browser is the 皮肤 page itself.
         assert(browse && [browse.title isEqual:@"在设置应用中打开…"] && [preferences respondsToSelector:browse.action]);
-        MetasequoiaSkinSettingsView *catalogView = (id)[preferences skinSettingsView];
-        assert([catalogView isKindOfClass:MetasequoiaSkinSettingsView.class]);
+        LingyaoSkinSettingsView *catalogView = (id)[preferences skinSettingsView];
+        assert([catalogView isKindOfClass:LingyaoSkinSettingsView.class]);
         assert([catalogView valueForKey:@"preferences"] == preferences);
         assert([preferences skinSettingsView] == catalogView && catalogView.window == preferences.window);
         [preferences.window.contentView layoutSubtreeIfNeeded];

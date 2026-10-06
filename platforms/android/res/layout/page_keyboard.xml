@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <!-- 水杉团队的通知（GET /v1/notices，channel app），由 NoticeBanner 填充；没有通知时不占位。 -->
+            <!-- 灵耀团队的通知（GET /v1/notices，channel app），由 NoticeBanner 填充；没有通知时不占位。 -->
             <LinearLayout
                 android:id="@+id/keyboard_notices"
                 android:layout_width="match_parent"

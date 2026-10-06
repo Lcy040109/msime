@@ -15,7 +15,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const prefix = "app.msime.inputmethod.MetasequoiaIME.";
+const prefix = "app.msime.inputmethod.LingyaoIME.";
 const allSchemes = [
   "quanpin",
   "shuangpin",
@@ -51,11 +51,11 @@ test("names the language each missing entry sits under in the add dialog", async
   );
 
   const text = (await screen.findByText(/还没加入的/)).textContent;
-  expect(text).toContain("「水杉输入法 · 粤」在「粤语」下");
-  expect(text).toContain("「水杉输入法 · 注」在「繁体中文」下");
-  expect(text).toContain("「水杉输入法 · 藏」在「藏语」下");
-  expect(text).toContain("「水杉输入法 · 笔」在「简体中文」下");
-  expect(text).not.toContain("水杉输入法 · 双");
+  expect(text).toContain("「灵耀输入法 · 粤」在「粤语」下");
+  expect(text).toContain("「灵耀输入法 · 注」在「繁体中文」下");
+  expect(text).toContain("「灵耀输入法 · 藏」在「藏语」下");
+  expect(text).toContain("「灵耀输入法 · 笔」在「简体中文」下");
+  expect(text).not.toContain("灵耀输入法 · 双");
   expect(text).not.toContain("菜单栏里还没有");
   expect(screen.getByRole("button", { name: "打开键盘设置" })).toBeTruthy();
 });
@@ -71,7 +71,7 @@ test("leads with the current scheme's entry when it is missing", async () => {
   );
 
   const text = (await screen.findByText(/还没加入的/)).textContent ?? "";
-  expect(text.startsWith("菜单栏里还没有「水杉输入法 · 粤」")).toBe(true);
+  expect(text.startsWith("菜单栏里还没有「灵耀输入法 · 粤」")).toBe(true);
   expect(text).not.toContain("重新登录");
 });
 
@@ -86,7 +86,7 @@ test("leads with the Stroke entry when Stroke is the current scheme", async () =
   );
 
   const text = (await screen.findByText(/还没加入的/)).textContent ?? "";
-  expect(text.startsWith("菜单栏里还没有「水杉输入法 · 笔」")).toBe(true);
+  expect(text.startsWith("菜单栏里还没有「灵耀输入法 · 笔」")).toBe(true);
 });
 
 test("leaves out the entries of schemes the host does not offer", async () => {
@@ -99,7 +99,7 @@ test("leaves out the entries of schemes the host does not offer", async () => {
     />,
   );
 
-  expect(await screen.findByText("输入法菜单里已经有水杉输入法的全部入口。")).toBeTruthy();
+  expect(await screen.findByText("输入法菜单里已经有灵耀输入法的全部入口。")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "打开键盘设置" })).toBeNull();
 });
 
@@ -137,7 +137,7 @@ test("reads the list again while the user is in System Settings", async () => {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(3000);
   });
-  expect(await screen.findByText(/还没加入的：「水杉输入法 · 英」/)).toBeTruthy();
+  expect(await screen.findByText(/还没加入的：「灵耀输入法 · 英」/)).toBeTruthy();
   expect(screen.queryByText(/菜单栏里还没有/)).toBeNull();
 });
 
@@ -165,7 +165,7 @@ test("reports a failure when opening keyboard settings fails", async () => {
 
 const wubiEdition: EditionInfo = {
   id: "wubi",
-  display_name: "水杉五笔",
+  display_name: "灵耀五笔",
   input_schemes: ["wubi"],
   default_scheme: "wubi",
   temporary_japanese: false,
@@ -179,27 +179,27 @@ test("full keeps the table and each edition lists only its own entries under its
   expect(macosInputModeEntriesFor()).toBe(macosInputModeEntries);
   // 五笔版的主模式就是「五」：bundle 只声明 Hans（用五笔的字）和 Roman，见 edition_bundle.py。
   expect(macosInputModeEntriesFor(wubiEdition).map(({ mode, name }) => [mode, name])).toEqual([
-    ["Hans", "水杉五笔 · 五"],
-    ["Roman", "水杉五笔 · 英"],
+    ["Hans", "灵耀五笔 · 五"],
+    ["Roman", "灵耀五笔 · 英"],
   ]);
   expect(
     macosInputModeEntriesFor({
       ...wubiEdition,
       id: "pinyin",
-      display_name: "水杉拼音",
+      display_name: "灵耀拼音",
       input_schemes: ["quanpin", "shuangpin"],
       default_scheme: "quanpin",
     }).map(({ mode, name }) => [mode, name]),
   ).toEqual([
-    ["Hans", "水杉拼音 · 中"],
-    ["Shuangpin", "水杉拼音 · 双"],
-    ["Roman", "水杉拼音 · 英"],
+    ["Hans", "灵耀拼音 · 中"],
+    ["Shuangpin", "灵耀拼音 · 双"],
+    ["Roman", "灵耀拼音 · 英"],
   ]);
   // 日文、越南文、藏文版的主模式是本版本方案的字，主模式和「英」都登记在这个方案的语言下；五笔版仍在「简体中文」下。
   for (const [id, display_name, mark, language] of [
-    ["japanese", "水杉日语", "日", "日语"],
-    ["vietnamese", "水杉越南语", "越", "越南语"],
-    ["tibetan", "水杉藏文", "藏", "藏语"],
+    ["japanese", "灵耀日语", "日", "日语"],
+    ["vietnamese", "灵耀越南语", "越", "越南语"],
+    ["tibetan", "灵耀藏文", "藏", "藏语"],
   ] as const) {
     expect(
       macosInputModeEntriesFor({
@@ -233,7 +233,7 @@ test("an edition whose entries are all in the list says so under its own name", 
       onError={vi.fn()}
     />,
   );
-  expect(await screen.findByText("输入法菜单里已经有水杉五笔的全部入口。")).toBeTruthy();
+  expect(await screen.findByText("输入法菜单里已经有灵耀五笔的全部入口。")).toBeTruthy();
 });
 
 test("an edition names its missing entry by the edition's name", async () => {
@@ -247,6 +247,6 @@ test("an edition names its missing entry by the edition's name", async () => {
     />,
   );
   const text = (await screen.findByText(/还没加入的/)).textContent;
-  expect(text).toContain("「水杉五笔 · 五」在「简体中文」下");
-  expect(text).not.toContain("水杉输入法");
+  expect(text).toContain("「灵耀五笔 · 五」在「简体中文」下");
+  expect(text).not.toContain("灵耀输入法");
 });

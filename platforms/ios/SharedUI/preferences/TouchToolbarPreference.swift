@@ -48,11 +48,11 @@ struct TouchToolbarPreference: Equatable {
   }
 
   static func load(stateRoot: URL? = nil) -> TouchToolbarPreference {
-    TouchToolbarPreference(in: MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot))
+    TouchToolbarPreference(in: LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot))
   }
 
   /// Written into the shared document, which the keyboard reads each time it appears.
   static func save(_ toolbar: TouchToolbarPreference, stateRoot: URL? = nil) -> Bool {
-    MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { $0[key] = toolbar.documentValue }
+    LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { $0[key] = toolbar.documentValue }
   }
 }

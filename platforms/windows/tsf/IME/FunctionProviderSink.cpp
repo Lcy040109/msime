@@ -1,5 +1,5 @@
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "SearchCandidateProvider.h"
 
 //+---------------------------------------------------------------------------
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_InitFunctionProviderSink()
+BOOL CLingyaoIME::_InitFunctionProviderSink()
 {
     ITfSourceSingle *pSourceSingle = nullptr;
     BOOL ret = FALSE;
@@ -38,7 +38,7 @@ BOOL CMetasequoiaIME::_InitFunctionProviderSink()
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_UninitFunctionProviderSink()
+void CLingyaoIME::_UninitFunctionProviderSink()
 {
     if (_pITfFnSearchCandidateProvider != nullptr)
     {

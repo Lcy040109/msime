@@ -100,7 +100,7 @@ def main() -> int:
         assert "切换到其他输入法" in calls(log, "notify")[0] and "ibus restart" in calls(log, "notify")[0], calls(log, "notify")
         # 切回时要找的名字就是 IBus 输入源列表里显示的 longname：组件 XML 与 msime-linux-ibus 自报的描述都得是这一个。
         longname = re.search(r"<longname>([^<]+)</longname>", (ROOT / "data/msime-linux.xml.in").read_text()).group(1)
-        assert longname == "Metasequoia 水杉输入法", longname
+        assert longname == "Lingyao 灵耀输入法", longname
         # msime-linux-ibus 自报的显示名是 LinuxEdition.h 里本版本的 MSIME_EDITION_IBUS_LONGNAME，full 的那一个就是这个 longname。
         assert "MSIME_EDITION_IBUS_LONGNAME" in (ROOT / "src/entrypoints/ibus_main.cpp").read_text()
         full_longname = re.search(r'#if defined\(MSIME_EDITION_FULL\).*?#define MSIME_EDITION_IBUS_LONGNAME ("[^"]*")', (ROOT / "src/core/LinuxEdition.h").read_text(), re.S).group(1)

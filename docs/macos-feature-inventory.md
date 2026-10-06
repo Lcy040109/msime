@@ -21,7 +21,7 @@ comm -23 /tmp/ref.txt /tmp/ours.txt   # 这 42 条，应与下表一致
 
 | 来源 | 行数 | 目的地 | 说明 |
 | --- | --- | --- | --- |
-| `MetasequoiaInputSessionBridge.h/.mm` | 122 / 657 | `platforms/macos/src/core/DesktopInputSession.{h,mm}` | 控制器持有的会话对象由 `MSIMEDesktopInputSession` 承担（`InputController.mm:613`） |
+| `LingyaoInputSessionBridge.h/.mm` | 122 / 657 | `platforms/macos/src/core/DesktopInputSession.{h,mm}` | 控制器持有的会话对象由 `MSIMEDesktopInputSession` 承担（`InputController.mm:613`） |
 | `InputSessionAdapter.h/.cpp` | 140 / 485 | `crates/host-api`（C ABI）+ `crates/input-runtime` | C++ 适配层换成 Rust 运行时，宿主不再自建适配 |
 | `PersonalDictionaryBridge.h/.mm` | 20 / 99 | `crates/host-api/src/dictionary.rs`、`crates/host-macos/native/dictionary.mm` | 用户词条的读写走同一套 C ABI |
 | `CandidateTranslation.h/.cpp` | 32 / 190 | `crates/host-api/src/ffi/translation.rs` | `msime_client_candidate_gloss_request` 是所有宿主共用的入口 |
@@ -55,11 +55,11 @@ comm -23 /tmp/ref.txt /tmp/ours.txt   # 这 42 条，应与下表一致
 
 ## 四、随 C++ Engine 一起删除的文件
 
-下面 14 个文件曾以来源原名留在本仓库，所以首次核对把它们算进了同名的 85 个。它们都不在产品的调用路径上：`MetasequoiaInputController.mm` 与 `DictionaryRuntime.mm` 是固定 Apple 快照里那对直连 Engine 的适配器，从未参与构建；其余是只被这对适配器引用的辅助头与桥接，除了各自的单元测试没有别的调用方（`StringConversion.mm` 虽然编进了输入法 bundle，调用它的也只有那个适配器）。2026-09-30 输入引擎换成 `crates/engine` 时一并删除，产品用的一直是右列那些。
+下面 14 个文件曾以来源原名留在本仓库，所以首次核对把它们算进了同名的 85 个。它们都不在产品的调用路径上：`LingyaoInputController.mm` 与 `DictionaryRuntime.mm` 是固定 Apple 快照里那对直连 Engine 的适配器，从未参与构建；其余是只被这对适配器引用的辅助头与桥接，除了各自的单元测试没有别的调用方（`StringConversion.mm` 虽然编进了输入法 bundle，调用它的也只有那个适配器）。2026-09-30 输入引擎换成 `crates/engine` 时一并删除，产品用的一直是右列那些。
 
 | 来源 | 行数 | 目的地 |
 | --- | --- | --- |
-| `MetasequoiaInputController.h/.mm` | 6 / 2135 | `platforms/macos/src/input/InputController.mm` 的 `MSIMEInputController`，会话经 `platforms/macos/src/core/DesktopInputSession.{h,mm}` 走 `crates/host-api` 的 C ABI |
+| `LingyaoInputController.h/.mm` | 6 / 2135 | `platforms/macos/src/input/InputController.mm` 的 `MSIMEInputController`，会话经 `platforms/macos/src/core/DesktopInputSession.{h,mm}` 走 `crates/host-api` 的 C ABI |
 | `DictionaryRuntime.h/.mm` | 7 / 246 | `platforms/macos/src/core/ClientDictionaryRuntime.mm` |
 | `DictionaryInstallation.h/.mm` | 35 / 272 | 随包词库的准备与升级换代由 `msime_client_prepare_host` / `msime_client_refresh_host` 完成（`crates/host-api/src/lib.rs` 的 `prepare_host_configuration`、`refresh_host_options`），校验在 `crates/client-core/src/resources.rs` 的 `ResourceStore`；单个下载词典的校验与原子替换在 `platforms/macos/src/dictionary/DictionaryInstaller.mm` |
 | `DictionarySnapshotBridge.h/.mm` | 43 / 281 | `crates/host-api/src/dictionary_snapshot.rs` |
@@ -94,25 +94,25 @@ ref=/path/to/MSIME-apple
 | 原生设置窗的 AppKit 管线 | 166 | `*Changed` 动作选择器、`refresh*` / `update*Controls*` 控件刷新、`set*` / `stored*` 的 NSUserDefaults 存取器。这些是来源 3323 行 `PreferencesWindowController.mm` 的骨架；按「公共 UI 放 Tauri」，对应物是 React 的 `onChange` 与一份共享 `Preferences`，不存在同名符号是设计结果 |
 | 承载行为、需逐个定位 | 37 | 下表 |
 
-2026-09-30 补记：「同名即命中」里有 70 个只命中于第四节删掉的那 14 个文件，也就是说它们当初靠从未参与构建的直连适配器才算作存在。以 `git grep -w` 在本仓库除 `docs/` 外逐个查，删除前的树命中 319 个（首次核对记的是 315，当时用的查法没有记下），删除后 249 个。这 70 个分三组，都不是缺口：22 个 `stored*` 存取器与上表第二行同性质，由共享 `Preferences` 取代；30 个控制器方法（`applyResult`、`commitLeadingCandidate`、`selectCandidateAtIndex`、`refreshCandidatePanelPreservingSelection` 等）是直连适配器自己的骨架，产品控制器 `MSIMEInputController` 经共享运行时承担同样的职责，名字不同；18 个自由函数里 16 个定义在第四节的文件里，去处就是那一行；另两个在来源别处定义：`HandleCharacterWithWubiAutoCommit`（来源 `WubiCommitPolicy.h`）对应下表 `ShouldAutoCommitUniqueWubiCandidate` 那一行的 `MSIMEShouldAutoCommitWubi`，`EnsureMetasequoiaDictionary`（来源 `DictionaryInstaller.mm`）对应下表 `PrepareMetasequoiaDictionary` 那一行。
+2026-09-30 补记：「同名即命中」里有 70 个只命中于第四节删掉的那 14 个文件，也就是说它们当初靠从未参与构建的直连适配器才算作存在。以 `git grep -w` 在本仓库除 `docs/` 外逐个查，删除前的树命中 319 个（首次核对记的是 315，当时用的查法没有记下），删除后 249 个。这 70 个分三组，都不是缺口：22 个 `stored*` 存取器与上表第二行同性质，由共享 `Preferences` 取代；30 个控制器方法（`applyResult`、`commitLeadingCandidate`、`selectCandidateAtIndex`、`refreshCandidatePanelPreservingSelection` 等）是直连适配器自己的骨架，产品控制器 `MSIMEInputController` 经共享运行时承担同样的职责，名字不同；18 个自由函数里 16 个定义在第四节的文件里，去处就是那一行；另两个在来源别处定义：`HandleCharacterWithWubiAutoCommit`（来源 `WubiCommitPolicy.h`）对应下表 `ShouldAutoCommitUniqueWubiCandidate` 那一行的 `MSIMEShouldAutoCommitWubi`，`EnsureLingyaoDictionary`（来源 `DictionaryInstaller.mm`）对应下表 `PrepareLingyaoDictionary` 那一行。
 
 37 个逐个都有去处：
 
 | 来源符号 | 目的地 |
 | --- | --- |
-| `MetasequoiaRegisterInputSource`、`MetasequoiaRegisterAndEnableInputSources`、`MetasequoiaShouldRegisterInputSource` | `platforms/macos/src/input/InputSourceRegistration.h`、`platforms/macos/src/input/input_method_main.mm`（仅前缀 `Metasequoia`→`MSIME`） |
-| `MetasequoiaInputModeHUDFrame`、`MetasequoiaIsUsableCaretRect` | `platforms/macos/src/input/InputModeHUDPanel.mm`（后者为 `MSIMEValidCaret`） |
-| `MetasequoiaShuangpinKeymapPanelFrame` | `platforms/macos/src/settings/ShuangpinKeymapPanel.h` |
-| `MetasequoiaFloatingToolbarWidth` | `platforms/macos/src/core/FloatingToolbarPanel.mm` |
+| `LingyaoRegisterInputSource`、`LingyaoRegisterAndEnableInputSources`、`LingyaoShouldRegisterInputSource` | `platforms/macos/src/input/InputSourceRegistration.h`、`platforms/macos/src/input/input_method_main.mm`（仅前缀 `Lingyao`→`MSIME`） |
+| `LingyaoInputModeHUDFrame`、`LingyaoIsUsableCaretRect` | `platforms/macos/src/input/InputModeHUDPanel.mm`（后者为 `MSIMEValidCaret`） |
+| `LingyaoShuangpinKeymapPanelFrame` | `platforms/macos/src/settings/ShuangpinKeymapPanel.h` |
+| `LingyaoFloatingToolbarWidth` | `platforms/macos/src/core/FloatingToolbarPanel.mm` |
 | `ShouldAutoCommitUniqueWubiCandidate` | `platforms/macos/src/core/WubiCommitPolicy.h` 的 `MSIMEShouldAutoCommitWubi` |
 | `ActionForSolitaryShift`、`handleSolitaryShiftFlags` | `platforms/macos/src/core/ModifierTap.h`，控制器用 `MSIMEModifierTap` 观察修饰键 |
 | `ClassifyConfiguredControllerKey` | `platforms/macos/src/input/InputControllerPhysicalKeys.h` |
-| `MetasequoiaCandidateKeyOptions`、`MetasequoiaCandidateFollowsCaret` | 共享 `NavigationPreferences` / `candidate_follow_cursor` |
+| `LingyaoCandidateKeyOptions`、`LingyaoCandidateFollowsCaret` | 共享 `NavigationPreferences` / `candidate_follow_cursor` |
 | `candidatePinToggled` | `platforms/macos/src/input/InputController.mm` 的 `MSIMETogglePinnedCandidate` / `MSIMECandidatePinCode` |
 | 释义与翻译共 12 个（`LookupCandidateGloss`、`FormatCandidateGloss`、`TakeLeadingSenses`、`FindSenseDelimiter`、`CollapseWhitespace`、`IsAsciiSpace`、`IsHanCodePoint`、`IsEnglishCandidateText`、`NextArmedGlossColumn`、`CandidateGlossRequestForModifiers`、`CandidateSupportsOnlineGloss`、`TranslationQueryForCandidate`、`CandidateTranslationProviderAt`） | `crates/host-api/src/ffi/translation.rs`（所有宿主共用的 C ABI） |
-| `EncodePersonalWord`、`DecodePersonalWord`、`personalEntriesAtOffset`、`ResetMetasequoiaLearnedData(ForCurrentUser)` | `crates/host-api/src/dictionary.rs` |
-| `InstallMetasequoiaDictionary`、`InstallMetasequoiaEnglishDictionary`、`InstallMetasequoiaHelpCodes`、`PrepareMetasequoiaDictionary` | `crates/host-api/src/lib.rs` 的 `prepare_host_configuration` / `refresh_host_options`（资源由 `platforms/macos/stage-resources.sh` 随包，`crates/client-core/src/resources.rs` 校验）、`platforms/macos/src/dictionary/DictionaryInstaller.mm` |
-| `UninstallMetasequoia`、`UninstallMetasequoiaForCurrentUser` | `crates/host-macos/native/uninstaller.mm` 的 `msime_macos_uninstall_input_source` |
+| `EncodePersonalWord`、`DecodePersonalWord`、`personalEntriesAtOffset`、`ResetLingyaoLearnedData(ForCurrentUser)` | `crates/host-api/src/dictionary.rs` |
+| `InstallLingyaoDictionary`、`InstallLingyaoEnglishDictionary`、`InstallLingyaoHelpCodes`、`PrepareLingyaoDictionary` | `crates/host-api/src/lib.rs` 的 `prepare_host_configuration` / `refresh_host_options`（资源由 `platforms/macos/stage-resources.sh` 随包，`crates/client-core/src/resources.rs` 校验）、`platforms/macos/src/dictionary/DictionaryInstaller.mm` |
+| `UninstallLingyao`、`UninstallLingyaoForCurrentUser` | `crates/host-macos/native/uninstaller.mm` 的 `msime_macos_uninstall_input_source` |
 
 这一轮没有找到缺口。
 

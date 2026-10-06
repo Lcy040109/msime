@@ -6,7 +6,7 @@ import java.util.Locale;
 import org.json.JSONObject;
 
 /**
- * 应用主题（水杉四季 / 春芽 / 夏荫 / 秋杉 / 冬雪）某一季、某一模式下宿主与跟随系统键盘要用的全部颜色，由种子色按设计稿 `全平台 UI.dc.html` 的 `color-mix` 公式推导。
+ * 应用主题（灵耀四季 / 春芽 / 夏荫 / 秋杉 / 冬雪）某一季、某一模式下宿主与跟随系统键盘要用的全部颜色，由种子色按设计稿 `全平台 UI.dc.html` 的 `color-mix` 公式推导。
  *
  * <p>种子色（accent、bg、card、hair、onAccent）来自 Rust 的 `msime_client_resolve_app_theme`，季节规则也在那里；这里只做 Android 呈现层的派生：andCard、accentSoft、logo 两色、开屏四色、统计柱与热力图、跟随系统皮肤的键盘底色 / 字母键 / 功能键。宿主（`res/values*` 的主题属性）和 `:ime` 进程（跟随系统皮肤）共用这一份公式，`res` 里的数值与它由测试对照。所有颜色都是 Android 的 ARGB `int`。
  *

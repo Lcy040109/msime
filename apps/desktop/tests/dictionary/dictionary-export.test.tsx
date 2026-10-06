@@ -10,10 +10,10 @@ import {
 } from "@msime/ui";
 
 test("each dictionary kind exports under its own shipped name", () => {
-  expect(dictionaryExportName("pinyin")).toBe("水杉IME-拼音用户词库.txt");
-  expect(dictionaryExportName("wubi")).toBe("水杉IME-五笔用户词库.txt");
-  expect(dictionaryExportName("english")).toBe("水杉IME-英文用户词库.txt");
-  expect(dictionaryExportName("quick_phrase")).toBe("水杉IME-快捷短语用户词库.txt");
+  expect(dictionaryExportName("pinyin")).toBe("灵耀IME-拼音用户词库.txt");
+  expect(dictionaryExportName("wubi")).toBe("灵耀IME-五笔用户词库.txt");
+  expect(dictionaryExportName("english")).toBe("灵耀IME-英文用户词库.txt");
+  expect(dictionaryExportName("quick_phrase")).toBe("灵耀IME-快捷短语用户词库.txt");
   // The old single generic name said nothing about which book it held.
   expect(
     new Set(
@@ -80,7 +80,7 @@ test("the complete personal dictionary export follows Apple's kind order and env
     { kind: "wubi98" as const, key: "wq", value: "你", weight: 5 },
     { kind: "wubi" as const, key: "wq", value: "你", weight: 1 },
   ];
-  expect(personalDictionaryExportName()).toBe("水杉用户词库.txt");
+  expect(personalDictionaryExportName()).toBe("灵耀用户词库.txt");
   expect(personalDictionaryExportPayload(entries)).toEqual({
     rows: 5,
     body: "# 类别\t编码\t词条\t权重\n拼音\tni'hao\t你好\t2\n86 五笔\twq\t你\t1\n98 五笔\twq\t你\t5\n快捷短语\tgreet\t你好\t3\n英文\thello\tHello\t4\n",

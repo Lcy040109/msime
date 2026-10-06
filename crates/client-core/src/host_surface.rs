@@ -327,7 +327,7 @@ const ANDROID_HELPCODE_SCHEMAS: [&str; 6] = [
 pub struct EditionInfo {
     /// 版本 id。
     pub id: String,
-    /// 版本的中文产品名（版本表 `display_name.zh-Hans`），例如「水杉五笔」。macOS 设置页用它称呼本版本在输入法菜单里的各个入口。
+    /// 版本的中文产品名（版本表 `display_name.zh-Hans`），例如「灵耀五笔」。macOS 设置页用它称呼本版本在输入法菜单里的各个入口。
     pub display_name: String,
     /// 本版本提供的方案；不在其中的方案在本版本里不存在。
     pub input_schemes: Vec<InputScheme>,
@@ -885,7 +885,7 @@ impl SurfaceRoute {
             SurfaceRoute::Keyboard => Some(PanelSurface {
                 label: "keyboard-panel",
                 query: "keyboard",
-                title: "水杉屏幕键盘",
+                title: "灵耀屏幕键盘",
                 width: 1100,
                 height: 400,
                 placement: PanelPlacement::BottomCenter,
@@ -893,7 +893,7 @@ impl SurfaceRoute {
             SurfaceRoute::Handwriting => Some(PanelSurface {
                 label: "handwriting-panel",
                 query: "handwriting",
-                title: "水杉手写识别板",
+                title: "灵耀手写识别板",
                 width: 980,
                 height: 650,
                 placement: PanelPlacement::BottomCenter,
@@ -909,7 +909,7 @@ impl SurfaceRoute {
             SurfaceRoute::Voice => Some(PanelSurface {
                 label: "voice-panel",
                 query: "voice",
-                title: "水杉语音输入",
+                title: "灵耀语音输入",
                 width: 620,
                 height: 520,
                 placement: PanelPlacement::BottomCenter,
@@ -917,7 +917,7 @@ impl SurfaceRoute {
             SurfaceRoute::Clipboard => Some(PanelSurface {
                 label: "clipboard-panel",
                 query: "clipboard",
-                title: "水杉本地剪贴板",
+                title: "灵耀本地剪贴板",
                 width: 560,
                 height: 620,
                 placement: PanelPlacement::BottomCenter,
@@ -925,7 +925,7 @@ impl SurfaceRoute {
             SurfaceRoute::CloudClipboard => Some(PanelSurface {
                 label: "cloud-clipboard-panel",
                 query: "cloud-clipboard",
-                title: "水杉云剪贴板",
+                title: "灵耀云剪贴板",
                 width: 560,
                 height: 560,
                 placement: PanelPlacement::BottomCenter,
@@ -933,7 +933,7 @@ impl SurfaceRoute {
             SurfaceRoute::CloudDictionary => Some(PanelSurface {
                 label: "cloud-dictionary-panel",
                 query: "cloud-dictionary",
-                title: "水杉云词库",
+                title: "灵耀云词库",
                 width: 760,
                 height: 700,
                 placement: PanelPlacement::BottomCenter,

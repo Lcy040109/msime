@@ -16,7 +16,7 @@ struct CommunitySkinTrialView: View {
             Spacer()
             Button("保留使用") { finish(keep: true) }.buttonStyle(.borderedProminent).accessibilityIdentifier("keepTrialSkin")
           }
-        }.padding(14).background(MetasequoiaTheme.accentSoft)
+        }.padding(14).background(LingyaoTheme.accentSoft)
         KeyboardTryoutView(focusOnAppear: true)
       }
     }.navigationViewStyle(.stack)

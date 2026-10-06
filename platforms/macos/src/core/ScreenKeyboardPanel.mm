@@ -210,7 +210,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
     MSIMEScreenKeyboardContent *content = [[MSIMEScreenKeyboardContent alloc] initWithFrame:NSMakeRect(0, 0, 1100, 400)];
     content.wantsLayer = YES;
     self.contentView = content;
-    _status = [NSTextField labelWithString:@"水杉屏幕键盘"];
+    _status = [NSTextField labelWithString:@"灵耀屏幕键盘"];
     _status.font = [NSFont systemFontOfSize:12];
     _status.frame = NSMakeRect(10, 4, 950, 20);
     _status.autoresizingMask = NSViewWidthSizable;
@@ -290,7 +290,7 @@ BOOL PostKey(unsigned short code, NSEventModifierFlags flags, pid_t targetPID) {
         if (CommitKey(key)) flags = 0; // Preserve Engine candidate selection with sticky modifiers.
         if (_sender && _sender(key.code, flags)) {
             _modifiers &= ~NSEventModifierFlagShift;
-            _status.stringValue = @"水杉屏幕键盘";
+            _status.stringValue = @"灵耀屏幕键盘";
         } else _status.stringValue = @"未发送：请检查辅助功能权限，并聚焦输入窗口后重试";
     }
     [self refreshKeys];

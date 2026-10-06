@@ -41,7 +41,7 @@ struct SkinSettingsView: View {
       } footer: {
         Text(skinSaveFailed
           ? "主题没有保存，键盘可能正在写入同一份设置，请再试一次。"
-          : "主题同时决定键盘和候选栏的配色，与电脑版同步。选择后预览立即更新，下次打开水杉键盘时应用。内置主题有固定的明暗，跟随系统和未设底色的自定义主题随「高级 · 明暗」里的键盘明暗切换。自定义主题当前以「\(GlobalThemeCatalog.title(customBase))」为底。")
+          : "主题同时决定键盘和候选栏的配色，与电脑版同步。选择后预览立即更新，下次打开灵耀键盘时应用。内置主题有固定的明暗，跟随系统和未设底色的自定义主题随「高级 · 明暗」里的键盘明暗切换。自定义主题当前以「\(GlobalThemeCatalog.title(customBase))」为底。")
       }
       Section {
         NavigationLink(destination: CustomSkinEditorView()) {
@@ -105,18 +105,18 @@ struct SkinSettingsView: View {
         HStack {
           Text(option.title).foregroundStyle(.primary)
           Spacer(minLength: 4)
-          if selected { Text("使用中").font(.system(size: 12)).foregroundStyle(MetasequoiaTheme.accent) }
+          if selected { Text("使用中").font(.system(size: 12)).foregroundStyle(LingyaoTheme.accent) }
         }
         .font(.system(size: 13)).padding(.horizontal, 2)
       }
       .padding(8)
-      .background(RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous).fill(MetasequoiaTheme.surface))
+      .background(RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous).fill(LingyaoTheme.surface))
       .overlay {
         if selected {
-          RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous).strokeBorder(MetasequoiaTheme.accent, lineWidth: 2)
+          RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous).strokeBorder(LingyaoTheme.accent, lineWidth: 2)
         }
       }
-      .contentShape(RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+      .contentShape(RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
     }
     .buttonStyle(.plain)
     .accessibilityElement(children: .ignore)
@@ -167,7 +167,7 @@ struct SkinSettingsView: View {
     } footer: {
       Text(themeSaveFailed
         ? "设置没有保存，键盘可能正在写入同一份设置，请再试一次。"
-        : "与电脑版的颜色模式、设置界面、屏幕键盘、手写、表情和语音主题同步。颜色模式是各处选“跟随”时的默认值；设置界面就是这个 App，立即生效。键盘选“跟随系统”时先看颜色模式，再跟随当前 App 的外观；面板选“跟随键盘”时和键盘一致。键盘和面板下次打开水杉键盘时应用。")
+        : "与电脑版的颜色模式、设置界面、屏幕键盘、手写、表情和语音主题同步。颜色模式是各处选“跟随”时的默认值；设置界面就是这个 App，立即生效。键盘选“跟随系统”时先看颜色模式，再跟随当前 App 的外观；面板选“跟随键盘”时和键盘一致。键盘和面板下次打开灵耀键盘时应用。")
     }
   }
 
@@ -182,7 +182,7 @@ struct SkinSettingsView: View {
   private func theme(_ key: String, fallback: String = "follow") -> Binding<String> {
     Binding(get: { themes[key] ?? fallback }, set: { value in
       themes[key] = value
-      themeSaveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences { $0[key] = value }
+      themeSaveFailed = !LingyaoInputSessionBridge.updateSharedPreferences { $0[key] = value }
       if themeSaveFailed { reloadThemes() }
       if key == AppAppearancePreference.globalKey || key == AppAppearancePreference.settingsKey {
         NotificationCenter.default.post(name: AppAppearancePreference.didChange, object: nil)
@@ -215,7 +215,7 @@ struct SkinSettingsView: View {
   }
 
   private func reloadThemes() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     document = preferences
     themeCards = GlobalThemeCatalog.ids.map { KeyboardTheme.resolve($0, document: preferences) }
     customBase = GlobalThemePreference.base(in: preferences)
@@ -335,7 +335,7 @@ struct DictionarySettingsView: View {
   }
 
   private func reload() {
-    habits = InputHabitPreference.settings(in: MetasequoiaInputSessionBridge.loadSharedPreferences())
+    habits = InputHabitPreference.settings(in: LingyaoInputSessionBridge.loadSharedPreferences())
   }
 
   /// A binding that saves one field; a failed save reloads so the control shows what is actually stored.
@@ -366,8 +366,8 @@ struct ServiceSettingsView: View {
   @State private var testingConnection = false
   @State private var token = ""
   @State private var keyboardAIEnabled = KeyboardAIService.configuration() != nil
-  @State private var aiCandidatesEnabled = AICandidatePreference.isEnabled(MetasequoiaInputSessionBridge.loadSharedPreferences())
-  @State private var aiCandidateLimit = AICandidatePreference.limit(MetasequoiaInputSessionBridge.loadSharedPreferences())
+  @State private var aiCandidatesEnabled = AICandidatePreference.isEnabled(LingyaoInputSessionBridge.loadSharedPreferences())
+  @State private var aiCandidateLimit = AICandidatePreference.limit(LingyaoInputSessionBridge.loadSharedPreferences())
   @State private var input = ""
   @State private var voiceTransfer: VoiceTextHandoff?
   @State private var output = ""
@@ -376,7 +376,7 @@ struct ServiceSettingsView: View {
   @State private var operation: Task<Void, Never>?
   @State private var requestID = UUID()
   @State private var voiceGeneration: UInt64 = 0
-  @State private var voiceSettings = VoicePolishSettings(MetasequoiaInputSessionBridge.loadSharedPreferences())
+  @State private var voiceSettings = VoicePolishSettings(LingyaoInputSessionBridge.loadSharedPreferences())
   @State private var voiceSettingsSaveFailed = false
   @State private var polishService = VoicePolishService.load()
   /// The recognized text before polishing, so the user can take it instead of the polished result.
@@ -490,8 +490,8 @@ struct ServiceSettingsView: View {
           Text("语音转文字")
         } footer: {
           Text(recognizesOnDevice
-            ? "在水杉 App 中录音，由本机识别，边说边显示文字，再将结果发送到键盘或复制。iOS 键盘扩展不能直接录音。"
-            : "在水杉 App 中录音识别，再将结果发送到键盘或复制。iOS 键盘扩展不能直接录音。")
+            ? "在灵耀 App 中录音，由本机识别，边说边显示文字，再将结果发送到键盘或复制。iOS 键盘扩展不能直接录音。"
+            : "在灵耀 App 中录音识别，再将结果发送到键盘或复制。iOS 键盘扩展不能直接录音。")
         }
         voiceOptionsSection
         voicePolishSection
@@ -557,7 +557,7 @@ struct ServiceSettingsView: View {
         }.accessibilityIdentifier("serviceDismissKeyboard")
       }
     }
-    .tint(Color(uiColor: MetasequoiaTheme.forestUIColor))
+    .tint(Color(uiColor: LingyaoTheme.forestUIColor))
     .sheet(isPresented: $showsProviders) {
       ProviderPickerView(options: providerOptions, selected: selectedProviderID) { id in
         if kind == .ai, let provider = AIProviderPreset(rawValue: id) { selectProvider(provider) }
@@ -567,7 +567,7 @@ struct ServiceSettingsView: View {
     .onChange(of: configuration.endpoint) { _ in fetchedModels = nil; modelStatus = "" }
     .onChange(of: voiceSettings) { _ in
       guard kind == .voice else { return }
-      voiceSettingsSaveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences { voiceSettings.write(into: &$0) }
+      voiceSettingsSaveFailed = !LingyaoInputSessionBridge.updateSharedPreferences { voiceSettings.write(into: &$0) }
     }
     .onChange(of: recorder.isRecording) { recording in
       // Also covers the recorder stopping itself at the 60-second limit.
@@ -834,7 +834,7 @@ struct ServiceSettingsView: View {
           Label("保存配置", systemImage: "checkmark.circle.fill").frame(maxWidth: .infinity)
         }
           .buttonStyle(.borderedProminent)
-          .tint(Color(uiColor: MetasequoiaTheme.forestUIColor))
+          .tint(Color(uiColor: LingyaoTheme.forestUIColor))
           .accessibilityIdentifier("saveServiceConfiguration")
         Button("删除此服务的密钥", role: .destructive) {
           do {
@@ -953,7 +953,7 @@ struct ServiceSettingsView: View {
   private func publishAICandidates() {
     let published = KeyboardAIService.configuration()
     let enabled = aiCandidatesEnabled && published != nil
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences { preferences in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences { preferences in
       preferences["ai_assistant"] = AICandidatePreference.assistant(
         preferences["ai_assistant"] as? [String: Any], enabled: enabled, limit: aiCandidateLimit,
         provider: published?.provider.rawValue ?? "", endpoint: published?.endpoint ?? "",
@@ -1130,7 +1130,7 @@ struct ServiceSettingsView: View {
         let result: String
         if provider == .local {
           guard let model else { throw ServiceFailure(message: "请先在“本地模型”中下载并选用一个模型。") }
-          let stateRoot = URL(fileURLWithPath: MetasequoiaInputSessionBridge.sharedStateDirectory, isDirectory: true)
+          let stateRoot = URL(fileURLWithPath: LingyaoInputSessionBridge.sharedStateDirectory, isDirectory: true)
           let resources = PersonalDictionaryBridge.packagedResources
           // The user's own words, read while the first audio is already buffering.
           let hotwords = await Task.detached(priority: .userInitiated) {
@@ -1200,7 +1200,7 @@ struct ServiceSettingsView: View {
 
 /// 「候选栏 AI 候选 → 提示词」: the desktop's three custom prompt slots for candidate-bar AI, on a page of its own so the editor has the whole screen on a phone.
 private struct AICandidatePromptView: View {
-  @State private var slot = AICandidatePreference.promptID(MetasequoiaInputSessionBridge.loadSharedPreferences())
+  @State private var slot = AICandidatePreference.promptID(LingyaoInputSessionBridge.loadSharedPreferences())
   @State private var text = ""
   @State private var savedText = ""
   @StateObject private var autosave = SettingsAutosave()
@@ -1244,12 +1244,12 @@ private struct AICandidatePromptView: View {
   }
 
   private func load(_ slot: String) {
-    text = AICandidatePreference.prompt(MetasequoiaInputSessionBridge.loadSharedPreferences(), slot: slot)
+    text = AICandidatePreference.prompt(LingyaoInputSessionBridge.loadSharedPreferences(), slot: slot)
     savedText = text
   }
 
   private func save(_ content: String, slot: String) throws {
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences { preferences in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences { preferences in
       preferences["ai_assistant"] = AICandidatePreference.assistant(
         preferences["ai_assistant"] as? [String: Any], promptSlot: slot, text: content)
     }

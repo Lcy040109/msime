@@ -14,7 +14,7 @@ struct CommunitySearchField: View {
           .accessibilityLabel("清除搜索")
       }
     }.padding(.horizontal, 13).frame(height: 44)
-      .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: 14))
+      .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: 14))
   }
 }
 struct CommunityAuthorLabel: View {
@@ -22,15 +22,15 @@ struct CommunityAuthorLabel: View {
   var body: some View {
     HStack(spacing: 5) {
       Text(String(name.prefix(1))).font(.system(size: 9, weight: .semibold))
-        .foregroundStyle(MetasequoiaTheme.accent).frame(width: 19, height: 19)
-        .background(MetasequoiaTheme.accentSoft, in: Circle())
+        .foregroundStyle(LingyaoTheme.accent).frame(width: 19, height: 19)
+        .background(LingyaoTheme.accentSoft, in: Circle())
       Text(name).font(.caption).foregroundStyle(.secondary).lineLimit(1)
     }
   }
 }
 struct CommunityResourceCard: View {
   let item: CommunityResource
-  private var accent: Color { MetasequoiaTheme.accent }
+  private var accent: Color { LingyaoTheme.accent }
   var body: some View {
     VStack(alignment: .leading, spacing: 9) {
       cover
@@ -44,8 +44,8 @@ struct CommunityResourceCard: View {
         Spacer(minLength: 2)
         Label(item.rating_count == 0 ? "暂无评分" : String(format: "%.1f", item.rating_average), systemImage: "star")
       }.font(.system(size: 10)).foregroundStyle(.secondary)
-    }.padding(10).background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
-      .overlay(RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous).strokeBorder(Color.primary.opacity(0.035), lineWidth: 1))
+    }.padding(10).background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
+      .overlay(RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous).strokeBorder(Color.primary.opacity(0.035), lineWidth: 1))
   }
   private var cover: some View {
     VStack(alignment: .leading, spacing: 7) {
@@ -60,7 +60,7 @@ struct CommunityResourceCard: View {
           ForEach(Array((item.content.entries ?? []).prefix(3).enumerated()), id: \.offset) { _, word in
             Text(word.word).font(.system(size: 12, weight: .medium)).lineLimit(1)
               .padding(.horizontal, 7).padding(.vertical, 3)
-              .background(MetasequoiaTheme.surface.opacity(0.8), in: RoundedRectangle(cornerRadius: 6))
+              .background(LingyaoTheme.surface.opacity(0.8), in: RoundedRectangle(cornerRadius: 6))
           }
         }
       } else {

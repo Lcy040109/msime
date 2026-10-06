@@ -28,7 +28,7 @@ repo_root=$(cd "$here/../../.." && pwd)
 mkdir -p "$2"
 out=$(cd "$2" && pwd)
 parts=",${MSIME_DEFINITIONS:-rpm,debian,arch,gentoo},"
-release_url="https://github.com/metasequoiaime/msime/releases/download/linux-v$version"
+release_url="https://github.com/Lcy040109/msime/releases/download/linux-v$version"
 want() { [[ "$parts" == *",$1,"* ]]; }
 # 容器以 root 往 OUTDIR 写文件；结束时（包括失败时）交回给调用者，免得 OUTDIR 删不掉。
 reclaim() { docker run --rm -v "$out":/out debian:sid chown -R "$(id -u):$(id -g)" /out 2>/dev/null || true; }

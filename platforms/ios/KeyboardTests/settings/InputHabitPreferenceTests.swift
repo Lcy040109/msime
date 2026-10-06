@@ -19,8 +19,8 @@ final class InputHabitPreferenceTests: XCTestCase {
   }
 
   func testDefaultsComeFromTheSharedDocument() {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
-    let settings = InputHabitPreference.settings(in: MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    _ = LingyaoInputSessionBridge(stateRoot: state)
+    let settings = InputHabitPreference.settings(in: LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertTrue(settings.learning)
     XCTAssertEqual(settings.frequencyMode, .promote)
     XCTAssertEqual(settings.primaryLanguage, 0, "English")
@@ -28,7 +28,7 @@ final class InputHabitPreferenceTests: XCTestCase {
   }
 
   func testUpdateWritesTheDocumentAndMirrorsTheAppGroup() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     let saved = try XCTUnwrap(InputHabitPreference.update(stateRoot: state) {
       $0.learning = false
       $0.frequencyMode = .disabled
@@ -38,7 +38,7 @@ final class InputHabitPreferenceTests: XCTestCase {
       $0.primaryLanguage = 6
       $0.secondaryLanguage = 1
     })
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["learning"] as? Bool, false)
     let frequency = try XCTUnwrap(document["frequency"] as? [String: Any])
     XCTAssertEqual(frequency["mode"] as? String, "disabled")
@@ -57,11 +57,11 @@ final class InputHabitPreferenceTests: XCTestCase {
   }
 
   func testNoSecondLanguageRemovesTheKeyAndTheSameLanguageTwiceIsNone() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertNotNil(InputHabitPreference.update(stateRoot: state) { $0.secondaryLanguage = 2 })
     let same = try XCTUnwrap(InputHabitPreference.update(stateRoot: state) { $0.secondaryLanguage = $0.primaryLanguage })
     XCTAssertEqual(same.secondaryLanguage, -1)
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertNil(document["translation_secondary_language"])
   }
 

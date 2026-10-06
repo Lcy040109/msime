@@ -703,14 +703,14 @@ mod tests {
             Some(1)
         );
         let wubi = entry(Wubi, "wq", "拟好", 12345);
-        let english = entry(English, "metasequoia", "Metasequoia", 12345);
+        let english = entry(English, "metasequoia", "Lingyao", 12345);
         let quick = entry(QuickPhrase, "test1", "fixture\nsecond line", 12345);
         for added in [&wubi, &english, &quick] {
             edit_personal_dictionary(&paths, None, Some(added), "").unwrap();
             assert!(has(&paths, added), "{added:?}");
         }
         assert_eq!(
-            weight(&journal, "SELECT count(*) FROM user_dictionary_operations WHERE dictionary='english' AND display='Metasequoia' AND user_inserted=1"),
+            weight(&journal, "SELECT count(*) FROM user_dictionary_operations WHERE dictionary='english' AND display='Lingyao' AND user_inserted=1"),
             Some(1)
         );
 

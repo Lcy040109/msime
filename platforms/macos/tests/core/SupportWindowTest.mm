@@ -19,12 +19,12 @@ int main() {
 
         [controller showPage:MSIMESupportPageHelp];
         assert(controller.page == MSIMESupportPageHelp);
-        assert([controller.window.title isEqualToString:@"水杉输入法帮助"]);
+        assert([controller.window.title isEqualToString:@"灵耀输入法帮助"]);
         assert(FindView(controller.window.contentView, @"MSIMESupportPreferences") != nil);
 
         [controller showPage:MSIMESupportPageAbout];
         assert(controller.page == MSIMESupportPageAbout);
-        assert([controller.window.title isEqualToString:@"关于水杉输入法"]);
+        assert([controller.window.title isEqualToString:@"关于灵耀输入法"]);
         assert(FindView(controller.window.contentView, @"MSIMESupportCheckForUpdates") != nil);
         assert(FindView(controller.window.contentView, @"MSIMESupportLicense") != nil);
         assert(FindView(controller.window.contentView, @"MSIMESupportPrivacy") != nil);

@@ -10,13 +10,13 @@
 #
 # 每台机器各自生成自己的测试证书，不需要在机器之间搬私钥。想让纯测试机信任本机签名，
 # 把证书的公钥导出成 .cer 拷过去，在那台机器上用 certutil 装进受信任根即可：
-#   certutil -addstore Root MetasequoiaImeLocalTest.cer
-#   certutil -addstore TrustedPublisher MetasequoiaImeLocalTest.cer
+#   certutil -addstore Root LingyaoImeLocalTest.cer
+#   certutil -addstore TrustedPublisher LingyaoImeLocalTest.cer
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$CertificateSubject = 'CN=Metasequoia IME Local Test Code Signing'
+$CertificateSubject = 'CN=Lingyao IME Local Test Code Signing'
 $CertificateValidityYears = 5
 $CodeSigningEku = '1.3.6.1.5.5.7.3.3'
 $TrustStores = @('Cert:\LocalMachine\Root', 'Cert:\LocalMachine\TrustedPublisher')
@@ -106,7 +106,7 @@ function Initialize-LocalTestCertificate {
         $certificate = New-SelfSignedCertificate `
             -Type CodeSigningCert `
             -Subject $CertificateSubject `
-            -FriendlyName 'Metasequoia IME Local Test Code Signing' `
+            -FriendlyName 'Lingyao IME Local Test Code Signing' `
             -KeyAlgorithm RSA `
             -KeyLength 3072 `
             -HashAlgorithm SHA256 `

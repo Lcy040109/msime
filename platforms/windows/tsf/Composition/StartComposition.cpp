@@ -1,7 +1,7 @@
 #include "Private.h"
 #include "Globals.h"
 #include "EditSession.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 
 //+---------------------------------------------------------------------------
 //
@@ -12,7 +12,7 @@
 class CStartCompositionEditSession : public CEditSessionBase
 {
   public:
-    CStartCompositionEditSession(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext)
+    CStartCompositionEditSession(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext)
         : CEditSessionBase(pTextService, pContext)
     {
     }
@@ -85,7 +85,7 @@ Exit:
 
 //////////////////////////////////////////////////////////////////////
 //
-// CMetasequoiaIME class
+// CLingyaoIME class
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -97,7 +97,7 @@ Exit:
 // focus context.
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_StartComposition(_In_ ITfContext *pContext)
+void CLingyaoIME::_StartComposition(_In_ ITfContext *pContext)
 {
     CStartCompositionEditSession *pStartCompositionEditSession =
         new (std::nothrow) CStartCompositionEditSession(this, pContext);
@@ -120,7 +120,7 @@ void CMetasequoiaIME::_StartComposition(_In_ ITfContext *pContext)
 // deactivation
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_SaveCompositionContext(_In_ ITfContext *pContext)
+void CLingyaoIME::_SaveCompositionContext(_In_ ITfContext *pContext)
 {
     assert(_pContext == nullptr);
 

@@ -150,7 +150,7 @@ private final class MalformedImportProtocol: URLProtocol {
 final class BackendAccountClientTests: XCTestCase {
   func testDefaultNicknameIsStableAndPreservesChosenName() {
     let empty = BackendAccountClient.User(id: "a7c2ef123456", display_name: "", created_at: "")
-    XCTAssertEqual(empty.preferredDisplayName, "水杉小鹿·A7C2EF")
+    XCTAssertEqual(empty.preferredDisplayName, "灵耀小鹿·A7C2EF")
     let whitespace = BackendAccountClient.User(id: empty.id, display_name: " \n", created_at: "")
     XCTAssertEqual(whitespace.preferredDisplayName, empty.preferredDisplayName)
     let renamed = BackendAccountClient.User(id: empty.id, display_name: "我的昵称", created_at: "")

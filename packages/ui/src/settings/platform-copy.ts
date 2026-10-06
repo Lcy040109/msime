@@ -37,7 +37,7 @@ export function platformCopy({
   const quickStart = android
     ? "在系统设置的“语言和输入法”或“屏幕键盘”中启用并选择灵耀输入法，也可以从首次启动页打开这些入口。默认是全拼输入法。"
     : linux
-      ? "首次配置（首次配置页或 msime-linux-setup）完成后会把灵耀输入法自动加入正在运行的 Fcitx5 或 IBus 的输入法列表，之后用输入法切换快捷键切换即可。未能自动加入时手动添加：使用 Fcitx5 时，用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组；使用 IBus 时，执行 ibus restart 后在系统设置的输入源中添加「Metasequoia 灵耀输入法」。默认是全拼输入法。"
+      ? "首次配置（首次配置页或 msime-linux-setup）完成后会把灵耀输入法自动加入正在运行的 Fcitx5 或 IBus 的输入法列表，之后用输入法切换快捷键切换即可。未能自动加入时手动添加：使用 Fcitx5 时，用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组；使用 IBus 时，执行 ibus restart 后在系统设置的输入源中添加「Lingyao 灵耀输入法」。默认是全拼输入法。"
       : macos
         ? "设置应用每次启动时会自动安装或更新随附的灵耀输入法，并在系统设置的键盘输入法中启用它；首次安装后如提示需要重新登录，注销并重新登录一次即可。之后使用系统配置的输入法切换快捷键。默认是全拼输入法。"
         : harmony

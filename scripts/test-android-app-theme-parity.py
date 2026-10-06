@@ -116,7 +116,7 @@ class AppThemeParity(unittest.TestCase):
                         normalize(resolve(table, f"ms_{BASE_SEASON}_{suffix}", fallback)))
 
     def test_seasonal_theme_resolves_like_base(self):
-        # 水杉四季本身没有固定季节；它在秋天的颜色就是基础主题的颜色。
+        # 灵耀四季本身没有固定季节；它在秋天的颜色就是基础主题的颜色。
         seasonal = [entry for entry in self.catalog if entry.get("seasonal")]
         autumn = next(entry for entry in self.catalog if entry.get("season") == BASE_SEASON)
         for entry in seasonal:

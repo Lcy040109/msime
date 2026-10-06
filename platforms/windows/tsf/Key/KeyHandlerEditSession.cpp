@@ -1,7 +1,7 @@
 #include "Private.h"
 #include "KeyHandlerEditSession.h"
 #include "EditSession.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CompositionProcessorEngine.h"
 #include "KeyStateCategory.h"
 #include "Ipc.h"
@@ -26,7 +26,7 @@ STDAPI CKeyHandlerEditSession::DoEditSession(TfEditCookie ec)
 {
     struct DeferredReplayCompletion
     {
-        CMetasequoiaIME *textService;
+        CLingyaoIME *textService;
         uint64_t token;
         bool applied = false;
         ~DeferredReplayCompletion()

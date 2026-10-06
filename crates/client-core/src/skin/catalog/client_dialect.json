@@ -295,16 +295,16 @@
    "base": "system"
   },
   {
-   "name": "base shuishan",
+   "name": "base lingyao",
    "reason": null,
    "template": "sample",
    "replace": [
     [
      "base = 'night'",
-     "base = 'shuishan'"
+     "base = 'lingyao'"
     ]
    ],
-   "base": "shuishan"
+   "base": "lingyao"
   },
   {
    "name": "base light",
@@ -536,10 +536,10 @@
    "id": "system"
   },
   {
-   "name": "reserved id shuishan",
+   "name": "reserved id lingyao",
    "reason": "invalid skin id",
    "template": "sample",
-   "id": "shuishan"
+   "id": "lingyao"
   },
   {
    "name": "reserved id light",

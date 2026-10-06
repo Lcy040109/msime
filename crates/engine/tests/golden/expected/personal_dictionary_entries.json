@@ -181,7 +181,7 @@
     "replacement": {
      "kind": "english",
      "key": "metasequoia",
-     "value": "Metasequoia",
+     "value": "Lingyao",
      "weight": 12345
     }
    },
@@ -237,7 +237,7 @@
      {
       "kind": "english",
       "key": "metasequoia",
-      "value": "Metasequoia",
+      "value": "Lingyao",
       "weight": 12345
      },
      {
@@ -636,7 +636,7 @@
     "candidate_count": 1,
     "candidates": [
      {
-      "word": "Metasequoia",
+      "word": "Lingyao",
       "pinyin": "metasequoia",
       "canonical_pinyin": "",
       "source": 4,
@@ -781,10 +781,10 @@
       [
        "english",
        "metasequoia",
-       "Metasequoia",
+       "Lingyao",
        "upsert",
        12345,
-       "Metasequoia",
+       "Lingyao",
        1
       ],
       [

@@ -66,7 +66,7 @@ struct FuzzyPinyinSettingsView: View {
       }
     }.navigationTitle("模糊音").navigationBarTitleDisplayMode(.inline)
       .onAppear {
-        let document = MetasequoiaInputSessionBridge.loadSharedPreferences()
+        let document = LingyaoInputSessionBridge.loadSharedPreferences()
         settings = FuzzyPinyinPreference.settings(in: document) ?? .pristine
       }
       .confirmationDialog("关闭模糊音并清空所有规则？", isPresented: $confirmingReset, titleVisibility: .visible) {

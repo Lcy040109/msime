@@ -26,7 +26,7 @@ ID = """#!/bin/sh
 echo "$STUB_UID"
 """
 
-MANUAL = "remove it there: Metasequoia 水杉输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)"
+MANUAL = "remove it there: Lingyao 灵耀输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)"
 
 
 def uninstall(temp: Path, uid: str = "1000", staged: bool = False, setup_status: str = "0", with_setup: bool = True):

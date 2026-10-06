@@ -57,14 +57,14 @@ class LocalFixture(unittest.TestCase):
 
 class LocalStreamTest(LocalFixture):
     def test_partials_final_and_the_start_request(self):
-        stream = self.stream(hotwords=[{"text": "水杉", "pinyin": "shui shan"}])
+        stream = self.stream(hotwords=[{"text": "灵耀", "pinyin": "shui shan"}])
         try:
             # 2.5 s of audio in uneven pieces; an odd trailing byte never reaches the helper.
             for _ in range(10):
                 stream.feed(b"\0" * 8001)
             seen = []
             final = stream.finish(lambda: seen.append(stream.latest()))
-            self.assertEqual(final, "水杉输入法")
+            self.assertEqual(final, "灵耀输入法")
             self.assertTrue(stream.done.is_set())
         finally:
             stream.close()
@@ -72,7 +72,7 @@ class LocalStreamTest(LocalFixture):
         start = requests[0]
         self.assertEqual({key: start[key] for key in ("op", "id", "model", "language", "hotwords", "threads")},
                          {"op": "start", "id": 1, "model": str(self.model), "language": "zh-cn",
-                          "hotwords": ["水杉"], "threads": 0})
+                          "hotwords": ["灵耀"], "threads": 0})
         audio = [request["bytes"] for request in requests if request["op"] == "audio"]
         self.assertEqual(sum(audio), 80010 // 2 * 2)
         self.assertTrue(all(size % 2 == 0 and size <= local.CHUNK_BYTES for size in audio))
@@ -92,11 +92,11 @@ class LocalStreamTest(LocalFixture):
     def test_a_clean_session_keeps_the_helper_warm(self):
         first = self.stream()
         first.feed(b"\0" * 6400)
-        self.assertEqual(first.finish(lambda: None), "水杉输入法")
+        self.assertEqual(first.finish(lambda: None), "灵耀输入法")
         first.close()
         second = self.stream()
         second.feed(b"\0" * 6400)
-        self.assertEqual(second.finish(lambda: None), "水杉输入法")
+        self.assertEqual(second.finish(lambda: None), "灵耀输入法")
         second.close()
         pids = {request["pid"] for request in self.requests()}
         self.assertEqual(len(pids), 1, "the second recording reuses the first helper")
@@ -113,7 +113,7 @@ class LocalStreamTest(LocalFixture):
         self.assertEqual(self.requests()[-1]["op"], "cancel")
         self.assertIsNotNone(self.pool.idle, "a confirmed cancel keeps the helper")
         again = self.stream()
-        self.assertEqual(again.finish(lambda: None), "水杉输入法")
+        self.assertEqual(again.finish(lambda: None), "灵耀输入法")
         again.close()
         self.assertEqual(len({request["pid"] for request in self.requests()}), 1)
 
@@ -184,13 +184,13 @@ class ModelAndHotwords(LocalFixture):
             local.model_manifest(str(listed))
 
     def test_parse_hotwords(self):
-        self.assertEqual(local.parse_hotwords("水杉\tshui shan\n输入法\tshu ru fa\n水杉\tshui shan\n\n孤词\n"),
-                         [{"text": "水杉", "pinyin": "shui shan"}, {"text": "输入法", "pinyin": "shu ru fa"}])
+        self.assertEqual(local.parse_hotwords("灵耀\tshui shan\n输入法\tshu ru fa\n灵耀\tshui shan\n\n孤词\n"),
+                         [{"text": "灵耀", "pinyin": "shui shan"}, {"text": "输入法", "pinyin": "shu ru fa"}])
         self.assertEqual(local.parse_hotwords(None), [])
         self.assertEqual(len(local.parse_hotwords("\n".join("词%d\tci" % i for i in range(5000)))), local.MAX_HOTWORDS)
 
     def test_correction_without_the_host_library_keeps_the_text(self):
-        hotwords = [{"text": "水杉", "pinyin": "shui shan"}]
+        hotwords = [{"text": "灵耀", "pinyin": "shui shan"}]
         self.assertEqual(local.HotwordCorrector(None).correct("谁删", hotwords), "谁删")
         corrector = local.HotwordCorrector(self.root / "libmsime_host_api.so")
         self.assertEqual(corrector.correct("谁删", hotwords), "谁删")

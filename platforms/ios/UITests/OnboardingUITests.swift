@@ -239,7 +239,7 @@ final class OnboardingUITests: XCTestCase {
     }
     XCTAssertTrue(app.buttons["desktopDownloadLink"].exists)
     app.buttons["aboutSettingsLink"].tap()
-    XCTAssertTrue(app.navigationBars["关于水杉"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["关于灵耀"].waitForExistence(timeout: 5))
   }
 
   @MainActor
@@ -463,10 +463,10 @@ final class OnboardingUITests: XCTestCase {
     let login = app.buttons["登录使用 AI"]
     XCTAssertTrue(login.waitForExistence(timeout: 8))
     login.tap()
-    XCTAssertTrue(app.navigationBars["登录水杉"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["登录灵耀"].waitForExistence(timeout: 5))
     XCTAssertFalse(app.buttons["accountLocalDesigns"].exists)
     XCTAssertFalse(app.buttons["aboutSettingsLink"].exists)
-    app.navigationBars["登录水杉"].buttons["取消"].tap()
+    app.navigationBars["登录灵耀"].buttons["取消"].tap()
     XCTAssertTrue(app.navigationBars["试用键盘"].waitForExistence(timeout: 5))
     app.navigationBars.buttons.firstMatch.tap()
     XCTAssertTrue(app.navigationBars["设置"].waitForExistence(timeout: 5))
@@ -495,7 +495,7 @@ final class OnboardingUITests: XCTestCase {
     let app = XCUIApplication()
     app.launchArguments = ["-launchScreenPreview"]
     app.launch()
-    XCTAssertTrue(app.staticTexts["水杉输入法"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["灵耀输入法"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts["让输入更自然"].exists)
     let screenshot = XCTAttachment(screenshot: app.screenshot())
     screenshot.name = "System launch storyboard"
@@ -562,7 +562,7 @@ final class OnboardingUITests: XCTestCase {
     XCTAssertTrue(app.buttons["splashView"].waitForExistence(timeout: 5))
     let title = app.staticTexts["onboardingTitle"]
     XCTAssertTrue(title.waitForExistence(timeout: 10))
-    XCTAssertEqual(title.label, "把水杉加进键盘")
+    XCTAssertEqual(title.label, "把灵耀加进键盘")
     XCTAssertEqual(app.staticTexts["onboardingProgress"].label, "1 / 4")
     let welcome = XCTAttachment(screenshot: app.screenshot())
     welcome.name = "Welcome onboarding"
@@ -670,7 +670,7 @@ final class OnboardingUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["插入验证：语音交接测试。"].waitForExistence(timeout: 5))
     app.terminate()
     app.launch()
-    XCTAssertTrue(app.staticTexts["请在水杉 App 的“语音设置”中录音识别，点击“发送到键盘”，再返回这里插入。"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["请在灵耀 App 的“语音设置”中录音识别，点击“发送到键盘”，再返回这里插入。"].waitForExistence(timeout: 5))
     XCTAssertFalse(app.buttons["keyboardVoiceInsert"].exists)
   }
 
@@ -906,7 +906,7 @@ final class OnboardingUITests: XCTestCase {
     app.buttons["confirmSaveCustomSkin"].tap()
     XCTAssertTrue(app.buttons["savedSkin_" + name].waitForExistence(timeout: 5))
     app.buttons["skinEditorTools"].tap(); app.buttons["设计模板"].tap()
-    app.buttons["skinTemplate_水杉留白"].tap()
+    app.buttons["skinTemplate_灵耀留白"].tap()
     app.buttons["undoSkinDesign"].tap()
     // The editor's own gradient state was asserted here by scrolling the control into view a second
     // time. What a design renders is covered by KeyboardSkinTests without a Simulator; the reload
@@ -921,7 +921,7 @@ final class OnboardingUITests: XCTestCase {
     app.buttons["skinEditorTools"].tap(); app.buttons["我的皮肤"].tap()
     XCTAssertTrue(app.buttons["savedSkin_" + name].exists)
     app.buttons["skinEditorTools"].tap(); app.buttons["设计模板"].tap()
-    app.buttons["skinTemplate_水杉留白"].tap()
+    app.buttons["skinTemplate_灵耀留白"].tap()
     app.buttons["skinEditorTools"].tap(); app.buttons["我的皮肤"].tap()
     app.buttons["管理" + name].tap()
     app.buttons["用当前设计更新"].tap()
@@ -1258,7 +1258,7 @@ final class OnboardingUITests: XCTestCase {
     }
     app.buttons["aboutSettingsLink"].tap()
     XCTAssertTrue(app.staticTexts["aboutAppVersion"].exists)
-    XCTAssertTrue(app.navigationBars["关于水杉"].exists)
+    XCTAssertTrue(app.navigationBars["关于灵耀"].exists)
   }
 
   @MainActor

@@ -12,7 +12,7 @@ struct DiagnosticLogSettingsView: View {
   @State private var saveFailed = false
   @State private var confirmsClear = false
 
-  private var file: URL? { DiagnosticLog.url(in: MetasequoiaInputSessionBridge.sharedStateDirectory) }
+  private var file: URL? { DiagnosticLog.url(in: LingyaoInputSessionBridge.sharedStateDirectory) }
 
   var body: some View {
     Form {
@@ -66,7 +66,7 @@ struct DiagnosticLogSettingsView: View {
 
   private func save(_ value: Bool) {
     enabled = value
-    saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences {
+    saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences {
       var diagnostic = $0["diagnostic_log"] as? [String: Any] ?? [:]
       diagnostic["server"] = value
       $0["diagnostic_log"] = diagnostic
@@ -82,7 +82,7 @@ struct DiagnosticLogSettingsView: View {
   }
 
   private func reload() {
-    enabled = DiagnosticLog.isEnabled(in: MetasequoiaInputSessionBridge.loadSharedPreferences())
+    enabled = DiagnosticLog.isEnabled(in: LingyaoInputSessionBridge.loadSharedPreferences())
     guard let file, let result = try? DiagnosticLog.readTail(from: file, maximumBytes: 32 * 1024) else { text = ""; size = 0; return }
     size = result.size
     // The end of the log is what a report needs; drawing a whole megabyte in one Text would stall the page.

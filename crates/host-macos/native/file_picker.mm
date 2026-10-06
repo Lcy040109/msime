@@ -23,7 +23,7 @@ extern "C" const char *MSIMEDefaultDirectoryPicker(void) {
     panel.canCreateDirectories = YES;
     panel.allowsMultipleSelection = NO;
     panel.resolvesAliases = YES;
-    panel.message = @"请选择一个空文件夹存放水杉输入法的词库、学习记录和设置。";
+    panel.message = @"请选择一个空文件夹存放灵耀输入法的词库、学习记录和设置。";
     panel.prompt = @"选择";
     if ([panel runModal] != NSModalResponseOK) return nullptr;
     return panel.URL.path.UTF8String;

@@ -69,7 +69,7 @@ struct PersonalDictionaryView: View {
       } header: {
         Text("键盘同步")
       } footer: {
-        Text("开启水杉键盘的「允许完全访问」，再打开键盘完成本机同步。已保存的学习记录和词条不会上传。")
+        Text("开启灵耀键盘的「允许完全访问」，再打开键盘完成本机同步。已保存的学习记录和词条不会上传。")
       }
       exportSection
       let requests = state.requests.filter { $0.status != .applied }
@@ -307,7 +307,7 @@ private struct PersonalWordEditor: View {
           Text("同一编码下权重越大，候选越靠前。新词默认 \(PersonalWord.defaultWeight)，可填 1–\(PersonalWord.weightRange.upperBound)。")
         }
         if let error { Section { Text(error).foregroundStyle(.red) } }
-        Section { Text("保存后等待水杉键盘确认同步。这里只保存本机词条，不会发送到 AI 或语音服务。").font(.footnote).foregroundStyle(.secondary) }
+        Section { Text("保存后等待灵耀键盘确认同步。这里只保存本机词条，不会发送到 AI 或语音服务。").font(.footnote).foregroundStyle(.secondary) }
       }
       .navigationTitle(previous == nil ? "添加词条" : word.isBundled ? "调整权重" : "编辑词条")
       .navigationBarTitleDisplayMode(.inline)

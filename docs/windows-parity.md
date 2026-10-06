@@ -11,7 +11,7 @@
 对照使用的是固定对象，不是某个仓库当天的 HEAD：
 
 - 来源：`metasequoiaime/MSIME-Windows` 的提交 `345cb87a3822f6ad7013bb29506fe3d856c1931a`。所有 reference 门禁统一经 `scripts/reference_source.py` 读取这个对象（`PINNED_SHA`），不跟随相邻检出的当前分支或可变远端 tip；环境变量 `MSIME_REFERENCE_DIR` 只覆盖检出位置，不能覆盖版本。检出存在但缺这个对象时，脚本判定为无效的验证环境并指出恢复命令，而不是回落到一个可变分支。
-- 目标：`metasequoiaime/msime` 的 `develop`。
+- 目标：`Lcy040109/msime` 的 `develop`。
 - Engine：来源把 C++ Engine 以 `engine/` 在自己树内维护；本仓库的输入引擎是移植成 Rust 的 `crates/engine`，不再取回或锁定任何 Engine 源码归档，也没有 overlay 这一层。下文各批次里提到的 `engine-lock.json`、`scripts/fetch_engine.py`、`vendor/MSIME-Engine`、`scripts/apply_engine_*.py` 与 `crates/engine-bridge`，是移植之前的做法，作为当时的记录保留；那些 overlay 承接的行为现在都直接写在 `crates/engine` 的对应模块里。两个 Engine 不因目录名或协议名相同而视为内容相同。
 
 来源的功能入口以该提交的 `README.md`「功能简介」「核心功能指南」、`ui-html/webview2/settings/ime-settings/src/modules/sidebar.ts`、`server/src/settings/settings_app.cpp`、`installer/default_config/config.default.toml` 和 `engine/contracts/webview/messages.json` 交叉核对。README 只是入口索引，真正的判据是后面几道逐字段、逐动作、逐文件的检查。
@@ -135,7 +135,7 @@
 - **安装器**：完整安装器提供数据目录选择页，拒绝系统 / 用户关键目录的父级、受保护目录内部、路径穿越与未标记的非空目录，并在就绪页展示迁移源与目标；`config.toml` 只 `onlyifdoesntexist`，升级不覆盖用户数据；light 包固定原目录。安装前在第一屏之前查注册表确认 WebView2 与 VC 运行库（要求 14.20 以上而非只看 `Installed=1`），静默安装默认继续并把缺失写进日志。
 - **云候选的首次同意（macOS）**：来源安装器的「联网功能」页在全新安装时说明云候选会把正在输入的拼写发给 inputtools.google.com，默认勾选、可取消，升级时跳过，只写 `cloud_candidates = false`。macOS 没有每个用户都会经过的安装步骤，输入法也可以在从未打开设置应用的情况下使用，所以由 IME 进程自己问：`AppearancePreferences.mm` 的 `resolveCloudCandidatesConsentWithPreferencesDirectory:userDataDirectory:` 在建立会话之前判断一次——宿主偏好里已有云候选选择、`preferences.json` 已存在或 Engine 用户数据目录（会话选项 `user_data`）已有内容即视为升级，不问、原值不动；否则记为待确认，结果存进 `MSIMEClientCloudCandidatesConsent`。待确认期间不发任何云候选请求，`InputController.mm` 的 `activateServer:` 在激活之后异步弹出不阻塞输入的「联网功能」对话框，文案沿用来源安装器页和 Linux 首次配置页，末句按来源的「设置 → 输入」指向共享设置输入页的「云候选」，按钮为「启用云候选」（默认，对应来源的默认勾选）与「不启用」；答案经 `answerCloudCandidates:` 写入共享 `cloud_candidates`，与 Windows、Linux 同一个字段。原生设置里改动云候选开关也算作答复。`shortcut` 测试的 `TestCloudCandidateConsent` 覆盖全新、升级（已有选择、已有 `preferences.json`、只有 Engine 用户数据）、空的用户数据目录、之后才出现的 `preferences.json`、拒绝与接受。
 - **安装后的首次准备**：完整安装器在提升权限下写入词库、出厂配置和所有权标记，但不以安装器身份替用户执行 Host API 准备。Server 的生产首次启动因此除全新目录外，也接受已有且带 `.metasequoiaime-data` 所有权标记、尚无 `runtime-options.json` 的目录，在用户上下文中完成准备；普通已有目录、已有运行时配置、文件和符号链接不会被接管或重建，准备失败保留现有数据。独立的 `msime-client-prepare` 仍只接受全新目录。
-- **升级后的用户词库回放**：来源 `installer/msime_setup.iss` 的 `ReplayUserDictionary` 在每次升级时以 `--data-dir` 运行随 Server 安装的 `MetasequoiaImeDictionaryReplay.exe`（源码在 `server/src/user-dictionary-replay`），失败就中止安装。它回放的是来源布局下 `DataDir` 里的 `msime_user.db`；本仓没有这种布局，Windows 安装器不带这一步，也不随包安装回放工具。没有按用户安装步骤的平台改用共享的 `msime_host_api::refresh_host_options`（导出为 `msime_client_refresh_host`）：比较运行时配置的词库代次与编译进去的词库锁，不一致时准备新代次、回放用户词库日志并原子改写 `resources` / `dictionaries`。Linux 由 IBus 与 Fcitx5 宿主在建立会话前调用，macOS 由 IMK 宿主启动时（`RuntimeOptionsRefresh.h`）和设置应用启动时（`macos_launch.rs`）调用。宿主自己调用的导出 `msime_client_refresh_host`（`refresh_host_options_with_language_dictionaries`）另外让 `language_dictionaries` 跟上资源目录旁安装的粤语与注音词库，不论代次；设置应用不写这个键，以免仍在运行的旧版本 IMK 因不认识它而拒绝配置。刻意的差异：macOS 与 Linux 没有按用户执行的安装步骤可以中止，失败时保留旧代次继续输入，下次启动再试。
+- **升级后的用户词库回放**：来源 `installer/msime_setup.iss` 的 `ReplayUserDictionary` 在每次升级时以 `--data-dir` 运行随 Server 安装的 `LingyaoImeDictionaryReplay.exe`（源码在 `server/src/user-dictionary-replay`），失败就中止安装。它回放的是来源布局下 `DataDir` 里的 `msime_user.db`；本仓没有这种布局，Windows 安装器不带这一步，也不随包安装回放工具。没有按用户安装步骤的平台改用共享的 `msime_host_api::refresh_host_options`（导出为 `msime_client_refresh_host`）：比较运行时配置的词库代次与编译进去的词库锁，不一致时准备新代次、回放用户词库日志并原子改写 `resources` / `dictionaries`。Linux 由 IBus 与 Fcitx5 宿主在建立会话前调用，macOS 由 IMK 宿主启动时（`RuntimeOptionsRefresh.h`）和设置应用启动时（`macos_launch.rs`）调用。宿主自己调用的导出 `msime_client_refresh_host`（`refresh_host_options_with_language_dictionaries`）另外让 `language_dictionaries` 跟上资源目录旁安装的粤语与注音词库，不论代次；设置应用不写这个键，以免仍在运行的旧版本 IMK 因不认识它而拒绝配置。刻意的差异：macOS 与 Linux 没有按用户执行的安装步骤可以中止，失败时保留旧代次继续输入，下次启动再试。
 - **检查更新**：各平台由 `.github/workflows/release-*.yml` 独立发布到同一个仓库、标签带平台前缀，所以读的是发行版列表而不是 `releases/latest`——后者返回的通常是别的平台那一个。只取本平台前缀、非草稿、非预发布的发行版，按版本号而不是列表顺序取最新，没有则显示「暂无可用发行版」。Server 遥测上报的版本号由 CMake 从 `platforms/windows/version.txt` 读入，`Build-Client.ps1` 的 `-TargetVersion` 把同一个版本号同时传给 Tauri 和 Server。
 - **外部链接**：走 `msime_host_windows::open_url`，用 `ShellExecuteW` 把 https URL 直接交给默认浏览器，非 https 一律拒绝，与已有的 `open_directory` 共用同一段调用；不经 `cmd /C start`，不闪控制台窗口，URL 也不过 cmd 解析。
 
@@ -209,15 +209,15 @@
 
 **Windows 语音的失败提示显示在语音浮层上，而不是来源的模态消息框；录满上传上限时自动结束并提交。** 来源 `voice_input_service.cpp` 用 `MessageBoxW` 报缺 Token、豆包启动失败、麦克风启动失败与识别失败；这边 `platforms/windows` 里没有任何模态对话框，已有的表面是 `WaveOverlay`，与 macOS 把失败留在浮层上的选择一致，文案沿用来源的句子（豆包那句把「请检查 config.toml」改成指向设置页的「语音输入」分区）。浮层提示由后台任务显示 4 秒，不占用控制线程；新的录音开始时旧提示随会话代际失效。批量录音的上限与 macOS 相同，取共享的 `batch_capture_sample_limit`（20 MiB WAV 上传预算），录满即结束并提交已录部分，而不是像来源那样在提交时报超限。
 
-**macOS 的中文标点与全半角是每个应用的运行时状态，保存的值只当起点。** 来源把两者放在 TSF 线程管理器的 compartment 里（`MetasequoiaIMEGuidCompartmentPunctuation` / `DoubleSingleByte`），按 UI 线程、实际上按应用各一份，从不写回配置：每次 Activate 重置为半角、标点跟随默认中英文模式，Deactivate 清空，Ctrl+.、Shift+Space 与悬浮工具栏只翻转 compartment，中英文切换时 `SyncPunctuationWithImeMode` 让标点重新跟上模式。macOS 的 `AppearancePreferences` 对应地按前台应用的 bundle id 在内存里记 `runtimeChinesePunctuation` / `runtimeFullWidthInput`，不受 `ime_mode_scope` 影响；Ctrl+.、Ctrl+Shift+Space、Option+Shift+H 与工具栏只改当前应用，不写 NSUserDefaults、共享文档或云端快照；中英文切换按新模式重定标点：进入英文模式时标点变为英文（`punctuation_lock` 固定为中文时除外），回到中文模式时丢掉当前应用的标点覆盖、回到保存的起点；从本输入法切到别的输入源时与中英文模式一起清掉所有应用的两项覆盖，对应 Deactivate 一并清空三个 compartment，普通的焦点切换不清。唯一有意保留的差别是起点：共享设置页在每个宿主上都提供 `chinese_punctuation` 与 `character_width`，于是 macOS 以保存的值为每个应用的起点（与 iOS 键盘相同），而不是像来源那样标点总从中英文模式出发；这两个保存值一旦改变（设置页、共享文档或云端恢复），所有应用的对应覆盖一并作废。英文模式把两项运行时状态同样用在键入的 ASCII 上，对应来源 `KeyEventSink.cpp` 在输入法关闭时仍走的 `FUNCTION_PUNCTUATION` 与 `FUNCTION_DOUBLE_SINGLE_BYTE` 分支，转换与 Linux 宿主共用 `shared/input/EnglishModeOutput.h`；固定的 `punctuation_lock` 在英文模式下压过 Ctrl+. 与工具栏，对应 `Ipc.h` 的 `ResolvePunctuationOpen`。`shortcut` 原生测试的 `TestPerApplicationPunctuationAndWidth` 与 `TestEnglishModePunctuationAndWidthOutput` 钉住这些规则。
+**macOS 的中文标点与全半角是每个应用的运行时状态，保存的值只当起点。** 来源把两者放在 TSF 线程管理器的 compartment 里（`LingyaoIMEGuidCompartmentPunctuation` / `DoubleSingleByte`），按 UI 线程、实际上按应用各一份，从不写回配置：每次 Activate 重置为半角、标点跟随默认中英文模式，Deactivate 清空，Ctrl+.、Shift+Space 与悬浮工具栏只翻转 compartment，中英文切换时 `SyncPunctuationWithImeMode` 让标点重新跟上模式。macOS 的 `AppearancePreferences` 对应地按前台应用的 bundle id 在内存里记 `runtimeChinesePunctuation` / `runtimeFullWidthInput`，不受 `ime_mode_scope` 影响；Ctrl+.、Ctrl+Shift+Space、Option+Shift+H 与工具栏只改当前应用，不写 NSUserDefaults、共享文档或云端快照；中英文切换按新模式重定标点：进入英文模式时标点变为英文（`punctuation_lock` 固定为中文时除外），回到中文模式时丢掉当前应用的标点覆盖、回到保存的起点；从本输入法切到别的输入源时与中英文模式一起清掉所有应用的两项覆盖，对应 Deactivate 一并清空三个 compartment，普通的焦点切换不清。唯一有意保留的差别是起点：共享设置页在每个宿主上都提供 `chinese_punctuation` 与 `character_width`，于是 macOS 以保存的值为每个应用的起点（与 iOS 键盘相同），而不是像来源那样标点总从中英文模式出发；这两个保存值一旦改变（设置页、共享文档或云端恢复），所有应用的对应覆盖一并作废。英文模式把两项运行时状态同样用在键入的 ASCII 上，对应来源 `KeyEventSink.cpp` 在输入法关闭时仍走的 `FUNCTION_PUNCTUATION` 与 `FUNCTION_DOUBLE_SINGLE_BYTE` 分支，转换与 Linux 宿主共用 `shared/input/EnglishModeOutput.h`；固定的 `punctuation_lock` 在英文模式下压过 Ctrl+. 与工具栏，对应 `Ipc.h` 的 `ResolvePunctuationOpen`。`shortcut` 原生测试的 `TestPerApplicationPunctuationAndWidth` 与 `TestEnglishModePunctuationAndWidthOutput` 钉住这些规则。
 
-**macOS 用两个输入模式承担来源托盘语言栏的常驻模式图标。** 来源 `LanguageBar.cpp` 以 `TF_LBI_STYLE_SHOWNINTRAY` 注册语言栏按钮，`GetIcon` 在中 / 英之间换图，大写锁定时换成 Caps 图、日语模式换成「日」，`RefreshLanguageBarIcons` 同时重画全半角与标点两个按钮，所以无论悬浮工具栏是否打开，托盘上总能看到当前状态。macOS 的输入法没有托盘，菜单栏里的输入源图标就是对应位置：`Info.plist.in` 声明中文模式 `.Hans` 与英文模式 `.Roman`，中文模式带产品标志的模板图标、英文模式带「英」（来源在中 / 英之间换图，这边中文那一格换成了标志：带模式的输入法在菜单栏永远显示模式图标而非 bundle 图标，那是标志唯一能出现的位置，而常态本就是中文），`InputController.mm` 在中英文切换时通过 `selectInputMode:` 选中对应模式，系统报告的模式切换（从输入法菜单选择或 Ctrl+空格 / 地球键切到另一条）经 `setValue:forTag:client:` 反过来改中英文状态，两边互不回声（`InputModeIdentifiers.h`，`input-mode-identifiers` 与 `shortcut` 原生测试）。其余托盘内容按平台分派：Caps 由系统自带的大写锁定指示承担，「日」与全半角、标点按钮在默认开启的悬浮工具栏上显示，不另占菜单栏图标。代价是英文模式在系统设置的输入源列表和 Ctrl+空格轮换里是单独一条，名称为「水杉输入法 · 英」/「Metasequoia · EN」以免与中文条目同名。
+**macOS 用两个输入模式承担来源托盘语言栏的常驻模式图标。** 来源 `LanguageBar.cpp` 以 `TF_LBI_STYLE_SHOWNINTRAY` 注册语言栏按钮，`GetIcon` 在中 / 英之间换图，大写锁定时换成 Caps 图、日语模式换成「日」，`RefreshLanguageBarIcons` 同时重画全半角与标点两个按钮，所以无论悬浮工具栏是否打开，托盘上总能看到当前状态。macOS 的输入法没有托盘，菜单栏里的输入源图标就是对应位置：`Info.plist.in` 声明中文模式 `.Hans` 与英文模式 `.Roman`，中文模式带产品标志的模板图标、英文模式带「英」（来源在中 / 英之间换图，这边中文那一格换成了标志：带模式的输入法在菜单栏永远显示模式图标而非 bundle 图标，那是标志唯一能出现的位置，而常态本就是中文），`InputController.mm` 在中英文切换时通过 `selectInputMode:` 选中对应模式，系统报告的模式切换（从输入法菜单选择或 Ctrl+空格 / 地球键切到另一条）经 `setValue:forTag:client:` 反过来改中英文状态，两边互不回声（`InputModeIdentifiers.h`，`input-mode-identifiers` 与 `shortcut` 原生测试）。其余托盘内容按平台分派：Caps 由系统自带的大写锁定指示承担，「日」与全半角、标点按钮在默认开启的悬浮工具栏上显示，不另占菜单栏图标。代价是英文模式在系统设置的输入源列表和 Ctrl+空格轮换里是单独一条，名称为「灵耀输入法 · 英」/「Lingyao · EN」以免与中文条目同名。
 
 **设置页有几处措辞与控件刻意与来源不同**：「始终使用英文标点」与这边的「中文标点」绑同一个 `chinese_punctuation` 但极性相反，只改名不反转控件即是错标；剪贴板管理来源写「关闭后立即清空」，这边写「保存关闭设置后清空」，因为这边的清空发生在偏好保存时；候选窗字体一项各宿主都只显示「主字体」（Windows 另有「候选窗英文字体」），不再提供来源的「中文补充字体」排序列表：补充字体由字体预设写入；Windows 渲染器不读 `candidate_font_family`，所以在 Windows 上选主字体时同时把它排到补充字体最前（`candidateMainFontPatch`）。
 
 ## Windows 进程与协议边界
 
-**两个目标，边界写死在构建里。** TSF tip 是进程内 DLL（`platforms/windows/tsf/`，`OUTPUT_NAME MetasequoiaImeTsf`，经 `IME/MetasequoiaIME.def` 导出四个未修饰 COM 入口，链 Rust `msime-host-api` 的导入库）；Server 是独立的窗口子系统可执行文件（`src/entrypoints/server_main.cpp`，`OUTPUT_NAME MetasequoiaImeServer`）。另有 `MetasequoiaImeWatchdog`（对应安装器的登录任务）与 `msime-client-prepare`（准备 `runtime-options.json`）。
+**两个目标，边界写死在构建里。** TSF tip 是进程内 DLL（`platforms/windows/tsf/`，`OUTPUT_NAME LingyaoImeTsf`，经 `IME/LingyaoIME.def` 导出四个未修饰 COM 入口，链 Rust `msime-host-api` 的导入库）；Server 是独立的窗口子系统可执行文件（`src/entrypoints/server_main.cpp`，`OUTPUT_NAME LingyaoImeServer`）。另有 `LingyaoImeWatchdog`（对应安装器的登录任务）与 `msime-client-prepare`（准备 `runtime-options.json`）。
 
 **Server 是窗口程序而不是控制台程序。** 控制台子系统会让 Watchdog 与 TSF DLL 每次拉起 Server 都带出一个黑色控制台窗口。现在链接为 Windows 子系统（MinGW `-mwindows`；MSVC `WIN32_EXECUTABLE` 加 `/ENTRY:wmainCRTStartup`，入口仍是 `wmain`）。`--config` 预览与 `--help` 从终端启动时挂到父控制台（`AttachConsole(ATTACH_PARENT_PROCESS)`），状态行与 Ctrl+C 照旧；受管启动（`--watchdog-managed` / `--production`）从不挂接，因为 TSF DLL 是在当前焦点程序里拉起 Server 的，那个程序本身可能是控制台程序。
 
@@ -236,14 +236,14 @@
 
 **TSF DLL 的 COM 边界。** 类工厂契约由 `msime-tsf-class-factory` 钉住：从同目录加载出货 DLL，解析 `DllGetClassObject`，用固定 CLSID 取得 `IClassFactory`，实例化的对象实现 `ITfTextInputProcessor`；未知 CLSID 返回 `CLASS_E_CLASSNOTAVAILABLE`，已知 CLSID 但请求不支持的类工厂接口返回 `E_NOINTERFACE`，空输出指针在 `QueryInterface` 返回 `E_POINTER`、在 `CreateInstance` 返回 `E_INVALIDARG`；类工厂拒绝聚合；`DllCanUnloadNow` 钉住「类工厂或 TIP 仍被引用时不可卸载、全部释放后可卸载」，并覆盖 `LockServer(TRUE/FALSE)`。生产的 `DllGetClassObject` 先清空输出，再按 CLSID、然后按接口判定，不把这两类错误混为一谈。
 
-**安装布局与注册。** 32 位与 64 位 TSF DLL 分别装到 `{commonpf32|64}\metasequoiaime\msime_v<ver>\` 并带 `regserver` 标志注册 TIP；PDB 与 `.ilk` 不装到用户机器上，`installer/Collect-Symbols.ps1` 把它们打成单独的 `msime-windows-<edition>-<version>-symbols.zip` 随安装包发布，`release-windows.yml` 和 `Package-SimplySign.ps1` 都调用它，维护者替换签名安装包时连同符号包一起替换；Server 装在 `{commonpf64}\metasequoiaime\server`；应用数据装到用户选定的 `DataDir`；HKLM `Software\Metasequoia\MetasequoiaIME` 写 `VersionDir` / `ServerPath` / `DataDir`；`THIRD_PARTY_NOTICES.txt` 与 `LICENSE.txt` 随包分发（GPLv3 第 4、6 条）。`ISCC /DLightPackage=1` 出不含词库的轻量包。
+**安装布局与注册。** 32 位与 64 位 TSF DLL 分别装到 `{commonpf32|64}\metasequoiaime\msime_v<ver>\` 并带 `regserver` 标志注册 TIP；PDB 与 `.ilk` 不装到用户机器上，`installer/Collect-Symbols.ps1` 把它们打成单独的 `msime-windows-<edition>-<version>-symbols.zip` 随安装包发布，`release-windows.yml` 和 `Package-SimplySign.ps1` 都调用它，维护者替换签名安装包时连同符号包一起替换；Server 装在 `{commonpf64}\metasequoiaime\server`；应用数据装到用户选定的 `DataDir`；HKLM `Software\Lingyao\LingyaoIME` 写 `VersionDir` / `ServerPath` / `DataDir`；`THIRD_PARTY_NOTICES.txt` 与 `LICENSE.txt` 随包分发（GPLv3 第 4、6 条）。`ISCC /DLightPackage=1` 出不含词库的轻量包。
 
 ### Windows 发布流水线产出真实安装包（2026-09-23）
 
 - 流水线：`.github/workflows/release-windows.yml` 在 windows-2025（MSVC，Visual Studio 18 2026）上按 `installer/Package-SimplySign.ps1` 的顺序走完 `Build-Client.ps1` → `Collect-Notices.ps1` → `Prepare-PackageFiles.ps1` → `Compile-Installer.ps1`，只是跳过签名。原生依赖按 `platforms/windows/vcpkg.json` 的 baseline 装进 x64/x86 两个前缀并缓存；Inno Setup 固定 6.7.1，`ChineseSimplified.isl` 取自同版本标签并校验 SHA-256。
-- 产物：`MetasequoiaIME_Setup_v<版本>.exe` 与 `.sha256` 作为 workflow artifact 上传；`publish` 输入默认打开，创建 `windows-v<版本>` Release（关掉则只上传 artifact）；构建“Use workflow from”所选分支或标签上的那个提交。安装包未签名，因为代码签名证书是只在发布机上的 Certum SimplySign 卡，签名仍是本地步骤。
+- 产物：`LingyaoIME_Setup_v<版本>.exe` 与 `.sha256` 作为 workflow artifact 上传；`publish` 输入默认打开，创建 `windows-v<版本>` Release（关掉则只上传 artifact）；构建“Use workflow from”所选分支或标签上的那个提交。安装包未签名，因为代码签名证书是只在发布机上的 Certum SimplySign 卡，签名仍是本地步骤。
 - 第一次在 MSVC 上完整构建暴露并修掉的问题：Engine overlay 脚本按 ANSI 代码页读写 UTF-8 源；engine-bridge 的 MSVC 编译拿不到 vcpkg 头文件；strict 目标的 `/W4 /WX` 窄化、遮蔽与 `getenv` 弃用告警；TSF 引入 Engine 管道契约时被 SDK 的 `max` 宏改写；PowerShell 调 pnpm（`.cmd`）时 Tauri `--config` 的内联 JSON 丢了引号；`Collect-Notices.ps1` 按整个文件比较 Engine 标记；安装脚本 `[Code]` 里有先用后声明的 `UserConfigPath` 和保留字 `Protected`。
-- 证据：https://github.com/metasequoiaime/msime/actions/runs/35815935438 成功，artifact `msime-windows-0.1.0` 内含 201 MB 的 `MetasequoiaIME_Setup_v0.1.0.exe`，下载后 `.sha256` 校验通过。安装包尚未在真实 Windows 上安装验收。Rust crate 与 npm 包的补充声明已由 #650 收进通知集合，随后的发布运行 https://github.com/metasequoiaime/msime/actions/runs/35830590535（`publish=false`）成功。
+- 证据：https://github.com/Lcy040109/msime/actions/runs/35815935438 成功，artifact `msime-windows-0.1.0` 内含 201 MB 的 `LingyaoIME_Setup_v0.1.0.exe`，下载后 `.sha256` 校验通过。安装包尚未在真实 Windows 上安装验收。Rust crate 与 npm 包的补充声明已由 #650 收进通知集合，随后的发布运行 https://github.com/Lcy040109/msime/actions/runs/35830590535（`publish=false`）成功。
 macOS（`shared/apple/TextClient.mm`，iOS 共用）与 Linux 两套前端改成：视图带非空 `reading` 时，组字就是假名。**唯一的例外是用户把光标移进字母中间**——引擎给的偏移是罗马字里的偏移，没有到假名的映射（与 `MSIMEPreeditCaretPosition` 拒绝为双拼猜测是同一条理由），这时继续显示光标所属的那串字母，而不是把光标画在不属于它的地方；正常打字永远碰不到这条，光标一直在末尾。判据写成 `composition_shows_reading`（Linux 侧，带四条用例），Apple 侧在 `TextClientTest` 里四条（假名显示、raw 样式同样显示假名、光标移进中间保留字母、其余方案不受影响），反向验证过。
 
 **Windows 同日也改了，而且比预计简单**：上一段里「TIP 自己按按键本地追加组字」的说法只对没有宿主引擎适配器的回退路径成立。挂着适配器时 `_HandleCompositionInputWorker` **本来就**把 `readingStrings` 整串换成视图里的 `preedit`，所以改的只是「换成哪一个字段」。TIP 的视图结构体补上 `reading`（解析器一行，用例钉住），显示判据直接用共享那条。
@@ -460,7 +460,7 @@ cargo run -p msime-input-runtime --example local_modes -- <verified-dictionary-d
 
 第一条是用户装完立刻能感觉到的：来源那边装好后输入法起手是英文态，macOS 起手是中文态（`AppearancePreferences.defaultImeMode` 在没有存储值时回落到 `chinese`）。
 
-**本轮不动它们**，理由是这不是「macOS 漏实现了什么」，四个字段每一个 macOS 都在消费；改的是默认值，而共享默认同时被 Linux、Android、iOS、HarmonyOS 使用，翻一处就翻五个宿主的首次启动行为。另外起手是中文还是英文，在 macOS 上与 Windows 的处境并不同——macOS 上用户是明确从输入菜单选中「水杉输入法」才开始打字的，选了中文输入法却起手英文，未必是这个平台想要的。这属于产品取舍，留给所有者定。
+**本轮不动它们**，理由是这不是「macOS 漏实现了什么」，四个字段每一个 macOS 都在消费；改的是默认值，而共享默认同时被 Linux、Android、iOS、HarmonyOS 使用，翻一处就翻五个宿主的首次启动行为。另外起手是中文还是英文，在 macOS 上与 Windows 的处境并不同——macOS 上用户是明确从输入菜单选中「灵耀输入法」才开始打字的，选了中文输入法却起手英文，未必是这个平台想要的。这属于产品取舍，留给所有者定。
 
 比对方法可重跑：`Preferences::default()` 用一个临时 example 序列化成 JSON，再按叶子名与来源 TOML 逐键对；不匹配的叶子名（来源有而共享没有同名字段的 80 个）多是命名差异，已在上一条记录里核过。
 
@@ -470,7 +470,7 @@ cargo run -p msime-input-runtime --example local_modes -- <verified-dictionary-d
 - **宿主能力矩阵**：`HostCapabilities::for_platform` 里没有任何一项是「Windows 有、macOS 没有」。
 - **悬浮工具栏缩放**：macOS 的白名单 75/100/125/150 与来源下拉逐项相同。
 - **翻页键的缺省**：原生窗口那个三选一的「候选翻页快捷键」只在共享 `navigation` 没有显式布尔值时充当缺省，一旦设置页写过就以共享值为准；它推出的缺省（minus_equal 开、brackets 关、其余开、mouse_wheel 关）与共享 `NavigationPreferences::default()` 逐项相同。
-- **候选字号**：`metasequoia::mac` 下那两个只认 16/18/20 的 `NormalizeCandidateFontSize` 属保留的 Apple 适配层（`MetasequoiaInputController.mm`，不编进产物）；发出去的宿主走的是 12–32。
+- **候选字号**：`metasequoia::mac` 下那两个只认 16/18/20 的 `NormalizeCandidateFontSize` 属保留的 Apple 适配层（`LingyaoInputController.mm`，不编进产物）；发出去的宿主走的是 12–32。
 
 混输最小前缀默认值的来源依据：
 
@@ -534,7 +534,7 @@ macOS 缺后半条。`ShouldRoutePhysicalCandidateDigit` 明确把 Unicode 模�
 
 改在共享层（`crates/input-runtime`），两个触发条件按来源逐条对应，扩充后的重排复用原有路径（`rerank` + `demote_runner_up_readings`），四条用例钉住：走到末尾能取到扣住的候选、踏进短尾页前先填满（与翻页一侧同形，页面不会先短一下再长出来）、引擎没有存货时高亮停在最后一条不回绕、向上走永远不请求扩充（否则会在用户往回读的时候重排列表）。
 
-同组其余四项没有缺口，一并记下判据：候选窗的固定位置项本仓已按来源的 `#379AD3` 单独着色（`InputController.mm` 的 `candidateFixed`，与来源 `candidate_view_model.h` 同值），不与高亮合并；悬浮工具栏可见性 `configured_enabled && !fullscreen && ime_active` 与来源 `floating_toolbar_visibility_policy.h` 逐项相同（`MetasequoiaFloatingToolbarShouldShow`），`ime_active` 也与来源同义地跟随输入法的选中而不是客户端焦点：`activateServer:` 置位，用户切到别的输入源时由 `MSIMEInputSourceMonitor` 的 `switchedAway` 调 `deactivateForInputSourceSwitch` 清除（对应来源 TIP Deactivate 发出的 `WM_IMEDEACTIVATE`）；客户端失焦（IMK `deactivateServer:`）对应来源的 `ClientSuspended`，不改变工具栏可见性，所以切换应用、点桌面或没有输入框的窗口时工具栏留在原处，属主控制器被释放时立即隐藏（`dealloc` 调 `deactivateForDelegate:`），每次应用激活时 `refreshVisibility` 再检查一次属主作为兜底；`candidate_size_estimator` 是 Direct2D 的度量工具，macOS 侧由 `CandidateRowFit.h` 和原生面板用例覆盖，属实现形态差异；翻页键的六组开关（minus/equal、逗号句号、方括号、Tab、PageUp/Down、方向键）macOS 全部消费；开关关闭时，Tab/Shift+Tab、PageUp/PageDown 与 ↑/↓ 在候选可见期间照样被吞掉，不发任何命令、不结束组字，候选原样保留——来源在任何候选模式下都把这几个键交给 Server（`CompositionProcessorEngine.cpp` 的 `FUNCTION_SERVER_CANDIDATE_KEY`），Server 以 `IsCandidateNavigationKey` 认出后默认回 `NavigationIgnored`，只有对应的 `GetConfigured*Enabled()` 为真才翻页或移动（`server/src/ipc/event_listener.cpp`）；候选不可见时这些键仍交还应用。另有 Home/End 落在当前页首尾。（**这句在 2026-09-21 的第二十五批被推翻**：来源不是没有 Home/End，而是在客户端一侧把它们分类成 `FUNCTION_MOVE_PAGE_TOP/BOTTOM`，选的是整份列表的首末项。见该批。）
+同组其余四项没有缺口，一并记下判据：候选窗的固定位置项本仓已按来源的 `#379AD3` 单独着色（`InputController.mm` 的 `candidateFixed`，与来源 `candidate_view_model.h` 同值），不与高亮合并；悬浮工具栏可见性 `configured_enabled && !fullscreen && ime_active` 与来源 `floating_toolbar_visibility_policy.h` 逐项相同（`LingyaoFloatingToolbarShouldShow`），`ime_active` 也与来源同义地跟随输入法的选中而不是客户端焦点：`activateServer:` 置位，用户切到别的输入源时由 `MSIMEInputSourceMonitor` 的 `switchedAway` 调 `deactivateForInputSourceSwitch` 清除（对应来源 TIP Deactivate 发出的 `WM_IMEDEACTIVATE`）；客户端失焦（IMK `deactivateServer:`）对应来源的 `ClientSuspended`，不改变工具栏可见性，所以切换应用、点桌面或没有输入框的窗口时工具栏留在原处，属主控制器被释放时立即隐藏（`dealloc` 调 `deactivateForDelegate:`），每次应用激活时 `refreshVisibility` 再检查一次属主作为兜底；`candidate_size_estimator` 是 Direct2D 的度量工具，macOS 侧由 `CandidateRowFit.h` 和原生面板用例覆盖，属实现形态差异；翻页键的六组开关（minus/equal、逗号句号、方括号、Tab、PageUp/Down、方向键）macOS 全部消费；开关关闭时，Tab/Shift+Tab、PageUp/PageDown 与 ↑/↓ 在候选可见期间照样被吞掉，不发任何命令、不结束组字，候选原样保留——来源在任何候选模式下都把这几个键交给 Server（`CompositionProcessorEngine.cpp` 的 `FUNCTION_SERVER_CANDIDATE_KEY`），Server 以 `IsCandidateNavigationKey` 认出后默认回 `NavigationIgnored`，只有对应的 `GetConfigured*Enabled()` 为真才翻页或移动（`server/src/ipc/event_listener.cpp`）；候选不可见时这些键仍交还应用。另有 Home/End 落在当前页首尾。（**这句在 2026-09-21 的第二十五批被推翻**：来源不是没有 Home/End，而是在客户端一侧把它们分类成 `FUNCTION_MOVE_PAGE_TOP/BOTTOM`，选的是整份列表的首末项。见该批。）
 
 方向键的朝向是刻意的平台适配：来源只认 ↑/↓，macOS 按候选窗朝向决定（竖排认 ↑/↓，横排认 ←/→），这是既有决定，不动。
 
@@ -613,7 +613,7 @@ macOS 缺后半条。`ShouldRoutePhysicalCandidateDigit` 明确把 Unicode 模�
 
 同一轮还核过几处怀疑、结论都是已实现或有意适配，一并记下以免再查：HarmonyOS 的 `InputCommand` 枚举值与 C ABI 的命令码逐一对应（分段命令是显式的 12/13/14，不是顺延的 9/10/11）；翻页键集合覆盖来源的 `IsPagingKey` 全部并多出鼠标滚轮；日语浊音/半浊音/小假名在触屏上以 `SURFACE_VARIANTS` 面板实现（点假名直接按下对应罗马字笔画），而不是来源的 `CycleKanaVariant` 循环命令。
 
-增量记录（2026-09-20，输入行为层第一片）：先确认了一件决定工作量的事——两个仓库用的是同一个引擎 `github.com/metasequoiaime/msime-engine`，来源以 submodule 锁在 `6bd22549`，本仓以 `engine-lock.json` 锁在 `0531d421`，而后者比前者**新 467 个提交**（来源那个 commit 是本仓的祖先）。所以候选生成、分词、词库这些引擎行为不存在「缺失」，本仓跑的是同一引擎的更新版本；行为差异只可能出在宿主怎么驱动它。本仓的候选快照字段（candidates / candidate_codes / candidate_annotations / candidate_sources / candidate_positions / candidate_corrected）也与来源 `CandidateViewItem` 的 text/annotation/badge/translation/fixed_position 一一对应，并多一个纠错标记。
+增量记录（2026-09-20，输入行为层第一片）：先确认了一件决定工作量的事——两个仓库用的是同一个引擎 `github.com/Lcy040109/msime-engine`，来源以 submodule 锁在 `6bd22549`，本仓以 `engine-lock.json` 锁在 `0531d421`，而后者比前者**新 467 个提交**（来源那个 commit 是本仓的祖先）。所以候选生成、分词、词库这些引擎行为不存在「缺失」，本仓跑的是同一引擎的更新版本；行为差异只可能出在宿主怎么驱动它。本仓的候选快照字段（candidates / candidate_codes / candidate_annotations / candidate_sources / candidate_positions / candidate_corrected）也与来源 `CandidateViewItem` 的 text/annotation/badge/translation/fixed_position 一一对应，并多一个纠错标记。
 
 据此查到一处真实差异并修掉：引擎会把一部分候选扣在初始结果之后，要调 `expand_initial_candidates` 才放出来，而运行时里这个调用只有一处——`expand_for_next_page`，只在 `Action::NextPage` 时触发。翻页的宿主能拿到，改为「一次列出全部」的触屏宿主则永远拿不到。`all_candidates()` 是 `&self`，只读 `self.cached`。实测（`withholding_runtime(12, 8, 5)`）：翻页前 `all_candidates()` 返回 12 条，翻页到底后返回 20 条——号称「全部」的面板少了 8 条，正好是引擎扣住的那批。HarmonyOS 的触屏路径用的就是 `allCandidates`（`KeyboardSession.ets`，注释写明沿用 iOS 的做法放弃翻页），所以这 8 条在触屏上无法通过任何操作到达。现让 `all_candidates()` 先扩充再返回：这个调用本身就是「把全部给我」。扩充失败不致命，调用方仍拿到已有的那一代。
 
@@ -629,7 +629,7 @@ macOS 缺后半条。`ShouldRoutePhysicalCandidateDigit` 明确把 Unicode 模�
 
 组件**默认值**有一处刻意不跟：`emoji` 在共享层默认关（与 `handwriting`、`voice`、`screen_keyboard` 一起），来源默认开。id、标签和顺序不变，只是新配置拿到的是精简工具栏。Windows 不受影响——`platforms/windows/installer/config.default.toml` 逐项显式写出每个组件（`floating_toolbar_emoji = true`），镜像来源自己的默认配置，共享默认值轮不到生效；变的是不带出厂配置的宿主（macOS、HarmonyOS）。理由与升级代价见下面《工具栏可选按钮改为默认关》。
 
-工具栏的外框同样对齐来源 `floating_toolbar_presenter.cpp`。左缘对应 `ToolbarDragHandle` 的是水杉 logo：来源那条 2.5×14、`#8E8CD8` 的圆角竖条在 macOS 上不再单独绘制，工具栏最前面已经有 logo，再放一条竖条只是第二个同义的记号，拖动交给 logo 承担。logo 占 34pt 加 4pt 间距，其后隔 3pt 是对应 `ToolbarDivider` 的 1.2pt 分隔线（取全局主题解析出的候选窗描边色 `border`），再隔 4pt 才是第一个按钮；按钮宽为字号加 8pt、彼此相隔 2pt，字形取字号的 0.95，尾部留 6pt，都随缩放比例放大。这比来源更紧凑：按来源间距排开时字与字相隔过远，工具栏挡住的正文比五个按钮实际需要的多。来源 `WM_NCHITTEST` 把柄所在区域报成 `HTCAPTION`，macOS 侧由 logo 的 `mouseDownCanMoveWindow` 配合面板的 `movableByWindowBackground` 实现同样的拖动，按钮一律返回 NO，按住按钮不会拖走面板；按钮全部关闭时分隔线隐藏、logo 保留，与来源始终保留柄一致。来源柄上的 `IDC_SIZEALL` 光标按平台惯例换成 `NSCursor.openHandCursor`，macOS 没有公开的四向箭头光标。按钮的悬停与按下底色对应 `ToolbarIconButton::Render`：半径 `max(2, 高度×0.25)` 的圆角矩形，填色取全局主题解析出的候选行悬停色 `hover`（跟随系统时深色白 0.10、浅色黑 0.06），与工具栏底色、描边同出一套主题；面板从不成为 key window，所以悬停由 `NSTrackingActiveAlways` 的跟踪区报告，面板隐藏时一并清除悬停态。
+工具栏的外框同样对齐来源 `floating_toolbar_presenter.cpp`。左缘对应 `ToolbarDragHandle` 的是灵耀 logo：来源那条 2.5×14、`#8E8CD8` 的圆角竖条在 macOS 上不再单独绘制，工具栏最前面已经有 logo，再放一条竖条只是第二个同义的记号，拖动交给 logo 承担。logo 占 34pt 加 4pt 间距，其后隔 3pt 是对应 `ToolbarDivider` 的 1.2pt 分隔线（取全局主题解析出的候选窗描边色 `border`），再隔 4pt 才是第一个按钮；按钮宽为字号加 8pt、彼此相隔 2pt，字形取字号的 0.95，尾部留 6pt，都随缩放比例放大。这比来源更紧凑：按来源间距排开时字与字相隔过远，工具栏挡住的正文比五个按钮实际需要的多。来源 `WM_NCHITTEST` 把柄所在区域报成 `HTCAPTION`，macOS 侧由 logo 的 `mouseDownCanMoveWindow` 配合面板的 `movableByWindowBackground` 实现同样的拖动，按钮一律返回 NO，按住按钮不会拖走面板；按钮全部关闭时分隔线隐藏、logo 保留，与来源始终保留柄一致。来源柄上的 `IDC_SIZEALL` 光标按平台惯例换成 `NSCursor.openHandCursor`，macOS 没有公开的四向箭头光标。按钮的悬停与按下底色对应 `ToolbarIconButton::Render`：半径 `max(2, 高度×0.25)` 的圆角矩形，填色取全局主题解析出的候选行悬停色 `hover`（跟随系统时深色白 0.10、浅色黑 0.06），与工具栏底色、描边同出一套主题；面板从不成为 key window，所以悬停由 `NSTrackingActiveAlways` 的跟踪区报告，面板隐藏时一并清除悬停态。
 
 未验证：固定候选的配色只有单测覆盖，没有在设备上目视确认——需要启用输入法、聚焦文本框、输入、长按候选、选固定这一串操作，本次没有完成。
 
@@ -1271,7 +1271,7 @@ if let Some(route) = launch_route_from_args(&args) { ... }
 
 **这里的保证来自返回类型，不是来自测试，如实记一下。** 新增的用例钉的是「回落到哪个 surface」（空参数、只有可执行文件路径、`--route=` 解析失败三种输入都回落到设置窗；显式 route 仍然优先），但它盖不住调用处——谁要是把 `if let Some(...)` 写回去，用例照样绿。真正让这个缺陷无法复发的是函数签名不再返回 `Option`，调用方没有可丢弃的东西。写守卫去检查调用处长什么样只会脆，不如把类型摆对。
 
-macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效：设置启动（`settings`、`settings:<分类>`，以及 Finder / 启动台不带 route 的启动）共用一个 `app.msime.macos` 进程，`tauri-plugin-single-instance` 在 macOS 上是 `/tmp` 下的 Unix socket。第二次设置启动把自己的 `--route=` 转发给已在运行的设置进程后立即退出，运行中的窗口 `show()` + `unminimize()` + `set_focus()` 并经 `settings-route` 切到请求的页面，所以菜单里的「水杉输入法设置…」「关于水杉输入法…」「检查更新…」都是把已开的窗口拉回前台并换页，而不是再开一个窗口。面板启动（屏幕键盘、emoji、手写、语音 / 面板会话、云剪贴板、云词典）不注册这个插件，仍是每个输入会话一个进程：它们的环境里带着会话身份和配置路径，面板关闭时进程随之退出。IMK 侧 `DesktopSettingsLauncher.h` 对所有 route 都保留 `createsNewApplicationInstance = YES`，否则 LaunchServices 会直接激活任意一个正在运行的实例（可能是隐藏的面板进程）并丢掉参数；这个短命的第二进程正是把 route 送到已开窗口的载体。判定在 `macos_settings_launch()`，由 `macos_single_instance_admits_only_settings_launches` 覆盖。
+macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效：设置启动（`settings`、`settings:<分类>`，以及 Finder / 启动台不带 route 的启动）共用一个 `app.msime.macos` 进程，`tauri-plugin-single-instance` 在 macOS 上是 `/tmp` 下的 Unix socket。第二次设置启动把自己的 `--route=` 转发给已在运行的设置进程后立即退出，运行中的窗口 `show()` + `unminimize()` + `set_focus()` 并经 `settings-route` 切到请求的页面，所以菜单里的「灵耀输入法设置…」「关于灵耀输入法…」「检查更新…」都是把已开的窗口拉回前台并换页，而不是再开一个窗口。面板启动（屏幕键盘、emoji、手写、语音 / 面板会话、云剪贴板、云词典）不注册这个插件，仍是每个输入会话一个进程：它们的环境里带着会话身份和配置路径，面板关闭时进程随之退出。IMK 侧 `DesktopSettingsLauncher.h` 对所有 route 都保留 `createsNewApplicationInstance = YES`，否则 LaunchServices 会直接激活任意一个正在运行的实例（可能是隐藏的面板进程）并丢掉参数；这个短命的第二进程正是把 route 送到已开窗口的载体。判定在 `macos_settings_launch()`，由 `macos_single_instance_admits_only_settings_launches` 覆盖。
 
 增量记录（2026-09-21，Windows 第三十批：等云候选该等多久）：沿对照表「谷歌云候选与 AI 联想」一行里「超时、取消、失焦后旧结果」逐项比。目标起点 `6b4b138ae`。
 
@@ -1311,7 +1311,7 @@ macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效�
 
 增量记录（2026-09-21，Windows 第三十二批：上游发过的每一个功能都被看过）：目标起点 `a26aca7e3`。
 
-这一轮把三条轴都走完了，结论先写在前面：**按上游 README 的功能清单逐条核对，只剩加加辅助码一项没有对应物**，而那一项的阻塞点已经记在第二十四批——7968 行码表是拼音加加 5.x 的非官方重建数据，引不引进来是仓库所有者的第三方数据分发决定。其余全部有对应物：全拼 / 双拼四套 / 86 五笔、日文罗马字与 R 模式、五种辅助码、云候选与 AI 联想、竖排候选窗的中英互译与腾讯云翻译、混输与独立英文候选、词库管理、语音输入、手写 / 屏幕键盘 / 悬浮工具栏 / 剪贴板历史、默认关闭的输入统计、K/T/U/E/M/J/Y/R 八个模式、智能标点与成对标点与以词定字与简繁转换、候选外观由全局主题提供（`skin/theme.rs` 的 `GlobalTheme`：`system`、`shuishan`、`light`、`paper`、`night`、`ink`、`custom` 七个 id，取代来源的 fluent/wechat/graphite/willow_green 四套皮肤）。
+这一轮把三条轴都走完了，结论先写在前面：**按上游 README 的功能清单逐条核对，只剩加加辅助码一项没有对应物**，而那一项的阻塞点已经记在第二十四批——7968 行码表是拼音加加 5.x 的非官方重建数据，引不引进来是仓库所有者的第三方数据分发决定。其余全部有对应物：全拼 / 双拼四套 / 86 五笔、日文罗马字与 R 模式、五种辅助码、云候选与 AI 联想、竖排候选窗的中英互译与腾讯云翻译、混输与独立英文候选、词库管理、语音输入、手写 / 屏幕键盘 / 悬浮工具栏 / 剪贴板历史、默认关闭的输入统计、K/T/U/E/M/J/Y/R 八个模式、智能标点与成对标点与以词定字与简繁转换、候选外观由全局主题提供（`skin/theme.rs` 的 `GlobalTheme`：`system`、`lingyao`、`light`、`paper`、`night`、`ink`、`custom` 七个 id，取代来源的 fluent/wechat/graphite/willow_green 四套皮肤）。
 
 这一批具体核对过、本仓已有而此前文档没点过名的几项：上游安装器那页「联网功能」同意页本仓 `msime_setup.iss` 423–475 行完整有（我一开始从「没有 `[Tasks]` 段」推断它缺，是错的——上游根本没用 `[Tasks]`，用的是 `[Code]` 里的 `CreateInputOptionPage`）；`MAX_PINYIN_LENGTH` 本仓在 `tsf/Key/KeyEventSink.cpp` 里用得比上游还多（延迟按键预算、shadow 原始输入、上报输入长度三处都夹了）；语言栏深浅色图标在 `LanguageBar.cpp` 的 `IsSystemDarkMode` / `ResolveThemeIconIndex`，资源比上游多一对 `jp-*.ico`；候选窗「隐藏」的拥塞宽限期连常量都一样是 24ms（`CandidateMailbox.h` 对 `internal_late_event`）；词条导入的默认权重 10000 与 Rime YAML 头跳过都在 `dictionary/import.rs`。
 
@@ -1331,7 +1331,7 @@ macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效�
 
 **皮肤目录。** 来源 `IsBuiltIn` 是 fluent/wechat/graphite/willow_green 四个，`IsSafeId` 是「首字符字母数字、整体只允许小写字母数字与 `. _ -`、上限 64」。本仓 `skin/catalog.rs` 的 `safe_id` 与 `IsSafeId` 逐条相同；内置 id 是有意的分歧：本仓没有内置皮肤，内置配色在 `skin/theme.rs` 的七个全局主题里，`skin/catalog.rs` 只经 `is_reserved` 把这七个 id 保留下来，外部皮肤包不能占用，来源的四个内置 id 在这里没有特殊含义。
 
-**用户词库日志重放。** 来源有一个独立 exe 走 Engine 的 `user_dictionary::replay`，把日志重放进新装词库。本仓同样有这个工具（`crates/engine-bridge/src/bin/MetasequoiaImeDictionaryReplay.rs`），只是 macOS 的词库更新不走它：走的是快照 staging，把用户词条、固定位、选择记录成流写进新一代（`stage_dictionary_state`）。两条路都保住用户数据，形态差异，不是缺口。
+**用户词库日志重放。** 来源有一个独立 exe 走 Engine 的 `user_dictionary::replay`，把日志重放进新装词库。本仓同样有这个工具（`crates/engine-bridge/src/bin/LingyaoImeDictionaryReplay.rs`），只是 macOS 的词库更新不走它：走的是快照 staging，把用户词条、固定位、选择记录成流写进新一代（`stage_dictionary_state`）。两条路都保住用户数据，形态差异，不是缺口。
 
 **AI 那一半的时序。** 来源防抖 650ms、连接 2500ms、总计 8000ms，命中缓存时跳过防抖直接出；缓存键是 provider + endpoint + model + 分段拼音。macOS 的 `_aiTimer` 是 0.65 秒，`client-core/src/ai.rs` 的 descriptor 是 2500/8000，`MSIMEAICacheKey` 是同样四项，命中时也是直接 apply 不等防抖。唯一差别是本仓给缓存加了 4096 条上限而来源不清（只在 Stop 时清），方向是更严。
 
@@ -1355,7 +1355,7 @@ macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效�
 
 第三十二批的结论是「按上游 README 功能清单逐条核对，只剩加加辅助码没有对应物」，并把它记成「等仓库所有者做第三方数据决定」。**那个决定已经有了**：仓库所有者明确要求完整复刻，本批照此执行。该做的不是替他决定，而是把决定所需要知道的事实摆清楚，然后把活干完——这两件事都做了，见 `resources/helpcodes/NOTICE.md`。
 
-**为什么不能提锁。** 前几批写过「可以加一个 overlay 把 `assets::helpcodes` 从五项扩到六项」，但没说清另一条路为什么不通：`git ls-remote metasequoiaime/msime-engine HEAD` 回来的就是 `engine-lock.json` 钉的那个 `f611f2ff`。引擎已经并进上游主仓（README 的「引擎在仓内」），独立引擎仓库停在并入那一刻，而加加是 2026-09-20 的 `566ff8b8` 加进上游 `engine/` 的——**没有更新的引擎提交可以提**。所以码表只能由本仓携带。
+**为什么不能提锁。** 前几批写过「可以加一个 overlay 把 `assets::helpcodes` 从五项扩到六项」，但没说清另一条路为什么不通：`git ls-remote Lcy040109/msime-engine HEAD` 回来的就是 `engine-lock.json` 钉的那个 `f611f2ff`。引擎已经并进上游主仓（README 的「引擎在仓内」），独立引擎仓库停在并入那一刻，而加加是 2026-09-20 的 `566ff8b8` 加进上游 `engine/` 的——**没有更新的引擎提交可以提**。所以码表只能由本仓携带。
 
 **注册只需一条 asset 条目。** `HelpcodeUtils::load_helpcode_keymap` 按 `entry.schema == schema` 在 `metasequoia::assets::helpcodes` 里找，`is_supported_helpcode_schema` 查的是同一个数组，所以一条条目同时决定「能不能加载」和「算不算合法」。`contracts/assets/generate.py` 把契约生成那个数组，`product.py` 又从同一份契约派生打包文件清单——于是 overlay 改 `assets.json` 之后跑引擎**自己的**生成器，而不是手改生成出来的头文件再祈祷三者一致。overlay 会断言生成结果里确实出现了 `{"jiajia", helpcode_jiajia}`。
 
@@ -1440,7 +1440,7 @@ macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效�
 
 `DictionaryInstaller.mm` 编进 bundle、导出符号、零覆盖。它校验指纹、跑 `PRAGMA quick_check`、原子写出临时文件——到这里都很稳妥——然后 **先 `removeItemAtURL:` 删掉现有 `msime-pinyin.db`，再 move 新文件**。这两步之间任何失败（磁盘满、沙箱拒绝、崩溃）都让用户**一个词库都不剩**，而且从这里恢复不了。改成 `replaceItemAtURL:`：原文件一直在，新文件提交不成功就放回去；本来就没装过的情况没有可替换的东西，move 本身就是全部操作。失败路径顺手清掉自己暂存的文件。
 
-顺带记两条：这个函数当前**没有活的调用方**（两个调用方 `DictionaryRuntime.mm` 与 `MetasequoiaInputController.mm` 都是保留的 Apple 适配器，不参与编译），所以这不是线上缺陷；但它是导出符号又编在 bundle 里，接上就会带着那个窗口，因此按缺陷修而不是按死代码放着。
+顺带记两条：这个函数当前**没有活的调用方**（两个调用方 `DictionaryRuntime.mm` 与 `LingyaoInputController.mm` 都是保留的 Apple 适配器，不参与编译），所以这不是线上缺陷；但它是导出符号又编在 bundle 里，接上就会带着那个窗口，因此按缺陷修而不是按死代码放着。
 
 用例覆盖八种情形：首次安装、覆盖安装、指纹不符、文件被截断（`quick_check` 该拦的正是这种——文件头仍然有效、能打开，读到页才发现）、指纹长度不足 64（否则会与真值的前缀比较）、空指纹、源/目标不是文件 URL、源文件不存在。每一条都额外断言**已安装的那份内容没被动过**，以及临时文件没有留下。反向验证过（把指纹判断短路，第 83 行立刻红）。
 
@@ -1734,7 +1734,7 @@ macOS 原生宿主此前存在同一条可达路径。`MSIMEInputController` 把
 
 IMK 启动时从 HostOptions 的 `preferences_directory/skins` 设置候选窗与悬浮工具栏皮肤根目录，因此皮肤不再滞留在旧的固定 Application Support 路径。Rust 回归覆盖成功切换、准备失败回滚、非空／嵌套／符号链接目标拒绝和无标记源目录保留；共享设置页回归覆盖路径显示、选择、确认及移动调用，AppKit 目录选择器另由原生构建覆盖。尚未在真实外置卷上执行安装后迁移与编辑器输入验收，不能把本地文件事务和原生构建表述为该层证据。
 
-`ShortcutTest.mm` 以宿主事件序列钉住三个方向：第一键清空组字、随后 repeat 被消费且 Engine 调用数不增加、下一次新按键重新交还客户端；另验证切换文本客户端会解除 armed 状态。反向移除 repeat 栅栏时用例稳定失败在第二次 Engine 调用。实现只落在 `Info.plist` 指定的 `MSIMEInputController`；保留的旧 `MetasequoiaInputController` 不是当前产品入口，不复制一份状态机。
+`ShortcutTest.mm` 以宿主事件序列钉住三个方向：第一键清空组字、随后 repeat 被消费且 Engine 调用数不增加、下一次新按键重新交还客户端；另验证切换文本客户端会解除 armed 状态。反向移除 repeat 栅栏时用例稳定失败在第二次 Engine 调用。实现只落在 `Info.plist` 指定的 `MSIMEInputController`；保留的旧 `LingyaoInputController` 不是当前产品入口，不复制一份状态机。
 
 ### 中文标点后的空格是改写手势，不是正文空格（2026-09-22）
 
@@ -1854,14 +1854,14 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 
 ### Server 不再弹控制台窗口；维护快捷键「停止」真正停下；诊断日志落盘（2026-09-23）
 
-- 控制台窗口：`msime-client-server`（`MetasequoiaImeServer.exe`）原是控制台子系统程序，Watchdog 与 TSF DLL 每次拉起它都会带出一个黑色控制台窗口。来源的 Server 是窗口程序，没有这个窗口。现在链接为 Windows 子系统（MinGW `-mwindows`；MSVC `WIN32_EXECUTABLE` 加 `/ENTRY:wmainCRTStartup`，入口仍是 `wmain`）。`--config` 预览与 `--help` 从终端启动时挂到父控制台（`AttachConsole(ATTACH_PARENT_PROCESS)`），状态行与 Ctrl+C 照旧；受管启动（`--watchdog-managed` / `--production`）从不挂接，因为 TSF DLL 是在当前焦点程序里拉起 Server 的，那个程序本身可能是控制台程序。
+- 控制台窗口：`msime-client-server`（`LingyaoImeServer.exe`）原是控制台子系统程序，Watchdog 与 TSF DLL 每次拉起它都会带出一个黑色控制台窗口。来源的 Server 是窗口程序，没有这个窗口。现在链接为 Windows 子系统（MinGW `-mwindows`；MSVC `WIN32_EXECUTABLE` 加 `/ENTRY:wmainCRTStartup`，入口仍是 `wmain`）。`--config` 预览与 `--help` 从终端启动时挂到父控制台（`AttachConsole(ATTACH_PARENT_PROCESS)`），状态行与 Ctrl+C 照旧；受管启动（`--watchdog-managed` / `--production`）从不挂接，因为 TSF DLL 是在当前焦点程序里拉起 Server 的，那个程序本身可能是控制台程序。
 - 停止快捷键（Ctrl+Shift+Alt+T）：原来只是让主循环退出、返回 0，Watchdog 把 0 当成非正常退出，两秒后又把 Server 拉起来，等于「停止」无效。现在返回 `watchdog::stop_exit_code`，与来源 `window_hook.cpp` 的 `ExitProcess(kStopExitCode)` 一致，Watchdog 随之退出。已打开的设置等 Tauri 窗口是独立进程，不随 Server 关闭，与「重启」时的行为相同。
 - 诊断日志文件：受管模式下 stdout/stderr 没有去处，原来写到控制台的诊断无人可见。设置页「Server 端日志」「TSF 端日志」两个开关（`diagnostic_log.server` / `diagnostic_log.tsf`）原本只影响控制台输出，现在分别控制写入数据目录下的 `logs\server.log`：Server 启停原因、各组件是否就绪、退出码，以及 TIP 上报的诊断批次。来源写到桌面、失败再退回数据目录；这里固定写数据目录，因为输入法在桌面上凭空出现文件不是用户预期的副作用。文件达到 4 MiB 时轮转为 `server.log.1`，最多保留两份；新文件带 UTF-8 BOM，行尾 CRLF，与来源一致。只记状态，不记按键、输入内容或候选文本。偏好发布时立即生效，无需重启 Server。
 - 证据：MinGW 交叉构建与 Wine 下的原生用例；未在 Windows 主机上目视确认。
 
 ### 检查更新改读本仓库的 Windows 发行版；Server 上报的版本号取自 version.txt（2026-09-23）
 
-- 检查更新：来源的「关于」页读 `https://msime.app/update.json`，那份清单描述的是来源产品，`releaseUrl` 指向 `metasequoiaime/MSIME-Windows`。共享设置页在 Windows 上沿用了这个地址，而校验只接受本仓库 `metasequoiaime/msime/releases` 下的链接，所以 Windows 上每次检查都显示「检查失败」；就算放行，也会把用户带去下载另一个产品。现在 Windows 与其他平台一样读本仓库的发行版列表。
+- 检查更新：来源的「关于」页读 `https://msime.app/update.json`，那份清单描述的是来源产品，`releaseUrl` 指向 `metasequoiaime/MSIME-Windows`。共享设置页在 Windows 上沿用了这个地址，而校验只接受本仓库 `Lcy040109/msime/releases` 下的链接，所以 Windows 上每次检查都显示「检查失败」；就算放行，也会把用户带去下载另一个产品。现在 Windows 与其他平台一样读本仓库的发行版列表。
 - 发行版按平台挑选：各平台由 `.github/workflows/release-*.yml` 独立发布到同一个仓库，标签带平台前缀（`windows-v1.2.0`、`linux-v1.2.0`）。原来的 `releases/latest` 只返回整个仓库最新的那一个，通常属于别的平台（写作时是 `macos-v…`），带前缀的标签又解析不出版本号，于是 Linux 等平台的检查同样一直失败。现在读取列表，只取本平台前缀、非草稿、非预发布的发行版，按版本号而不是列表顺序取最新；没有则显示「暂无可用发行版」。
 - 版本号：Server 的遥测原本写死 `0.1.0-dev`。现在由 CMake 从 `platforms/windows/version.txt` 读入（发布工作流读的也是它），`Build-Client.ps1` 带 `-TargetVersion` 构建安装包时同一个版本号同时传给 Tauri 和 Server。
 - 证据：设置页用例覆盖 Windows 读列表、跨平台与预发布过滤、按版本比较；MinGW 交叉构建。未在 Windows 主机上实际点「检查更新」。
@@ -1876,7 +1876,7 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 
 来源的安装程序在安装时就把词库和出厂配置写进数据目录，输入法一能选中就能用，不存在「选中了但没准备好」这个状态。Linux 安装包按设计不产生用户状态，首次配置要由 `msime-linux-setup` 或设置窗口的首次配置页完成；此前用户若先在 IBus 里选中 MSIME，启动器只往 stderr 写一行就退出，界面上什么也看不到，Fcitx5 则只显示笼统的「MSIME：请检查运行配置」，两者都不告诉用户下一步做什么。
 
-适配方式不是照搬安装程序（包管理器安装不应按用户写状态，也不能替用户决定是否联网下载词库），而是在这个状态下把用户引到已有的首次配置页：新增随装脚本 `platforms/linux/scripts/msime-linux-first-run-guide`，有图形会话时脱离调用方打开 `msime-linux-settings`（窗口在缺少 `runtime-options.json` 时自己进入首次配置页），并用 `notify-send` 发一条通知；IBus 启动器与 Fcitx5 插件在「没有显式覆盖、用户与系统配置都不存在」时调用它，Fcitx5 面板同时显示「水杉输入法尚未完成首次配置：请打开「水杉输入法」设置，或在终端运行 msime-linux-setup」。显式覆盖无效、文件不可读或悬空符号链接仍按配置损坏处理。
+适配方式不是照搬安装程序（包管理器安装不应按用户写状态，也不能替用户决定是否联网下载词库），而是在这个状态下把用户引到已有的首次配置页：新增随装脚本 `platforms/linux/scripts/msime-linux-first-run-guide`，有图形会话时脱离调用方打开 `msime-linux-settings`（窗口在缺少 `runtime-options.json` 时自己进入首次配置页），并用 `notify-send` 发一条通知；IBus 启动器与 Fcitx5 插件在「没有显式覆盖、用户与系统配置都不存在」时调用它，Fcitx5 面板同时显示「灵耀输入法尚未完成首次配置：请打开「灵耀输入法」设置，或在终端运行 msime-linux-setup」。显式覆盖无效、文件不可读或悬空符号链接仍按配置损坏处理。
 
 限流放在脚本里、两个宿主共用：`$XDG_RUNTIME_DIR/msime-client/first-run-guide.stamp` 存在就不再弹窗与通知，每个登录会话只引导一次，因为 ibus-daemon 每次选中都会重新拉起启动器、Fcitx5 每次聚焦都会激活输入法，按时间过期的冷却期会让继续打字的用户每隔几分钟被打断一次；会话没有 `XDG_RUNTIME_DIR` 时退到跨会话保留的缓存目录，只能按 5 分钟冷却期限流。Fcitx5 只在激活输入法时拉起引导，按键只显示面板提示，打字途中弹出的窗口可能抢走键盘焦点；插件另外把自身的拉起频率压到 30 秒一次。通知里的后续步骤按宿主区分：Fcitx5 下次按键就会重读配置，写「完成后即可直接输入」；IBus 组件已退出，写先切换到其他输入法再切回、仍不行就 `ibus restart`（后者未在真实 IBus 会话里验证）。脚本不创建状态目录（`msime-linux-setup` 拒绝准备已存在的目录），不发起任何网络请求。
 
@@ -2030,7 +2030,7 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 - 屏幕键盘：来源的按键在松开时才发送，按下后把指针滑出按键再松开就取消。本仓以前在按下时立即发送，还带长按连发。现在 Windows 上按下只记录按下的键，并释放隐式的指针捕获；只有主按钮在同一个键上松开才发送，`pointercancel` 清除记录。滑出后再滑回原键松开仍然发送，和来源一致。修饰键、NumLock、键盘或辅助技术触发的点击（`detail` 为 0）仍按点击处理。其他平台保持按下即发送、长按连发。`apps/desktop/tests/input/keyboard-repeat.test.tsx` 覆盖这一行为。
 - 手写笔画上限：来源不限制笔画数。本仓的共享面板在其他平台停在 32 笔（与 Linux socket provider 的上限一致）；Windows 现在放宽到共享契约 `crates/client-core/src/panels.rs` 的 `MAX_STROKES`（64 笔），超出后仍然提示「笔画已达上限」。剩下的差异是：来源无上限，本仓在 64 笔处停止，这是识别请求的共享边界，没有改动。这项修改不需要 `crates/host-api/src/handwriting_cells.rs`。`apps/desktop/tests/core/handwriting-pointer.test.tsx` 覆盖这一行为。
 - 表情与手写面板的尺寸和位置：来源的表情面板是 550×610 的窗口（`server/src/emoji-panel/main.cpp`），手写面板也在工作区居中打开。本仓以前统一放在工作区底部居中。现在由 `SurfaceRoute::panel_for` 按宿主给出几何：Windows 上表情面板为 550×610、居中，手写面板保持共享尺寸 980×650、居中，键盘和其他面板仍在底部居中；其他平台不变。已知差异：本仓的尺寸是逻辑像素，来源按物理像素建窗；居中计算沿用原有的底部居中换算，高 DPI 下的差异此前就存在，这次没有改动。
-- 检查更新：来源在更新提示里给出安装包的 SHA-256 和未签名警告，并在十秒后放弃请求。本仓以前对 Windows 发行版不读取资产，也没有超时，网络卡住时按钮会一直处于忙碌状态。现在从发行资产中选出唯一的 `MetasequoiaIME_Setup_v*.exe` 和它的 GitHub digest，标记为未签名，警告改用来源的措辞（SmartScreen 拦截、uiAccess 失效），并给出 `Get-FileHash` 命令。没有 digest 时，提示用户下载同名 `.sha256` 文件核对。请求十秒后中止，并显示「检查失败，请稍后重试」。超时是所有平台共用的。
+- 检查更新：来源在更新提示里给出安装包的 SHA-256 和未签名警告，并在十秒后放弃请求。本仓以前对 Windows 发行版不读取资产，也没有超时，网络卡住时按钮会一直处于忙碌状态。现在从发行资产中选出唯一的 `LingyaoIME_Setup_v*.exe` 和它的 GitHub digest，标记为未签名，警告改用来源的措辞（SmartScreen 拦截、uiAccess 失效），并给出 `Get-FileHash` 命令。没有 digest 时，提示用户下载同名 `.sha256` 文件核对。请求十秒后中止，并显示「检查失败，请稍后重试」。超时是所有平台共用的。
 - 托盘菜单与悬浮工具栏的配色：来源的原生托盘菜单（`TrayMenuPresenter::ApplyTheme`）和悬浮工具栏（`FloatingToolbarPresenter::ApplyTheme`）使用固定的中性色，只随各自的深浅色偏好切换，不跟随候选皮肤。本仓是有意的分歧：两者跟随全局主题，由 `CandidatePalette.h` 的 `toolbar_palette(CandidatePalette)` 和 `tray_menu_palette(CandidatePalette)` 从解析后的候选窗调色板派生（工具栏取底色、正文、悬停、描边与选中色，托盘取菜单的底色、正文、悬停与描边）。来源行尾的开关在本仓画成工具格（`TrayMenuWindow.cpp` 的 `TrayMenuRowKind::Tool`）：开启时整格填主题的 accent，图标与说明取 `candidate_on_accent`（按亮度取黑或白，所以 ink 的白色 accent 上仍然可读）；关闭时和普通行一样，只在悬停时填 hover。托盘中能力缺失的行用 `number` 色变暗而不是隐藏；来源的菜单没有这种行，所以这是本仓自己的取值。`windows-candidate-palette` 覆盖这些颜色。
 - 打字统计的 30 天明细表和永久保留由 PR #652 处理，这一批没有改动。
 - 验证层级：TypeScript 部分在本机跑了 vitest 和 typecheck；`msime-client-core` 在本机跑了 cargo test；配色头文件测试在本机用 clang 编译并运行；Windows 窗口和面板定位代码经 `build-cross.sh x64` 和 `cargo check --target x86_64-pc-windows-gnu` 交叉编译。以上都没有在 Windows 桌面上实际操作过。
@@ -2073,8 +2073,8 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 
 - **卸载删不掉自定义数据目录**：`DataDir` 注册表值带 `uninsdeletevalue`，卸载步骤里就已被删掉，`usPostUninstall` 再调 `GetDataDir` 只会回落到默认的 `{localappdata}\metasequoiaime`，自定义目录因此永远留在磁盘上。现在 `InitializeUninstall` 像缓存 `VersionDirName` 一样先调 `ResolvePreviousDataDir` 缓存路径，`usPostUninstall` 只删这个缓存路径，且仍要求它带所有权标记。注册表值照旧删除。
 - **数据目录的权限与完整性级别**：Server 与设置窗口以 Medium 完整性级别运行，写不了提升权限的安装器创建的对象。与来源相同，`[Dirs]` 给数据目录加 `Permissions: users-modify`，`ssPostInstall` 在写完词库、配置与词典重放之后再执行 `icacls /grant *S-1-5-32-545:(OI)(CI)M` 与 `/setintegritylevel (OI)(CI)M`，以覆盖安装器之后写入的文件。代价与来源一样：数据目录在每用户的 LocalAppData 下，Users 组的修改权限也让同一台机器上的其他本地用户能改它。
-- **升级与卸载不停设置窗口和面板**：设置窗口和表情 / 屏幕键盘 / 手写面板是同一个 Tauri 外壳 `msime-client-settings.exe`（面板由 `MSIME_CLIENT_PANEL` 选择），窗口关闭后隐藏驻留约 10 分钟，升级时会报文件占用。`StopImeProcesses` 依次停 Watchdog、Server 与这个外壳，升级和卸载都只经它停进程；安装包里其余可执行文件（`MetasequoiaImeDictionaryReplay`、`msime-client-prepare`）是一次性进程。
-- **TSF 拉起的 Server 不恢复 Watchdog**：来源 Server 启动时若命令行里没有 `--watchdog-managed`，就拉起同目录的 Watchdog。本仓库的 `parse_server_arguments` 把 `--production` 与 `--watchdog-managed` 合并成 `Managed`，区分不出来，于是 TSF DLL 用 `--production` 重启崩溃的 Server 后，要到下次登录才重新有 Watchdog。`ServerLaunch` 新增 `supervised`，只在 `--watchdog-managed` 时为真；受管启动拿到单实例锁后，若非 Watchdog 所启，就用 `CreateProcessW` 拉起同目录的 `MetasequoiaImeWatchdog.exe`。Watchdog 有自己的单实例互斥量，会接管已在运行的同目录 Server 而不再起第二个，TIP 未启用时自行退出。
+- **升级与卸载不停设置窗口和面板**：设置窗口和表情 / 屏幕键盘 / 手写面板是同一个 Tauri 外壳 `msime-client-settings.exe`（面板由 `MSIME_CLIENT_PANEL` 选择），窗口关闭后隐藏驻留约 10 分钟，升级时会报文件占用。`StopImeProcesses` 依次停 Watchdog、Server 与这个外壳，升级和卸载都只经它停进程；安装包里其余可执行文件（`LingyaoImeDictionaryReplay`、`msime-client-prepare`）是一次性进程。
+- **TSF 拉起的 Server 不恢复 Watchdog**：来源 Server 启动时若命令行里没有 `--watchdog-managed`，就拉起同目录的 Watchdog。本仓库的 `parse_server_arguments` 把 `--production` 与 `--watchdog-managed` 合并成 `Managed`，区分不出来，于是 TSF DLL 用 `--production` 重启崩溃的 Server 后，要到下次登录才重新有 Watchdog。`ServerLaunch` 新增 `supervised`，只在 `--watchdog-managed` 时为真；受管启动拿到单实例锁后，若非 Watchdog 所启，就用 `CreateProcessW` 拉起同目录的 `LingyaoImeWatchdog.exe`。Watchdog 有自己的单实例互斥量，会接管已在运行的同目录 Server 而不再起第二个，TIP 未启用时自行退出。
 - **登录任务的 `/TR` 未加引号**：schtasks 把不带内层引号的 `/TR` 值在第一个空格处拆成程序与参数，`C:\Program Files\...` 会被存成程序 `C:\Program`。与来源相同，改回 `/TR "\"<路径>\""`（c306e5985 当初去掉了内层引号）。`watchdog-task.ps1` 除了静态检查，还会在提升权限的 Windows 上把安装器实际传给 schtasks 的整串参数以临时任务名注册一次，读回任务 XML 核对 `Command` 就是完整路径、`Arguments` 为空，结束后删除任务。
 - **开始菜单的「设置」找不到 `DataDir` 里的 `runtime-options.json`**：Server 拉起外壳时通过 `MSIME_CLIENT_STATE_DIR` 与 `MSIME_CLIENT_HOST_OPTIONS` 指路，开始菜单快捷方式没有这两个变量，外壳只在自己的 `app.msime.client` 目录和 `%LOCALAPPDATA%\MSIME-Client` 下找，装在默认 `{localappdata}\metasequoiaime` 或自定义目录时都找不到。现在没有这两个变量时，外壳按 Server 的 `production_state_directory` 同样的顺序（`METASEQUOIA_IME_DATA_DIR`、HKLM 64 位视图的 `DataDir`、`%LOCALAPPDATA%\MSIME-Client`，注册表读取在 `msime_host_windows::server_state_directory`）找 Server 的状态目录，其中已有 `runtime-options.json` 时就用它，状态目录取其中的 `preferences_directory`（与 Server 相同）。
 - **升级清理删掉了所有权标记**：`CleanAppDataExceptUserFiles` 在 `PrepareToInstall` 写入 `.metasequoiaime-data` 之后、`ssPostInstall` 之前执行，保留名单里没有标记文件，升级中途失败时重试和卸载都不再认这个目录。标记现在列入保留名单。

@@ -434,8 +434,8 @@ final class KeyboardSkinTests: XCTestCase {
     // of that line, so the foreground has to follow the appearance rather than be picked once.
     for style in [UIUserInterfaceStyle.light, .dark] {
       let traits = UITraitCollection(userInterfaceStyle: style)
-      let background = packed(MetasequoiaTheme.forestUIColor.resolvedColor(with: traits))
-      let foreground = packed(MetasequoiaTheme.onForestUIColor.resolvedColor(with: traits))
+      let background = packed(LingyaoTheme.forestUIColor.resolvedColor(with: traits))
+      let foreground = packed(LingyaoTheme.onForestUIColor.resolvedColor(with: traits))
       XCTAssertGreaterThanOrEqual(CustomKeyboardSkin.contrast(foreground, background), 4.5,
                                   "\(style) 下选中态文字对比度不足")
     }

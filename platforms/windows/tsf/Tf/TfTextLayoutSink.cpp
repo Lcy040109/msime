@@ -1,7 +1,7 @@
 #include "FanyDefines.h"
 #include "Private.h"
 #include "TfTextLayoutSink.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "GetTextExtentEditSession.h"
 #include <debugapi.h>
 #include <fmt/xchar.h>
@@ -23,7 +23,7 @@ POINT GetPhysicalTextAnchor(_In_ ITfContextView *pContextView, _In_ const RECT &
     return anchor;
 }
 
-CTfTextLayoutSink::CTfTextLayoutSink(_In_ CMetasequoiaIME *pTextService)
+CTfTextLayoutSink::CTfTextLayoutSink(_In_ CLingyaoIME *pTextService)
 {
     _pTextService = pTextService;
     _pTextService->AddRef();

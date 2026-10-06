@@ -2,16 +2,16 @@
 
 #import <Sparkle/Sparkle.h>
 
-static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequoiaime/msime/releases";
+static NSString *const LingyaoReleasePageURL = @"https://github.com/Lcy040109/msime/releases";
 
 // Sparkle needs an application bundle: a feed URL, a version, a code signature. Started anywhere else
 // it reports the misconfiguration with a modal alert, which in an input method process means the user's
 // typing stops behind a dialog they never asked for. Non-application processes therefore stay inert;
 // application bundles without a feed use the explicit release-page driver below.
-@interface MetasequoiaUnavailableUpdateDriver : NSObject <MetasequoiaUpdateDriver>
+@interface LingyaoUnavailableUpdateDriver : NSObject <LingyaoUpdateDriver>
 @end
 
-@implementation MetasequoiaUnavailableUpdateDriver
+@implementation LingyaoUnavailableUpdateDriver
 
 - (BOOL)canCheckForUpdates
 {
@@ -30,19 +30,19 @@ static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequ
 
 @end
 
-@interface MetasequoiaReleasePageUpdateDriver ()
+@interface LingyaoReleasePageUpdateDriver ()
 @property(nonatomic, readonly) NSURL *releaseURL;
-@property(nonatomic, copy, readonly) MetasequoiaUpdateReleaseConfirmation confirmation;
-@property(nonatomic, copy, readonly) MetasequoiaUpdateReleaseOpener opener;
-@property(nonatomic, copy, readonly) MetasequoiaUpdateReleaseFailure failure;
+@property(nonatomic, copy, readonly) LingyaoUpdateReleaseConfirmation confirmation;
+@property(nonatomic, copy, readonly) LingyaoUpdateReleaseOpener opener;
+@property(nonatomic, copy, readonly) LingyaoUpdateReleaseFailure failure;
 @end
 
-@implementation MetasequoiaReleasePageUpdateDriver
+@implementation LingyaoReleasePageUpdateDriver
 
 - (instancetype)initWithReleaseURL:(NSURL *)releaseURL
-                       confirmation:(MetasequoiaUpdateReleaseConfirmation)confirmation
-                             opener:(MetasequoiaUpdateReleaseOpener)opener
-                            failure:(MetasequoiaUpdateReleaseFailure)failure
+                       confirmation:(LingyaoUpdateReleaseConfirmation)confirmation
+                             opener:(LingyaoUpdateReleaseOpener)opener
+                            failure:(LingyaoUpdateReleaseFailure)failure
 {
     self = [super init];
     if (self != nil)
@@ -68,11 +68,11 @@ static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequ
 
 @end
 
-@interface MetasequoiaSparkleUpdateDriver : NSObject <MetasequoiaUpdateDriver>
+@interface LingyaoSparkleUpdateDriver : NSObject <LingyaoUpdateDriver>
 @property(nonatomic, readonly) SPUStandardUpdaterController *updaterController;
 @end
 
-@implementation MetasequoiaSparkleUpdateDriver
+@implementation LingyaoSparkleUpdateDriver
 
 - (instancetype)init
 {
@@ -103,36 +103,36 @@ static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequ
 
 @end
 
-@interface MetasequoiaUpdateController ()
-@property(nonatomic) id<MetasequoiaUpdateDriver> driver;
-@property(nonatomic, copy) MetasequoiaUpdateActivationHandler activationHandler;
+@interface LingyaoUpdateController ()
+@property(nonatomic) id<LingyaoUpdateDriver> driver;
+@property(nonatomic, copy) LingyaoUpdateActivationHandler activationHandler;
 @end
 
-@implementation MetasequoiaUpdateController
+@implementation LingyaoUpdateController
 
 + (instancetype)sharedController
 {
-    static MetasequoiaUpdateController *controller = nil;
+    static LingyaoUpdateController *controller = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
       NSBundle *host = NSBundle.mainBundle;
-      MetasequoiaUpdateRoute route = MSIMEUpdateRouteForHost(
+      LingyaoUpdateRoute route = MSIMEUpdateRouteForHost(
           host.bundleIdentifier, host.bundlePath, [host objectForInfoDictionaryKey:@"SUFeedURL"]);
-      id<MetasequoiaUpdateDriver> driver = nil;
-      if (route == MetasequoiaUpdateRouteSparkle)
+      id<LingyaoUpdateDriver> driver = nil;
+      if (route == LingyaoUpdateRouteSparkle)
       {
-          driver = [[MetasequoiaSparkleUpdateDriver alloc] init];
+          driver = [[LingyaoSparkleUpdateDriver alloc] init];
       }
-      else if (route == MetasequoiaUpdateRouteReleasePage)
+      else if (route == LingyaoUpdateRouteReleasePage)
       {
-          NSURL *releaseURL = [NSURL URLWithString:MetasequoiaReleasePageURL];
-          driver = [[MetasequoiaReleasePageUpdateDriver alloc]
+          NSURL *releaseURL = [NSURL URLWithString:LingyaoReleasePageURL];
+          driver = [[LingyaoReleasePageUpdateDriver alloc]
               initWithReleaseURL:releaseURL
                    confirmation:^NSModalResponse(NSURL *url) {
                      (void)url;
                      NSAlert *alert = [NSAlert new];
                      alert.messageText = @"此构建未配置应用内更新";
-                     alert.informativeText = @"无法使用 Sparkle 自动检查。可以前往水杉输入法的官方发布页查看可用版本。";
+                     alert.informativeText = @"无法使用 Sparkle 自动检查。可以前往灵耀输入法的官方发布页查看可用版本。";
                      [alert addButtonWithTitle:@"前往发布页"];
                      [alert addButtonWithTitle:@"取消"];
                      return [alert runModal];
@@ -144,16 +144,16 @@ static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequ
                           NSAlert *alert = [NSAlert new];
                           alert.alertStyle = NSAlertStyleCritical;
                           alert.messageText = @"无法打开发布页";
-                          alert.informativeText = @"请稍后重试，或在浏览器中访问 github.com/metasequoiaime/msime/releases。";
+                          alert.informativeText = @"请稍后重试，或在浏览器中访问 github.com/Lcy040109/msime/releases。";
                           [alert runModal];
                         }];
       }
       else
       {
-          driver = [[MetasequoiaUnavailableUpdateDriver alloc] init];
+          driver = [[LingyaoUnavailableUpdateDriver alloc] init];
       }
       controller =
-          [[MetasequoiaUpdateController alloc] initWithDriver:driver
+          [[LingyaoUpdateController alloc] initWithDriver:driver
                                             activationHandler:^{
                                               [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
                                               [NSApp activateIgnoringOtherApps:YES];
@@ -162,8 +162,8 @@ static NSString *const MetasequoiaReleasePageURL = @"https://github.com/metasequ
     return controller;
 }
 
-- (instancetype)initWithDriver:(id<MetasequoiaUpdateDriver>)driver
-             activationHandler:(MetasequoiaUpdateActivationHandler)activationHandler
+- (instancetype)initWithDriver:(id<LingyaoUpdateDriver>)driver
+             activationHandler:(LingyaoUpdateActivationHandler)activationHandler
 {
     self = [super init];
     if (self != nil)

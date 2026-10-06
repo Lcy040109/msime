@@ -16,11 +16,11 @@ private enum DesktopPlatform: String, CaseIterable, Identifiable {
   var steps: [String] {
     switch self {
     case .macOS:
-      ["在 Mac 上打开下载页，选择适合你的 macOS 安装包。", "按照发布页说明完成安装。", "在系统设置的键盘输入法中添加水杉输入法，再切换使用。"]
+      ["在 Mac 上打开下载页，选择适合你的 macOS 安装包。", "按照发布页说明完成安装。", "在系统设置的键盘输入法中添加灵耀输入法，再切换使用。"]
     case .windows:
-      ["在 Windows 电脑上打开下载页，选择与你的系统架构匹配的安装包。", "运行安装程序，按发布页说明完成安装。", "使用 Win + 空格切换到水杉输入法。"]
+      ["在 Windows 电脑上打开下载页，选择与你的系统架构匹配的安装包。", "运行安装程序，按发布页说明完成安装。", "使用 Win + 空格切换到灵耀输入法。"]
     case .linux:
-      ["在 Linux 电脑上打开发布页，查看适用发行版与依赖要求。", "按照项目安装说明配置 IBus 和水杉输入法。", "在系统输入源中添加水杉输入法，按说明重新登录后使用。"]
+      ["在 Linux 电脑上打开发布页，查看适用发行版与依赖要求。", "按照项目安装说明配置 IBus 和灵耀输入法。", "在系统输入源中添加灵耀输入法，按说明重新登录后使用。"]
     }
   }
 }
@@ -33,8 +33,8 @@ struct DesktopDownloadView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 24) {
         VStack(alignment: .leading, spacing: 10) {
-          Image(systemName: "desktopcomputer").font(.system(size: 38)).foregroundStyle(MetasequoiaTheme.accent)
-          Text("在电脑上，也用水杉").font(.title2.bold())
+          Image(systemName: "desktopcomputer").font(.system(size: 38)).foregroundStyle(LingyaoTheme.accent)
+          Text("在电脑上，也用灵耀").font(.title2.bold())
           Text("选择你的电脑系统，获取官方安装包与使用指南。").foregroundStyle(.secondary)
         }.padding(.top, 12)
         Picker("电脑系统", selection: $platform) {
@@ -44,8 +44,8 @@ struct DesktopDownloadView: View {
           Label(platform.rawValue + " 安装指南", systemImage: platform.symbol).font(.headline)
           ForEach(Array(platform.steps.enumerated()), id: \.offset) { index, step in
             HStack(alignment: .top, spacing: 12) {
-              Text(String(index + 1)).font(.subheadline.bold()).foregroundStyle(MetasequoiaTheme.accent)
-                .frame(width: 28, height: 28).background(MetasequoiaTheme.accentSoft, in: Circle())
+              Text(String(index + 1)).font(.subheadline.bold()).foregroundStyle(LingyaoTheme.accent)
+                .frame(width: 28, height: 28).background(LingyaoTheme.accentSoft, in: Circle())
               Text(step).font(.subheadline).fixedSize(horizontal: false, vertical: true)
             }
           }
@@ -85,7 +85,7 @@ struct AboutView: View {
         VStack(spacing: 12) {
           Image("MSIMELogo").resizable().scaledToFit().frame(width: 72, height: 72)
             .accessibilityHidden(true)
-          Text("水杉输入法").font(.title2.bold())
+          Text("灵耀输入法").font(.title2.bold())
           Text("让输入更自然").foregroundStyle(.secondary)
           Text("版本 " + version).font(.footnote).foregroundStyle(.secondary).accessibilityIdentifier("aboutAppVersion")
         }.frame(maxWidth: .infinity).padding(.vertical, 20)
@@ -96,9 +96,9 @@ struct AboutView: View {
                            symbol: "desktopcomputer")
         }
       } header: {
-        Text("关于水杉")
+        Text("关于灵耀")
       } footer: {
-        Text("水杉是一款开源输入法，支持多种输入方案和个性化皮肤。手机与电脑共用输入引擎，各平台提供原生输入体验。")
+        Text("灵耀是一款开源输入法，支持多种输入方案和个性化皮肤。手机与电脑共用输入引擎，各平台提供原生输入体验。")
       }
       Section("帮助与开源") {
         NavigationLink(destination: HelpView()) {
@@ -112,7 +112,7 @@ struct AboutView: View {
         Link(destination: URL(string: "https://msime.app/")!) {
           SettingsRowLabel(title: "官方网站", detail: "msime.app", symbol: "globe")
         }
-        Link(destination: URL(string: "https://github.com/metasequoiaime/msime")!) {
+        Link(destination: URL(string: "https://github.com/Lcy040109/msime")!) {
           SettingsRowLabel(title: "开源代码与许可证", detail: "GitHub", symbol: "curlybraces")
         }
       }
@@ -123,7 +123,7 @@ struct AboutView: View {
       } header: {
         Text("使用统计")
       } footer: {
-        Text("开启时，键盘每次显示结束后记一次使用，每天记一次活跃，崩溃后附上崩溃位置（程序模块名与偏移，不含文件路径），连同版本号、平台和一个本机随机生成的安装编号发送给水杉。安装编号与设备、账号无关，不发送输入内容、联系人或任何个人信息。关闭后不再记录或发送，未发送的记录立即删除。")
+        Text("开启时，键盘每次显示结束后记一次使用，每天记一次活跃，崩溃后附上崩溃位置（程序模块名与偏移，不含文件路径），连同版本号、平台和一个本机随机生成的安装编号发送给灵耀。安装编号与设备、账号无关，不发送输入内容、联系人或任何个人信息。关闭后不再记录或发送，未发送的记录立即删除。")
       }
       Section {
         Link(destination: URL(string: "https://msime.app/privacy/")!) {
@@ -134,7 +134,7 @@ struct AboutView: View {
       } footer: {
         Text("键盘默认离线。仅在你使用 AI 或语音时，将本次文字或录音发送到所配置的服务。账号、云同步和皮肤社区按你启用的功能联网；开启「发送匿名使用统计」时，本应用和允许完全访问的键盘会发送上面的使用统计。手写首次联网下载模型，之后在设备上识别；Google ML Kit 会发送性能及使用统计，不会上传笔迹或识别结果。")
       }
-    }.navigationTitle("关于水杉").navigationBarTitleDisplayMode(.inline)
+    }.navigationTitle("关于灵耀").navigationBarTitleDisplayMode(.inline)
       .onAppear { usageReporting = UsageReporting.isEnabled }
       .alert("无法保存设置", isPresented: $usageReportingFailed) { Button("好", role: .cancel) {} } message: {
         Text("设置被键盘同时修改了，请稍后再试。")

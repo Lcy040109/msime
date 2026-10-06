@@ -116,7 +116,7 @@ fn snapshot_restore_preflight_rejects_text_larger_than_native_limit() {
 #[test]
 fn external_url_allows_encoded_query_parameters() {
     assert!(super::external_url_is_safe(
-        "https://github.com/metasequoiaime/msime/issues/new?title=bug&body=synthetic%20report"
+        "https://github.com/Lcy040109/msime/issues/new?title=bug&body=synthetic%20report"
     ));
     assert!(!super::external_url_is_safe("javascript:alert(1)"));
     assert!(!super::external_url_is_safe(
@@ -1083,7 +1083,7 @@ fn macos_restart_targets_the_input_method_bundle() {
         [
             "-n",
             "-b",
-            "app.msime.inputmethod.MetasequoiaIME",
+            "app.msime.inputmethod.LingyaoIME",
             "--args",
             "--reregister-input-source",
         ]
@@ -2323,7 +2323,7 @@ fn input_source_status_rereads_only_what_the_user_can_change() {
     let timeout = std::time::Duration::ZERO;
     let system_copy = || {
         vec![std::path::PathBuf::from(
-            "/Library/Input Methods/MetasequoiaIME.app",
+            "/Library/Input Methods/LingyaoIME.app",
         )]
     };
 
@@ -2332,7 +2332,7 @@ fn input_source_status_rereads_only_what_the_user_can_change() {
     assert_eq!(before.enabled, Some(false));
     assert_eq!(
         before.system_bundles,
-        vec!["/Library/Input Methods/MetasequoiaIME.app".to_string()]
+        vec!["/Library/Input Methods/LingyaoIME.app".to_string()]
     );
     let after = super::input_source_status_now(&state, timeout, || Some(true), Vec::new).unwrap();
     assert_eq!(after.action, "installed");

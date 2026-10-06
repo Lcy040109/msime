@@ -12,7 +12,7 @@ using GUID = int;
 constexpr int GUID_TFCAT_TIP_KEYBOARD = 11;
 constexpr int GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER = 12;
 constexpr GUID SupportCategories[] = {GUID_TFCAT_TIP_KEYBOARD, GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER};
-namespace Global { constexpr int MetasequoiaIMECLSID = 7; }
+namespace Global { constexpr int LingyaoIMECLSID = 7; }
 constexpr bool FAILED(HRESULT result) { return result < 0; }
 struct Scenario { HRESULT create = S_OK; int fail_at = -1; int calls = 0; int releases = 0; } scenario;
 struct ITfCategoryMgr {

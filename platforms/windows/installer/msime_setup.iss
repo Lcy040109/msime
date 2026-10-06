@@ -1,4 +1,4 @@
-; Metasequoia IME — Inno Setup script
+; Lingyao IME — Inno Setup script
 ; 源文件根目录：本脚本所在目录
 ;
 ; 编译方法：
@@ -20,12 +20,12 @@
 #include "editions.iss"
 #define MyAppName      MyEditionAppName
 #define MyAppVersion   "0.0.1"
-#define MyAppPublisher "Metasequoia"
-#define MyAppExeName   "MetasequoiaImeServer.exe"
+#define MyAppPublisher "Lingyao"
+#define MyAppExeName   "LingyaoImeServer.exe"
 #define MySettingsExeName "msime-client-settings.exe"
-#define MyWatchdogName "MetasequoiaImeWatchdog.exe"
+#define MyWatchdogName "LingyaoImeWatchdog.exe"
 #define MyWatchdogTaskName MyEditionWatchdogTask
-; Global::MetasequoiaIMECLSID in platforms/windows/tsf/Global/Globals.cpp.
+; Global::LingyaoIMECLSID in platforms/windows/tsf/Global/Globals.cpp.
 #define MyTipKey       "SOFTWARE\Microsoft\CTF\TIP\" + MyEditionClsid
 #define MyVersionDirBase "msime_v" + MyAppVersion
 #define MySourceRoot   "."
@@ -48,7 +48,7 @@ AlwaysShowDirOnReadyPage=yes
 DisableProgramGroupPage=yes
 OutputDir=Output
 OutputBaseFilename={#MyEditionInstallerBaseName}_v{#MyAppVersion}{#MyOutputSuffix}
-SetupIconFile={#MySourceRoot}\MetasequoiaIME.ico
+SetupIconFile={#MySourceRoot}\LingyaoIME.ico
 Compression=lzma2
 SolidCompression=yes
 ; 安装和卸载界面自动跟随 Windows 的浅色/深色模式。
@@ -58,7 +58,7 @@ UsedUserAreasWarning=no
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayName={#MyAppName}
-UninstallDisplayIcon={commonpf64}\{#MyEditionInstallDir}\MetasequoiaIME.ico
+UninstallDisplayIcon={commonpf64}\{#MyEditionInstallDir}\LingyaoIME.ico
 VersionInfoVersion={#MyAppVersion}
 
 [Languages]
@@ -74,7 +74,7 @@ Name: "{code:GetDataDir}"; Permissions: users-modify
 
 [Files]
 ; 独立安装应用图标，供 Windows“已安装的应用”列表稳定显示。
-Source: "{#MySourceRoot}\MetasequoiaIME.ico"; \
+Source: "{#MySourceRoot}\LingyaoIME.ico"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}"; Flags: ignoreversion
 
 ; 第三方声明随包安装。词库主体含 rime-ice（GPL-3.0）内容，其许可要求保留署名，
@@ -92,40 +92,40 @@ Source: "{#MySourceRoot}\LICENSE.txt"; \
 ; PDB 不随安装包分发：Collect-Symbols.ps1（release-windows.yml 和 Package-SimplySign.ps1 都调用它）把暂存的符号打成单独的 msime-windows-<edition>-<version>-symbols.zip 发布，分析崩溃时让调试器指向解压出的目录。
 ; Install Host API and ordinary dependencies before registering the TIP.
 Source: "{#MySourceRoot}\tsf_dll\32\*.dll"; \
-    Excludes: "MetasequoiaImeTsf.dll"; \
+    Excludes: "LingyaoImeTsf.dll"; \
     DestDir: "{commonpf32}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion 32bit
 
 Source: "{#MySourceRoot}\tsf_dll\64\*.dll"; \
-    Excludes: "MetasequoiaImeTsf.dll"; \
+    Excludes: "LingyaoImeTsf.dll"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion
 
-Source: "{#MySourceRoot}\tsf_dll\32\MetasequoiaImeTsf.dll"; \
+Source: "{#MySourceRoot}\tsf_dll\32\LingyaoImeTsf.dll"; \
     DestDir: "{commonpf32}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion regserver 32bit
 
-Source: "{#MySourceRoot}\tsf_dll\64\MetasequoiaImeTsf.dll"; \
+Source: "{#MySourceRoot}\tsf_dll\64\LingyaoImeTsf.dll"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion regserver; Check: not IsArm64
 
 ; Windows on Arm 上 64 位 TIP 换成 Arm64X 的那一份：原生 ARM64 进程（资源管理器、Edge、记事本等）和模拟运行的 x64 进程共用同一个 InprocServer32 路径，x64 TIP 只能被后者加载。它原生的那一半导入同目录的 ARM64 宿主 DLL，ARM64EC 那一半导入上面装进同一目录的 x64 宿主 DLL。Server 和其余程序仍是 x64，在模拟下运行。
 Source: "{#MySourceRoot}\tsf_dll\arm64\*.dll"; \
-    Excludes: "MetasequoiaImeTsf.dll"; \
+    Excludes: "LingyaoImeTsf.dll"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion; Check: IsArm64
 
-Source: "{#MySourceRoot}\tsf_dll\arm64\MetasequoiaImeTsf.dll"; \
+Source: "{#MySourceRoot}\tsf_dll\arm64\LingyaoImeTsf.dll"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\{code:GetVersionDir}"; \
     Flags: ignoreversion regserver; Check: IsArm64
 
 ; Server、设置窗口和 MCP 服务需要与 64 位 TIP 相同的 x64 宿主 DLL 和运行时 DLL。Prepare-PackageFiles.ps1 只把它们暂存在 tsf_dll\64 下，而 Inno 对同一个源文件无论有几条安装条目都只存一份，所以包里只有一份。
 Source: "{#MySourceRoot}\tsf_dll\64\*.dll"; \
-    Excludes: "MetasequoiaImeTsf.dll"; \
+    Excludes: "LingyaoImeTsf.dll"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\server"; \
     Flags: ignoreversion
 
-; server_exe 含本地语音识别运行时（sherpa-onnx-c-api.dll、onnxruntime.dll、onnxruntime_providers_shared.dll）。Server 从自身目录 LoadLibrary 加载它们，因此必须与 MetasequoiaImeServer.exe 同目录；ignoreversion 保证升级时换成本包锁定的版本。PDB 和链接器的 .ilk 不装，见上面 TSF 一节。
+; server_exe 含本地语音识别运行时（sherpa-onnx-c-api.dll、onnxruntime.dll、onnxruntime_providers_shared.dll）。Server 从自身目录 LoadLibrary 加载它们，因此必须与 LingyaoImeServer.exe 同目录；ignoreversion 保证升级时换成本包锁定的版本。PDB 和链接器的 .ilk 不装，见上面 TSF 一节。
 Source: "{#MySourceRoot}\server_exe\*"; \
     Excludes: "*.pdb,*.ilk"; \
     DestDir: "{commonpf64}\{#MyEditionInstallDir}\server"; \
@@ -147,7 +147,7 @@ Source: "{#MySourceRoot}\app_data\config.default.toml"; \
 ; 符号改为单独发布资产之前的包会把所有 PDB、设置程序增量链接的 .ilk 和一份多余的 TSF DLL 装进 Server 目录，而升级沿用这个目录；这里删掉它们，让升级收回空间。那里的 TSF DLL 从未被加载或注册：TIP 从版本目录运行。
 Type: files; Name: "{commonpf64}\{#MyEditionInstallDir}\server\*.pdb"
 Type: files; Name: "{commonpf64}\{#MyEditionInstallDir}\server\*.ilk"
-Type: files; Name: "{commonpf64}\{#MyEditionInstallDir}\server\MetasequoiaImeTsf.dll"
+Type: files; Name: "{commonpf64}\{#MyEditionInstallDir}\server\LingyaoImeTsf.dll"
 ; 手写模型和落定重排模型改为由设置应用按需下载到数据目录的 resource-packs 之前，包把它们装在 Server 目录的 handwriting 和 settled-model 下。升级时删掉这两份旧副本：宿主优先用随包的那份，留着它们会让按锁更新过的下载永远轮不到，还白占约 50 MB。
 Type: filesandordirs; Name: "{commonpf64}\{#MyEditionInstallDir}\server\handwriting"
 Type: filesandordirs; Name: "{commonpf64}\{#MyEditionInstallDir}\server\settled-model"
@@ -177,7 +177,7 @@ const
   DataDirMarkerPrefix = '{#MyDataDirMarkerPrefix}';
 #if !MyEditionIsFull
   { 本版本写进所有权标记的内容。标记里带着版本 id，OwnsDataDir 只认它，不认别的版本的标记。 }
-  DataDirMarkerText = 'This directory is managed by Metasequoia IME (edition {#Edition}).';
+  DataDirMarkerText = 'This directory is managed by Lingyao IME (edition {#Edition}).';
 #endif
 
   { WebView2 Evergreen Runtime 在 EdgeUpdate 里的固定客户端 ID。}
@@ -488,7 +488,7 @@ begin
     Exit;
   SetArrayLength(Lines, 1);
 #if MyEditionIsFull
-  Lines[0] := 'This directory is managed by Metasequoia IME.';
+  Lines[0] := 'This directory is managed by Lingyao IME.';
 #else
   Lines[0] := DataDirMarkerText;
 #endif
@@ -598,7 +598,7 @@ begin
   if (Length(Directory) < 4) or (Directory[2] <> ':') or
     (Directory[3] <> '\') then
   begin
-    Result := '请填写本机磁盘上的完整路径，例如 D:\MetasequoiaIME。';
+    Result := '请填写本机磁盘上的完整路径，例如 D:\LingyaoIME。';
     Exit;
   end;
   if not DirExists(Copy(Directory, 1, 3)) then
@@ -666,7 +666,7 @@ begin
   if Overlap <> '' then
   begin
     Result :=
-      '这个目录与水杉输入法另一个版本的数据目录（' + Overlap + '）重叠或互相包含。' +
+      '这个目录与灵耀输入法另一个版本的数据目录（' + Overlap + '）重叠或互相包含。' +
       '几个版本的数据目录必须彼此独立，否则卸载其中一个版本或更换它的数据目录时，会把另一个版本的数据一起删除。请另选一个目录。';
     Exit;
   end;
@@ -678,7 +678,7 @@ begin
   end;
   if (not DirectoryIsEmpty(Directory)) and (not OwnsDataDir(Directory)) then
   begin
-    Result := '请选择一个空目录；这个目录已有文件且不属于水杉输入法。';
+    Result := '请选择一个空目录；这个目录已有文件且不属于灵耀输入法。';
     Exit;
   end;
   { 不覆盖用户恰好已有的同名文件；从空闲名称中选一个写入再删除。}
@@ -742,7 +742,7 @@ begin
     '选择安装后哪些功能可以联网',
     '拼音切分、候选排序和词频学习全部在本机完成，不联网。' + #13#10 +
     '下面这一项会把输入内容发出设备，默认不启用，勾选后才开启。AI 联想和语音输入要你自己填入 API token，候选翻译要你在设置里选择翻译服务，之后才会发出请求。' + #13#10 +
-    'Server 首次启动时会向 api.msime.app 注册一个本机匿名水杉账号，只发送本机随机生成的标识和口令，不含输入内容，失败时下次启动重试。' + #13#10 +
+    'Server 首次启动时会向 api.msime.app 注册一个本机匿名灵耀账号，只发送本机随机生成的标识和口令，不含输入内容，失败时下次启动重试。' + #13#10 +
     '匿名使用统计默认开启，可在「设置 → 关于」里关闭：每天一条活跃记录、每次正常退出一条会话记录，崩溃后下次启动补发一条含异常摘要和调用栈（只有模块文件名和偏移）的崩溃记录；只带随机事件 id、本机随机生成的安装 id、平台名和版本号，不含输入内容、账号或设备信息。' + #13#10#13#10 +
     '安装后随时可以在「设置 → 输入」里改变云候选的选择。',
     False,
@@ -961,7 +961,7 @@ var
 begin
   ServerDir := ExpandConstant('{commonpf64}\{#MyEditionInstallDir}\server');
   { Watchdog 必须先停，否则它可能在升级或卸载期间重新启动 Server。}
-  StopProcessesUnder(ServerDir, 'MetasequoiaImeWatchdog');
+  StopProcessesUnder(ServerDir, 'LingyaoImeWatchdog');
   { 然后是 Server、WinUI 设置窗口、承载面板的 MSIME.exe 和 AI 助手拉起的 msime-mcp.exe：它们都在 server 目录里，也都不在 Server 的进程树里。}
   StopProcessesUnder(ServerDir, '');
 end;

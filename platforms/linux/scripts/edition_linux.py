@@ -97,7 +97,7 @@ COMMANDS: Rule = ("setup and settings commands", r"msime-linux-(setup|settings)(
 CLIENT_DIRECTORY: Rule = ("client directory", r"msime-client(?![-\w])", lambda n: n["client_directory"])
 # 包名、IBus 组件与引擎名和图标名。
 PACKAGE: Rule = ("package, IBus engine and icon", r"msime-linux(?![-\w])", lambda n: n["package"])
-DISPLAY_NAME: Rule = ("display name", r"水杉输入法", lambda n: n["zh"])
+DISPLAY_NAME: Rule = ("display name", r"灵耀输入法", lambda n: n["zh"])
 # 桌面入口和 Fcitx5 条目的英文名。
 ENGLISH_NAME: Rule = ("English name", r"^Name=MSIME\b", lambda n: "Name=" + n["en"])
 FCITX5_ADDON_PYTHON: Rule = ("Fcitx5 addon and theme", r'^(FCITX5_INPUT_METHOD|FCITX5_THEME) = "msime"$', lambda n: rf'\1 = "{n["fcitx5_addon"]}"')
@@ -173,7 +173,7 @@ LEFTOVERS = [
     r"msime-linux(?![-\w])",
     r"msime-linux-(online|voice|clipboard)\.(socket|service)",
     r"msime-linux-(setup|settings)(?![-\w])",
-    r"水杉输入法",
+    r"灵耀输入法",
     r"""["'`]msime["'`]""",
     r"theme-set\.d/msime\b(?!-)",
     r"metasequoia\.msime(?![-\w])",
@@ -249,7 +249,7 @@ def header_text(table: dict) -> str:
             ("PACKAGE", narrow(names["package"])),
             ("CLIENT_DIRECTORY", narrow(names["client_directory"])),
             ("IBUS_ENGINE", narrow(names["ibus_engine"])),
-            ("IBUS_LONGNAME", narrow("Metasequoia " + names["zh"])),
+            ("IBUS_LONGNAME", narrow("Lingyao " + names["zh"])),
             # IBus 引擎登记的语言，与 IBus 组件文件里的 <language> 相同。
             ("IBUS_LANGUAGE", narrow(names["ibus_language"])),
             ("FCITX5_ADDON", narrow(names["fcitx5_addon"])),

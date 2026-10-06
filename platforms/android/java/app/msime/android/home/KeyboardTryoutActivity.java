@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * 试用键盘：一个只为了把键盘调出来而存在的输入框，按设计做成聊天样式。
  *
- * <p>这里的键盘是绑定到这个输入框上的真正输入法，不是首页的静态预览。打的字不会被读取、保存或发送到任何地方；只有在用户登录、加载了 AI 模型并点发送之后，那一条消息才会作为 AI 对话发出去。没有加载模型时发送键保持禁用，对话区只有水杉的问候。
+ * <p>这里的键盘是绑定到这个输入框上的真正输入法，不是首页的静态预览。打的字不会被读取、保存或发送到任何地方；只有在用户登录、加载了 AI 模型并点发送之后，那一条消息才会作为 AI 对话发出去。没有加载模型时发送键保持禁用，对话区只有灵耀的问候。
  */
 public final class KeyboardTryoutActivity extends AppCompatActivity {
 
@@ -146,9 +146,9 @@ public final class KeyboardTryoutActivity extends AppCompatActivity {
         WindowCompat.getInsetsController(getWindow(), field).show(WindowInsetsCompat.Type.ime());
     }
 
-    /** 第一条气泡：水杉的问候。 */
+    /** 第一条气泡：灵耀的问候。 */
     private void greet() {
-        appendBubble("你好，我是" + getString(R.string.app_name) + "。打几个字发给我试试，比如 shuishan。", false);
+        appendBubble("你好，我是" + getString(R.string.app_name) + "。打几个字发给我试试，比如 lingyao。", false);
     }
 
     /** 清空：停掉进行中的请求，清掉草稿、对话和上下文，回到只有问候的样子。 */
@@ -343,11 +343,11 @@ public final class KeyboardTryoutActivity extends AppCompatActivity {
     }
 
     /**
-     * 加一个气泡：自己的消息靠右、accent 底 onAccent 字；水杉和 AI 的靠左、andCard 底。圆角 18，最宽到对话区的八成。
+     * 加一个气泡：自己的消息靠右、accent 底 onAccent 字；灵耀和 AI 的靠左、andCard 底。圆角 18，最宽到对话区的八成。
      */
     /** 每次请求开头的系统约定：默认用简体中文回答。 */
     private static final String SYSTEM_PROMPT =
-        "你是水杉输入法里的 AI 助手。除非用户明确要求使用其他语言，一律用简体中文回答，回答简洁。";
+        "你是灵耀输入法里的 AI 助手。除非用户明确要求使用其他语言，一律用简体中文回答，回答简洁。";
 
     private TextView appendBubble(String text, boolean mine) {
         LinearLayout chat = findViewById(R.id.tryout_chat);
@@ -371,7 +371,7 @@ public final class KeyboardTryoutActivity extends AppCompatActivity {
         return bubble;
     }
 
-    /** AI 与水杉的气泡按 Markdown 渲染（加粗、列表、标题、引用、代码、链接）；自己发的那句原样显示。 */
+    /** AI 与灵耀的气泡按 Markdown 渲染（加粗、列表、标题、引用、代码、链接）；自己发的那句原样显示。 */
     private void setBubbleText(TextView bubble, String text, boolean markdown) {
         String shown = text.length() > 8_000 ? text.substring(0, 8_000) : text;
         if (markdown) markwon().setMarkdown(bubble, shown);

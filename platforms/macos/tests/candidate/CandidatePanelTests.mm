@@ -13,7 +13,7 @@ static void Require(bool condition, const char *message)
         throw std::runtime_error(message);
 }
 
-@interface CandidatePanelTestDelegate : NSObject <MetasequoiaCandidatePanelDelegate>
+@interface CandidatePanelTestDelegate : NSObject <LingyaoCandidatePanelDelegate>
 @property(nonatomic, strong) NSAttributedString *selection;
 @property(nonatomic) NSUInteger nextPages;
 @end
@@ -61,8 +61,8 @@ width_dip = 0
         const char *oldHome = std::getenv("HOME");
         const std::string savedHome = oldHome == nullptr ? std::string() : std::string(oldHome);
         Require(setenv("HOME", temporary, 1) == 0, "Failed to isolate candidate panel skin root.");
-        MetasequoiaSetStoredGlobalTheme(@"system");
-        MetasequoiaCandidatePanel *panel = [MetasequoiaCandidatePanel new];
+        LingyaoSetStoredGlobalTheme(@"system");
+        LingyaoCandidatePanel *panel = [LingyaoCandidatePanel new];
         CandidatePanelTestDelegate *delegate = [CandidatePanelTestDelegate new];
         panel.delegate = delegate;
         NSMutableArray *candidates = [NSMutableArray array];
@@ -128,7 +128,7 @@ width_dip = 0
         Require(panel.candidateFrame.size.width <= NSScreen.mainScreen.visibleFrame.size.width,
                 "Long candidates pushed the window beyond the screen width.");
         panel.panelType = kIMKSingleRowSteppingCandidatePanel;
-        NSAttributedString *annotated = [[NSAttributedString alloc] initWithString:@"水杉(Ss)"];
+        NSAttributedString *annotated = [[NSAttributedString alloc] initWithString:@"灵耀(Ss)"];
         [panel setCandidateData:@[ annotated, annotated, annotated ]];
         NSButton *annotatedButton = nil;
         for (NSView *view in panel.window.contentView.subviews)
@@ -141,9 +141,9 @@ width_dip = 0
         NSDictionary *measure = @{NSFontAttributeName : annotatedButton.font};
         NSDictionary *numberMeasure = @{NSFontAttributeName : numberFont};
         // The 6pt accent-bar gutter exists only for a palette that draws the bar; the native system theme does not.
-        const CGFloat barGutter = MetasequoiaResolveStoredTheme(NO, NO).tokens.showSelectedBar ? 6.0 : 0.0;
+        const CGFloat barGutter = LingyaoResolveStoredTheme(NO, NO).tokens.showSelectedBar ? 6.0 : 0.0;
         const CGFloat needed = 8.0 + barGutter + [@"1" sizeWithAttributes:numberMeasure].width + MSIMECandidateNumberGap +
-                               [@"水杉(Ss)" sizeWithAttributes:measure].width + 8.0;
+                               [@"灵耀(Ss)" sizeWithAttributes:measure].width + 8.0;
         Require(annotatedButton.frame.size.width + 0.5 >= needed, "Horizontal layout truncated helpcode annotations.");
         [panel setCandidateData:[candidates subarrayWithRange:NSMakeRange(0, 5)]];
         for (NSScreen *screen in NSScreen.screens)
@@ -177,7 +177,7 @@ width_dip = 0
         Require(!panel.isVisible && panel.selectedCandidate == NSNotFound, "Empty data retained a visible selection.");
         // A package is drawn as the custom theme's candidate skin.
         [NSUserDefaults.standardUserDefaults setObject:@"wide-card" forKey:@"MSIMEClientCustomCandidateSkin"];
-        MetasequoiaSetStoredGlobalTheme(@"custom");
+        LingyaoSetStoredGlobalTheme(@"custom");
         panel.panelType = kIMKSingleColumnScrollingCandidatePanel;
         [panel setCandidateData:@[ [[NSAttributedString alloc] initWithString:@"短"] ,
                                    [[NSAttributedString alloc] initWithString:@"窄"] ]];
@@ -187,17 +187,17 @@ width_dip = 0
                 wideButton = (NSButton *)view;
         Require(wideButton != nil, "The wide-card candidate was not rendered.");
         const CGFloat cardWidth = panel.window.contentView.bounds.size.width;
-        const CGFloat contentInset = MetasequoiaResolveStoredTheme(NO, YES).tokens.pad;
+        const CGFloat contentInset = LingyaoResolveStoredTheme(NO, YES).tokens.pad;
         Require(cardWidth >= 240.0 && wideButton.frame.size.width >= cardWidth - 2.0 * contentInset - 0.5,
                 "Vertical candidate highlighting did not fill the final card width.");
         Require(NSMaxX(wideButton.frame) >= cardWidth - contentInset - 0.5,
                 "Vertical candidate row did not reach the card's content edge.");
-        Require(MetasequoiaResolveStoredTheme(NO, YES).candidateSkin == "wide-card" &&
-                    MetasequoiaResolveStoredTheme(NO, NO).candidateSkin.empty(),
+        Require(LingyaoResolveStoredTheme(NO, YES).candidateSkin == "wide-card" &&
+                    LingyaoResolveStoredTheme(NO, NO).candidateSkin.empty(),
                 "A vertical-only package was not drawn in exactly the vertical layout.");
         [panel hide];
         [NSUserDefaults.standardUserDefaults removeObjectForKey:@"MSIMEClientCustomCandidateSkin"];
-        MetasequoiaSetStoredGlobalTheme(@"system");
+        LingyaoSetStoredGlobalTheme(@"system");
         if (savedHome.empty()) unsetenv("HOME");
         else setenv("HOME", savedHome.c_str(), 1);
         std::filesystem::remove_all(temporary);

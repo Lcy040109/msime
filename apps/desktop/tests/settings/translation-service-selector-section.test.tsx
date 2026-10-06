@@ -21,7 +21,7 @@ test("selects a translation provider and exposes the account option when enabled
 
   const select = screen.getByRole("combobox", { name: "候选词翻译服务" });
   expect(
-    screen.getByRole("option", { name: "水杉账号（候选词发送到 api.msime.app）" }),
+    screen.getByRole("option", { name: "灵耀账号（候选词发送到 api.msime.app）" }),
   ).toBeTruthy();
   fireEvent.change(select, { target: { value: "account" } });
   expect(onChange).toHaveBeenCalledWith("account");
@@ -41,7 +41,7 @@ test("disables provider selection when candidate translation is unavailable", ()
     (screen.getByRole("combobox", { name: "候选词翻译服务" }) as HTMLSelectElement).disabled,
   ).toBe(true);
   expect(
-    screen.queryByRole("option", { name: "水杉账号（候选词发送到 api.msime.app）" }),
+    screen.queryByRole("option", { name: "灵耀账号（候选词发送到 api.msime.app）" }),
   ).toBeNull();
 });
 

@@ -43,7 +43,7 @@ public final class UpdateApiSmoke {
         check(UpdateApi.Channel.fromId("nonsense") == UpdateApi.Channel.STABLE, "unknown channel is stable");
 
         UpdateApi.Update update = UpdateApi.update(releases.get(0), "full");
-        check(update.apkUrl().equals("https://github.com/metasequoiaime/msime/releases/download/android-v1.1.0/msime-client.apk"), "apk url");
+        check(update.apkUrl().equals("https://github.com/Lcy040109/msime/releases/download/android-v1.1.0/msime-client.apk"), "apk url");
         check(update.checksumUrl().equals(update.apkUrl() + ".sha256"), "checksum url");
         check(UpdateApi.update(new UpdateApi.Release("../../x", "9", false), "full") == null, "tags are validated");
 

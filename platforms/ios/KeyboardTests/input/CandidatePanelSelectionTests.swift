@@ -16,7 +16,7 @@ final class CandidatePanelSelectionTests: XCTestCase {
   }
 
   func testAnEntryPastTheVisiblePageCommits() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.cancel()
     let visible = bridge.handleCharacter("y").candidates
     let (generation, entries) = try panel(bridge)
@@ -32,7 +32,7 @@ final class CandidatePanelSelectionTests: XCTestCase {
   }
 
   func testAStaleGenerationIsRefused() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.cancel()
     _ = bridge.handleCharacter("y")
     let (generation, entries) = try panel(bridge)
@@ -44,7 +44,7 @@ final class CandidatePanelSelectionTests: XCTestCase {
     XCTAssertNil(bridge.selectAnyCandidate(generation: generation, globalIndex: first.index).commitText)
   }
 
-  private func panel(_ bridge: MetasequoiaInputSessionBridge) throws -> (UInt64, [(position: Int, index: UInt64, text: String)]) {
+  private func panel(_ bridge: LingyaoInputSessionBridge) throws -> (UInt64, [(position: Int, index: UInt64, text: String)]) {
     let answer = try bridge.allCandidates()
     let generation = try XCTUnwrap((answer["generation"] as? NSNumber)?.uint64Value)
     let rows = try XCTUnwrap(answer["candidates"] as? [[String: Any]])

@@ -55,10 +55,10 @@ test("the generated catalog module is deterministic and carries every Windows lo
 test("SKINS lists system, the catalog's built-in themes and the Windows looks", () => {
   const builtins = catalog.filter((entry) => entry.candidate !== null).map((entry) => entry.id);
   assert.deepEqual([...SKINS], ["system", ...builtins, ...WINDOWS_LOOKS]);
-  assert.deepEqual(builtins, ["shuishan", "light", "paper", "night", "ink"]);
+  assert.deepEqual(builtins, ["lingyao", "light", "paper", "night", "ink"]);
   assert.ok(Object.isFrozen(SKINS));
   assert.ok(!SKINS.includes("custom") && !SKINS.includes("fluent"));
-  assert.equal(DEFAULT_SKIN, "shuishan");
+  assert.equal(DEFAULT_SKIN, "lingyao");
 });
 
 test("every custom-theme-parity case gives exactly its expected palette", () => {
@@ -111,8 +111,8 @@ test("every built-in id resolves in light and dark", () => {
       }
     }
   }
-  assert.equal(resolveSkin(undefined).id, "shuishan");
-  assert.deepEqual(resolveSkin(undefined), resolveSkin("shuishan"));
+  assert.equal(resolveSkin(undefined).id, "lingyao");
+  assert.deepEqual(resolveSkin(undefined), resolveSkin("lingyao"));
 });
 
 test("system and the slots resolve() leaves to the platform use the platform defaults", () => {

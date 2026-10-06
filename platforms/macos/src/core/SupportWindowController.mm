@@ -54,8 +54,8 @@ void OpenURL(NSString *url) {
 
 void InvokeUpdateController(void) {
     // MSIMEUpdateController is a source-level alias; the Objective-C runtime name is the
-    // Metasequoia-prefixed class.
-    Class type = NSClassFromString(@"MetasequoiaUpdateController");
+    // Lingyao-prefixed class.
+    Class type = NSClassFromString(@"LingyaoUpdateController");
     if (type == Nil || ![type respondsToSelector:@selector(sharedController)]) return;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"

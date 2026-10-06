@@ -217,8 +217,8 @@ test("titlebar sits above the shared sidebar and content body", async () => {
     true,
   );
   expect(
-    within(screen.getByRole("banner", { name: "窗口控制" })).getByText("水杉输入法").textContent,
-  ).toBe("水杉输入法");
+    within(screen.getByRole("banner", { name: "窗口控制" })).getByText("灵耀输入法").textContent,
+  ).toBe("灵耀输入法");
 });
 
 test("Android fuzzy-pinyin settings preserve rules while disabled and reset explicitly", async () => {
@@ -547,7 +547,7 @@ test("Android exposes handwriting model privacy and system settings", async () =
     expect(openExternalUrl).toHaveBeenCalledWith("https://developers.google.com/ml-kit/terms"),
   );
   expect(screen.getByText("Android 键盘手写")).toBeDefined();
-  expect(screen.getByText(/Android 系统输入法设置中启用水杉键盘/)).toBeDefined();
+  expect(screen.getByText(/Android 系统输入法设置中启用灵耀键盘/)).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "打开系统输入法设置" }));
   expect(openSystemKeyboardSettings).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole("button", { name: "打开手写识别板" })).toBeNull();
@@ -1858,7 +1858,7 @@ test("Linux appearance and service copy names both hosts and the Fcitx5 reload",
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
   const service = screen.getByRole("region", { name: "输入法服务" }).textContent ?? "";
   expect(service).toContain("重启 IBus 输入法服务");
-  expect(service).toContain("使用 Fcitx5 时重载水杉插件");
+  expect(service).toContain("使用 Fcitx5 时重载灵耀插件");
 });
 
 test.each(["windows", "macos"] as const)(
@@ -1925,7 +1925,7 @@ test("Linux restart copy covers both input method frameworks", async () => {
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
   expect(
     await screen.findByText(
-      "重启 IBus 输入法服务；使用 Fcitx5 时重载水杉插件，关闭并重建所有输入会话，不影响其他输入法。",
+      "重启 IBus 输入法服务；使用 Fcitx5 时重载灵耀插件，关闭并重建所有输入会话，不影响其他输入法。",
     ),
   ).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "重启" }));
@@ -1947,7 +1947,7 @@ test("macOS service page exposes installation separately from re-registration", 
     />,
   );
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
-  expect(await screen.findByText("安装或更新水杉输入源")).toBeDefined();
+  expect(await screen.findByText("安装或更新灵耀输入源")).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "安装 / 更新" }));
   await waitFor(() => expect(installInputSource).toHaveBeenCalledOnce());
   expect(await screen.findByText("输入源已安装并注册。")).toBeDefined();
@@ -1973,13 +1973,13 @@ test("macOS reports the start-time input method refresh and a source that still 
       }}
     />,
   );
-  const banner = await screen.findByRole("status", { name: "水杉输入法安装状态" });
-  expect(within(banner).getByText("把水杉输入法加入输入法列表")).toBeDefined();
+  const banner = await screen.findByRole("status", { name: "灵耀输入法安装状态" });
+  expect(within(banner).getByText("把灵耀输入法加入输入法列表")).toBeDefined();
   expect(
     within(banner).getByText(/^已更新到 0\.51\.0 \(7300\)。macOS 只允许你自己把输入法加入列表/),
   ).toBeDefined();
   expect(
-    within(banner).getByText(/在左侧选「简体中文」，再选「水杉输入法」，然后点「添加」/),
+    within(banner).getByText(/在左侧选「简体中文」，再选「灵耀输入法」，然后点「添加」/),
   ).toBeDefined();
   expect(within(banner).getByText(/系统对所有第三方输入法都会显示的标准提示/)).toBeDefined();
   // macOS 27 does not let a process enable the source, so nothing offers to do it for the user.
@@ -1987,7 +1987,7 @@ test("macOS reports the start-time input method refresh and a source that still 
   fireEvent.click(within(banner).getByRole("button", { name: "打开键盘设置" }));
   await waitFor(() => expect(openSettings).toHaveBeenCalledOnce());
   fireEvent.click(within(banner).getByRole("button", { name: "知道了" }));
-  expect(screen.queryByRole("status", { name: "水杉输入法安装状态" })).toBeNull();
+  expect(screen.queryByRole("status", { name: "灵耀输入法安装状态" })).toBeNull();
 });
 
 test("macOS names a system-wide copy of the input method even when everything else is current", async () => {
@@ -2002,7 +2002,7 @@ test("macOS names a system-wide copy of the input method even when everything el
             enabled: true,
             bundled_version: "0.50.0 (1)",
             installed_version: "0.50.0 (1)",
-            system_bundles: ["/Library/Input Methods/水杉输入法.app"],
+            system_bundles: ["/Library/Input Methods/灵耀输入法.app"],
           }),
           openSettings: vi.fn(),
         },
@@ -2010,8 +2010,8 @@ test("macOS names a system-wide copy of the input method even when everything el
       }}
     />,
   );
-  const banner = await screen.findByRole("status", { name: "水杉输入法安装状态" });
-  expect(within(banner).getByText(/\/Library\/Input Methods\/水杉输入法\.app/)).toBeDefined();
+  const banner = await screen.findByRole("status", { name: "灵耀输入法安装状态" });
+  expect(within(banner).getByText(/\/Library\/Input Methods\/灵耀输入法\.app/)).toBeDefined();
   expect(within(banner).queryByRole("button", { name: "打开键盘设置" })).toBeNull();
 });
 
@@ -2034,7 +2034,7 @@ test("macOS stays quiet when the input method is current and enabled, and points
   );
   await settingsReady();
   await waitFor(() => expect(quiet).toHaveBeenCalledOnce());
-  expect(screen.queryByLabelText("水杉输入法安装状态")).toBeNull();
+  expect(screen.queryByLabelText("灵耀输入法安装状态")).toBeNull();
   unmount();
 
   render(
@@ -2055,7 +2055,7 @@ test("macOS stays quiet when the input method is current and enabled, and points
       }}
     />,
   );
-  const banner = await screen.findByRole("alert", { name: "水杉输入法安装状态" });
+  const banner = await screen.findByRole("alert", { name: "灵耀输入法安装状态" });
   expect(within(banner).getByText(/点「安装 \/ 更新」重试/)).toBeDefined();
   expect(within(banner).queryByRole("button", { name: "打开键盘设置" })).toBeNull();
 });
@@ -2079,7 +2079,7 @@ test("macOS asks for a new login when a first install waits for the input source
       }}
     />,
   );
-  const banner = await screen.findByRole("status", { name: "水杉输入法安装状态" });
+  const banner = await screen.findByRole("status", { name: "灵耀输入法安装状态" });
   expect(within(banner).getByText(/请注销并重新登录/)).toBeDefined();
   expect(within(banner).queryByRole("button", { name: "打开键盘设置" })).toBeNull();
 });
@@ -2111,10 +2111,10 @@ test("macOS keeps reading the input source list while the notice waits for the u
         }}
       />,
     );
-    await screen.findByRole("status", { name: "水杉输入法安装状态" });
+    await screen.findByRole("status", { name: "灵耀输入法安装状态" });
     // System Settings sits beside the window, so no focus event arrives; the interval still notices the added source.
     await vi.advanceTimersByTimeAsync(3000);
-    await waitFor(() => expect(screen.queryByLabelText("水杉输入法安装状态")).toBeNull());
+    await waitFor(() => expect(screen.queryByLabelText("灵耀输入法安装状态")).toBeNull());
     expect(status).toHaveBeenCalledTimes(2);
     // Nothing is left to wait for, so the reads stop.
     await vi.advanceTimersByTimeAsync(9000);
@@ -2149,10 +2149,10 @@ test("macOS reads the input source again when the window regains focus, but not 
       }}
     />,
   );
-  await screen.findByRole("status", { name: "水杉输入法安装状态" });
+  await screen.findByRole("status", { name: "灵耀输入法安装状态" });
   // The user added the source in System Settings and came back.
   fireEvent.focus(window);
-  await waitFor(() => expect(screen.queryByLabelText("水杉输入法安装状态")).toBeNull());
+  await waitFor(() => expect(screen.queryByLabelText("灵耀输入法安装状态")).toBeNull());
   expect(status).toHaveBeenCalledTimes(2);
 });
 
@@ -2173,11 +2173,11 @@ test("macOS keeps a dismissed input source notice hidden on later focus", async 
       }}
     />,
   );
-  const banner = await screen.findByRole("status", { name: "水杉输入法安装状态" });
+  const banner = await screen.findByRole("status", { name: "灵耀输入法安装状态" });
   fireEvent.click(within(banner).getByRole("button", { name: "知道了" }));
   fireEvent.focus(window);
   await settingsReady();
-  expect(screen.queryByLabelText("水杉输入法安装状态")).toBeNull();
+  expect(screen.queryByLabelText("灵耀输入法安装状态")).toBeNull();
   expect(status).toHaveBeenCalledOnce();
 });
 
@@ -2200,7 +2200,7 @@ test("the start-time input method report is macOS only", async () => {
   );
   await settingsReady();
   expect(status).not.toHaveBeenCalled();
-  expect(screen.queryByLabelText("水杉输入法安装状态")).toBeNull();
+  expect(screen.queryByLabelText("灵耀输入法安装状态")).toBeNull();
 });
 
 test("macOS 维护与诊断 page exposes reversible uninstall with explicit data removal", async () => {
@@ -2223,15 +2223,15 @@ test("macOS 维护与诊断 page exposes reversible uninstall with explicit data
   );
   fireEvent.click(screen.getByRole("button", { name: "关于" }));
   const about = await screen.findByRole("group", { name: "关于" });
-  expect(within(about).getByText("© 2026 Metasequoia IME")).toBeDefined();
+  expect(within(about).getByText("© 2026 Lingyao IME")).toBeDefined();
   // 卸载属于维护，不是产品信息：它已从「关于」移出，放在「维护与诊断」的最后。
-  expect(within(about).queryByText("卸载水杉输入法")).toBeNull();
+  expect(within(about).queryByText("卸载灵耀输入法")).toBeNull();
   const groupTitles = (scope: HTMLElement) =>
     [...scope.querySelectorAll("[data-group-title]")].map((node) => node.textContent);
   expect(groupTitles(about)).toEqual(["版本与更新", "许可与隐私"]);
   fireEvent.click(screen.getByRole("button", { name: "维护与诊断" }));
   const developer = await screen.findByRole("group", { name: "维护与诊断" });
-  expect(await within(developer).findByText("卸载水杉输入法")).toBeDefined();
+  expect(await within(developer).findByText("卸载灵耀输入法")).toBeDefined();
   expect(await within(developer).findByText("/synthetic/default-state")).toBeDefined();
   // 基础的服务操作在前，破坏性的那个在最后。
   expect(groupTitles(developer)).toEqual(["输入法服务", "诊断日志", "数据目录", "卸载"]);
@@ -2239,7 +2239,7 @@ test("macOS 维护与诊断 page exposes reversible uninstall with explicit data
   expect(remove.checked).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "卸载…" }));
   expect(uninstallInputSource).not.toHaveBeenCalled();
-  expect(await screen.findByRole("alertdialog", { name: "确认卸载水杉输入法" })).toBeDefined();
+  expect(await screen.findByRole("alertdialog", { name: "确认卸载灵耀输入法" })).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(uninstallInputSource).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "卸载…" }));
@@ -2254,9 +2254,9 @@ test("macOS 维护与诊断 page exposes reversible uninstall with explicit data
 
 test("macOS developer page moves the shared data root only after an explicit confirmation", async () => {
   const status = vi.fn().mockResolvedValue({ path: "/synthetic/default-state", isDefault: true });
-  const pick = vi.fn().mockResolvedValue("/synthetic/second-volume/MetasequoiaIME");
+  const pick = vi.fn().mockResolvedValue("/synthetic/second-volume/LingyaoIME");
   const move = vi.fn().mockResolvedValue({
-    path: "/synthetic/second-volume/MetasequoiaIME",
+    path: "/synthetic/second-volume/LingyaoIME",
     isDefault: false,
     retainedOldData: false,
   });
@@ -2733,15 +2733,15 @@ test("a host-saved dictionary export reports the path only once the host has wri
   fireEvent.click(await screen.findByRole("button", { name: "导出当前类型" }));
   await waitFor(() =>
     expect(saveExport).toHaveBeenCalledWith(
-      "水杉IME-快捷短语用户词库.txt",
+      "灵耀IME-快捷短语用户词库.txt",
       "\ufeffsynthetic phrase\tfixture\t10\n",
     ),
   );
   expect(screen.queryByText(/已导出/)).toBeNull();
-  await act(async () => written("/Users/fixture/Downloads/水杉IME-快捷短语用户词库 (2).txt"));
+  await act(async () => written("/Users/fixture/Downloads/灵耀IME-快捷短语用户词库 (2).txt"));
   expect(
     await screen.findByText(
-      "已导出 1 条用户词条到 /Users/fixture/Downloads/水杉IME-快捷短语用户词库 (2).txt。",
+      "已导出 1 条用户词条到 /Users/fixture/Downloads/灵耀IME-快捷短语用户词库 (2).txt。",
     ),
   ).toBeDefined();
 
@@ -2751,15 +2751,15 @@ test("a host-saved dictionary export reports the path only once the host has wri
   fireEvent.click(exportAll);
   await waitFor(() =>
     expect(saveExport).toHaveBeenLastCalledWith(
-      "水杉用户词库.txt",
+      "灵耀用户词库.txt",
       "# 类别\t编码\t词条\t权重\n快捷短语\tfixture\tsynthetic phrase\t10\n",
     ),
   );
   expect(screen.queryByText(/已导出全部/)).toBeNull();
-  await act(async () => written("/Users/fixture/Downloads/水杉用户词库.txt"));
+  await act(async () => written("/Users/fixture/Downloads/灵耀用户词库.txt"));
   expect(
     await screen.findByText(
-      "已导出全部 1 条用户词条到 /Users/fixture/Downloads/水杉用户词库.txt。",
+      "已导出全部 1 条用户词条到 /Users/fixture/Downloads/灵耀用户词库.txt。",
     ),
   ).toBeDefined();
   // The host wrote the file, so the page must not also start a download the webview would drop.
@@ -4298,7 +4298,7 @@ test("screen keyboard theme and Apple skin load, save independently and reload",
     .filter((button) => button.closest("article")?.getAttribute("aria-label"));
   expect(cards.map((button) => button.getAttribute("aria-label"))).toEqual([
     "跟随系统",
-    "水杉",
+    "灵耀",
     "浅色",
     "纸白",
     "夜青",
@@ -4341,15 +4341,15 @@ test("screen keyboard theme and Apple skin load, save independently and reload",
     ),
   );
   fireEvent.click(screen.getByRole("button", { name: "主题" }));
-  fireEvent.click(screen.getByRole("switch", { name: "水杉" }));
+  fireEvent.click(screen.getByRole("switch", { name: "灵耀" }));
   fireEvent.click(screen.getByRole("button", { name: "屏幕键盘" }));
-  expect(preview.getAttribute("data-preview-skin")).toBe("shuishan");
+  expect(preview.getAttribute("data-preview-skin")).toBe("lingyao");
   fireEvent.change(select, { target: { value: "follow" } });
   expect(preview.getAttribute("data-preview-theme")).toBe("light");
   await waitFor(() =>
     expect(save).toHaveBeenLastCalledWith(
       8,
-      expect.objectContaining({ screen_keyboard_theme: "follow", global_theme: "shuishan" }),
+      expect.objectContaining({ screen_keyboard_theme: "follow", global_theme: "lingyao" }),
     ),
   );
 });
@@ -5229,7 +5229,7 @@ test("skin preview switches are independent, reversible and do not change saved 
     screen.getByRole("article", { name: "自定义" }),
   ]);
   for (const [title, appearance] of [
-    ["水杉", "dark"],
+    ["灵耀", "dark"],
     ["浅色", "light"],
     ["纸白", "light"],
     ["夜青", "dark"],
@@ -5243,7 +5243,7 @@ test("skin preview switches are independent, reversible and do not change saved 
   expect(screen.getByRole("switch", { name: /跟随系统/ }).getAttribute("aria-checked")).toBe(
     "true",
   );
-  expect(preview(screen.getByRole("article", { name: "水杉" }))).toBe("dark");
+  expect(preview(screen.getByRole("article", { name: "灵耀" }))).toBe("dark");
   fireEvent.click(within(system).getByRole("button", { name: "预览深色" }));
   expect(preview(system)).toBe("dark");
   expect(save).not.toHaveBeenCalled();
@@ -5459,11 +5459,11 @@ test("help, about and feedback pages expose their Windows content and actions", 
   await waitFor(() => expect(openExternalUrl).toHaveBeenCalledWith("https://msime.app/docs/"));
 
   fireEvent.click(screen.getByRole("button", { name: "关于" }));
-  expect(await screen.findByText("Metasequoia IME")).toBeDefined();
+  expect(await screen.findByText("Lingyao IME")).toBeDefined();
   fireEvent.click(screen.getByRole("button", { name: "开源许可协议" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/blob/develop/LICENSE",
+      "https://github.com/Lcy040109/msime/blob/develop/LICENSE",
     ),
   );
 
@@ -5473,7 +5473,7 @@ test("help, about and feedback pages expose their Windows content and actions", 
   await waitFor(() => expect(copyText).toHaveBeenCalledWith("829919142"));
   fireEvent.click(screen.getByRole("button", { name: "查看 Issues" }));
   await waitFor(() =>
-    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/metasequoiaime/msime/issues"),
+    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/Lcy040109/msime/issues"),
   );
 });
 
@@ -5495,10 +5495,10 @@ test("Linux help quick start covers both Fcitx5 and IBus", async () => {
   // First-run setup adds the input method on its own; the manual steps are the fallback.
   expect(quickStart.textContent).toContain("自动加入正在运行的 Fcitx5 或 IBus 的输入法列表");
   expect(quickStart.textContent).toContain(
-    "「水杉输入法」（英文界面显示为「MSIME」）加入当前输入法组",
+    "「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组",
   );
   // The name IBus lists is the component's longname.
-  expect(quickStart.textContent).toContain("「Metasequoia 水杉输入法」");
+  expect(quickStart.textContent).toContain("「Lingyao 灵耀输入法」");
   expect(quickStart.textContent).not.toContain("MSIME Client");
   expect(screen.queryByText(/Win \+ Space/)).toBeNull();
 });
@@ -5521,9 +5521,9 @@ test("Linux help network section says what goes online and where credentials liv
   expect(text).toContain("Google input-tools");
   expect(text).toContain("msime-linux-online-provider");
   expect(text).toContain("msime-linux-voice-provider");
-  // 候选翻译新装不联网，水杉账号要用户显式选择，文案说明选了它会发送什么；语音和 AI 仍要等配置好服务。
+  // 候选翻译新装不联网，灵耀账号要用户显式选择，文案说明选了它会发送什么；语音和 AI 仍要等配置好服务。
   expect(text).toContain("候选词翻译默认不联网");
-  expect(text).toContain("选择水杉账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求");
+  expect(text).toContain("选择灵耀账号把当前页的中文候选词发送到 api.msime.app 之后才会发请求");
   expect(text).toContain("语音识别和 AI 功能只在启用并配置好对应服务后联网");
   expect(text).not.toContain("填好凭据后联网");
   // The provider credentials are private files; NiuTrans and custom translation keys are the exception and the copy says so.
@@ -5558,7 +5558,7 @@ test("Android help and about pages use mobile instructions and project links", a
   fireEvent.click(screen.getByRole("button", { name: "开源许可协议" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/blob/develop/LICENSE",
+      "https://github.com/Lcy040109/msime/blob/develop/LICENSE",
     ),
   );
   fireEvent.click(screen.getByRole("button", { name: "隐私政策" }));
@@ -5567,7 +5567,7 @@ test("Android help and about pages use mobile instructions and project links", a
   fireEvent.click(screen.getByRole("button", { name: "帮助与反馈" }));
   fireEvent.click(screen.getByRole("button", { name: "查看 Issues" }));
   await waitFor(() =>
-    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/metasequoiaime/msime/issues"),
+    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/Lcy040109/msime/issues"),
   );
 });
 
@@ -5662,11 +5662,11 @@ test("macOS support pages use client project and privacy links", async () => {
   );
 
   fireEvent.click(screen.getByRole("button", { name: "关于" }));
-  await screen.findByText("Metasequoia IME");
+  await screen.findByText("Lingyao IME");
   fireEvent.click(screen.getByRole("button", { name: "开源许可协议" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/blob/develop/LICENSE",
+      "https://github.com/Lcy040109/msime/blob/develop/LICENSE",
     ),
   );
   fireEvent.click(screen.getByRole("button", { name: "隐私政策" }));
@@ -5691,7 +5691,7 @@ test("macOS support pages use client project and privacy links", async () => {
   );
   fireEvent.click(screen.getByRole("button", { name: "查看 Issues" }));
   await waitFor(() =>
-    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/metasequoiaime/msime/issues"),
+    expect(openExternalUrl).toHaveBeenCalledWith("https://github.com/Lcy040109/msime/issues"),
   );
 });
 
@@ -6933,7 +6933,7 @@ test("about page validates a newer release before offering its URL", async () =>
       ok: true,
       json: async () => ({
         version: "v1.2.0",
-        releaseUrl: "https://github.com/metasequoiaime/msime/releases",
+        releaseUrl: "https://github.com/Lcy040109/msime/releases",
         signed: true,
       }),
     }),
@@ -6952,7 +6952,7 @@ test("about page validates a newer release before offering its URL", async () =>
   fireEvent.click(screen.getByRole("button", { name: "前往下载" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/releases",
+      "https://github.com/Lcy040109/msime/releases",
     ),
   );
   vi.unstubAllGlobals();
@@ -6965,7 +6965,7 @@ test("Linux checks the client release feed and treats no release as a normal res
     json: async () => [
       {
         tag_name: "macos-v9.0.0",
-        html_url: "https://github.com/metasequoiaime/msime/releases/tag/macos-v9.0.0",
+        html_url: "https://github.com/Lcy040109/msime/releases/tag/macos-v9.0.0",
       },
     ],
   });
@@ -7000,16 +7000,16 @@ test("Linux offers its own newest published release, not another platform's", as
       json: async () => [
         {
           tag_name: "macos-v9.0.0",
-          html_url: "https://github.com/metasequoiaime/msime/releases/tag/macos-v9.0.0",
+          html_url: "https://github.com/Lcy040109/msime/releases/tag/macos-v9.0.0",
         },
         {
           tag_name: "linux-v1.3.0",
-          html_url: "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.3.0",
+          html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v1.3.0",
           prerelease: true,
         },
         {
           tag_name: "linux-v1.2.0",
-          html_url: "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.2.0",
+          html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0",
         },
       ],
     }),
@@ -7031,7 +7031,7 @@ test("Linux offers its own newest published release, not another platform's", as
   fireEvent.click(screen.getByRole("button", { name: "前往下载" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.2.0",
+      "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0",
     ),
   );
   // A release without assets has no digest to show, so the notice falls back to SHA256SUMS instead of inventing one.
@@ -7052,19 +7052,19 @@ test("Linux update notice shows the .deb digest GitHub computed and the sha256su
       json: async () => [
         {
           tag_name: "linux-v1.2.0",
-          html_url: "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.2.0",
+          html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0",
           assets: [
             {
               name: "msime-linux-1.2.0-linux-x86_64.tar.gz",
               digest: `sha256:${"f".repeat(64)}`,
               browser_download_url:
-                "https://github.com/metasequoiaime/msime/releases/download/linux-v1.2.0/msime-linux-1.2.0-linux-x86_64.tar.gz",
+                "https://github.com/Lcy040109/msime/releases/download/linux-v1.2.0/msime-linux-1.2.0-linux-x86_64.tar.gz",
             },
             {
               name: "msime-linux_1.2.0_amd64.deb",
               digest: `sha256:${digest}`,
               browser_download_url:
-                "https://github.com/metasequoiaime/msime/releases/download/linux-v1.2.0/msime-linux_1.2.0_amd64.deb",
+                "https://github.com/Lcy040109/msime/releases/download/linux-v1.2.0/msime-linux_1.2.0_amd64.deb",
             },
             { name: "SHA256SUMS", digest: `sha256:${"e".repeat(64)}` },
           ],
@@ -7092,7 +7092,7 @@ test("Linux update notice shows the .deb digest GitHub computed and the sha256su
 });
 
 test("Linux release assets yield a digest only when it is well-formed and unambiguous", () => {
-  const page = "https://github.com/metasequoiaime/msime/releases";
+  const page = "https://github.com/Lcy040109/msime/releases";
   const digest = "a".repeat(64);
   const release = (assets: unknown) => [
     { tag_name: "linux-v1.2.0", html_url: `${page}/tag/linux-v1.2.0`, assets },
@@ -7202,7 +7202,7 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
         {
           tag_name: "macos-v1.2.0",
           html_url: `${page}/tag/macos-v1.2.0`,
-          assets: [{ name: "MetasequoiaIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` }],
+          assets: [{ name: "LingyaoIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` }],
         },
       ],
       "macos",
@@ -7212,7 +7212,7 @@ test("Linux release assets yield a digest only when it is well-formed and unambi
 });
 
 test("Windows release assets yield the installer digest and mark the build unsigned", () => {
-  const page = "https://github.com/metasequoiaime/msime/releases";
+  const page = "https://github.com/Lcy040109/msime/releases";
   const digest = "d".repeat(64);
   const pick = (assets: unknown) => {
     const update = selectPlatformRelease(
@@ -7231,21 +7231,21 @@ test("Windows release assets yield the installer digest and mark the build unsig
   // What release-windows.yml uploads: the installer and its .sha256 file.
   expect(
     pick([
-      { name: "MetasequoiaIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` },
-      { name: "MetasequoiaIME_Setup_v1.2.0.exe.sha256", digest: `sha256:${"e".repeat(64)}` },
+      { name: "LingyaoIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` },
+      { name: "LingyaoIME_Setup_v1.2.0.exe.sha256", digest: `sha256:${"e".repeat(64)}` },
     ]),
-  ).toEqual({ name: "MetasequoiaIME_Setup_v1.2.0.exe", sha256: digest, signed: false });
+  ).toEqual({ name: "LingyaoIME_Setup_v1.2.0.exe", sha256: digest, signed: false });
   // An older API response without digests keeps the name, so the notice can point at the .sha256 file.
-  expect(pick([{ name: "MetasequoiaIME_Setup_v1.2.0.exe", digest: null }])).toEqual({
-    name: "MetasequoiaIME_Setup_v1.2.0.exe",
+  expect(pick([{ name: "LingyaoIME_Setup_v1.2.0.exe", digest: null }])).toEqual({
+    name: "LingyaoIME_Setup_v1.2.0.exe",
     sha256: null,
     signed: false,
   });
   // Two installers are ambiguous; a name needing quoting never reaches the command.
   expect(
     pick([
-      { name: "MetasequoiaIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` },
-      { name: "MetasequoiaIME_Setup_v1.2.0-x86.exe", digest: `sha256:${digest}` },
+      { name: "LingyaoIME_Setup_v1.2.0.exe", digest: `sha256:${digest}` },
+      { name: "LingyaoIME_Setup_v1.2.0-x86.exe", digest: `sha256:${digest}` },
     ]),
   ).toEqual({ name: null, sha256: null, signed: false });
   expect(pick([{ name: "Setup v1.2.0;calc.exe", digest: `sha256:${digest}` }])).toEqual({
@@ -7259,7 +7259,7 @@ test("Windows release assets yield the installer digest and mark the build unsig
 test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows", () => {
   const digest = "c".repeat(64);
   const version = { display: "1.2.0", parts: [1, 2, 0] };
-  const releaseUrl = "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.2.0";
+  const releaseUrl = "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0";
   expect(
     describeInstallerTrust(
       {
@@ -7283,8 +7283,8 @@ test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows"
   ).toBeNull();
   const windows = {
     version,
-    releaseUrl: "https://github.com/metasequoiaime/msime/releases",
-    installerName: "MetasequoiaIME_Setup_v1.2.0.exe",
+    releaseUrl: "https://github.com/Lcy040109/msime/releases",
+    installerName: "LingyaoIME_Setup_v1.2.0.exe",
     installerSha256: digest,
     signed: false,
   };
@@ -7292,7 +7292,7 @@ test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows"
     warning:
       "该版本未经代码签名，SmartScreen 会拦截，且 uiAccess 失效（候选窗口无法浮在以管理员身份运行的程序之上）。请务必核对下面的校验值。",
     verify: {
-      command: "Get-FileHash .\\MetasequoiaIME_Setup_v1.2.0.exe -Algorithm SHA256",
+      command: "Get-FileHash .\\LingyaoIME_Setup_v1.2.0.exe -Algorithm SHA256",
       sha256: digest,
     },
   };
@@ -7301,7 +7301,7 @@ test("installer trust uses sha256sum on Linux and keeps Get-FileHash on Windows"
   // Without a digest the unsigned warning points at the .sha256 file the release carries.
   expect(describeInstallerTrust({ ...windows, installerSha256: null }, "windows")).toEqual({
     warning:
-      "该版本未经代码签名，SmartScreen 会拦截，且 uiAccess 失效（候选窗口无法浮在以管理员身份运行的程序之上）。请从发行页一并下载 MetasequoiaIME_Setup_v1.2.0.exe.sha256，用 Get-FileHash .\\MetasequoiaIME_Setup_v1.2.0.exe -Algorithm SHA256 核对。",
+      "该版本未经代码签名，SmartScreen 会拦截，且 uiAccess 失效（候选窗口无法浮在以管理员身份运行的程序之上）。请从发行页一并下载 LingyaoIME_Setup_v1.2.0.exe.sha256，用 Get-FileHash .\\LingyaoIME_Setup_v1.2.0.exe -Algorithm SHA256 核对。",
     verify: null,
   });
 });
@@ -7313,14 +7313,14 @@ test("Windows checks this repository's Windows releases rather than the referenc
     json: async () => [
       {
         tag_name: "linux-v9.0.0",
-        html_url: "https://github.com/metasequoiaime/msime/releases/tag/linux-v9.0.0",
+        html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v9.0.0",
       },
       {
         tag_name: "windows-v1.2.0",
-        html_url: "https://github.com/metasequoiaime/msime/releases/tag/windows-v1.2.0",
+        html_url: "https://github.com/Lcy040109/msime/releases/tag/windows-v1.2.0",
         assets: [
-          { name: "MetasequoiaIME_Setup_v1.2.0.exe", digest: `sha256:${"b".repeat(64)}` },
-          { name: "MetasequoiaIME_Setup_v1.2.0.exe.sha256", digest: `sha256:${"c".repeat(64)}` },
+          { name: "LingyaoIME_Setup_v1.2.0.exe", digest: `sha256:${"b".repeat(64)}` },
+          { name: "LingyaoIME_Setup_v1.2.0.exe.sha256", digest: `sha256:${"c".repeat(64)}` },
         ],
       },
     ],
@@ -7344,7 +7344,7 @@ test("Windows checks this repository's Windows releases rather than the referenc
   expect(screen.getByText(/SmartScreen 会拦截，且 uiAccess 失效/)).toBeDefined();
   expect(screen.getByText("b".repeat(64))).toBeDefined();
   expect(
-    screen.getByText("Get-FileHash .\\MetasequoiaIME_Setup_v1.2.0.exe -Algorithm SHA256"),
+    screen.getByText("Get-FileHash .\\LingyaoIME_Setup_v1.2.0.exe -Algorithm SHA256"),
   ).toBeDefined();
   expect(fetch).toHaveBeenCalledWith(
     expect.stringMatching(/^https:\/\/api\.github\.com\/repos\/metasequoiaime\/msime\/releases\?/),
@@ -7353,7 +7353,7 @@ test("Windows checks this repository's Windows releases rather than the referenc
   fireEvent.click(screen.getByRole("button", { name: "前往下载" }));
   await waitFor(() =>
     expect(openExternalUrl).toHaveBeenCalledWith(
-      "https://github.com/metasequoiaime/msime/releases/tag/windows-v1.2.0",
+      "https://github.com/Lcy040109/msime/releases/tag/windows-v1.2.0",
     ),
   );
   vi.unstubAllGlobals();
@@ -7408,7 +7408,7 @@ test("about page uses the packaged app version for display and update comparison
       json: async () => [
         {
           tag_name: "linux-v1.2.0",
-          html_url: "https://github.com/metasequoiaime/msime/releases/tag/linux-v1.2.0",
+          html_url: "https://github.com/Lcy040109/msime/releases/tag/linux-v1.2.0",
         },
       ],
     }),
@@ -7432,7 +7432,7 @@ test("about page uses the packaged app version for display and update comparison
 });
 
 test("platform release selection compares versions rather than trusting list order", () => {
-  const page = "https://github.com/metasequoiaime/msime/releases";
+  const page = "https://github.com/Lcy040109/msime/releases";
   expect(
     selectPlatformRelease(
       [
@@ -7455,7 +7455,7 @@ test("client release validation rejects a release URL outside the shared reposit
         tag_name: "v1.2.0",
         html_url: "https://github.com/metasequoiaime/MSIME-Windows/releases/tag/v1.2.0",
       },
-      "https://github.com/metasequoiaime/msime/releases",
+      "https://github.com/Lcy040109/msime/releases",
     ),
   ).toBeNull();
 });

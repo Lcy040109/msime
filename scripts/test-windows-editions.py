@@ -223,7 +223,7 @@ def check_installer(errors: list[str], editions: list[dict]) -> None:
             if other["id"] == edition_id:
                 continue
             for key, text in identifiers(other["platforms"]["windows"]).items():
-                # 一个版本的名字可能恰好是另一个版本名字的前缀（MetasequoiaIME 和 MetasequoiaIME-Wubi）；只看完整出现、又不属于本版本那一处的情况。
+                # 一个版本的名字可能恰好是另一个版本名字的前缀（LingyaoIME 和 LingyaoIME-Wubi）；只看完整出现、又不属于本版本那一处的情况。
                 if text in output and text not in own.values() and not any(text in mine for mine in own.values()):
                     errors.append(f"msime_setup.iss for edition {edition_id}: contains edition {other['id']}'s {key} {text.strip()!r}")
         # 所有权标记的文件名接版本的名字后缀：full 的安装器认 .metasequoiaime-data 这个文件名就当目录归自己，别的版本用同一个文件名就会被 full 接管、清理或删除。

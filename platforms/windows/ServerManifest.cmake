@@ -7,7 +7,7 @@ if(MSIME_SERVER_UIACCESS)
   target_sources(msime-client-server PRIVATE "${CMAKE_CURRENT_LIST_DIR}/ServerManifest.rc")
   target_include_directories(msime-client-server PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
   set_property(SOURCE "${CMAKE_CURRENT_LIST_DIR}/ServerManifest.rc" APPEND PROPERTY
-    OBJECT_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/MetasequoiaImeServer.manifest")
+    OBJECT_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/LingyaoImeServer.manifest")
   if(MSVC)
     # The RC embeds resource 1. Do not generate/merge a second default manifest.
     target_link_options(msime-client-server PRIVATE /MANIFEST:NO)

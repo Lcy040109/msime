@@ -14,7 +14,7 @@
     },
     {
       "name": "internet_permission_reason",
-      "value": "账号和云剪贴板功能需要访问水杉服务"
+      "value": "账号和云剪贴板功能需要访问灵耀服务"
     },
     {
       "name": "clipboard_permission_reason",
@@ -30,11 +30,11 @@
     },
     {
       "name": "entry_ability_desc",
-      "value": "水杉输入法的设置"
+      "value": "灵耀输入法的设置"
     },
     {
       "name": "entry_ability_label",
-      "value": "水杉输入法"
+      "value": "灵耀输入法"
     }
   ]
 }

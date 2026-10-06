@@ -28,11 +28,11 @@
 - (CGFloat)previewContentHeight;
 @end
 
-/// The floating toolbar drawn at the size the toolbar settings actually produce: the components that are ticked, laid out with MetasequoiaFloatingToolbarPanel's own metrics for the chosen 工具栏缩放 and 工具栏字号. The 状态栏 page offers four scale steps and seven font sizes, and until this view there was nowhere in the window those 28 combinations looked like anything.
+/// The floating toolbar drawn at the size the toolbar settings actually produce: the components that are ticked, laid out with LingyaoFloatingToolbarPanel's own metrics for the chosen 工具栏缩放 and 工具栏字号. The 状态栏 page offers four scale steps and seven font sizes, and until this view there was nowhere in the window those 28 combinations looked like anything.
 @interface MSIMEToolbarPreviewView : NSView
 @property(nonatomic, weak) MSIMEAppearancePreferences *preferences;
 - (void)reloadPreview;
 - (BOOL)previewUsesDark;
 @end
 
-#define MetasequoiaCandidatePreviewView MSIMECandidatePreviewView
+#define LingyaoCandidatePreviewView MSIMECandidatePreviewView

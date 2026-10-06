@@ -1650,7 +1650,7 @@ export interface HostCapabilities {
 /** Mirrors `client-core::host_surface::EditionInfo`. */
 export interface EditionInfo {
   id: string;
-  /** 版本的中文产品名，例如「水杉五笔」。缺省时按 full 的「水杉输入法」。 */
+  /** 版本的中文产品名，例如「灵耀五笔」。缺省时按 full 的「灵耀输入法」。 */
   display_name?: string;
   /** 本版本提供的方案，顺序与全部方案的顺序一致。 */
   input_schemes: InputScheme[];
@@ -3298,7 +3298,7 @@ export function SettingsPage(props: SettingsPageProps) {
               {...(macShell ? windowDragHandlers : {})}
             >
               <img src={logo} alt="" draggable={false} />
-              <span>水杉输入法</span>
+              <span>灵耀输入法</span>
             </div>
           )}
           {searchInSidebar && <label className={settings.sidebarSearch}>{navSearchField}</label>}

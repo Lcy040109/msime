@@ -261,7 +261,7 @@ export const touchKeyboardSkinTemplates: { title: string; design: TouchKeyboardS
       customBorderColor: 0xb09b83,
     }),
   },
-  { title: "水杉留白", design: skin({}) },
+  { title: "灵耀留白", design: skin({}) },
   {
     title: "复古纸感",
     design: skin({

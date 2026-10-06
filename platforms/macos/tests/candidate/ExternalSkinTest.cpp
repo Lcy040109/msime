@@ -40,7 +40,7 @@ int main()
     Require(msime::mac::IsSafeSkinId("niya-demo") && !msime::mac::IsSafeSkinId("Fluent") &&
                 !msime::mac::IsSafeSkinId("../x"),
             "Skin id validation did not match the shared catalog.");
-    Require(!msime::mac::IsGlobalThemeId("niya-demo") && msime::mac::IsGlobalThemeId("shuishan") &&
+    Require(!msime::mac::IsGlobalThemeId("niya-demo") && msime::mac::IsGlobalThemeId("lingyao") &&
                 !msime::mac::IsGlobalThemeId("fluent"),
             "Package ids and theme ids overlapped.");
 
@@ -61,7 +61,7 @@ schema_version = 1
 id = "niya-demo"
 name = "Niya Demo"
 version = "0.1.1"
-author = "Metasequoia IME contributors"
+author = "Lingyao IME contributors"
 description = "demo"
 base = "system"
 preview = "assets/character.png"
@@ -100,10 +100,10 @@ border = "rgba(176, 80, 110, 0.22)"
     Require(!msime::mac::LoadSkinPackage(root, "broken", &error) &&
                 error.find("schema_version") != std::string::npos,
             "An invalid external skin was accepted.");
-    WriteFile(root / "shuishan" / "skin.toml", "schema_version = 1\nid = \"shuishan\"\n");
-    Require(!msime::mac::LoadSkinPackage(root, "shuishan", &error),
+    WriteFile(root / "lingyao" / "skin.toml", "schema_version = 1\nid = \"lingyao\"\n");
+    Require(!msime::mac::LoadSkinPackage(root, "lingyao", &error),
             "A global theme id was treated as an external package.");
-    std::filesystem::remove_all(root / "shuishan");
+    std::filesystem::remove_all(root / "lingyao");
 
     const auto catalog = msime::mac::ScanSkinCatalog(root);
     Require(catalog.packages.size() == 1 && catalog.issues.size() == 1 && catalog.packages[0].id == "niya-demo",

@@ -113,7 +113,7 @@ public final class CommunityRequestSmoke {
             && "1 万 次使用".equals(CommunityRequest.usesLabel(10_000))
             && "2.9 万 次使用".equals(CommunityRequest.usesLabel(29_049)), "large use counts are in 万 with one decimal");
         check("4,812 条".equals(CommunityRequest.entriesLabel(4_812)), "entry counts are grouped by thousands");
-        check("@水杉词库组 · 4,812 条 · 本周更新".equals(CommunityRequest.resourceSubtitle("水杉词库组", 4_812, true))
+        check("@灵耀词库组 · 4,812 条 · 本周更新".equals(CommunityRequest.resourceSubtitle("灵耀词库组", 4_812, true))
             && "18 条".equals(CommunityRequest.resourceSubtitle("", 18, false))
             && "@寻章".equals(CommunityRequest.resourceSubtitle("寻章", -1, false)),
             "a resource row says author, entries and a recent update, leaving out what it does not know");

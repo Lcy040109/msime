@@ -478,7 +478,7 @@ fn rejects_wrong_numeric_types_and_nonfinite_or_out_of_range_dimensions() {
 fn rejects_theme_ids_as_external_skin_folders() {
     let root = tempdir().unwrap();
     for id in [
-        "system", "shuishan", "light", "paper", "night", "ink", "custom",
+        "system", "lingyao", "light", "paper", "night", "ink", "custom",
     ] {
         let skin = root.path().join(id);
         fs::create_dir(&skin).unwrap();
@@ -602,7 +602,7 @@ fn base_names_system_or_a_builtin_theme() {
     use super::super::theme::GlobalTheme;
     for (base, expected) in [
         ("system", GlobalTheme::System),
-        ("shuishan", GlobalTheme::Shuishan),
+        ("lingyao", GlobalTheme::Lingyao),
         ("light", GlobalTheme::Light),
         ("paper", GlobalTheme::Paper),
         ("night", GlobalTheme::Night),
@@ -1051,7 +1051,7 @@ fn a_symlinked_catalog_root_is_not_scanned() {
     assert!(read_resource(&root, "sample", "images/sample.png").is_err());
 }
 
-/// The layout msime-skins (github.com/metasequoiaime/msime-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
+/// The layout msime-skins (github.com/Lcy040109/msime-skins) writes: a decoration with its own image and alignment, a background image, a corner radius, a toolbar palette per mode, a translation colour and licence metadata.
 fn styled_package(root: &Path) -> std::path::PathBuf {
     let skin = root.join("bigfish");
     fs::create_dir_all(skin.join("assets")).unwrap();

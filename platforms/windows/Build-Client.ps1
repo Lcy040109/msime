@@ -163,21 +163,21 @@ try {
         $prefix = if ($arch -eq 'x64') { $X64Dependencies } else { $X86Dependencies }
         & (Join-Path $PSScriptRoot 'Copy-RuntimeDependencies.ps1') `
             -DependencyPrefix $prefix -Destination $bin -Architecture $arch
-        foreach ($dll in @('MetasequoiaImeTsf.dll', $hostDll)) {
+        foreach ($dll in @('LingyaoImeTsf.dll', $hostDll)) {
             & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $bin $dll) -Architecture $arch -Kind dll
         }
         if ($arch -eq 'x64') {
             foreach ($dll in $voiceRuntimeLibraries) {
                 & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $bin $dll) -Architecture x64 -Kind dll
             }
-            foreach ($exe in @('MetasequoiaImeServer.exe', 'MetasequoiaImeWatchdog.exe',
+            foreach ($exe in @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe',
                 'msime-client-prepare.exe', 'msime-mcp.exe',
                 'msime-client-settings.exe', 'MSIME.exe')) {
                 & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $bin $exe) -Architecture x64 -Kind exe
             }
         }
     }
-    & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $arm64Bin 'MetasequoiaImeTsf.dll') -Architecture arm64x -Kind dll
+    & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $arm64Bin 'LingyaoImeTsf.dll') -Architecture arm64x -Kind dll
     & (Join-Path $PSScriptRoot 'Test-PortableExecutable.ps1') -LiteralPath (Join-Path $arm64Bin $arm64HostDll) -Architecture arm64 -Kind dll
     Write-Output 'Client build commands and PE architecture checks completed; no signing, packaging or installation performed.'
 } finally {

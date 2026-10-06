@@ -2,7 +2,7 @@
 # 模板：platforms/windows/packaging/render.py 按一个 windows-v 发布填写 @...@ 字段。
 # 下面的事实取自 platforms/windows/installer/msime_setup.iss 与它包含的 editions.iss 里 full 的那一份：AppId（ProductCode 是这个 GUID 加上 Inno 的「_is1」后缀）、PrivilegesRequired=admin、ArchitecturesAllowed=x64compatible、AppName 与 AppPublisher。scripts/test-windows-package-managers.py 核对它们仍然一致。
 
-PackageIdentifier: Metasequoia.MetasequoiaIME
+PackageIdentifier: Lingyao.LingyaoIME
 PackageVersion: "@VERSION@"
 InstallerLocale: zh-CN
 Platform:
@@ -29,8 +29,8 @@ Dependencies:
 ProductCode: "{A7C3E91F-4B2D-4E8A-9F1C-6D5E8B0A2C4D}_is1"
 ReleaseDate: "@RELEASE_DATE@"
 AppsAndFeaturesEntries:
-  - DisplayName: Metasequoia IME 水杉输入法
-    Publisher: Metasequoia
+  - DisplayName: Lingyao IME 灵耀输入法
+    Publisher: Lingyao
     DisplayVersion: "@VERSION@"
     ProductCode: "{A7C3E91F-4B2D-4E8A-9F1C-6D5E8B0A2C4D}_is1"
     InstallerType: inno

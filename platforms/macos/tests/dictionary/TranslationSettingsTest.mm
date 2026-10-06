@@ -47,7 +47,7 @@ int main() {
         NSTextField *secretId = [window valueForKey:@"secretId"], *region = [window valueForKey:@"region"], *plainTencent = [window valueForKey:@"plainTencentKey"];
         NSSecureTextField *tencentKey = [window valueForKey:@"tencentKey"];
         assert([tencentKey isKindOfClass:NSSecureTextField.class] && !tencentKey.hidden && plainTencent.hidden);
-        // 新装不选「水杉账号」，要用户显式选择：和没选过账号的旧配置一样，服务落在腾讯云，凭据为空所以不发请求。
+        // 新装不选「灵耀账号」，要用户显式选择：和没选过账号的旧配置一样，服务落在腾讯云，凭据为空所以不发请求。
         assert(![initial[@"preferences"][@"translation_account"] boolValue]);
         assert(provider.indexOfSelectedItem == 0 && secretId.enabled && !secretId.stringValue.length);
         assert(tencent.state == NSControlStateValueOn && [region.stringValue isEqual:@"ap-guangzhou"]);
@@ -66,7 +66,7 @@ int main() {
         NSButton *revealNiuTrans = [window valueForKey:@"revealNiuTrans"];
         assert(target.numberOfItems == 7 && secondary.numberOfItems == 8 && secondary.indexOfSelectedItem == 0);
         assert(provider.indexOfSelectedItem == 0 && !endpoint.enabled);
-        assert(([provider.itemTitles isEqual:@[@"腾讯云", @"小牛翻译（NiuTrans）", @"自定义 DeepLX", @"水杉账号（发送到 api.msime.app）"]]));
+        assert(([provider.itemTitles isEqual:@[@"腾讯云", @"小牛翻译（NiuTrans）", @"自定义 DeepLX", @"灵耀账号（发送到 api.msime.app）"]]));
         assert(offline.state == NSControlStateValueOff && offline.enabled);
         assert([grid rowAtIndex:5].hidden && ![grid rowAtIndex:8].hidden);
         // A provider whose fields are incomplete is not written.

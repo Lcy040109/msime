@@ -76,10 +76,10 @@ struct PairedPunctuationStack {
   }
 }
 
-extension MetasequoiaInputSnapshot {
+extension LingyaoInputSnapshot {
   /// The same snapshot committing `text` instead.
-  func replacingCommit(_ text: String?) -> MetasequoiaInputSnapshot {
-    MetasequoiaInputSnapshot(
+  func replacingCommit(_ text: String?) -> LingyaoInputSnapshot {
+    LingyaoInputSnapshot(
       isHandled: isHandled, commitText: text, preedit: preedit, reading: reading, phrasePrefix: phrasePrefix,
       candidates: candidates, candidateCodes: candidateCodes, candidateGlosses: candidateGlosses,
       candidateAnnotations: candidateAnnotations, candidateSources: candidateSources,

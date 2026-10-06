@@ -24,14 +24,14 @@ cask "msime" do
   binary "#{appdir}/MSIME.app/Contents/MacOS/msime-mcp", target: "msime"
 
   # The settings app copies the input method here on its first launch.
-  uninstall quit:   ["app.msime.macos", "app.msime.inputmethod.MetasequoiaIME"],
+  uninstall quit:   ["app.msime.macos", "app.msime.inputmethod.LingyaoIME"],
             delete: "~/Library/Input Methods/灵耀输入法.app"
 
   zap trash: [
     "~/Library/Application Support/app.msime.macos",
     "~/Library/Caches/app.msime.macos",
     "~/Library/Preferences/app.msime.macos.plist",
-    "~/Library/Preferences/app.msime.inputmethod.MetasequoiaIME.plist",
+    "~/Library/Preferences/app.msime.inputmethod.LingyaoIME.plist",
     "~/Library/Saved Application State/app.msime.macos.savedState",
     "~/Library/WebKit/app.msime.macos",
   ]

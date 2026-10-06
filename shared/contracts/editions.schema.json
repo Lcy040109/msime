@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metasequoiaime/msime/shared/contracts/editions.schema.json",
-  "title": "水杉输入法版本表",
+  "$id": "https://github.com/Lcy040109/msime/shared/contracts/editions.schema.json",
+  "title": "灵耀输入法版本表",
   "description": "shared/contracts/editions.json 的结构说明。版本表是各版本（full、pinyin、wubi 等）的单一事实源：Rust 侧由 crates/client-core/src/edition.rs 用 include_str! 读入，结构与跨字段约束由 scripts/test-editions.py 在 contracts job 里检查，该脚本同时核对本文件声明的字段集合与版本表一致。多个版本可以同时安装，彼此完全隔离；full 保持现有的全部标识和行为不变。",
   "type": "object",
   "additionalProperties": false,
@@ -318,7 +318,7 @@
                 "registry_key": {
                   "description": "HKLM 下记录 VersionDir、ServerPath 和 DataDir 的键。",
                   "type": "string",
-                  "pattern": "^Software\\\\Metasequoia\\\\[A-Za-z][A-Za-z0-9-]*$"
+                  "pattern": "^Software\\\\Lingyao\\\\[A-Za-z][A-Za-z0-9-]*$"
                 },
                 "state_directory": {
                   "description": "没有 DataDir 时 %LOCALAPPDATA% 下的状态目录名。",
@@ -356,9 +356,9 @@
                   "pattern": "^app\\.msime\\.windows(\\.[a-z][a-z0-9]*)?$"
                 },
                 "installer_base_name": {
-                  "description": "安装包文件名前缀，完整文件名是 `<installer_base_name>_v<版本>.exe`；不是 full 时必须是 packages/ui/src/settings/update-manifest.ts 认的 `MetasequoiaIME-<Id>_Setup`。",
+                  "description": "安装包文件名前缀，完整文件名是 `<installer_base_name>_v<版本>.exe`；不是 full 时必须是 packages/ui/src/settings/update-manifest.ts 认的 `LingyaoIME-<Id>_Setup`。",
                   "type": "string",
-                  "pattern": "^MetasequoiaIME(-[A-Z][a-z0-9]*)?_Setup$"
+                  "pattern": "^LingyaoIME(-[A-Z][a-z0-9]*)?_Setup$"
                 }
               }
             },

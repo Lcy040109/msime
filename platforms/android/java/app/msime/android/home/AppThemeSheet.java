@@ -25,14 +25,14 @@ import java.util.List;
 import org.json.JSONObject;
 
 /**
- * 「我的 → 应用主题」的选择面板：顶部是颜色模式分段（跟随系统 / 浅色 / 深色，共享偏好 `theme`），下面是水杉四季（自动）与四个固定季节（Android 本地设置的 `general.app_theme`，见 {@link AndroidLocalSettings#APP_THEME}）。
+ * 「我的 → 应用主题」的选择面板：顶部是颜色模式分段（跟随系统 / 浅色 / 深色，共享偏好 `theme`），下面是灵耀四季（自动）与四个固定季节（Android 本地设置的 `general.app_theme`，见 {@link AndroidLocalSettings#APP_THEME}）。
  *
  * <p>外观与 {@link OptionSheet} 一致（M3 modal bottom sheet、居中小标题、56dp 强调色选项、当前项加粗打 ✓、末尾「取消」），只是多了顶部那一行分段，所以自己搭而不是往 OptionSheet 里塞。季节规则在 Rust：写入应用主题后交给 {@link AppThemeController#follow} 重新解析并更新缓存，缓存的季节变了才 `recreate()`；颜色模式写入后交给 {@link AppMode#follow}，由 AppCompat 重建打开着的页面。
  */
 final class AppThemeSheet {
     /** 应用主题的取值与显示名，顺序即面板顺序；与 Rust `AppTheme` 的序列化值一致。 */
     static final String[][] THEMES = {
-        {"siji", "水杉四季（自动）"}, {"chunya", "春芽"}, {"xiayin", "夏荫"}, {"qiushan", "秋杉"}, {"dongxue", "冬雪"},
+        {"siji", "灵耀四季（自动）"}, {"chunya", "春芽"}, {"xiayin", "夏荫"}, {"qiushan", "秋杉"}, {"dongxue", "冬雪"},
     };
     private static final String[][] MODES = {
         {AppMode.SYSTEM, "跟随系统"}, {AppMode.LIGHT, "浅色"}, {AppMode.DARK, "深色"},

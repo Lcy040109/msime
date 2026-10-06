@@ -610,7 +610,7 @@ public final class VoiceRecognitionActivity extends Activity {
             RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, safeLanguage(language));
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "水杉语音输入");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "灵耀语音输入");
         return intent;
     }
 

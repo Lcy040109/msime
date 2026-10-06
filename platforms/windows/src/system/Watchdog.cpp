@@ -14,7 +14,7 @@
 #include "../../../../shared/contracts/msime_edition.h"
 
 namespace {
-constexpr wchar_t server_file_name[] = L"MetasequoiaImeServer.exe";
+constexpr wchar_t server_file_name[] = L"LingyaoImeServer.exe";
 // 互斥量带版本后缀，CLSID、profile 和语言按版本取（shared/contracts/msime_edition.h，与 TSF 的 Globals.cpp 同源）：每个版本的看门狗只看护、只等待自己版本的 TIP 和 Server。
 constexpr wchar_t watchdog_mutex[] = L"Local\\MSIMEClientWatchdog.SingleInstance" MSIME_EDITION_NAME_SUFFIX;
 constexpr DWORD profile_ready_timeout_milliseconds = 30'000;

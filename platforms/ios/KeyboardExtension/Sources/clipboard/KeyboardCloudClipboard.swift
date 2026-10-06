@@ -41,7 +41,7 @@ final class KeyboardCloudClipboard {
     case loaded([BackendAccountClient.ClipboardItem])
   }
 
-  static let signedOutMessage = "登录水杉账号后可在设备间同步剪贴板"
+  static let signedOutMessage = "登录灵耀账号后可在设备间同步剪贴板"
   static let disabledMessage = "云剪贴板未开启"
   static let needsFullAccessMessage = "请在系统键盘设置中开启「允许完全访问」，再使用云剪贴板。"
   static let offlineMessage = "连接未完成，请检查网络后重试。"

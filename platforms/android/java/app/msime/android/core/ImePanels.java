@@ -345,7 +345,7 @@ final class ImePanels {
         boolean hostDark = KeyboardSkin.resolveDark(
             preferences == null ? "follow" : preferences.optString("screen_keyboard_theme", "follow"),
             preferences == null ? "system" : preferences.optString("theme", "system"), s.systemDark());
-        // 目录里的全局主题按共享目录的顺序（含水杉四季与春夏秋冬），后面接「我的设计」。
+        // 目录里的全局主题按共享目录的顺序（含灵耀四季与春夏秋冬），后面接「我的设计」。
         java.util.List<MSIMEInputService.SkinChoice> choices = new java.util.ArrayList<>();
         JSONObject customTheme = preferences == null ? null : preferences.optJSONObject("custom_theme");
         JSONArray themes = s.themeCatalog();

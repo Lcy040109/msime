@@ -20,7 +20,7 @@ if (-not $settings -or -not $shellNames.Success -or $shellNames.Groups[1].Value 
 }
 # Every edition, full included, stops the processes whose executable is inside its own server directory, not by image name: the editions' processes share names, and taskkill /IM would also stop the other editions installed side by side. The Watchdog stops first, or it restarts the Server.
 $stop = Get-Block 'procedure StopImeProcesses;' 'procedure DeleteWatchdogLogonTask;'
-$watchdogFirst = $stop.IndexOf("StopProcessesUnder(ServerDir, 'MetasequoiaImeWatchdog');")
+$watchdogFirst = $stop.IndexOf("StopProcessesUnder(ServerDir, 'LingyaoImeWatchdog');")
 $rest = $stop.IndexOf("StopProcessesUnder(ServerDir, '');")
 if ($watchdogFirst -lt 0 -or $rest -lt 0 -or $watchdogFirst -gt $rest) {
     throw 'StopImeProcesses must stop the Watchdog first and then everything else under the server directory'

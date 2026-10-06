@@ -13,7 +13,7 @@ const BACKGROUND_FITS = ["cover", "contain", "stretch"];
 const DECORATION_ALIGNS = ["left", "center", "right"];
 
 /** 不传皮肤时画的皮肤。 */
-export const DEFAULT_SKIN = "shuishan";
+export const DEFAULT_SKIN = "lingyao";
 
 // 桌面上的 `system` 画宿主平台自己的配色，主题表里它没有配色（`candidate: null`），`resolve()` 在它之上留空的槽位也都交给平台。网页上的平台配色就是桌面设置页预览用的那套默认值：`packages/ui/src/styles.css` 的 `skin-card-preview` 按 `data-preview-theme` 声明的 `--cand-*`（选中项的文字和序号没有专门的颜色，就是普通的文字和序号色，强调色是样式表的 `#6B69D6`）。候选条的样式表（candidates.js 的 SHEET）也从这张表生成默认值。
 export const PLATFORM_PALETTE = Object.freeze({

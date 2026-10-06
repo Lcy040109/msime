@@ -63,7 +63,7 @@ if (-not $PSBoundParameters.ContainsKey('DesktopExecutable')) {
 function Test-PackageTestArtifact {
     param([Parameter(Mandatory)][string]$BaseName)
     # Client CMake tests use windows-*; the other patterns cover the remaining test executables.
-    # Production entry points use MetasequoiaIme* or msime-client-* names.
+    # Production entry points use LingyaoIme* or msime-client-* names.
     return $BaseName -like '*Tests' -or $BaseName -like 'test_*' -or $BaseName -like 'windows-*'
 }
 
@@ -122,22 +122,22 @@ if (-not $Tsf32ReleaseDirectory -and (Test-Path -LiteralPath (Join-Path $RepoRoo
 if (-not $Tsf64ReleaseDirectory -and (Test-Path -LiteralPath $clientNativeBin -PathType Container)) {
     $Tsf64ReleaseDirectory = "$editionBuild/x64/bin"
 }
-$tsf32Release = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build32-release\Release\MetasequoiaImeTsf.dll')
-$tsf64Release = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build64-release\Release\MetasequoiaImeTsf.dll')
-$tsf32Pdb = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build32-release\Release\MetasequoiaImeTsf.pdb')
-$tsf64Pdb = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build64-release\Release\MetasequoiaImeTsf.pdb')
+$tsf32Release = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build32-release\Release\LingyaoImeTsf.dll')
+$tsf64Release = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build64-release\Release\LingyaoImeTsf.dll')
+$tsf32Pdb = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build32-release\Release\LingyaoImeTsf.pdb')
+$tsf64Pdb = Join-Path $RepoRoot (Join-Path $TsfDirectory 'build64-release\Release\LingyaoImeTsf.pdb')
 if ($Tsf32ReleaseDirectory) {
-    $tsf32Release = Join-Path (Join-Path $RepoRoot $Tsf32ReleaseDirectory) 'MetasequoiaImeTsf.dll'
-    $tsf32Pdb = Join-Path (Join-Path $RepoRoot $Tsf32ReleaseDirectory) 'MetasequoiaImeTsf.pdb'
+    $tsf32Release = Join-Path (Join-Path $RepoRoot $Tsf32ReleaseDirectory) 'LingyaoImeTsf.dll'
+    $tsf32Pdb = Join-Path (Join-Path $RepoRoot $Tsf32ReleaseDirectory) 'LingyaoImeTsf.pdb'
 }
 if ($Tsf64ReleaseDirectory) {
-    $tsf64Release = Join-Path (Join-Path $RepoRoot $Tsf64ReleaseDirectory) 'MetasequoiaImeTsf.dll'
-    $tsf64Pdb = Join-Path (Join-Path $RepoRoot $Tsf64ReleaseDirectory) 'MetasequoiaImeTsf.pdb'
+    $tsf64Release = Join-Path (Join-Path $RepoRoot $Tsf64ReleaseDirectory) 'LingyaoImeTsf.dll'
+    $tsf64Pdb = Join-Path (Join-Path $RepoRoot $Tsf64ReleaseDirectory) 'LingyaoImeTsf.pdb'
 }
 if (-not $TsfArm64ReleaseDirectory) { $TsfArm64ReleaseDirectory = "$editionBuild/arm64/bin" }
 $tsfArm64Directory = Join-Path $RepoRoot $TsfArm64ReleaseDirectory
-$tsfArm64Release = Join-Path $tsfArm64Directory 'MetasequoiaImeTsf.dll'
-$tsfArm64Pdb = Join-Path $tsfArm64Directory 'MetasequoiaImeTsf.pdb'
+$tsfArm64Release = Join-Path $tsfArm64Directory 'LingyaoImeTsf.dll'
+$tsfArm64Pdb = Join-Path $tsfArm64Directory 'LingyaoImeTsf.pdb'
 $arm64HostDllName = [IO.Path]::GetFileNameWithoutExtension($hostDllName) + '_arm64.dll'
 $tsfArm64Host = Join-Path $tsfArm64Directory $arm64HostDllName
 $tsf32Host = Join-Path (Split-Path -Parent $tsf32Release) $hostDllName
@@ -147,7 +147,7 @@ $iconSource = Join-Path $PSScriptRoot 'assets\icons'
 $audioSource = Join-Path $PSScriptRoot 'assets\audios'
 $helpcodeSource = Join-Path $RepoRoot $HelpCodeDirectory
 # 品牌标识。这个目录只放 ServerResources.rc 要编译进 Server 的那一个图标。
-# 语言栏与工具栏的状态图标不在这里：它们在 tsf/assets 下，由 MetasequoiaIME.rc 编进 TSF DLL，
+# 语言栏与工具栏的状态图标不在这里：它们在 tsf/assets 下，由 LingyaoIME.rc 编进 TSF DLL，
 # 运行时走 MAKEINTRESOURCE。这里曾经有它们的一份逐字节副本，随包装到用户磁盘、且因为
 # uninsneveruninstall 连卸载都不清除，而没有任何代码从磁盘读图标。
 $appIcon = Join-Path $iconSource 'msime.ico'
@@ -171,7 +171,7 @@ if ($DesktopPreviewExecutable -and -not (Test-Path -LiteralPath $previewSource -
     throw "缺少 Tauri 面板外壳，请先构建或通过 -DesktopPreviewExecutable 指定：$previewSource"
 }
 Assert-PathExists -LiteralPath $serverRelease -Description 'Server Release 输出目录'
-Assert-PathExists -LiteralPath (Join-Path $serverRelease 'MetasequoiaImeWatchdog.exe') -Description 'Watchdog Release EXE'
+Assert-PathExists -LiteralPath (Join-Path $serverRelease 'LingyaoImeWatchdog.exe') -Description 'Watchdog Release EXE'
 Assert-PathExists -LiteralPath $mcpRelease -Description 'MCP 服务程序 Release EXE'
 Assert-PathExists -LiteralPath $tsf32Release -Description '32 位 TSF Release DLL'
 Assert-PathExists -LiteralPath $tsf64Release -Description '64 位 TSF Release DLL'
@@ -190,7 +190,7 @@ foreach ($hostDll in @($tsf32Host, $tsf64Host)) {
 $editionHostDllNames = @($editionTable.editions | Where-Object { $null -ne $_.platforms.windows } | ForEach-Object { [string]$_.platforms.windows.host_dll })
 $tsf32Dependencies = @(
     Get-ChildItem -LiteralPath (Split-Path -Parent $tsf32Release) -File -Filter '*.dll' |
-        Where-Object { $_.Name -notin (@('MetasequoiaImeTsf.dll') + $editionHostDllNames) } |
+        Where-Object { $_.Name -notin (@('LingyaoImeTsf.dll') + $editionHostDllNames) } |
         ForEach-Object FullName
 )
 $tsf64Dependencies = @(
@@ -442,7 +442,7 @@ Get-ChildItem -LiteralPath $targetServer -Recurse -File |
     } |
     Remove-Item -Force
 # CI 里 Server 输出目录同时也是 x64 TIP 的构建目录。TIP 和它的符号暂存在 tsf_dll\64 下，只从版本目录加载；宿主 DLL 和 TIP 的运行时 DLL 也从同一份 tsf_dll\64 进入 Server 目录（msime_setup.iss），所以它们都不重复暂存。Build-Client.ps1 也把宿主 DLL 的 PDB 留在这里；Collect-Symbols.ps1 直接从构建输出取它打进符号包，所以它完全不暂存。
-foreach ($name in @('MetasequoiaImeTsf.dll', 'MetasequoiaImeTsf.pdb', $hostDllName, 'msime_host_api.pdb') + @($tsf64Dependencies | ForEach-Object { Split-Path -Leaf $_ })) {
+foreach ($name in @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', $hostDllName, 'msime_host_api.pdb') + @($tsf64Dependencies | ForEach-Object { Split-Path -Leaf $_ })) {
     $staged = Join-Path $targetServer $name
     if (Test-Path -LiteralPath $staged -PathType Leaf) { Remove-Item -LiteralPath $staged -Force }
 }
@@ -470,7 +470,7 @@ Copy-Item -LiteralPath $tsfArm64Release, $tsfArm64Pdb, $tsfArm64Host -Destinatio
 # Build-Client 把检查过架构的发布依赖收集到 TIP 旁边；只复制上面列出的那些，绝不复制共用 x64 目录里的其余文件。
 foreach ($dependency in $tsf32Dependencies) { Copy-Item -LiteralPath $dependency -Destination $targetTsf32 -Force }
 foreach ($dependency in $tsf64Dependencies) { Copy-Item -LiteralPath $dependency -Destination $targetTsf64 -Force }
-Copy-Item -LiteralPath $appIcon -Destination (Join-Path $PSScriptRoot 'MetasequoiaIME.ico') -Force
+Copy-Item -LiteralPath $appIcon -Destination (Join-Path $PSScriptRoot 'LingyaoIME.ico') -Force
 # rime-ice is GPL-3.0 and requires attribution, and its content forms the bulk of msime-pinyin.db, so the
 # notice has to reach the user's disk rather than only exist in the source repository.
 Copy-Item -LiteralPath $thirdPartyNotices -Destination (Join-Path $PSScriptRoot 'THIRD_PARTY_NOTICES.txt') -Force

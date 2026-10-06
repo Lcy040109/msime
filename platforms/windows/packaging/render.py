@@ -13,7 +13,7 @@
 
 输出目录按三个包管理器各自的布局：
 
-    winget/manifests/m/Metasequoia/MetasequoiaIME/<version>/*.yaml
+    winget/manifests/m/Lingyao/LingyaoIME/<version>/*.yaml
     scoop/msime.json
     chocolatey/msime/msime.nuspec, chocolatey/msime/tools/*.ps1
 
@@ -38,9 +38,9 @@ import urllib.request
 import xml.etree.ElementTree as ElementTree
 
 HERE = pathlib.Path(__file__).resolve().parent
-DEFAULT_REPO = "metasequoiaime/msime"
+DEFAULT_REPO = "Lcy040109/msime"
 TAG_PREFIX = "windows-v"
-WINGET_ID = "Metasequoia.MetasequoiaIME"
+WINGET_ID = "Lingyao.LingyaoIME"
 # release-windows.yml 只接受三段数字的版本号，因为 Build-Client.ps1 要把它写进 Tauri 与 Server 的元数据。
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 SHA256_PATTERN = re.compile(r"^[0-9a-fA-F]{64}$")
@@ -55,8 +55,8 @@ class RenderError(Exception):
 
 
 def installer_name(version: str) -> str:
-    # msime_setup.iss 的 OutputBaseFilename 是 {#MyEditionInstallerBaseName}_v{#MyAppVersion}，full 的前缀是 MetasequoiaIME_Setup（版本表的 installer_base_name）；release-windows.yml 以这个名字发布。
-    return f"MetasequoiaIME_Setup_v{version}.exe"
+    # msime_setup.iss 的 OutputBaseFilename 是 {#MyEditionInstallerBaseName}_v{#MyAppVersion}，full 的前缀是 LingyaoIME_Setup（版本表的 installer_base_name）；release-windows.yml 以这个名字发布。
+    return f"LingyaoIME_Setup_v{version}.exe"
 
 
 def release_download_url(repo: str, version: str) -> str:
@@ -258,7 +258,7 @@ def check_can_verify() -> None:
 
 def outputs(version: str) -> list[tuple[pathlib.Path, pathlib.Path]]:
     """一个发布要渲染的每个文件的（模板，输出目录里的路径）。"""
-    winget_dir = pathlib.Path("winget/manifests/m/Metasequoia/MetasequoiaIME") / version
+    winget_dir = pathlib.Path("winget/manifests/m/Lingyao/LingyaoIME") / version
     pairs = [(template, winget_dir / template.name) for template in sorted((HERE / "winget").glob(f"{WINGET_ID}*.yaml"))]
     pairs.append((HERE / "scoop/msime.json", pathlib.Path("scoop/msime.json")))
     pairs.append((HERE / "chocolatey/msime.nuspec", pathlib.Path("chocolatey/msime/msime.nuspec")))

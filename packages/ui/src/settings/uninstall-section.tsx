@@ -34,7 +34,7 @@ export function UninstallSection({
       <SettingsRowStack role="group" aria-label="卸载">
         <SettingsManagerBlock className={`${settings.serviceRow} ${settings.serviceRowDanger}`}>
           <span>
-            卸载水杉输入法
+            卸载灵耀输入法
             <small>输入源会移到废纸篓；默认保留词库、学习记录和偏好，重新安装后可继续使用。</small>
             <label>
               <input
@@ -57,8 +57,8 @@ export function UninstallSection({
             {uninstallResult === "error" && <span role="alert">卸载未能完成，请稍后重试。</span>}
             {uninstallResult === "listed" && (
               <span role="alert">
-                系统设置的输入源列表里还有水杉输入法，已为你打开「键盘」设置：在「文字输入 ›
-                输入源」里逐个选中水杉输入法的各项并点「−」移除，然后再点「确认卸载」。
+                系统设置的输入源列表里还有灵耀输入法，已为你打开「键盘」设置：在「文字输入 ›
+                输入源」里逐个选中灵耀输入法的各项并点「−」移除，然后再点「确认卸载」。
               </span>
             )}
           </div>
@@ -67,14 +67,14 @@ export function UninstallSection({
               className={settings.serviceConfirmation}
               role="alertdialog"
               aria-modal="true"
-              aria-label="确认卸载水杉输入法"
+              aria-label="确认卸载灵耀输入法"
             >
               <p>
                 输入法会被移到废纸篓，放错了可以从那里放回原处。
                 {removeUserData
                   ? "已选择同时删除词库、偏好与语音密钥。"
                   : "词库、学习记录和偏好会保留，重新安装后可以继续使用。"}{" "}
-                卸载前要先在系统设置的输入源列表里移除水杉输入法：macOS
+                卸载前要先在系统设置的输入源列表里移除灵耀输入法：macOS
                 只允许在系统设置里移除，先删掉输入法的话，列表里会一直留着它。
               </p>
               <div>

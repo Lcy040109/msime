@@ -11,9 +11,9 @@ RUST_MIN_VER="1.97.1"
 
 inherit cargo cmake git-r3 optfeature python-single-r1 xdg
 
-DESCRIPTION="Metasequoia IME (水杉输入法): Chinese input method for Fcitx5 and IBus"
-HOMEPAGE="https://github.com/metasequoiaime/msime"
-EGIT_REPO_URI="https://github.com/metasequoiaime/msime.git"
+DESCRIPTION="Lingyao IME (灵耀输入法): Chinese input method for Fcitx5 and IBus"
+HOMEPAGE="https://github.com/Lcy040109/msime"
+EGIT_REPO_URI="https://github.com/Lcy040109/msime.git"
 EGIT_BRANCH="develop"
 
 # 本项目 GPL-3；随包的第三方数据与运行库：sherpa-onnx 与 OpenCC（Apache-2.0）、ONNX Runtime 与 nlohmann/json（MIT）、手写模型与 libchewing-data（LGPL-2.1）、rime-stroke（LGPL-3）、rime-cantonese（CC-BY-4.0）、离线释义（CC-BY-SA-4.0）、libhangul 汉字表（BSD）、行政区划（WTFPL-2）。live ebuild 不逐个列出 crate 的许可证，按版本发布的 ebuild 由 pycargoebuild 补上。
@@ -210,7 +210,7 @@ pkg_postinst() {
 
 	if [[ -z ${REPLACING_VERSIONS} ]]; then
 		elog "每个用户首次使用前运行一次 msime-linux-setup --download 取回词库（约 170 MB），"
-		elog "再在 Fcitx5 或 IBus 的输入法列表里添加水杉输入法。"
+		elog "再在 Fcitx5 或 IBus 的输入法列表里添加灵耀输入法。"
 	fi
 	optfeature "Doubao streaming speech recognition" dev-python/websockets
 	optfeature "voice recording" media-libs/libpulse media-video/pipewire media-sound/alsa-utils

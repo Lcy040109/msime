@@ -45,23 +45,23 @@ public final class KeyboardSkinSmoke {
             "#E4DFD4", "#1A1A1A", "#6B6B6B", "#FFFFFF", "#000000").withAppTheme(AppThemePalette.Seed.AUTUMN);
         check("#B5562B".equals(tinted.returnBackground()) && "#F4F1EA".equals(tinted.background()));
 
-        // A resolved built-in palette (the shuishan row of the shared colour table).
-        KeyboardSkin shuishan = KeyboardSkin.palette("shuishan", "水杉", true, "#1E1F1C",
+        // A resolved built-in palette (the lingyao row of the shared colour table).
+        KeyboardSkin lingyao = KeyboardSkin.palette("lingyao", "灵耀", true, "#1E1F1C",
             "#2F302C", "#23241F", "#FFFFFF", "#9FB5A3", "#7FE08E", "#000000");
-        check("shuishan".equals(shuishan.id()) && "水杉".equals(shuishan.title()) && shuishan.dark());
-        check("#1E1F1C".equals(shuishan.background()) && "#2F302C".equals(shuishan.keyBackground()));
-        check("#23241F".equals(shuishan.functionBackground()) && "#FFFFFF".equals(shuishan.keyForeground()));
-        check("#9FB5A3".equals(shuishan.secondary()) && "#7FE08E".equals(shuishan.accent()));
-        check("#000000".equals(shuishan.onAccent()));
+        check("lingyao".equals(lingyao.id()) && "灵耀".equals(lingyao.title()) && lingyao.dark());
+        check("#1E1F1C".equals(lingyao.background()) && "#2F302C".equals(lingyao.keyBackground()));
+        check("#23241F".equals(lingyao.functionBackground()) && "#FFFFFF".equals(lingyao.keyForeground()));
+        check("#9FB5A3".equals(lingyao.secondary()) && "#7FE08E".equals(lingyao.accent()));
+        check("#000000".equals(lingyao.onAccent()));
         // 确认 and the switched-on tiles keep the platform accent in every theme, as iOS and Harmony draw them; the theme accent is only the selected strip candidate.
-        check("#8FD5A6".equals(shuishan.returnBackground()) && "#003920".equals(shuishan.returnForeground()));
-        check("#2A4F37".equals(shuishan.accentSoft()) && "#8FD5A6".equals(shuishan.accentText()));
+        check("#8FD5A6".equals(lingyao.returnBackground()) && "#003920".equals(lingyao.returnForeground()));
+        check("#2A4F37".equals(lingyao.accentSoft()) && "#8FD5A6".equals(lingyao.accentText()));
         KeyboardSkin ink = KeyboardSkin.palette("ink", "水墨", false, "#F4F1EA", "#FFFFFF",
             "#E4DFD4", "#1A1A1A", "#6B6B6B", "#FFFFFF", "#000000");
         check("#2C7A4B".equals(ink.returnBackground()) && "#FFFFFF".equals(ink.returnForeground()));
         check("#CFE9D6".equals(ink.accentSoft()) && "#2C7A4B".equals(ink.accentText()));
         check("#408FD5A6".equals(dark.accentSoft()) && "#8FD5A6".equals(dark.accentText()));
-        check(shuishan.cornerRadius() == 8);
+        check(lingyao.cornerRadius() == 8);
 
         // Alpha-last contract colours become Android's alpha-first form; null and junk slots fall
         // back to the Material 3 token for that slot, never to transparent.
@@ -126,29 +126,29 @@ public final class KeyboardSkinSmoke {
         check("#99FFFFFF".equals(custom.secondary()));
         check(custom.photo().length == 4 && custom.photoShade() == .8 && custom.photoPosition() == 1);
 
-        // The resolver's answer for each kind of global theme. A custom theme with a design is resolved without that design (themeRequest leaves it out), so the keyboard it returns is the base theme's: here shuishan's, whose grey-green hint colour must not reach the design.
-        java.util.Map<String, String> shuishanSlots = new java.util.HashMap<>();
-        shuishanSlots.put("background", "#1E1F1C");
-        shuishanSlots.put("key", "#2F302C");
-        shuishanSlots.put("function_key", "#23241F");
-        shuishanSlots.put("text", "#FFFFFF");
-        shuishanSlots.put("secondary", "#9FB5A3");
-        shuishanSlots.put("accent", "#7FE08E");
-        shuishanSlots.put("on_accent", "#000000");
+        // The resolver's answer for each kind of global theme. A custom theme with a design is resolved without that design (themeRequest leaves it out), so the keyboard it returns is the base theme's: here lingyao's, whose grey-green hint colour must not reach the design.
+        java.util.Map<String, String> lingyaoSlots = new java.util.HashMap<>();
+        lingyaoSlots.put("background", "#1E1F1C");
+        lingyaoSlots.put("key", "#2F302C");
+        lingyaoSlots.put("function_key", "#23241F");
+        lingyaoSlots.put("text", "#FFFFFF");
+        lingyaoSlots.put("secondary", "#9FB5A3");
+        lingyaoSlots.put("accent", "#7FE08E");
+        lingyaoSlots.put("on_accent", "#000000");
         CustomKeyboardSkin lightDesign = CustomKeyboardSkin.fixture(0xFFF4EC, 0xFFFFFF, 0x5A2E1F,
             0xE8866A, 0xF6D5C5, 12, 0, 0, 0, false, "rounded", "flat", 1,
             null, false, .15, null, null, .25, .5);
         KeyboardSkin designed = KeyboardSkin.resolved("custom", "自定义", "dark", false,
-            shuishanSlots, lightDesign);
+            lingyaoSlots, lightDesign);
         check(designed.designed() && designed.dark() && "#FFF4EC".equals(designed.background()));
         check("#995A2E1F".equals(designed.secondary()));
         check("#5A2E1F".equals(designed.keyForeground()));
         // Without a design the custom theme is its flattened palette, secondary included.
         KeyboardSkin flatCustom = KeyboardSkin.resolved("custom", "自定义", null, true,
-            shuishanSlots, null);
+            lingyaoSlots, null);
         check(!flatCustom.designed() && "#9FB5A3".equals(flatCustom.secondary()));
         // A built-in theme maps its keyboard slots, alpha-last colours included, and a fixed appearance overrides the host's mode.
-        java.util.Map<String, String> nightSlots = new java.util.HashMap<>(shuishanSlots);
+        java.util.Map<String, String> nightSlots = new java.util.HashMap<>(lingyaoSlots);
         nightSlots.put("secondary", "#FFFFFF99");
         nightSlots.put("accent", null);
         KeyboardSkin night = KeyboardSkin.resolved("night", "夜间", "dark", false, nightSlots, null);
@@ -156,8 +156,8 @@ public final class KeyboardSkinSmoke {
         check("#1E1F1C".equals(night.background()) && "#2F302C".equals(night.keyBackground()));
         check("#23241F".equals(night.functionBackground()) && "#99FFFFFF".equals(night.secondary()));
         check("#8FD5A6".equals(night.accent()) && "#000000".equals(night.onAccent()));
-        check(!KeyboardSkin.resolved("paper", "纸", "light", true, shuishanSlots, null).dark());
-        check(KeyboardSkin.resolved("paper", "纸", null, true, shuishanSlots, null).dark());
+        check(!KeyboardSkin.resolved("paper", "纸", "light", true, lingyaoSlots, null).dark());
+        check(KeyboardSkin.resolved("paper", "纸", null, true, lingyaoSlots, null).dark());
         // No keyboard in the answer: `system` is the Material 3 keyboard, anything else keeps its own id and title over the same tokens.
         KeyboardSkin bare = KeyboardSkin.resolved("system", "跟随系统", null, true, null, null);
         check("system".equals(bare.id()) && "跟随系统".equals(bare.title()) && bare.dark());

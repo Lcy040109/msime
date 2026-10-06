@@ -5,8 +5,8 @@
 #import "../cloud/CloudAppearanceSettings.h"
 #import "../core/WindowPresentation.h"
 
-static NSString *const MSIMESchemeKey = @"MetasequoiaImeScheme";
-static NSString *const MSIMEShuangpinSchemaKey = @"MetasequoiaImeShuangpinSchema";
+static NSString *const MSIMESchemeKey = @"LingyaoImeScheme";
+static NSString *const MSIMEShuangpinSchemaKey = @"LingyaoImeShuangpinSchema";
 NSNotificationName const MSIMEStandalonePreferencesDidCloseNotification =
     @"MSIMEStandalonePreferencesDidCloseNotification";
 
@@ -18,8 +18,8 @@ NSNotificationName const MSIMEStandalonePreferencesDidCloseNotification =
 + (NSNumber *)applyCloudSettingsSnapshot:(NSDictionary *)values {
     return @([[MSIMEAppearancePreferences sharedPreferences] applyCloudSettingsSnapshot:values]);
 }
-+ (NSString *)storedGlobalTheme { return MetasequoiaStoredGlobalTheme(); }
-+ (void)setStoredGlobalTheme:(NSString *)themeId { MetasequoiaSetStoredGlobalTheme(themeId); }
++ (NSString *)storedGlobalTheme { return LingyaoStoredGlobalTheme(); }
++ (void)setStoredGlobalTheme:(NSString *)themeId { LingyaoSetStoredGlobalTheme(themeId); }
 + (NSString *)themeTitleForIdentifier:(NSString *)themeId {
     return @(metasequoia::mac::ThemeTitle(themeId.UTF8String ?: "").c_str());
 }

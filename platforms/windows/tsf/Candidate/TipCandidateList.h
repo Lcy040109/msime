@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Private.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 
 //
 // CTipCandidateList
@@ -31,5 +31,5 @@ class CTipCandidateList : public ITfCandidateList
 
   protected:
     long _refCount;
-    CMetasequoiaImeArray<ITfCandidateString *> _tfCandStrList;
+    CLingyaoImeArray<ITfCandidateString *> _tfCandStrList;
 };

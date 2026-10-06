@@ -14,10 +14,10 @@
 // Side of the brand mark inside the logo view, unscaled: the size of the toolbar's button glyphs.
 constexpr CGFloat kToolbarLogoMarkSide = 22.0;
 
-@interface MetasequoiaFloatingToolbarLogoView : NSView
+@interface LingyaoFloatingToolbarLogoView : NSView
 @property(nonatomic) CGFloat scale;
 @end
-@implementation MetasequoiaFloatingToolbarLogoView
+@implementation LingyaoFloatingToolbarLogoView
 {
     NSImage *_image;
     NSTrackingArea *_trackingArea;
@@ -30,7 +30,7 @@ constexpr CGFloat kToolbarLogoMarkSide = 22.0;
         _scale = 1.0;
         NSString *path = [[NSBundle bundleForClass:self.class] pathForResource:@"MSIMEClientInputMethod" ofType:@"icns"];
         _image = path == nil ? nil : [[NSImage alloc] initWithContentsOfFile:path];
-        self.accessibilityIdentifier = @"MetasequoiaFloatingToolbarLogo";
+        self.accessibilityIdentifier = @"LingyaoFloatingToolbarLogo";
         self.accessibilityLabel = MSIMEEditionDisplayName();
     }
     return self;
@@ -106,10 +106,10 @@ constexpr CGFloat kToolbarLogoMarkSide = 22.0;
 @end
 
 // Hairline between the logo and the buttons, the counterpart of the reference's ToolbarDivider.
-@interface MetasequoiaFloatingToolbarDivider : NSView
+@interface LingyaoFloatingToolbarDivider : NSView
 @property(nonatomic, copy) NSColor *fillColor;
 @end
-@implementation MetasequoiaFloatingToolbarDivider
+@implementation LingyaoFloatingToolbarDivider
 - (void)setFillColor:(NSColor *)fillColor
 {
     _fillColor = [fillColor copy];
@@ -125,11 +125,11 @@ constexpr CGFloat kToolbarLogoMarkSide = 22.0;
 @end
 
 // Toolbar button with the reference's ToolbarIconButton hover and pressed fill: a rounded rect of radius max(2, height * 0.25) behind the glyph while the pointer is over it or it is pressed.
-@interface MetasequoiaFloatingToolbarButton : NSButton
+@interface LingyaoFloatingToolbarButton : NSButton
 @property(nonatomic, copy) NSColor *hoverFillColor;
 @property(nonatomic) BOOL hovered;
 @end
-@implementation MetasequoiaFloatingToolbarButton
+@implementation LingyaoFloatingToolbarButton
 {
     NSTrackingArea *_trackingArea;
     BOOL _hovered;
@@ -223,11 +223,11 @@ static_assert(kToolbarWidth >= 6 * (24.0 + kToolbarButtonPadding) + 5 * kToolbar
                   kToolbarWidth < 6 * (24.0 + kToolbarButtonPadding) + 5 * kToolbarButtonSpacing + kToolbarTrailingChrome + kToolbarLeadingChrome + 1.0,
               "kToolbarWidth must be ToolbarPreferredWidth(6, 24, 1)");
 constexpr CGFloat kToolbarHeight = 44.0;
-NSString *const kToolbarFrameAutosaveName = @"MetasequoiaFloatingToolbarFrame";
+NSString *const kToolbarFrameAutosaveName = @"LingyaoFloatingToolbarFrame";
 
 NSButton *ToolbarButton(NSString *title, NSString *identifier, id target, SEL action)
 {
-    MetasequoiaFloatingToolbarButton *button = [MetasequoiaFloatingToolbarButton buttonWithTitle:title target:target action:action];
+    LingyaoFloatingToolbarButton *button = [LingyaoFloatingToolbarButton buttonWithTitle:title target:target action:action];
     button.translatesAutoresizingMaskIntoConstraints = NO;
     button.bordered = NO;
     button.font = [NSFont systemFontOfSize:15.0 weight:NSFontWeightRegular];
@@ -272,7 +272,7 @@ NSScreen *ScreenContainingMouse()
 }
 } // namespace
 
-BOOL MetasequoiaFloatingToolbarShouldShow(BOOL configuredEnabled, BOOL imeActive, BOOL fullscreen)
+BOOL LingyaoFloatingToolbarShouldShow(BOOL configuredEnabled, BOOL imeActive, BOOL fullscreen)
 {
     return configuredEnabled && imeActive && !fullscreen;
 }
@@ -316,18 +316,18 @@ static BOOL __attribute__((unused)) FrontmostApplicationOwnsFullscreenDisplay(vo
             NSNumber *number = screen.deviceDescription[@"NSScreenNumber"];
             CGRect display = number != nil ? CGDisplayBounds((CGDirectDisplayID)number.unsignedIntValue)
                                            : NSRectToCGRect(screen.frame);
-            if (MetasequoiaWindowCoversDisplay(bounds, display)) return YES;
+            if (LingyaoWindowCoversDisplay(bounds, display)) return YES;
         }
     }
     return NO;
 }
 
-BOOL MetasequoiaFrontmostApplicationOwnsFullscreenDisplay(void)
+BOOL LingyaoFrontmostApplicationOwnsFullscreenDisplay(void)
 {
     return FrontmostApplicationOwnsFullscreenDisplay();
 }
 
-BOOL MetasequoiaWindowCoversDisplay(CGRect windowBounds, CGRect displayBounds)
+BOOL LingyaoWindowCoversDisplay(CGRect windowBounds, CGRect displayBounds)
 {
     if (!std::isfinite(windowBounds.origin.x) || !std::isfinite(windowBounds.origin.y) ||
         !std::isfinite(windowBounds.size.width) || !std::isfinite(windowBounds.size.height) ||
@@ -363,12 +363,12 @@ static NSRect SizedToolbarFrame(NSRect proposedFrame, NSRect visibleFrame, BOOL 
     return proposedFrame;
 }
 
-NSRect MetasequoiaFloatingToolbarFrame(NSRect proposedFrame, NSRect visibleFrame, BOOL hasSavedFrame)
+NSRect LingyaoFloatingToolbarFrame(NSRect proposedFrame, NSRect visibleFrame, BOOL hasSavedFrame)
 {
     return SizedToolbarFrame(proposedFrame, visibleFrame, hasSavedFrame, NSMakeSize(kToolbarWidth, kToolbarHeight));
 }
 
-NSMenu *CreateMetasequoiaFloatingToolbarUtilityMenu(id target)
+NSMenu *CreateLingyaoFloatingToolbarUtilityMenu(id target)
 {
     NSMenu *menu = [[NSMenu alloc] initWithTitle:MSIMEEditionDisplayName()];
     // Every item targets the panel, an NSWindow subclass, and NSMenu's automatic enabling asks
@@ -415,13 +415,13 @@ NSMenu *CreateMetasequoiaFloatingToolbarUtilityMenu(id target)
     return menu;
 }
 
-@interface MetasequoiaFloatingToolbarChromeView : NSView
+@interface LingyaoFloatingToolbarChromeView : NSView
 @property(nonatomic, weak) id appearanceTarget;
 @property(nonatomic) SEL appearanceAction;
 @property(nonatomic, copy) NSColor *fillColor;
 @property(nonatomic, copy) NSColor *strokeColor;
 @end
-@implementation MetasequoiaFloatingToolbarChromeView
+@implementation LingyaoFloatingToolbarChromeView
 - (void)viewDidChangeEffectiveAppearance
 {
     [super viewDidChangeEffectiveAppearance];
@@ -456,9 +456,9 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
            [sender isKindOfClass:NSMenuItem.class] ? "menu" : "button");
 }
 
-@implementation MetasequoiaFloatingToolbarPanel
+@implementation LingyaoFloatingToolbarPanel
 {
-    MetasequoiaFloatingToolbarChromeView *_chrome;
+    LingyaoFloatingToolbarChromeView *_chrome;
     NSButton *_inputModeButton;
     NSButton *_inputSchemeButton;
     NSButton *_punctuationButton;
@@ -470,8 +470,8 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     NSButton *_voiceButton;
     NSButton *_settingsButton;
     NSStackView *_actions;
-    MetasequoiaFloatingToolbarLogoView *_logo;
-    MetasequoiaFloatingToolbarDivider *_divider;
+    LingyaoFloatingToolbarLogoView *_logo;
+    LingyaoFloatingToolbarDivider *_divider;
     NSLayoutConstraint *_logoWidth;
     NSLayoutConstraint *_logoDividerGap;
     NSLayoutConstraint *_dividerWidth;
@@ -497,10 +497,10 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
 
 + (instancetype)sharedPanel
 {
-    static MetasequoiaFloatingToolbarPanel *panel = nil;
+    static LingyaoFloatingToolbarPanel *panel = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-      panel = [[MetasequoiaFloatingToolbarPanel alloc] init];
+      panel = [[LingyaoFloatingToolbarPanel alloc] init];
     });
     return panel;
 }
@@ -535,7 +535,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     // force: is required because this panel is borderless and therefore not resizable.
     [self setFrameUsingName:kToolbarFrameAutosaveName force:YES];
 
-    _chrome = [[MetasequoiaFloatingToolbarChromeView alloc] initWithFrame:self.contentView.bounds];
+    _chrome = [[LingyaoFloatingToolbarChromeView alloc] initWithFrame:self.contentView.bounds];
     _chrome.appearanceTarget = self;
     _chrome.appearanceAction = @selector(applySkin);
     _chrome.wantsLayer = YES;
@@ -543,37 +543,37 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     _chrome.layer.masksToBounds = YES;
     self.contentView = _chrome;
 
-    _inputModeButton = ToolbarButton(@"中", @"MetasequoiaFloatingToolbarInputMode", self, @selector(toggleInputMode:));
+    _inputModeButton = ToolbarButton(@"中", @"LingyaoFloatingToolbarInputMode", self, @selector(toggleInputMode:));
     // 点开列出可用的输入方案。macOS 27 上粤、注、笔这类菜单栏入口只能由用户自己去系统设置添加，有了它不加入口也能切换。
-    _inputSchemeButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarInputScheme", self, @selector(showInputSchemeMenu:));
+    _inputSchemeButton = ToolbarButton(@"", @"LingyaoFloatingToolbarInputScheme", self, @selector(showInputSchemeMenu:));
     _inputSchemeButton.image = [NSImage imageWithSystemSymbolName:@"list.bullet" accessibilityDescription:@"输入方案"];
     _inputSchemeButton.accessibilityLabel = @"切换输入方案";
     _inputSchemeButton.toolTip = _inputSchemeButton.accessibilityLabel;
     _punctuationButton =
-        ToolbarButton(@"。", @"MetasequoiaFloatingToolbarPunctuation", self, @selector(togglePunctuation:));
-    _fullWidthButton = ToolbarButton(@"半", @"MetasequoiaFloatingToolbarFullWidth", self, @selector(toggleFullWidth:));
+        ToolbarButton(@"。", @"LingyaoFloatingToolbarPunctuation", self, @selector(togglePunctuation:));
+    _fullWidthButton = ToolbarButton(@"半", @"LingyaoFloatingToolbarFullWidth", self, @selector(toggleFullWidth:));
     _traditionalOutputButton =
-        ToolbarButton(@"简", @"MetasequoiaFloatingToolbarTraditionalOutput", self, @selector(toggleTraditionalOutput:));
-    _emojiButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarEmoji", self, @selector(openEmoji:));
+        ToolbarButton(@"简", @"LingyaoFloatingToolbarTraditionalOutput", self, @selector(toggleTraditionalOutput:));
+    _emojiButton = ToolbarButton(@"", @"LingyaoFloatingToolbarEmoji", self, @selector(openEmoji:));
     _emojiButton.image = [NSImage imageWithSystemSymbolName:@"face.smiling" accessibilityDescription:@"表情"];
-    _emojiButton.accessibilityLabel = @"打开水杉表情面板";
+    _emojiButton.accessibilityLabel = @"打开灵耀表情面板";
     _emojiButton.toolTip = _emojiButton.accessibilityLabel;
-    _handwritingButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarHandwriting", self, @selector(openHandwriting:));
+    _handwritingButton = ToolbarButton(@"", @"LingyaoFloatingToolbarHandwriting", self, @selector(openHandwriting:));
     _handwritingButton.image = [NSImage imageWithSystemSymbolName:@"hand.draw" accessibilityDescription:@"手写"];
-    _handwritingButton.accessibilityLabel = @"打开水杉手写识别板";
+    _handwritingButton.accessibilityLabel = @"打开灵耀手写识别板";
     _handwritingButton.toolTip = _handwritingButton.accessibilityLabel;
-    _keyboardButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarScreenKeyboard", self, @selector(openScreenKeyboard:));
+    _keyboardButton = ToolbarButton(@"", @"LingyaoFloatingToolbarScreenKeyboard", self, @selector(openScreenKeyboard:));
     _keyboardButton.image = [NSImage imageWithSystemSymbolName:@"keyboard" accessibilityDescription:@"屏幕键盘"];
-    _keyboardButton.accessibilityLabel = @"打开水杉屏幕键盘";
+    _keyboardButton.accessibilityLabel = @"打开灵耀屏幕键盘";
     _keyboardButton.toolTip = _keyboardButton.accessibilityLabel;
-    _voiceButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarVoice", self, @selector(toggleVoice:));
+    _voiceButton = ToolbarButton(@"", @"LingyaoFloatingToolbarVoice", self, @selector(toggleVoice:));
     _voiceButton.image = [NSImage imageWithSystemSymbolName:@"mic.fill" accessibilityDescription:@"语音输入"];
     _voiceButton.accessibilityLabel = @"开始或结束语音输入";
     _voiceButton.toolTip = _voiceButton.accessibilityLabel;
     // A click opens settings directly; the utility menu (updates, help, hiding the toolbar) stays reachable on right-click / control-click.
-    _settingsButton = ToolbarButton(@"", @"MetasequoiaFloatingToolbarSettings", self, @selector(openSettings:));
+    _settingsButton = ToolbarButton(@"", @"LingyaoFloatingToolbarSettings", self, @selector(openSettings:));
     _settingsButton.image = [NSImage imageWithSystemSymbolName:@"gearshape" accessibilityDescription:@"设置"];
-    _settingsButton.menu = CreateMetasequoiaFloatingToolbarUtilityMenu(self);
+    _settingsButton.menu = CreateLingyaoFloatingToolbarUtilityMenu(self);
     _settingsButton.accessibilityLabel = [NSString stringWithFormat:@"打开%@设置", MSIMEEditionDisplayName()];
     _settingsButton.toolTip = _settingsButton.accessibilityLabel;
 
@@ -590,12 +590,12 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [_chrome addSubview:actions];
 
     // The reference lays out handle, divider, then icons from the left edge, and its hit test makes the handle the caption drag region; here the logo is the handle.
-    _logo = [[MetasequoiaFloatingToolbarLogoView alloc] initWithFrame:NSZeroRect];
+    _logo = [[LingyaoFloatingToolbarLogoView alloc] initWithFrame:NSZeroRect];
     _logo.translatesAutoresizingMaskIntoConstraints = NO;
     [_chrome addSubview:_logo];
-    _divider = [[MetasequoiaFloatingToolbarDivider alloc] initWithFrame:NSZeroRect];
+    _divider = [[LingyaoFloatingToolbarDivider alloc] initWithFrame:NSZeroRect];
     _divider.translatesAutoresizingMaskIntoConstraints = NO;
-    _divider.accessibilityIdentifier = @"MetasequoiaFloatingToolbarDivider";
+    _divider.accessibilityIdentifier = @"LingyaoFloatingToolbarDivider";
     [_chrome addSubview:_divider];
 
     _logoWidth = [_logo.widthAnchor constraintEqualToConstant:kToolbarLogoWidth + kToolbarLogoGap];
@@ -619,7 +619,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     ]];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applySkin)
-                                                 name:MetasequoiaCandidateSkinDidChangeNotification
+                                                 name:LingyaoCandidateSkinDidChangeNotification
                                                object:nil];
     [[NSWorkspace sharedWorkspace].notificationCenter addObserver:self
                                                           selector:@selector(refreshVisibility)
@@ -655,7 +655,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
         [self orderOut:nil];
         return;
     }
-    const BOOL show = MetasequoiaFloatingToolbarShouldShow(
+    const BOOL show = LingyaoFloatingToolbarShouldShow(
         _requestedVisible && !_idleHidden, _imeActive, NO);
     if (!show)
     {
@@ -783,20 +783,20 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     {
         return;
     }
-    const BOOL dark = MetasequoiaAppearanceIsDark(_chrome.effectiveAppearance);
+    const BOOL dark = LingyaoAppearanceIsDark(_chrome.effectiveAppearance);
     auto tokens = _hasHostToolbarSkin ? (dark ? _darkToolbarSkin : _lightToolbarSkin)
-        : (_hasHostSkin ? (dark ? _darkSkin : _lightSkin) : MetasequoiaResolveStoredTheme(dark, NO).tokens);
+        : (_hasHostSkin ? (dark ? _darkSkin : _lightSkin) : LingyaoResolveStoredTheme(dark, NO).tokens);
     // Candidate tokens carry a package's card radius, which is not the toolbar's; only a toolbar palette (ToolbarSkinTokens: the package's toolbar radius, then its stylesheet) sets the toolbar radius.
     if (!_hasHostToolbarSkin) tokens.radius = msime::mac::NativeCandidateTokens(dark).radius;
     _chrome.layer.cornerRadius = tokens.radius * (_appliedScale > 0.0 ? _appliedScale : 1.0);
-    _chrome.fillColor = MetasequoiaColorFromRgba(tokens.surface);
-    _chrome.strokeColor = MetasequoiaColorFromRgba(tokens.border);
-    NSColor *text = MetasequoiaColorFromRgba(tokens.text);
+    _chrome.fillColor = LingyaoColorFromRgba(tokens.surface);
+    _chrome.strokeColor = LingyaoColorFromRgba(tokens.border);
+    NSColor *text = LingyaoColorFromRgba(tokens.text);
     // The toolbar derives from the candidate palette (THEME_CONTRACT §3): hover from the row hover and the divider from the outline. The logo is the brand mark and keeps its own colours. The hover fill is drawn under the glyph, and every theme's hover is a translucent wash of its text colour.
-    NSColor *hoverFill = MetasequoiaColorFromRgba(tokens.hover);
+    NSColor *hoverFill = LingyaoColorFromRgba(tokens.hover);
     // A package's `[toolbar]` divider colour when it has one. Its `handle` colour has no target here: the logo is the drag handle and keeps the brand mark's colours.
-    _divider.fillColor = MetasequoiaColorFromRgba(tokens.divider.value_or(tokens.border));
-    for (MetasequoiaFloatingToolbarButton *button in
+    _divider.fillColor = LingyaoColorFromRgba(tokens.divider.value_or(tokens.border));
+    for (LingyaoFloatingToolbarButton *button in
          @[ _inputModeButton, _inputSchemeButton, _punctuationButton, _fullWidthButton, _traditionalOutputButton, _emojiButton, _handwritingButton, _keyboardButton, _voiceButton, _settingsButton ])
     {
         button.contentTintColor = text;
@@ -823,7 +823,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [super orderOut:sender];
     if (_inputModeButton == nil || _settingsButton == nil) return;
     // A hidden window gets no mouseExited:, so a button hovered at the moment the toolbar hides would come back highlighted.
-    for (MetasequoiaFloatingToolbarButton *button in
+    for (LingyaoFloatingToolbarButton *button in
          @[ _inputModeButton, _inputSchemeButton, _punctuationButton, _fullWidthButton, _traditionalOutputButton, _emojiButton, _handwritingButton, _keyboardButton, _voiceButton, _settingsButton ])
         [button setHovered:NO];
 }
@@ -891,7 +891,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self applySkin];
 }
 
-- (void)activateForDelegate:(id<MetasequoiaFloatingToolbarDelegate>)delegate visible:(BOOL)visible
+- (void)activateForDelegate:(id<LingyaoFloatingToolbarDelegate>)delegate visible:(BOOL)visible
 {
     const BOOL newlyActive = !_imeActive;
     const BOOL ownerChanged = self.toolbarDelegate != delegate;
@@ -905,7 +905,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self refreshVisibility];
 }
 
-- (void)setVisible:(BOOL)visible forDelegate:(id<MetasequoiaFloatingToolbarDelegate>)delegate
+- (void)setVisible:(BOOL)visible forDelegate:(id<LingyaoFloatingToolbarDelegate>)delegate
 {
     if (self.toolbarDelegate != delegate)
     {
@@ -918,7 +918,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self refreshVisibility];
 }
 
-- (void)wakeForInputDelegate:(id<MetasequoiaFloatingToolbarDelegate>)delegate
+- (void)wakeForInputDelegate:(id<LingyaoFloatingToolbarDelegate>)delegate
 {
     if (!delegate) return;
     self.toolbarDelegate = delegate;
@@ -931,7 +931,7 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [self orderFrontRegardless];
 }
 
-- (void)noteInputForDelegate:(id<MetasequoiaFloatingToolbarDelegate>)delegate
+- (void)noteInputForDelegate:(id<LingyaoFloatingToolbarDelegate>)delegate
 {
     if (!delegate || self.toolbarDelegate != delegate || !_imeActive || !_requestedVisible) return;
     _idleHidden = NO;
@@ -939,9 +939,9 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     if (_idleTimer) {
         _idleTimer.fireDate = [NSDate dateWithTimeIntervalSinceNow:10.0];
     } else {
-        __weak MetasequoiaFloatingToolbarPanel *weakSelf = self;
+        __weak LingyaoFloatingToolbarPanel *weakSelf = self;
         _idleTimer = [NSTimer timerWithTimeInterval:10.0 repeats:NO block:^(NSTimer *timer) {
-            MetasequoiaFloatingToolbarPanel *panel = weakSelf;
+            LingyaoFloatingToolbarPanel *panel = weakSelf;
             if (!panel || panel->_idleTimer != timer) return;
             panel->_idleTimer = nil;
             panel->_idleHidden = YES;
@@ -962,11 +962,11 @@ static void MSIMELogToolbarAction(const char *action, BOOL hasDelegate, id sende
     [super sendEvent:event];
 }
 
-- (void)deactivateForDelegate:(id<MetasequoiaFloatingToolbarDelegate>)delegate
+- (void)deactivateForDelegate:(id<LingyaoFloatingToolbarDelegate>)delegate
 {
     // A deallocating owner reads back as nil through the weak property, so a nil owner is treated as released by the
     // caller rather than as a mismatch.
-    id<MetasequoiaFloatingToolbarDelegate> owner = self.toolbarDelegate;
+    id<LingyaoFloatingToolbarDelegate> owner = self.toolbarDelegate;
     if (owner != nil && owner != delegate)
     {
         return;

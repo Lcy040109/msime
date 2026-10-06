@@ -58,20 +58,20 @@ if ($Edition -eq 'full') {
     Check ($declared -eq $Edition) "server\edition.json declares $Edition"
 }
 # The three voice runtime libraries are what the Server loads for on-device speech recognition; Build-Client.ps1 stages them for every release package.
-foreach ($name in 'MetasequoiaImeServer.exe', 'MetasequoiaImeWatchdog.exe', 'msime-client-settings.exe', 'MSIME.exe', 'msime-mcp.exe',
+foreach ($name in 'LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'msime-client-settings.exe', 'MSIME.exe', 'msime-mcp.exe',
     'sherpa-onnx-c-api.dll', 'onnxruntime.dll', 'onnxruntime_providers_shared.dll') {
     Check (Test-Path -LiteralPath (Join-Path $pf64 "server\$name") -PathType Leaf) "server\$name installed"
 }
 # The MCP server an AI assistant starts from the install directory must run there, not only be copied; --version touches no state and prints to stderr.
 $mcpVersion = (& (Join-Path $pf64 'server\msime-mcp.exe') --version 2>&1 | Out-String).Trim()
 Check ($LASTEXITCODE -eq 0 -and $mcpVersion -like 'msime-mcp *') "installed msime-mcp.exe runs ($mcpVersion)"
-$tip64 = Join-Path $pf64 "$versionDir\MetasequoiaImeTsf.dll"
-$tip32 = Join-Path $pf32 "$versionDir\MetasequoiaImeTsf.dll"
+$tip64 = Join-Path $pf64 "$versionDir\LingyaoImeTsf.dll"
+$tip32 = Join-Path $pf32 "$versionDir\LingyaoImeTsf.dll"
 Check (Test-Path -LiteralPath (Join-Path $pf64 "$versionDir\$($identity.host_dll)") -PathType Leaf) "64-bit $($identity.host_dll) installed beside the TSF DLL"
 Check (Test-Path -LiteralPath (Join-Path $pf32 "$versionDir\$($identity.host_dll)") -PathType Leaf) "32-bit $($identity.host_dll) installed beside the TSF DLL"
 # Server 目录的 x64 宿主 DLL 与 64 位 TIP 取自同一份暂存文件；包里不再在 server_exe 下另带一份。
 Check (Test-Path -LiteralPath (Join-Path $pf64 "server\$($identity.host_dll)") -PathType Leaf) "server\$($identity.host_dll) installed"
-Check (-not (Test-Path -LiteralPath (Join-Path $pf64 'server\MetasequoiaImeTsf.dll'))) 'no stray TSF DLL in the Server folder'
+Check (-not (Test-Path -LiteralPath (Join-Path $pf64 'server\LingyaoImeTsf.dll'))) 'no stray TSF DLL in the Server folder'
 # TIP 会被加载进每个进程；它旁边只该有它的宿主 DLL 和运行时依赖，不该有设置程序的 Windows App SDK 或 Server 的语音运行时。
 $tipNeighbours = @(Get-ChildItem -LiteralPath (Join-Path $pf64 $versionDir) -File -Include 'Microsoft.*', 'onnxruntime*', 'sherpa*' -Recurse -ErrorAction SilentlyContinue | ForEach-Object Name)
 Check ($tipNeighbours.Count -eq 0) "64-bit TSF folder carries no Server-only DLLs ($($tipNeighbours -join ', '))"
@@ -107,7 +107,7 @@ Check (TaskExists) 'watchdog logon task created'
 Check ($app.DataDir -eq $dataDir) "DataDir recorded as the /DATADIR choice ($($app.DataDir))"
 # schtasks splits an unquoted /TR at the first space; the stored action must be the whole Program Files path with no arguments.
 $action = if (TaskExists) { @((Get-ScheduledTask -TaskName $taskName).Actions)[0] } else { $null }
-$watchdog = Join-Path $pf64 'server\MetasequoiaImeWatchdog.exe'
+$watchdog = Join-Path $pf64 'server\LingyaoImeWatchdog.exe'
 Check ($null -ne $action -and $action.Execute.Trim('"') -eq $watchdog -and [string]::IsNullOrEmpty($action.Arguments)) "watchdog task runs the full Watchdog path ($(if ($action) { "$($action.Execute) | $($action.Arguments)" }))"
 # The Server and settings window run at medium integrity and must be able to write what the elevated installer created.
 $rules = (Get-Acl -LiteralPath $app.DataDir).GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])

@@ -9,7 +9,7 @@ import { candidateTextColor } from "../candidate/candidate-text-color";
 import catalog from "./theme-catalog.json";
 
 /** `Preferences.global_theme`: one id for the candidate window, floating toolbar, menus and touch keyboard. */
-export type GlobalTheme = "system" | "shuishan" | "light" | "paper" | "night" | "ink" | "custom";
+export type GlobalTheme = "system" | "lingyao" | "light" | "paper" | "night" | "ink" | "custom";
 export type BuiltinGlobalTheme = Exclude<GlobalTheme, "system" | "custom">;
 export type ThemeAppearance = "light" | "dark";
 

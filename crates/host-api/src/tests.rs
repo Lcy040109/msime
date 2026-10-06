@@ -2078,7 +2078,7 @@ fn theme_catalog_lists_every_theme_in_picker_order() {
         .collect();
     assert_eq!(
         ids,
-        ["system", "shuishan", "light", "paper", "night", "ink", "custom"]
+        ["system", "lingyao", "light", "paper", "night", "ink", "custom"]
     );
     let night = &catalog["value"]["themes"][4];
     assert_eq!(night["title"], "夜青");
@@ -8162,7 +8162,7 @@ fn importing_a_personal_dictionary_file_queues_instead_of_taking_the_engine_lock
         "format": "msime-personal-dictionary",
         "version": 1,
         "entries": [
-            {"kind": "pinyin", "key": "shui'shan", "value": "水杉", "weight": 100},
+            {"kind": "pinyin", "key": "shui'shan", "value": "灵耀", "weight": 100},
             {"kind": "quickPhrase", "key": "zjd", "value": "在家等", "weight": 100},
         ],
     })
@@ -8318,7 +8318,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     });
     // One row the Engine refuses and one repeated word: the queue alone would refuse the whole file for either.
     let text =
-        "水杉\tshui'shan\t100\n你好\tnihaoma\t100\n水杉\tshui'shan\t100\n在家\tzai'jia\t100\n";
+        "灵耀\tshui'shan\t100\n你好\tnihaoma\t100\n灵耀\tshui'shan\t100\n在家\tzai'jia\t100\n";
     let request = json!({
         "options": options,
         "action": {"operation": "import", "kind": "pinyin", "format": "standard", "text": text, "request_id": "ui-import-1"},
@@ -8382,7 +8382,7 @@ fn a_queued_dictionary_file_imports_what_it_can_and_reports_the_rest() {
     let entries = parsed["value"]["entries"].as_array().unwrap();
     assert_eq!(entries.len(), 2);
     assert_eq!(entries[0]["key"], "shui'shan");
-    assert_eq!(entries[0]["value"], "水杉");
+    assert_eq!(entries[0]["value"], "灵耀");
     assert_eq!(parsed["value"]["applied"], 2);
     assert_eq!(parsed["value"]["failed"], 1);
     assert_eq!(std::fs::read_dir(resources.path()).unwrap().count(), 0);
@@ -8431,7 +8431,7 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
             "format_version": 1,
             "engine_compatibility": {"dictionary_format": 1, "japanese_model_magic": "MSJPDT1"},
             "source": {
-                "repository": "metasequoiaime/msime-engine",
+                "repository": "Lcy040109/msime-engine",
                 "path": "dictionary",
                 "commit": commit,
                 "dirty": false,

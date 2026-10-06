@@ -2,7 +2,7 @@ import Foundation
 
 /// 本输入法属于哪个版本，与 src/core/EditionIdentity.h 读的是同一份 Info.plist：没有 `MSIMEEdition` 就是 full，每个值都取 full 今天的那个。
 enum BackendEdition {
-  static let fullInputMethodBundleIdentifier = "app.msime.inputmethod.MetasequoiaIME"
+  static let fullInputMethodBundleIdentifier = "app.msime.inputmethod.LingyaoIME"
 
   private static var isFull: Bool {
     guard let edition = Bundle.main.object(forInfoDictionaryKey: "MSIMEEdition") as? String, !edition.isEmpty else { return true }

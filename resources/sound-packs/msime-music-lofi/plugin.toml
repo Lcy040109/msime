@@ -5,7 +5,7 @@ id = "msime-music-lofi"
 name = "Lo-fi 午后"
 version = "1.0.0"
 license = "CC0-1.0"
-author = "水杉输入法"
+author = "灵耀输入法"
 description = "36 秒无缝循环的慢节奏 lo-fi：电钢琴和弦、贝斯与摇摆的鼓点，第二、三遍加入一段旋律。"
 permissions = []
 

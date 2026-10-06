@@ -4,7 +4,7 @@ use crate::preferences::CustomCandidateColors;
 /// The design's `THEMES` table (dc.html L1484-1491), in its own order: id, bg, panel, accent, text, kb.bg, kb.key, kb.spec, kb.fg, kb.sub.
 const DESIGN: [(&str, [&str; 9]); 5] = [
     (
-        "shuishan",
+        "lingyao",
         [
             "#1E1F1C", "#2A2B27", "#7FE08E", "#FFFFFF", "#1E1F1C", "#2F302C", "#23241F", "#FFFFFF",
             "#9FB5A3",
@@ -45,7 +45,7 @@ fn ids_round_trip_in_picker_order() {
     let ids: Vec<_> = GlobalTheme::ALL.iter().map(|theme| theme.id()).collect();
     assert_eq!(
         ids,
-        ["system", "shuishan", "light", "paper", "night", "ink", "custom"]
+        ["system", "lingyao", "light", "paper", "night", "ink", "custom"]
     );
     for theme in GlobalTheme::ALL {
         assert_eq!(GlobalTheme::from_id(theme.id()), Some(theme));
@@ -71,7 +71,7 @@ fn unknown_and_retired_ids_are_refused() {
         "fluent",
         "forest",
         "custom ",
-        "水杉",
+        "灵耀",
     ] {
         assert_eq!(GlobalTheme::from_id(id), None, "{id}");
         assert!(

@@ -31,7 +31,7 @@ enum KeyboardLayoutPreference {
 
   /// Writes `navigation.tab` into the shared document, keeping the other paging keys in the same object.
   static func saveTabShowsMoreCandidates(_ enabled: Bool, stateRoot: URL? = nil) -> Bool {
-    MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
+    LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
       var navigation = document["navigation"] as? [String: Any] ?? [:]
       navigation["tab"] = enabled
       document["navigation"] = navigation
@@ -47,9 +47,9 @@ enum KeyboardLayoutPreference {
   @discardableResult
   static func saveGeometry(keySpacing: Double, rowSpacing: Double, heightAdjustment: Double,
                            voiceShortcut: Bool, stateRoot: URL? = nil) -> Bool {
-    guard let mapping = MetasequoiaInputSessionBridge.geometryMapping(
+    guard let mapping = LingyaoInputSessionBridge.geometryMapping(
       keySpacing: keySpacing, rowSpacing: rowSpacing, heightAdjustment: heightAdjustment, voiceEnabled: voiceShortcut),
-      MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
+      LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
     self.keySpacing = keySpacing
     self.rowSpacing = rowSpacing
     self.heightAdjustment = heightAdjustment
@@ -60,7 +60,7 @@ enum KeyboardLayoutPreference {
   /// `resetToDefaults`, for the shared document as well.
   @discardableResult
   static func resetGeometry(stateRoot: URL? = nil) -> Bool {
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { preferences in
+    let written = LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { preferences in
       for key in ["touch_key_spacing_tenths", "touch_row_spacing_tenths", "touch_keyboard_height_adjustment",
                   "touch_voice_shortcut"] {
         preferences.removeValue(forKey: key)

@@ -29,7 +29,7 @@ final class HelpcodeSettingsTests: XCTestCase {
 
   /// A Shift letter narrows the composition by helpcode, and turning helpcode off in the app reaches the session the keyboard already has.
   func testReloadTurnsHelpcodeOffInTheLiveSession() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let plain = compose(bridge, "shi", helpcode: nil)
     // 自然码 Y is the 讠 radical: 识 试 诗 lead instead of 是.
     let narrowed = compose(bridge, "shi", helpcode: "Y")
@@ -47,7 +47,7 @@ final class HelpcodeSettingsTests: XCTestCase {
 
   /// "Show in the candidate bar" puts each candidate's helpcode in the annotations the strip draws.
   func testShownHelpcodeReachesTheCandidateAnnotations() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(compose(bridge, "shi", helpcode: nil).candidateAnnotations.first, "", "全拼 ships with helpcode hidden")
 
     update { $0["show_in_candidate_window"] = true }
@@ -61,14 +61,14 @@ final class HelpcodeSettingsTests: XCTestCase {
   }
 
   private func update(_ change: (inout [String: Any]) -> Void) {
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       var helpcode = $0["quanpin_helpcode"] as? [String: Any] ?? [:]
       change(&helpcode)
       $0["quanpin_helpcode"] = helpcode
     })
   }
 
-  private func reload(_ bridge: MetasequoiaInputSessionBridge) async {
+  private func reload(_ bridge: LingyaoInputSessionBridge) async {
     let reloaded = expectation(description: "reload")
     var accepted = false
     bridge.reloadSharedPreferences { accepted = $0; reloaded.fulfill() }
@@ -77,7 +77,7 @@ final class HelpcodeSettingsTests: XCTestCase {
   }
 
   /// The snapshot after typing `letters` from an empty composition, then a Shift `helpcode` letter; the composition is then abandoned.
-  private func compose(_ bridge: MetasequoiaInputSessionBridge, _ letters: String, helpcode: String?) -> MetasequoiaInputSnapshot {
+  private func compose(_ bridge: LingyaoInputSessionBridge, _ letters: String, helpcode: String?) -> LingyaoInputSnapshot {
     var snapshot = bridge.cancel()
     for letter in letters { snapshot = bridge.handleCharacter(String(letter)) }
     if let helpcode { snapshot = bridge.handleCharacter(helpcode, shifted: true) }

@@ -85,16 +85,16 @@ int main() {
         assert(defaultFrame.origin.x == NSMaxX(visible) - 275.0 && defaultFrame.origin.y == NSMinY(visible) + 20.0);
         NSRect restored = MSIMEFloatingToolbarFrame(NSMakeRect(-4000.0, 4000.0, 1.0, 1.0), visible, YES);
         assert(restored.origin.x == NSMinX(visible) + 12.0 && restored.origin.y == NSMaxY(visible) - 56.0);
-        assert(MetasequoiaFloatingToolbarShouldShow(YES, YES, NO));
-        assert(!MetasequoiaFloatingToolbarShouldShow(NO, YES, NO));
-        assert(!MetasequoiaFloatingToolbarShouldShow(YES, NO, NO));
-        assert(!MetasequoiaFloatingToolbarShouldShow(YES, YES, YES));
+        assert(LingyaoFloatingToolbarShouldShow(YES, YES, NO));
+        assert(!LingyaoFloatingToolbarShouldShow(NO, YES, NO));
+        assert(!LingyaoFloatingToolbarShouldShow(YES, NO, NO));
+        assert(!LingyaoFloatingToolbarShouldShow(YES, YES, YES));
         const CGRect display = CGRectMake(-1440.0, 0.0, 1440.0, 900.0);
-        assert(MetasequoiaWindowCoversDisplay(display, display));
-        assert(MetasequoiaWindowCoversDisplay(CGRectMake(-1441.0, -1.0, 1442.0, 902.0), display));
-        assert(!MetasequoiaWindowCoversDisplay(CGRectMake(-1440.0, 22.0, 1440.0, 878.0), display));
-        assert(!MetasequoiaWindowCoversDisplay(CGRectMake(-720.0, 0.0, 1440.0, 900.0), display));
-        assert(!MetasequoiaWindowCoversDisplay(CGRectZero, display));
+        assert(LingyaoWindowCoversDisplay(display, display));
+        assert(LingyaoWindowCoversDisplay(CGRectMake(-1441.0, -1.0, 1442.0, 902.0), display));
+        assert(!LingyaoWindowCoversDisplay(CGRectMake(-1440.0, 22.0, 1440.0, 878.0), display));
+        assert(!LingyaoWindowCoversDisplay(CGRectMake(-720.0, 0.0, 1440.0, 900.0), display));
+        assert(!LingyaoWindowCoversDisplay(CGRectZero, display));
 
         MSIMEFloatingToolbarPanel *panel = [[MSIMEFloatingToolbarPanel alloc] init];
         assert(panel != nil && !panel.canBecomeKeyWindow && !panel.canBecomeMainWindow);
@@ -112,13 +112,13 @@ int main() {
         assert([panel.appearance.name isEqualToString:NSAppearanceNameAqua]);
         [panel applyThemePreferences:@{@"theme": @"system", @"toolbar_theme": @"follow"}];
         assert(panel.appearance == nil);
-        assert([panel.frameAutosaveName isEqualToString:@"MetasequoiaFloatingToolbarFrame"]);
+        assert([panel.frameAutosaveName isEqualToString:@"LingyaoFloatingToolbarFrame"]);
         {
             // Resizing a hidden toolbar must not write a saved frame. The window has an autosave name, so
             // any setFrame: here is persisted, and setVisible: reads the presence of that default as "the
             // user placed it" - which would strand a toolbar the user has never seen in the corner this
             // path clamps to, instead of the default placement on the screen holding the pointer.
-            NSString *key = @"NSWindow Frame MetasequoiaFloatingToolbarFrame";
+            NSString *key = @"NSWindow Frame LingyaoFloatingToolbarFrame";
             [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
             assert(!panel.visible);
             [panel applySizingPreferences:@{@"floating_toolbar": @{@"scale_percent": @150, @"font_size": @28}}];
@@ -141,17 +141,17 @@ int main() {
             const auto expected = [mode isEqual:@"dark"] ? dark : light;
             [panel applyThemePreferences:@{@"toolbar_theme": mode}];
             // Legacy notifications and size updates must not replace host-supplied colors.
-            [NSNotificationCenter.defaultCenter postNotificationName:MetasequoiaCandidateSkinDidChangeNotification object:nil];
+            [NSNotificationCenter.defaultCenter postNotificationName:LingyaoCandidateSkinDidChangeNotification object:nil];
             [panel applySizingPreferences:@{}];
             id chrome = [panel valueForKey:@"chrome"];
-            assert([[chrome valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(expected.surface)]);
-            assert([[chrome valueForKey:@"strokeColor"] isEqual:MetasequoiaColorFromRgba(expected.border)]);
-            NSButton *button = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarInputMode");
-            assert([button.contentTintColor isEqual:MetasequoiaColorFromRgba(expected.text)]);
+            assert([[chrome valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(expected.surface)]);
+            assert([[chrome valueForKey:@"strokeColor"] isEqual:LingyaoColorFromRgba(expected.border)]);
+            NSButton *button = FindButton(panel.contentView, @"LingyaoFloatingToolbarInputMode");
+            assert([button.contentTintColor isEqual:LingyaoColorFromRgba(expected.text)]);
         }
         dark.surface = {0.3, 0.1, 0.2, 1};
         [panel applyLightSkin:light darkSkin:dark];
-        assert([[[panel valueForKey:@"chrome"] valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(dark.surface)]);
+        assert([[[panel valueForKey:@"chrome"] valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(dark.surface)]);
 
         // Candidate card colors and toolbar colors are separate host inputs.
         // A toolbar theme change must continue using the toolbar palette after
@@ -164,33 +164,33 @@ int main() {
         toolbarDark.hover = {1.0, 1.0, 1.0, 0.10};
         [panel applyLightToolbarSkin:toolbarLight darkSkin:toolbarDark];
         [panel applyThemePreferences:@{@"toolbar_theme": @"dark"}];
-        assert([[[panel valueForKey:@"chrome"] valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(toolbarDark.surface)]);
+        assert([[[panel valueForKey:@"chrome"] valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(toolbarDark.surface)]);
 
-        NSButton *inputMode = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarInputMode");
-        NSButton *punctuation = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarPunctuation");
-        NSButton *fullWidth = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarFullWidth");
-        NSButton *traditional = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarTraditionalOutput");
-        NSButton *settings = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarSettings");
-        NSButton *emoji = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarEmoji");
-        NSButton *handwriting = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarHandwriting");
-        NSButton *keyboard = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarScreenKeyboard");
-        NSButton *voice = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarVoice");
-        NSButton *inputScheme = FindButton(panel.contentView, @"MetasequoiaFloatingToolbarInputScheme");
+        NSButton *inputMode = FindButton(panel.contentView, @"LingyaoFloatingToolbarInputMode");
+        NSButton *punctuation = FindButton(panel.contentView, @"LingyaoFloatingToolbarPunctuation");
+        NSButton *fullWidth = FindButton(panel.contentView, @"LingyaoFloatingToolbarFullWidth");
+        NSButton *traditional = FindButton(panel.contentView, @"LingyaoFloatingToolbarTraditionalOutput");
+        NSButton *settings = FindButton(panel.contentView, @"LingyaoFloatingToolbarSettings");
+        NSButton *emoji = FindButton(panel.contentView, @"LingyaoFloatingToolbarEmoji");
+        NSButton *handwriting = FindButton(panel.contentView, @"LingyaoFloatingToolbarHandwriting");
+        NSButton *keyboard = FindButton(panel.contentView, @"LingyaoFloatingToolbarScreenKeyboard");
+        NSButton *voice = FindButton(panel.contentView, @"LingyaoFloatingToolbarVoice");
+        NSButton *inputScheme = FindButton(panel.contentView, @"LingyaoFloatingToolbarInputScheme");
         assert(inputScheme && inputScheme.image && [inputScheme.accessibilityLabel isEqualToString:@"切换输入方案"]);
         assert([inputScheme.toolTip isEqualToString:inputScheme.accessibilityLabel]);
-        NSView *logo = FindView(panel.contentView, @"MetasequoiaFloatingToolbarLogo");
-        assert(logo != nil && [logo.accessibilityLabel isEqualToString:@"水杉输入法"]);
+        NSView *logo = FindView(panel.contentView, @"LingyaoFloatingToolbarLogo");
+        assert(logo != nil && [logo.accessibilityLabel isEqualToString:@"灵耀输入法"]);
         // The four opt-in buttons, after the empty snapshot above: built, labelled and off the row until
         // a snapshot turns them on. Their labels and images exist either way, which is what makes turning
         // one on a visibility change and nothing else.
         assert(keyboard && keyboard.image && keyboard.hidden);
-        assert([keyboard.accessibilityLabel isEqualToString:@"打开水杉屏幕键盘"]);
+        assert([keyboard.accessibilityLabel isEqualToString:@"打开灵耀屏幕键盘"]);
         assert([keyboard.toolTip isEqualToString:keyboard.accessibilityLabel]);
         assert(emoji && emoji.image && emoji.hidden);
-        assert([emoji.accessibilityLabel isEqualToString:@"打开水杉表情面板"]);
+        assert([emoji.accessibilityLabel isEqualToString:@"打开灵耀表情面板"]);
         assert([emoji.toolTip isEqualToString:emoji.accessibilityLabel]);
         assert(handwriting && handwriting.image && handwriting.hidden);
-        assert([handwriting.accessibilityLabel isEqualToString:@"打开水杉手写识别板"]);
+        assert([handwriting.accessibilityLabel isEqualToString:@"打开灵耀手写识别板"]);
         assert([handwriting.toolTip isEqualToString:handwriting.accessibilityLabel]);
         assert(voice && voice.image && voice.hidden);
         assert([voice.accessibilityLabel isEqualToString:@"开始或结束语音输入"]);
@@ -198,10 +198,10 @@ int main() {
         assert(inputMode && punctuation && fullWidth && traditional && handwriting && voice && settings);
 
         // The logo, standing in for the reference's ToolbarDragHandle, and the ToolbarDivider lead the row. Dragging the logo moves the panel; pressing a button never does. The reference's separate handle bar is gone.
-        NSView *handle = FindView(panel.contentView, @"MetasequoiaFloatingToolbarLogo");
-        NSView *divider = FindView(panel.contentView, @"MetasequoiaFloatingToolbarDivider");
+        NSView *handle = FindView(panel.contentView, @"LingyaoFloatingToolbarLogo");
+        NSView *divider = FindView(panel.contentView, @"LingyaoFloatingToolbarDivider");
         assert(handle != nil && divider != nil && handle.mouseDownCanMoveWindow && panel.movableByWindowBackground);
-        assert(FindView(panel.contentView, @"MetasequoiaFloatingToolbarGrip") == nil);
+        assert(FindView(panel.contentView, @"LingyaoFloatingToolbarGrip") == nil);
         [panel.contentView layoutSubtreeIfNeeded];
         {
             const NSRect handleRect = [handle convertRect:handle.bounds toView:panel.contentView];
@@ -230,11 +230,11 @@ int main() {
         [panel orderOut:nil];
         assert(![[inputMode valueForKey:@"hovered"] boolValue]);
         [panel applyThemePreferences:@{@"toolbar_theme": @"dark"}];
-        assert([[inputMode valueForKey:@"hoverFillColor"] isEqual:MetasequoiaColorFromRgba(toolbarDark.hover)]);
-        assert([[divider valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(toolbarDark.border)]);
+        assert([[inputMode valueForKey:@"hoverFillColor"] isEqual:LingyaoColorFromRgba(toolbarDark.hover)]);
+        assert([[divider valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(toolbarDark.border)]);
         [panel applyThemePreferences:@{@"toolbar_theme": @"light"}];
-        assert([[inputMode valueForKey:@"hoverFillColor"] isEqual:MetasequoiaColorFromRgba(toolbarLight.hover)]);
-        assert([[divider valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(toolbarLight.border)]);
+        assert([[inputMode valueForKey:@"hoverFillColor"] isEqual:LingyaoColorFromRgba(toolbarLight.hover)]);
+        assert([[divider valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(toolbarLight.border)]);
         // The toolbar palette's radius drives the chrome at the current scale, and a package divider colour replaces the outline on the divider only.
         assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 10.0);
         {
@@ -246,11 +246,11 @@ int main() {
             [panel applyLightToolbarSkin:roundedLight darkSkin:roundedDark];
             [panel applyThemePreferences:@{@"toolbar_theme": @"dark"}];
             assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 16.0);
-            assert([[divider valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(*roundedDark.divider)]);
-            assert([[[panel valueForKey:@"chrome"] valueForKey:@"strokeColor"] isEqual:MetasequoiaColorFromRgba(roundedDark.border)]);
+            assert([[divider valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(*roundedDark.divider)]);
+            assert([[[panel valueForKey:@"chrome"] valueForKey:@"strokeColor"] isEqual:LingyaoColorFromRgba(roundedDark.border)]);
             [panel applyThemePreferences:@{@"toolbar_theme": @"light"}];
             assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 4.0);
-            assert([[divider valueForKey:@"fillColor"] isEqual:MetasequoiaColorFromRgba(roundedLight.border)]);
+            assert([[divider valueForKey:@"fillColor"] isEqual:LingyaoColorFromRgba(roundedLight.border)]);
             [panel applySizingPreferences:@{@"floating_toolbar": @{@"scale_percent": @150, @"font_size": @24}}];
             assert([[panel valueForKey:@"chrome"] layer].cornerRadius == 6.0);
             [panel applySizingPreferences:@{@"floating_toolbar": @{@"scale_percent": @100, @"font_size": @24}}];
@@ -356,7 +356,7 @@ int main() {
         }
         // With every button off the divider goes, but the logo stays so the panel can still be dragged.
         [panel applySizingPreferences:@{@"floating_toolbar": @{@"english_mode": @NO, @"input_scheme": @NO, @"punctuation": @NO, @"fullwidth": @NO, @"character_set": @NO, @"emoji": @NO, @"handwriting": @NO, @"screen_keyboard": @NO, @"voice": @NO, @"settings": @NO}}];
-        assert(FindView(panel.contentView, @"MetasequoiaFloatingToolbarLogo") == handle && !handle.hidden && divider.hidden);
+        assert(FindView(panel.contentView, @"LingyaoFloatingToolbarLogo") == handle && !handle.hidden && divider.hidden);
         assert([[panel valueForKey:@"preferredSize"] sizeValue].width == ExpectedWidth(0, 24, 1));
         [panel applySizingPreferences:@{}];
         assert(!divider.hidden);
@@ -503,7 +503,7 @@ int main() {
         SendButton(settings);
         assert(delegate.settingsRequests == 1);
         assert(settings.menu.numberOfItems == 10 && [settings.menu itemAtIndex:1].action == @selector(openSettings:));
-        assert([settings.accessibilityLabel isEqualToString:@"打开水杉输入法设置"]);
+        assert([settings.accessibilityLabel isEqualToString:@"打开灵耀输入法设置"]);
         for (NSString *selectorName in @[@"openCharacterPalette:", @"openSettings:", @"checkForUpdates:",
                                          @"openWebsite:", @"dismissFloatingToolbar:"]) {
             [NSApp sendAction:NSSelectorFromString(selectorName) to:panel from:nil];

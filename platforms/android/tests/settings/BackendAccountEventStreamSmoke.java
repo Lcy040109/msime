@@ -8,13 +8,13 @@ import java.nio.charset.StandardCharsets;
 public final class BackendAccountEventStreamSmoke {
     public static void main(String[] args) throws Exception {
         // Multi-byte characters must survive a read that splits them, so feed the stream one byte at a time.
-        String body = "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"水杉\"},\"finish_reason\":null}]}\r\n\r\n"
+        String body = "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"灵耀\"},\"finish_reason\":null}]}\r\n\r\n"
             + ": keep-alive\n"
             + "event: message\n"
             + "data:[DONE]\n\n";
         BackendAccount.EventLines lines = new BackendAccount.EventLines(
             new TrickleStream(body.getBytes(StandardCharsets.UTF_8)));
-        check(("data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"水杉\"},\"finish_reason\":null}]}")
+        check(("data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"灵耀\"},\"finish_reason\":null}]}")
             .equals(lines.next()), "CRLF lines drop the CR and keep split UTF-8 intact");
         check("".equals(lines.next()), "the blank line that ends an event is returned as an empty line");
         check(": keep-alive".equals(lines.next()), "comment lines are returned as they are");

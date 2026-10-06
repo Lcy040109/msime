@@ -6,14 +6,14 @@ class CEnumTfCandidates : public IEnumTfCandidates
 {
   protected:
     // constructor/destructor
-    CEnumTfCandidates(_In_ const CMetasequoiaImeArray<ITfCandidateString *> &rgelm, UINT currentNum);
+    CEnumTfCandidates(_In_ const CLingyaoImeArray<ITfCandidateString *> &rgelm, UINT currentNum);
 
     virtual ~CEnumTfCandidates(void);
 
   public:
     // create instance
     static HRESULT CreateInstance(_Outptr_ IEnumTfCandidates **ppEnum,
-                                  _In_ const CMetasequoiaImeArray<ITfCandidateString *> &rgelm, UINT currentNum = 0);
+                                  _In_ const CLingyaoImeArray<ITfCandidateString *> &rgelm, UINT currentNum = 0);
 
     // IUnknown methods
     virtual STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void **ppvObj);
@@ -28,6 +28,6 @@ class CEnumTfCandidates : public IEnumTfCandidates
 
   protected:
     LONG _refCount;
-    CMetasequoiaImeArray<ITfCandidateString *> _rgelm;
+    CLingyaoImeArray<ITfCandidateString *> _rgelm;
     UINT _currentCandidateStrIndex;
 };

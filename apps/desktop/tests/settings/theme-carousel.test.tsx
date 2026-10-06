@@ -5,7 +5,7 @@ import { ThemeCarousel } from "@msime/ui";
 
 afterEach(cleanup);
 
-const labels = ["跟随系统", "水杉", "薄荷晨光"];
+const labels = ["跟随系统", "灵耀", "薄荷晨光"];
 
 function renderCarousel(selectedIndex: number) {
   return render(
@@ -25,7 +25,7 @@ test("opens on the selected theme and keeps every card mounted", () => {
   renderCarousel(1);
 
   expect(screen.getByText("2 / 3")).toBeTruthy();
-  expect(current()?.getAttribute("aria-label")).toBe("查看水杉");
+  expect(current()?.getAttribute("aria-label")).toBe("查看灵耀");
   for (const label of labels) expect(screen.getByRole("article", { name: label })).toBeTruthy();
 });
 
@@ -134,10 +134,10 @@ test("cards added or removed around the viewed one keep it in view; only a new s
   expect(screen.getByText("4 / 4")).toBeTruthy();
 
   // 正在看的卡片被删掉时停在原位置，越界则退到最后一张。
-  rerender(slides(["新皮肤", "跟随系统", "水杉"], 1));
-  expect(current()?.getAttribute("aria-label")).toBe("查看水杉");
+  rerender(slides(["新皮肤", "跟随系统", "灵耀"], 1));
+  expect(current()?.getAttribute("aria-label")).toBe("查看灵耀");
   expect(screen.getByText("3 / 3")).toBeTruthy();
 
-  rerender(slides(["新皮肤", "跟随系统", "水杉"], 0));
+  rerender(slides(["新皮肤", "跟随系统", "灵耀"], 0));
   expect(current()?.getAttribute("aria-label")).toBe("查看新皮肤");
 });

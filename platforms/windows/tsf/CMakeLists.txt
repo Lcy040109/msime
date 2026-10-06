@@ -170,7 +170,7 @@ add_library(msime-tsf SHARED
   Edit/EditSession.cpp Edit/GetTextExtentEditSession.cpp Edit/TextEditSink.cpp
   Global/Globals.cpp
   IME/ActiveLanguageProfileNotifySink.cpp IME/FunctionProviderSink.cpp
-  IME/MetasequoiaIME.cpp IME/MetasequoiaIMEBaseStructure.cpp
+  IME/LingyaoIME.cpp IME/LingyaoIMEBaseStructure.cpp
   IPC/Ipc.cpp IPC/PassthroughStatisticsQueue.cpp IPC/KeyPressStatisticsQueue.cpp
   Key/KeyEventSink.cpp Key/KeyHandler.cpp Key/KeyHandlerEditSession.cpp
   Key/KeyStateCategory.cpp
@@ -183,8 +183,8 @@ add_library(msime-tsf SHARED
   DllMain.cpp Server.cpp
   EngineSessionAdapter.cpp EngineSessionAdapter.h EngineResponse.cpp
   HostOptionsPaths.cpp HostOptionsPaths.h PreparedHostOptions.cpp
-  IME/MetasequoiaIME.rc
-  IME/MetasequoiaIME.def
+  IME/LingyaoIME.rc
+  IME/LingyaoIME.def
 )
 add_dependencies(msime-tsf-class-factory-test msime-tsf)
 
@@ -207,7 +207,7 @@ if(MINGW)
   target_sources(msime-tsf PRIVATE Global/TsfPropertyGuids.cpp)
 endif()
 target_link_libraries(msime-tsf PRIVATE "${MSIME_HOST_LIBRARY}")
-set_target_properties(msime-tsf PROPERTIES OUTPUT_NAME MetasequoiaImeTsf)
+set_target_properties(msime-tsf PROPERTIES OUTPUT_NAME LingyaoImeTsf)
 install(TARGETS msime-tsf
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

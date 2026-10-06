@@ -22,7 +22,7 @@ test("starts on the add-the-keyboard step", () => {
     <WelcomeFlowPage actions={makeActions()} onComplete={vi.fn().mockResolvedValue(undefined)} />,
   );
 
-  expect(screen.getByRole("heading", { name: "把水杉加进键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "把灵耀加进键盘" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "下一步" })).toBeTruthy();
   // Android draws its progress as a linear bar with a pair of buttons under the page, and the bar replaces the count.
   expect(screen.getByRole("progressbar", { name: "设置进度" }).getAttribute("aria-valuenow")).toBe(
@@ -105,7 +105,7 @@ test("adapts setup copy and actions for HarmonyOS", async () => {
   const actions = makeActions({ platform: "harmony" });
   render(<WelcomeFlowPage actions={actions} onComplete={vi.fn().mockResolvedValue(undefined)} />);
 
-  expect(screen.getByText(/HarmonyOS 中启用并选择水杉输入法/)).toBeTruthy();
+  expect(screen.getByText(/HarmonyOS 中启用并选择灵耀输入法/)).toBeTruthy();
   expect(screen.getByText("前往 HarmonyOS 的系统输入法设置。")).toBeTruthy();
   expect(screen.getByText(/系统设置页面由 HarmonyOS 管理/)).toBeTruthy();
   expect(screen.queryByText(/Android/)).toBeNull();
@@ -122,7 +122,7 @@ test("adapts setup copy and actions for HarmonyOS", async () => {
 test("adapts the setup step for iOS keyboard settings", () => {
   const actions = makeActions({ platform: "ios" });
   render(<WelcomeFlowPage actions={actions} onComplete={vi.fn().mockResolvedValue(undefined)} />);
-  expect(screen.getByRole("heading", { name: "添加水杉键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "添加灵耀键盘" })).toBeTruthy();
   expect(screen.getByText(/通用 → 键盘 → 键盘/)).toBeTruthy();
   expect(screen.queryByRole("button", { name: "选择输入法" })).toBeNull();
 });
@@ -156,7 +156,7 @@ test("a HarmonyOS 2-in-1 takes the desktop sheet and never opens on the splash",
   );
 
   expect(screen.queryByRole("button", { name: "跳过开屏" })).toBeNull();
-  expect(screen.getByRole("heading", { name: "把水杉加进键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "把灵耀加进键盘" })).toBeTruthy();
   const shell = screen.getByRole("main", { name: "首次设置" });
   expect(shell.getAttribute("data-platform")).toBe("hm2");
   expect(shell.hasAttribute("data-mobile")).toBe(false);
@@ -248,7 +248,7 @@ test("the wubi edition skips choosing a keyboard and completes with Wubi", async
   expect(screen.queryByRole("radio", { name: /全拼/ })).toBeNull();
   expect(progress().getAttribute("aria-valuenow")).toBe("2");
   fireEvent.click(screen.getByRole("button", { name: "上一步" }));
-  await screen.findByRole("heading", { name: "把水杉加进键盘" });
+  await screen.findByRole("heading", { name: "把灵耀加进键盘" });
   fireEvent.click(screen.getByRole("button", { name: "下一步" }));
   await screen.findByRole("heading", { name: "候选下方显示译文" });
   fireEvent.click(screen.getByRole("button", { name: "下一步" }));
@@ -334,7 +334,7 @@ test("reports a resource preparation failure", async () => {
   fireEvent.click(screen.getByRole("button", { name: "下一步" }));
 
   expect((await screen.findByRole("alert")).textContent).toContain("操作失败");
-  expect(screen.getByRole("heading", { name: "把水杉加进键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "把灵耀加进键盘" })).toBeTruthy();
   // The system actions must not open while the dictionaries are missing.
   fireEvent.click(screen.getByRole("button", { name: "打开系统设置" }));
   await waitFor(() => expect(actions.prepareResources).toHaveBeenCalledTimes(2));
@@ -350,9 +350,9 @@ test("a first launch opens on the splash, which a tap skips", () => {
     />,
   );
 
-  expect(screen.queryByRole("heading", { name: "把水杉加进键盘" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "把灵耀加进键盘" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "跳过开屏" }));
-  expect(screen.getByRole("heading", { name: "把水杉加进键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "把灵耀加进键盘" })).toBeTruthy();
 });
 
 test("the splash gives way to the flow on its own", () => {
@@ -369,5 +369,5 @@ test("the splash gives way to the flow on its own", () => {
   expect(screen.getByRole("button", { name: "跳过开屏" })).toBeTruthy();
   act(() => vi.advanceTimersByTime(1));
   expect(screen.queryByRole("button", { name: "跳过开屏" })).toBeNull();
-  expect(screen.getByRole("heading", { name: "把水杉加进键盘" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "把灵耀加进键盘" })).toBeTruthy();
 });

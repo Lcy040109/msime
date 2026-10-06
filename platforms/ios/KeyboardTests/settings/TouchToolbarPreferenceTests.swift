@@ -26,7 +26,7 @@ final class TouchToolbarPreferenceTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-toolbar-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(TouchToolbarPreference.load(stateRoot: state), TouchToolbarPreference())
 
     var toolbar = TouchToolbarPreference()
@@ -36,7 +36,7 @@ final class TouchToolbarPreferenceTests: XCTestCase {
     XCTAssertTrue(TouchToolbarPreference.save(toolbar, stateRoot: state))
     XCTAssertEqual(TouchToolbarPreference.load(stateRoot: state), toolbar)
     let stored = try XCTUnwrap(
-      MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)?["touch_toolbar"] as? [String: Any])
+      LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["touch_toolbar"] as? [String: Any])
     XCTAssertEqual(Set(stored.keys), Set(TouchToolbarPreference.options.map(\.name)))
   }
 }

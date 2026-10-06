@@ -159,7 +159,7 @@ pub struct MacosIdentity {
 }
 
 impl MacosIdentity {
-    /// 输入法 bundle 的文件名，例如 `水杉输入法.app`。
+    /// 输入法 bundle 的文件名，例如 `灵耀输入法.app`。
     pub fn input_method_bundle_name(&self) -> String {
         format!("{}.app", self.input_method_name)
     }
@@ -598,7 +598,7 @@ mod tests {
                 handwriting: true,
             }
         );
-        assert_eq!(full.display_name.zh_hans, "水杉输入法");
+        assert_eq!(full.display_name.zh_hans, "灵耀输入法");
         assert_eq!(full.display_name.en, "MSIME");
     }
 
@@ -611,7 +611,7 @@ mod tests {
         );
         assert_eq!(pinyin.default_scheme, InputScheme::Quanpin);
         assert!(pinyin.features.temporary_japanese);
-        assert_eq!(pinyin.display_name.zh_hans, "水杉拼音");
+        assert_eq!(pinyin.display_name.zh_hans, "灵耀拼音");
         assert_eq!(pinyin.display_name.en, "MSIME Pinyin");
     }
 
@@ -626,7 +626,7 @@ mod tests {
         assert!(wubi.features.handwriting);
         assert!(wubi.offers(InputScheme::Wubi));
         assert!(!wubi.offers(InputScheme::Quanpin));
-        assert_eq!(wubi.display_name.zh_hans, "水杉五笔");
+        assert_eq!(wubi.display_name.zh_hans, "灵耀五笔");
         assert_eq!(wubi.display_name.en, "MSIME Wubi");
     }
 
@@ -637,16 +637,16 @@ mod tests {
             (
                 "japanese",
                 InputScheme::Japanese,
-                "水杉日语",
+                "灵耀日语",
                 "MSIME Japanese",
             ),
             (
                 "vietnamese",
                 InputScheme::Vietnamese,
-                "水杉越南语",
+                "灵耀越南语",
                 "MSIME Vietnamese",
             ),
-            ("tibetan", InputScheme::Tibetan, "水杉藏文", "MSIME Tibetan"),
+            ("tibetan", InputScheme::Tibetan, "灵耀藏文", "MSIME Tibetan"),
         ] {
             let edition = Edition::by_id(id).unwrap();
             assert_eq!(edition.input_schemes, [scheme], "{id}");
@@ -1051,15 +1051,15 @@ mod tests {
         let full = Edition::full().macos().unwrap();
         assert_eq!(
             full.input_method_bundle_id,
-            "app.msime.inputmethod.MetasequoiaIME"
+            "app.msime.inputmethod.LingyaoIME"
         );
-        assert_eq!(full.input_method_bundle_name(), "水杉输入法.app");
+        assert_eq!(full.input_method_bundle_name(), "灵耀输入法.app");
         assert_eq!(full.settings_bundle_id, "app.msime.macos");
         assert_eq!(full.keychain_service, "com.metasequoia.msime.account");
         assert_eq!(full.cask, "msime");
         assert_eq!(full.dmg_prefix, "msime-macos");
         let wubi = Edition::by_id("wubi").unwrap().macos().unwrap();
-        assert_eq!(wubi.input_method_bundle_name(), "水杉五笔.app");
+        assert_eq!(wubi.input_method_bundle_name(), "灵耀五笔.app");
         // 还没有 macOS 段的版本（值为 null）不参与比较，由引入该平台的阶段补齐。
         let sections: Vec<_> = Edition::all().iter().filter_map(Edition::macos).collect();
         assert!(sections.len() >= 3);
@@ -1079,7 +1079,7 @@ mod tests {
     fn full_keeps_its_windows_identifiers_and_the_others_add_a_suffix() {
         let full = Edition::full().windows().unwrap();
         assert_eq!(full.clsid, "{E3062E9A-D834-4637-8958-ED8CFA427D01}");
-        assert_eq!(full.registry_key, r"Software\Metasequoia\MetasequoiaIME");
+        assert_eq!(full.registry_key, r"Software\Lingyao\LingyaoIME");
         assert_eq!(full.state_directory, "MSIME-Client");
         assert_eq!(
             full.data_dir_environment_variable,

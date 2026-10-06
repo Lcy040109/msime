@@ -172,7 +172,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         launcher = (IOS_ROOT / "KeyboardExtension/Sources/keyboard/KeyboardAppLauncher.swift").read_text()
         self.assertIn('URL(string: "\\(MSIMEAppEdition.urlScheme)://settings")', launcher)
         self.assertIn('URL(string: "\\(MSIMEAppEdition.urlScheme)://voice")', launcher)
-        app = (IOS_ROOT / "App/Sources/MetasequoiaImeApp.swift").read_text()
+        app = (IOS_ROOT / "App/Sources/LingyaoImeApp.swift").read_text()
         self.assertIn("url.scheme == MSIMEAppEdition.urlScheme", app)
 
     def test_scheme_choices_are_narrowed_by_edition(self):
@@ -181,7 +181,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertIn("].filter { $0.scheme.isOfferedByEdition }", welcome)
         onboarding = (IOS_ROOT / "App/Sources/app/OnboardingView.swift").read_text()
         self.assertIn("ChineseInputScheme.allCases.filter(\\.isOfferedByEdition)", onboarding)
-        bridge = (IOS_ROOT / "SharedUI/core/MetasequoiaInputSessionBridge.swift").read_text()
+        bridge = (IOS_ROOT / "SharedUI/core/LingyaoInputSessionBridge.swift").read_text()
         self.assertIn("enabledSchemes.contains($0) && $0.isOfferedByEdition", bridge)
 
     def test_app_icon_assets_and_alternate_names_are_configured(self):
@@ -281,8 +281,8 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertNotIn("MSIME-Windows", source)
         self.assertNotIn("MSIME-Linux", source)
         self.assertEqual(
-            source.count("https://github.com/metasequoiaime/msime")
-            + feedback.count("https://github.com/metasequoiaime/msime"),
+            source.count("https://github.com/Lcy040109/msime")
+            + feedback.count("https://github.com/Lcy040109/msime"),
             2,
         )
         project = (IOS_ROOT / "MSIMEClient.xcodeproj/project.pbxproj").read_text()

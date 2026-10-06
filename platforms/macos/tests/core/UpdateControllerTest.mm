@@ -6,7 +6,7 @@
 #include <cstdio>
 
 // Stands in for Sparkle so the controller's own behaviour can be checked without starting an updater.
-@interface UpdateDriverFixture : NSObject <MetasequoiaUpdateDriver>
+@interface UpdateDriverFixture : NSObject <LingyaoUpdateDriver>
 @property(nonatomic) BOOL canCheckForUpdates;
 @property(nonatomic) BOOL automaticallyChecksForUpdates;
 @property(nonatomic) NSUInteger checks;
@@ -57,8 +57,8 @@ int main()
         // command-line tool, a bundle whose identifier never made it into the plist - it answers a start
         // with a modal alert, and an input method that stops typing behind a dialog is the worse failure.
         NSString *feed = @"https://example.invalid/appcast.xml";
-        assert(MSIMEUpdateHostCanStartSparkle(@"app.msime.inputmethod.MetasequoiaIME",
-                                              @"/Users/someone/Library/Input Methods/水杉输入法.app", feed));
+        assert(MSIMEUpdateHostCanStartSparkle(@"app.msime.inputmethod.LingyaoIME",
+                                              @"/Users/someone/Library/Input Methods/灵耀输入法.app", feed));
         assert(MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/", feed));
         assert(!MSIMEUpdateHostCanStartSparkle(nil, @"/Applications/Example.app", feed));
         assert(!MSIMEUpdateHostCanStartSparkle(@"", @"/Applications/Example.app", feed));
@@ -73,18 +73,18 @@ int main()
         assert(!MSIMEUpdateHostCanStartSparkle(@"app.example", @"/Applications/Example.app/Contents/MacOS/example", feed));
 
         assert(MSIMEUpdateRouteForHost(@"app.example", @"/Applications/Example.app", feed) ==
-               MetasequoiaUpdateRouteSparkle);
+               LingyaoUpdateRouteSparkle);
         assert(MSIMEUpdateRouteForHost(@"app.example", @"/Applications/Example.app", nil) ==
-               MetasequoiaUpdateRouteReleasePage);
+               LingyaoUpdateRouteReleasePage);
         assert(MSIMEUpdateRouteForHost(@"app.example", @"/usr/local/bin/example", nil) ==
-               MetasequoiaUpdateRouteUnavailable);
+               LingyaoUpdateRouteUnavailable);
 
         __block NSInteger confirmations = 0;
         __block NSInteger opens = 0;
         __block NSInteger failures = 0;
-        NSURL *releaseURL = [NSURL URLWithString:@"https://github.com/metasequoiaime/msime/releases"];
-        MetasequoiaReleasePageUpdateDriver *releaseDriver =
-            [[MetasequoiaReleasePageUpdateDriver alloc]
+        NSURL *releaseURL = [NSURL URLWithString:@"https://github.com/Lcy040109/msime/releases"];
+        LingyaoReleasePageUpdateDriver *releaseDriver =
+            [[LingyaoReleasePageUpdateDriver alloc]
                 initWithReleaseURL:releaseURL
                      confirmation:^NSModalResponse(NSURL *url) {
                        assert([url isEqual:releaseURL]);
@@ -101,8 +101,8 @@ int main()
         [releaseDriver checkForUpdates:nil];
         assert(confirmations == 1 && opens == 1 && failures == 1);
 
-        MetasequoiaReleasePageUpdateDriver *cancelledDriver =
-            [[MetasequoiaReleasePageUpdateDriver alloc]
+        LingyaoReleasePageUpdateDriver *cancelledDriver =
+            [[LingyaoReleasePageUpdateDriver alloc]
                 initWithReleaseURL:releaseURL
                      confirmation:^NSModalResponse(NSURL *url) {
                        assert([url isEqual:releaseURL]);

@@ -7,7 +7,7 @@ FOUNDATION_EXPORT NSArray<NSString *> *MSIMEVoiceASRProviderTitles(void);
 FOUNDATION_EXPORT NSString *MSIMEVoiceASRProviderDefaultEndpoint(NSString *provider);
 FOUNDATION_EXPORT NSString *MSIMEVoiceASRProviderDefaultModel(NSString *provider);
 FOUNDATION_EXPORT BOOL MSIMEVoiceASRProviderUsesService(NSString *provider);
-@interface MetasequoiaVoiceProviderSettings : NSObject
+@interface LingyaoVoiceProviderSettings : NSObject
 @property(nonatomic, copy) NSString *provider;
 @property(nonatomic, copy) NSString *endpoint;
 @property(nonatomic, copy) NSString *model;
@@ -32,12 +32,12 @@ FOUNDATION_EXPORT BOOL MSIMEVoiceASRProviderUsesService(NSString *provider);
 /// The voice form. It is the 语音输入 page of the settings window and the contents of the
 /// standalone window the input method's toolbar opens, so both show the same controls.
 /// Every change is stored as it is made; there is no confirmation step.
-@interface MetasequoiaVoiceProviderSettingsView : NSView
+@interface LingyaoVoiceProviderSettingsView : NSView
 /// Fills the controls from storage. Call it whenever the form becomes visible.
 - (void)reloadSettings;
 @end
 
-@interface MetasequoiaVoiceProviderSettingsWindow : NSWindowController
+@interface LingyaoVoiceProviderSettingsWindow : NSWindowController
 + (instancetype)sharedController;
 - (void)showAndActivate;
 @end

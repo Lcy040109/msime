@@ -28,7 +28,7 @@ final class PairedPunctuationTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-paired-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.cancel()
     XCTAssertEqual(bridge.handlePunctuationWithContext("<", preceding: 0).commitText, "《")
     XCTAssertTrue(bridge.balancePairedPunctuationAfterAutoClose(opening: "<"))
@@ -38,10 +38,10 @@ final class PairedPunctuationTests: XCTestCase {
   }
 
   func testReplacingTheCommitKeepsTheRestOfTheSnapshot() {
-    let snapshot = MetasequoiaInputSnapshot(isHandled: true, commitText: "”", preedit: "", candidates: ["a"])
+    let snapshot = LingyaoInputSnapshot(isHandled: true, commitText: "”", preedit: "", candidates: ["a"])
     let reopened = snapshot.replacingCommit("“")
     XCTAssertEqual(reopened.commitText, "“")
-    XCTAssertEqual(reopened, MetasequoiaInputSnapshot(isHandled: true, commitText: "“", preedit: "", candidates: ["a"]))
+    XCTAssertEqual(reopened, LingyaoInputSnapshot(isHandled: true, commitText: "“", preedit: "", candidates: ["a"]))
   }
 
   func testTheClosingKeyStepsOverTheInnermostClosedPair() {

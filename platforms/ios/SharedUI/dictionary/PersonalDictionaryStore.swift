@@ -110,7 +110,7 @@ struct PersonalExportRequest: Codable, Equatable, Sendable {
   var kind: PersonalWordKind
   var format: String
   /// The name the desktop settings page gives the same export.
-  var fileName: String { "水杉IME-\(kind.title)用户词库.txt" }
+  var fileName: String { "灵耀IME-\(kind.title)用户词库.txt" }
 }
 
 struct PersonalExportResult: Codable, Equatable, Sendable {

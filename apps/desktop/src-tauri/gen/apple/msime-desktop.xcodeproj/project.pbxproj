@@ -18,7 +18,7 @@
 		0E00C414501D58F3317F4A9C /* GeneratedKeyboardSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = C64BF3A6B4F4FFC72A93789C /* GeneratedKeyboardSkin.swift */; };
 		0ECEDE40EEC734CD6F81693A /* SkinKeySurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0601AF2216631F597091878D /* SkinKeySurfaceView.swift */; };
 		104E1CAFEE0AFE0FBC071699 /* KeyboardMorePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5162B860BA8A9667EE021CC3 /* KeyboardMorePickerView.swift */; };
-		119F8AFDF5C7BCEEF6BAF5ED /* MetasequoiaInputSessionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1106F81C95002DE525307E1 /* MetasequoiaInputSessionBridge.swift */; };
+		119F8AFDF5C7BCEEF6BAF5ED /* LingyaoInputSessionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1106F81C95002DE525307E1 /* LingyaoInputSessionBridge.swift */; };
 		12733C56985711E13A8C71E2 /* CandidatePanelSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 257D3343803406F729ECD3EE /* CandidatePanelSnapshot.swift */; };
 		14023CAE66890CB9656B114E /* BackendLocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F829A751EA225AFD910316E /* BackendLocalStore.swift */; };
 		16B4C371EDD2C19F4E2C7EF3 /* MLKit-NOTICES.txt in Resources */ = {isa = PBXBuildFile; fileRef = 71AC7DF11C330F1B99B20D6E /* MLKit-NOTICES.txt */; };
@@ -81,7 +81,7 @@
 		B5DEFF42983539AF8DCF0047 /* BackendAccountClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A07B8F2D4348845B5A6EF3 /* BackendAccountClient.swift */; };
 		B7ED9C9AA3A071164CF21256 /* KeyboardBrand.png in Resources */ = {isa = PBXBuildFile; fileRef = FF586848BA58AC03CBAB7B2F /* KeyboardBrand.png */; };
 		B87D98FED5FE01336F868C5D /* DictionarySnapshotBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B7819183815CBA1EBFB383 /* DictionarySnapshotBridge.swift */; };
-		B8E90209A73C8C76539CF234 /* MetasequoiaTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A414E8A5DC8DCF4B9C7251D /* MetasequoiaTheme.swift */; };
+		B8E90209A73C8C76539CF234 /* LingyaoTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A414E8A5DC8DCF4B9C7251D /* LingyaoTheme.swift */; };
 		BB7C476BCD29C99DCC18F3DC /* KeyboardPanelButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 910298C10C6D797FB24CE91C /* KeyboardPanelButtonStyle.swift */; };
 		C1595DC737A6E480B6F55AE4 /* PersonalDictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF92DA07147B63D3463DDFD4 /* PersonalDictionaryStore.swift */; };
 		C39294CA57EC88AB8124BB1E /* MSIMEKeyboardExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F07B412E5224A9C64140306 /* MSIMEKeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -167,7 +167,7 @@
 		257D3343803406F729ECD3EE /* CandidatePanelSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatePanelSnapshot.swift; sourceTree = "<group>"; };
 		25EAF522221CE8B71DFB02AA /* WubiCodeHintPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WubiCodeHintPreference.swift; sourceTree = "<group>"; };
 		25FDA6EE50D1EE5D706C4B29 /* KeyboardSymbolPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSymbolPanelView.swift; sourceTree = "<group>"; };
-		2A414E8A5DC8DCF4B9C7251D /* MetasequoiaTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetasequoiaTheme.swift; sourceTree = "<group>"; };
+		2A414E8A5DC8DCF4B9C7251D /* LingyaoTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LingyaoTheme.swift; sourceTree = "<group>"; };
 		2BF1930B2549F455C3D0C796 /* ReplyKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyKeyboardView.swift; sourceTree = "<group>"; };
 		2F8FC5B441EAA962CFB0CBD6 /* ios_account_preferences.rs */ = {isa = PBXFileReference; path = ios_account_preferences.rs; sourceTree = "<group>"; };
 		3043141481E53F3542239F79 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
@@ -229,7 +229,7 @@
 		AE0C193DE3B2C583018AE233 /* CustomKeyboardSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomKeyboardSkin.swift; sourceTree = "<group>"; };
 		AF92DA07147B63D3463DDFD4 /* PersonalDictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalDictionaryStore.swift; sourceTree = "<group>"; };
 		B103DA6DD106AA9D14B57A94 /* KeyboardEmojiCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardEmojiCatalog.swift; sourceTree = "<group>"; };
-		B2AD1FB041D8B7F251882BAA /* MetasequoiaKeyboard-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MetasequoiaKeyboard-Bridging-Header.h"; sourceTree = "<group>"; };
+		B2AD1FB041D8B7F251882BAA /* LingyaoKeyboard-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LingyaoKeyboard-Bridging-Header.h"; sourceTree = "<group>"; };
 		B34D1F41A328472472E9AC9E /* HandwritingDownloadSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HandwritingDownloadSession.h; sourceTree = "<group>"; };
 		B45361F9C93E1514BEFB45CE /* KeyboardFeedbackPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardFeedbackPreference.swift; sourceTree = "<group>"; };
 		B50AAE806FEE6C17250D4636 /* linux_process.rs */ = {isa = PBXFileReference; path = linux_process.rs; sourceTree = "<group>"; };
@@ -240,7 +240,7 @@
 		BAE25326E0C7C40A8363BF23 /* KeyboardSkinTrial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSkinTrial.swift; sourceTree = "<group>"; };
 		BB611225422A785B6162052A /* FrequencyAdjustmentPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencyAdjustmentPreference.swift; sourceTree = "<group>"; };
 		BBB094C22D31F3E3CFA36065 /* macos_account.rs */ = {isa = PBXFileReference; path = macos_account.rs; sourceTree = "<group>"; };
-		C1106F81C95002DE525307E1 /* MetasequoiaInputSessionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetasequoiaInputSessionBridge.swift; sourceTree = "<group>"; };
+		C1106F81C95002DE525307E1 /* LingyaoInputSessionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LingyaoInputSessionBridge.swift; sourceTree = "<group>"; };
 		C19F8ACF95D8D139766DE57C /* BackendAccountSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendAccountSession.swift; sourceTree = "<group>"; };
 		C1E26702874AB308B74C3B4F /* KeyboardInputContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInputContext.swift; sourceTree = "<group>"; };
 		C2679035FA049060B15251EC /* KeyboardSkinCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSkinCollection.swift; sourceTree = "<group>"; };
@@ -657,7 +657,7 @@
 		B7B6E8E27A2B17A889A56507 /* core */ = {
 			isa = PBXGroup;
 			children = (
-				B2AD1FB041D8B7F251882BAA /* MetasequoiaKeyboard-Bridging-Header.h */,
+				B2AD1FB041D8B7F251882BAA /* LingyaoKeyboard-Bridging-Header.h */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -762,8 +762,8 @@
 			children = (
 				8127C5345AA65A423B13B529 /* AppServicesBridge.swift */,
 				42AEB0AF28355099F04AB583 /* CommunityResource.swift */,
-				C1106F81C95002DE525307E1 /* MetasequoiaInputSessionBridge.swift */,
-				2A414E8A5DC8DCF4B9C7251D /* MetasequoiaTheme.swift */,
+				C1106F81C95002DE525307E1 /* LingyaoInputSessionBridge.swift */,
+				2A414E8A5DC8DCF4B9C7251D /* LingyaoTheme.swift */,
 				31A147B6A799BCDAF70BB5A0 /* ScrollEdgeEffects.swift */,
 				1DF62219E32D76A859348EEA /* TypingStatistics.swift */,
 			);
@@ -1020,8 +1020,8 @@
 				36BB76C82FE368003E8EC5B5 /* KeyboardToolSection.swift in Sources */,
 				8A5945A041DFB03F9DAD1C56 /* KeyboardViewController.swift in Sources */,
 				A21A4DA5E3D298C101D81941 /* KeyboardVoiceView.swift in Sources */,
-				119F8AFDF5C7BCEEF6BAF5ED /* MetasequoiaInputSessionBridge.swift in Sources */,
-				B8E90209A73C8C76539CF234 /* MetasequoiaTheme.swift in Sources */,
+				119F8AFDF5C7BCEEF6BAF5ED /* LingyaoInputSessionBridge.swift in Sources */,
+				B8E90209A73C8C76539CF234 /* LingyaoTheme.swift in Sources */,
 				3903F215165DDFF5BD2FAA2A /* PersonalDictionaryBridge.swift in Sources */,
 				C5063D99549F904CBC301C1F /* PersonalDictionaryImport.swift in Sources */,
 				C1595DC737A6E480B6F55AE4 /* PersonalDictionaryStore.swift in Sources */,
@@ -1107,7 +1107,7 @@
 					"-lsqlite3",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.metasequoiaime.client;
-				PRODUCT_NAME = "水杉输入法";
+				PRODUCT_NAME = "灵耀输入法";
 				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = arm64;
 			};
@@ -1152,7 +1152,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.metasequoiaime.client.keyboard;
 				PRODUCT_NAME = MSIMEKeyboardExtension;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/MetasequoiaKeyboard-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = debug;
@@ -1204,7 +1204,7 @@
 					"-lsqlite3",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.metasequoiaime.client;
-				PRODUCT_NAME = "水杉输入法";
+				PRODUCT_NAME = "灵耀输入法";
 				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = arm64;
 			};
@@ -1235,7 +1235,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.metasequoiaime.client.keyboard;
 				PRODUCT_NAME = MSIMEKeyboardExtension;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/MetasequoiaKeyboard-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = release;

@@ -122,7 +122,7 @@ export function InputModeShortcutsSection({
         </SelectRow>
         {linux && (
           <SettingsGroupNote>
-            Ctrl+Space 未选用或关闭后水杉不处理此组合键；若 IBus 或 Fcitx5
+            Ctrl+Space 未选用或关闭后灵耀不处理此组合键；若 IBus 或 Fcitx5
             配置了同名全局快捷键，需在框架设置中另行关闭。
           </SettingsGroupNote>
         )}

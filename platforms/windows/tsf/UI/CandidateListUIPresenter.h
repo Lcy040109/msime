@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateSessionState.h"
 #include "CompositionProcessorEngine.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include "KeyHandlerEditSession.h"
 #include "TfTextLayoutSink.h"
 #include <string>
@@ -31,7 +31,7 @@ class CCandidateListUIPresenter : public CTfTextLayoutSink,
                                   public ITfIntegratableCandidateListUIElement
 {
   public:
-    CCandidateListUIPresenter(_In_ CMetasequoiaIME *pTextService, KEYSTROKE_CATEGORY Category,
+    CCandidateListUIPresenter(_In_ CLingyaoIME *pTextService, KEYSTROKE_CATEGORY Category,
                               _In_ CCandidateRange *pIndexRange, BOOL hideWindow);
     virtual ~CCandidateListUIPresenter();
 
@@ -84,7 +84,7 @@ class CCandidateListUIPresenter : public CTfTextLayoutSink,
     }
 
     void _NotifyUI();
-    void _SetText(_In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
+    void _SetText(_In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
     void _ClearList();
     void _ApplyUiLessCandidatePage(_In_ const std::wstring &page, int selectedIndex = 0);
     void _NotifyUiLessHost();
@@ -133,10 +133,10 @@ class CCandidateListUIPresenter : public CTfTextLayoutSink,
     HRESULT BeginUIElement();
     HRESULT EndUIElement();
 
-    void AddCandidateToCandidateListUI(_In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList,
+    void AddCandidateToCandidateListUI(_In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList,
                                        BOOL isAddFindKeyCode);
 
-    void SetPageIndexWithScrollInfo(_In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList);
+    void SetPageIndexWithScrollInfo(_In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList);
     void WriteCandidateUiPayload(_In_ UINT writeFlag);
     void BeginCandidateUiSession();
     void UpdateCandidateUiSession();
@@ -156,7 +156,7 @@ class CCandidateListUIPresenter : public CTfTextLayoutSink,
     KEYSTROKE_CATEGORY _Category;
     DWORD _updatedFlags;
     DWORD _uiElementId;
-    CMetasequoiaIME *_pTextService;
+    CLingyaoIME *_pTextService;
     LONG _refCount;
     BOOL _candidateUiSessionActive;
     BOOL _asyncCleanupPending;

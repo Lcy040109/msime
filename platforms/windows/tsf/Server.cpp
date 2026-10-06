@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 
 // from Register.cpp
 BOOL RegisterProfiles();
@@ -173,7 +173,7 @@ STDAPI CClassFactory::LockServer(BOOL fLock)
 void BuildGlobalObjects(void)
 {
     classFactoryObjects[0] =
-        new (std::nothrow) CClassFactory(Global::MetasequoiaIMECLSID, CMetasequoiaIME::CreateInstance);
+        new (std::nothrow) CClassFactory(Global::LingyaoIMECLSID, CLingyaoIME::CreateInstance);
 }
 
 //+---------------------------------------------------------------------------

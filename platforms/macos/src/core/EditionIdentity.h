@@ -8,7 +8,7 @@
 // full 的 Info.plist 不带这些键，与引入版本之前逐字节相同，所以没有 MSIMEEdition 就是 full，每个值都取 full 今天的那个。测试进程不是 bundle，同样读到 full。每个函数都有一个接收 Info.plist 字典的版本，测试用合成的字典验证其他版本。
 
 static NSString *const MSIMEFullEditionIdentifier = @"full";
-static NSString *const MSIMEFullInputMethodBundleIdentifier = @"app.msime.inputmethod.MetasequoiaIME";
+static NSString *const MSIMEFullInputMethodBundleIdentifier = @"app.msime.inputmethod.LingyaoIME";
 static NSString *const MSIMEFullSettingsBundleIdentifier = @"app.msime.macos";
 static NSString *const MSIMEFullKeychainService = @"com.metasequoia.msime.account";
 static NSString *const MSIMEFullDefaultScheme = @"quanpin";

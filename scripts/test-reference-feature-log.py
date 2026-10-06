@@ -180,7 +180,7 @@ REVIEWED_COMMITS: dict[str, str] = {
         "The five smart_punctuation* keys in platforms/windows/installer/config.default.toml, read "
         "in platforms/windows/src/entrypoints/server_main.cpp; the space-convert and same-key revert "
         "edits are FUNCTION_SMART_PUNCTUATION_CONVERT/REVERT in "
-        "platforms/windows/tsf/IME/MetasequoiaIMEBaseStructure.h."
+        "platforms/windows/tsf/IME/LingyaoIMEBaseStructure.h."
     ),
     "feat(japanese): 日语模式禁用 -/= 翻页并用 - 打长音符": (
         "platforms/windows/src/input/PunctuationPolicy.h (no -/= paging in the Japanese scheme) and "

@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     const std::string root = argc > 1 ? argv[1] : "platforms/windows/tsf";
 
     const std::string focus = read(root + "/Thread/ThreadFocusSink.cpp");
-    const std::string kill = between(focus, "STDAPI CMetasequoiaIME::OnKillThreadFocus()", "\n}\n");
+    const std::string kill = between(focus, "STDAPI CLingyaoIME::OnKillThreadFocus()", "\n}\n");
     expect(between(kill, "return S_OK;", "_CaptureWindowsTextInputHostFocusLoss"), clear_call,
            "losing thread focus clears the smart-punctuation action after the owner guard");
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
            "a top-context change clears the smart-punctuation action");
 
     const std::string composition = read(root + "/Composition/Composition.cpp");
-    const std::string helper = between(composition, "void CMetasequoiaIME::_ClearSmartPunctuationAction()", "\n}\n");
+    const std::string helper = between(composition, "void CLingyaoIME::_ClearSmartPunctuationAction()", "\n}\n");
     expect(helper, "_ResetSmartPunctuationHistory();", "clearing the action forgets the armed space and revert");
     expect(helper, "_pendingSmartPunctuationReplacement = 0;", "clearing the action drops the queued rewrite");
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;

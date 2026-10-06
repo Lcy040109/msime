@@ -511,8 +511,8 @@ fn voice_provider_names_only_known_missing_dependencies() {
             Err(None),
         ),
         (
-            r#"{"generation":7,"type":"final","text":"水杉","ok":true}"#,
-            Ok("水杉".to_owned()),
+            r#"{"generation":7,"type":"final","text":"灵耀","ok":true}"#,
+            Ok("灵耀".to_owned()),
         ),
     ] {
         let directory = private_tempdir();

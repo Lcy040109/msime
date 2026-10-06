@@ -37,7 +37,7 @@ static void TestEveryEditableFieldHasASharedKey()
 {
     NSDictionary<NSString *, NSString *> *keys = MSIMEVoiceProviderSharedKeys();
     unsigned int count = 0;
-    objc_property_t *properties = class_copyPropertyList(MetasequoiaVoiceProviderSettings.class, &count);
+    objc_property_t *properties = class_copyPropertyList(LingyaoVoiceProviderSettings.class, &count);
     NSUInteger strings = 0;
     for (unsigned int index = 0; index < count; ++index) {
         NSString *name = @(property_getName(properties[index]));
@@ -108,7 +108,7 @@ static void TestProviderCredentialIsolation()
 static void TestProviderWindowRestoresTheMatchingDraft()
 {
     [NSApplication sharedApplication];
-    MetasequoiaVoiceProviderSettingsWindow *window = [MetasequoiaVoiceProviderSettingsWindow new];
+    LingyaoVoiceProviderSettingsWindow *window = [LingyaoVoiceProviderSettingsWindow new];
     // The controls belong to the form, which is also the 语音输入 page of the settings window.
     id form = [window valueForKey:@"form"];
     NSPopUpButton *provider = [form valueForKey:@"provider"];
@@ -152,7 +152,7 @@ static void TestLoadUsesTheSelectedProviderSlots()
         @"MSIMEClientVoicePolishTokens":@{@"deepseek":@"polish-secret"},
         @"MSIMEClientVoicePolishToken":@"wrong-flat-polish"
     } forName:NSArgumentDomain];
-    MetasequoiaVoiceProviderSettings *settings = [MetasequoiaVoiceProviderSettings loadSettings];
+    LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.provider isEqual:@"groq"]);
     assert([settings.token isEqual:@"groq-secret"]);
     assert([settings.tokenSlots[@"openai"] isEqual:@"openai-secret"]);
@@ -162,7 +162,7 @@ static void TestLoadUsesTheSelectedProviderSlots()
         @"MSIMEClientVoiceASRProvider":@"system",
         @"MSIMEClientVoiceASRToken":@"stale-cloud-secret"
     } forName:NSArgumentDomain];
-    settings = [MetasequoiaVoiceProviderSettings loadSettings];
+    settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.provider isEqual:@"system"]);
     assert(settings.token.length == 0);
     [defaults setVolatileDomain:oldArguments forName:NSArgumentDomain];
@@ -182,7 +182,7 @@ static void TestUnsetPolishServiceFallsBackToTheSharedDefault()
         @"MSIMEClientVoicePolishModel":@"",
         @"MSIMEClientVoicePolishTokens":@{@"deepseek":@"deepseek-secret", @"siliconflow":@"siliconflow-secret"}
     } forName:NSArgumentDomain];
-    MetasequoiaVoiceProviderSettings *settings = [MetasequoiaVoiceProviderSettings loadSettings];
+    LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings loadSettings];
     assert([settings.polishEndpoint isEqual:@"https://api.deepseek.com/chat/completions"]);
     assert([settings.polishModel isEqual:@"deepseek-v4-flash"]);
     assert([settings.polishToken isEqual:@"deepseek-secret"]);
@@ -204,7 +204,7 @@ static void TestEveryRuntimeProviderIsEditable()
     for (NSString *provider in defaults) {
         assert([MSIMEVoiceASRProviderDefaultEndpoint(provider) isEqual:defaults[provider][0]]);
         assert([MSIMEVoiceASRProviderDefaultModel(provider) isEqual:defaults[provider][1]]);
-        MetasequoiaVoiceProviderSettings *settings = [MetasequoiaVoiceProviderSettings new];
+        LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings new];
         settings.provider = provider;
         settings.endpoint = defaults[provider][0];
         settings.model = defaults[provider][1];
@@ -213,7 +213,7 @@ static void TestEveryRuntimeProviderIsEditable()
         settings.polishEnabled = NO;
         assert([settings validate:nil]);
     }
-    MetasequoiaVoiceProviderSettings *doubao = [MetasequoiaVoiceProviderSettings new];
+    LingyaoVoiceProviderSettings *doubao = [LingyaoVoiceProviderSettings new];
     doubao.provider = @"doubao";
     doubao.endpoint = MSIMEVoiceASRProviderDefaultEndpoint(@"doubao");
     doubao.model = @"";
@@ -222,7 +222,7 @@ static void TestEveryRuntimeProviderIsEditable()
     doubao.polishEnabled = NO;
     assert([doubao validate:nil]);
 
-    MetasequoiaVoiceProviderSettings *system = [MetasequoiaVoiceProviderSettings new];
+    LingyaoVoiceProviderSettings *system = [LingyaoVoiceProviderSettings new];
     system.provider = @"system";
     system.endpoint = @"";
     system.model = @"";

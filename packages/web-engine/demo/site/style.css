@@ -958,7 +958,7 @@ h1 {
 
 .code pre code { padding: 0; background: none; color: inherit; font-size: inherit; }
 
-/* Prism 的高亮配色，配代码面板的深色底，沿用水杉绿系。 */
+/* Prism 的高亮配色，配代码面板的深色底，沿用灵耀绿系。 */
 .code .token.comment { color: #7E9886; font-style: italic; }
 .code .token.keyword, .code .token.boolean, .code .token.important { color: #7FE08E; }
 .code .token.string, .code .token.attr-value, .code .token.template-string { color: #F2C97D; }

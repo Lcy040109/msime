@@ -41,11 +41,11 @@ const FEATURES: [&str; 8] = [
     "symbols",
     "japanese",
 ];
-const REPOSITORY: &str = "metasequoiaime/msime";
+const REPOSITORY: &str = "Lcy040109/msime";
 const SOURCE_PATH: &str = "resources/dictionary-sources";
 /// manifest 的 references 用这个名字列出词库源仓库，提交取 `--dictionary` checkout 的 HEAD。自定义词、翻译和英文词在它的 `custom/` 目录，基础词库来自同一个提交。
 const CUSTOM_DICTIONARY: &str = "msime-dictionary";
-const CUSTOM_DICTIONARY_REPOSITORY: &str = "metasequoiaime/msime-dictionary";
+const CUSTOM_DICTIONARY_REPOSITORY: &str = "Lcy040109/msime-dictionary";
 const CUSTOM_DICTIONARY_PATH: &str = "custom";
 
 #[derive(Serialize)]
@@ -475,7 +475,7 @@ mod tests {
         assert_eq!(reference.commit, head);
         assert_eq!(
             reference.repository,
-            "https://github.com/metasequoiaime/msime-dictionary.git"
+            "https://github.com/Lcy040109/msime-dictionary.git"
         );
 
         assert!(

@@ -87,7 +87,7 @@ int main()
         Require([[NSData dataWithContentsOfFile:foreign] isEqualToData:foreignBytes],
                 "A document outside the prepared layout was rewritten.");
 
-        NSString *bundle = [root stringByAppendingPathComponent:@"Metasequoia.app"];
+        NSString *bundle = [root stringByAppendingPathComponent:@"Lingyao.app"];
         NSString *embedded = [bundle stringByAppendingPathComponent:@"Contents/Resources/runtime-options.json"];
         Require([files createDirectoryAtPath:embedded.stringByDeletingLastPathComponent withIntermediateDirectories:YES
                                   attributes:nil error:nil],
@@ -102,7 +102,7 @@ int main()
         Require([[NSData dataWithContentsOfFile:embedded] isEqualToData:embeddedBytes],
                 "Options inside the main bundle were modified.");
 
-        NSString *sibling = [root stringByAppendingPathComponent:@"Metasequoia.app-data/runtime-options.json"];
+        NSString *sibling = [root stringByAppendingPathComponent:@"Lingyao.app-data/runtime-options.json"];
         Require(MSIMERefreshRuntimeOptionsWith(sibling, bundle, CountingRefresh) == MSIMERuntimeOptionsRefreshFailed &&
                     refreshCalls == 1,
                 "A path that only shares the bundle path as a string prefix was treated as inside the bundle.");

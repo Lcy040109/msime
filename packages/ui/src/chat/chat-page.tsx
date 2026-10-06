@@ -210,7 +210,7 @@ export function ChatPage({
           <div className={chat.empty}>
             <strong>试试你的输入方案和键盘皮肤</strong>
             <span>
-              发一条消息，看看水杉键盘在不同编辑器中的表现。对话内容只用于本次请求，不会写入输入统计。
+              发一条消息，看看灵耀键盘在不同编辑器中的表现。对话内容只用于本次请求，不会写入输入统计。
             </span>
           </div>
         )}

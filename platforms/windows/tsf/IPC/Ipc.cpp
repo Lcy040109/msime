@@ -14,7 +14,7 @@
 #include <winuser.h>
 #include "Globals.h"
 #include "FanyDefines.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include <fmt/xchar.h>
 #include "../Utils/PerfTimer.h"
 
@@ -234,7 +234,7 @@ void CALLBACK FlushTsfDiagnosticLogs(PTP_CALLBACK_INSTANCE instance, PVOID conte
         }
     }
 }
-// These tokens fence messages that can outlive a CMetasequoiaIME instance.
+// These tokens fence messages that can outlive a CLingyaoIME instance.
 // Per-instance counters can collide after HWND/HANDLE reuse during a rapid
 // deactivate/reactivate cycle.
 std::atomic<UINT> nextLocalSessionResetToken{0};

@@ -4,7 +4,7 @@ import UIKit
 /// Every switch in the host app is the iOS system green (#34C759), while buttons, links and selection keep the brand accent. Applied once at each root so pushed pages and sheets inherit it.
 struct GreenSwitchToggleStyle: ToggleStyle {
   func makeBody(configuration: Configuration) -> some View {
-    Toggle(configuration).toggleStyle(.switch).tint(MetasequoiaTheme.switchOn)
+    Toggle(configuration).toggleStyle(.switch).tint(LingyaoTheme.switchOn)
   }
 }
 
@@ -120,35 +120,35 @@ struct KeyboardStatusCard: View {
         Image("MSIMELogo").resizable().scaledToFit().frame(width: 44, height: 44)
           .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous)).accessibilityHidden(true)
         VStack(alignment: .leading, spacing: 2) {
-          Text("水杉输入法").font(.system(size: 17, weight: .semibold))
+          Text("灵耀输入法").font(.system(size: 17, weight: .semibold))
           Text("当前方案 · \(scheme.title)").font(.system(size: 13)).foregroundStyle(.secondary)
             .accessibilityIdentifier("keyboardStatusScheme")
         }
       }
       VStack(alignment: .leading, spacing: 10) {
-        step(1, "添加水杉键盘", "设置 → 通用 → 键盘 → 键盘 → 添加新键盘")
+        step(1, "添加灵耀键盘", "设置 → 通用 → 键盘 → 键盘 → 添加新键盘")
         step(2, "打开「允许完全访问」", "云候选、云剪贴板和同步需要它，日常输入不联网")
       }
       Button {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
       } label: {
-        Text("去开启").font(.system(size: 15, weight: .semibold)).foregroundStyle(MetasequoiaTheme.accent)
+        Text("去开启").font(.system(size: 15, weight: .semibold)).foregroundStyle(LingyaoTheme.accent)
           .frame(maxWidth: .infinity).frame(height: 40)
-          .background(MetasequoiaTheme.accentSoft, in: Capsule())
+          .background(LingyaoTheme.accentSoft, in: Capsule())
           .contentShape(Capsule())
       }
       .buttonStyle(.plain)
       .accessibilityIdentifier("openKeyboardSettingsButton")
-      .accessibilityHint("打开水杉输入法的系统设置页面")
+      .accessibilityHint("打开灵耀输入法的系统设置页面")
     }
     .padding(.vertical, 6)
   }
 
   private func step(_ number: Int, _ title: String, _ detail: String) -> some View {
     HStack(alignment: .top, spacing: 10) {
-      Text("\(number)").font(.system(size: 13, weight: .semibold)).foregroundStyle(MetasequoiaTheme.accent)
-        .frame(width: 22, height: 22).background(MetasequoiaTheme.accentSoft, in: Circle())
+      Text("\(number)").font(.system(size: 13, weight: .semibold)).foregroundStyle(LingyaoTheme.accent)
+        .frame(width: 22, height: 22).background(LingyaoTheme.accentSoft, in: Circle())
       VStack(alignment: .leading, spacing: 2) {
         Text(title).font(.system(size: 15))
         Text(detail).font(.system(size: 13)).foregroundStyle(.secondary)
@@ -163,6 +163,6 @@ struct KeyboardStatusCard: View {
 struct SettingsGroupHeader: View {
   let title: String
   var body: some View {
-    Text(title).font(.system(size: 13)).foregroundStyle(MetasequoiaTheme.groupTitle).textCase(nil)
+    Text(title).font(.system(size: 13)).foregroundStyle(LingyaoTheme.groupTitle).textCase(nil)
   }
 }

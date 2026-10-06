@@ -2,7 +2,7 @@
 #include "../HostFocusState.h"
 
 #include "KeyHandlerEditSession.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include "Ipc.h"
 #include <atomic>
 #include <chrono>
@@ -81,9 +81,9 @@ constexpr UINT FOCUS_LOSS_DEFER_MS = 300;
 // Chromium hosts fire a burst of OnSetFocus per window switch; coalesce them
 // into one resend instead of one packet per callback.
 constexpr UINT FOCUS_STATUS_RESEND_DELAY_MS = 50;
-LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND wndHandle, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK CLingyaoIME_WindowProc(HWND wndHandle, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-class CMetasequoiaIME : public ITfTextInputProcessorEx,
+class CLingyaoIME : public ITfTextInputProcessorEx,
                         public ITfThreadMgrEventSink,
                         public ITfTextEditSink,
                         public ITfKeyEventSink,
@@ -101,8 +101,8 @@ class CMetasequoiaIME : public ITfTextInputProcessorEx,
     friend class CCandidateListUIPresenter;
 
   public:
-    CMetasequoiaIME();
-    ~CMetasequoiaIME();
+    CLingyaoIME();
+    ~CLingyaoIME();
 
     // IUnknown
     STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void **ppvObj);
@@ -342,7 +342,7 @@ class CMetasequoiaIME : public ITfTextInputProcessorEx,
                                          _Out_opt_ HINSTANCE *phInst);
     static HRESULT GetComModuleName(REFGUID rclsid, _Out_writes_(cchPath) WCHAR *wchPath, DWORD cchPath);
 
-    static void IpcWorkerThread(CMetasequoiaIME *pIME);
+    static void IpcWorkerThread(CLingyaoIME *pIME);
     void _QueuePendingServerCandidate(UINT msgType, _In_z_ const WCHAR *pCandidateString);
     bool _TakePendingServerCandidate(_Out_ UINT *pMsgType, _Out_ std::wstring *pCandidateString);
     void _ScheduleCandidatePresenterCleanup(_In_ CCandidateListUIPresenter *pPresenter);
@@ -486,7 +486,7 @@ class CMetasequoiaIME : public ITfTextInputProcessorEx,
     void _HandleHookedBareShiftRelease(UINT sequence);
     void _MarkBareShiftHandled();
     static LRESULT CALLBACK _BareShiftKeyboardHookProc(int code, WPARAM wParam, LPARAM lParam);
-    static thread_local CMetasequoiaIME *_bareShiftHookOwner;
+    static thread_local CLingyaoIME *_bareShiftHookOwner;
 
     void _StartComposition(_In_ ITfContext *pContext);
     HRESULT _EndComposition(_In_opt_ ITfContext *pContext, _In_opt_ ITfComposition *expectedComposition = nullptr,
@@ -568,9 +568,9 @@ class CMetasequoiaIME : public ITfTextInputProcessorEx,
     void _RefreshLanguageBarThemeIcons();
     void _RequestLanguageBarCapsIconRefresh();
 
-    BOOL VerifyMetasequoiaIMECLSID(_In_ REFCLSID clsid);
+    BOOL VerifyLingyaoIMECLSID(_In_ REFCLSID clsid);
 
-    friend LRESULT CALLBACK CMetasequoiaIME_WindowProc(HWND wndHandle, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    friend LRESULT CALLBACK CLingyaoIME_WindowProc(HWND wndHandle, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
   private:
     ITfThreadMgr *_pThreadMgr;

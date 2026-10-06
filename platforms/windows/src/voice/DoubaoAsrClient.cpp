@@ -167,7 +167,7 @@ HINTERNET ConnectWebSocket(const std::string &endpoint, const std::string &auth_
     std::wstring path(components.lpszUrlPath, components.dwUrlPathLength);
     if (components.dwExtraInfoLength)
         path.append(components.lpszExtraInfo, components.dwExtraInfoLength);
-    session.value = WinHttpOpen(L"MetasequoiaImeServer/1.0", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME,
+    session.value = WinHttpOpen(L"LingyaoImeServer/1.0", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME,
                                 WINHTTP_NO_PROXY_BYPASS, 0);
     if (!session.value)
         return nullptr;

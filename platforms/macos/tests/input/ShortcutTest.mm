@@ -2001,7 +2001,7 @@ static void TestOptInSchemeModes() {
     NSView *hint = hintRow(settings);
     assert(hint && !hint.hidden);
     NSTextField *hintText = (NSTextField *)MSIMEFindPreferenceViewOfClass(hint, NSTextField.class);
-    assert([hintText.stringValue containsString:@"「水杉输入法 · 粤」"] && [hintText.stringValue containsString:@"「粤语」"]);
+    assert([hintText.stringValue containsString:@"「灵耀输入法 · 粤」"] && [hintText.stringValue containsString:@"「粤语」"]);
     assert(MSIMEFindPreferenceControl(hint, @selector(openInputSourceSettings:)));
     cantoneseAdded = YES;
     [NSNotificationCenter.defaultCenter postNotificationName:NSWindowDidBecomeKeyNotification object:settings.window];
@@ -4683,15 +4683,15 @@ static void TestInputMode(NSUserDefaults *defaults, MSIMEAppearancePreferences *
     assert([menu itemAtIndex:1].state == NSControlStateValueOff);
     assert(menu.numberOfItems == 21);
     assert([[menu itemAtIndex:12].title isEqual:@"悬浮工具栏"]);
-    NSArray<NSString *> *toolTitles = @[@"水杉表情面板…", @"云剪贴板…", @"水杉屏幕键盘…", @"手写输入…", @"开始/结束语音输入"];
+    NSArray<NSString *> *toolTitles = @[@"灵耀表情面板…", @"云剪贴板…", @"灵耀屏幕键盘…", @"手写输入…", @"开始/结束语音输入"];
     NSArray<NSString *> *toolActions = @[@"showEmoji:", @"showCloudClipboard:", @"showScreenKeyboard:", @"showHandwriting:", @"showVoicePanel"];
     for (NSUInteger index = 0; index < toolTitles.count; ++index) {
         NSMenuItem *tool = [menu itemAtIndex:13 + index];
         assert([tool.title isEqual:toolTitles[index]] && tool.action == NSSelectorFromString(toolActions[index]));
     }
     assert([menu itemAtIndex:18].separatorItem);
-    assert([[menu itemAtIndex:19].title isEqual:@"水杉输入法设置…"] && [menu itemAtIndex:19].action == @selector(showAppearance:));
-    assert([[menu itemAtIndex:20].title isEqual:@"关于水杉输入法…"] && [menu itemAtIndex:20].action == @selector(showAbout:));
+    assert([[menu itemAtIndex:19].title isEqual:@"灵耀输入法设置…"] && [menu itemAtIndex:19].action == @selector(showAppearance:));
+    assert([[menu itemAtIndex:20].title isEqual:@"关于灵耀输入法…"] && [menu itemAtIndex:20].action == @selector(showAbout:));
     // Simplified output is the off state of the one 繁体输出 toggle.
     const BOOL traditionalOutput = appearance.traditionalOutput;
     appearance.traditionalOutput = NO;
@@ -4924,7 +4924,7 @@ show_selected_bar = true
     MSIMEAppearancePreferences *external = [[MSIMEAppearancePreferences alloc] initWithDefaults:defaults skinsRoot:[NSURL fileURLWithPath:@(root.c_str()) isDirectory:YES]];
     // Skins are picked from the cards on the 皮肤 page, which is the browser itself now; the popup
     // of skin names it replaced could not show what any of them looked like.
-    MetasequoiaSkinSettingsView *picker = (id)[external skinSettingsView];
+    LingyaoSkinSettingsView *picker = (id)[external skinSettingsView];
     NSArray<NSSwitch *> *pickerSwitches = [picker valueForKey:@"switches"];
     // Seven global themes, then the package.
     assert(pickerSwitches.count == 8 && [pickerSwitches.lastObject.identifier isEqual:@"synthetic"]);
@@ -4937,7 +4937,7 @@ show_selected_bar = true
     MSIMEFloatingToolbarPanel *toolbar = [MSIMEFloatingToolbarPanel new];
     [toolbar setFrameAutosaveName:@""];
     [controller setValue:toolbar forKey:@"toolbar"];
-    MetasequoiaSkinSettingsView *cards = (id)[external skinSettingsView];
+    LingyaoSkinSettingsView *cards = (id)[external skinSettingsView];
     NSArray<NSSwitch *> *skinSwitches = [cards valueForKey:@"switches"];
     assert([skinSwitches.lastObject.identifier isEqual:@"synthetic"]);
     [NSNotificationCenter.defaultCenter addObserver:controller selector:@selector(appearanceChanged:)
@@ -4990,7 +4990,7 @@ show_selected_bar = true
     assert([external resolvedSkinForDark:NO].candidateSkin == "synthetic" && external.decorationImage);
     // Rescanning is 刷新皮肤 on the skin page, which rebuilds the cards from the directory; the
     // accessor performs the same reload the button does.
-    MetasequoiaSkinSettingsView *rescanned = (id)[external skinSettingsView];
+    LingyaoSkinSettingsView *rescanned = (id)[external skinSettingsView];
     // The choice is kept for when the package comes back; meanwhile the custom theme is drawn without it.
     assert([external.customCandidateSkin isEqual:@"synthetic"]);
     assert([external resolvedSkinForDark:NO].id == "custom" && [external resolvedSkinForDark:NO].candidateSkin.empty() &&
@@ -7825,7 +7825,7 @@ int main(int argc, char **argv) {
         assert([[[appearance sharedPreferencesByMerging:@{}] objectForKey:@"candidate_follow_cursor"] isEqual:@NO]);
         [appearance applySharedCandidatePreferences:@{@"candidate_follow_cursor": @YES}];
         assert(appearance.candidateFollowCursor);
-        NSArray<NSString *> *skinIDs = @[@"system", @"shuishan", @"light", @"paper", @"night", @"ink", @"custom"];
+        NSArray<NSString *> *skinIDs = @[@"system", @"lingyao", @"light", @"paper", @"night", @"ink", @"custom"];
         NSArray<NSSwitch *> *skinCards = [(id)[appearance skinSettingsView] valueForKey:@"switches"];
         assert(skinCards.count == skinIDs.count);
         for (NSUInteger option = 0; option < skinIDs.count; ++option) {
@@ -8548,11 +8548,11 @@ int main(int argc, char **argv) {
                     assert([unselected.titleColor isEqual:SkinColor(tokens.text)]);
                     // On the selected fill the translation is the design's candSelTr, the selected number's colour.
                     assert([selected.translationColor isEqual:SkinColor(tokens.selectedNumber)]);
-                    // A plain row's translation is the theme's secondary colour, which is the number colour (dc.html L2150, L2183): #9FB5A3 under 水杉, the platform's sub grey under 跟随系统.
+                    // A plain row's translation is the theme's secondary colour, which is the number colour (dc.html L2150, L2183): #9FB5A3 under 灵耀, the platform's sub grey under 跟随系统.
                     assert([unselected.translationColor isEqual:SkinColor(tokens.number)]);
-                    if ([skinID isEqual:@"shuishan"] || [skinID isEqual:@"system"]) {
+                    if ([skinID isEqual:@"lingyao"] || [skinID isEqual:@"system"]) {
                         NSColor *gloss = [unselected.translationColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-                        const unsigned expected = [skinID isEqual:@"shuishan"] ? 0x9FB5A3 : dark ? 0x98989D : 0x6E6E73;
+                        const unsigned expected = [skinID isEqual:@"lingyao"] ? 0x9FB5A3 : dark ? 0x98989D : 0x6E6E73;
                         assert(fabs(gloss.redComponent - ((expected >> 16) & 0xFF) / 255.0) < 0.002);
                         assert(fabs(gloss.greenComponent - ((expected >> 8) & 0xFF) / 255.0) < 0.002);
                         assert(fabs(gloss.blueComponent - (expected & 0xFF) / 255.0) < 0.002);

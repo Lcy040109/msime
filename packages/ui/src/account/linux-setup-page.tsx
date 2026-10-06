@@ -83,7 +83,7 @@ export function LinuxSetupPage({
     >
       <header className={onboarding.header}>
         <img src={new URL("./assets/msime.svg", import.meta.url).href} alt="" />
-        <h1>水杉输入法</h1>
+        <h1>灵耀输入法</h1>
       </header>
       <div className={onboarding.body}>
         <section className={onboarding.section}>

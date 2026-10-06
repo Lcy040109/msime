@@ -314,8 +314,8 @@ enum GlobalThemePreference {
   /// Change the theme fields of the shared document, then copy what the document now holds to the App Group; false when the document refused the change, which leaves the App Group alone.
   @discardableResult
   static func update(stateRoot: URL? = nil, _ mapping: (inout [String: Any]) -> Void) -> Bool {
-    guard MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
-    if let document = MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot) {
+    guard LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
+    if let document = LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot) {
       mirror(document)
       KeyboardTheme.reload(document)
     }

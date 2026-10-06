@@ -13,7 +13,7 @@ void require_at(bool value, int line) {
                              std::to_string(line));
 }
 ServerLaunch parse(std::initializer_list<const wchar_t *> arguments) {
-  std::vector<const wchar_t *> argv{L"MetasequoiaImeServer.exe"};
+  std::vector<const wchar_t *> argv{L"LingyaoImeServer.exe"};
   for (const auto *argument : arguments)
     argv.push_back(argument);
   return parse_server_arguments(static_cast<int>(argv.size()), argv.data());

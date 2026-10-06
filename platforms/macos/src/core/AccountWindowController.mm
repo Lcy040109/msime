@@ -22,7 +22,7 @@
         self.window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 420, 280)
                                                    styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
                                                      backing:NSBackingStoreBuffered defer:NO];
-        self.window.title = @"水杉账号";
+        self.window.title = @"灵耀账号";
     }
     NSString *token = [[MSIMEAccountSessionManager sharedManager] accessTokenForAccountID:accountID];
     NSTextField *label = [[NSTextField alloc] initWithFrame:NSMakeRect(24, 90, 372, 50)];

@@ -628,7 +628,7 @@ std::string production_preview_document(const std::string &runtime_document,
   return document.dump();
 }
 // 本版本的 TIP 有没有活动的输入模式，用一个命名的手动重置事件告诉别的版本的 Server：有信号表示活动。名字后面接版本后缀（full 是空串）。只有生产 Server 发布它，预览实例不碰。
-constexpr wchar_t server_mode_active_event_prefix[] = L"Local\\MetasequoiaImeServer_ModeActive";
+constexpr wchar_t server_mode_active_event_prefix[] = L"Local\\LingyaoImeServer_ModeActive";
 // 另一个版本的 TIP 是否有活动的输入模式：看那个版本的 Server 发布的事件。那个版本没在运行时事件不存在，按不活动处理。
 bool other_edition_mode_active() {
   for (const wchar_t *suffix : {MSIME_EDITIONS_NAME_SUFFIXES}) {
@@ -648,7 +648,7 @@ class ProductionInstance final {
 public:
   ProductionInstance() {
     handle_ = CreateMutexW(nullptr, FALSE,
-                           L"Local\\MetasequoiaImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX);
+                           L"Local\\LingyaoImeServer_SingleInstance" MSIME_EDITION_NAME_SUFFIX);
     if (!handle_)
       throw std::runtime_error("Server instance guard unavailable");
     already_running_ = GetLastError() == ERROR_ALREADY_EXISTS;
@@ -684,7 +684,7 @@ private:
 };
 // A Server that TSF revived after a crash (--production) has no Watchdog above it, so it starts the one packaged beside it, as the reference Server does. The Watchdog adopts this running Server instead of launching a second one, holds its own single-instance mutex, and exits on its own when the TIP profile is not enabled.
 void start_watchdog(const std::filesystem::path &directory) {
-  const auto watchdog = directory / L"MetasequoiaImeWatchdog.exe";
+  const auto watchdog = directory / L"LingyaoImeWatchdog.exe";
   if (directory.empty() || GetFileAttributesW(watchdog.c_str()) == INVALID_FILE_ATTRIBUTES)
     return;
   std::wstring command = L"\"" + watchdog.wstring() + L"\"";

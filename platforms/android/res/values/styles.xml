@@ -42,7 +42,7 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <!-- 状态卡标题「水杉输入法」：17sp、600。 -->
+    <!-- 状态卡标题「灵耀输入法」：17sp、600。 -->
     <style name="TextAppearance.MSIME.CardTitle" parent="TextAppearance.Material3.TitleMedium">
         <item name="android:textSize">@dimen/ms_text_card_title</item>
         <item name="android:textStyle">bold</item>

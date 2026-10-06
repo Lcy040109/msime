@@ -26,14 +26,14 @@ try {
         if ($models.Count -ne 0) { throw "$Context packaged on-demand model files: $($models.FullName -join ', ')" }
     }
     foreach ($file in @(
-        'server/build-release/bin/Release/MetasequoiaImeServer.exe',
-        'server/build-release/bin/Release/MetasequoiaImeServer.pdb',
-        'server/build-release/bin/Release/MetasequoiaImeWatchdog.exe',
-        'server/build-release/bin/Release/MetasequoiaImeWatchdog.pdb',
+        'server/build-release/bin/Release/LingyaoImeServer.exe',
+        'server/build-release/bin/Release/LingyaoImeServer.pdb',
+        'server/build-release/bin/Release/LingyaoImeWatchdog.exe',
+        'server/build-release/bin/Release/LingyaoImeWatchdog.pdb',
         'server/build-release/bin/Release/msime-mcp.exe',
         'server/build-release/bin/Release/msime-mcp.pdb',
-        'server/build-release/bin/Release/MetasequoiaImeServerTests.exe',
-        'server/build-release/bin/Release/MetasequoiaImeServerTests.pdb',
+        'server/build-release/bin/Release/LingyaoImeServerTests.exe',
+        'server/build-release/bin/Release/LingyaoImeServerTests.pdb',
         'server/build-release/bin/Release/test_webview_contract.exe',
         'server/build-release/bin/Release/test_webview_contract.pdb',
         'server/build-release/bin/Release/windows-first-run.exe',
@@ -46,10 +46,10 @@ try {
         'server/build-release/bin/Release/MSIME.exe',
         'server/build-release/bin/Release/MSIME.pdb',
         'server/build-release/bin/Release/RestartAgent.exe',
-        'windows/build32-release/Release/MetasequoiaImeTsf.dll',
-        'windows/build32-release/Release/MetasequoiaImeTsf.pdb',
-        'windows/build64-release/Release/MetasequoiaImeTsf.dll',
-        'windows/build64-release/Release/MetasequoiaImeTsf.pdb',
+        'windows/build32-release/Release/LingyaoImeTsf.dll',
+        'windows/build32-release/Release/LingyaoImeTsf.pdb',
+        'windows/build64-release/Release/LingyaoImeTsf.dll',
+        'windows/build64-release/Release/LingyaoImeTsf.pdb',
         'THIRD_PARTY_NOTICES.txt',
         'LICENSE',
         'target/release/msime-desktop.exe',
@@ -75,8 +75,8 @@ try {
     # Build-Client.ps1 的 Arm64X TIP、它的 PDB 和 ARM64 宿主 DLL；宿主 DLL 的 PDB 也留在这里，从不暂存。
     foreach ($edition in @('full', 'wubi', 'vietnamese')) {
         $suffix = if ($edition -eq 'full') { '' } else { "_$edition" }
-        Write-Fixture "target/windows-$edition/arm64/bin/MetasequoiaImeTsf.dll" "synthetic $edition Arm64X TIP"
-        Write-Fixture "target/windows-$edition/arm64/bin/MetasequoiaImeTsf.pdb" "synthetic $edition Arm64X TIP symbols"
+        Write-Fixture "target/windows-$edition/arm64/bin/LingyaoImeTsf.dll" "synthetic $edition Arm64X TIP"
+        Write-Fixture "target/windows-$edition/arm64/bin/LingyaoImeTsf.pdb" "synthetic $edition Arm64X TIP symbols"
         Write-Fixture "target/windows-$edition/arm64/bin/msime_host_api$($suffix)_arm64.dll" "synthetic $edition ARM64 host"
         Write-Fixture "target/windows-$edition/arm64/bin/msime_host_api.pdb" "synthetic $edition ARM64 host symbols"
     }
@@ -101,12 +101,12 @@ try {
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -TargetVersion '2026.9.1'
     # tsf_dll\arm64 只有 Arm64X TIP、它的 PDB 和 ARM64 宿主 DLL：TIP 的 ARM64EC 那一半用的 x64 宿主由 tsf_dll\64 装进同一个版本目录。
     $arm64Staged = @(Get-ChildItem -LiteralPath (Join-Path $installer 'tsf_dll/arm64') -File | ForEach-Object Name | Sort-Object)
-    if (($arm64Staged -join ',') -ne 'MetasequoiaImeTsf.dll,MetasequoiaImeTsf.pdb,msime_host_api_arm64.dll' -or
-        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/MetasequoiaImeTsf.dll')) -ne 'synthetic full Arm64X TIP' -or
+    if (($arm64Staged -join ',') -ne 'LingyaoImeTsf.dll,LingyaoImeTsf.pdb,msime_host_api_arm64.dll' -or
+        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/LingyaoImeTsf.dll')) -ne 'synthetic full Arm64X TIP' -or
         [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/msime_host_api_arm64.dll')) -ne 'synthetic full ARM64 host') {
         throw "tsf_dll/arm64 is not the Arm64X TIP and its ARM64 host: $($arm64Staged -join ', ')"
     }
-    $arm64Tip = Join-Path $fixture 'target/windows-full/arm64/bin/MetasequoiaImeTsf.dll'
+    $arm64Tip = Join-Path $fixture 'target/windows-full/arm64/bin/LingyaoImeTsf.dll'
     Move-Item -LiteralPath $arm64Tip -Destination "$arm64Tip.moved"
     $rejected = $false
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $_.Exception.Message -match 'Arm64X TSF' }
@@ -134,11 +134,11 @@ try {
         }
     }
     [IO.File]::WriteAllText($pinned, $originalPinned)
-    foreach ($file in @('tsf_dll/32/MetasequoiaImeTsf.dll', 'tsf_dll/32/MetasequoiaImeTsf.pdb',
-                         'tsf_dll/64/MetasequoiaImeTsf.dll', 'tsf_dll/64/MetasequoiaImeTsf.pdb',
-                         'server_exe/MetasequoiaImeServer.pdb',
-                         'server_exe/MetasequoiaImeWatchdog.exe',
-                         'server_exe/MetasequoiaImeWatchdog.pdb',
+    foreach ($file in @('tsf_dll/32/LingyaoImeTsf.dll', 'tsf_dll/32/LingyaoImeTsf.pdb',
+                         'tsf_dll/64/LingyaoImeTsf.dll', 'tsf_dll/64/LingyaoImeTsf.pdb',
+                         'server_exe/LingyaoImeServer.pdb',
+                         'server_exe/LingyaoImeWatchdog.exe',
+                         'server_exe/LingyaoImeWatchdog.pdb',
                          'server_exe/msime-mcp.exe',
                          'server_exe/msime-mcp.pdb',
                          'server_exe/msime-client-settings.exe',
@@ -169,8 +169,8 @@ try {
     Remove-Item (Join-Path $fixture 'target/language-dictionaries/msime-cantonese.db') -Force
     & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture
     foreach ($testFile in @(
-        'server_exe/MetasequoiaImeServerTests.exe',
-        'server_exe/MetasequoiaImeServerTests.pdb',
+        'server_exe/LingyaoImeServerTests.exe',
+        'server_exe/LingyaoImeServerTests.pdb',
         'server_exe/test_webview_contract.exe',
         'server_exe/test_webview_contract.pdb',
         'server_exe/windows-first-run.exe',
@@ -179,7 +179,7 @@ try {
     )) {
         if (Test-Path (Join-Path $installer $testFile)) { throw "Packaged a test file: $testFile" }
     }
-    $serverPdbFixture = Join-Path $fixture 'server/build-release/bin/Release/MetasequoiaImeServer.pdb'
+    $serverPdbFixture = Join-Path $fixture 'server/build-release/bin/Release/LingyaoImeServer.pdb'
     Remove-Item $serverPdbFixture -Force
     $rejected = $false
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture } catch { $rejected = $_.Exception.Message -match 'PDB' }
@@ -187,7 +187,7 @@ try {
     [IO.File]::WriteAllText($serverPdbFixture, 'fixture')
     # 发布时 Server 输出目录同时作为 x64 TIP 目录传入，所以自包含的 Windows App SDK 和语音运行时就在 64 位 TIP 旁边。tsf_dll\64 只取 TIP、它的宿主 DLL 和 32 位 TIP 也有的那些依赖；Server 暂存目录去掉 TIP 以及 msime_setup.iss 从 tsf_dll\64 装进 Server 目录的那些文件。
     $sharedOutput = 'server/build-release/bin/Release'
-    $sharedTipFiles = @('MetasequoiaImeTsf.dll', 'MetasequoiaImeTsf.pdb', 'msime_host_api.dll', 'synthetic-runtime.dll')
+    $sharedTipFiles = @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb', 'msime_host_api.dll', 'synthetic-runtime.dll')
     foreach ($name in $sharedTipFiles) {
         Copy-Item (Join-Path $fixture "windows/build64-release/Release/$name") (Join-Path $fixture $sharedOutput)
     }
@@ -252,7 +252,7 @@ try {
         }
         [IO.File]::WriteAllText($sourceHost, $expected)
     }
-    $watchdog = Join-Path $fixture 'server/build-release/bin/Release/MetasequoiaImeWatchdog.exe'
+    $watchdog = Join-Path $fixture 'server/build-release/bin/Release/LingyaoImeWatchdog.exe'
     Remove-Item -LiteralPath $watchdog
     $rejected = $false
     try { & (Join-Path $installer 'Prepare-PackageFiles.ps1') -RepoRoot $fixture -Light } catch { $rejected = $_.Exception.Message -match 'Watchdog' }
@@ -330,7 +330,7 @@ try {
     foreach ($mapping in @(@('32', 'x86'), @('64', 'x64'))) {
         $native = Join-Path $fixture "target/windows-full/$($mapping[1])/bin"
         New-Item -ItemType Directory -Force $native | Out-Null
-        foreach ($name in @('MetasequoiaImeTsf.dll', 'MetasequoiaImeTsf.pdb')) {
+        foreach ($name in @('LingyaoImeTsf.dll', 'LingyaoImeTsf.pdb')) {
             Copy-Item (Join-Path $fixture "windows/build$($mapping[0])-release/Release/$name") $native
         }
         [IO.File]::WriteAllText((Join-Path $native 'msime_host_api.dll'), "native $($mapping[1]) host")
@@ -459,7 +459,7 @@ try {
     }
     if (-not (Test-Path (Join-Path $installer 'tsf_dll/arm64/msime_host_api_wubi_arm64.dll')) -or
         (Test-Path (Join-Path $installer 'tsf_dll/arm64/msime_host_api_arm64.dll')) -or
-        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/MetasequoiaImeTsf.dll')) -ne 'synthetic wubi Arm64X TIP') {
+        [IO.File]::ReadAllText((Join-Path $installer 'tsf_dll/arm64/LingyaoImeTsf.dll')) -ne 'synthetic wubi Arm64X TIP') {
         throw 'Edition Arm64X TIP or ARM64 host not packaged from the edition build'
     }
     # 五笔版提供中文方案，非英文离线释义照常装；手写模型和落定重排模型和其他版本一样不进安装包。

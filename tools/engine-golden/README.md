@@ -6,7 +6,7 @@ The recipe below is historical. `engine-lock.json`, `scripts/fetch_engine.py` an
 
 ## Oracle
 
-- Engine: `metasequoiaime/msime-engine` commit `a9b9f092219505166c927843762b650d1e0e501d`, archive sha256 `9510e03f761e94c44c9dcba74f84de23db661251b0eb67766aba0991a7e5445e`, plus the `dependencies` of `engine-lock.json` (googlepinyinime-rev, utfcpp, ...) extracted at their paths, exactly as `scripts/fetch_engine.py` stages them.
+- Engine: `Lcy040109/msime-engine` commit `a9b9f092219505166c927843762b650d1e0e501d`, archive sha256 `9510e03f761e94c44c9dcba74f84de23db661251b0eb67766aba0991a7e5445e`, plus the `dependencies` of `engine-lock.json` (googlepinyinime-rev, utfcpp, ...) extracted at their paths, exactly as `scripts/fetch_engine.py` stages them.
 - 23 overlays applied, in `engine-lock.json` order: alternative_segmentation_page, double_helpcode_cache, english_display, expand_initial_candidates, frequency_comparison_set, google_umlaut, jiajia_helpcode, lattice_reading, standalone_sentence_learning, quanpin_autocorrect_parity, manual_segmentation_cloud, wubi_prefix_learning, shuangpin_yo, xuan_single_character, punctuation_alternation, bundled_dictionary_entries, paired_punctuation_ipc, local_mode_fallback, custom_helpcode, personal_learning, online_candidate_dedup, wubi_mixed_candidates, shuangpin_sentence_score (each `scripts/apply_engine_<name>.py`).
 - 3 overlays NOT applied (they fail to apply to this archive): `wubi_mixed_routing`, `neural_association`, `caret_prefix`. Nothing they add has a golden; the Rust side needs hand-written tests for them.
 - Not engine behaviour, so not recorded: the Google decoder (`dict_pinyin.dat`, dropped) and the sentence reranker (`sentence-model*.safetensors`).
@@ -25,7 +25,7 @@ for s in alternative_segmentation_page double_helpcode_cache english_display exp
   python3 scripts/apply_engine_$s.py "$REF/MSIME-Engine"
 done
 cmake -S "$REF/MSIME-Engine" -B "$REF/build-ref" -DCMAKE_BUILD_TYPE=Release   # Unix Makefiles, AppleClang 21, Homebrew boost/fmt/spdlog/sqlite
-cmake --build "$REF/build-ref" --target MetasequoiaImeEngine -j8
+cmake --build "$REF/build-ref" --target LingyaoImeEngine -j8
 ```
 
 The recorded goldens came from macOS arm64 with that exact configuration (`-O3 -DNDEBUG -std=c++17`, `FMT_HEADER_ONLY=1`).
@@ -38,7 +38,7 @@ cmake -S tools/engine-golden -B "$WORK/build" \
 cmake --build "$WORK/build"
 ```
 
-Links `libMetasequoiaImeEngine.a` the way the reference test targets do (Boost headers, SQLite3, Threads) and uses Homebrew's header-only `nlohmann_json` for JSON (tooling only, nothing ships). `$WORK` must be a scratch directory, never inside the repo.
+Links `libLingyaoImeEngine.a` the way the reference test targets do (Boost headers, SQLite3, Threads) and uses Homebrew's header-only `nlohmann_json` for JSON (tooling only, nothing ships). `$WORK` must be a scratch directory, never inside the repo.
 
 ## 3. Resource directory (real-dictionary goldens)
 

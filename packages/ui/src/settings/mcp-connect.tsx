@@ -175,7 +175,7 @@ function terminalInstructions(server: McpServerStatus, flags: readonly McpFlag[]
         placeholder("@<文件路径>"),
       ];
   return [
-    plain("水杉输入法（MSIME）可以在终端里直接管理：\n- 查看可用的工具和参数："),
+    plain("灵耀输入法（MSIME）可以在终端里直接管理：\n- 查看可用的工具和参数："),
     ...msime,
     plain(" tools\n- 调用一个工具，参数是 JSON 对象，输出 JSON："),
     ...call,

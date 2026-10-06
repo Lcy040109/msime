@@ -27,7 +27,7 @@ final class SmartPunctuationTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-smart-punctuation-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
     // What the bridge owes is the context: the preceding scalar reaches the shared layer, which
     // then decides. With the shipped defaults `smart_punctuation_direct_letter` is on - it follows

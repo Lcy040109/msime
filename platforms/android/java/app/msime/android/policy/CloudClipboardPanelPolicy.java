@@ -17,7 +17,7 @@ public final class CloudClipboardPanelPolicy {
     public static final String TAB_LOCAL = "本机";
     public static final String TAB_CLOUD = "云端";
     public static final String UPLOAD_ACTION = "发到云剪贴板";
-    public static final String SIGNED_OUT_MESSAGE = "登录水杉账号后可在设备间同步剪贴板";
+    public static final String SIGNED_OUT_MESSAGE = "登录灵耀账号后可在设备间同步剪贴板";
     public static final String DISABLED_MESSAGE = "云剪贴板未开启";
 
     private static final int HTTP_UNAUTHORIZED = 401;

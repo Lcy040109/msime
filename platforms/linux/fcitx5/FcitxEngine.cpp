@@ -6282,7 +6282,7 @@ void FcitxState::maintenance(int operation) {
   }
 }
 
-// The badge's theme, by the macOS badge's rule: its mode is toolbar_theme when that names one, otherwise the global mode, whose "system" (跟随系统) default follows the desktop. A global theme with a fixed appearance (水杉 is dark, 纸白 light) decides it either way, and the colours are that theme's palette as the floating toolbar takes it.
+// The badge's theme, by the macOS badge's rule: its mode is toolbar_theme when that names one, otherwise the global mode, whose "system" (跟随系统) default follows the desktop. A global theme with a fixed appearance (灵耀 is dark, 纸白 light) decides it either way, and the colours are that theme's palette as the floating toolbar takes it.
 msime::linux_host::CandidateTheme fcitx_mode_badge_theme(const Json &preferences, bool system_dark, const Json &catalog) {
   const bool dark = msime::linux_host::surface_dark_theme(preferences, "toolbar_theme", system_dark);
   return resolveThemeInMode(preferences, dark, catalog);

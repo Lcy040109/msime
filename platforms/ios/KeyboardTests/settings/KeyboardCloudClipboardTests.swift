@@ -123,7 +123,7 @@ final class KeyboardCloudClipboardTests: XCTestCase {
     let signedOut = KeyboardCloudClipboard(hasFullAccess: true, service: FakeCloudClipboard(signedIn: false, items: ["x"]))
     signedOut.refresh()
     await settle(signedOut) { signedOut.message == KeyboardCloudClipboard.signedOutMessage }
-    XCTAssertEqual(signedOut.message, "登录水杉账号后可在设备间同步剪贴板")
+    XCTAssertEqual(signedOut.message, "登录灵耀账号后可在设备间同步剪贴板")
     XCTAssertFalse(signedOut.canUpload)
     XCTAssertTrue(signedOut.items.isEmpty)
 

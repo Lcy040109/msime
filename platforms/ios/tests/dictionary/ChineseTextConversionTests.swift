@@ -2,11 +2,11 @@ import XCTest
 
 final class ChineseTextConversionTests: XCTestCase {
   func testSimplifiedOutputIsUntouched() {
-    XCTAssertEqual(ChineseTextConversion.outputString("水杉输入法", traditional: false), "水杉输入法")
+    XCTAssertEqual(ChineseTextConversion.outputString("灵耀输入法", traditional: false), "灵耀输入法")
   }
 
   func testTraditionalOutputUsesTheSharedPhraseTables() {
-    XCTAssertEqual(ChineseTextConversion.outputString("水杉输入法", traditional: true), "水杉輸入法")
+    XCTAssertEqual(ChineseTextConversion.outputString("灵耀输入法", traditional: true), "灵耀輸入法")
     // 发 is 發 or 髮 depending on the word; a character-by-character transform cannot tell.
     XCTAssertEqual(ChineseTextConversion.outputString("头发", traditional: true), "頭髮")
     XCTAssertEqual(ChineseTextConversion.outputString("发现", traditional: true), "發現")

@@ -19,16 +19,16 @@ final class PunctuationSettingsTests: XCTestCase {
   /// The app reads and writes the document without creating a session.
   func testSettingsAppRoundTripsTheSharedDocument() throws {
     // The keyboard prepares the state root; the app only ever reads one that exists.
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
-    let before = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    _ = LingyaoInputSessionBridge(stateRoot: state)
+    let before = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(before["paired_punctuation"] as? Bool, true)
     XCTAssertEqual(before["punctuation_lock"] as? String, "follow")
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["paired_punctuation"] = false
       $0["punctuation_lock"] = "english"
     })
-    let after = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let after = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(after["paired_punctuation"] as? Bool, false)
     XCTAssertEqual(after["punctuation_lock"] as? String, "english")
     // Nothing else moved.
@@ -39,14 +39,14 @@ final class PunctuationSettingsTests: XCTestCase {
   ///
   /// The keyboard has already written its own preferences by then - it applies the learning switches every time it appears - so the document's revision is not what the session last counted to.
   func testReloadHandsPunctuationSwitchesToTheLiveSession() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertNotEqual(bridge.handlePunctuationWithContext(",", preceding: 0x61).commitText, "，",
                       "direct-after-letter ships on, so a comma after a letter stays ASCII")
     XCTAssertTrue(bridge.setFuzzyPinyinRules(1))
     XCTAssertTrue(bridge.setFuzzyPinyinRules(0))
     XCTAssertTrue(bridge.setTraditionalChineseOutput(false))
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["smart_punctuation_direct_letter"] = false
     })
     await reload(bridge)
@@ -54,7 +54,7 @@ final class PunctuationSettingsTests: XCTestCase {
     XCTAssertEqual(bridge.handlePunctuationWithContext(",", preceding: 0x61).commitText, "，")
   }
 
-  private func reload(_ bridge: MetasequoiaInputSessionBridge) async {
+  private func reload(_ bridge: LingyaoInputSessionBridge) async {
     let reloaded = expectation(description: "reload")
     var accepted = false
     bridge.reloadSharedPreferences { loaded in

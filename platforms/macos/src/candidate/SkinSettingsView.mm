@@ -51,15 +51,15 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 
 /// Scroll views lay an unflipped document view out from the bottom, which parks the list of skins
 /// against the bottom edge with its first card out of sight above.
-@interface MetasequoiaSkinDocumentView : NSView
+@interface LingyaoSkinDocumentView : NSView
 @end
-@implementation MetasequoiaSkinDocumentView
+@implementation LingyaoSkinDocumentView
 - (BOOL)isFlipped { return YES; }
 @end
 
-@interface MetasequoiaSkinSwitch : NSSwitch
+@interface LingyaoSkinSwitch : NSSwitch
 @end
-@implementation MetasequoiaSkinSwitch
+@implementation LingyaoSkinSwitch
 - (void)mouseDown:(NSEvent *)event
 {
     if (self.state == NSControlStateValueOn)
@@ -80,7 +80,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 }
 @end
 
-@implementation MetasequoiaSkinSettingsView
+@implementation LingyaoSkinSettingsView
 {
     NSStackView *_document;
     NSView *_externalCards;
@@ -89,7 +89,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     NSTextField *_emptyLabel;
     NSTextField *_diagnosticsLabel;
     NSMutableArray<NSSwitch *> *_switches;
-    NSMutableArray<MetasequoiaCandidatePreviewView *> *_previews;
+    NSMutableArray<LingyaoCandidatePreviewView *> *_previews;
     NSMutableArray<NSButton *> *_themeButtons;
     NSMutableArray<NSTextField *> *_titles;
     NSMutableArray<NSString *> *_skinIds;
@@ -151,7 +151,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     // The stack goes inside a flipped container rather than being the document view itself: an
     // unflipped document view is laid out from the bottom, so the page opens showing the last skin
     // in the list with the first one above the visible area.
-    NSView *documentContainer = [[MetasequoiaSkinDocumentView alloc] initWithFrame:NSZeroRect];
+    NSView *documentContainer = [[LingyaoSkinDocumentView alloc] initWithFrame:NSZeroRect];
     documentContainer.translatesAutoresizingMaskIntoConstraints = NO;
     scroll.documentView = documentContainer;
     [documentContainer addSubview:_document];
@@ -253,7 +253,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 - (void)preferencesChanged:(NSNotification *)notification
 {
     (void)notification;
-    for (MetasequoiaCandidatePreviewView *preview in _previews) [preview reloadPreview];
+    for (LingyaoCandidatePreviewView *preview in _previews) [preview reloadPreview];
     [self refreshSelection];
 }
 
@@ -285,7 +285,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     title.accessibilityLabel = [name stringByAppendingString:@"标题"];
     NSTextField *summary = Label(description, 13.0, NSFontWeightRegular, [NSColor secondaryLabelColor]);
     summary.maximumNumberOfLines = 2;
-    NSSwitch *enable = [[MetasequoiaSkinSwitch alloc] initWithFrame:NSZeroRect];
+    NSSwitch *enable = [[LingyaoSkinSwitch alloc] initWithFrame:NSZeroRect];
     enable.identifier = skinId;
     enable.target = self;
     enable.action = @selector(enableSkin:);
@@ -296,7 +296,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     theme.bezelStyle = NSBezelStyleRounded;
     theme.identifier = skinId;
     theme.accessibilityLabel = [name stringByAppendingString:@"预览明暗"];
-    MetasequoiaCandidatePreviewView *preview = [[MetasequoiaCandidatePreviewView alloc] initWithFrame:NSZeroRect];
+    LingyaoCandidatePreviewView *preview = [[LingyaoCandidatePreviewView alloc] initWithFrame:NSZeroRect];
     preview.preferences = _preferences;
     [preview setShowsLayoutShowcase:YES];
     [preview setPreviewSkinId:skinId];
@@ -377,7 +377,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
             return std::find(package.layouts.begin(), package.layouts.end(), layout) != package.layouts.end();
     }
     NSAppearance *appearance = _preferences.systemBaseCandidateAppearanceOverride ?: self.effectiveAppearance;
-    NSString *host = MetasequoiaAppearanceIsDark(appearance) ? @"dark" : @"light";
+    NSString *host = LingyaoAppearanceIsDark(appearance) ? @"dark" : @"light";
     return msime::mac::SupportsSkin(package, layout, host.UTF8String);
 }
 

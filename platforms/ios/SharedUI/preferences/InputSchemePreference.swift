@@ -51,7 +51,7 @@ enum ChineseInputScheme: String, CaseIterable {
   /// Whether a held backspace and a quick space-bar flick edit the spelling a syllable at a time. Only a lettered pinyin spelling has syllables to step over: a nine-key digit run is still ambiguous, and a wubi code is not made of syllables, so those keep a hold that clears the composition.
   var editsBySyllable: Bool { self == .quanpin || shuangpinProfile != nil }
 
-  /// 这个入口背后的输入方案，即版本表和共享偏好 `scheme` 里的方案名。手写的识别由平台识别器完成，不属于任何一个方案，这里的 `quanpin` 只用来归类；它写进偏好的方案见 `MetasequoiaInputSessionBridge.schemeMapping`。
+  /// 这个入口背后的输入方案，即版本表和共享偏好 `scheme` 里的方案名。手写的识别由平台识别器完成，不属于任何一个方案，这里的 `quanpin` 只用来归类；它写进偏好的方案见 `LingyaoInputSessionBridge.schemeMapping`。
   var engineScheme: String {
     switch self {
     case .quanpin, .nineKey, .handwriting: "quanpin"
@@ -183,7 +183,7 @@ enum WubiProfilePreference {
   @discardableResult
   static func save(_ value: String, stateRoot: URL? = nil) -> Bool {
     guard profiles.contains(value),
-          MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { $0[documentKey] = value }) else { return false }
+          LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { $0[documentKey] = value }) else { return false }
     profile = value
     return true
   }
@@ -264,8 +264,8 @@ enum InputSchemePreference {
   /// Once the keyboard has recorded a scheme in the shared document it copies that selection over the App Group every time it appears, so a choice written only to the App Group was undone the next time the keyboard opened. The App Group is written after the document, and only when the document took the change.
   @discardableResult
   static func save(scheme: ChineseInputScheme, enabled: [ChineseInputScheme], stateRoot: URL? = nil) -> Bool {
-    guard let mapping = MetasequoiaInputSessionBridge.schemeMapping(scheme, enabledSchemes: enabled),
-          MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
+    guard let mapping = LingyaoInputSessionBridge.schemeMapping(scheme, enabledSchemes: enabled),
+          LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else { return false }
     enabledSchemes = enabled
     self.scheme = scheme
     return true

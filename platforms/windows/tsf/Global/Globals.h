@@ -2,7 +2,7 @@
 
 #include "Private.h"
 #include "Define.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include <iostream>
 #include <string>
 #include <wrl.h>
@@ -102,14 +102,14 @@ extern LONG dllRefCount;
 
 extern CRITICAL_SECTION CS;
 
-extern const CLSID MetasequoiaIMECLSID;
-extern const GUID MetasequoiaIMEGuidProfile;
-extern const GUID MetasequoiaIMEGuidImeModePreserveKey;
-extern const GUID MetasequoiaIMEGuidImeModePreserveKey02;
-extern const GUID MetasequoiaIMEGuidImeModePreserveKey03;
-extern const GUID MetasequoiaIMEGuidEnglishInputModePreserveKey;
-extern const GUID MetasequoiaIMEGuidDoubleSingleBytePreserveKey;
-extern const GUID MetasequoiaIMEGuidPunctuationPreserveKey;
+extern const CLSID LingyaoIMECLSID;
+extern const GUID LingyaoIMEGuidProfile;
+extern const GUID LingyaoIMEGuidImeModePreserveKey;
+extern const GUID LingyaoIMEGuidImeModePreserveKey02;
+extern const GUID LingyaoIMEGuidImeModePreserveKey03;
+extern const GUID LingyaoIMEGuidEnglishInputModePreserveKey;
+extern const GUID LingyaoIMEGuidDoubleSingleBytePreserveKey;
+extern const GUID LingyaoIMEGuidPunctuationPreserveKey;
 
 LRESULT CALLBACK ThreadKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 BOOL CheckModifiers(UINT uModCurrent, UINT uMod);
@@ -122,21 +122,21 @@ extern thread_local BOOL IsAltKeyDownOnly;
 extern thread_local BOOL PureShiftKeyDown;
 extern thread_local BOOL PureShiftKeyUp;
 
-extern const GUID MetasequoiaIMEGuidCompartmentDoubleSingleByte;
-extern const GUID MetasequoiaIMEGuidCompartmentPunctuation;
+extern const GUID LingyaoIMEGuidCompartmentDoubleSingleByte;
+extern const GUID LingyaoIMEGuidCompartmentPunctuation;
 
 extern const WCHAR FullWidthCharTable[];
 extern const struct _PUNCTUATION PunctuationTable[23];
 extern const std::unordered_set<WCHAR> CommitWithHighlightedCandPunc;
 
-extern const GUID MetasequoiaIMEGuidLangBarIMEMode;
-extern const GUID MetasequoiaIMEGuidLangBarDoubleSingleByte;
-extern const GUID MetasequoiaIMEGuidLangBarPunctuation;
+extern const GUID LingyaoIMEGuidLangBarIMEMode;
+extern const GUID LingyaoIMEGuidLangBarDoubleSingleByte;
+extern const GUID LingyaoIMEGuidLangBarPunctuation;
 
-extern const GUID MetasequoiaIMEGuidDisplayAttributeInput;
-extern const GUID MetasequoiaIMEGuidDisplayAttributeConverted;
+extern const GUID LingyaoIMEGuidDisplayAttributeInput;
+extern const GUID LingyaoIMEGuidDisplayAttributeConverted;
 
-extern const GUID MetasequoiaIMEGuidCandUIElement;
+extern const GUID LingyaoIMEGuidCandUIElement;
 
 extern const WCHAR UnicodeByteOrderMark;
 extern const WCHAR KeywordDelimiter;

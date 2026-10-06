@@ -18,7 +18,7 @@ full 是现有产品本身：对 full，这里的每个输出都与输入逐字�
     edition_bundle.py plist   --edition ID --template Info.plist.in --output Info.plist.in
     edition_bundle.py strings --edition ID --input InfoPlist.strings --output InfoPlist.strings
     edition_bundle.py settings-strings --edition ID --input InfoPlist.strings --output InfoPlist.strings  # 设置应用的显示名
-    edition_bundle.py apply   --edition ID path/to/水杉输入法.app      # 把编好的 full bundle 原地改成该版本（改名由调用方负责）
+    edition_bundle.py apply   --edition ID path/to/灵耀输入法.app      # 把编好的 full bundle 原地改成该版本（改名由调用方负责）
     edition_bundle.py field   --edition ID KEY                        # 打印 macOS 段的字段、display_name.zh-Hans/en、bundle_name 或 features.<功能>（true/false）
     edition_bundle.py marker  --edition ID --output edition.json      # 设置应用 Resources 里的版本声明；full 不写
     edition_bundle.py tauri-config --edition ID --version VERSION     # 设置应用按版本打包时传给 tauri bundle --config 的配置
@@ -229,7 +229,7 @@ def info_plist_strings(source: str, edition_id: str, table: dict | None = None) 
         return source
     full = full_entry(table)
     full_bundle = full["platforms"]["macos"]["input_method_bundle_id"]
-    full_names = (full["display_name"]["zh-Hans"], "Metasequoia")
+    full_names = (full["display_name"]["zh-Hans"], "Lingyao")
     bundle = entry["platforms"]["macos"]["input_method_bundle_id"]
     zh = entry["display_name"]["zh-Hans"]
     en = entry["display_name"]["en"]

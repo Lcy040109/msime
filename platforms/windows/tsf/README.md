@@ -2,7 +2,7 @@
 
 The Windows DLL requires `MSIME_HOST_LIBRARY` at CMake configure time. Supply an absolute path to the Cargo-built host static library or DLL import library for the same architecture. Missing paths and directories are rejected before native dependency discovery. The linker remains responsible for format, architecture and symbols. Portable component tests and the standalone export fixture do not require it.
 
-The DLL version resource uses the standard `VS_VERSION_INFO` identifier, the workspace package version with a zero Windows revision, and the actual `MetasequoiaImeTsf.dll` output name. The portable CMake tests verify this source contract without loading or registering the DLL.
+The DLL version resource uses the standard `VS_VERSION_INFO` identifier, the workspace package version with a zero Windows revision, and the actual `LingyaoImeTsf.dll` output name. The portable CMake tests verify this source contract without loading or registering the DLL.
 
 The TIP reads `%LOCALAPPDATA%\MSIME-Client\runtime-options.json`, not legacy product state or guessed paths relative to the embedding application. The installer prepares that state for the production TIP; the command below prepares an equivalent state directory by hand, which is what a development build of the DLL wants.
 
@@ -20,7 +20,7 @@ The 19 CTest entries registered here (`msime-tsf-version-resource`, `msime-tsf-c
 
 ## COM export contract
 
-The production DLL links `IME/MetasequoiaIME.def` to expose the four undecorated COM entry points on x86 and x64. A standalone link-only fixture tests this same definition without requiring the complete SDK-dependent TIP:
+The production DLL links `IME/LingyaoIME.def` to expose the four undecorated COM entry points on x86 and x64. A standalone link-only fixture tests this same definition without requiring the complete SDK-dependent TIP:
 
 ```sh
 cmake -S platforms/windows/tsf/tests/exports -B target/tsf-exports-x64 -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++

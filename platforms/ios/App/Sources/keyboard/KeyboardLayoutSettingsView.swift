@@ -21,7 +21,7 @@ struct KeyboardLayoutSettingsView: View {
       preview
       form
     }
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .navigationTitle("键盘").navigationBarTitleDisplayMode(.inline)
     .onAppear { readPreferences() }
   }
@@ -43,7 +43,7 @@ struct KeyboardLayoutSettingsView: View {
 
   private var grip: some View {
     Capsule()
-      .fill(MetasequoiaTheme.accent.opacity(0.35))
+      .fill(LingyaoTheme.accent.opacity(0.35))
       .frame(width: 44, height: 5)
       .frame(maxWidth: .infinity)
       .frame(height: 26)
@@ -146,7 +146,7 @@ struct KeyboardLayoutSettingsView: View {
         } header: {
           Text("iPad")
         } footer: {
-          Text("全尺寸键盘在字母上方多一排数字、Q 左边多一个 Tab 键。组字时数字键选候选，Tab 打开全部候选（桌面端的 Tab 翻页）；没有组字时照常输入。浮动键盘和分屏的窄窗口用 iPhone 布局，不显示这两样。\n\n外接实体键盘（妙控键盘、蓝牙键盘）时，iOS 不会把实体按键交给任何第三方键盘，实体键盘打出的是系统输入法的结果。要用水杉的拼音、候选和皮肤，请在屏幕键盘上输入。")
+          Text("全尺寸键盘在字母上方多一排数字、Q 左边多一个 Tab 键。组字时数字键选候选，Tab 打开全部候选（桌面端的 Tab 翻页）；没有组字时照常输入。浮动键盘和分屏的窄窗口用 iPhone 布局，不显示这两样。\n\n外接实体键盘（妙控键盘、蓝牙键盘）时，iOS 不会把实体按键交给任何第三方键盘，实体键盘打出的是系统输入法的结果。要用灵耀的拼音、候选和皮肤，请在屏幕键盘上输入。")
         }
       }
       Section {
@@ -171,19 +171,19 @@ struct KeyboardLayoutSettingsView: View {
   private func saveTab(_ enabled: Bool) {
     saveFailed = !KeyboardLayoutPreference.saveTabShowsMoreCandidates(enabled)
     tabOpensCandidates = saveFailed
-      ? KeyboardLayoutPreference.tabShowsMoreCandidates(MetasequoiaInputSessionBridge.loadSharedPreferences()) : enabled
+      ? KeyboardLayoutPreference.tabShowsMoreCandidates(LingyaoInputSessionBridge.loadSharedPreferences()) : enabled
   }
 
   private func readPreferences() {
     keySpacing = KeyboardLayoutPreference.keySpacing
     rowSpacing = KeyboardLayoutPreference.rowSpacing
     height = KeyboardLayoutPreference.heightAdjustment
-    skin = KeyboardTheme.reload(MetasequoiaInputSessionBridge.loadSharedPreferences())
+    skin = KeyboardTheme.reload(LingyaoInputSessionBridge.loadSharedPreferences())
     nineKey = InputSchemePreference.scheme == .nineKey
     voice = KeyboardLayoutPreference.voiceShortcutEnabled
     tabletFullKeys = KeyboardLayoutPreference.tabletFullKeys
     // The document is what the keyboard will use, including a value synced from another device that no keyboard has mirrored into the App Group yet.
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     tabOpensCandidates = KeyboardLayoutPreference.tabShowsMoreCandidates(preferences)
     if let spacing = KeyboardLayoutPreference.sharedKeySpacing(preferences["touch_key_spacing_tenths"]) {
       keySpacing = spacing

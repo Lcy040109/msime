@@ -11,7 +11,7 @@ macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先
 比对在固定对象上进行，便于复核：
 
 - 来源：`metasequoiaime/MSIME-Apple` 的默认分支 `develop`，提交 `b93f169839c442cfa7034f3130c3dfaac11b9467`。
-- 目标：`metasequoiaime/msime` 的 `develop`。
+- 目标：`Lcy040109/msime` 的 `develop`。
 
 来源入口是该检出的 `platforms/ios/`，以及 `shared/apple-bridge/` 与 `shared/backend/`。
 
@@ -21,7 +21,7 @@ macOS 的同类文档是 [macos-parity.md](macos-parity.md)，方法一致：先
 | --- | --- | --- | --- |
 | 源文件名 | 192 | 来源 `platforms/ios` 与 `shared` 下的 Swift/ObjC/C++ 文件按文件名在目标检索 | 集中在 `shared/apple-bridge/` 与 `shared/backend/`：前者是 ObjC 桥接层，由 `crates/host-api` 的 C ABI 取代；后者是 Swift 后端客户端，由 `crates/client-core` 取代 |
 | 中文文案 | 1666 | 抽取来源全部源文件的中文字面量，逐条精确检索 | 测试断言文案、措辞差异、Tauri 页以不同表述覆盖、落在注释里的引号 |
-| 符号 | 584 | ObjC 方法、C/C++ 函数与 Swift 函数名，按原名与 snake_case 改名两种形式检索 | 61 个在被 C ABI 取代的 ObjC 桥接层（`InputSessionAdapter`、`MetasequoiaInputSessionBridge`、`CandidateTranslation`、`MSIMEBackendClient`）；其余是改名或重构等价物 |
+| 符号 | 584 | ObjC 方法、C/C++ 函数与 Swift 函数名，按原名与 snake_case 改名两种形式检索 | 61 个在被 C ABI 取代的 ObjC 桥接层（`InputSessionAdapter`、`LingyaoInputSessionBridge`、`CandidateTranslation`、`MSIMEBackendClient`）；其余是改名或重构等价物 |
 | 可达控件标识 | 254 | 抽取来源全部 `accessibilityIdentifier` 字面量逐个检索 | 2 个：`emojiCategory-` 在目标用连字符，自定义皮肤重置由 Tauri 页覆盖 |
 | 同名文件成员 | 116 对 | 逐对抽取 `func` / `var` / `let` 名做差集 | 16 个文件有差集，逐个核实全是重构等价物：候选注解并成 `KeyboardCandidateAnnotation`、「更多」面板从布尔开关换成显式页枚举、表情目录从内存表换成分页 ABI |
 | 测试断言 | 来源 232 | 来源 `test*` 函数名逐个检索，按名未命中的逐簇对到改名或拆分后的用例 | 目标 `KeyboardTests`/`ServiceTests`/`tests`/`TransportTests` 现有 312 个 `test*`，整体是来源的超集 |

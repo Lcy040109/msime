@@ -46,7 +46,7 @@ export function HandwritingSettingsSection({
     <GroupList title="iOS 键盘手写">
       <SettingsGroupNote>
         请在 iOS
-        系统键盘设置中启用水杉键盘，并在键盘内切换到“手写”输入方案。首次使用会按需下载中文识别模型；需要开启“允许完全访问”才能下载模型，下载后可离线识别。
+        系统键盘设置中启用灵耀键盘，并在键盘内切换到“手写”输入方案。首次使用会按需下载中文识别模型；需要开启“允许完全访问”才能下载模型，下载后可离线识别。
       </SettingsGroupNote>
       {systemSettingsRow("系统键盘设置", "打开系统键盘设置")}
       <SettingsGroupNote>{handwritingPrivacyText("ios")}</SettingsGroupNote>
@@ -55,7 +55,7 @@ export function HandwritingSettingsSection({
   ) : android ? (
     <GroupList title="Android 键盘手写">
       <SettingsGroupNote>
-        请在 Android 系统输入法设置中启用水杉键盘，再从键盘方案切换到“手写”。首次使用时按需下载
+        请在 Android 系统输入法设置中启用灵耀键盘，再从键盘方案切换到“手写”。首次使用时按需下载
         Google ML Kit 中文手写模型；模型就绪后可离线识别。
       </SettingsGroupNote>
       {systemSettingsRow("系统输入法设置", "打开系统输入法设置")}
@@ -66,8 +66,8 @@ export function HandwritingSettingsSection({
     <GroupList title="HarmonyOS 键盘手写">
       <SettingsGroupNote>
         {mobile
-          ? "请在系统输入法设置中启用水杉输入法，再从键盘的方案选择器切换到“手写”。"
-          : "请在系统输入法设置中启用水杉输入法；2-in-1 候选窗口不绘制键面，请先从悬浮工具栏打开屏幕键盘，再从方案选择器切换到“手写”。"}
+          ? "请在系统输入法设置中启用灵耀输入法，再从键盘的方案选择器切换到“手写”。"
+          : "请在系统输入法设置中启用灵耀输入法；2-in-1 候选窗口不绘制键面，请先从悬浮工具栏打开屏幕键盘，再从方案选择器切换到“手写”。"}
       </SettingsGroupNote>
       {systemSettingsRow("系统输入法设置", "打开系统输入法设置")}
       <SettingsGroupNote>{handwritingPrivacyText("harmony")}</SettingsGroupNote>

@@ -28,6 +28,6 @@ struct AccountLoginSheet: View {
           ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
         }
         .onChange(of: signedIn) { if $0 { dismiss() } }
-    }.navigationViewStyle(.stack).tint(MetasequoiaTheme.accent)
+    }.navigationViewStyle(.stack).tint(LingyaoTheme.accent)
   }
 }

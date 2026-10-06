@@ -69,7 +69,7 @@ export function useDataDirectory({ client, enabled, confirm }: UseDataDirectoryO
             : "";
         setResult(
           moved.retainedOldData
-            ? `数据已切换到新目录；旧目录不属于水杉输入法，已为安全起见保留。${restartNote}设置窗口即将关闭。`
+            ? `数据已切换到新目录；旧目录不属于灵耀输入法，已为安全起见保留。${restartNote}设置窗口即将关闭。`
             : `数据已移动。${restartNote}设置窗口即将关闭，请重新打开后继续使用。`,
         );
       },

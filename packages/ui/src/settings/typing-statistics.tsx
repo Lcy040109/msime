@@ -1174,7 +1174,7 @@ function CandidateRanks({ selections }: { selections: SelectionCounts | undefine
       </p>
       {total === 0 ? (
         <SettingsEmptyMessage centered>
-          暂无候选记录。用水杉键盘上屏几次后再回来查看。
+          暂无候选记录。用灵耀键盘上屏几次后再回来查看。
         </SettingsEmptyMessage>
       ) : (
         <div className={rankChart} role="img" aria-label="候选命中位置分布">
@@ -1300,8 +1300,8 @@ export function availabilityNotice(
   if (!statistics.enabled) return "";
   if (status.availability === "neverWritten")
     return iosPlatform
-      ? "键盘从未写入过统计。请在系统设置 → 通用 → 键盘 → 键盘 → 水杉输入法中开启“允许完全访问”，然后用水杉键盘输入几个字再回来刷新。未开启时仍可正常打字，只是不记录统计。"
-      : "键盘从未写入过统计。请用水杉键盘成功输入几个字符，再返回此页刷新。";
+      ? "键盘从未写入过统计。请在系统设置 → 通用 → 键盘 → 键盘 → 灵耀输入法中开启“允许完全访问”，然后用灵耀键盘输入几个字再回来刷新。未开启时仍可正常打字，只是不记录统计。"
+      : "键盘从未写入过统计。请用灵耀键盘成功输入几个字符，再返回此页刷新。";
   if (statistics.total === 0 && status.lastWrittenMs)
     return `统计最后写入于 ${new Date(status.lastWrittenMs).toLocaleString("zh-CN")}，当前计数为零；如果刚刚清空过统计，这是正常的。`;
   if (statistics.total === 0) return "统计文件已建立，但当前还没有输入记录。";
@@ -1849,7 +1849,7 @@ export function TypingStatisticsPage({
       {mobile ? (
         <section className="section m-0 pt-0.5">
           <p className={`${privacy} mt-0`}>
-            字数仅统计水杉键盘成功提交的字符，含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。仅在本机保存日期、分类和数量，不保存输入内容。每日明细默认永久保留。
+            字数仅统计灵耀键盘成功提交的字符，含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。仅在本机保存日期、分类和数量，不保存输入内容。每日明细默认永久保留。
           </p>
         </section>
       ) : (
@@ -1921,7 +1921,7 @@ export function TypingStatisticsPage({
             />
           </div>
           <p className={privacy}>
-            字数统计水杉键盘提交的字符，以及英文模式和放行给应用的字母、数字与符号（按按键时估计），含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。仅在本机保存日期、分类和数量，不保存输入内容。每日明细默认永久保留，可在「自动清理」中改为只保留最近一段时间；清理删除的日期同时从累计总数与分类中扣除。
+            字数统计灵耀键盘提交的字符，以及英文模式和放行给应用的字母、数字与符号（按按键时估计），含标点及表情，不含空格和换行。组合表情计为一个字符，删除文字不扣减。按键热力图只保存每个键每天被按下的次数，不保存按键顺序和输入内容。仅在本机保存日期、分类和数量，不保存输入内容。每日明细默认永久保留，可在「自动清理」中改为只保留最近一段时间；清理删除的日期同时从累计总数与分类中扣除。
           </p>
         </section>
       )}

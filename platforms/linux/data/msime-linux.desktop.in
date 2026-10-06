@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=MSIME
-Name[zh_CN]=水杉输入法
+Name[zh_CN]=灵耀输入法
 GenericName=Chinese Input Method Settings
 GenericName[zh_CN]=中文输入法设置
 Comment=Configure the MSIME Linux desktop host
-Comment[zh_CN]=配置水杉输入法的 Linux 桌面宿主
+Comment[zh_CN]=配置灵耀输入法的 Linux 桌面宿主
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings
 TryExec=@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings
 Icon=msime-linux
@@ -46,7 +46,7 @@ Exec=@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings --panel cloud-clipboard
 
 [Desktop Action About]
 Name=About MSIME
-Name[zh_CN]=关于水杉输入法
+Name[zh_CN]=关于灵耀输入法
 Exec=@CMAKE_INSTALL_FULL_BINDIR@/msime-linux-settings --panel about
 
 [Desktop Action Clipboard]

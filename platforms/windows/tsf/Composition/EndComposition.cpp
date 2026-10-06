@@ -1,7 +1,7 @@
 #include "Private.h"
 #include "Globals.h"
 #include "EditSession.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include <debugapi.h>
 #include <fmt/xchar.h>
 #include "../Utils/PerfTimer.h"
@@ -47,7 +47,7 @@ HRESULT SafeEndComposition(_In_ ITfComposition *composition, TfEditCookie ec)
 class CEndCompositionEditSession : public CEditSessionBase
 {
   public:
-    CEndCompositionEditSession(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext,
+    CEndCompositionEditSession(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext,
                                _In_ ITfComposition *expectedComposition, uint64_t focusToken,
                                bool bypassFocusValidation)
         : CEditSessionBase(pTextService, pContext), _expectedComposition(expectedComposition), _focusToken(focusToken),
@@ -81,7 +81,7 @@ class CEndCompositionEditSession : public CEditSessionBase
 
 //////////////////////////////////////////////////////////////////////
 //
-// CMetasequoiaIME class
+// CLingyaoIME class
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -91,7 +91,7 @@ class CEndCompositionEditSession : public CEditSessionBase
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCalledFromDeactivate)
+void CLingyaoIME::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCalledFromDeactivate)
 {
     isCalledFromDeactivate;
     PerfTimer timer;
@@ -166,7 +166,7 @@ void CMetasequoiaIME::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pC
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_EndComposition(_In_opt_ ITfContext *pContext, _In_opt_ ITfComposition *expectedComposition,
+HRESULT CLingyaoIME::_EndComposition(_In_opt_ ITfContext *pContext, _In_opt_ ITfComposition *expectedComposition,
                                          bool bypassFocusValidation)
 {
     ITfComposition *target = expectedComposition ? expectedComposition : _pComposition;

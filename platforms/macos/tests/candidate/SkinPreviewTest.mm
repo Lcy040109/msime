@@ -144,7 +144,7 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
         assert([effective[[@"platform.macos." stringByAppendingString:key]] isEqual:@NO]);
     assert([MSIMECloudAppearanceSnapshot(defaults) isEqual:original]);
     NSMutableDictionary *imported = [original mutableCopy];
-    imported[@"platform.macos.global_theme"] = @"shuishan";
+    imported[@"platform.macos.global_theme"] = @"lingyao";
     imported[@"platform.macos.candidate_font_size"] = @32;
     imported[@"platform.macos.candidate_page_size"] = @9;
     imported[@"platform.macos.candidate_panel_style"] = @0;
@@ -157,7 +157,7 @@ static void TestCloudImportCache(MSIMEAppearancePreferences *preferences, NSUser
     id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) {
         (void)note; ++notifications;
         assert(preferences.fontSize == 32 && preferences.pageSize == 9 && !preferences.vertical);
-        assert([preferences resolvedSkinForDark:NO].id == "shuishan");
+        assert([preferences resolvedSkinForDark:NO].id == "lingyao");
     }];
     NSMutableDictionary *invalid = [imported mutableCopy];
     invalid[@"platform.macos.candidate_font_size"] = @33;
@@ -339,7 +339,7 @@ static void TestCandidateSurfaceTheme(MSIMEAppearancePreferences *preferences) {
 // The toolbar preview paints the divider in the candidate outline, as the panel does, so a theme change reaches it. The logo beside it is the brand mark and keeps its own colours.
 static void TestToolbarPreviewChrome(MSIMEAppearancePreferences *preferences) {
     NSString *globalTheme = preferences.globalTheme;
-    for (NSString *skin in @[@"shuishan", @"paper"]) {
+    for (NSString *skin in @[@"lingyao", @"paper"]) {
         preferences.globalTheme = skin;
         MSIMEToolbarPreviewView *toolbar = [[MSIMEToolbarPreviewView alloc] initWithFrame:NSMakeRect(0, 0, 580, 100)];
         toolbar.preferences = preferences;
@@ -459,7 +459,7 @@ int main(int argc, const char **argv) {
         assert([preview.accessibilityLabel isEqual:@"候选窗口预览"]);
         __block NSUInteger notifications = 0;
         id observer = [NSNotificationCenter.defaultCenter addObserverForName:MSIMEAppearanceDidChangeNotification object:preferences queue:nil usingBlock:^(NSNotification *note) { (void)note; ++notifications; }];
-        for (NSString *skin in @[@"system", @"shuishan", @"light", @"paper", @"night", @"ink", @"custom"]) {
+        for (NSString *skin in @[@"system", @"lingyao", @"light", @"paper", @"night", @"ink", @"custom"]) {
             preferences.globalTheme = skin;
             // The five built-in themes fix their mode; only 跟随系统 and 自定义 have another one to preview.
             const BOOL fixed = [skin isEqual:@"system"] || [skin isEqual:@"custom"] ? NO : YES;
@@ -629,7 +629,7 @@ int main(int argc, const char **argv) {
         preferences.fontFamily = @"Helvetica";
         preferences.fontSize = 32;
         NSFont *fallbackFont = [preferences candidateFontOfSize:32];
-        CGFloat actualHeight = ceil([@"水杉(Ss)" sizeWithAttributes:@{NSFontAttributeName:fallbackFont}].height);
+        CGFloat actualHeight = ceil([@"灵耀(Ss)" sizeWithAttributes:@{NSFontAttributeName:fallbackFont}].height);
         assert(actualHeight > ceil(fallbackFont.ascender - fallbackFont.descender + fallbackFont.leading));
         NSFont *headerFont = [preferences candidateFontOfSize:preferences.preeditFontSize];
         CGFloat headerHeight = MAX(22.0, MAX(ceil([@"nihao" sizeWithAttributes:@{NSFontAttributeName:headerFont}].height), ceil(headerFont.ascender - headerFont.descender + headerFont.leading)) + 6);
@@ -693,8 +693,8 @@ int main(int argc, const char **argv) {
         automatic.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
         assert(automatic.previewUsesDark);
         NSString *selectedTheme = preferences.globalTheme;
-        [automatic setPreviewSkinId:@"shuishan"];
-        assert(automatic.previewSkin.id == "shuishan" && [preferences.globalTheme isEqual:selectedTheme]);
+        [automatic setPreviewSkinId:@"lingyao"];
+        assert(automatic.previewSkin.id == "lingyao" && [preferences.globalTheme isEqual:selectedTheme]);
         // A theme with a fixed mode is previewed in it, whatever the local override says.
         assert(automatic.previewUsesDark && automatic.previewSkin.fixedDark == true);
         [automatic setPreviewSkinId:@"missing-package"];

@@ -96,7 +96,7 @@ test("Harmony capability chrome stays split between phone and 2-in-1", async () 
   await settingsFormReady();
   expect(
     screen.getByText(
-      "在系统设置中启用并选择水杉输入法，再使用实体键盘、候选窗口和悬浮工具栏输入。默认是全拼输入法。",
+      "在系统设置中启用并选择灵耀输入法，再使用实体键盘、候选窗口和悬浮工具栏输入。默认是全拼输入法。",
     ),
   ).toBeTruthy();
   expect(screen.getByText("为 HarmonyOS 2-in-1 桌面输入体验打造的开放中文输入法。")).toBeTruthy();
@@ -125,7 +125,7 @@ test("Harmony capability chrome stays split between phone and 2-in-1", async () 
   await settingsFormReady();
   expect(
     screen.getByText(
-      "在系统设置中启用并选择水杉输入法，再从输入法键盘使用语音和触屏输入。默认是全拼输入法。",
+      "在系统设置中启用并选择灵耀输入法，再从输入法键盘使用语音和触屏输入。默认是全拼输入法。",
     ),
   ).toBeTruthy();
   expect(screen.getByText("为 HarmonyOS 触屏输入体验打造的开放中文输入法。")).toBeTruthy();
@@ -519,7 +519,7 @@ test("the sidebar brand heads desktop sidebars and stays off phone layouts", asy
     const sidebar = screen.getByRole("navigation", { name: "设置分类" });
     const brand = sidebar.querySelector<HTMLElement>("[data-sidebar-brand]");
     expect(brand, platform).not.toBeNull();
-    expect(within(brand!).getByText("水杉输入法")).toBeTruthy();
+    expect(within(brand!).getByText("灵耀输入法")).toBeTruthy();
     // 图标只是装饰，名称由文字给出，也不进 Tab 顺序。
     expect(brand!.querySelector("img")?.getAttribute("alt")).toBe("");
     expect(brand!.querySelector("a, button, [tabindex]")).toBeNull();
@@ -534,7 +534,7 @@ test("the sidebar brand heads desktop sidebars and stays off phone layouts", asy
   await settingsFormReady();
   expect(document.querySelector("[data-sidebar-brand]")).toBeNull();
   expect(
-    within(screen.getByRole("banner", { name: "窗口控制" })).getByText("水杉输入法"),
+    within(screen.getByRole("banner", { name: "窗口控制" })).getByText("灵耀输入法"),
   ).toBeTruthy();
   cleanup();
 

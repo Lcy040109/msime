@@ -3,7 +3,7 @@ import SwiftUI
 private enum IOSCloudSettings {
   static func snapshot() throws -> [String: BackendPreferenceValue] {
     let scheme = InputSchemePreference.scheme
-    let document = MetasequoiaInputSessionBridge.loadSharedPreferences()
+    let document = LingyaoInputSessionBridge.loadSharedPreferences()
     var settings: [String: BackendPreferenceValue] = [
       "input.character_set": .string(ChineseOutputPreference.usesTraditional ? "traditional" : "simplified"),
       "platform.ios.sound_enabled": .boolean(KeyboardFeedbackPreference.soundEnabled),
@@ -48,8 +48,8 @@ private enum IOSCloudSettings {
     }
     let scheme = plan.scheme.flatMap(ChineseInputScheme.init(rawValue:))
     let enabled = InputSchemePreference.enabledSchemes
-    let schemeFields = scheme.flatMap { MetasequoiaInputSessionBridge.schemeMapping($0, enabledSchemes: enabled) }
-    let written = MetasequoiaInputSessionBridge.updateSharedPreferences { document in
+    let schemeFields = scheme.flatMap { LingyaoInputSessionBridge.schemeMapping($0, enabledSchemes: enabled) }
+    let written = LingyaoInputSessionBridge.updateSharedPreferences { document in
       if let theme = plan.globalTheme { document["global_theme"] = theme }
       if plan.customThemeBase != nil || design != nil {
         var customTheme = GlobalThemePreference.customTheme(in: document)
@@ -71,7 +71,7 @@ private enum IOSCloudSettings {
     if let sound = plan.sound { defaults.set(sound, forKey: KeyboardFeedbackPreference.soundKey) }
     if let haptics = plan.haptics { defaults.set(haptics, forKey: KeyboardFeedbackPreference.hapticsKey) }
     if let strength = plan.strength { defaults.set(strength, forKey: KeyboardFeedbackPreference.strengthKey) }
-    if let document = MetasequoiaInputSessionBridge.loadSharedPreferences() { GlobalThemePreference.mirror(document) }
+    if let document = LingyaoInputSessionBridge.loadSharedPreferences() { GlobalThemePreference.mirror(document) }
   }
 }
 

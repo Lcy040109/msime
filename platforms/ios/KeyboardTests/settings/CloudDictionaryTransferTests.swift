@@ -24,7 +24,7 @@ final class CloudDictionaryTransferTests: XCTestCase {
     let resources = try XCTUnwrap(
       Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true)
     )
-    let session = MetasequoiaInputSessionBridge(
+    let session = LingyaoInputSessionBridge(
       resources: resources,
       stateRoot: root.appendingPathComponent("EngineState", isDirectory: true)
     )

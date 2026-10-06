@@ -63,7 +63,7 @@ final class KeyboardExtensionEditorUITests: XCTestCase {
     // The pane and the list inside it carry the same title on some layouts.
     _ = tapRow("键盘", scrolling: false)
     // Already added: the keyboard list names it.
-    if settings.staticTexts["水杉输入法"].waitForExistence(timeout: 3) { return }
+    if settings.staticTexts["灵耀输入法"].waitForExistence(timeout: 3) { return }
 
     // iOS 27 上这一行写作「添加新键盘」，没有省略号，而且是按钮不是文本；只按前缀找，哪种都认。原来写死「添加新键盘…」找不到它，于是键盘从未被添加，本套件在 iOS 27 上每次都整体跳过。
     let add = settings.descendants(matching: .any)
@@ -72,14 +72,14 @@ final class KeyboardExtensionEditorUITests: XCTestCase {
     add.tap()
 
     let ours = settings.descendants(matching: .any)
-      .matching(NSPredicate(format: "label == %@", "水杉输入法")).firstMatch
+      .matching(NSPredicate(format: "label == %@", "灵耀输入法")).firstMatch
     for _ in 0..<8 where !ours.exists { settings.swipeUp() }
     guard ours.waitForExistence(timeout: 8) else { return }
     ours.tap()
 
     // Full access is a second, separate confirmation. The keyboard runs without it; only the
     // features that need a network or the shared container do.
-    let entry = settings.staticTexts["水杉输入法"].firstMatch
+    let entry = settings.staticTexts["灵耀输入法"].firstMatch
     if entry.waitForExistence(timeout: 5) {
       entry.tap()
       let fullAccess = settings.switches["允许完全访问"].firstMatch

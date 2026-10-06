@@ -92,7 +92,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
     _target.target = self; _target.action = @selector(controlChanged:);
     _secondary.target = self; _secondary.action = @selector(controlChanged:);
     _provider = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-    [_provider addItemsWithTitles:@[@"腾讯云", @"小牛翻译（NiuTrans）", @"自定义 DeepLX", @"水杉账号（发送到 api.msime.app）"]];
+    [_provider addItemsWithTitles:@[@"腾讯云", @"小牛翻译（NiuTrans）", @"自定义 DeepLX", @"灵耀账号（发送到 api.msime.app）"]];
     _provider.target = self; _provider.action = @selector(providerChanged:);
     _endpoint = [NSTextField textFieldWithString:@""]; _endpoint.placeholderString = @"https://example.com/translate";
     _key = [[NSSecureTextField alloc] initWithFrame:NSZeroRect]; _key.placeholderString = @"留空表示不鉴权";
@@ -136,7 +136,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
         [field.widthAnchor constraintEqualToConstant:310].active = YES;
         field.delegate = self;
     }
-    NSTextField *notice = [NSTextField wrappingLabelWithString:@"可同时显示两种候选释义；相同语言会自动去重。离线英文释义使用随客户端打包的词库，不联网；英文候选译为中文，英语目标优先查本地词库。不选择翻译服务时不联网。自定义服务优先，未命中候选会发送到所填地址（建议 HTTPS）；也可选择腾讯云或小牛翻译。腾讯云须填写 SecretId 和 SecretKey，小牛翻译须填写 App ID 和 API Key。凭据仅保存在本机配置文件，不参与云端设置同步。选择「水杉账号」会把当前页的中文候选词发送到 api.msime.app，首次使用会创建匿名账号。"];
+    NSTextField *notice = [NSTextField wrappingLabelWithString:@"可同时显示两种候选释义；相同语言会自动去重。离线英文释义使用随客户端打包的词库，不联网；英文候选译为中文，英语目标优先查本地词库。不选择翻译服务时不联网。自定义服务优先，未命中候选会发送到所填地址（建议 HTTPS）；也可选择腾讯云或小牛翻译。腾讯云须填写 SecretId 和 SecretKey，小牛翻译须填写 App ID 和 API Key。凭据仅保存在本机配置文件，不参与云端设置同步。选择「灵耀账号」会把当前页的中文候选词发送到 api.msime.app，首次使用会创建匿名账号。"];
     _status = [NSTextField wrappingLabelWithString:@""];
     NSStackView *stack = [NSStackView stackViewWithViews:@[_grid, notice, _status]];
     stack.orientation = NSUserInterfaceLayoutOrientationVertical; stack.alignment = NSLayoutAttributeLeading; stack.spacing = 16;
@@ -212,7 +212,7 @@ static NSDictionary *SaveTranslationEdits(NSString *directory, NSDictionary *sna
 - (void)reload:(id)sender {
     (void)sender;
     if (_busy) return;
-    if (!_directory.isAbsolutePath) { _status.stringValue = @"请先激活水杉输入法以加载本机配置。"; return; }
+    if (!_directory.isAbsolutePath) { _status.stringValue = @"请先激活灵耀输入法以加载本机配置。"; return; }
     _busy = YES; _snapshot = nil; _committed = nil; _pending = NO; _key.stringValue = @""; _plainKey.stringValue = @"";
     _secretId.stringValue = @""; _tencentKey.stringValue = @""; _plainTencentKey.stringValue = @"";
     _appId.stringValue = @""; _niuTransKey.stringValue = @""; _plainNiuTransKey.stringValue = @"";

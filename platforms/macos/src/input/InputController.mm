@@ -96,7 +96,7 @@ static dispatch_queue_t MSIMETypingStatisticsQueue(void) {
 
 // 分布式通知在整个登录会话里广播，名字随版本而变（MSIMEEditionNotificationName，full 不变），一个版本的设置应用不会改动另一个版本的输入法。与 crates/host-macos/native/dictionary.mm 收发的是同一个名字。
 #define MSIMETypingStatisticsEnabledChangedNotification \
-    MSIMEEditionNotificationName(@"MetasequoiaTypingStatisticsEnabledChangedNotification")
+    MSIMEEditionNotificationName(@"LingyaoTypingStatisticsEnabledChangedNotification")
 // 由设置窗口（crates/host-macos/native/dictionary.mm）和原生词库窗口在 quiesce 租约写好之后发出。它只负责叫醒控制器；控制器放手之前检查的是词库锁旁边的租约。
 #define MSIMEDictionaryMaintenanceWillBeginNotification \
     MSIMEEditionNotificationName(@"MSIMEDictionaryMaintenanceWillBeginNotification")
@@ -1951,7 +1951,7 @@ static NSImage *MSIMECandidateLogoImage() {
     for (NSDictionary *candidate in onDevice[@"candidates"])
         for (NSString *target in onDevice[@"target_languages"])
             fill(candidate[@"text"], target, [[MSIMETranslationCache sharedCache] valueForIdentity:MSIMEOnDeviceGlossIdentity(target, candidate[@"text"])]);
-    // 没有目标语言词典时，页面顺序取自英文释义、系统翻译请求和水杉账号的回复，三者合起来覆盖了这里所有能带释义的候选。
+    // 没有目标语言词典时，页面顺序取自英文释义、系统翻译请求和灵耀账号的回复，三者合起来覆盖了这里所有能带释义的候选。
     NSMutableArray *texts = [NSMutableArray array];
     for (NSDictionary *candidate in targetGloss ? _targetGlossRequest[@"candidates"] : @[]) [texts addObject:candidate[@"text"]];
     for (NSDictionary *entry in english) if (![texts containsObject:entry[@"text"]]) [texts addObject:entry[@"text"]];
@@ -1984,7 +1984,7 @@ static NSImage *MSIMECandidateLogoImage() {
         ? _onDeviceGlossRequest : nil;
     BOOL accountCurrent = _accountGlossResults && [_accountGlossRequest isEqual:[self currentAccountGlossRequest]];
     if (customCurrent && _customResults.count) [results addObjectsFromArray:_customResults];
-    // 水杉账号一次回复所有目标语言，所以同一个词的英文词典释义必须按语言逐行合并，不能代替整条结果：它排在前面时，曾经把账号回复的第二语言那一行整个挡掉。
+    // 灵耀账号一次回复所有目标语言，所以同一个词的英文词典释义必须按语言逐行合并，不能代替整条结果：它排在前面时，曾经把账号回复的第二语言那一行整个挡掉。
     else if (targetGloss || onDevice || (glossCurrent && accountCurrent))
         [results addObjectsFromArray:[self offlineGlossResults:targetGloss english:glossCurrent ? _glossResults : nil onDevice:onDevice]];
     else if (glossCurrent) [results addObjectsFromArray:_glossResults];
@@ -3082,7 +3082,7 @@ static __weak MSIMEInputController *MSIMEFocusedController;
     [self ensureAppearance];
     NSMenu *menu = [[NSMenu alloc] initWithTitle:MSIMEEditionDisplayName()];
     menu.autoenablesItems = NO;
-    ApplyMetasequoiaMenuTheme(menu, [self resolvedMenuThemePreferences]);
+    ApplyLingyaoMenuTheme(menu, [self resolvedMenuThemePreferences]);
     for (NSUInteger mode = 0; mode < 2; ++mode) {
         NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:mode ? @"英文输入" : @"中文输入" action:mode ? @selector(selectEnglishMode:) : @selector(selectChineseMode:) keyEquivalent:@""];
         item.target = self;
@@ -3149,14 +3149,14 @@ static __weak MSIMEInputController *MSIMEFocusedController;
     [menu addItem:toolbar];
 
     // Keep the live input tools one click away. Account, update and support destinations stay in the settings window; listing those management pages here made this menu taller than the screen, but hiding the tools behind a second submenu made the useful part too hard to reach.
-    NSMenuItem *emoji = [[NSMenuItem alloc] initWithTitle:@"水杉表情面板…" action:@selector(showEmoji:) keyEquivalent:@""];
+    NSMenuItem *emoji = [[NSMenuItem alloc] initWithTitle:@"灵耀表情面板…" action:@selector(showEmoji:) keyEquivalent:@""];
     emoji.target = self;
     [menu addItem:emoji];
     // The cloud clipboard panel pastes into the editor like the emoji panel's clipboard page, so it sits beside it; the account, sync switch and history management stay in the settings window.
     NSMenuItem *cloudClipboard = [[NSMenuItem alloc] initWithTitle:@"云剪贴板…" action:@selector(showCloudClipboard:) keyEquivalent:@""];
     cloudClipboard.target = self;
     [menu addItem:cloudClipboard];
-    NSMenuItem *keyboard = [[NSMenuItem alloc] initWithTitle:@"水杉屏幕键盘…" action:@selector(showScreenKeyboard:) keyEquivalent:@""];
+    NSMenuItem *keyboard = [[NSMenuItem alloc] initWithTitle:@"灵耀屏幕键盘…" action:@selector(showScreenKeyboard:) keyEquivalent:@""];
     keyboard.target = self;
     [menu addItem:keyboard];
     // 手写模型只认汉字，不提供手写的版本（日文、越南文和藏文版）菜单里没有这一项。
@@ -3556,7 +3556,7 @@ static __weak MSIMEInputController *MSIMEFocusedController;
 - (void)showVoiceSettings:(id)sender {
     (void)sender;
     MSIMEOpenDesktopSettings(MSIMEDesktopSettingsPage::Voice, NSWorkspace.sharedWorkspace, ^{
-        [[MetasequoiaVoiceProviderSettingsWindow sharedController] showAndActivate];
+        [[LingyaoVoiceProviderSettingsWindow sharedController] showAndActivate];
     });
 }
 - (BOOL)usesLocalModelVoice {
@@ -5026,7 +5026,7 @@ static __weak MSIMEInputController *MSIMEMusicOwner;
     __weak MSIMEInputController *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         MSIMEInputController *strongSelf = weakSelf;
-        if (strongSelf && strongSelf->_activeClient) strongSelf->_typingEffectFullscreen = MetasequoiaFrontmostApplicationOwnsFullscreenDisplay();
+        if (strongSelf && strongSelf->_activeClient) strongSelf->_typingEffectFullscreen = LingyaoFrontmostApplicationOwnsFullscreenDisplay();
     });
 }
 
@@ -6588,13 +6588,13 @@ static __weak MSIMEInputController *MSIMECandidatePanelOwner;
     };
     NSMenu *menu = [[NSMenu alloc] initWithTitle:@"候选操作"];
     menu.autoenablesItems = NO;
-    ApplyMetasequoiaMenuTheme(menu, [self resolvedMenuThemePreferences]);
+    ApplyLingyaoMenuTheme(menu, [self resolvedMenuThemePreferences]);
     NSString *pinTitle = MSIMECandidateIsPinned(MSIMECandidatePinCode(_view), text) ? @"取消置顶" : @"置顶";
     [menu addItem:item(pinTitle, 0)];
     NSMenuItem *fixed = [[NSMenuItem alloc] initWithTitle:@"固定排位" action:nil keyEquivalent:@""];
     NSMenu *positions = [[NSMenu alloc] initWithTitle:@"固定排位"];
     positions.autoenablesItems = NO;
-    ApplyMetasequoiaMenuTheme(positions, [self resolvedMenuThemePreferences]);
+    ApplyLingyaoMenuTheme(positions, [self resolvedMenuThemePreferences]);
     for (NSInteger position = 1; position <= 5; ++position)
         [positions addItem:item([NSString stringWithFormat:@"第 %ld 位", (long)position], 10 + position)];
     [positions addItem:NSMenuItem.separatorItem];

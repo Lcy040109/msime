@@ -1,10 +1,10 @@
 #include "FanyDefines.h"
 #include "Globals.h"
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include "Define.h"
 #include <algorithm>
 #include <cwchar>
@@ -19,7 +19,7 @@
 
 //////////////////////////////////////////////////////////////////////
 //
-// CMetasequoiaIME candidate key handler methods
+// CLingyaoIME candidate key handler methods
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ const int MOVETO_BOTTOM = -1;
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateFinalize(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
+HRESULT CLingyaoIME::_HandleCandidateFinalize(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
                                                   const std::wstring &prefetchedText)
 {
     HRESULT hr = S_OK;
@@ -215,7 +215,7 @@ NoPresenter:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateFinalizeForVKReturn(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleCandidateFinalizeForVKReturn(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     if (auto *host = _pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
         return _HandleHostRawCommit(ec, pContext);
@@ -281,7 +281,7 @@ NoPresenter:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
+HRESULT CLingyaoIME::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
                                                  const std::wstring &prefetchedText)
 {
     return _HandleCandidateWorker(ec, pContext, requestId, prefetchedText);
@@ -293,7 +293,7 @@ HRESULT CMetasequoiaIME::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContex
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
+HRESULT CLingyaoIME::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId,
                                                 const std::wstring &prefetchedText)
 {
     HRESULT hrReturn = E_FAIL;
@@ -365,7 +365,7 @@ Exit:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateArrowKey( //
+HRESULT CLingyaoIME::_HandleCandidateArrowKey( //
     TfEditCookie ec,                               //
     _In_ ITfContext *pContext,                     //
     _In_ KEYSTROKE_FUNCTION keyFunction,           //
@@ -435,7 +435,7 @@ HRESULT CMetasequoiaIME::_HandleCandidateArrowKey( //
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode,
+HRESULT CLingyaoIME::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode,
                                                         uint64_t requestId, const std::wstring &prefetchedText)
 {
     int iSelectAsNumber = _pCompositionProcessorEngine->GetCandidateListIndexRange()->GetIndex(uCode);
@@ -467,7 +467,7 @@ HRESULT CMetasequoiaIME::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ IT
 //
 //----------------------------------------------------------------------------
 
-CCandidateListUIPresenter::CCandidateListUIPresenter(_In_ CMetasequoiaIME *pTextService, KEYSTROKE_CATEGORY Category,
+CCandidateListUIPresenter::CCandidateListUIPresenter(_In_ CLingyaoIME *pTextService, KEYSTROKE_CATEGORY Category,
                                                      _In_ CCandidateRange *pIndexRange, BOOL hideWindow)
     : CTfTextLayoutSink(pTextService), _candidateState(pIndexRange)
 {
@@ -602,7 +602,7 @@ STDAPI CCandidateListUIPresenter::GetDescription(BSTR *pbstr)
 
 STDAPI CCandidateListUIPresenter::GetGUID(GUID *pguid)
 {
-    *pguid = Global::MetasequoiaIMEGuidCandUIElement;
+    *pguid = Global::LingyaoIMEGuidCandUIElement;
     return S_OK;
 }
 
@@ -989,7 +989,7 @@ void CCandidateListUIPresenter::_NotifyUI()
 //
 //----------------------------------------------------------------------------
 
-void CCandidateListUIPresenter::_SetText(_In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList,
+void CCandidateListUIPresenter::_SetText(_In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList,
                                          BOOL isAddFindKeyCode)
 {
     PerfTimer timer;
@@ -1029,7 +1029,7 @@ void CCandidateListUIPresenter::_SetText(_In_ CMetasequoiaImeArray<CCandidateLis
 }
 
 void CCandidateListUIPresenter::AddCandidateToCandidateListUI(     //
-    _In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList, //
+    _In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList, //
     BOOL isAddFindKeyCode                                          //
 )
 {
@@ -1040,7 +1040,7 @@ void CCandidateListUIPresenter::AddCandidateToCandidateListUI(     //
 }
 
 void CCandidateListUIPresenter::SetPageIndexWithScrollInfo(       //
-    _In_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList //
+    _In_ CLingyaoImeArray<CCandidateListItem> *pCandidateList //
 )
 {
     if ((pCandidateList == nullptr) || (_pIndexRange == nullptr))
@@ -1579,7 +1579,7 @@ void CCandidateListUIPresenter::_ReplaceCandidateListFromPage(_In_ const std::ws
         return;
     }
 
-    CMetasequoiaImeArray<CCandidateListItem> pageIndexSource;
+    CLingyaoImeArray<CCandidateListItem> pageIndexSource;
     for (UINT i = 0; i < count; ++i)
     {
         pageIndexSource.Append();

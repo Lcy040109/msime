@@ -18,7 +18,7 @@ int main()
 {
     @autoreleasepool
     {
-        MetasequoiaVoiceProviderSettings *settings = [MetasequoiaVoiceProviderSettings new];
+        LingyaoVoiceProviderSettings *settings = [LingyaoVoiceProviderSettings new];
         settings.provider = @"openai";
         settings.endpoint = @"https://example.test/v1/audio/transcriptions";
         settings.model = @"fixture-model";

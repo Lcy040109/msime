@@ -40,7 +40,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 /**
- * 帮助与反馈：反馈类型（问题 / 建议 / 词库纠错）、附带诊断信息开关、描述（0 / 500）、至多 3 张截图，提交到水杉云（{@link FeedbackApi}）。
+ * 帮助与反馈：反馈类型（问题 / 建议 / 词库纠错）、附带诊断信息开关、描述（0 / 500）、至多 3 张截图，提交到灵耀云（{@link FeedbackApi}）。
  *
  * <p>附带诊断信息默认关闭；打开后只带服务端白名单里的字段——机型、系统版本、应用版本与版本（edition）、当前方案、键盘布局、皮肤、键盘是否已启用和是否为默认——不带任何输入内容和日志。截图由用户从系统选择器里挑，这里按长边 1600 像素、1 MiB 以内重新编码成 JPEG，顺带去掉 EXIF（其中可能有位置）。
  *
@@ -49,7 +49,7 @@ import org.json.JSONObject;
 public final class FeedbackPage extends DetailPage {
     private static final String QQ_GROUP = "829919142";
     private static final String TELEGRAM_URL = "https://t.me/msimegroup";
-    private static final String ISSUES = "https://github.com/metasequoiaime/msime/issues/new";
+    private static final String ISSUES = "https://github.com/Lcy040109/msime/issues/new";
     private static final int MAX_EDGE = 1600;
 
     private FeedbackApi.Type type = FeedbackApi.Type.BUG;

@@ -89,7 +89,7 @@ def main() -> int:
         # 同名的文件是用户自己的：不覆盖，卸载也不删。
         link.write_text("#!/bin/bash\necho mine\n")
         _, out, err = run(setup.link_omarchy_theme_hook, prefix, options)
-        assert "不是水杉的钩子" in err, err
+        assert "不是灵耀的钩子" in err, err
         assert link.read_text() == "#!/bin/bash\necho mine\n"
         assert run(setup.unlink_omarchy_theme_hook)[0] is None and link.exists()
 
@@ -138,7 +138,7 @@ def check_plugin(setup, prefix: Path, home: Path) -> None:
     # 同名目录是用户自己的：不覆盖，卸载也不删。
     link.mkdir()
     _, out, err = run(setup.link_omarchy_plugin, prefix)
-    assert "不是水杉的插件" in err and link.is_dir() and not link.is_symlink(), err
+    assert "不是灵耀的插件" in err and link.is_dir() and not link.is_symlink(), err
     assert run(setup.unlink_omarchy_plugin)[0] is None and link.is_dir()
 
 

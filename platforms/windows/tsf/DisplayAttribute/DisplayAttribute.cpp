@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 
 //+---------------------------------------------------------------------------
 //
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext,
+void CLingyaoIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext,
                                                          _In_opt_ ITfComposition *expectedComposition)
 {
     ITfRange *pRangeComposition = nullptr;
@@ -43,7 +43,7 @@ void CMetasequoiaIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ I
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext,
+BOOL CLingyaoIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext,
                                                        TfGuidAtom gaDisplayAttribute)
 {
     ITfRange *pRangeComposition = nullptr;
@@ -68,7 +68,7 @@ BOOL CMetasequoiaIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITf
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_SetCompositionDisplayAttributesForRange(TfEditCookie ec, _In_ ITfContext *pContext,
+BOOL CLingyaoIME::_SetCompositionDisplayAttributesForRange(TfEditCookie ec, _In_ ITfContext *pContext,
                                                                _In_ ITfRange *pRangeComposition,
                                                                TfGuidAtom gaDisplayAttribute)
 {
@@ -105,7 +105,7 @@ BOOL CMetasequoiaIME::_SetCompositionDisplayAttributesForRange(TfEditCookie ec, 
 // TfGuidAtom, we do it once when Activate is called.
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_InitDisplayAttributeGuidAtom()
+BOOL CLingyaoIME::_InitDisplayAttributeGuidAtom()
 {
     ITfCategoryMgr *pCategoryMgr = nullptr;
     HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr,
@@ -117,13 +117,13 @@ BOOL CMetasequoiaIME::_InitDisplayAttributeGuidAtom()
     }
 
     // register the display attribute for input text.
-    hr = pCategoryMgr->RegisterGUID(Global::MetasequoiaIMEGuidDisplayAttributeInput, &_gaDisplayAttributeInput);
+    hr = pCategoryMgr->RegisterGUID(Global::LingyaoIMEGuidDisplayAttributeInput, &_gaDisplayAttributeInput);
     if (FAILED(hr))
     {
         goto Exit;
     }
     // register the display attribute for the converted text.
-    hr = pCategoryMgr->RegisterGUID(Global::MetasequoiaIMEGuidDisplayAttributeConverted, &_gaDisplayAttributeConverted);
+    hr = pCategoryMgr->RegisterGUID(Global::LingyaoIMEGuidDisplayAttributeConverted, &_gaDisplayAttributeConverted);
     if (FAILED(hr))
     {
         goto Exit;

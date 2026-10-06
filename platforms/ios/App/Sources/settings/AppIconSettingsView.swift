@@ -100,7 +100,7 @@ struct AppIconSettingsView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 24) {
         VStack(alignment: .leading, spacing: 8) {
-          Text("让水杉，带上你的颜色")
+          Text("让灵耀，带上你的颜色")
             .font(.title2.bold())
           Text("挑选喜欢的图标，点一下换到主屏幕。")
             .font(.subheadline).foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct AppIconSettingsView: View {
       .frame(maxWidth: 680)
       .frame(maxWidth: .infinity)
     }
-    .background(MetasequoiaTheme.canvas.ignoresSafeArea())
+    .background(LingyaoTheme.canvas.ignoresSafeArea())
     .navigationTitle("App 图标")
     .navigationBarTitleDisplayMode(.inline)
     .onAppear { model.refresh() }
@@ -166,13 +166,13 @@ struct AppIconSettingsView: View {
           Text(pending ? "更换中" : selected ? "使用中" : "使用此图标")
         }
         .font(.caption.weight(.medium))
-        .foregroundStyle(selected ? MetasequoiaTheme.accent : .secondary)
+        .foregroundStyle(selected ? LingyaoTheme.accent : .secondary)
       }
       .frame(maxWidth: .infinity)
       .padding(.vertical, 20).padding(.horizontal, 10)
-      .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: 22))
+      .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: 22))
       .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(
-        selected ? MetasequoiaTheme.accent : Color.primary.opacity(0.06), lineWidth: selected ? 2 : 1))
+        selected ? LingyaoTheme.accent : Color.primary.opacity(0.06), lineWidth: selected ? 2 : 1))
       .contentShape(RoundedRectangle(cornerRadius: 22))
     }
     .buttonStyle(.plain)

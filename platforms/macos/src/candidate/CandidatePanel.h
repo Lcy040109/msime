@@ -2,15 +2,15 @@
 #import <AppKit/AppKit.h>
 #import <InputMethodKit/InputMethodKit.h>
 
-@protocol MetasequoiaCandidatePanelDelegate <NSObject>
+@protocol LingyaoCandidatePanelDelegate <NSObject>
 - (void)candidateSelected:(NSAttributedString *)candidate;
 - (void)candidatePanelPreviousPage;
 - (void)candidatePanelNextPage;
 @end
 
 // Nonactivating AppKit presentation of one controller-owned candidate page.
-@interface MetasequoiaCandidatePanel : NSObject
-@property(nonatomic, weak) id<MetasequoiaCandidatePanelDelegate> delegate;
+@interface LingyaoCandidatePanel : NSObject
+@property(nonatomic, weak) id<LingyaoCandidatePanelDelegate> delegate;
 @property(nonatomic) IMKCandidatePanelType panelType;
 @property(nonatomic, copy) NSArray<NSNumber *> *selectionKeys;
 @property(nonatomic) NSRect caretRect;

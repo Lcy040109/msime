@@ -976,7 +976,7 @@ int main(int argc, char **argv) {
       require(engine.input_mode_action_.shortText(&ic) == "中文" && engine.width_action_.shortText(&ic) == "全角字符" &&
                   engine.candidate_translation_action_.shortText(&ic) == "显示译文" &&
                   engine.dictionary_action_.shortText(&ic) == "词库…" && engine.settings_action_.shortText(&ic) == "设置…" &&
-                  engine.about_action_.shortText(&ic) == "关于水杉输入法",
+                  engine.about_action_.shortText(&ic) == "关于灵耀输入法",
               "design menu entries use the design labels");
       // The Engine's dedicated English mode is not the design's 英文 (that is the 中文 toggle unchecked); it stays reachable in 输入选项, next to 混合英文.
       const auto input = engine.input_group_menu_.actions();

@@ -26,11 +26,11 @@ final class DefaultImeModeTests: XCTestCase {
 
   func testANewSessionSeesTheModeTheSettingsAppWrote() async throws {
     XCTAssertTrue(KeyboardViewController.startsInChinese(
-      MetasequoiaInputSessionBridge(stateRoot: state).sharedPreferences), "the shared default is Chinese")
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+      LingyaoInputSessionBridge(stateRoot: state).sharedPreferences), "the shared default is Chinese")
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["default_ime_mode"] = "english"
     })
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertFalse(KeyboardViewController.startsInChinese(bridge.sharedPreferences))
 
     let reloaded = expectation(description: "reload")

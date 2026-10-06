@@ -177,7 +177,7 @@ struct CandidateOptionsSettingsView: View {
   private func stored<Value>(_ object: String, _ key: String, _ state: Binding<Value>) -> Binding<Value> {
     Binding(get: { state.wrappedValue }, set: { value in
       state.wrappedValue = value
-      saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences {
+      saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences {
         var nested = $0[object] as? [String: Any] ?? [:]
         nested[key] = value
         $0[object] = nested
@@ -192,7 +192,7 @@ struct CandidateOptionsSettingsView: View {
   }
 
   private func write(_ mutate: (inout [String: Any]) -> Void) {
-    saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences(mutate)
+    saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences(mutate)
     reload()
   }
 
@@ -200,13 +200,13 @@ struct CandidateOptionsSettingsView: View {
   private func storedTop<Value>(_ key: String, _ state: Binding<Value>) -> Binding<Value> {
     Binding(get: { state.wrappedValue }, set: { value in
       state.wrappedValue = value
-      saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences { $0[key] = value }
+      saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences { $0[key] = value }
       if saveFailed { reload() }
     })
   }
 
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     let mixed = preferences["mixed_input"] as? [String: Any] ?? [:]
     english = mixed["english"] as? Bool ?? english
     minimumPrefix = Self.minimumPrefix(mixed["minimum_prefix"]) ?? minimumPrefix

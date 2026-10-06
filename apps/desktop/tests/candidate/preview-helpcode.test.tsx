@@ -38,7 +38,7 @@ const scan = async () => catalog;
 
 const selections: Record<string, Pick<Preferences, "global_theme" | "custom_theme">> = {
   system: { global_theme: "system" },
-  shuishan: { global_theme: "shuishan" },
+  lingyao: { global_theme: "lingyao" },
   light: { global_theme: "light" },
   paper: { global_theme: "paper" },
   night: { global_theme: "night" },

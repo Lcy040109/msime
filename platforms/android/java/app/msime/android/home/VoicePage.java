@@ -136,7 +136,7 @@ public final class VoicePage extends DetailPage {
         if (row != null) row.setChecked(false);
         new MaterialAlertDialogBuilder(requireContext())
             .setTitle("上传语音以改进识别？")
-            .setMessage("开启后，每次语音输入的音频和识别出的文字会上传到水杉云，只用于改进语音识别。数据保存 180 天，到期自动删除；你可以随时在这里关闭。隐私模式、密码框和不允许个性化学习的输入框里不会上传。")
+            .setMessage("开启后，每次语音输入的音频和识别出的文字会上传到灵耀云，只用于改进语音识别。数据保存 180 天，到期自动删除；你可以随时在这里关闭。隐私模式、密码框和不允许个性化学习的输入框里不会上传。")
             .setNegativeButton("取消", null)
             .setPositiveButton("开启", (dialog, which) -> {
                 GroupCard.Row current = contributeRow;

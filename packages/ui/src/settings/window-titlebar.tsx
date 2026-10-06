@@ -34,7 +34,7 @@ export function WindowTitlebar({
       <span className={settings.titlebarBrand}>
         {!linux && <img src={logo} alt="" draggable={false} />}
         <span className={settings.title} data-window-title="">
-          水杉输入法
+          灵耀输入法
         </span>
         {!linux && <span className={settings.titlebarSubtitle}>设置</span>}
       </span>

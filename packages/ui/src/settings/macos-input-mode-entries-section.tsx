@@ -22,20 +22,20 @@ interface ModeEntry {
 
 /** 顺序与输入法菜单一致，名字与 `platforms/macos/resources/*.lproj/InfoPlist.strings` 一致，语言对应 Info.plist.in 里各模式的 `TISIntendedLanguage`。 */
 export const macosInputModeEntries: readonly ModeEntry[] = [
-  { mode: "Hans", name: "水杉输入法 · 中", scheme: null, language: "简体中文" },
-  { mode: "Shuangpin", name: "水杉输入法 · 双", scheme: "shuangpin", language: "简体中文" },
-  { mode: "Wubi", name: "水杉输入法 · 五", scheme: "wubi", language: "简体中文" },
-  { mode: "Cantonese", name: "水杉输入法 · 粤", scheme: "cantonese", language: "粤语" },
-  { mode: "Zhuyin", name: "水杉输入法 · 注", scheme: "zhuyin", language: "繁体中文" },
-  { mode: "Japanese", name: "水杉输入法 · 日", scheme: "japanese", language: "日语" },
-  { mode: "Korean", name: "水杉输入法 · 韩", scheme: "korean", language: "韩语" },
-  { mode: "Vietnamese", name: "水杉输入法 · 越", scheme: "vietnamese", language: "越南语" },
-  { mode: "Tibetan", name: "水杉输入法 · 藏", scheme: "tibetan", language: "藏语" },
-  { mode: "Stroke", name: "水杉输入法 · 笔", scheme: "stroke", language: "简体中文" },
-  { mode: "Roman", name: "水杉输入法 · 英", scheme: null, language: "简体中文" },
+  { mode: "Hans", name: "灵耀输入法 · 中", scheme: null, language: "简体中文" },
+  { mode: "Shuangpin", name: "灵耀输入法 · 双", scheme: "shuangpin", language: "简体中文" },
+  { mode: "Wubi", name: "灵耀输入法 · 五", scheme: "wubi", language: "简体中文" },
+  { mode: "Cantonese", name: "灵耀输入法 · 粤", scheme: "cantonese", language: "粤语" },
+  { mode: "Zhuyin", name: "灵耀输入法 · 注", scheme: "zhuyin", language: "繁体中文" },
+  { mode: "Japanese", name: "灵耀输入法 · 日", scheme: "japanese", language: "日语" },
+  { mode: "Korean", name: "灵耀输入法 · 韩", scheme: "korean", language: "韩语" },
+  { mode: "Vietnamese", name: "灵耀输入法 · 越", scheme: "vietnamese", language: "越南语" },
+  { mode: "Tibetan", name: "灵耀输入法 · 藏", scheme: "tibetan", language: "藏语" },
+  { mode: "Stroke", name: "灵耀输入法 · 笔", scheme: "stroke", language: "简体中文" },
+  { mode: "Roman", name: "灵耀输入法 · 英", scheme: null, language: "简体中文" },
 ];
 
-const fullName = "水杉输入法";
+const fullName = "灵耀输入法";
 
 /**
  * 本版本的菜单栏入口，与 `platforms/macos/scripts/edition_bundle.py` 生成的 Info.plist 一致：本版本的方案对应的模式加上「英」，主模式 `Hans` 总在。版本不含全拼时，`Hans` 显示默认方案的字（五笔版是「五」，日文版是「日」），默认方案自己的模式不再单列；默认方案不在「简体中文」下时（日文、越南文、藏文版），`Hans` 和「英」都登记在那个方案的语言下。名字的前缀是版本的产品名。full（`edition` 缺省）就是上面这张表。

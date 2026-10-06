@@ -53,7 +53,7 @@ struct CustomThemeCandidateSection: View {
         }
         Picker("明暗", selection: Binding(get: { candidateTheme }, set: { value in
           candidateTheme = value
-          saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences { $0["candidate_theme"] = value }
+          saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences { $0["candidate_theme"] = value }
           if saveFailed { reload() }
           onThemeChange()
         })) {
@@ -211,7 +211,7 @@ struct CustomThemeCandidateSection: View {
   }
 
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     themeId = GlobalThemePreference.theme(in: preferences)
     customTheme = GlobalThemePreference.customTheme(in: preferences)
     candidateSkin = customTheme["candidate_skin"] as? String ?? ""

@@ -448,7 +448,7 @@ steps = [op("validate_entry", {"kind": "pinyin", "key": "NI HAO", "value": "拟�
 steps += [op("validate_entry", {"kind": k, "key": key, "value": v}) for k, key, v in invalid]
 steps += [op("dict_edit", {"replacement": {"kind": "pinyin", "key": "ni'hao", "value": "拟好", "weight": 12345}}),
           op("dict_edit", {"replacement": {"kind": "wubi", "key": "wq", "value": "拟好", "weight": 12345}}),
-          op("dict_edit", {"replacement": {"kind": "english", "key": "metasequoia", "value": "Metasequoia", "weight": 12345}}),
+          op("dict_edit", {"replacement": {"kind": "english", "key": "metasequoia", "value": "Lingyao", "weight": 12345}}),
           op("dict_edit", {"replacement": {"kind": "quick_phrase", "key": "test1", "value": "fixture\nsecond line", "weight": 12345}}),
           op("dict_list", {}), REOPEN, ty("nihao"), CANCEL, op("switch_scheme", "shuangpin"), ty("nihc"), CANCEL,
           op("switch_scheme", "wubi"), ty("wq"), CANCEL, op("switch_scheme", "quanpin"),

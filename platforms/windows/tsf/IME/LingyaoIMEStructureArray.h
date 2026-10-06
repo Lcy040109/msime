@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 //
-//  CMetasequoiaIMEMetasequoiaIMEStructureArray.h
+//  CLingyaoIMELingyaoIMEStructureArray.h
 //
-//          CMetasequoiaIMEStructureArray declaration.
+//          CLingyaoIMEStructureArray declaration.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -10,27 +10,27 @@
 
 #include <vector>
 
-template <class T> class CMetasequoiaIMEStructureArray
+template <class T> class CLingyaoIMEStructureArray
 {
     typedef typename std::vector<T> value_type;
     typedef const T &CONST_REF;
-    typedef typename value_type CMetasequoiaIMEArray;
-    typedef typename value_type::iterator CMetasequoiaIMEIter;
+    typedef typename value_type CLingyaoIMEArray;
+    typedef typename value_type::iterator CLingyaoIMEIter;
 
   public:
-    CMetasequoiaIMEStructureArray() : _imeVector()
+    CLingyaoIMEStructureArray() : _imeVector()
     {
     }
 
-    explicit CMetasequoiaIMEStructureArray(size_t iCount) : _imeVector(iCount)
+    explicit CLingyaoIMEStructureArray(size_t iCount) : _imeVector(iCount)
     {
     }
 
-    CMetasequoiaIMEStructureArray(size_t iCount, CONST_REF tVal) : _imeVector(iCount, tVal)
+    CLingyaoIMEStructureArray(size_t iCount, CONST_REF tVal) : _imeVector(iCount, tVal)
     {
     }
 
-    virtual ~CMetasequoiaIMEStructureArray()
+    virtual ~CLingyaoIMEStructureArray()
     {
     }
 
@@ -55,8 +55,8 @@ template <class T> class CMetasequoiaIMEStructureArray
         assert(iIndex <= _imeVector.size());
         assert(_imeVector.size() > 0);
 
-        CMetasequoiaIMEIter beginIter = _imeVector.begin() + iIndex;
-        CMetasequoiaIMEIter lastIter = beginIter + iElements - 1;
+        CLingyaoIMEIter beginIter = _imeVector.begin() + iIndex;
+        CLingyaoIMEIter lastIter = beginIter + iElements - 1;
 
         _imeVector.erase(beginIter, lastIter);
     }
@@ -77,6 +77,6 @@ template <class T> class CMetasequoiaIMEStructureArray
     }
 
   private:
-    CMetasequoiaIMEArray _imeVector; // the actual array of data
-    CMetasequoiaIMEIter _imeIter;
+    CLingyaoIMEArray _imeVector; // the actual array of data
+    CLingyaoIMEIter _imeIter;
 };

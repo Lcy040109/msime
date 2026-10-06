@@ -88,7 +88,7 @@ struct InputSettingsView: View {
                   Spacer()
                   if inputScheme == scheme {
                     Image(systemName: "checkmark")
-                      .foregroundStyle(MetasequoiaTheme.accent)
+                      .foregroundStyle(LingyaoTheme.accent)
                       .accessibilityHidden(true)
                   }
                 }
@@ -173,7 +173,7 @@ struct InputSettingsView: View {
         Section {
           Picker("打开键盘时", selection: Binding(get: { startsInEnglish }, set: { english in
             startsInEnglish = english
-            defaultModeSaveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences {
+            defaultModeSaveFailed = !LingyaoInputSessionBridge.updateSharedPreferences {
               $0["default_ime_mode"] = english ? "english" : "chinese"
             }
             if defaultModeSaveFailed { reloadPreferences() }
@@ -266,7 +266,7 @@ struct InputSettingsView: View {
     inputScheme = InputSchemePreference.scheme
     enabledSchemes = InputSchemePreference.enabledSchemes
     usesTraditionalOutput = ChineseOutputPreference.usesTraditional
-    document = MetasequoiaInputSessionBridge.loadSharedPreferences()
+    document = LingyaoInputSessionBridge.loadSharedPreferences()
     if let document { WubiProfilePreference.mirror(document) }
     wubiProfile = WubiProfilePreference.profile
     startsInEnglish = document?["default_ime_mode"] as? String == "english"
@@ -279,8 +279,8 @@ struct OnboardingView: View {
 
   private let steps = [
     ("1", "打开键盘设置", "前往“设置 → 通用 → 键盘 → 键盘”。"),
-    ("2", "添加水杉输入法", "选择“添加新键盘”，再选择水杉输入法。"),
-    ("3", "切换并开始输入", "在输入框长按地球键，选择水杉输入法。"),
+    ("2", "添加灵耀输入法", "选择“添加新键盘”，再选择灵耀输入法。"),
+    ("3", "切换并开始输入", "在输入框长按地球键，选择灵耀输入法。"),
   ]
 
   var body: some View {
@@ -302,15 +302,15 @@ struct OnboardingView: View {
             .font(.headline)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .foregroundStyle(MetasequoiaTheme.onAccent)
+            .foregroundStyle(LingyaoTheme.onAccent)
             .background(
-              MetasequoiaTheme.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+              LingyaoTheme.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous)
             )
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("openKeyboardSettingsButton")
-        .accessibilityHint("打开水杉输入法的系统设置页面")
+        .accessibilityHint("打开灵耀输入法的系统设置页面")
 
         if let onFinish {
           Button("已完成，进入设置", action: onFinish)
@@ -329,16 +329,16 @@ struct OnboardingView: View {
       .padding(.vertical, 30)
     }
     .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .navigationTitle("启用指南")
     .navigationBarTitleDisplayMode(.inline)
   }
 
   private var header: some View {
     HStack(alignment: .center, spacing: 18) {
-      MetasequoiaMark()
+      LingyaoMark()
         .stroke(
-          MetasequoiaTheme.accent,
+          LingyaoTheme.accent,
           style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
         )
         .frame(width: 58, height: 76)
@@ -347,12 +347,12 @@ struct OnboardingView: View {
         .accessibilityHidden(true)
 
       VStack(alignment: .leading, spacing: 5) {
-        Text("水杉输入法")
+        Text("灵耀输入法")
           .font(.system(.largeTitle, design: .rounded).weight(.bold))
           .foregroundStyle(.primary)
-        Text("添加键盘，开始使用水杉输入法")
+        Text("添加键盘，开始使用灵耀输入法")
           .font(.subheadline.weight(.medium))
-          .foregroundStyle(MetasequoiaTheme.needle)
+          .foregroundStyle(LingyaoTheme.needle)
       }
     }
   }
@@ -365,10 +365,10 @@ struct OnboardingView: View {
           .font(.system(.headline, design: .rounded).weight(.bold))
           .foregroundStyle(.white)
           .frame(width: 34, height: 34)
-          .background(MetasequoiaTheme.cone, in: Circle())
+          .background(LingyaoTheme.cone, in: Circle())
         if drawsLine {
           Rectangle()
-            .fill(MetasequoiaTheme.needle.opacity(0.3))
+            .fill(LingyaoTheme.needle.opacity(0.3))
             .frame(width: 2, height: 54)
         }
       }

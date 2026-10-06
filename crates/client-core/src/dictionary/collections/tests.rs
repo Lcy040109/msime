@@ -651,11 +651,11 @@ fn collections_actions_use_the_operation_tag() {
     );
 }
 
-fn shuishan(weight: i64) -> PersonalWord {
+fn lingyao(weight: i64) -> PersonalWord {
     PersonalWord {
         kind: PersonalWordKind::Pinyin,
         key: "shui'shan".into(),
-        value: "水杉".into(),
+        value: "灵耀".into(),
         weight,
     }
 }
@@ -672,7 +672,7 @@ fn collections_never_overwrite_or_remove_a_word_the_user_already_had() {
     };
     for ending in ["disable", "delete", "remove_words"] {
         let mut fixture = Fixture::new();
-        let own = shuishan(OWN_WEIGHT);
+        let own = lingyao(OWN_WEIGHT);
         fixture.dictionary.insert(own.identity(), OWN_WEIGHT);
         let view = fixture
             .store
@@ -681,7 +681,7 @@ fn collections_never_overwrite_or_remove_a_word_the_user_already_had() {
         let id = id_of(&view, "拼音");
         fixture
             .store
-            .add_words(&id, vec![shuishan(COLLECTION_WEIGHT), other.clone()])
+            .add_words(&id, vec![lingyao(COLLECTION_WEIGHT), other.clone()])
             .unwrap();
         fixture.drain();
         assert_eq!(
@@ -701,7 +701,7 @@ fn collections_never_overwrite_or_remove_a_word_the_user_already_had() {
             _ => {
                 fixture
                     .store
-                    .remove_words(&id, &[shuishan(COLLECTION_WEIGHT), other.clone()])
+                    .remove_words(&id, &[lingyao(COLLECTION_WEIGHT), other.clone()])
                     .unwrap();
             }
         }
@@ -725,7 +725,7 @@ fn collections_never_overwrite_or_remove_a_word_the_user_already_had() {
 #[test]
 fn collections_a_removal_queued_before_the_receipt_is_not_sent() {
     let mut fixture = Fixture::new();
-    let own = shuishan(4_321);
+    let own = lingyao(4_321);
     fixture.dictionary.insert(own.identity(), own.weight);
     let view = fixture
         .store
@@ -735,7 +735,7 @@ fn collections_a_removal_queued_before_the_receipt_is_not_sent() {
     // 加入已经送进个人词库队列，键盘还没应用就停用了集合：「删除」只能排着，等回执到了再丢掉。
     fixture
         .store
-        .add_words(&id, vec![shuishan(10_000)])
+        .add_words(&id, vec![lingyao(10_000)])
         .unwrap();
     assert_eq!(fixture.requests().len(), 1);
     fixture.store.set_enabled(&id, false).unwrap();
@@ -756,7 +756,7 @@ fn collections_a_removal_queued_before_the_receipt_is_not_sent() {
 #[test]
 fn collections_a_word_the_user_deleted_by_hand_is_the_collection_s_again() {
     let mut fixture = Fixture::new();
-    let own = shuishan(4_321);
+    let own = lingyao(4_321);
     fixture.dictionary.insert(own.identity(), own.weight);
     let view = fixture
         .store
@@ -765,7 +765,7 @@ fn collections_a_word_the_user_deleted_by_hand_is_the_collection_s_again() {
     let id = id_of(&view, "拼音");
     fixture
         .store
-        .add_words(&id, vec![shuishan(10_000)])
+        .add_words(&id, vec![lingyao(10_000)])
         .unwrap();
     fixture.drain();
     fixture.store.set_enabled(&id, false).unwrap();

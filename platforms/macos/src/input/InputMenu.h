@@ -13,7 +13,7 @@ inline NSMenuItem *CreateInputModeItem(NSString *title, SEL action, id target, B
 
 /// Match the Windows menu surface precedence: explicit menu theme, then the
 /// global theme, with a nil appearance delegating system mode to AppKit.
-inline void ApplyMetasequoiaMenuTheme(NSMenu *menu, NSDictionary *preferences)
+inline void ApplyLingyaoMenuTheme(NSMenu *menu, NSDictionary *preferences)
 {
     if (menu == nil) return;
     id surface = preferences[@"menu_theme"];
@@ -28,7 +28,7 @@ inline void ApplyMetasequoiaMenuTheme(NSMenu *menu, NSDictionary *preferences)
         menu.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
 }
 
-inline NSMenu *CreateMetasequoiaInputMenu(id target, BOOL englishMode, BOOL traditionalOutput)
+inline NSMenu *CreateLingyaoInputMenu(id target, BOOL englishMode, BOOL traditionalOutput)
 {
     NSMenu *menu = [[NSMenu alloc] initWithTitle:MSIMEEditionDisplayName()];
     menu.autoenablesItems = NO;

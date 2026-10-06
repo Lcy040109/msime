@@ -32,14 +32,14 @@ function Check-Installed([string]$Edition, [string]$When) {
     $app = if (Test-Path -LiteralPath $appKey) { Get-ItemProperty -LiteralPath $appKey } else { $null }
     Check ($null -ne $app) "${When}: $Edition keeps HKLM\$($identity.registry_key)"
     if ($null -eq $app) { return }
-    Check ($app.ServerPath -eq (Join-Path $pf64 'server\MetasequoiaImeServer.exe') -and (Test-Path -LiteralPath $app.ServerPath -PathType Leaf)) "${When}: $Edition ServerPath is its own Server"
-    Check ((InprocServer 'HKLM:\SOFTWARE\Classes' $identity.clsid) -eq (Join-Path $pf64 "$($app.VersionDir)\MetasequoiaImeTsf.dll")) "${When}: $Edition 64-bit COM server is its own TSF DLL"
-    Check ((InprocServer 'HKLM:\SOFTWARE\WOW6432Node\Classes' $identity.clsid) -eq (Join-Path $pf32 "$($app.VersionDir)\MetasequoiaImeTsf.dll")) "${When}: $Edition 32-bit COM server is its own TSF DLL"
+    Check ($app.ServerPath -eq (Join-Path $pf64 'server\LingyaoImeServer.exe') -and (Test-Path -LiteralPath $app.ServerPath -PathType Leaf)) "${When}: $Edition ServerPath is its own Server"
+    Check ((InprocServer 'HKLM:\SOFTWARE\Classes' $identity.clsid) -eq (Join-Path $pf64 "$($app.VersionDir)\LingyaoImeTsf.dll")) "${When}: $Edition 64-bit COM server is its own TSF DLL"
+    Check ((InprocServer 'HKLM:\SOFTWARE\WOW6432Node\Classes' $identity.clsid) -eq (Join-Path $pf32 "$($app.VersionDir)\LingyaoImeTsf.dll")) "${When}: $Edition 32-bit COM server is its own TSF DLL"
     Check (Test-Path -LiteralPath "HKLM:\SOFTWARE\Microsoft\CTF\TIP\$($identity.clsid)") "${When}: $Edition TIP registered"
     Check (Test-Path -LiteralPath (Join-Path $pf64 "$($app.VersionDir)\$($identity.host_dll)") -PathType Leaf) "${When}: $Edition $($identity.host_dll) beside its TSF DLL"
     $task = Get-ScheduledTask -TaskName $identity.watchdog_task -ErrorAction SilentlyContinue
     $action = if ($task) { @($task.Actions)[0].Execute.Trim('"') } else { $null }
-    Check ($action -eq (Join-Path $pf64 'server\MetasequoiaImeWatchdog.exe')) "${When}: $Edition watchdog task runs its own Watchdog"
+    Check ($action -eq (Join-Path $pf64 'server\LingyaoImeWatchdog.exe')) "${When}: $Edition watchdog task runs its own Watchdog"
     # 所有权标记的文件名接版本的名字后缀（edition_windows.py 的 data_dir_marker）：full 的安装器认不出别的版本的标记，不会接管它们的数据目录。
     Check (Test-Path -LiteralPath (Join-Path $app.DataDir ('.metasequoiaime-data' + $identity.name_suffix)) -PathType Leaf) "${When}: $Edition DataDir still owned ($($app.DataDir))"
     $declaration = Join-Path $pf64 'server\edition.json'

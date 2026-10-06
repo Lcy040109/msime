@@ -30,7 +30,7 @@ final class CompositionBoundaryTests: XCTestCase {
 
   /// 网址模式里数字和网址符号是 Engine 的输入：符号面板据此把它们作为字符交给会话，而不是选候选或结束组字。
   func testUrlModeDigitsAreEngineInputNotCandidatePicks() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     for letter in ["w", "w", "w"] { _ = bridge.handleCharacter(letter) }
     XCTAssertTrue(bridge.engineSpellsWhileComposing("."), "the . after www opens the URL mode")
     XCTAssertFalse(bridge.engineSpellsWhileComposing("1"), "a digit still picks before the URL mode opens")
@@ -49,7 +49,7 @@ final class CompositionBoundaryTests: XCTestCase {
 
   /// U 模式里码点的数字是 Engine 的输入：宿主据此把数字作为字符交给会话，而不是按槽位选候选。
   func testUnicodeModeDigitsAreEngineInputNotCandidatePicks() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertFalse(bridge.engineSpellsWhileComposing("4"), "with nothing composed a digit is not spelled")
     XCTAssertTrue(bridge.openLocalMode("U").isInLocalMode, "Shift+U opens the Unicode mode")
     for digit in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] {
@@ -70,7 +70,7 @@ final class CompositionBoundaryTests: XCTestCase {
     XCTAssertEqual(CompositionBoundaryPolicy.action(composing: true, scheme: .korean, boundary: .modeSwitch, koreanHanjaListOpen: true), .finishComposition)
     XCTAssertEqual(CompositionBoundaryPolicy.action(composing: true, scheme: .korean, boundary: .deactivate, koreanHanjaListOpen: true), .finishComposition)
 
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToKorean()
     for letter in "rk" { _ = bridge.handleCharacter(String(letter)) }
     let returned = bridge.commitRaw()
@@ -85,7 +85,7 @@ final class CompositionBoundaryTests: XCTestCase {
 
   /// Korean writes half-width ASCII marks whatever the Chinese punctuation switch and the width say.
   func testKoreanPunctuationStaysAsciiAndHalfWidth() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToKorean()
     bridge.setChinesePunctuation(true)
     bridge.setCharacterWidth(fullwidth: true)
@@ -100,7 +100,7 @@ final class CompositionBoundaryTests: XCTestCase {
   }
 
   func testCommitRawKeepsTheTypedLetters() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     for letter in "nihao" { _ = bridge.handleCharacter(String(letter)) }
     let snapshot = bridge.commitRaw()
     XCTAssertTrue(snapshot.isHandled)
@@ -113,7 +113,7 @@ final class CompositionBoundaryTests: XCTestCase {
   }
 
   func testChinesePunctuationSwitchReachesTheRuntime() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(bridge.handlePunctuationWithContext(",", preceding: 0).commitText, "，")
     bridge.setChinesePunctuation(false)
     XCTAssertNotEqual(bridge.handlePunctuationWithContext(",", preceding: 0).commitText, "，")
@@ -123,11 +123,11 @@ final class CompositionBoundaryTests: XCTestCase {
 
   /// English mode asks the runtime only under 标点锁定为中文, and the runtime answers with the Chinese mark whatever the switch says.
   func testChineseLockOverridesTheSwitch() {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    _ = LingyaoInputSessionBridge(stateRoot: state)
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["punctuation_lock"] = "chinese"
     })
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     bridge.setChinesePunctuation(false)
     XCTAssertEqual(bridge.handlePunctuationWithContext(",", preceding: 0).commitText, "，")
   }

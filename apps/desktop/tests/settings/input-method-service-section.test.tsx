@@ -22,7 +22,7 @@ test("service section exposes restart and macOS install actions", () => {
   );
 
   expect(
-    screen.getByText("重新注册并启用已安装的水杉输入源；当前输入法进程继续按系统生命周期运行。"),
+    screen.getByText("重新注册并启用已安装的灵耀输入源；当前输入法进程继续按系统生命周期运行。"),
   ).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "重新注册" }));
   fireEvent.click(screen.getByRole("button", { name: "安装 / 更新" }));
@@ -35,7 +35,7 @@ test("service section uses Linux restart wording", () => {
 
   expect(
     screen.getByText(
-      "重启 IBus 输入法服务；使用 Fcitx5 时重载水杉插件，关闭并重建所有输入会话，不影响其他输入法。",
+      "重启 IBus 输入法服务；使用 Fcitx5 时重载灵耀插件，关闭并重建所有输入会话，不影响其他输入法。",
     ),
   ).toBeTruthy();
   expect(screen.getByText("立即重启输入法服务")).toBeTruthy();

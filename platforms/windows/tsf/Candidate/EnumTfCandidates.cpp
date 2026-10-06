@@ -2,7 +2,7 @@
 #include "EnumTfCandidates.h"
 
 HRESULT CEnumTfCandidates::CreateInstance(_Outptr_ IEnumTfCandidates **ppEnum,
-                                          _In_ const CMetasequoiaImeArray<ITfCandidateString *> &rgelm, UINT currentNum)
+                                          _In_ const CLingyaoImeArray<ITfCandidateString *> &rgelm, UINT currentNum)
 {
     if (ppEnum == nullptr)
     {
@@ -18,7 +18,7 @@ HRESULT CEnumTfCandidates::CreateInstance(_Outptr_ IEnumTfCandidates **ppEnum,
     return S_OK;
 }
 
-CEnumTfCandidates::CEnumTfCandidates(_In_ const CMetasequoiaImeArray<ITfCandidateString *> &rgelm, UINT currentNum)
+CEnumTfCandidates::CEnumTfCandidates(_In_ const CLingyaoImeArray<ITfCandidateString *> &rgelm, UINT currentNum)
 {
     _refCount = 0;
     _rgelm = rgelm;

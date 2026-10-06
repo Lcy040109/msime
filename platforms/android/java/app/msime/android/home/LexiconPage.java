@@ -455,7 +455,7 @@ public final class LexiconPage extends DetailPage {
     }
 
     private void startExport() {
-        createDocument.launch("水杉词库.txt");
+        createDocument.launch("灵耀词库.txt");
     }
 
     private void onExportPicked(@Nullable Uri uri) {

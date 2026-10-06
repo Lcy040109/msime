@@ -92,7 +92,7 @@ void *GetInputSourceProperty(TISInputSourceRef inputSource, CFStringRef property
     }
     if (inputSource == koreanModeSource) return (__bridge void *)MSIMEKoreanInputModeID;
     if (inputSource == japaneseModeSource) return (__bridge void *)MSIMEJapaneseInputModeID;
-    if (inputSource == appParentSource) return (__bridge void *)@"app.msime.inputmethod.MetasequoiaIME";
+    if (inputSource == appParentSource) return (__bridge void *)@"app.msime.inputmethod.LingyaoIME";
     if (inputSource == hansModeSource) return (__bridge void *)MSIMEChineseInputModeID;
     if (inputSource == shuangpinModeSource) return (__bridge void *)MSIMEShuangpinInputModeID;
     if (inputSource == wubiModeSource) return (__bridge void *)MSIMEWubiInputModeID;
@@ -101,9 +101,9 @@ void *GetInputSourceProperty(TISInputSourceRef inputSource, CFStringRef property
     if (inputSource == vietnameseModeSource) return (__bridge void *)MSIMEVietnameseInputModeID;
     if (inputSource == tibetanModeSource) return (__bridge void *)MSIMETibetanInputModeID;
     if (inputSource == strokeModeSource) return (__bridge void *)MSIMEStrokeInputModeID;
-    CFStringRef identifier = inputSource == parentSource        ? CFSTR("com.houko.inputmethod.MetasequoiaIME")
-                             : inputSource == englishModeSource ? CFSTR("com.houko.inputmethod.MetasequoiaIME.Roman")
-                                                                : CFSTR("com.houko.inputmethod.MetasequoiaIME.Hans");
+    CFStringRef identifier = inputSource == parentSource        ? CFSTR("com.houko.inputmethod.LingyaoIME")
+                             : inputSource == englishModeSource ? CFSTR("com.houko.inputmethod.LingyaoIME.Roman")
+                                                                : CFSTR("com.houko.inputmethod.LingyaoIME.Hans");
     return const_cast<void *>(reinterpret_cast<const void *>(identifier));
 }
 
@@ -124,12 +124,12 @@ int main()
 {
     @autoreleasepool
     {
-        const char *registrationArguments[] = {"MetasequoiaIME", "--register-input-source"};
-        const char *ordinaryArguments[] = {"MetasequoiaIME"};
-        const char *unknownArguments[] = {"MetasequoiaIME", "--unknown"};
+        const char *registrationArguments[] = {"LingyaoIME", "--register-input-source"};
+        const char *ordinaryArguments[] = {"LingyaoIME"};
+        const char *unknownArguments[] = {"LingyaoIME", "--unknown"};
         require(MSIMEShouldRegisterInputSource(2, registrationArguments),
                 "The registration command was not recognized.");
-        const char *reregistrationArguments[] = {"MetasequoiaIME", "--reregister-input-source"};
+        const char *reregistrationArguments[] = {"LingyaoIME", "--reregister-input-source"};
         require(MSIMEShouldRegisterInputSource(2, reregistrationArguments),
                 "The re-registration command was not recognized.");
         require(!MSIMEShouldRegisterInputSource(1, ordinaryArguments),
@@ -137,7 +137,7 @@ int main()
         require(!MSIMEShouldRegisterInputSource(2, unknownArguments),
                 "An unknown command was treated as registration.");
 
-        NSURL *bundleURL = [NSURL fileURLWithPath:@"/tmp/MetasequoiaIME.app" isDirectory:YES];
+        NSURL *bundleURL = [NSURL fileURLWithPath:@"/tmp/LingyaoIME.app" isDirectory:YES];
         RegistrationWorkspace *workspace = [RegistrationWorkspace new];
         __block BOOL launchCompleted = NO;
         __block BOOL launchSucceeded = NO;
@@ -173,7 +173,7 @@ int main()
 
         const void *sources[] = {parentSource, modeSource};
         sourceList = CFArrayCreate(nullptr, sources, 2, nullptr);
-        NSString *bundleIdentifier = @"com.houko.inputmethod.MetasequoiaIME";
+        NSString *bundleIdentifier = @"com.houko.inputmethod.LingyaoIME";
         require(MSIMERegisterAndEnableInputSources(bundleURL, bundleIdentifier, CaptureRegistration,
                                                          CopyInputSources, GetInputSourceProperty,
                                                          EnableInputSource) == noErr,
@@ -229,7 +229,7 @@ int main()
         const void *chineseSchemeSources[] = {shuangpinModeSource, wubiModeSource, hansModeSource};
         sourceList = CFArrayCreate(nullptr, chineseSchemeSources, 3, nullptr);
         enabledSources.clear();
-        require(MSIMERegisterAndEnableInputSources(bundleURL, @"app.msime.inputmethod.MetasequoiaIME", CaptureRegistration,
+        require(MSIMERegisterAndEnableInputSources(bundleURL, @"app.msime.inputmethod.LingyaoIME", CaptureRegistration,
                                                          CopyInputSources, GetInputSourceProperty,
                                                          EnableInputSource) == noErr,
                 "A bundle with Shuangpin and Wubi modes was rejected.");
@@ -243,7 +243,7 @@ int main()
         const void *optInSources[] = {cantoneseModeSource, hansModeSource, zhuyinModeSource, wubiModeSource, vietnameseModeSource, tibetanModeSource, strokeModeSource};
         sourceList = CFArrayCreate(nullptr, optInSources, 7, nullptr);
         enabledSources.clear();
-        require(MSIMERegisterAndEnableInputSources(bundleURL, @"app.msime.inputmethod.MetasequoiaIME", CaptureRegistration,
+        require(MSIMERegisterAndEnableInputSources(bundleURL, @"app.msime.inputmethod.LingyaoIME", CaptureRegistration,
                                                          CopyInputSources, GetInputSourceProperty,
                                                          EnableInputSource) == noErr,
                 "A bundle with opt-in modes was rejected.");
@@ -253,7 +253,7 @@ int main()
         sourceList = nullptr;
 
         // An update that only replaced the bundle left the modes it added off. The first launch that keeps a record counts the modes every earlier install enabled as offered and turns on the rest, once each; the bundle-level source is not a mode.
-        NSString *appBundle = @"app.msime.inputmethod.MetasequoiaIME";
+        NSString *appBundle = @"app.msime.inputmethod.LingyaoIME";
         const void *installedSources[] = {appParentSource, hansModeSource, japaneseModeSource, koreanModeSource, shuangpinModeSource, wubiModeSource};
         sourceList = CFArrayCreate(nullptr, installedSources, 6, nullptr);
         alreadyEnabledSources = {appParentSource, hansModeSource, japaneseModeSource};

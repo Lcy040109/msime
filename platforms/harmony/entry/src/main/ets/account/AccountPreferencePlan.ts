@@ -79,9 +79,9 @@ const WUBI_PROFILES = ["wubi86", "wubi98"];
 const FREQUENCY_MODES = ["disabled", "pin", "halve", "linear", "promote"];
 const LAYOUTS = ["twenty_six_key", "nine_key", "handwriting"];
 // The seven global theme ids the shared layer accepts; any other id, a retired skin id included, is refused rather than mapped.
-const GLOBAL_THEMES = ["system", "shuishan", "light", "paper", "night", "ink", "custom"];
+const GLOBAL_THEMES = ["system", "lingyao", "light", "paper", "night", "ink", "custom"];
 // What a custom theme may be drawn over: the platform tokens or a built-in theme, never `custom` itself.
-const THEME_BASES = ["system", "shuishan", "light", "paper", "night", "ink"];
+const THEME_BASES = ["system", "lingyao", "light", "paper", "night", "ink"];
 const THEMES = ["dark", "light", "system"];
 const HAPTIC_STRENGTHS = ["light", "medium", "strong"];
 

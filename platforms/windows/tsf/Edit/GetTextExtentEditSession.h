@@ -2,7 +2,7 @@
 
 #include "EditSession.h"
 
-class CMetasequoiaIME;
+class CLingyaoIME;
 class CTfTextLayoutSink;
 
 //////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ class CTfTextLayoutSink;
 class CGetTextExtentEditSession : public CEditSessionBase
 {
   public:
-    CGetTextExtentEditSession(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext,
+    CGetTextExtentEditSession(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext,
                               _In_ ITfContextView *pContextView, _In_ ITfRange *pRangeComposition,
                               _In_ CTfTextLayoutSink *pTextLayoutSink);
 

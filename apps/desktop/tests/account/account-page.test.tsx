@@ -22,7 +22,7 @@ afterEach(() => {
 
 const user: AccountUser = {
   id: "fixture-user-id",
-  displayName: "水杉测试用户",
+  displayName: "灵耀测试用户",
   createdAt: "2026-01-01T00:00:00Z",
 };
 const profile: AccountProfile = { user, providers: ["email"] };
@@ -72,7 +72,7 @@ test("code login trims the target, requires six ASCII digits and loads the profi
   );
   fireEvent.click(screen.getByRole("button", { name: "登录" }));
   await waitFor(() => expect(client.login).toHaveBeenCalledWith("fixture-challenge", "123456"));
-  expect(await screen.findByText("水杉测试用户")).not.toBeNull();
+  expect(await screen.findByText("灵耀测试用户")).not.toBeNull();
   expect(onLoginComplete).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole("button", { name: "编辑个人资料" }));
   expect(
@@ -284,7 +284,7 @@ test("the mobile login sheet exposes its caller's cancel action", async () => {
   const onCancelLogin = vi.fn();
   render(<AccountPage client={account()} platform="harmony" onCancelLogin={onCancelLogin} />);
 
-  expect(await screen.findByRole("heading", { name: "登录水杉" })).not.toBeNull();
+  expect(await screen.findByRole("heading", { name: "登录灵耀" })).not.toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(onCancelLogin).toHaveBeenCalledOnce();
 });
@@ -311,13 +311,13 @@ test("Harmony chat login focuses the tryout and cancel returns to it", async () 
   const composer = await screen.findByRole("textbox", { name: "聊天消息" });
   await waitFor(() => expect(document.activeElement).toBe(composer));
   fireEvent.click(await screen.findByRole("button", { name: "登录使用 AI" }));
-  expect(await screen.findByRole("heading", { name: "登录水杉" })).not.toBeNull();
+  expect(await screen.findByRole("heading", { name: "登录灵耀" })).not.toBeNull();
   expect(screen.queryByText("账号操作")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(await screen.findByRole("button", { name: "登录使用 AI" })).not.toBeNull();
 });
 
-// Apple's account detail rows are 账号 ID, 登录方式 and 加入水杉, and the ID row is
+// Apple's account detail rows are 账号 ID, 登录方式 and 加入灵耀, and the ID row is
 // itself the copy button. The desktop editor had a case for that; the mobile
 // page it pushes did not, so the parity was only true by inspection.
 test("the mobile profile page copies the account ID and shows the join date", async () => {
@@ -329,7 +329,7 @@ test("the mobile profile page copies the account ID and shows the join date", as
   fireEvent.click(await screen.findByRole("button", { name: "编辑个人资料" }));
   await screen.findByRole("heading", { name: "编辑资料" });
 
-  expect(screen.getByText("加入水杉")).not.toBeNull();
+  expect(screen.getByText("加入灵耀")).not.toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "#FIXTUR" }));
   await waitFor(() => expect(writeText).toHaveBeenCalledWith("fixture-user-id"));
   expect(await screen.findByRole("button", { name: "已复制" })).not.toBeNull();
@@ -342,7 +342,7 @@ test("profile card opens the shared editor and copies the complete account ID", 
   render(<AccountPage client={client} />);
   fireEvent.click(await screen.findByRole("button", { name: "编辑个人资料" }));
   const dialog = screen.getByRole("dialog", { name: "编辑个人资料" });
-  expect(within(dialog).getByText("加入水杉")).not.toBeNull();
+  expect(within(dialog).getByText("加入灵耀")).not.toBeNull();
   fireEvent.click(within(dialog).getByRole("button", { name: "#FIXTUR" }));
   await waitFor(() => expect(writeText).toHaveBeenCalledWith("fixture-user-id"));
   fireEvent.click(screen.getByRole("button", { name: "关闭" }));
@@ -388,7 +388,7 @@ test("an Apple sign-in response from a replaced account client is ignored", asyn
     await Promise.resolve();
   });
   expect(oldClient.profile).not.toHaveBeenCalled();
-  expect(screen.queryByText("水杉测试用户")).toBeNull();
+  expect(screen.queryByText("灵耀测试用户")).toBeNull();
 });
 
 test("an Apple-only backend without a native Apple client shows the empty login state", async () => {
@@ -448,7 +448,7 @@ test("a Google sign-in response from a replaced account client is ignored", asyn
     await Promise.resolve();
   });
   expect(oldClient.profile).not.toHaveBeenCalled();
-  expect(screen.queryByText("水杉测试用户")).toBeNull();
+  expect(screen.queryByText("灵耀测试用户")).toBeNull();
 });
 
 test("Google sign-in needs both the backend provider and a native Google client", async () => {
@@ -564,7 +564,7 @@ test("account cancellation does not show a stale error alert", async () => {
     status: vi.fn().mockRejectedValue({ code: "account_cancelled" }),
   });
   render(<AccountPage client={client} />);
-  expect(await screen.findByRole("heading", { name: "欢迎来到水杉" })).not.toBeNull();
+  expect(await screen.findByRole("heading", { name: "欢迎来到灵耀" })).not.toBeNull();
   expect(screen.queryByRole("alert")).toBeNull();
 });
 
@@ -688,7 +688,7 @@ test("mobile accounts expose about and desktop download actions while signed out
       onOpenDesktopDownload={openDesktopDownload}
     />,
   );
-  fireEvent.click(await screen.findByRole("button", { name: "关于水杉" }));
+  fireEvent.click(await screen.findByRole("button", { name: "关于灵耀" }));
   fireEvent.click(screen.getByRole("button", { name: "电脑版下载" }));
   expect(openAbout).toHaveBeenCalledTimes(1);
   expect(openDesktopDownload).toHaveBeenCalledTimes(1);
@@ -1029,7 +1029,7 @@ test("settings expose My only with a personal capability and omit preference act
     />,
   );
   expect(await screen.findByRole("heading", { name: "账号与同步" })).not.toBeNull();
-  await screen.findByText("欢迎来到水杉");
+  await screen.findByText("欢迎来到灵耀");
   expect(screen.queryByRole("form", { name: "设置" })).toBeNull();
   expect(screen.queryByRole("button", { name: "重新读取" })).toBeNull();
 });
@@ -1057,7 +1057,7 @@ test("iOS exposes My and alternate icons without a fake account client", async (
   expect(
     screen.getByRole("button", { name: "晴空，清透蓝调，轻盈明亮" }).getAttribute("aria-pressed"),
   ).toBe("true");
-  expect(screen.queryByText("欢迎来到水杉")).toBeNull();
+  expect(screen.queryByText("欢迎来到灵耀")).toBeNull();
 });
 
 test("macOS settings offer no setup guide to replay; the status notice covers the input source", async () => {
@@ -1078,7 +1078,7 @@ test("macOS settings offer no setup guide to replay; the status notice covers th
       onReplayOnboarding={replay}
     />,
   );
-  await screen.findByText("欢迎来到水杉");
+  await screen.findByText("欢迎来到灵耀");
   expect(screen.queryByRole("button", { name: "重新查看新手引导" })).toBeNull();
 });
 
@@ -1124,7 +1124,7 @@ test("without an avatar, or on a host that does not fetch one, the name's first 
   const card = await screen.findByRole("button", { name: "编辑个人资料" });
   expect(card.querySelector("img")).toBeNull();
   expect(within(card).getByText("水")).not.toBeNull();
-  expect(within(card).getByText("水杉账号已登录")).not.toBeNull();
+  expect(within(card).getByText("灵耀账号已登录")).not.toBeNull();
 });
 
 test("the edit dialog uploads and removes a custom avatar without losing the name being typed", async () => {

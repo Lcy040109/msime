@@ -4,7 +4,7 @@
 
 #include "../core/EditionIdentity.h"
 
-// Info.plist.in 声明的十一个输入模式。每个模式的图标是铺满图块的一个大字：中、双、五、粤、注、日、한、越、ཀ、笔或英；选中的那条在输入菜单里打勾，并在输入源列表里列出名称。模式标识符是本版本输入法的 bundle id 加上模式后缀：full 是 `app.msime.inputmethod.MetasequoiaIME.Hans` 这些，info-plist-names 对照 plist 检查它们；其他版本只声明自己的方案对应的模式和「英」，见 scripts/edition_bundle.py。进程里 bundle id 不会变，所以每个后缀只拼一次。
+// Info.plist.in 声明的十一个输入模式。每个模式的图标是铺满图块的一个大字：中、双、五、粤、注、日、한、越、ཀ、笔或英；选中的那条在输入菜单里打勾，并在输入源列表里列出名称。模式标识符是本版本输入法的 bundle id 加上模式后缀：full 是 `app.msime.inputmethod.LingyaoIME.Hans` 这些，info-plist-names 对照 plist 检查它们；其他版本只声明自己的方案对应的模式和「英」，见 scripts/edition_bundle.py。进程里 bundle id 不会变，所以每个后缀只拼一次。
 static inline NSString *MSIMEInputModeIdentifier(NSString *suffix) {
     static NSDictionary<NSString *, NSString *> *identifiers;
     static dispatch_once_t once;
@@ -147,12 +147,12 @@ static inline NSString *MSIMEInputModeMenuName(NSString *identifier) {
         return [name isKindOfClass:NSString.class] ? name : nil;
     }
     NSDictionary<NSString *, NSString *> *names = @{
-        MSIMEChineseInputModeID: @"水杉输入法 · 中", MSIMEShuangpinInputModeID: @"水杉输入法 · 双",
-        MSIMEWubiInputModeID: @"水杉输入法 · 五", MSIMECantoneseInputModeID: @"水杉输入法 · 粤",
-        MSIMEZhuyinInputModeID: @"水杉输入法 · 注", MSIMEJapaneseInputModeID: @"水杉输入法 · 日",
-        MSIMEKoreanInputModeID: @"水杉输入法 · 韩", MSIMEVietnameseInputModeID: @"水杉输入法 · 越",
-        MSIMETibetanInputModeID: @"水杉输入法 · 藏", MSIMEStrokeInputModeID: @"水杉输入法 · 笔",
-        MSIMEEnglishInputModeID: @"水杉输入法 · 英",
+        MSIMEChineseInputModeID: @"灵耀输入法 · 中", MSIMEShuangpinInputModeID: @"灵耀输入法 · 双",
+        MSIMEWubiInputModeID: @"灵耀输入法 · 五", MSIMECantoneseInputModeID: @"灵耀输入法 · 粤",
+        MSIMEZhuyinInputModeID: @"灵耀输入法 · 注", MSIMEJapaneseInputModeID: @"灵耀输入法 · 日",
+        MSIMEKoreanInputModeID: @"灵耀输入法 · 韩", MSIMEVietnameseInputModeID: @"灵耀输入法 · 越",
+        MSIMETibetanInputModeID: @"灵耀输入法 · 藏", MSIMEStrokeInputModeID: @"灵耀输入法 · 笔",
+        MSIMEEnglishInputModeID: @"灵耀输入法 · 英",
     };
     return identifier ? names[identifier] : nil;
 }

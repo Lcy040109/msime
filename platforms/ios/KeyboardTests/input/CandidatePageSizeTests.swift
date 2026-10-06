@@ -30,7 +30,7 @@ final class CandidatePageSizeTests: XCTestCase {
 
   func testTheSessionPagesByTheIOSValueAndADigitPastItPicksNothing() throws {
     CandidatePageSizePreference.size = 3
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(bridge.sharedPreferences?["candidate_page_size"] as? Int, 3)
     _ = bridge.cancel()
     var snapshot = bridge.cancel()
@@ -56,7 +56,7 @@ final class CandidatePageSizeTests: XCTestCase {
 
   func testAChangeReachesTheLiveSessionOnReload() async throws {
     CandidatePageSizePreference.size = 9
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(bridge.sharedPreferences?["candidate_page_size"] as? Int, 9)
     // The settings app writes the switch and then the document; any newer document carries the switch to the session.
     CandidatePageSizePreference.size = 5

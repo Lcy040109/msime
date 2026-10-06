@@ -19,13 +19,13 @@ try {
     New-Item -ItemType Directory -Force (Split-Path -Parent $settingsSymbols) | Out-Null
     [IO.File]::WriteAllText($settingsSymbols, 'synthetic WinUI symbols')
     foreach ($arch in @('x86', 'x64')) {
-        foreach ($dll in @('MetasequoiaImeTsf.dll', 'msime_host_api.dll')) {
+        foreach ($dll in @('LingyaoImeTsf.dll', 'msime_host_api.dll')) {
             Write-PEFixture (Join-Path $fixture "target/windows-full/$arch/bin/$dll") $arch dll
         }
     }
-    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/MetasequoiaImeTsf.dll') arm64x dll
+    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/LingyaoImeTsf.dll') arm64x dll
     Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/msime_host_api_arm64.dll') arm64 dll
-    foreach ($exe in @('MetasequoiaImeServer.exe', 'MetasequoiaImeWatchdog.exe', 'msime-client-prepare.exe',
+    foreach ($exe in @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'msime-client-prepare.exe',
         'msime-mcp.exe', 'msime-client-settings.exe', 'MSIME.exe')) {
         Write-PEFixture (Join-Path $fixture "target/windows-full/x64/bin/$exe") x64 exe
     }
@@ -232,13 +232,13 @@ try {
     Remove-Item -LiteralPath $alternateSymbols
     # 不是 full 的版本：输出在 target/windows-<id>，host DLL 按版本表改名，并用 lib /DEF 生成同名导入库给原生目标链接；CMake 和设置窗口工程拿到同一个版本。
     foreach ($arch in @('x86', 'x64')) {
-        foreach ($dll in @('MetasequoiaImeTsf.dll', 'msime_host_api_wubi.dll')) {
+        foreach ($dll in @('LingyaoImeTsf.dll', 'msime_host_api_wubi.dll')) {
             Write-PEFixture (Join-Path $fixture "target/windows-wubi/$arch/bin/$dll") $arch dll
         }
     }
-    Write-PEFixture (Join-Path $fixture 'target/windows-wubi/arm64/bin/MetasequoiaImeTsf.dll') arm64x dll
+    Write-PEFixture (Join-Path $fixture 'target/windows-wubi/arm64/bin/LingyaoImeTsf.dll') arm64x dll
     Write-PEFixture (Join-Path $fixture 'target/windows-wubi/arm64/bin/msime_host_api_wubi_arm64.dll') arm64 dll
-    foreach ($exe in @('MetasequoiaImeServer.exe', 'MetasequoiaImeWatchdog.exe', 'msime-client-prepare.exe',
+    foreach ($exe in @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'msime-client-prepare.exe',
         'msime-mcp.exe', 'msime-client-settings.exe', 'MSIME.exe')) {
         Write-PEFixture (Join-Path $fixture "target/windows-wubi/x64/bin/$exe") x64 exe
     }
@@ -283,12 +283,12 @@ try {
     catch { $rejected = $_.Exception.Message -like 'Edition klingon has no Windows identifiers*' }
     if (-not $rejected -or $global:ClientBuildCalls.Count -ne 0) { throw 'Unknown edition reached build tools' }
     # A plain ARM64 TIP would load in native processes only; emulated x64 ones need the ARM64EC half.
-    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/MetasequoiaImeTsf.dll') arm64 dll
+    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/LingyaoImeTsf.dll') arm64 dll
     $rejected = $false
     try { & $entry -RepoRoot $fixture -X64Dependencies $x64 -X86Dependencies $x86 }
     catch { $rejected = $_.Exception.Message -eq 'PE Arm64X hybrid metadata mismatch' }
     if (-not $rejected) { throw 'Build accepted an ARM64 TIP without its ARM64EC half' }
-    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/MetasequoiaImeTsf.dll') arm64x dll
+    Write-PEFixture (Join-Path $fixture 'target/windows-full/arm64/bin/LingyaoImeTsf.dll') arm64x dll
     Write-PEFixture (Join-Path $fixture 'target/windows-full/x64/bin/onnxruntime.dll') x86 dll
     $rejected = $false
     try { & $entry -RepoRoot $fixture -X64Dependencies $x64 -X86Dependencies $x86 }

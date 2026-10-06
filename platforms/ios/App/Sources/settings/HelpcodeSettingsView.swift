@@ -66,7 +66,7 @@ struct HelpcodeSettingsView: View {
   private func stored<Value>(_ object: String, _ field: String, _ state: Binding<[String: Value]>, _ fallback: Value) -> Binding<Value> {
     Binding(get: { state.wrappedValue[object] ?? fallback }, set: { value in
       state.wrappedValue[object] = value
-      saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences {
+      saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences {
         var nested = $0[object] as? [String: Any] ?? [:]
         nested[field] = value
         $0[object] = nested
@@ -76,7 +76,7 @@ struct HelpcodeSettingsView: View {
   }
 
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     for scheme in Self.schemes {
       let stored = preferences[scheme.key] as? [String: Any] ?? [:]
       enabled[scheme.key] = stored["enabled"] as? Bool ?? true

@@ -4,22 +4,22 @@
   <metadata>
     <id>msime</id>
     <version>@VERSION@</version>
-    <packageSourceUrl>https://github.com/metasequoiaime/msime/tree/develop/platforms/windows/packaging/chocolatey</packageSourceUrl>
-    <owners>Metasequoia</owners>
-    <title>Metasequoia IME (水杉输入法)</title>
-    <authors>Metasequoia</authors>
-    <projectUrl>https://github.com/metasequoiaime/msime</projectUrl>
-    <iconUrl>https://raw.githubusercontent.com/metasequoiaime/msime/develop/apps/desktop/src-tauri/icons/128x128.png</iconUrl>
-    <licenseUrl>https://github.com/metasequoiaime/msime/blob/develop/LICENSE</licenseUrl>
+    <packageSourceUrl>https://github.com/Lcy040109/msime/tree/develop/platforms/windows/packaging/chocolatey</packageSourceUrl>
+    <owners>Lingyao</owners>
+    <title>Lingyao IME (灵耀输入法)</title>
+    <authors>Lingyao</authors>
+    <projectUrl>https://github.com/Lcy040109/msime</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/Lcy040109/msime/develop/apps/desktop/src-tauri/icons/128x128.png</iconUrl>
+    <licenseUrl>https://github.com/Lcy040109/msime/blob/develop/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/metasequoiaime/msime</projectSourceUrl>
-    <docsUrl>https://github.com/metasequoiaime/msime/tree/develop/platforms/windows</docsUrl>
-    <bugTrackerUrl>https://github.com/metasequoiaime/msime/issues</bugTrackerUrl>
+    <projectSourceUrl>https://github.com/Lcy040109/msime</projectSourceUrl>
+    <docsUrl>https://github.com/Lcy040109/msime/tree/develop/platforms/windows</docsUrl>
+    <bugTrackerUrl>https://github.com/Lcy040109/msime/issues</bugTrackerUrl>
     <tags>msime metasequoia ime input-method chinese pinyin shuangpin wubi tsf</tags>
-    <summary>Metasequoia IME (水杉输入法): Chinese input method for Windows</summary>
-    <description><![CDATA[Metasequoia IME (水杉输入法, MSIME) is a Chinese input method for Windows, macOS, Linux, Android, iOS and HarmonyOS. On Windows it is a Text Services Framework input method with its own Server process, a native candidate window and a settings app.
+    <summary>Lingyao IME (灵耀输入法): Chinese input method for Windows</summary>
+    <description><![CDATA[Lingyao IME (灵耀输入法, MSIME) is a Chinese input method for Windows, macOS, Linux, Android, iOS and HarmonyOS. On Windows it is a Text Services Framework input method with its own Server process, a native candidate window and a settings app.
 
-MSIME is short for Metasequoia IME; it has nothing to do with Microsoft IME.
+MSIME is short for Lingyao IME; it has nothing to do with Microsoft IME.
 
 This package runs the released Inno Setup installer silently; the input method is installed machine-wide under Program Files.
 

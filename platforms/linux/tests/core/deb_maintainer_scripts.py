@@ -18,7 +18,7 @@ SERVICES = [unit for unit in UNITS if unit.endswith(".service")]
 SETUP = sys.argv[4]
 PROVIDER = SETUP.rsplit("/", 1)[0] + "/msime-linux-online-provider"
 # Removing the input method from each user's lists, the counterpart of the Windows uninstaller unregistering the TSF profile.
-MANUAL_LISTS = "remove the input method from its lists: Metasequoia 水杉输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)"
+MANUAL_LISTS = "remove the input method from its lists: Lingyao 灵耀输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)"
 
 # systemd 252 prints UID USER LINGER, newer releases add STATE and indent the UID column; both must parse.
 USERS = "1000 alice no\n   1001 bob yes active\n"

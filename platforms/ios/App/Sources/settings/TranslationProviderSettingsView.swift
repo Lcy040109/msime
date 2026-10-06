@@ -29,7 +29,7 @@ struct TranslationProviderSettingsView: View {
           autosave.saveNow { try save() }
         }
       } footer: {
-        Text("选择自己的翻译服务后，键盘把这一页的中文候选直接发给该服务，不经过水杉账号；凭据只保存在本设备的共享设置里。所选服务的凭据不完整时，键盘不会联网翻译，也不会改用其他服务。")
+        Text("选择自己的翻译服务后，键盘把这一页的中文候选直接发给该服务，不经过灵耀账号；凭据只保存在本设备的共享设置里。所选服务的凭据不完整时，键盘不会联网翻译，也不会改用其他服务。")
       }
       switch provider {
       case .off:
@@ -38,7 +38,7 @@ struct TranslationProviderSettingsView: View {
         }
       case .account:
         Section {
-          Text("候选词会发送到水杉服务器（api.msime.app）翻译，首次使用会自动创建匿名账号。").foregroundStyle(.secondary)
+          Text("候选词会发送到灵耀服务器（api.msime.app）翻译，首次使用会自动创建匿名账号。").foregroundStyle(.secondary)
         }
       case .niutrans:
         Section("小牛翻译") {
@@ -105,7 +105,7 @@ struct TranslationProviderSettingsView: View {
   }
 
   private func load() {
-    let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences()
+    let preferences = LingyaoInputSessionBridge.loadSharedPreferences()
     provider = TranslationProviderPreference.selected(in: preferences)
     let niutrans = preferences?[TranslationProviderPreference.niutransKey] as? [String: Any] ?? [:]
     let tencent = preferences?[TranslationProviderPreference.tencentKey] as? [String: Any] ?? [:]
@@ -131,7 +131,7 @@ struct TranslationProviderSettingsView: View {
 
   /// Writes the whole page, so a provider switch also keeps the credentials typed so far.
   private func save() throws {
-    let saved = MetasequoiaInputSessionBridge.updateSharedPreferences { write(into: &$0) }
+    let saved = LingyaoInputSessionBridge.updateSharedPreferences { write(into: &$0) }
     guard saved else { throw ServiceFailure(message: "保存失败，请稍后再试。") }
     savedProvider = provider
     savedFields = fields

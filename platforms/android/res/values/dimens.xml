@@ -7,7 +7,7 @@
     <!-- 滚动后收起的顶栏标题。 -->
     <dimen name="ms_text_app_bar_title">22sp</dimen>
     <dimen name="ms_text_onboarding_title">32sp</dimen>
-    <!-- 状态卡标题「水杉输入法」、试用页里的应用标题。 -->
+    <!-- 状态卡标题「灵耀输入法」、试用页里的应用标题。 -->
     <dimen name="ms_text_card_title">17sp</dimen>
     <!-- 列表行标题、搜索占位、引导正文。 -->
     <dimen name="ms_text_body">16sp</dimen>

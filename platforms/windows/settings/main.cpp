@@ -382,7 +382,7 @@ public:
   bool Load(std::wstring &error) {
     const auto directory = state_directory();
     if (directory.empty()) {
-      error = L"找不到水杉输入法的数据目录。请先完成输入法安装。";
+      error = L"找不到灵耀输入法的数据目录。请先完成输入法安装。";
       return false;
     }
     const auto path = path_utf8(directory);
@@ -708,7 +708,7 @@ const PageLabel &page_label(std::string_view id) {
 // What each page of the shared app is for, on the card that opens it.
 const wchar_t *shell_page_description(std::string_view id) {
   if (id == "account")
-    return L"登录水杉输入法账号，管理设置和词库在设备之间的同步。";
+    return L"登录灵耀输入法账号，管理设置和词库在设备之间的同步。";
   if (id == "clip")
     return L"开关本机的剪贴板历史，打开在各台设备之间同步的云剪贴板。";
   if (id == "stats")
@@ -726,9 +726,9 @@ constexpr std::wstring_view no_search_results = L"没有找到相关设置";
 constexpr const wchar_t *download_url = L"https://msime.app/download/";
 constexpr const wchar_t *privacy_url = L"https://msime.app/privacy/";
 constexpr const wchar_t *license_url =
-    L"https://github.com/metasequoiaime/msime/blob/develop/LICENSE";
+    L"https://github.com/Lcy040109/msime/blob/develop/LICENSE";
 constexpr const wchar_t *releases_url =
-    L"https://github.com/metasequoiaime/msime/releases";
+    L"https://github.com/Lcy040109/msime/releases";
 
 std::wstring lowercase(std::wstring_view value) {
   std::wstring result(value);
@@ -864,7 +864,7 @@ constexpr std::array<std::pair<const wchar_t *, const wchar_t *>, 9>
 
 struct MainWindow : WindowT<MainWindow> {
   explicit MainWindow(std::string page) : current_page_(std::move(page)) {
-    // 窗口标题和侧栏的产品名按版本取，full 仍是「水杉输入法」。
+    // 窗口标题和侧栏的产品名按版本取，full 仍是「灵耀输入法」。
     Title(MSIME_EDITION_DISPLAY_NAME L"设置");
     ExtendsContentIntoTitleBar(true);
     reload_document();
@@ -1758,8 +1758,8 @@ private:
   // The design's deskStrip: an orange notice above the page title while the input method is not in the keyboard list, or is not the default one, with the button that fixes it.
   FrameworkElement make_input_method_banner() {
     const bool missing = input_method_ == InputMethodState::missing;
-    const std::wstring message = missing ? L"水杉输入法尚未在「语言和区域」中添加"
-                                         : L"水杉输入法还不是默认输入法";
+    const std::wstring message = missing ? L"灵耀输入法尚未在「语言和区域」中添加"
+                                         : L"灵耀输入法还不是默认输入法";
     const std::wstring action_label = missing ? L"去添加" : L"设为默认";
 
     Border strip;
@@ -1838,10 +1838,10 @@ private:
               ShellExecuteW(nullptr, L"open", L"ms-settings:regionlanguage",
                             nullptr, nullptr, SW_SHOWNORMAL));
           if (result <= 32)
-            show_notice(L"无法添加水杉输入法。请在「设置 → 时间和语言 → 语言和区域」中为中文添加水杉输入法。");
+            show_notice(L"无法添加灵耀输入法。请在「设置 → 时间和语言 → 语言和区域」中为中文添加灵耀输入法。");
         }
       } else if (!make_input_method_default()) {
-        show_notice(L"无法设为默认输入法。请在「设置 → 时间和语言 → 输入 → 高级键盘设置」中选择水杉输入法。");
+        show_notice(L"无法设为默认输入法。请在「设置 → 时间和语言 → 输入 → 高级键盘设置」中选择灵耀输入法。");
       }
       input_method_ = input_method_state();
       queue_refresh();
@@ -2312,7 +2312,7 @@ private:
     queue.TryEnqueue([weak] {
       if (auto self = weak.get())
         self->show_notice(
-            L"无法打开水杉输入法应用（MSIME.exe）。请重新安装输入法后再试。");
+            L"无法打开灵耀输入法应用（MSIME.exe）。请重新安装输入法后再试。");
     });
   }
 
@@ -2389,7 +2389,7 @@ private:
             button_control(L"打开", [this, target = model.shell] {
               open_shell(target);
             }));
-    auto note = make_text(L"这一页由水杉输入法应用提供，点击「打开」后在应用中显示。",
+    auto note = make_text(L"这一页由灵耀输入法应用提供，点击「打开」后在应用中显示。",
                           12, palette_.faint);
     note.Margin(Thickness{4, 8, 4, 0});
     page.Children().Append(note);
@@ -2518,10 +2518,10 @@ private:
               family.empty() ? L"跟随系统默认字体" : family, L"更改",
               nav::shell_links::appearance);
     shell_row(look, 0xE70F, L"自定义主题",
-              L"取色器、皮肤包与键盘样式在水杉输入法应用中编辑", L"编辑",
+              L"取色器、皮肤包与键盘样式在灵耀输入法应用中编辑", L"编辑",
               nav::shell_links::skin);
     shell_row(look, 0xE716, L"社区皮肤",
-              L"在水杉输入法应用的「主题 › 社区皮肤」中浏览、安装和发布候选窗口皮肤", L"浏览",
+              L"在灵耀输入法应用的「主题 › 社区皮肤」中浏览、安装和发布候选窗口皮肤", L"浏览",
               nav::shell_links::skin);
 
     auto surfaces = add_group(page, L"界面主题");
@@ -2962,7 +2962,7 @@ private:
       if (shuangpin_helpcode)
         helpcode_rows(helpcode, L"双拼", L"shuangpin_helpcode");
       shell_row(helpcode, 0xE8A7, L"辅助码插件",
-                L"在水杉输入法应用的「输入 › 辅助码」中选用已安装的辅助码插件", L"打开",
+                L"在灵耀输入法应用的「输入 › 辅助码」中选用已安装的辅助码插件", L"打开",
                 nav::shell_links::input);
     }
 
@@ -3151,7 +3151,7 @@ private:
     auto manage = add_group(page, L"管理");
     shell_row(manage, 0xE82D, L"管理词库", L"导入、导出和编辑词库与快捷短语", L"打开",
               nav::shell_links::dictionary);
-    shell_row(manage, 0xE8F1, L"背单词", L"在水杉输入法应用中背单词", L"打开",
+    shell_row(manage, 0xE8F1, L"背单词", L"在灵耀输入法应用中背单词", L"打开",
               nav::shell_links::vocabulary);
   }
 
@@ -3161,7 +3161,7 @@ private:
     auto group = add_group(page, L"");
     shell_row(group, 0xE92E, L"屏幕键盘", L"在屏幕上显示键盘，点击按键向当前窗口输入",
               L"打开", nav::shell_links::keyboard_panel);
-    shell_row(group, 0xE713, L"屏幕键盘设置", L"在水杉输入法应用中调整屏幕键盘", L"设置",
+    shell_row(group, 0xE713, L"屏幕键盘设置", L"在灵耀输入法应用中调整屏幕键盘", L"设置",
               nav::shell_links::screen_keyboard);
   }
 
@@ -3232,7 +3232,7 @@ private:
     auto group = add_group(page, L"");
     shell_row(group, 0xE929, L"手写输入", L"打开手写识别板，书写后向当前窗口输入", L"打开",
               nav::shell_links::handwriting_panel);
-    shell_row(group, 0xE713, L"手写设置", L"在水杉输入法应用中调整手写识别", L"设置",
+    shell_row(group, 0xE713, L"手写设置", L"在灵耀输入法应用中调整手写识别", L"设置",
               nav::shell_links::handwriting);
   }
 
@@ -3299,10 +3299,10 @@ private:
       StackPanel names;
       names.Spacing(4);
       names.VerticalAlignment(VerticalAlignment::Center);
-      auto product = make_text(L"水杉输入法", 20, palette_.text);
+      auto product = make_text(L"灵耀输入法", 20, palette_.text);
       product.FontWeight(Windows::UI::Text::FontWeight{600});
       names.Children().Append(product);
-      names.Children().Append(make_text(L"© 2026 Metasequoia", 12, palette_.faint));
+      names.Children().Append(make_text(L"© 2026 Lingyao", 12, palette_.faint));
       Grid::SetColumn(names, 1);
       identity.Children().Append(names);
       card.Child(identity);
@@ -3310,10 +3310,10 @@ private:
     }
 
     auto updates = add_group(page, L"版本与更新");
-    shell_row(updates, 0xE895, L"检查更新", L"在水杉输入法应用中检查并安装新版本", L"检查",
+    shell_row(updates, 0xE895, L"检查更新", L"在灵耀输入法应用中检查并安装新版本", L"检查",
               nav::shell_links::about);
     url_row(updates, 0xE896, L"其他平台下载",
-            L"在 macOS、Linux、iOS、Android 和鸿蒙设备上安装水杉输入法。",
+            L"在 macOS、Linux、iOS、Android 和鸿蒙设备上安装灵耀输入法。",
             L"打开下载页", download_url);
     add_row(updates, 0xE8C8, L"复制下载链接", download_url,
             button_control(L"复制链接", [this] {
@@ -3328,7 +3328,7 @@ private:
              L"usage_reporting", true);
     url_row(privacy, 0xEA18, L"隐私政策", L"设置保存到当前输入法数据目录，详细说明见隐私政策。",
             L"查看", privacy_url);
-    url_row(privacy, 0xE8A5, L"开源许可协议", L"水杉输入法的开源许可证", L"查看", license_url);
+    url_row(privacy, 0xE8A5, L"开源许可协议", L"灵耀输入法的开源许可证", L"查看", license_url);
   }
 
   // ---- 连接 AI 助手 ----

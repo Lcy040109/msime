@@ -131,7 +131,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-touch-scheme-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
     XCTAssertTrue(bridge.setTouchKeyboardScheme(
       .microsoft, enabledSchemes: [.quanpin, .microsoft, .japaneseNineKey]))
@@ -149,7 +149,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-touch-skin-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
     XCTAssertTrue(bridge.updateTheme(GlobalThemePreference.selecting("night")))
     var preferences = try XCTUnwrap(bridge.sharedPreferences)
@@ -170,7 +170,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-traditional-output-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
     XCTAssertTrue(bridge.setTraditionalChineseOutput(true))
     let preferences = try XCTUnwrap(bridge.sharedPreferences)
@@ -181,7 +181,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-fuzzy-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setFuzzyPinyinRules(1))
     _ = bridge.handleCharacter("z")
     XCTAssertFalse(bridge.setFuzzyPinyinRules(0))
@@ -469,7 +469,7 @@ final class NineKeyKeyboardTests: XCTestCase {
       add(attachment)
       try button("skinCard-night", in: controller).sendActions(for: .primaryActionTriggered)
       XCTAssertEqual(GlobalThemePreference.selected, "night")
-      XCTAssertEqual(MetasequoiaInputSessionBridge.loadSharedPreferences()?["global_theme"] as? String, "night")
+      XCTAssertEqual(LingyaoInputSessionBridge.loadSharedPreferences()?["global_theme"] as? String, "night")
       XCTAssertNil(picker.superview)
       XCTAssertEqual(controller.view.constraints.first { $0.identifier == "keyboardHeight" }?.constant, 260 + KeyboardViewController.stripExtraHeight)
       try button("skinShortcut", in: controller).sendActions(for: .primaryActionTriggered)
@@ -643,7 +643,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-touch-geometry-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
 
     XCTAssertTrue(bridge.setTouchKeyboardGeometry(
       keySpacing: 99, rowSpacing: -1, heightAdjustment: 99, voiceEnabled: true))
@@ -1523,7 +1523,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     }
     let footprintBefore = footprint()
     let before = residentBytes()
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.switchToJapanese()
     var snapshot = bridge.cancel()
     for letter in "watashihanihonjindesu" { snapshot = bridge.handleCharacter(String(letter)) }
@@ -1612,7 +1612,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-suspend-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     var snapshot = bridge.cancel()
     for letter in "nihao" { snapshot = bridge.handleCharacter(String(letter)) }
     XCTAssertTrue(snapshot.candidates.contains("你好"))
@@ -1637,7 +1637,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   // the digits its layout produces and the engine, expecting letters, answers with nothing at all:
   // no preedit, no candidates, no diagnostic.
   func testNineKeySurvivesTheSessionBeingReleasedAndRebuilt() throws {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.switchToNineKey()
     var snapshot = bridge.cancel()
     for digit in "64426" { snapshot = bridge.handleCharacter(String(digit)) }
@@ -1656,7 +1656,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   // the nine-key layout the host kept drawing was sitting on a 26-key engine from the first
   // refresh onwards, which is why typing only started working after a trip through 26 keys.
   func testNineKeySurvivesTheSessionRebuiltForDictionaryMaintenance() throws {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.switchToNineKey()
     var snapshot = bridge.cancel()
     for digit in "64426" { snapshot = bridge.handleCharacter(String(digit)) }
@@ -1676,12 +1676,12 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-scheme-persist-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    var first: MetasequoiaInputSessionBridge? = MetasequoiaInputSessionBridge(stateRoot: state)
+    var first: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(try XCTUnwrap(first).setTouchKeyboardScheme(
       .nineKey, enabledSchemes: [.quanpin, .nineKey]))
     first = nil
 
-    let next = MetasequoiaInputSessionBridge(stateRoot: state)
+    let next = LingyaoInputSessionBridge(stateRoot: state)
     var snapshot = next.cancel()
     for digit in "64426" { snapshot = next.handleCharacter(String(digit)) }
     XCTAssertTrue(snapshot.candidates.contains("你好"), "the new session did not start on nine-key")
@@ -1696,7 +1696,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-selection-persist-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    var first: MetasequoiaInputSessionBridge? = MetasequoiaInputSessionBridge(stateRoot: state)
+    var first: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(stateRoot: state)
     let bridge = try XCTUnwrap(first)
     XCTAssertTrue(bridge.updateTheme(GlobalThemePreference.selecting("night")))
     XCTAssertTrue(bridge.setTraditionalChineseOutput(true))
@@ -1708,7 +1708,7 @@ final class NineKeyKeyboardTests: XCTestCase {
       keySpacing: 3, rowSpacing: 4, heightAdjustment: -5, voiceEnabled: false))
     first = nil
 
-    let next = MetasequoiaInputSessionBridge(stateRoot: state)
+    let next = LingyaoInputSessionBridge(stateRoot: state)
     let preferences = try XCTUnwrap(next.sharedPreferences)
     XCTAssertEqual(preferences["global_theme"] as? String, "night")
     XCTAssertEqual(preferences["traditional_chinese_output"] as? Bool, true)
@@ -1724,7 +1724,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-reload-overrides-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setTouchKeyboardScheme(.nineKey, enabledSchemes: [.quanpin, .nineKey]))
     let reloaded = expectation(description: "shared preferences reloaded")
     bridge.reloadSharedPreferences { accepted in
@@ -1749,7 +1749,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   /// come from the Engine's own profile through the shared ABI, so this drives a real
   /// session per profile and checks the face against the key that produced candidates.
   func testShuangpinKeyHintsComeFromTheProfileTheSessionRuns() throws {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     // The key each profile puts `uai` on, reached with the `g` initial.
     for (profile, key) in [("xiaohe", "K"), ("ziranma", "Y"), ("shoudao", "G"), ("microsoft", "Y")] {
       _ = bridge.switch(toShuangpinProfile: profile)
@@ -1775,7 +1775,7 @@ final class NineKeyKeyboardTests: XCTestCase {
   }
 
   func testAdditionalShuangpinProfilesAndKeyHints() throws {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     for (profile, input) in [("ziranma", "nihk"), ("microsoft", "nihk"), ("shoudao", "nihd"), ("xiaohe", "nihc")] {
       _ = bridge.switch(toShuangpinProfile: profile)
       var snapshot = bridge.cancel()
@@ -1810,7 +1810,7 @@ final class NineKeyKeyboardTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-schemes-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToWubi()
     var snapshot = bridge.handleCharacter("a")
     XCTAssertTrue(snapshot.candidates.contains("工"))

@@ -102,7 +102,7 @@ class LocalProvider(unittest.TestCase):
 
     def options(self, **extra):
         return dict({"asr_provider": "local", "asr_model_path": str(self.model),
-                     "voice_hotwords": "水杉\tshui shan\n输入法\tshu ru fa"}, **extra)
+                     "voice_hotwords": "灵耀\tshui shan\n输入法\tshu ru fa"}, **extra)
 
     def requests(self):
         return [json.loads(line) for line in self.log.read_text(encoding="utf-8").splitlines()]
@@ -118,7 +118,7 @@ class LocalProvider(unittest.TestCase):
                 replies.append(reply)
                 if reply["type"] == "final":
                     break
-            self.assertEqual(replies[-1], {"generation": 1, "text": "水杉输入法", "type": "final", "ok": True})
+            self.assertEqual(replies[-1], {"generation": 1, "text": "灵耀输入法", "type": "final", "ok": True})
             for reply in replies[:-1]:
                 if reply["type"] == "partial":
                     self.assertRegex(reply["text"], r"^听到\d秒$")
@@ -127,7 +127,7 @@ class LocalProvider(unittest.TestCase):
             self.assertEqual(lines.readline(), b"")
         start = self.requests()[0]
         self.assertEqual((start["op"], start["model"], start["language"], start["hotwords"]),
-                         ("start", str(self.model), "zh-cn", ["水杉", "输入法"]))
+                         ("start", str(self.model), "zh-cn", ["灵耀", "输入法"]))
         self.assertEqual(self.requests()[-1]["op"], "finish")
         self.assertGreater(sum(request.get("bytes", 0) for request in self.requests()), 32000)
 
@@ -138,7 +138,7 @@ class LocalProvider(unittest.TestCase):
                 reply = self.read(lines)
                 if reply["type"] == "final":
                     break
-            self.assertEqual(reply["text"], "水杉输入法")
+            self.assertEqual(reply["text"], "灵耀输入法")
         self.assertEqual(len({request["pid"] for request in self.requests()}), 1)
         self.assertIsNone(self.process.poll(), "voice service stays up")
 

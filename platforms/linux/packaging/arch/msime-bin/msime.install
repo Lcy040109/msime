@@ -79,7 +79,7 @@ pre_remove() {
         systemd-run --user -M "$uid@" --wait --collect --quiet /usr/bin/msime-linux-setup --unregister </dev/null >/dev/null 2>&1 || true
       fi
     else
-      echo "msime: could not reach the systemd user manager of ${name:-uid $uid}; that user should stop its services: systemctl --user disable --now $_msime_units; and remove the input method from its lists: Metasequoia 水杉输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)" >&2
+      echo "msime: could not reach the systemd user manager of ${name:-uid $uid}; that user should stop its services: systemctl --user disable --now $_msime_units; and remove the input method from its lists: Lingyao 灵耀输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)" >&2
     fi
   done <<EOF
 $users

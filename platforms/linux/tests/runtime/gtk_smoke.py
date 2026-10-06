@@ -186,7 +186,7 @@ if "--custom-compose" in sys.argv:
     first.set_text("")
     pump()
     keys("n", "i", "h", "a", "o", "Multi_key", "x", "x")
-    wait(lambda: first.get_text() == "nihao水杉😀", "Custom Compose table did not insert its UTF-8 sequence")
+    wait(lambda: first.get_text() == "nihao灵耀😀", "Custom Compose table did not insert its UTF-8 sequence")
     print("GTK3 custom Compose table acceptance passed")
 from surrounding_text import check_surrounding, TextViewAdapter
 check_surrounding(first, keys, pump, wait)

@@ -31,7 +31,7 @@ enum SystemSpeechRecognizer {
         }
       : SFSpeechRecognizer.authorizationStatus()
     try Task.checkCancellation()
-    guard status == .authorized else { throw ServiceFailure(message: "请在系统设置中允许水杉使用语音识别。") }
+    guard status == .authorized else { throw ServiceFailure(message: "请在系统设置中允许灵耀使用语音识别。") }
   }
 
   static let pcmFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16_000, channels: 1, interleaved: true)!

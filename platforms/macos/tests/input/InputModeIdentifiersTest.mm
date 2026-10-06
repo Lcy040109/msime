@@ -53,7 +53,7 @@ int main() {
                                @"MSIMESettingsBundleIdentifier": @"app.msime.macos.wubi",
                                @"MSIMEKeychainService": @"com.metasequoia.msime.wubi.account", @"MSIMEWubiMixedPinyinDefault": @YES};
         require([MSIMEEditionIdentifierIn(@{}) isEqualToString:@"full"] && MSIMEEditionIsFullIn(@{@"CFBundleIdentifier": @"x"}) &&
-                    [MSIMEInputMethodBundleIdentifierIn(@{@"CFBundleIdentifier": @"x"}) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME"] &&
+                    [MSIMEInputMethodBundleIdentifierIn(@{@"CFBundleIdentifier": @"x"}) isEqualToString:@"app.msime.inputmethod.LingyaoIME"] &&
                     [MSIMESettingsBundleIdentifierIn(@{}) isEqualToString:@"app.msime.macos"] &&
                     [MSIMEKeychainServiceIn(@{}) isEqualToString:@"com.metasequoia.msime.account"] &&
                     MSIMEEditionInputSchemesIn(@{}) == nil && [MSIMEEditionDefaultSchemeIn(@{}) isEqualToString:@"quanpin"] &&
@@ -81,24 +81,24 @@ int main() {
                 "The voice provider keychain service or the usage reporting directory did not follow the edition.");
         // 卸载按 bundle 文件名找要移走的 bundle：五笔版只能是它自己的，名字缺了时宁可不卸载也不退回 full 的。
         NSMutableDictionary *named = [wubi mutableCopy];
-        named[@"CFBundleExecutable"] = @"水杉五笔";
-        named[@"CFBundleDisplayName"] = @"水杉五笔";
-        require([MSIMEInputMethodBundleNameIn(@{}) isEqualToString:@"水杉输入法.app"] &&
-                    [MSIMEInputMethodBundleNameIn(named) isEqualToString:@"水杉五笔.app"] &&
+        named[@"CFBundleExecutable"] = @"灵耀五笔";
+        named[@"CFBundleDisplayName"] = @"灵耀五笔";
+        require([MSIMEInputMethodBundleNameIn(@{}) isEqualToString:@"灵耀输入法.app"] &&
+                    [MSIMEInputMethodBundleNameIn(named) isEqualToString:@"灵耀五笔.app"] &&
                     MSIMEInputMethodBundleNameIn(wubi) == nil &&
-                    [MSIMEEditionDisplayNameIn(@{}) isEqualToString:@"水杉输入法"] &&
-                    [MSIMEEditionDisplayNameIn(named) isEqualToString:@"水杉五笔"],
+                    [MSIMEEditionDisplayNameIn(@{}) isEqualToString:@"灵耀输入法"] &&
+                    [MSIMEEditionDisplayNameIn(named) isEqualToString:@"灵耀五笔"],
                 "The bundle file name or the display name did not follow the edition.");
         require(MSIMEEditionIsFull() && MSIMEEditionOffersScheme(@"tibetan") && !MSIMEEditionOffersScheme(@"klingon") &&
                     [MSIMEEffectiveInputScheme(@"cantonese", @"klingon", @{}) isEqualToString:@"quanpin"],
                 "The test process, which is full, did not offer every scheme or fall back to quanpin.");
-        require([MSIMEInputModeID(MSIMEInputModeFor(NO, @"quanpin")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Hans"] &&
-                    [MSIMEInputModeID(MSIMEInputModeFor(YES, @"quanpin")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Roman"] &&
-                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"japanese")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Japanese"] &&
-                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"korean")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Korean"],
+        require([MSIMEInputModeID(MSIMEInputModeFor(NO, @"quanpin")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Hans"] &&
+                    [MSIMEInputModeID(MSIMEInputModeFor(YES, @"quanpin")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Roman"] &&
+                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"japanese")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Japanese"] &&
+                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"korean")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Korean"],
                 "The Chinese, English, Japanese and Korean states do not map to the modes Info.plist.in declares.");
-        require([MSIMEInputModeID(MSIMEInputModeFor(NO, @"shuangpin")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Shuangpin"] &&
-                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"wubi")) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Wubi"],
+        require([MSIMEInputModeID(MSIMEInputModeFor(NO, @"shuangpin")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Shuangpin"] &&
+                    [MSIMEInputModeID(MSIMEInputModeFor(NO, @"wubi")) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Wubi"],
                 "The shuangpin and wubi schemes do not map to the modes Info.plist.in declares.");
         // 五笔版只声明 .Hans 和 .Roman，五笔的名字和图标在 .Hans 上：设置窗口检查菜单栏入口时不能去找一个不存在的 .Wubi，否则提示永远消不掉。full 每个方案仍是它自己的模式。
         NSDictionary *wubiModes = @{@"MSIMEEdition": @"wubi", @"ComponentInputModeDict": @{@"tsInputModeListKey": @{
@@ -129,7 +129,7 @@ int main() {
         require(MSIMEIsInputModeID(MSIMEChineseInputModeID) && MSIMEIsInputModeID(MSIMEEnglishInputModeID) &&
                     MSIMEIsInputModeID(MSIMEJapaneseInputModeID) && MSIMEIsInputModeID(MSIMEKoreanInputModeID) &&
                     MSIMEIsInputModeID(MSIMEShuangpinInputModeID) && MSIMEIsInputModeID(MSIMEWubiInputModeID) &&
-                    !MSIMEIsInputModeID(@"com.apple.keylayout.ABC") && !MSIMEIsInputModeID(@"app.msime.inputmethod.MetasequoiaIME") &&
+                    !MSIMEIsInputModeID(@"com.apple.keylayout.ABC") && !MSIMEIsInputModeID(@"app.msime.inputmethod.LingyaoIME") &&
                     !MSIMEIsInputModeID(@42) && !MSIMEIsInputModeID(nil),
                 "Something other than this bundle's six modes was taken for one of them.");
 
@@ -289,22 +289,22 @@ int main() {
                         MSIMEInputModeFor(YES, scheme) == MSIMEInputMode::English,
                     "A Cantonese, Zhuyin, Vietnamese, Tibetan or Stroke scheme does not round-trip through its opt-in mode.");
         }
-        require([MSIMEInputModeID(MSIMEInputMode::Cantonese) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Cantonese"] &&
-                    [MSIMEInputModeID(MSIMEInputMode::Zhuyin) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Zhuyin"] &&
-                    [MSIMEInputModeID(MSIMEInputMode::Vietnamese) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Vietnamese"] &&
-                    [MSIMEInputModeID(MSIMEInputMode::Tibetan) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Tibetan"] &&
-                    [MSIMEInputModeID(MSIMEInputMode::Stroke) isEqualToString:@"app.msime.inputmethod.MetasequoiaIME.Stroke"],
+        require([MSIMEInputModeID(MSIMEInputMode::Cantonese) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Cantonese"] &&
+                    [MSIMEInputModeID(MSIMEInputMode::Zhuyin) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Zhuyin"] &&
+                    [MSIMEInputModeID(MSIMEInputMode::Vietnamese) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Vietnamese"] &&
+                    [MSIMEInputModeID(MSIMEInputMode::Tibetan) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Tibetan"] &&
+                    [MSIMEInputModeID(MSIMEInputMode::Stroke) isEqualToString:@"app.msime.inputmethod.LingyaoIME.Stroke"],
                 "The new modes do not use the identifiers Info.plist.in declares.");
         require(!MSIMEIsOptInInputModeID(MSIMEChineseInputModeID) && !MSIMEIsOptInInputModeID(MSIMEKoreanInputModeID) && !MSIMEIsOptInInputModeID(nil),
                 "A mode every install enables was treated as opt-in.");
         require([MSIMEInputSchemeNames() isEqualToArray:@[@"quanpin", @"shuangpin", @"wubi", @"japanese", @"korean", @"cantonese", @"zhuyin", @"vietnamese", @"tibetan", @"stroke"]],
                 "The scheme names are not in the Engine's wire order.");
         // 菜单名和「添加」对话框里的语言与 InfoPlist.strings、Info.plist.in 和共享设置页的表一致。
-        require([MSIMEInputModeMenuName(MSIMETibetanInputModeID) isEqualToString:@"水杉输入法 · 藏"] &&
+        require([MSIMEInputModeMenuName(MSIMETibetanInputModeID) isEqualToString:@"灵耀输入法 · 藏"] &&
                     [MSIMEInputModeAddDialogLanguage(MSIMETibetanInputModeID) isEqualToString:@"藏语"],
                 "The Tibetan mode is named or grouped differently from the plist and the settings page.");
-        // 笔画在输入菜单里叫「水杉输入法 · 笔」，在系统设置「添加」对话框的「简体中文」下。
-        require([MSIMEInputModeMenuName(MSIMEStrokeInputModeID) isEqualToString:@"水杉输入法 · 笔"] &&
+        // 笔画在输入菜单里叫「灵耀输入法 · 笔」，在系统设置「添加」对话框的「简体中文」下。
+        require([MSIMEInputModeMenuName(MSIMEStrokeInputModeID) isEqualToString:@"灵耀输入法 · 笔"] &&
                     [MSIMEInputModeAddDialogLanguage(MSIMEStrokeInputModeID) isEqualToString:@"简体中文"],
                 "The Stroke mode's menu name or Add dialog language is wrong.");
         // 日文、越南文、藏文版的 中（.Hans）和 英 登记在本版本的语言下，设置窗口按 bundle 里的 TISIntendedLanguage 说去哪个语言下添加；五笔版的仍在「简体中文」下。

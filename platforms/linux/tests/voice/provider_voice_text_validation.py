@@ -18,7 +18,7 @@ loader.exec_module(voice)
 
 class ProviderVoiceTextValidation(unittest.TestCase):
     def test_unicode_text_whitespace_and_byte_limit_are_preserved(self):
-        self.assertEqual(voice.bounded_text(" \u00a0水杉输入\u00a0 "), "水杉输入")
+        self.assertEqual(voice.bounded_text(" \u00a0灵耀输入\u00a0 "), "灵耀输入")
         self.assertEqual(voice.bounded_text("第一行\n第二行\t注释"), "第一行\n第二行\t注释")
         boundary = "字" * 1365 + "a"
         self.assertEqual(len(boundary.encode()), 4096)

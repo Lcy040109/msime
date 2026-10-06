@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-enum MetasequoiaTheme {
+enum LingyaoTheme {
   // Fixed brand green (#2C7A4B). Use it for fills that carry white labels in both appearances (5.3:1); for text, icons and adaptive fills use `accent`.
   static let forest = Color(red: 44 / 255, green: 122 / 255, blue: 75 / 255)
   // Adaptive brand accent for text, icons and selected states: #2C7A4B in light, #5FBF84 in dark.
@@ -90,7 +90,7 @@ enum MetasequoiaTheme {
   }
 }
 
-struct MetasequoiaMark: Shape {
+struct LingyaoMark: Shape {
   func path(in rect: CGRect) -> Path {
     var path = Path()
     let centerX = rect.midX

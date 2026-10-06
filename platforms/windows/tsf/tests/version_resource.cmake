@@ -16,7 +16,7 @@ if(resource_header MATCHES "IDR_VERSION2")
   message(FATAL_ERROR "legacy TSF version identifier remains")
 endif()
 
-file(READ "${SOURCE_ROOT}/IME/MetasequoiaIME.rc" version_resource)
+file(READ "${SOURCE_ROOT}/IME/LingyaoIME.rc" version_resource)
 foreach(kind IN ITEMS FILEVERSION PRODUCTVERSION)
   string(REGEX MATCH
     "${kind}[ \t]+([0-9]+),([0-9]+),([0-9]+),([0-9]+)"
@@ -42,7 +42,7 @@ endforeach()
 
 foreach(field IN ITEMS InternalName OriginalFilename)
   string(FIND "${version_resource}"
-    "VALUE \"${field}\", \"MetasequoiaImeTsf.dll\"" field_position)
+    "VALUE \"${field}\", \"LingyaoImeTsf.dll\"" field_position)
   if(field_position EQUAL -1)
     message(FATAL_ERROR "${field} does not match the TSF DLL output name")
   endif()

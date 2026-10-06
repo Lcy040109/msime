@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CompositionProcessorEngine.h"
 #include <cwctype>
 #include <debugapi.h>
@@ -161,7 +161,7 @@ WCHAR SmartPunctuationAsciiFor(WCHAR chinese)
 }
 } // namespace
 
-int CMetasequoiaIME::_GetPrecedingDocumentChars(TfEditCookie ec, _In_ ITfContext *pContext,
+int CLingyaoIME::_GetPrecedingDocumentChars(TfEditCookie ec, _In_ ITfContext *pContext,
                                                 _Out_writes_(count) WCHAR *buffer, int count)
 {
     if (pContext == nullptr || buffer == nullptr || count <= 0)
@@ -226,13 +226,13 @@ int CMetasequoiaIME::_GetPrecedingDocumentChars(TfEditCookie ec, _In_ ITfContext
     return readCount;
 }
 
-WCHAR CMetasequoiaIME::_GetPrecedingDocumentChar(TfEditCookie ec, _In_ ITfContext *pContext)
+WCHAR CLingyaoIME::_GetPrecedingDocumentChar(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     WCHAR buffer[1] = {};
     return _GetPrecedingDocumentChars(ec, pContext, buffer, 1) == 1 ? buffer[0] : 0;
 }
 
-bool CMetasequoiaIME::_SmartPunctuationFingerprintMatches(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR beforeChar)
+bool CLingyaoIME::_SmartPunctuationFingerprintMatches(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR beforeChar)
 {
     if (beforeChar == 0)
     {
@@ -245,7 +245,7 @@ bool CMetasequoiaIME::_SmartPunctuationFingerprintMatches(TfEditCookie ec, _In_ 
     return Global::SmartPunctuationFingerprintMatches(readCount, buffer[0], beforeChar);
 }
 
-WCHAR CMetasequoiaIME::_GetFollowingDocumentChar(TfEditCookie ec, _In_ ITfContext *pContext)
+WCHAR CLingyaoIME::_GetFollowingDocumentChar(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     if (pContext == nullptr)
     {
@@ -290,7 +290,7 @@ WCHAR CMetasequoiaIME::_GetFollowingDocumentChar(TfEditCookie ec, _In_ ITfContex
     return following;
 }
 
-WCHAR CMetasequoiaIME::_GetPrecedingCharForSmartPunctuation(TfEditCookie ec, _In_ ITfContext *pContext)
+WCHAR CLingyaoIME::_GetPrecedingCharForSmartPunctuation(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     if (_smartPunctuationShadowValid)
     {
@@ -299,7 +299,7 @@ WCHAR CMetasequoiaIME::_GetPrecedingCharForSmartPunctuation(TfEditCookie ec, _In
     return _GetPrecedingDocumentChar(ec, pContext);
 }
 
-bool CMetasequoiaIME::_CanConvertSmartPunctuationSpace() const
+bool CLingyaoIME::_CanConvertSmartPunctuationSpace() const
 {
     return _smartPunctuationSpaceArmed &&
            Global::SmartPunctuationSpaceConvertEnabled.load(std::memory_order_relaxed) &&
@@ -307,7 +307,7 @@ bool CMetasequoiaIME::_CanConvertSmartPunctuationSpace() const
            GetForegroundWindow() == _smartPunctuationSpaceForegroundWindow;
 }
 
-bool CMetasequoiaIME::_CanRevertSmartPunctuation(WCHAR wch) const
+bool CLingyaoIME::_CanRevertSmartPunctuation(WCHAR wch) const
 {
     const bool sameKey = wch == _smartPunctuationRevertAscii ||
                          (_smartPunctuationRevertAscii == L'/' && wch == L'\\');
@@ -318,7 +318,7 @@ bool CMetasequoiaIME::_CanRevertSmartPunctuation(WCHAR wch) const
            GetForegroundWindow() == _smartPunctuationRevertForegroundWindow;
 }
 
-void CMetasequoiaIME::_ClearSmartPunctuationSpace()
+void CLingyaoIME::_ClearSmartPunctuationSpace()
 {
     _smartPunctuationSpaceArmed = false;
     _smartPunctuationSpaceChinese = 0;
@@ -327,7 +327,7 @@ void CMetasequoiaIME::_ClearSmartPunctuationSpace()
     _smartPunctuationSpaceForegroundWindow = nullptr;
 }
 
-void CMetasequoiaIME::_ClearSmartPunctuationRevert()
+void CLingyaoIME::_ClearSmartPunctuationRevert()
 {
     _smartPunctuationRevertArmed = false;
     _smartPunctuationRevertAscii = 0;
@@ -338,7 +338,7 @@ void CMetasequoiaIME::_ClearSmartPunctuationRevert()
     _smartPunctuationRevertDeadline = 0;
 }
 
-void CMetasequoiaIME::_ArmSmartPunctuationRevert(WCHAR ascii, WCHAR chinese, WCHAR beforeChar)
+void CLingyaoIME::_ArmSmartPunctuationRevert(WCHAR ascii, WCHAR chinese, WCHAR beforeChar)
 {
     _ClearSmartPunctuationRevert();
     if (ascii == 0 || chinese == 0 ||
@@ -355,7 +355,7 @@ void CMetasequoiaIME::_ArmSmartPunctuationRevert(WCHAR ascii, WCHAR chinese, WCH
     _smartPunctuationRevertDeadline = GetTickCount64() + SMART_PUNCTUATION_REPEAT_INTERVAL_MS;
 }
 
-void CMetasequoiaIME::_ArmSmartPunctuationSpace(WCHAR chinese, bool autoClosedPair, WCHAR beforeChar)
+void CLingyaoIME::_ArmSmartPunctuationSpace(WCHAR chinese, bool autoClosedPair, WCHAR beforeChar)
 {
     _ClearSmartPunctuationSpace();
     _ClearSmartPunctuationRevert();
@@ -373,7 +373,7 @@ void CMetasequoiaIME::_ArmSmartPunctuationSpace(WCHAR chinese, bool autoClosedPa
     _smartPunctuationSpaceForegroundWindow = GetForegroundWindow();
 }
 
-HRESULT CMetasequoiaIME::_HandleSmartPunctuationConvert(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleSmartPunctuationConvert(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     const WCHAR chinese = _smartPunctuationSpaceChinese;
     const WCHAR beforeChar = _smartPunctuationSpaceBeforeChar;
@@ -454,7 +454,7 @@ HRESULT CMetasequoiaIME::_HandleSmartPunctuationConvert(TfEditCookie ec, _In_ IT
     return S_OK;
 }
 
-HRESULT CMetasequoiaIME::_HandleSmartPunctuationRevert(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch)
+HRESULT CLingyaoIME::_HandleSmartPunctuationRevert(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch)
 {
     const WCHAR ascii = _smartPunctuationRevertAscii;
     const WCHAR chinese = _smartPunctuationRevertChinese;
@@ -524,7 +524,7 @@ HRESULT CMetasequoiaIME::_HandleSmartPunctuationRevert(TfEditCookie ec, _In_ ITf
     return S_OK;
 }
 
-WCHAR CMetasequoiaIME::_GetPairedPunctuationClosingFor(WCHAR opening)
+WCHAR CLingyaoIME::_GetPairedPunctuationClosingFor(WCHAR opening)
 {
     switch (opening)
     {
@@ -547,7 +547,7 @@ WCHAR CMetasequoiaIME::_GetPairedPunctuationClosingFor(WCHAR opening)
     }
 }
 
-void CMetasequoiaIME::_PushPairedPunctuation(WCHAR opening, WCHAR closing)
+void CLingyaoIME::_PushPairedPunctuation(WCHAR opening, WCHAR closing)
 {
     if (opening == 0 || closing == 0)
     {
@@ -566,12 +566,12 @@ void CMetasequoiaIME::_PushPairedPunctuation(WCHAR opening, WCHAR closing)
     _pairedPunctuationStack.push_back(entry);
 }
 
-void CMetasequoiaIME::_ClearPairedPunctuationStack()
+void CLingyaoIME::_ClearPairedPunctuationStack()
 {
     _pairedPunctuationStack.clear();
 }
 
-bool CMetasequoiaIME::_TryStepOverPairedPunctuation(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR closing)
+bool CLingyaoIME::_TryStepOverPairedPunctuation(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR closing)
 {
     if (closing == 0 || _pairedPunctuationStack.empty())
     {
@@ -601,7 +601,7 @@ bool CMetasequoiaIME::_TryStepOverPairedPunctuation(TfEditCookie ec, _In_ ITfCon
     return true;
 }
 
-void CMetasequoiaIME::_NoteKeyForPairedPunctuation(UINT code)
+void CLingyaoIME::_NoteKeyForPairedPunctuation(UINT code)
 {
     if (_pairedPunctuationStack.empty() && _pendingPairedCaretDelta == 0)
     {
@@ -648,7 +648,7 @@ void CMetasequoiaIME::_NoteKeyForPairedPunctuation(UINT code)
     }
 }
 
-void CMetasequoiaIME::_CancelPairedPunctuationCaretMove()
+void CLingyaoIME::_CancelPairedPunctuationCaretMove()
 {
     if (_pairedCaretRetryTimerActive && _msgWndHandle != nullptr)
     {
@@ -660,7 +660,7 @@ void CMetasequoiaIME::_CancelPairedPunctuationCaretMove()
     _pendingPairedCaretDeadline = 0;
 }
 
-void CMetasequoiaIME::_QueuePairedPunctuationCaretMove(int delta)
+void CLingyaoIME::_QueuePairedPunctuationCaretMove(int delta)
 {
     if (delta == 0 || _msgWndHandle == nullptr)
     {
@@ -696,7 +696,7 @@ void CMetasequoiaIME::_QueuePairedPunctuationCaretMove(int delta)
     }
 }
 
-void CMetasequoiaIME::_RunPairedPunctuationCaretMove()
+void CLingyaoIME::_RunPairedPunctuationCaretMove()
 {
     if (_pendingPairedCaretDelta == 0)
     {
@@ -748,7 +748,7 @@ void CMetasequoiaIME::_RunPairedPunctuationCaretMove()
     _InvalidateSmartPunctuationShadow();
 }
 
-void CMetasequoiaIME::_ResetSmartPunctuationHistory()
+void CLingyaoIME::_ResetSmartPunctuationHistory()
 {
     _ClearSmartPunctuationSpace();
     _ClearSmartPunctuationRevert();
@@ -761,7 +761,7 @@ void CMetasequoiaIME::_ResetSmartPunctuationHistory()
     _smartPunctuationForegroundWindow = nullptr;
 }
 
-void CMetasequoiaIME::_ClearSmartPunctuationAction()
+void CLingyaoIME::_ClearSmartPunctuationAction()
 {
     _ResetSmartPunctuationHistory();
     _pendingSmartPunctuationReplacement = 0;
@@ -770,7 +770,7 @@ void CMetasequoiaIME::_ClearSmartPunctuationAction()
     _pendingSmartPunctuationDeadline = 0;
 }
 
-bool CMetasequoiaIME::_QueueSmartPunctuationRewrite(WCHAR replacement)
+bool CLingyaoIME::_QueueSmartPunctuationRewrite(WCHAR replacement)
 {
     if (replacement == 0 || _msgWndHandle == nullptr)
     {
@@ -799,7 +799,7 @@ bool CMetasequoiaIME::_QueueSmartPunctuationRewrite(WCHAR replacement)
     return true;
 }
 
-bool CMetasequoiaIME::_QueueRepeatedSmartPunctuationReplacement(WCHAR wch)
+bool CLingyaoIME::_QueueRepeatedSmartPunctuationReplacement(WCHAR wch)
 {
     // Backspace rejection means the ASCII form is already gone. Treating the
     // next press as "replace the still-visible ASCII punct" would SendInput a
@@ -847,13 +847,13 @@ bool CMetasequoiaIME::_QueueRepeatedSmartPunctuationReplacement(WCHAR wch)
     return true;
 }
 
-void CMetasequoiaIME::_InvalidateSmartPunctuationShadow()
+void CLingyaoIME::_InvalidateSmartPunctuationShadow()
 {
     _smartPunctuationShadowChar = 0;
     _smartPunctuationShadowValid = false;
 }
 
-void CMetasequoiaIME::_UpdateSmartPunctuationShadow(UINT code, WCHAR wch, bool isEaten)
+void CLingyaoIME::_UpdateSmartPunctuationShadow(UINT code, WCHAR wch, bool isEaten)
 {
     switch (code)
     {
@@ -908,7 +908,7 @@ void CMetasequoiaIME::_UpdateSmartPunctuationShadow(UINT code, WCHAR wch, bool i
     _smartPunctuationShadowValid = true;
 }
 
-void CMetasequoiaIME::_NoteKeyForSmartPunctuation(UINT code, WCHAR wch, bool isEaten)
+void CLingyaoIME::_NoteKeyForSmartPunctuation(UINT code, WCHAR wch, bool isEaten)
 {
     // The replacement message normally runs before another input event. If it
     // does not, never let a later key leave the queued Backspace targeting an
@@ -1000,7 +1000,7 @@ void CMetasequoiaIME::_NoteKeyForSmartPunctuation(UINT code, WCHAR wch, bool isE
     }
 }
 
-std::wstring CMetasequoiaIME::_ResolveSmartPunctuation(WCHAR wch, WCHAR precedingChar)
+std::wstring CLingyaoIME::_ResolveSmartPunctuation(WCHAR wch, WCHAR precedingChar)
 {
     if (_pCompositionProcessorEngine == nullptr)
     {
@@ -1062,7 +1062,7 @@ std::wstring CMetasequoiaIME::_ResolveSmartPunctuation(WCHAR wch, WCHAR precedin
 // someone other than this service ends a composition.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnCompositionTerminated(TfEditCookie ecWrite, _In_ ITfComposition *pComposition)
+STDAPI CLingyaoIME::OnCompositionTerminated(TfEditCookie ecWrite, _In_ ITfComposition *pComposition)
 {
     PerfTimer timer;
     if (pComposition == nullptr || !_IsCompositionCurrent(pComposition))
@@ -1146,7 +1146,7 @@ STDAPI CMetasequoiaIME::OnCompositionTerminated(TfEditCookie ecWrite, _In_ ITfCo
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_IsComposing()
+BOOL CLingyaoIME::_IsComposing()
 {
     return _pComposition != nullptr;
 }
@@ -1157,7 +1157,7 @@ BOOL CMetasequoiaIME::_IsComposing()
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_SetComposition(_In_ ITfComposition *pComposition)
+void CLingyaoIME::_SetComposition(_In_ ITfComposition *pComposition)
 {
     _pComposition = pComposition;
     uint64_t nextEpoch = _compositionEpoch.fetch_add(1, std::memory_order_acq_rel) + 1;
@@ -1173,7 +1173,7 @@ void CMetasequoiaIME::_SetComposition(_In_ ITfComposition *pComposition)
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_AddComposingAndChar(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_AddComposingAndChar(TfEditCookie ec, _In_ ITfContext *pContext,
                                               _In_ CStringRange *pstrAddString)
 {
     HRESULT hr = S_OK;
@@ -1256,7 +1256,7 @@ HRESULT CMetasequoiaIME::_AddComposingAndChar(TfEditCookie ec, _In_ ITfContext *
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_AddCharAndFinalize(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_AddCharAndFinalize(TfEditCookie ec, _In_ ITfContext *pContext,
                                              _In_ CStringRange *pstrAddString)
 {
     HRESULT hr = E_FAIL;
@@ -1300,7 +1300,7 @@ HRESULT CMetasequoiaIME::_AddCharAndFinalize(TfEditCookie ec, _In_ ITfContext *p
     return hr;
 }
 
-HRESULT CMetasequoiaIME::_InsertTextToComposition(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_InsertTextToComposition(TfEditCookie ec, _In_ ITfContext *pContext,
                                                   _In_ CStringRange *pstrAddString)
 {
     PerfTimer timer;
@@ -1344,7 +1344,7 @@ HRESULT CMetasequoiaIME::_InsertTextToComposition(TfEditCookie ec, _In_ ITfConte
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_SetCompositionTextAndSelection(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_SetCompositionTextAndSelection(TfEditCookie ec, _In_ ITfContext *pContext,
                                                          _In_ CStringRange *pstrAddString)
 {
     PerfTimer timer;
@@ -1388,7 +1388,7 @@ HRESULT CMetasequoiaIME::_SetCompositionTextAndSelection(TfEditCookie ec, _In_ I
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_FindComposingRange(TfEditCookie ec, _In_ ITfContext *pContext, _In_ ITfRange *pSelection,
+BOOL CLingyaoIME::_FindComposingRange(TfEditCookie ec, _In_ ITfContext *pContext, _In_ ITfRange *pSelection,
                                           _Outptr_result_maybenull_ ITfRange **ppRange)
 {
     if (ppRange == nullptr)
@@ -1446,7 +1446,7 @@ BOOL CMetasequoiaIME::_FindComposingRange(TfEditCookie ec, _In_ ITfContext *pCon
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_SetInputString(TfEditCookie ec, _In_ ITfContext *pContext, _Out_opt_ ITfRange *pRange,
+HRESULT CLingyaoIME::_SetInputString(TfEditCookie ec, _In_ ITfContext *pContext, _Out_opt_ ITfRange *pRange,
                                          _In_ CStringRange *pstrAddString, BOOL exist_composing)
 {
     ITfRange *pRangeInsert = nullptr;
@@ -1504,7 +1504,7 @@ HRESULT CMetasequoiaIME::_SetInputString(TfEditCookie ec, _In_ ITfContext *pCont
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_InsertAtSelection(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_InsertAtSelection(TfEditCookie ec, _In_ ITfContext *pContext,
                                             _In_ CStringRange *pstrAddString, _Outptr_ ITfRange **ppCompRange)
 {
     ITfRange *rangeInsert = nullptr;
@@ -1549,7 +1549,7 @@ Exit:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_RemoveDummyCompositionForComposing(TfEditCookie ec, _In_ ITfComposition *pComposition)
+HRESULT CLingyaoIME::_RemoveDummyCompositionForComposing(TfEditCookie ec, _In_ ITfComposition *pComposition)
 {
     HRESULT hr = S_OK;
 
@@ -1574,7 +1574,7 @@ HRESULT CMetasequoiaIME::_RemoveDummyCompositionForComposing(TfEditCookie ec, _I
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_SetCompositionLanguage(TfEditCookie ec, _In_ ITfContext *pContext)
+BOOL CLingyaoIME::_SetCompositionLanguage(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     HRESULT hr = S_OK;
     BOOL ret = TRUE;

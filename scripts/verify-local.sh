@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local verification for the shared 水杉输入法 client.
+# Local verification for the shared 灵耀输入法 client.
 #
 # This is the half of verification GitHub Actions does not cover, and the fast feedback before a commit. Nothing here talks to CI; it runs the Rust workspace tests, fmt, clippy and a dependency audit, the UI type check, and the native host builds and tests, then reports the result.
 #
@@ -401,10 +401,10 @@ note "compile: rust workspace"
 #
 # The name has to be the bundle tauri.macos.conf.json lists, not the CMake
 # target that produces it: platforms/macos names the target
-# MSIMEClientInputMethod and then sets OUTPUT_NAME to 水杉输入法, so the
+# MSIMEClientInputMethod and then sets OUTPUT_NAME to 灵耀输入法, so the
 # guard below matched on no machine and the desktop crate was excluded from
 # every run anyone has made. Three compile errors reached develop behind that.
-desktop_resource="target/macos/水杉输入法.app"
+desktop_resource="target/macos/灵耀输入法.app"
 # The bundle is not the only resource tauri.macos.conf.json points at. A checkout with the input method
 # built but the dictionary release not staged has half of them, and the build script fails on the missing
 # half rather than skipping - which reads as a broken crate instead of an unprepared checkout.

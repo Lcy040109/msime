@@ -2,5 +2,5 @@
 # 语音服务按文件名导入这几个模块，它们与 msime-linux-voice-provider 放在同一目录，本身不是可执行脚本。
 addFilter("script-without-shebang /usr/bin/msime_.*\.py")
 addFilter("non-executable-in-bin /usr/bin/msime_.*\.py")
-# 产品名与命令名（Metasequoia、msime-linux-setup、Fcitx5 addon）。
+# 产品名与命令名（Lingyao、msime-linux-setup、Fcitx5 addon）。
 addFilter("spelling-error")

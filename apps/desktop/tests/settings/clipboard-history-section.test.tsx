@@ -210,7 +210,7 @@ test("clipboard history explains a signed-out account and keeps the cloud action
   const cloudRequest = vi.fn().mockRejectedValue({ code: "account_unauthorized" });
   renderWithCloud(cloudRequest);
 
-  expect(await screen.findByText("登录水杉账号后可在设备间同步剪贴板")).toBeTruthy();
+  expect(await screen.findByText("登录灵耀账号后可在设备间同步剪贴板")).toBeTruthy();
   expect(screen.getByRole("button", { name: "发到云剪贴板" }).hasAttribute("disabled")).toBe(true);
   expect(cloudRequest).toHaveBeenCalledTimes(1);
 });
@@ -255,6 +255,6 @@ test("clipboard history reports a failed upload and a lost session", async () =>
 
   await waitFor(() => expect(send.hasAttribute("disabled")).toBe(false));
   fireEvent.click(send);
-  expect(await screen.findByText("登录水杉账号后可在设备间同步剪贴板")).toBeTruthy();
+  expect(await screen.findByText("登录灵耀账号后可在设备间同步剪贴板")).toBeTruthy();
   expect(send.hasAttribute("disabled")).toBe(true);
 });

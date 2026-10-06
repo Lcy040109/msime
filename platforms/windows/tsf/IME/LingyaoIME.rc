@@ -54,12 +54,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "MSFT"
-            VALUE "FileDescription", "The Metasequoia code of Windows 11 IME"
+            VALUE "FileDescription", "The Lingyao code of Windows 11 IME"
             VALUE "FileVersion", "0.1.0.0"
-            VALUE "InternalName", "MetasequoiaImeTsf.dll"
+            VALUE "InternalName", "LingyaoImeTsf.dll"
             VALUE "LegalCopyright", "Copyright (C)"
-            VALUE "OriginalFilename", "MetasequoiaImeTsf.dll"
-            VALUE "ProductName", "MetasequoiaIME"
+            VALUE "OriginalFilename", "LingyaoImeTsf.dll"
+            VALUE "ProductName", "LingyaoIME"
             VALUE "ProductVersion", "0.1.0.0"
         END
     END

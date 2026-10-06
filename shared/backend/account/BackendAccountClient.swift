@@ -80,7 +80,7 @@ struct BackendAccountClient: Sendable {
     let created_at: String
     var preferredDisplayName: String {
       display_name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        ? "水杉小鹿·" + id.prefix(6).uppercased() : display_name
+        ? "灵耀小鹿·" + id.prefix(6).uppercased() : display_name
     }
   }
   struct Tokens: Codable, Sendable {

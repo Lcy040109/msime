@@ -15,7 +15,7 @@ final class CharacterWidthPreferenceTests: XCTestCase {
     super.tearDown()
   }
 
-  private func commitRaw(_ bridge: MetasequoiaInputSessionBridge, _ letters: String) -> String? {
+  private func commitRaw(_ bridge: LingyaoInputSessionBridge, _ letters: String) -> String? {
     _ = bridge.cancel()
     for letter in letters { _ = bridge.handleCharacter(String(letter)) }
     return bridge.commitRaw().commitText
@@ -23,7 +23,7 @@ final class CharacterWidthPreferenceTests: XCTestCase {
 
   /// What the runtime commits comes back converted once it is told the width, and a session rebuilt after the keyboard was put away is told again.
   func testRuntimeCommitsInTheWidthItIsToldAcrossRebuilds() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertEqual(commitRaw(bridge, "ni"), "ni")
     bridge.setCharacterWidth(fullwidth: true)
     XCTAssertEqual(commitRaw(bridge, "ni"), "ｎｉ")

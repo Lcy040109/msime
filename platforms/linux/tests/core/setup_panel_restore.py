@@ -201,7 +201,7 @@ def main() -> int:
         result = harness.unregister()
         assert harness.classicui.read_text() == restored_file(Theme="default", DarkTheme="default-dark", Font='"Sans 10"'), harness.classicui.read_text()
         assert "恢复 Fcitx5 候选面板设置 Theme、DarkTheme、Font" in result.stdout, result.stdout
-        assert "WheelForPaging 在水杉写入之后已被改动，保持不变" in result.stdout, result.stdout
+        assert "WheelForPaging 在灵耀写入之后已被改动，保持不变" in result.stdout, result.stdout
         assert not any(SET_CONFIG in call for call in harness.calls("gdbus")), harness.calls("gdbus")
         # IBus: the font the user had goes back; use-custom-font, which they had never set, is reset to the schema default.
         assert harness.state()["panel"]["user"] == {"custom-font": "Serif 11"}, harness.state()["panel"]

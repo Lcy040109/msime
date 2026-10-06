@@ -3,7 +3,7 @@
 Environment:
   FAKE_HELPER_AVAILABLE=0  report the runtime missing in hello
   FAKE_HELPER_LOG=<file>   append every request (audio as its byte count) as a JSON line
-  FAKE_HELPER_FINAL=<text> the final transcript (default 水杉输入法)
+  FAKE_HELPER_FINAL=<text> the final transcript (default 灵耀输入法)
 A start whose model ends in "/broken" answers an error; audio after "crash" in the model path exits the process.
 """
 import base64
@@ -56,7 +56,7 @@ def main():
             if received // 32000 != (received - len(data)) // 32000:
                 emit({"type": "partial", "id": session, "text": "听到%d秒" % (received // 32000)})
         elif op == "finish" and session is not None:
-            emit({"type": "final", "id": session, "text": os.environ.get("FAKE_HELPER_FINAL", "水杉输入法")})
+            emit({"type": "final", "id": session, "text": os.environ.get("FAKE_HELPER_FINAL", "灵耀输入法")})
             session = None
         elif op == "cancel" and session is not None:
             emit({"type": "cancelled", "id": session})

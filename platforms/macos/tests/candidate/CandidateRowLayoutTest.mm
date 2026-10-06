@@ -94,7 +94,7 @@ int main(void)
         appearance.vertical = NO;
         NSString *(^glyphs)(CGFloat) = ^NSString *(CGFloat points) {
             return [@"" stringByPaddingToLength:(NSUInteger)MAX(2.0, floor(points / glyphWidth))
-                                     withString:@"水杉输入法" startingAtIndex:0];
+                                     withString:@"灵耀输入法" startingAtIndex:0];
         };
 
         // A sentence worth four fifths of half the screen, then eight candidates that together take far more than a whole screen line: the card grows past half the screen towards the screen less its margins, and the page still breaks onto new lines.

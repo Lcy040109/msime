@@ -117,7 +117,7 @@ int main() {
 
     // The picker is the shared catalog, in its order, and only its ids are themes.
     const auto &catalog = msime::mac::ThemeCatalog();
-    const char *ids[] = {"system", "shuishan", "light", "paper", "night", "ink", "custom"};
+    const char *ids[] = {"system", "lingyao", "light", "paper", "night", "ink", "custom"};
     assert(catalog.size() == 7);
     for (size_t index = 0; index < catalog.size(); ++index) {
         assert(catalog[index].id == ids[index] && !catalog[index].title.empty());
@@ -129,7 +129,7 @@ int main() {
     CheckColor(catalog[1].previewAccent, 0x7FE08E);
     for (const char *retired : {"fluent", "wechat", "graphite", "willow_green", "Custom", ""})
         assert(!msime::mac::IsGlobalThemeId(retired));
-    assert(msime::mac::ThemeTitle("shuishan") == "水杉" && msime::mac::ThemeTitle("custom") == "自定义");
+    assert(msime::mac::ThemeTitle("lingyao") == "灵耀" && msime::mac::ThemeTitle("custom") == "自定义");
 
     const msime::mac::CustomTheme none;
     for (bool dark : {false, true}) {
@@ -141,14 +141,14 @@ int main() {
         const auto unknown = msime::mac::ResolveSkin("fluent", none, dark, "horizontal", {});
         assert(unknown.id == "system" && SameTokens(unknown.tokens, NativeCandidateTokens(dark)));
         // A built-in theme fixes its mode whatever the system's is, and paints the shared palette.
-        const auto shuishan = msime::mac::ResolveSkin("shuishan", none, dark, "horizontal", {});
-        assert(shuishan.id == "shuishan" && shuishan.fixedDark == true && shuishan.dark);
-        CheckColor(shuishan.tokens.surface, 0x2A2B27);
-        CheckColor(shuishan.tokens.text, 0xFFFFFF);
-        CheckColor(shuishan.tokens.accent, 0x7FE08E);
-        CheckColor(shuishan.tokens.selected, 0x7FE08E, 0x24 / 255.f);
-        CheckColor(shuishan.tokens.selectedText, 0x7FE08E);
-        assert(SameColor(shuishan.tokens.selectedHover, shuishan.tokens.selected));
+        const auto lingyao = msime::mac::ResolveSkin("lingyao", none, dark, "horizontal", {});
+        assert(lingyao.id == "lingyao" && lingyao.fixedDark == true && lingyao.dark);
+        CheckColor(lingyao.tokens.surface, 0x2A2B27);
+        CheckColor(lingyao.tokens.text, 0xFFFFFF);
+        CheckColor(lingyao.tokens.accent, 0x7FE08E);
+        CheckColor(lingyao.tokens.selected, 0x7FE08E, 0x24 / 255.f);
+        CheckColor(lingyao.tokens.selectedText, 0x7FE08E);
+        assert(SameColor(lingyao.tokens.selectedHover, lingyao.tokens.selected));
         const auto paper = msime::mac::ResolveSkin("paper", none, dark, "vertical", {});
         assert(paper.fixedDark == false && !paper.dark);
         CheckColor(paper.tokens.surface, 0xF7F5F0);
@@ -199,10 +199,10 @@ int main() {
 
         // Without a package the toolbar is the candidate palette itself.
         assert(SameTokens(ToolbarSkinTokens(system, {}), system.tokens));
-        assert(SameTokens(ToolbarSkinTokens(shuishan, {}), shuishan.tokens));
+        assert(SameTokens(ToolbarSkinTokens(lingyao, {}), lingyao.tokens));
         assert(SameTokens(ToolbarSkinTokens(overNight, {}), overNight.tokens));
         // Without a package no theme has a translation colour of its own (secondary follows number) and the toolbar has no divider colour of its own.
-        for (const auto *resolved : {&system, &shuishan, &paper, &custom, &overNight, &ink})
+        for (const auto *resolved : {&system, &lingyao, &paper, &custom, &overNight, &ink})
         {
             assert(!resolved->tokens.translation && !ToolbarSkinTokens(*resolved, {}).divider);
             assert(resolved->backgroundPath.empty() && resolved->decorationAlign == msime::mac::DecorationAlign::right);

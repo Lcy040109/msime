@@ -1,22 +1,22 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.locale.1.12.0.schema.json
 # 模板：platforms/windows/packaging/render.py 按一个 windows-v 发布填写 @...@ 字段。
 
-PackageIdentifier: Metasequoia.MetasequoiaIME
+PackageIdentifier: Lingyao.LingyaoIME
 PackageVersion: "@VERSION@"
 PackageLocale: zh-CN
-Publisher: Metasequoia
+Publisher: Lingyao
 PublisherUrl: https://msime.app/
-PublisherSupportUrl: https://github.com/metasequoiaime/msime/issues
-PrivacyUrl: https://github.com/metasequoiaime/msime/blob/develop/PRIVACY.md
-PackageName: 水杉输入法
-PackageUrl: https://github.com/metasequoiaime/msime
+PublisherSupportUrl: https://github.com/Lcy040109/msime/issues
+PrivacyUrl: https://github.com/Lcy040109/msime/blob/develop/PRIVACY.md
+PackageName: 灵耀输入法
+PackageUrl: https://github.com/Lcy040109/msime
 License: GPL-3.0-only
-LicenseUrl: https://github.com/metasequoiaime/msime/blob/develop/LICENSE
-ShortDescription: 水杉输入法（Metasequoia IME）：Windows 中文输入法
+LicenseUrl: https://github.com/Lcy040109/msime/blob/develop/LICENSE
+ShortDescription: 灵耀输入法（Lingyao IME）：Windows 中文输入法
 Description: |-
-  水杉输入法（MSIME，Metasequoia IME）是面向 Windows、macOS、Linux、Android、iOS 与 HarmonyOS 的中文输入法。Windows 版是基于文本服务框架（TSF）的输入法，带独立的 Server 进程、原生候选窗和设置程序。
+  灵耀输入法（MSIME，Lingyao IME）是面向 Windows、macOS、Linux、Android、iOS 与 HarmonyOS 的中文输入法。Windows 版是基于文本服务框架（TSF）的输入法，带独立的 Server 进程、原生候选窗和设置程序。
 
-  MSIME 是 Metasequoia IME 的缩写，与 Microsoft IME 无关。
+  MSIME 是 Lingyao IME 的缩写，与 Microsoft IME 无关。
 Tags:
   - chinese
   - ime

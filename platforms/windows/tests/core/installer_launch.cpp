@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
       if ((*it)[1].str() == "MyAppExeName") {
         ++servers;
         const std::wstring argument(parameter.begin(), parameter.end());
-        const wchar_t *arguments[] = {L"MetasequoiaImeServer.exe",
+        const wchar_t *arguments[] = {L"LingyaoImeServer.exe",
                                       argument.c_str()};
         const auto parsed = msime::windows::parse_server_arguments(
             parameter.empty() ? 1 : 2, arguments);
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
         throw std::runtime_error(std::string("Previous directory is removed before ") + step);
 
     // The installer starts the Server with --production, which is not a Watchdog launch; the Server therefore brings its Watchdog back when TSF, not the Watchdog, revives it.
-    const wchar_t *production[] = {L"MetasequoiaImeServer.exe",
+    const wchar_t *production[] = {L"LingyaoImeServer.exe",
                                    L"--production"};
     if (msime::windows::parse_server_arguments(2, production).supervised)
       throw std::runtime_error(

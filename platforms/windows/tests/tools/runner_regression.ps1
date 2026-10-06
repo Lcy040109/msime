@@ -18,7 +18,7 @@ try {
         'windows-input-queue.exe', 'windows-session-smoke.exe',
         'windows-reply-codec.exe', 'windows-reply-composer.exe',
         'windows-pipe-io.exe', 'windows-server-smoke.exe',
-        'windows-preview-config.exe', 'MetasequoiaImeServer.exe'
+        'windows-preview-config.exe', 'LingyaoImeServer.exe'
     )
     foreach ($name in $names) { Copy-Item -LiteralPath $probePath -Destination (Join-Path $root $name) }
     $env:MSIME_RUNNER_PROBE_MODE = 'pass'
@@ -48,8 +48,8 @@ try {
     $env:MSIME_RUNNER_PROBE_MODE = 'timeout'
     Expect-Failure { & $copy -TimeoutSeconds 1 } '*timed out*'
     $env:MSIME_RUNNER_PROBE_MODE = 'pass'
-    Remove-Item -LiteralPath (Join-Path $root 'MetasequoiaImeServer.exe')
-    Expect-Failure { & $copy } '*Missing test: MetasequoiaImeServer.exe*'
+    Remove-Item -LiteralPath (Join-Path $root 'LingyaoImeServer.exe')
+    Expect-Failure { & $copy } '*Missing test: LingyaoImeServer.exe*'
     Write-Host 'Runner process-control regressions passed; no Windows IME binary was tested.'
 } finally {
     $env:MSIME_RUNNER_PROBE_MODE = $previousMode

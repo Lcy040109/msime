@@ -3,7 +3,7 @@
 候选栏的独立预览页，不需要引擎：用假的一帧画 src/candidates.js 的候选栏，供手动查看和浏览器自动截图。src/skin.js 导入的 src/theme-catalog.js 是生成的，先跑一次 `node packages/web-engine/tools/theme-catalog.mjs`（或 `node --test 'packages/web-engine/test/*.test.mjs'`），再用以 packages/web-engine 为根的静态服务器打开，例如 `python3 -m http.server -d packages/web-engine 8000` 后访问 http://localhost:8000/test/candidates-preview.html?skin=wechat&layout=vertical&dark=1。
 
 查询参数：
-- skin：内置皮肤 id，默认 shuishan。
+- skin：内置皮肤 id，默认 lingyao。
 - layout：horizontal（默认）或 vertical。
 - dark：1、0 或 auto（默认，跟随系统）。
 - sample：decorated 时把 skin 当作 base，画一个带装饰图和背景图的皮肤对象；bar-off 时画一个关掉选中条的皮肤对象。
@@ -70,7 +70,7 @@
       }
 
       try {
-        const base = params.get("skin") ?? "shuishan";
+        const base = params.get("skin") ?? "lingyao";
         const sample = params.get("sample");
         const skin = sample ? sampleSkin(sample, base) : base;
         const darkParam = params.get("dark") ?? "auto";

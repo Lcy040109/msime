@@ -86,15 +86,15 @@ int main()
     {
         [NSApplication sharedApplication];
         PreferencesTarget *target = [[PreferencesTarget alloc] init];
-        NSMenu *menu = CreateMetasequoiaInputMenu(target, NO, NO);
-        ApplyMetasequoiaMenuTheme(menu, @{@"theme": @"light", @"menu_theme": @"dark"});
+        NSMenu *menu = CreateLingyaoInputMenu(target, NO, NO);
+        ApplyLingyaoMenuTheme(menu, @{@"theme": @"light", @"menu_theme": @"dark"});
         assert(menu.appearance != nil);
         assert([[menu.appearance name] isEqualToString:NSAppearanceNameDarkAqua]);
-        ApplyMetasequoiaMenuTheme(menu, @{@"theme": @"dark", @"menu_theme": @"light"});
+        ApplyLingyaoMenuTheme(menu, @{@"theme": @"dark", @"menu_theme": @"light"});
         assert([[menu.appearance name] isEqualToString:NSAppearanceNameAqua]);
-        ApplyMetasequoiaMenuTheme(menu, @{@"theme": @"system", @"menu_theme": @"follow"});
+        ApplyLingyaoMenuTheme(menu, @{@"theme": @"system", @"menu_theme": @"follow"});
         assert(menu.appearance == nil);
-        ApplyMetasequoiaMenuTheme(menu, @{@"theme": @"dark", @"menu_theme": @"invalid"});
+        ApplyLingyaoMenuTheme(menu, @{@"theme": @"dark", @"menu_theme": @"invalid"});
         assert([[menu.appearance name] isEqualToString:NSAppearanceNameDarkAqua]);
 
         require(menu.numberOfItems == 12,
@@ -139,7 +139,7 @@ int main()
         require(updateItem.target == target && updateItem.enabled, "The update action was not enabled for its target.");
 
         NSMenuItem *settingsItem = [menu itemAtIndex:8];
-        require([settingsItem.title isEqualToString:@"水杉输入法设置…"], "The settings action title was incorrect.");
+        require([settingsItem.title isEqualToString:@"灵耀输入法设置…"], "The settings action title was incorrect.");
         require(settingsItem.action == @selector(showPreferences:), "The settings action used the wrong selector.");
         require(settingsItem.target == target, "The settings action did not target the input controller.");
         require(settingsItem.enabled, "The settings action was unexpectedly disabled.");
@@ -149,7 +149,7 @@ int main()
         require(target.voicePanelShown && target.voiceSettingsShown, "Voice menu actions were not dispatched.");
         [menu performActionForItemAtIndex:1];
         require(target.englishSelected, "The English input mode action was not dispatched.");
-        NSMenu *englishMenu = CreateMetasequoiaInputMenu(target, YES, YES);
+        NSMenu *englishMenu = CreateLingyaoInputMenu(target, YES, YES);
         require([englishMenu itemAtIndex:0].state == NSControlStateValueOff &&
                     [englishMenu itemAtIndex:1].state == NSControlStateValueOn,
                 "The English input mode was not represented as selected.");

@@ -81,7 +81,7 @@ final class VoiceRecorder: ObservableObject {
       session.requestRecordPermission { continuation.resume(returning: $0) }
     }
     try Task.checkCancellation()
-    guard allowed else { throw ServiceFailure(message: "请在系统设置中允许水杉使用麦克风。") }
+    guard allowed else { throw ServiceFailure(message: "请在系统设置中允许灵耀使用麦克风。") }
     discard()
     do {
       if quietensOthers {

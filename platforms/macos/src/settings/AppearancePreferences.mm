@@ -1031,7 +1031,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     NSTextField *_previewSampleField;
     MSIMEToolbarPreviewView *_toolbarPreview;
     NSButton *_themeButton;
-    MetasequoiaSkinSettingsView *_skinSettingsView;
+    LingyaoSkinSettingsView *_skinSettingsView;
     NSView *_skinPageContainer;
     NSView<MSIMEVoiceSettingsForm> *_voiceSettingsView;
     NSButton *_skinPageSharedEntry;
@@ -2649,7 +2649,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
 }
 
 - (NSAppearance *)candidateAppearanceOverride {
-    // A theme with a mode of its own (水杉, 浅色, 纸, 夜 and 墨, or the custom theme over one of them) is drawn in that mode whatever the light/dark choice says: its palette is the one for that mode.
+    // A theme with a mode of its own (灵耀, 浅色, 纸, 夜 and 墨, or the custom theme over one of them) is drawn in that mode whatever the light/dark choice says: its palette is the one for that mode.
     if (_lightSkin.fixedDark) return [NSAppearance appearanceNamed:*_lightSkin.fixedDark ? NSAppearanceNameDarkAqua : NSAppearanceNameAqua];
     return self.systemBaseCandidateAppearanceOverride;
 }
@@ -3730,7 +3730,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     ]];
 
     // ---- 关于 -------------------------------------------------------------------------------
-    Class updateControllerClass = NSClassFromString(@"MetasequoiaUpdateController");
+    Class updateControllerClass = NSClassFromString(@"LingyaoUpdateController");
     if ([updateControllerClass respondsToSelector:@selector(sharedController)])
         _updateController = [updateControllerClass sharedController];
     _versionLabel = [NSTextField labelWithString:@"开发构建"];
@@ -3750,7 +3750,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     ], 0.0);
     updateCard.accessibilityLabel = @"软件更新卡片";
     NSButton *websiteButton = [NSButton buttonWithTitle:@"访问 msime.app" target:self action:@selector(openProductWebsite:)];
-    MSIMELinkifyButton(websiteButton, @"访问水杉官网");
+    MSIMELinkifyButton(websiteButton, @"访问灵耀官网");
     _removeUserDataButton = [NSButton checkboxWithTitle:@"同时删除词库、学习记录、偏好与语音密钥"
                                                    target:nil
                                                    action:nil];
@@ -3776,13 +3776,13 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     // then the same artwork by construction and cannot drift apart in shape or colour.
     logo.image = [NSImage imageNamed:NSImageNameApplicationIcon];
     logo.imageScaling = NSImageScaleProportionallyUpOrDown;
-    logo.accessibilityLabel = @"水杉 IME";
+    logo.accessibilityLabel = @"灵耀 IME";
     logo.translatesAutoresizingMaskIntoConstraints = NO;
     [logo.widthAnchor constraintEqualToConstant:52.0].active = YES;
     [logo.heightAnchor constraintEqualToConstant:52.0].active = YES;
     NSTextField *brand = [NSTextField labelWithString:MSIMEEditionDisplayName()];
     brand.font = [NSFont systemFontOfSize:17.0 weight:NSFontWeightSemibold];
-    NSTextField *tagline = [NSTextField labelWithString:@"Metasequoia IME"];
+    NSTextField *tagline = [NSTextField labelWithString:@"Lingyao IME"];
     tagline.font = [NSFont systemFontOfSize:kBodyFontSize];
     tagline.textColor = NSColor.secondaryLabelColor;
     NSStackView *brandText = [NSStackView stackViewWithViews:@[brand, tagline]];
@@ -3799,7 +3799,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     // offers a restore.
     NSScrollView *aboutPage = [self page:MSIMESettingsPageAbout
                                    title:@"关于"
-                                 summary:@"版本与更新，以及水杉输入法的产品主页。"
+                                 summary:@"版本与更新，以及灵耀输入法的产品主页。"
                                  content:@[
         brandRow, [self sectionHeader:@"软件更新" keys:@[]], updateCard,
         [self sectionHeader:@"产品信息" keys:@[]], aboutCard,
@@ -3923,21 +3923,21 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
         accountPaneView = MSIMEAccountPaneView();
         [accountPaneView.heightAnchor constraintGreaterThanOrEqualToConstant:520.0].active = YES;
     } else {
-        NSButton *accountButton = [NSButton buttonWithTitle:@"管理水杉账号…" target:self action:@selector(showBackendAccount:)];
+        NSButton *accountButton = [NSButton buttonWithTitle:@"管理灵耀账号…" target:self action:@selector(showBackendAccount:)];
         accountButton.accessibilityIdentifier = @"MSIMEClientBackendAccount";
         NSBox *accountCard = MSIMECardWithViews(@[[self settingRow:@"登录与账号管理" control:accountButton]], 0.0);
-        accountCard.accessibilityLabel = @"水杉账号卡片";
-        accountPaneView = MSIMECardWithViews(@[MSIMESectionLabel(@"水杉账号"), accountCard], 0.0);
+        accountCard.accessibilityLabel = @"灵耀账号卡片";
+        accountPaneView = MSIMECardWithViews(@[MSIMESectionLabel(@"灵耀账号"), accountCard], 0.0);
     }
     NSScrollView *accountPage = [self page:MSIMESettingsPageAccount
                                      title:@"账号"
-                                   summary:@"登录水杉账号后，云同步等需要账号的功能才会生效；候选词翻译要在「翻译服务」里选择「水杉账号」才会使用账号。"
+                                   summary:@"登录灵耀账号后，云同步等需要账号的功能才会生效；候选词翻译要在「翻译服务」里选择「灵耀账号」才会使用账号。"
                                    content:@[
         accountPaneView,
     ]];
     // The account pane is a SwiftUI view attached by the Swift backend: its text is neither an NSTextField nor an NSButton, so nothing on it could ever be found by name. These are the names the pane goes by, and the result lands on the page that holds it.
     [self registerSearchKeywords:@[ @"登录", @"注销", @"退出登录", @"云同步", @"云剪贴板", @"会员" ]
-                         section:@"水杉账号"
+                         section:@"灵耀账号"
                           onPage:MSIMESettingsPageAccount
                              row:nil];
 
@@ -3982,7 +3982,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     ], 0.0);
     voiceCard.accessibilityLabel = @"语音卡片";
     // The form itself, not a 配置语音输入… button opening a second window with its own 保存 button.
-    Class voiceFormClass = NSClassFromString(@"MetasequoiaVoiceProviderSettingsView");
+    Class voiceFormClass = NSClassFromString(@"LingyaoVoiceProviderSettingsView");
     _voiceSettingsView = [[voiceFormClass alloc] initWithFrame:NSZeroRect];
     NSView *voiceContent = _voiceSettingsView
         ?: (NSView *)MSIMECardWithViews(@[[self settingRow:@"语音输入"
@@ -4071,7 +4071,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     _sidebarOutline.floatsGroupRows = NO;
     _sidebarOutline.allowsEmptySelection = NO;
     _sidebarOutline.rowSizeStyle = NSTableViewRowSizeStyleCustom;
-    _sidebarOutline.accessibilityLabel = @"水杉输入法导航";
+    _sidebarOutline.accessibilityLabel = @"灵耀输入法导航";
     NSTableColumn *sidebarColumn = [[NSTableColumn alloc] initWithIdentifier:@"MSIMESettingsSidebarColumn"];
     sidebarColumn.resizingMask = NSTableColumnAutoresizingMask;
     [_sidebarOutline addTableColumn:sidebarColumn];
@@ -4541,10 +4541,10 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
 - (void)toolbarSettingsChanged:(NSButton *)sender { self.floatingToolbarSettings = sender.state == NSControlStateValueOn; }
 - (void)toolbarScaleChanged:(NSPopUpButton *)sender { self.floatingToolbarScalePercent = [@[@75, @100, @125, @150][sender.indexOfSelectedItem] integerValue]; }
 - (void)toolbarFontSizeChanged:(NSPopUpButton *)sender { self.floatingToolbarFontSize = 16 + sender.indexOfSelectedItem * 2; }
-- (MetasequoiaSkinSettingsView *)ensureSkinSettingsView {
+- (LingyaoSkinSettingsView *)ensureSkinSettingsView {
     (void)self.window;  // The page container is built with the rest of the pages.
     if (_skinSettingsView != nil) return _skinSettingsView;
-    _skinSettingsView = [[MetasequoiaSkinSettingsView alloc] initWithFrame:NSZeroRect preferences:self];
+    _skinSettingsView = [[LingyaoSkinSettingsView alloc] initWithFrame:NSZeroRect preferences:self];
     [_skinPageContainer addSubview:_skinSettingsView];
     [NSLayoutConstraint activateConstraints:@[
         [_skinSettingsView.leadingAnchor constraintEqualToAnchor:_skinPageContainer.leadingAnchor],
@@ -4555,7 +4555,7 @@ static NSArray<NSString *> *PinyinSpellings(NSString *text) {
     return _skinSettingsView;
 }
 - (NSView *)skinSettingsView {
-    MetasequoiaSkinSettingsView *view = [self ensureSkinSettingsView];
+    LingyaoSkinSettingsView *view = [self ensureSkinSettingsView];
     [view reload];
     return view;
 }
@@ -5011,7 +5011,7 @@ static const NSUInteger MSIMESettingsDocumentLimit = 1 << 20;
 - (void)exportSettings:(id)sender {
     (void)sender;
     NSSavePanel *panel = [NSSavePanel savePanel];
-    panel.nameFieldStringValue = @"水杉输入法设置.json";
+    panel.nameFieldStringValue = @"灵耀输入法设置.json";
     panel.prompt = @"导出";
     panel.message = MSIMESettingsDocumentScope;
     if ([panel runModal] != NSModalResponseOK || panel.URL == nil) return;
@@ -5046,7 +5046,7 @@ static const NSUInteger MSIMESettingsDocumentLimit = 1 << 20;
     if (![document isKindOfClass:NSDictionary.class] ||
         ![document[MSIMESettingsDocumentFormatField] isEqual:MSIMESettingsDocumentFormat]) {
         [self reportSettingsDocumentFailure:@"无法导入这个文件"
-                                     reason:@"它不是水杉输入法导出的设置文件。"];
+                                     reason:@"它不是灵耀输入法导出的设置文件。"];
         return;
     }
     // 另一个版本导出的文件先收窄到本版本，见 MSIMEAdoptCloudAppearance。
@@ -5054,7 +5054,7 @@ static const NSUInteger MSIMESettingsDocumentLimit = 1 << 20;
     // The same check the account sync puts a downloaded snapshot through — +[MSIMEPreferencesWindowController validateCloudSettingsSnapshot:] is one line around this function — asked here first so that a document this host cannot read is told apart from one it can read and still has to refuse.
     if (![values isKindOfClass:NSDictionary.class] || !MSIMEValidateCloudAppearance(values)) {
         [self reportSettingsDocumentFailure:@"无法导入这个文件"
-                                     reason:@"文件里的设置无法识别，可能来自更新版本的水杉输入法，或者已经被改动过。"];
+                                     reason:@"文件里的设置无法识别，可能来自更新版本的灵耀输入法，或者已经被改动过。"];
         return;
     }
     if (![self applyCloudSettingsSnapshot:values]) {

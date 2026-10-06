@@ -1,4 +1,4 @@
-LIBRARY MetasequoiaImeTsf.dll
+LIBRARY LingyaoImeTsf.dll
 
 EXPORTS
         DllGetClassObject    PRIVATE

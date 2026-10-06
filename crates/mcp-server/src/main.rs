@@ -1,4 +1,4 @@
-//! `msime-mcp`: a Model Context Protocol server over stdio that lets an agent manage 水杉输入法, and the same tools one per run from a shell.
+//! `msime-mcp`: a Model Context Protocol server over stdio that lets an agent manage 灵耀输入法, and the same tools one per run from a shell.
 //!
 //! stdout carries the protocol, or a command's JSON result, and nothing else; anything for a person goes to stderr.
 

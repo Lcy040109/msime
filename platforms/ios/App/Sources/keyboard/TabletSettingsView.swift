@@ -37,7 +37,7 @@ struct TabletSettingsView: View {
       }.id(selection)
     }
     .navigationSplitViewStyle(.balanced)
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .onAppear { scheme = InputSchemePreference.scheme }
     .onChange(of: scenePhase) { if $0 == .active { scheme = InputSchemePreference.scheme } }
   }

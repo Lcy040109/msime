@@ -35,7 +35,7 @@ function resultLead(status: InputSourceStartupStatus): string {
   if (status.action === "login_required")
     return "注销并重新登录后才能在系统设置里添加它，设置页里有具体步骤。";
   if (status.enabled === true)
-    return "按 Control+空格 或在菜单栏的输入法菜单中切换到水杉输入法即可开始输入。";
+    return "按 Control+空格 或在菜单栏的输入法菜单中切换到灵耀输入法即可开始输入。";
   return "进入设置后，按页面上的提示把它添加到系统的输入法列表。";
 }
 
@@ -97,7 +97,7 @@ export function MacosInstallPage({
   return (
     <main
       className="relative flex h-full min-h-full w-full flex-col items-center justify-center overflow-y-auto bg-chrome px-8 pt-12 pb-10 text-body select-none"
-      aria-label="安装水杉输入法"
+      aria-label="安装灵耀输入法"
       data-platform="macos"
     >
       {/* The window has no title bar of its own; this strip under the traffic lights moves it. */}
@@ -109,7 +109,7 @@ export function MacosInstallPage({
           className="size-[60px]"
         />
       </div>
-      <h1 className="mt-5 mb-0 text-[24px] font-[650] tracking-[0.02em]">水杉输入法</h1>
+      <h1 className="mt-5 mb-0 text-[24px] font-[650] tracking-[0.02em]">灵耀输入法</h1>
       {phase === "done" && result ? (
         <>
           <h2

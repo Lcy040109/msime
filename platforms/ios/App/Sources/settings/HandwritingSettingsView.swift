@@ -23,7 +23,7 @@ struct HandwritingSettingsView: View {
             Text("设为当前方案").foregroundStyle(enabled ? Color.primary : Color.secondary)
             Spacer()
             if current == .handwriting {
-              Image(systemName: "checkmark").foregroundStyle(MetasequoiaTheme.accent).accessibilityHidden(true)
+              Image(systemName: "checkmark").foregroundStyle(LingyaoTheme.accent).accessibilityHidden(true)
             }
           }.contentShape(Rectangle())
         }

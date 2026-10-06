@@ -1,7 +1,7 @@
 #pragma once
 #include "Globals.h"
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "ClientKeyRouter.h"
 #include <cstdint>
 #include <string>
@@ -12,7 +12,7 @@ class CKeyStateCategoryFactory
 {
   public:
     static CKeyStateCategoryFactory *Instance();
-    CKeyStateCategory *MakeKeyStateCategory(KEYSTROKE_CATEGORY keyCategory, _In_ CMetasequoiaIME *pTextService);
+    CKeyStateCategory *MakeKeyStateCategory(KEYSTROKE_CATEGORY keyCategory, _In_ CLingyaoIME *pTextService);
     void Release();
 
   protected:
@@ -63,7 +63,7 @@ inline ClientKeyEvent client_key_event(const KeyHandlerEditSessionDTO &dto,
 class CKeyStateCategory
 {
   public:
-    CKeyStateCategory(_In_ CMetasequoiaIME *pTextService);
+    CKeyStateCategory(_In_ CLingyaoIME *pTextService);
 
   protected:
     ~CKeyStateCategory(void);
@@ -122,13 +122,13 @@ class CKeyStateCategory
     virtual HRESULT HandleKeySelectByNumber(KeyHandlerEditSessionDTO dto);
 
   protected:
-    CMetasequoiaIME *_pTextService;
+    CLingyaoIME *_pTextService;
 };
 
 class CKeyStateComposing : public CKeyStateCategory
 {
   public:
-    CKeyStateComposing(_In_ CMetasequoiaIME *pTextService);
+    CKeyStateComposing(_In_ CLingyaoIME *pTextService);
 
   protected:
     // _HandleCompositionInput
@@ -177,7 +177,7 @@ class CKeyStateComposing : public CKeyStateCategory
 class CKeyStateCandidate : public CKeyStateCategory
 {
   public:
-    CKeyStateCandidate(_In_ CMetasequoiaIME *pTextService);
+    CKeyStateCandidate(_In_ CLingyaoIME *pTextService);
 
   protected:
     // HandleKeyFinalizeCandidatelist
@@ -205,7 +205,7 @@ class CKeyStateCandidate : public CKeyStateCategory
 class CKeyStateNull : public CKeyStateCategory
 {
   public:
-    CKeyStateNull(_In_ CMetasequoiaIME *pTextService) : CKeyStateCategory(pTextService) {};
+    CKeyStateNull(_In_ CLingyaoIME *pTextService) : CKeyStateCategory(pTextService) {};
 
   protected:
     // _HandleNullInput

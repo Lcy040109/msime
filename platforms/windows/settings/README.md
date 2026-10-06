@@ -23,7 +23,7 @@
 
 ## 默认输入法提示
 
-每页标题上方的橙色提示条对应设计稿的 deskStrip：水杉输入法不在当前用户的键盘列表中时显示「去添加」，已添加但不是默认输入法时显示「设为默认」。状态通过 `input.dll` 的 `EnumEnabledLayoutOrTip` 读取（无头文件和导入库，运行时加载），按钮分别调用 `InstallLayoutOrTip` 和 `SetDefaultLayoutOrTip`；添加失败时打开「语言和区域」。`input.dll` 无法回答时不显示提示条。窗口重新获得焦点时重新检查。
+每页标题上方的橙色提示条对应设计稿的 deskStrip：灵耀输入法不在当前用户的键盘列表中时显示「去添加」，已添加但不是默认输入法时显示「设为默认」。状态通过 `input.dll` 的 `EnumEnabledLayoutOrTip` 读取（无头文件和导入库，运行时加载），按钮分别调用 `InstallLayoutOrTip` 和 `SetDefaultLayoutOrTip`；添加失败时打开「语言和区域」。`input.dll` 无法回答时不显示提示条。窗口重新获得焦点时重新检查。
 
 ## 保存
 

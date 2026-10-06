@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MetasequoiaImeApp: App {
+struct LingyaoImeApp: App {
   @StateObject private var onboardingNavigation = AppNavigation()
   @Environment(\.scenePhase) private var scenePhase
   @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -71,7 +71,7 @@ struct MetasequoiaImeApp: App {
 
   /// 设置界面主题 (see AppAppearancePreference) on every window. A window override rather than `preferredColorScheme`, so going back to 跟随系统 hands the style back to the device reliably and sheets follow too.
   private func applyAppearance() {
-    let style = AppAppearancePreference.style(in: MetasequoiaInputSessionBridge.loadSharedPreferences())
+    let style = AppAppearancePreference.style(in: LingyaoInputSessionBridge.loadSharedPreferences())
     for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
       for window in scene.windows { window.overrideUserInterfaceStyle = style }
     }
@@ -157,7 +157,7 @@ private struct MainTabView: View {
         .tabItem { Label("我的", systemImage: "person.crop.circle.fill") }.tag(AppNavigation.Tab.account)
     }
     .environmentObject(navigation)
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     // 键盘的「应用设置」发来的本版本 URL scheme（`MSIMEAppEdition.urlScheme`，full 是 msime://）。不加这一条应用照样会被拉起来,但会停在上次离开的那个标签页 —— 用户是从键盘的设置面板点过来的,落点应该是设置。
     .onOpenURL { url in
       guard url.scheme == MSIMEAppEdition.urlScheme else { return }
@@ -170,7 +170,7 @@ private struct MainTabView: View {
           .toolbar {
             ToolbarItem(placement: .confirmationAction) { Button("完成") { navigation.recordsVoice = false } }
           }
-      }.navigationViewStyle(.stack).tint(MetasequoiaTheme.accent)
+      }.navigationViewStyle(.stack).tint(LingyaoTheme.accent)
     }
   }
 

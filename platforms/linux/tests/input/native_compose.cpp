@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   require(!compose.feed(XKB_KEY_e));
   require(compose.feed(XKB_KEY_Multi_key).has_value());
   require(compose.feed(XKB_KEY_x).has_value());
-  require(compose.feed(XKB_KEY_x) == "水杉😀");
+  require(compose.feed(XKB_KEY_x) == "灵耀😀");
   require(!compose.feed(XKB_KEY_e));
   // An invalid sequence is consumed once, then normal input resumes.
   require(compose.feed(XKB_KEY_Multi_key).has_value());

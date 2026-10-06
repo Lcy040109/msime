@@ -1230,7 +1230,7 @@ export function HandwritingPanel({
       aria-label="手写识别板"
     >
       <NativePanelHeader
-        title="水杉手写识别板"
+        title="灵耀手写识别板"
         className={`native-panel-header ${surface.panelHeader}`}
         drag={drag}
         closeDisabled={closing}
@@ -1774,7 +1774,7 @@ export function VoicePanel({
       aria-label="语音输入"
     >
       <NativePanelHeader
-        title="水杉语音输入"
+        title="灵耀语音输入"
         className={`native-panel-header ${surface.panelHeader}`}
         drag={drag}
         onClose={() => void close()}
@@ -2016,7 +2016,7 @@ export function CloudClipboardPanel({ client }: { client: CloudClipboardPanelCli
 
   return (
     <main className={`native-panel ${cloud.clipboardPanel}`} aria-label="云剪贴板">
-      <CloudPanelHeader title="水杉云剪贴板" onClose={() => void client.close()} />
+      <CloudPanelHeader title="灵耀云剪贴板" onClose={() => void client.close()} />
       <div className={cloud.clipboardBody}>
         <p className={cloud.clipboardNote}>只上传你明确选择的文本，不自动读取本地剪贴板。</p>
         <label className={cloud.clipboardToggle}>
@@ -2302,7 +2302,7 @@ export function CloudDictionaryPanel({ client }: { client: CloudDictionaryPanelC
   return (
     <main className={`native-panel ${cloud.dictionaryPanel}`} aria-label="云词库">
       {confirmation}
-      <CloudPanelHeader title="水杉云词库" onClose={() => void client.close()} />
+      <CloudPanelHeader title="灵耀云词库" onClose={() => void client.close()} />
       <div className={cloud.dictionaryBody}>
         <p className={cloud.dictionaryNote}>
           管理当前账号的云端词条。修改需要 provider 提供登录态和同步服务。
@@ -2851,7 +2851,7 @@ export function CloudDictionaryApplyPanel({ client }: { client: CloudDictionaryP
 
   function download() {
     if (!localVersion) {
-      setNotice("尚未获取本机词库版本，请先打开水杉键盘");
+      setNotice("尚未获取本机词库版本，请先打开灵耀键盘");
       return;
     }
     void run(async (revision, lifecycle) => {
@@ -2931,7 +2931,7 @@ export function CloudDictionaryApplyPanel({ client }: { client: CloudDictionaryP
         <section className={cloud.dictionarySection} aria-label="准备本机词库">
           <h2>准备本机词库</h2>
           <p className={cloud.dictionaryNote}>
-            请启用水杉键盘并打开一次，让宿主提供当前本机词库版本。测试区或编辑器内容不会上传。
+            请启用灵耀键盘并打开一次，让宿主提供当前本机词库版本。测试区或编辑器内容不会上传。
           </p>
           <div className={cloud.dictionarySnapshotFact}>
             {localVersion ? (

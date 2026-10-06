@@ -8,16 +8,16 @@ export const windowIcons = {
 };
 
 export const fallbackAppVersion = "0.1.0";
-export const releasesPageUrl = "https://github.com/metasequoiaime/msime/releases";
-export const linuxReleasesPageUrl = "https://github.com/metasequoiaime/msime/releases";
+export const releasesPageUrl = "https://github.com/Lcy040109/msime/releases";
+export const linuxReleasesPageUrl = "https://github.com/Lcy040109/msime/releases";
 export const updateManifestUrl = "https://msime.app/update.json";
-export const clientReleasesUrl = "https://api.github.com/repos/metasequoiaime/msime/releases";
+export const clientReleasesUrl = "https://api.github.com/repos/Lcy040109/msime/releases";
 export const UPDATE_CHECK_TIMEOUT_MS = 10_000;
-export const licenseUrl = "https://github.com/metasequoiaime/msime/blob/develop/LICENSE";
+export const licenseUrl = "https://github.com/Lcy040109/msime/blob/develop/LICENSE";
 export const privacyUrl = "https://msime.app/privacy/";
 export const androidPrivacyUrl = "https://msime.app/privacy/";
-export const linuxLicenseUrl = "https://github.com/metasequoiaime/msime/blob/develop/LICENSE";
-export const linuxIssuesUrl = "https://github.com/metasequoiaime/msime/issues";
+export const linuxLicenseUrl = "https://github.com/Lcy040109/msime/blob/develop/LICENSE";
+export const linuxIssuesUrl = "https://github.com/Lcy040109/msime/issues";
 export const desktopDownloadUrl = "https://msime.app/download/";
 export const documentationUrl = "https://msime.app/docs/";
 export const handwritingSdkPrivacyUrl = "https://developers.google.com/ml-kit/terms";

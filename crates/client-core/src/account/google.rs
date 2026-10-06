@@ -229,7 +229,7 @@ fn answer_callback(
                 tone: "success",
                 icon: CHECK_ICON,
                 title: "已收到 Google 授权",
-                message: "请回到水杉输入法，登录会在那里完成。",
+                message: "请回到灵耀输入法，登录会在那里完成。",
             },
         ),
         GoogleCallback::Failed(AccountError::Cancelled) => (
@@ -238,7 +238,7 @@ fn answer_callback(
                 tone: "neutral",
                 icon: DASH_ICON,
                 title: "已取消 Google 登录",
-                message: "请回到水杉输入法，需要时可以重新登录。",
+                message: "请回到灵耀输入法，需要时可以重新登录。",
             },
         ),
         GoogleCallback::Failed(_) => (
@@ -247,7 +247,7 @@ fn answer_callback(
                 tone: "warning",
                 icon: ALERT_ICON,
                 title: "Google 登录未完成",
-                message: "请回到水杉输入法重试。",
+                message: "请回到灵耀输入法重试。",
             },
         ),
         GoogleCallback::Ignored => (

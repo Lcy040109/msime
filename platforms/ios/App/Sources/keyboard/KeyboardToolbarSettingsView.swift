@@ -40,7 +40,7 @@ struct KeyboardToolbarSettingsView: View {
 
   /// The document is what the keyboard will use, including a value synced from another device that no keyboard has mirrored into the App Group yet.
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     toolbar = TouchToolbarPreference(in: preferences)
   }
 }

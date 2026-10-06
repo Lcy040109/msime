@@ -47,7 +47,7 @@ struct LocalModeSettingsView: View {
   private func stored(_ key: String) -> Binding<Bool> {
     Binding(get: { enabled[key] ?? true }, set: { value in
       enabled[key] = value
-      saveFailed = !MetasequoiaInputSessionBridge.updateSharedPreferences {
+      saveFailed = !LingyaoInputSessionBridge.updateSharedPreferences {
         var modes = $0["local_modes"] as? [String: Any] ?? [:]
         modes[key] = value
         $0["local_modes"] = modes
@@ -57,7 +57,7 @@ struct LocalModeSettingsView: View {
   }
 
   private func reload() {
-    guard let preferences = MetasequoiaInputSessionBridge.loadSharedPreferences() else { return }
+    guard let preferences = LingyaoInputSessionBridge.loadSharedPreferences() else { return }
     let stored = preferences["local_modes"] as? [String: Any] ?? [:]
     for (key, _, _) in Self.modes { enabled[key] = stored[key] as? Bool ?? true }
   }

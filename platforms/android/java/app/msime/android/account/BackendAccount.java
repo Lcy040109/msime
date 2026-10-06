@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import app.msime.android.clipboard.CloudClipboardTextPolicy;
 
 /**
- * 水杉账号：登录方式、挑战、登录、以及本机保存的会话。
+ * 灵耀账号：登录方式、挑战、登录、以及本机保存的会话。
  *
  * <p>Separate from {@link BackendAnonymousAccount}, which holds the device's own identity and needs
  * no one's permission. This one is a real account: a third party vouches for it, and the backend

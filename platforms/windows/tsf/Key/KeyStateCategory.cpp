@@ -1,7 +1,7 @@
 #include "KeyStateCategory.h"
 #include "Globals.h"
 #include "Ipc.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include <debugapi.h>
 
 thread_local CKeyStateCategoryFactory *CKeyStateCategoryFactory::_instance = nullptr;
@@ -22,7 +22,7 @@ CKeyStateCategoryFactory *CKeyStateCategoryFactory::Instance()
 }
 
 CKeyStateCategory *CKeyStateCategoryFactory::MakeKeyStateCategory(KEYSTROKE_CATEGORY keyCategory,
-                                                                  _In_ CMetasequoiaIME *pTextService)
+                                                                  _In_ CLingyaoIME *pTextService)
 {
     CKeyStateCategory *pKeyState = nullptr;
 
@@ -59,7 +59,7 @@ void CKeyStateCategoryFactory::Release()
 /*
 class CKeyStateCategory
 */
-CKeyStateCategory::CKeyStateCategory(_In_ CMetasequoiaIME *pTextService)
+CKeyStateCategory::CKeyStateCategory(_In_ CLingyaoIME *pTextService)
 {
     _pTextService = pTextService;
 }
@@ -282,7 +282,7 @@ HRESULT CKeyStateCategory::HandleKeySelectByNumber(KeyHandlerEditSessionDTO dto)
 /*
 class CKeyStateComposing
 */
-CKeyStateComposing::CKeyStateComposing(_In_ CMetasequoiaIME *pTextService) : CKeyStateCategory(pTextService)
+CKeyStateComposing::CKeyStateComposing(_In_ CLingyaoIME *pTextService) : CKeyStateCategory(pTextService)
 {
 }
 
@@ -368,7 +368,7 @@ HRESULT CKeyStateComposing::HandleKeyPunctuation(KeyHandlerEditSessionDTO dto)
 /*
 class CKeyStateCandidate
 */
-CKeyStateCandidate::CKeyStateCandidate(_In_ CMetasequoiaIME *pTextService) : CKeyStateCategory(pTextService)
+CKeyStateCandidate::CKeyStateCandidate(_In_ CLingyaoIME *pTextService) : CKeyStateCategory(pTextService)
 {
 }
 

@@ -1,4 +1,4 @@
-// 把引擎接到一个 <textarea> 或 <input> 上：拦截 keydown 交给引擎，把帧里的输出写回文本框，并用 candidates.js 画一个按水杉候选框皮肤绘制的候选栏（可以关掉，自己用 onFrame 画）。
+// 把引擎接到一个 <textarea> 或 <input> 上：拦截 keydown 交给引擎，把帧里的输出写回文本框，并用 candidates.js 画一个按灵耀候选框皮肤绘制的候选栏（可以关掉，自己用 onFrame 画）。
 import { createCandidateBar } from "./candidates.js";
 import { KeyKind, createShiftTap, keyFromEvent, osImeIntercepting, packKey } from "./keys.js";
 

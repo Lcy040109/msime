@@ -20,7 +20,7 @@ function TranslationServiceOptions({ showAccountProvider }: { showAccountProvide
       <option value="niutrans">小牛翻译（NiuTrans）</option>
       <option value="custom">自定义 DeepLX 兼容服务</option>
       {showAccountProvider && (
-        <option value="account">水杉账号（候选词发送到 api.msime.app）</option>
+        <option value="account">灵耀账号（候选词发送到 api.msime.app）</option>
       )}
     </>
   );

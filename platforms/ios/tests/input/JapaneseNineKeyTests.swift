@@ -59,12 +59,12 @@ final class JapaneseNineKeyTests: XCTestCase {
   }
 
   func testEveryKanaKeyConvertsAndLayoutsKeepFullHeight() throws {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.switchToJapanese()
     for key in JapaneseNineKeyView.keys {
       for (kana, input) in zip(key.kana, key.strokes) where !input.isEmpty {
         _ = bridge.cancel()
-        var snapshot: MetasequoiaInputSnapshot?
+        var snapshot: LingyaoInputSnapshot?
         for letter in input { snapshot = bridge.handleCharacter(String(letter)) }
         XCTAssertTrue(snapshot?.candidates.contains(kana) == true, "\(input) → \(kana): \(snapshot?.candidates ?? [])")
       }

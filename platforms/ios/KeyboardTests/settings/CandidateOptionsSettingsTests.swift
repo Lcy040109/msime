@@ -24,16 +24,16 @@ final class CandidateOptionsSettingsTests: XCTestCase {
 
   /// Writing one field of `mixed_input` leaves the object's other fields as stored.
   func testNestedWriteKeepsTheRestOfTheObject() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
-    let before = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)?["mixed_input"] as? [String: Any])
+    _ = LingyaoInputSessionBridge(stateRoot: state)
+    let before = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["mixed_input"] as? [String: Any])
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       var mixed = $0["mixed_input"] as? [String: Any] ?? [:]
       mixed["emoji"] = true
       $0["mixed_input"] = mixed
     })
 
-    let after = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)?["mixed_input"] as? [String: Any])
+    let after = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["mixed_input"] as? [String: Any])
     XCTAssertEqual(after["emoji"] as? Bool, true)
     XCTAssertEqual(after["english"] as? Bool, before["english"] as? Bool)
     XCTAssertEqual((after["minimum_prefix"] as? NSNumber)?.intValue, (before["minimum_prefix"] as? NSNumber)?.intValue)
@@ -41,11 +41,11 @@ final class CandidateOptionsSettingsTests: XCTestCase {
 
   /// Typo correction is enabled by default and an explicit false still reaches the live session.
   func testReloadHandsTypoCorrectionToTheLiveSession() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     // The engine's own autocorrect check: with the default enabled, gau leads with 挂 (gua).
     XCTAssertEqual(firstCandidates(bridge, "gau").first, "挂", "transposition correction ships on")
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       var quanpin = $0["quanpin"] as? [String: Any] ?? [:]
       quanpin["autocorrect_transposition"] = false
       $0["quanpin"] = quanpin
@@ -61,11 +61,11 @@ final class CandidateOptionsSettingsTests: XCTestCase {
 
   /// 「双拼预编辑」 turned off in the app makes the live session spell out the pinyin behind the raw shuangpin keys the strip otherwise shows.
   func testReloadHandsShuangpinPreeditToTheLiveSession() async {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switch(toShuangpin: true)
     XCTAssertEqual(spelling(bridge, "ui"), "ui", "raw keys ship on")
 
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) {
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) {
       $0["shuangpin_preedit_uses_raw"] = false
     })
     let reloaded = expectation(description: "reload")
@@ -93,7 +93,7 @@ final class CandidateOptionsSettingsTests: XCTestCase {
   }
 
   /// The composition after typing `letters` from an empty one, which is then abandoned.
-  private func spelling(_ bridge: MetasequoiaInputSessionBridge, _ letters: String) -> String {
+  private func spelling(_ bridge: LingyaoInputSessionBridge, _ letters: String) -> String {
     var snapshot = bridge.cancel()
     for letter in letters { snapshot = bridge.handleCharacter(String(letter)) }
     _ = bridge.cancel()
@@ -101,7 +101,7 @@ final class CandidateOptionsSettingsTests: XCTestCase {
   }
 
   /// The first few candidate texts after typing `letters` from an empty composition, which is then abandoned.
-  private func firstCandidates(_ bridge: MetasequoiaInputSessionBridge, _ letters: String) -> [String] {
+  private func firstCandidates(_ bridge: LingyaoInputSessionBridge, _ letters: String) -> [String] {
     var snapshot = bridge.cancel()
     for letter in letters { snapshot = bridge.handleCharacter(String(letter)) }
     let texts = snapshot.candidates.prefix(5).map { String($0.split(separator: "\n").first ?? "") }

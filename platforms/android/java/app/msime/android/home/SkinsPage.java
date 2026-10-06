@@ -25,7 +25,7 @@ import org.json.JSONObject;
 /**
  * 皮肤页：两列皮肤卡（预览加名字，选中的卡 2dp 强调色描边、名字前打 ✓），依次是共享目录里的全局主题、「我的设计」（自定义皮肤库，含社区下载和 AI 设计的皮肤），最后一张虚线卡进 AI 设计皮肤。
  *
- * <p>点一张卡立刻生效：全局主题写 `global_theme`；我的设计按键盘自己的皮肤面板那样写进 `custom_theme.keyboard` 并选中 `custom`，同时按 P23 写设计带的按键动画和音效。每次换皮肤都在统计里记一次 `record_skin`，并标记云同步的「皮肤」分类。水杉四季那张卡跟着应用主题当前的季节写成「水杉四季 · 秋杉」。卡片预览用与键盘相同的解析器（{@link HostStore#keyboardSkin(JSONObject, boolean, app.msime.android.AppThemePalette.Seed)}），跟随系统那张按应用主题的种子色画。
+ * <p>点一张卡立刻生效：全局主题写 `global_theme`；我的设计按键盘自己的皮肤面板那样写进 `custom_theme.keyboard` 并选中 `custom`，同时按 P23 写设计带的按键动画和音效。每次换皮肤都在统计里记一次 `record_skin`，并标记云同步的「皮肤」分类。灵耀四季那张卡跟着应用主题当前的季节写成「灵耀四季 · 秋杉」。卡片预览用与键盘相同的解析器（{@link HostStore#keyboardSkin(JSONObject, boolean, app.msime.android.AppThemePalette.Seed)}），跟随系统那张按应用主题的种子色画。
  */
 public final class SkinsPage extends DetailPage {
     /** 一张卡：`design` 为 null 是全局主题，否则是皮肤库里的设计。 */

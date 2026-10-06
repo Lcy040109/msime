@@ -56,7 +56,7 @@ struct TrayMenuCapabilities {
   bool stroke = false;
   // 本版本提供的方案。不在其中的方案行不出现，而不是显示为不可用：那个方案在这个版本里根本不存在。full 提供全部方案。
   scheme::OfferedSchemes schemes = scheme::edition_schemes();
-  // 卡片标题和「关于」行里的产品名（UTF-8），按版本取；full 是「水杉输入法」。
+  // 卡片标题和「关于」行里的产品名（UTF-8），按版本取；full 是「灵耀输入法」。
   std::string product_name = MSIME_EDITION_DISPLAY_NAME_UTF8;
 };
 // What the menu shows, sampled by the Server each time the card opens or redraws after a switch.

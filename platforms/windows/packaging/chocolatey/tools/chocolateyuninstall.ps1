@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 
 $productCode = '{A7C3E91F-4B2D-4E8A-9F1C-6D5E8B0A2C4D}_is1'
-[array]$keys = Get-UninstallRegistryKey -SoftwareName 'Metasequoia IME*' | Where-Object { $_.PSChildName -eq $productCode }
+[array]$keys = Get-UninstallRegistryKey -SoftwareName 'Lingyao IME*' | Where-Object { $_.PSChildName -eq $productCode }
 
 if ($keys.Count -eq 0) {
     Write-Warning "$env:ChocolateyPackageName has already been uninstalled by other means."

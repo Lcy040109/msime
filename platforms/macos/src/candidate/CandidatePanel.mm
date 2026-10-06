@@ -5,12 +5,12 @@
 #include "../core/DiagnosticLog.h"
 #include <cmath>
 
-@interface MetasequoiaCandidateWindow : NSPanel
-@property(nonatomic, weak) id<MetasequoiaCandidatePanelDelegate> candidateDelegate;
+@interface LingyaoCandidateWindow : NSPanel
+@property(nonatomic, weak) id<LingyaoCandidatePanelDelegate> candidateDelegate;
 @property(nonatomic) BOOL hasPreviousPage;
 @property(nonatomic) BOOL hasNextPage;
 @end
-@implementation MetasequoiaCandidateWindow
+@implementation LingyaoCandidateWindow
 - (BOOL)canBecomeKeyWindow
 {
     return NO;
@@ -27,7 +27,7 @@
 }
 @end
 
-@interface MetasequoiaCandidateButton : NSButton
+@interface LingyaoCandidateButton : NSButton
 @property(nonatomic) BOOL candidateHighlighted;
 @property(nonatomic) BOOL candidateHovered;
 @property(nonatomic, strong) NSFont *numberFont;
@@ -40,7 +40,7 @@
 @property(nonatomic) BOOL showSelectedBar;
 @property(nonatomic) CGFloat cornerRadius;
 @end
-@implementation MetasequoiaCandidateButton
+@implementation LingyaoCandidateButton
 - (BOOL)acceptsFirstResponder
 {
     return NO;
@@ -138,7 +138,7 @@
 }
 @end
 
-@interface MetasequoiaCandidateChromeView : NSView
+@interface LingyaoCandidateChromeView : NSView
 @property(nonatomic, weak) id appearanceTarget;
 @property(nonatomic) SEL appearanceAction;
 @property(nonatomic, copy) NSColor *fillColor;
@@ -146,7 +146,7 @@
 @property(nonatomic) CGFloat cornerRadius;
 @property(nonatomic) CGFloat lineWidth;
 @end
-@implementation MetasequoiaCandidateChromeView
+@implementation LingyaoCandidateChromeView
 - (BOOL)isOpaque
 {
     return self.fillColor.alphaComponent >= 0.99;
@@ -179,10 +179,10 @@
 }
 @end
 
-@implementation MetasequoiaCandidatePanel
+@implementation LingyaoCandidatePanel
 {
     NSPanel *_window;
-    MetasequoiaCandidateChromeView *_chrome;
+    LingyaoCandidateChromeView *_chrome;
     NSImageView *_decorationView;
     NSArray<NSAttributedString *> *_data;
     NSFont *_font;
@@ -192,10 +192,10 @@
     CGFloat _tallestVerticalHeight;
 }
 
-- (void)setDelegate:(id<MetasequoiaCandidatePanelDelegate>)delegate
+- (void)setDelegate:(id<LingyaoCandidatePanelDelegate>)delegate
 {
     _delegate = delegate;
-    ((MetasequoiaCandidateWindow *)_window).candidateDelegate = delegate;
+    ((LingyaoCandidateWindow *)_window).candidateDelegate = delegate;
 }
 
 - (instancetype)init
@@ -206,7 +206,7 @@
         _data = @[];
         _font = [NSFont systemFontOfSize:18];
         _selected = NSNotFound;
-        _window = [[MetasequoiaCandidateWindow alloc]
+        _window = [[LingyaoCandidateWindow alloc]
             initWithContentRect:NSZeroRect
                       styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel
                         backing:NSBackingStoreBuffered
@@ -219,7 +219,7 @@
         _window.hasShadow = YES;
         _window.collectionBehavior =
             NSWindowCollectionBehaviorCanJoinAllSpaces | NSWindowCollectionBehaviorFullScreenAuxiliary;
-        _chrome = [[MetasequoiaCandidateChromeView alloc] initWithFrame:NSZeroRect];
+        _chrome = [[LingyaoCandidateChromeView alloc] initWithFrame:NSZeroRect];
         _chrome.appearanceTarget = self;
         _chrome.appearanceAction = @selector(reloadSkin);
         _window.contentView = _chrome;
@@ -230,7 +230,7 @@
         [self reloadSkin];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(reloadSkin)
-                                                     name:MetasequoiaCandidateSkinDidChangeNotification
+                                                     name:LingyaoCandidateSkinDidChangeNotification
                                                    object:nil];
     }
     return self;
@@ -246,7 +246,7 @@
 }
 - (void)reloadSkin
 {
-    _skin = MetasequoiaResolveStoredTheme(MetasequoiaAppearanceIsDark(_chrome.effectiveAppearance),
+    _skin = LingyaoResolveStoredTheme(LingyaoAppearanceIsDark(_chrome.effectiveAppearance),
                                           _panelType == kIMKSingleColumnScrollingCandidatePanel);
     _decorationImage = nil;
     if (_skin.decorationTopDip > 0.0 && !_skin.decorationPath.empty())
@@ -301,7 +301,7 @@
 }
 - (void)layoutCandidates
 {
-    MetasequoiaCandidateWindow *window = (MetasequoiaCandidateWindow *)_window;
+    LingyaoCandidateWindow *window = (LingyaoCandidateWindow *)_window;
     window.hasPreviousPage = _hasPreviousPage;
     window.hasNextPage = _hasNextPage;
     for (NSView *view in [_chrome.subviews copy])
@@ -355,8 +355,8 @@
                                      2 * inset + decorationHeight,
                                  10));
     [_window setContentSize:size];
-    _chrome.fillColor = MetasequoiaColorFromRgba(_skin.tokens.surface);
-    _chrome.strokeColor = MetasequoiaColorFromRgba(_skin.tokens.border);
+    _chrome.fillColor = LingyaoColorFromRgba(_skin.tokens.surface);
+    _chrome.strokeColor = LingyaoColorFromRgba(_skin.tokens.border);
     _chrome.cornerRadius = _skin.tokens.radius;
     _chrome.lineWidth = _skin.tokens.borderWidth;
     _chrome.needsDisplay = YES;
@@ -376,17 +376,17 @@
     CGFloat x = inset;
     const CGFloat contentTop = size.height - inset - decorationHeight;
     const CGFloat verticalItemWidth = MAX(0.0, size.width - 2.0 * inset);
-    NSColor *selectedFill = MetasequoiaColorFromRgba(_skin.tokens.selected);
-    NSColor *textColor = MetasequoiaColorFromRgba(_skin.tokens.text);
-    NSColor *selectedText = MetasequoiaColorFromRgba(_skin.tokens.selectedText);
-    NSColor *numberColor = MetasequoiaColorFromRgba(_skin.tokens.number);
-    NSColor *accent = MetasequoiaColorFromRgba(_skin.tokens.accent);
+    NSColor *selectedFill = LingyaoColorFromRgba(_skin.tokens.selected);
+    NSColor *textColor = LingyaoColorFromRgba(_skin.tokens.text);
+    NSColor *selectedText = LingyaoColorFromRgba(_skin.tokens.selectedText);
+    NSColor *numberColor = LingyaoColorFromRgba(_skin.tokens.number);
+    NSColor *accent = LingyaoColorFromRgba(_skin.tokens.accent);
     for (NSUInteger index = 0; index < _data.count; ++index)
     {
         const CGFloat itemWidth = vertical ? verticalItemWidth : widths[index].doubleValue;
         const CGFloat y = vertical ? contentTop - (index + 1) * rowHeight : inset;
-        MetasequoiaCandidateButton *button =
-            [[MetasequoiaCandidateButton alloc] initWithFrame:NSMakeRect(vertical ? inset : x, y, itemWidth, rowHeight)];
+        LingyaoCandidateButton *button =
+            [[LingyaoCandidateButton alloc] initWithFrame:NSMakeRect(vertical ? inset : x, y, itemWidth, rowHeight)];
         button.title = titles[index];
         button.font = _font;
         button.numberFont = numberFont;
@@ -396,8 +396,8 @@
         button.action = @selector(selectFromMouse:);
         button.candidateHighlighted = (NSInteger)index == _selected;
         button.fillColor = selectedFill;
-        button.hoverColor = MetasequoiaColorFromRgba(_skin.tokens.hover);
-        button.selectedHoverColor = MetasequoiaColorFromRgba(_skin.tokens.selectedHover);
+        button.hoverColor = LingyaoColorFromRgba(_skin.tokens.hover);
+        button.selectedHoverColor = LingyaoColorFromRgba(_skin.tokens.selectedHover);
         button.titleColor = button.candidateHighlighted ? selectedText : textColor;
         button.numberColor = button.candidateHighlighted ? selectedText : numberColor;
         button.barColor = accent;
@@ -508,15 +508,15 @@
         return NO;
     _selected = identifier;
     for (NSView *view in _chrome.subviews)
-        if ([view isKindOfClass:MetasequoiaCandidateButton.class])
+        if ([view isKindOfClass:LingyaoCandidateButton.class])
         {
-            MetasequoiaCandidateButton *button = (MetasequoiaCandidateButton *)view;
+            LingyaoCandidateButton *button = (LingyaoCandidateButton *)view;
             button.candidateHighlighted = view.tag == identifier;
             button.cornerRadius = button.candidateHighlighted ? _skin.tokens.selectedRadius : _skin.tokens.candidateRadius;
-            button.titleColor = button.candidateHighlighted ? MetasequoiaColorFromRgba(_skin.tokens.selectedText)
-                                                            : MetasequoiaColorFromRgba(_skin.tokens.text);
-            button.numberColor = button.candidateHighlighted ? MetasequoiaColorFromRgba(_skin.tokens.selectedText)
-                                                             : MetasequoiaColorFromRgba(_skin.tokens.number);
+            button.titleColor = button.candidateHighlighted ? LingyaoColorFromRgba(_skin.tokens.selectedText)
+                                                            : LingyaoColorFromRgba(_skin.tokens.text);
+            button.numberColor = button.candidateHighlighted ? LingyaoColorFromRgba(_skin.tokens.selectedText)
+                                                             : LingyaoColorFromRgba(_skin.tokens.number);
             view.needsDisplay = YES;
         }
     return YES;

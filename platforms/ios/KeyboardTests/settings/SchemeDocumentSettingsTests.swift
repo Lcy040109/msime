@@ -29,12 +29,12 @@ final class SchemeDocumentSettingsTests: XCTestCase {
 
   /// The keyboard's own switch wrote `touch_keyboard_schemes` first; a later choice in the app has to replace it there, not only in the App Group.
   func testAppSchemeChoiceReplacesTheKeyboardsEarlierSelection() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(bridge.setTouchKeyboardScheme(.nineKey, enabledSchemes: [.quanpin, .nineKey]))
 
     XCTAssertTrue(InputSchemePreference.save(scheme: .wubi, enabled: [.quanpin, .nineKey, .wubi], stateRoot: state))
 
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     let schemes = try XCTUnwrap(document["touch_keyboard_schemes"] as? [String: Any])
     XCTAssertEqual(schemes["selected"] as? String, ChineseInputScheme.wubi.sharedIdentifier)
     XCTAssertEqual(schemes["enabled"] as? [String], [ChineseInputScheme.quanpin, .nineKey, .wubi].map(\.sharedIdentifier))
@@ -45,7 +45,7 @@ final class SchemeDocumentSettingsTests: XCTestCase {
 
   /// 五笔版本写进文档的 `wubi_profile`，方案名和卡片角标跟着变；之后再切方案不会把它改回去。
   func testWubiProfileReachesTheDocumentAndSurvivesSchemeChanges() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(WubiProfilePreference.save("wubi98", stateRoot: state))
     XCTAssertEqual(WubiProfilePreference.profile, "wubi98")
     XCTAssertEqual(ChineseInputScheme.wubi.title, "98 五笔")
@@ -53,7 +53,7 @@ final class SchemeDocumentSettingsTests: XCTestCase {
 
     XCTAssertTrue(InputSchemePreference.save(scheme: .quanpin, enabled: [.quanpin, .wubi], stateRoot: state))
     XCTAssertTrue(InputSchemePreference.save(scheme: .wubi, enabled: [.quanpin, .wubi], stateRoot: state))
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["scheme"] as? String, "wubi")
     XCTAssertEqual(document["wubi_profile"] as? String, "wubi98")
     XCTAssertEqual(WubiProfilePreference.profile(in: document), "wubi98")
@@ -66,9 +66,9 @@ final class SchemeDocumentSettingsTests: XCTestCase {
   }
 
   func testTraditionalOutputReachesTheDocument() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(ChineseOutputPreference.save(true, stateRoot: state))
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["traditional_chinese_output"] as? Bool, true)
     XCTAssertTrue(ChineseOutputPreference.usesTraditional)
   }

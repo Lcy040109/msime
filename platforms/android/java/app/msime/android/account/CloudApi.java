@@ -16,7 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 水杉云端接口的公共传输层：基础地址、会话 Bearer、固定 User-Agent、JSON 与 multipart 请求体、错误解析和超时。
+ * 灵耀云端接口的公共传输层：基础地址、会话 Bearer、固定 User-Agent、JSON 与 multipart 请求体、错误解析和超时。
  *
  * <p>各功能自己的接口文件（同步、设备、反馈……）都建在这一层上，只管路径和字段。这里统一发 `MSIME/Android`；带设备型号的详细 User-Agent 只出现在 {@link BackendAccount} 的真实账号登录请求上，后端只在登录时记录它。
  *

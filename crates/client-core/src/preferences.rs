@@ -122,7 +122,7 @@ impl Default for TouchKeyboardSkinDesign {
 }
 
 impl TouchKeyboardSkinDesign {
-    /// 薄荷晨光: a clear mint gradient under rounded white keys with deep green text. The 水杉精选 design of the same name in the skin community, and the touch keyboards' default.
+    /// 薄荷晨光: a clear mint gradient under rounded white keys with deep green text. The 灵耀精选 design of the same name in the skin community, and the touch keyboards' default.
     pub fn mint_morning() -> Self {
         Self {
             background: 0xD8F0E4,
@@ -890,7 +890,7 @@ pub struct Preferences {
     /// Optional second language for mobile candidate glosses. `None` shows a single language and is omitted from serialized snapshots.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub translation_secondary_language: Option<TranslationTargetLanguage>,
-    /// 候选翻译服务选的是水杉账号时为真，候选词会发到 `https://api.msime.app/v1/translate`。新装和缺字段时都是关闭，必须由用户显式选择。
+    /// 候选翻译服务选的是灵耀账号时为真，候选词会发到 `https://api.msime.app/v1/translate`。新装和缺字段时都是关闭，必须由用户显式选择。
     #[serde(default)]
     pub translation_account: bool,
     /// Send anonymous usage reports (daily activity, session ends, crash summaries; see [`crate::telemetry`] and PRIVACY.md) to `https://api.msime.app/v1/telemetry/events`. On by default; turning it off stops all reporting and clears the local queue. A reader treats an absent key as on.

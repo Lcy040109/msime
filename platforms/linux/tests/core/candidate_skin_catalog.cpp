@@ -63,7 +63,7 @@ int main() {
 
   // The menu: the shared catalogue's themes in its order, then the packages; one named like a theme, or drawn over a base that is not a catalogue theme other than 自定义, is refused by the shared layer and left out.
   const auto theme_catalog = Json::parse(
-      R"({"themes":[{"id":"system","title":"跟随系统"},{"id":"shuishan","title":"水杉"},{"id":"light","title":"浅色"},)"
+      R"({"themes":[{"id":"system","title":"跟随系统"},{"id":"lingyao","title":"灵耀"},{"id":"light","title":"浅色"},)"
       R"({"id":"paper","title":"纸白"},{"id":"night","title":"夜青"},{"id":"ink","title":"墨"},{"id":"custom","title":"自定义"}],)"
       R"("default":"system"})");
   const auto choices = theme_choices(theme_catalog, packages);

@@ -184,8 +184,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    description = "水杉输入法的 Fcitx5 插件与 Linux 原生宿主";
-    homepage = "https://github.com/metasequoiaime/msime";
+    description = "灵耀输入法的 Fcitx5 插件与 Linux 原生宿主";
+    homepage = "https://github.com/Lcy040109/msime";
     license = [
       lib.licenses.gpl3Only
     ]

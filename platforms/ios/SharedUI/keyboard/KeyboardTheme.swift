@@ -55,7 +55,7 @@ struct KeyboardTheme: Equatable {
     lock.lock()
     let theme = stored
     lock.unlock()
-    return theme ?? reload(MetasequoiaInputSessionBridge.loadSharedPreferences())
+    return theme ?? reload(LingyaoInputSessionBridge.loadSharedPreferences())
   }
 
   /// Resolve the selected theme of `document` again and make it `current`.

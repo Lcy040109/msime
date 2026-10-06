@@ -12,7 +12,7 @@ enum ChineseOutputPreference {
   /// Save the output form where the keyboard reads it: the keyboard copies the shared document's `traditional_chinese_output` over the App Group every time it appears.
   @discardableResult
   static func save(_ traditional: Bool, stateRoot: URL? = nil) -> Bool {
-    guard MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { $0[documentKey] = traditional })
+    guard LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, { $0[documentKey] = traditional })
     else { return false }
     usesTraditional = traditional
     return true

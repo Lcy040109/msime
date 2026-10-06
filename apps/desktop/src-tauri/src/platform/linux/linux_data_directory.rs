@@ -367,7 +367,7 @@ impl MovePlan {
         if wrote_marker
             && fs::write(
                 target.join(DATA_DIRECTORY_MARKER),
-                b"Metasequoia IME user data directory.\n",
+                b"Lingyao IME user data directory.\n",
             )
             .is_err()
         {

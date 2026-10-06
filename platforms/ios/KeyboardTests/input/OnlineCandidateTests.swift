@@ -22,12 +22,12 @@ final class OnlineCandidateTests: XCTestCase {
 
   func testACloudReplyJoinsTheCandidates() throws {
     CloudCandidatePreference.enabled = true
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     type(bridge, "nihao")
     let document = try XCTUnwrap(bridge.onlineQuery(), "nihao has no online query")
     let query = try XCTUnwrap(try JSONSerialization.jsonObject(with: document) as? [String: Any])
     XCTAssertTrue(OnlineCandidateProvider.requestsCloud(query), "\(query)")
-    let url = try XCTUnwrap(MetasequoiaInputSessionBridge.cloudRequestURL(query: document))
+    let url = try XCTUnwrap(LingyaoInputSessionBridge.cloudRequestURL(query: document))
     XCTAssertEqual(url.scheme, "https")
 
     let applied = try bridge.applyCloudResponse(query: document, body: Self.cloudBody)
@@ -36,10 +36,10 @@ final class OnlineCandidateTests: XCTestCase {
   }
 
   func testBridgeRejectsMalformedUnsignedIntegers() {
-    XCTAssertEqual(MetasequoiaInputSessionBridge.strictUInt64(NSNumber(value: 7)), 7)
-    XCTAssertNil(MetasequoiaInputSessionBridge.strictUInt64(NSNumber(value: 7.5)))
-    XCTAssertNil(MetasequoiaInputSessionBridge.strictUInt64(NSNumber(value: true)))
-    XCTAssertNil(MetasequoiaInputSessionBridge.strictUInt64(NSNumber(value: -1)))
+    XCTAssertEqual(LingyaoInputSessionBridge.strictUInt64(NSNumber(value: 7)), 7)
+    XCTAssertNil(LingyaoInputSessionBridge.strictUInt64(NSNumber(value: 7.5)))
+    XCTAssertNil(LingyaoInputSessionBridge.strictUInt64(NSNumber(value: true)))
+    XCTAssertNil(LingyaoInputSessionBridge.strictUInt64(NSNumber(value: -1)))
   }
 
   func testTransportRejectsUnsafeURLComponents() {
@@ -55,7 +55,7 @@ final class OnlineCandidateTests: XCTestCase {
   }
 
   func testSnapshotRejectsCandidateRowsWithoutText() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let malformed: [String: Any] = [
       "view": [
         "candidates": [["code": "ni", "source": 0], ["text": "你", "code": "ni"]],
@@ -65,7 +65,7 @@ final class OnlineCandidateTests: XCTestCase {
   }
 
   func testSnapshotRejectsMalformedCandidateNumericFields() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     for field in ["source", "fixed_position"] {
       for invalid: Any in [1.5, true, -1, 256, "1", NSNull()] {
         let malformed: [String: Any] = ["view": ["candidates": [["text": "合成", field: invalid]]]]
@@ -75,7 +75,7 @@ final class OnlineCandidateTests: XCTestCase {
   }
 
   func testSnapshotRejectsMalformedPageCountsAndCaretOffsets() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     for field in ["page_count", "caret_position"] {
       for invalid: Any in [1.5, true, -1, "1", NSNull(), NSNumber(value: UInt64.max)] {
         let malformed: [String: Any] = ["view": ["editing_text": "ni", field: invalid]]
@@ -86,7 +86,7 @@ final class OnlineCandidateTests: XCTestCase {
   }
 
   func testSnapshotPreservesIntegerBoundsAndUTF8CaretOffsets() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let snapshot = try bridge.snapshot(from: ["view": [
       "candidates": [["text": "合成", "source": 255, "fixed_position": 255]],
       "page_count": Int.max, "editing_text": "việt", "caret_position": "việt".utf8.count,
@@ -106,13 +106,13 @@ final class OnlineCandidateTests: XCTestCase {
   func testCloudCandidatesStayOffUntilTheSwitchIsOn() async throws {
     CloudCandidatePreference.enabled = false
     // A document synced from a desktop, where cloud candidates are on.
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0["cloud_candidates"] = true })
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0["cloud_candidates"] = true })
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     type(bridge, "nihao")
     if let document = bridge.onlineQuery() {
       let query = try XCTUnwrap(try JSONSerialization.jsonObject(with: document) as? [String: Any])
       XCTAssertFalse(OnlineCandidateProvider.requestsCloud(query))
-      XCTAssertNil(MetasequoiaInputSessionBridge.cloudRequestURL(query: document))
+      XCTAssertNil(LingyaoInputSessionBridge.cloudRequestURL(query: document))
       XCTAssertEqual(try bridge.applyCloudResponse(query: document, body: Self.cloudBody)["applied"] as? Bool, false)
     }
 
@@ -127,7 +127,7 @@ final class OnlineCandidateTests: XCTestCase {
     XCTAssertTrue(OnlineCandidateProvider.requestsCloud(query))
 
     CloudCandidatePreference.enabled = false
-    XCTAssertTrue(MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0["cloud_candidates"] = true })
+    XCTAssertTrue(LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: state) { $0["cloud_candidates"] = true })
     let turnedOff = expectation(description: "reload off")
     bridge.reloadSharedPreferences { _ in turnedOff.fulfill() }
     await fulfillment(of: [turnedOff], timeout: 15)
@@ -135,12 +135,12 @@ final class OnlineCandidateTests: XCTestCase {
     let offDocument = bridge.onlineQuery()
     let offQuery = offDocument.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
     XCTAssertFalse(offQuery.map(OnlineCandidateProvider.requestsCloud) ?? false)
-    XCTAssertEqual(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)?["cloud_candidates"] as? Bool, true)
+    XCTAssertEqual(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)?["cloud_candidates"] as? Bool, true)
   }
 
   func testAReplyForAnAbandonedCompositionIsRefused() throws {
     CloudCandidatePreference.enabled = true
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     type(bridge, "nihao")
     let document = try XCTUnwrap(bridge.onlineQuery())
     type(bridge, "shijie")
@@ -151,7 +151,7 @@ final class OnlineCandidateTests: XCTestCase {
 
   func testTheProviderAsksOnceThePauseEndsAndRendersTheReply() throws {
     CloudCandidatePreference.enabled = true
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let transport = RecordingTransport(body: Self.cloudBody)
     let provider = OnlineCandidateProvider(session: bridge, transport: transport)
     let rendered = expectation(description: "rendered")
@@ -174,7 +174,7 @@ final class OnlineCandidateTests: XCTestCase {
 
   func testAFailedRequestCanBeRetriedForTheSameComposition() throws {
     CloudCandidatePreference.enabled = true
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let transport = FlakyTransport(body: Self.cloudBody)
     let provider = OnlineCandidateProvider(session: bridge, transport: transport)
 
@@ -196,7 +196,7 @@ final class OnlineCandidateTests: XCTestCase {
 
   func testNothingIsAskedWithoutTheHostsPermission() {
     CloudCandidatePreference.enabled = true
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let transport = RecordingTransport(body: Self.cloudBody)
     let provider = OnlineCandidateProvider(session: bridge, transport: transport)
     provider.onApplied = { _ in XCTFail("nothing should be applied") }
@@ -313,7 +313,7 @@ final class OnlineCandidateTests: XCTestCase {
         cloudRequested: true, cloudApplied: true, aiRequested: false, aiApplied: false))
   }
 
-  private func type(_ bridge: MetasequoiaInputSessionBridge, _ letters: String) {
+  private func type(_ bridge: LingyaoInputSessionBridge, _ letters: String) {
     _ = bridge.cancel()
     for letter in letters { _ = bridge.handleCharacter(String(letter)) }
   }

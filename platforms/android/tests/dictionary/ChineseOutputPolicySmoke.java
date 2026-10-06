@@ -29,9 +29,9 @@ public final class ChineseOutputPolicySmoke {
         check(ChineseOutputPolicy.output("发展", true, true, phrase).equals("發展"));
 
         ChineseOutputPolicy.Converter sample = text -> text.replace("输入", "輸入");
-        check(ChineseOutputPolicy.output("水杉输入法", false, true, sample).equals("水杉输入法"));
-        check(ChineseOutputPolicy.output("水杉输入法", true, false, sample).equals("水杉输入法"));
-        check(ChineseOutputPolicy.output("水杉输入法", true, true, sample).equals("水杉輸入法"));
+        check(ChineseOutputPolicy.output("灵耀输入法", false, true, sample).equals("灵耀输入法"));
+        check(ChineseOutputPolicy.output("灵耀输入法", true, false, sample).equals("灵耀输入法"));
+        check(ChineseOutputPolicy.output("灵耀输入法", true, true, sample).equals("灵耀輸入法"));
         check(ChineseOutputPolicy.output("", true, true, sample).isEmpty());
         check(ChineseOutputPolicy.output("输入法", true, true, text -> null).equals("输入法"));
         check(ChineseOutputPolicy.output("输入法", true, true, text -> {

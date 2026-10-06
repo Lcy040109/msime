@@ -1,10 +1,10 @@
 #include "Private.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CompositionProcessorEngine.h"
 #include "Ipc.h"
 
-bool CMetasequoiaIME::_IsSameComObject(_In_opt_ IUnknown *left, _In_opt_ IUnknown *right)
+bool CLingyaoIME::_IsSameComObject(_In_opt_ IUnknown *left, _In_opt_ IUnknown *right)
 {
     if (left == nullptr || right == nullptr)
     {
@@ -27,7 +27,7 @@ bool CMetasequoiaIME::_IsSameComObject(_In_opt_ IUnknown *left, _In_opt_ IUnknow
     return matches;
 }
 
-void CMetasequoiaIME::_DebugCompositionRecovery(_In_z_ const WCHAR *reason, HRESULT hr) const
+void CLingyaoIME::_DebugCompositionRecovery(_In_z_ const WCHAR *reason, HRESULT hr) const
 {
     if (!Global::TsfDiagnosticLogEnabled.load(std::memory_order_relaxed))
     {
@@ -98,7 +98,7 @@ bool HasActiveComposingProperty(_In_ ITfContext *context, TfEditCookie ecReadOnl
 // Called by the system whenever anyone releases a write-access document lock.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCookie ecReadOnly,
+STDAPI CLingyaoIME::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCookie ecReadOnly,
                                   __RPC__in_opt ITfEditRecord *pEditRecord)
 {
     if (!IsNamedpipeFocusStateOwner(this) || !Global::g_connected)
@@ -185,7 +185,7 @@ STDAPI CMetasequoiaIME::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCook
 // Always release any previous sink.
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_InitTextEditSink(_In_opt_ ITfDocumentMgr *pDocMgr)
+BOOL CLingyaoIME::_InitTextEditSink(_In_opt_ ITfDocumentMgr *pDocMgr)
 {
     ITfSource *pSource = nullptr;
     BOOL ret = TRUE;

@@ -603,7 +603,7 @@ test("statistics written before candidate positions existed render an empty stat
   render(<SettingsPage client={{ ...baseClient(), typingStatistics }} />);
   fireEvent.click(await screen.findByRole("button", { name: "打字统计" }));
   fireEvent.click(await screen.findByRole("tab", { name: "候选" }));
-  expect(await screen.findByText("暂无候选记录。用水杉键盘上屏几次后再回来查看。")).not.toBeNull();
+  expect(await screen.findByText("暂无候选记录。用灵耀键盘上屏几次后再回来查看。")).not.toBeNull();
   expect(screen.queryByLabelText("候选命中位置分布")).toBeNull();
 });
 

@@ -157,7 +157,7 @@ final class KeyboardSheets {
         SyncSignals.markDirty(context, SyncSwitch.SKINS);
     }
 
-    /** 季节 id 的中文名，用在「水杉四季 · 秋杉」这样的卡名上；还没解析过季节时按基础主题秋杉。 */
+    /** 季节 id 的中文名，用在「灵耀四季 · 秋杉」这样的卡名上；还没解析过季节时按基础主题秋杉。 */
     static String seasonTitle(@Nullable String season) {
         if (season == null) return "秋杉";
         return switch (season) {

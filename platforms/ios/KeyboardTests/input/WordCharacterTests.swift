@@ -16,7 +16,7 @@ final class WordCharacterTests: XCTestCase {
   }
 
   func testEdgesCommitOneCharacterOfTheCandidate() throws {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let first = try select(bridge, "zhongguo", word: "中国", last: false)
     XCTAssertEqual(first.commitText, "中")
     XCTAssertEqual(first.preedit, "", "the composition ends with the character")
@@ -26,14 +26,14 @@ final class WordCharacterTests: XCTestCase {
   }
 
   func testAStaleCandidateIsRefused() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.cancel()
     let snapshot = bridge.selectCandidateEdge(at: 0, last: false)
     XCTAssertNil(snapshot.commitText)
     XCTAssertNotNil(snapshot.diagnosticText)
   }
 
-  private func select(_ bridge: MetasequoiaInputSessionBridge, _ letters: String, word: String, last: Bool) throws -> MetasequoiaInputSnapshot {
+  private func select(_ bridge: LingyaoInputSessionBridge, _ letters: String, word: String, last: Bool) throws -> LingyaoInputSnapshot {
     var snapshot = bridge.cancel()
     for letter in letters { snapshot = bridge.handleCharacter(String(letter)) }
     let index = try XCTUnwrap(snapshot.candidates.firstIndex { $0.split(separator: "\n").first.map(String.init) == word },

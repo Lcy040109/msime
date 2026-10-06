@@ -32,12 +32,12 @@ final class KeyboardGeometrySettingsTests: XCTestCase {
   }
 
   func testSavedGeometryReachesTheDocumentTheKeyboardCopiesFrom() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
 
     XCTAssertTrue(KeyboardLayoutPreference.saveGeometry(
       keySpacing: 4.5, rowSpacing: 7, heightAdjustment: 20, voiceShortcut: true, stateRoot: state))
 
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     XCTAssertEqual(document["touch_key_spacing_tenths"] as? Int, 45)
     XCTAssertEqual(document["touch_row_spacing_tenths"] as? Int, 70)
     XCTAssertEqual(document["touch_keyboard_height_adjustment"] as? Int, 20)
@@ -47,18 +47,18 @@ final class KeyboardGeometrySettingsTests: XCTestCase {
   }
 
   func testResetClearsTheDocumentOverrides() throws {
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
     XCTAssertTrue(KeyboardLayoutPreference.saveGeometry(
       keySpacing: 5, rowSpacing: 9, heightAdjustment: -8, voiceShortcut: false, stateRoot: state))
     let fresh = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-geometry-defaults-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: fresh) }
-    _ = MetasequoiaInputSessionBridge(stateRoot: fresh)
-    let defaults = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: fresh))
+    _ = LingyaoInputSessionBridge(stateRoot: fresh)
+    let defaults = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: fresh))
 
     XCTAssertTrue(KeyboardLayoutPreference.resetGeometry(stateRoot: state))
 
-    let document = try XCTUnwrap(MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state))
+    let document = try XCTUnwrap(LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state))
     for key in ["touch_key_spacing_tenths", "touch_row_spacing_tenths", "touch_keyboard_height_adjustment",
                 "touch_voice_shortcut"] {
       XCTAssertEqual(document[key] as? NSObject, defaults[key] as? NSObject, key)

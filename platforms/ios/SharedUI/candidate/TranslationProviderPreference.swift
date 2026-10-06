@@ -155,10 +155,10 @@ struct TranslationProviderClient: Sendable {
   }
 
   private func exchange(provider: String, request: [String: Any], expected: Int) async -> [String?]? {
-    guard let descriptor = MetasequoiaInputSessionBridge.translationRequest(provider: provider, request),
+    guard let descriptor = LingyaoInputSessionBridge.translationRequest(provider: provider, request),
           let urlRequest = Self.urlRequest(descriptor),
           let body = await transport.fetch(urlRequest) else { return nil }
-    return MetasequoiaInputSessionBridge.parseTranslationResponse(provider: provider, body: body, expected: expected)
+    return LingyaoInputSessionBridge.parseTranslationResponse(provider: provider, body: body, expected: expected)
   }
 
   /// The HTTPS POST a descriptor describes. `body_utf8` is sent byte for byte because Tencent signed exactly those bytes; `body` is a JSON object the custom endpoint expects.

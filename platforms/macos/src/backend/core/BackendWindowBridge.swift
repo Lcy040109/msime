@@ -32,10 +32,10 @@ final class BackendWindowBridge: NSObject {
   @objc func showClipboard(forAccountID accountID: String) { show("clipboard", accountID: accountID, title: "云剪贴板", size: NSSize(width: 560, height: 560)) { MacCloudClipboardView(accountID: accountID) } }
   @objc func showSnapshot(forAccountID accountID: String) { show("snapshot", accountID: accountID, title: "词库快照", size: NSSize(width: 560, height: 460)) { MacCloudSnapshotView(accountID: accountID) } }
   @objc func showSettings(forAccountID accountID: String) { show("settings", accountID: accountID, title: "桌面设置同步", size: NSSize(width: 540, height: 520)) { MacCloudSettingsView(accountID: accountID) } }
-  @objc func showHandwriting() { show("handwriting", accountID: "local", title: "水杉手写识别板", size: NSSize(width: 720, height: 510)) { MacHandwritingToolView() } }
+  @objc func showHandwriting() { show("handwriting", accountID: "local", title: "灵耀手写识别板", size: NSSize(width: 720, height: 510)) { MacHandwritingToolView() } }
   @objc func showHandwriting(selectionAttempt selection: @escaping (String) -> Bool) {
     weak var presented: NSWindowController?
-    presented = show("handwriting", accountID: UUID().uuidString, title: "水杉手写识别板", size: NSSize(width: 720, height: 510)) {
+    presented = show("handwriting", accountID: UUID().uuidString, title: "灵耀手写识别板", size: NSSize(width: 720, height: 510)) {
       MacHandwritingToolView(onCandidate: { text in
         let accepted = selection(text)
         if accepted { presented?.close() }
@@ -109,7 +109,7 @@ final class BackendWindowBridge: NSObject {
   }
 }
 
-// 子系统、类别和字段都与 WindowPresentationLog.h 相同，一条 `log show --predicate 'subsystem == "app.msime.inputmethod.MetasequoiaIME" && category == "ui"'` 就能读到两边（子系统是本版本输入法的 bundle id，上面是 full 的）。只记状态：编号、类名、标题和标志。
+// 子系统、类别和字段都与 WindowPresentationLog.h 相同，一条 `log show --predicate 'subsystem == "app.msime.inputmethod.LingyaoIME" && category == "ui"'` 就能读到两边（子系统是本版本输入法的 bundle id，上面是 full 的）。只记状态：编号、类名、标题和标志。
 private let backendUILog = Logger(subsystem: BackendEdition.inputMethodBundleIdentifier, category: "ui")
 
 // The window's place among on-screen windows of its own level, 0 being frontmost; -1 when it is not on screen.

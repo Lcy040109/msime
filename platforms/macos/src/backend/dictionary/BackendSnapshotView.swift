@@ -90,7 +90,7 @@ final class MacSnapshotModel: ObservableObject {
   func discard() { preview = nil; expectedRevision = nil; localPreview = false; localContext = nil }
   func chooseBackup() {
     guard !busy, panel == nil else { return }
-    let selected = NSSavePanel(); selected.nameFieldStringValue = "水杉完整云词库.ndjson"; selected.allowedContentTypes = [.data]
+    let selected = NSSavePanel(); selected.nameFieldStringValue = "灵耀完整云词库.ndjson"; selected.allowedContentTypes = [.data]
     panel = selected
     selected.begin { response in Task { @MainActor in
       defer { self.panel = nil }

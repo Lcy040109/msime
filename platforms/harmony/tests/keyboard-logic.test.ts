@@ -1394,7 +1394,7 @@ group("a key says what it does, not what it draws", () => {
     "the 译 pill, which draws only a glyph, reads the switch's name and state",
   );
   check(
-    KeyAccessibilityPolicy.tile("主题 · 水杉", KeyAccessibilityPolicy.theme(), false, false) ===
+    KeyAccessibilityPolicy.tile("主题 · 灵耀", KeyAccessibilityPolicy.theme(), false, false) ===
       "选择主题",
     "a tile with a label reads the label, not the drawn title",
   );
@@ -8594,7 +8594,7 @@ group("sending to the cloud clipboard needs a signed-in account with the clipboa
   );
   check(
     CloudClipboardPolicy.sendBlock(CloudClipboardState.SIGNED_OUT, "hello") ===
-      "登录水杉账号后可在设备间同步剪贴板",
+      "登录灵耀账号后可在设备间同步剪贴板",
     "signed out says how to sign in",
   );
   check(
@@ -8655,7 +8655,7 @@ group("sending to the cloud clipboard needs a signed-in account with the clipboa
   );
   check(
     CloudClipboardPolicy.notice(CloudClipboardState.SIGNED_OUT, false, 0) ===
-      "登录水杉账号后可在设备间同步剪贴板" &&
+      "登录灵耀账号后可在设备间同步剪贴板" &&
       CloudClipboardPolicy.notice(CloudClipboardState.DISABLED, false, 0) === "云剪贴板未开启",
     "signed-out and disabled use the shared wording",
   );

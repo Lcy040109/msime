@@ -99,7 +99,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let host = PersonalDictionaryStore(directory: root)
     let keyboard = PersonalDictionaryStore(directory: root)
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     let word = try PersonalWord(kind: .quickPhrase, key: "msimefixture", value: "private fixture text").validated()
     let id = try host.enqueue(previous: nil, replacement: word)
@@ -291,7 +291,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     try keyboard.synchronize(apply: { _ in }, page: empty, export: export)
     XCTAssertEqual(asked.count, 1)
     let copy = try host.exportCopy(for: result)
-    XCTAssertEqual(copy.lastPathComponent, "水杉IME-快捷短语用户词库.txt")
+    XCTAssertEqual(copy.lastPathComponent, "灵耀IME-快捷短语用户词库.txt")
     XCTAssertEqual(try String(contentsOf: copy, encoding: .utf8), "q0\t短语0\t100\nq1\t短语1\t100\n")
 
     // A newer export must not be copied under an older result's filename.
@@ -321,7 +321,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     let word = try PersonalWord(kind: .quickPhrase, key: "msimeexport", value: "export fixture", weight: 42).validated()
     defer {
@@ -348,7 +348,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let host = PersonalDictionaryStore(directory: root)
     let keyboard = PersonalDictionaryStore(directory: root)
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     let wanted = try PersonalWord(kind: .quickPhrase, key: "msimesearch", value: "search fixture").validated()
     let other = try PersonalWord(kind: .quickPhrase, key: "msimeother", value: "other fixture").validated()
@@ -392,7 +392,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let host = PersonalDictionaryStore(directory: root)
     let keyboard = PersonalDictionaryStore(directory: root)
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     defer { _ = session.cancel() }
     func sync() throws {

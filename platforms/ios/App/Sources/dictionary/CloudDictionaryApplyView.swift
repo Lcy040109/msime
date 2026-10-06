@@ -19,9 +19,9 @@ struct CloudDictionaryApplyView: View {
       // 说明、试打框、状态、动作原来是四个平铺的列表行,说明排在最前面,而它讲的是整组要做的事。
       Section {
         SettingsFactRow(title: state.localVersion == nil ? "尚未获取键盘词库版本" : "已获取本地词库版本",
-                        detail: state.localVersion == nil ? "在下面的输入框里打开水杉键盘" : nil,
+                        detail: state.localVersion == nil ? "在下面的输入框里打开灵耀键盘" : nil,
                         symbol: state.localVersion == nil ? "questionmark.circle.fill" : "checkmark.circle.fill")
-        TextField("点此打开水杉键盘", text: $probe)
+        TextField("点此打开灵耀键盘", text: $probe)
           .textInputAutocapitalization(.never).autocorrectionDisabled()
         SettingsActionRow(title: "下载云词库并预览", detail: "先看清楚要替换成什么，再决定",
                           symbol: "icloud.and.arrow.down.fill",
@@ -29,7 +29,7 @@ struct CloudDictionaryApplyView: View {
       } header: {
         Text("准备本地词库")
       } footer: {
-        Text("请启用水杉键盘的完全访问权限，并在上方打开水杉键盘，让键盘提供当前词库版本。测试区内容不会上传。")
+        Text("请启用灵耀键盘的完全访问权限，并在上方打开灵耀键盘，让键盘提供当前词库版本。测试区内容不会上传。")
       }
       if let preview {
         Section {
@@ -61,7 +61,7 @@ struct CloudDictionaryApplyView: View {
           Text("处理结果")
         } footer: {
           if request.status.active {
-            Text("保持水杉键盘开启，等待准备完成；结束当前输入后会尝试应用。")
+            Text("保持灵耀键盘开启，等待准备完成；结束当前输入后会尝试应用。")
           }
         }
       }
@@ -78,11 +78,11 @@ struct CloudDictionaryApplyView: View {
     .alert("替换本机词库？", isPresented: $confirming) {
       Button("取消", role: .cancel) { }
       Button("确认替换", role: .destructive) { enqueue() }
-    } message: { Text("将以这份云端快照替换本机个人词库及学习记录。确认后由水杉键盘在空闲时处理，请先确认云端数据完整。") }
+    } message: { Text("将以这份云端快照替换本机个人词库及学习记录。确认后由灵耀键盘在空闲时处理，请先确认云端数据完整。") }
   }
   private func status(_ value: DictionarySnapshotRequest.Status) -> String {
     switch value {
-    case .queued: return "等待水杉键盘接收。"
+    case .queued: return "等待灵耀键盘接收。"
     case .preparing: return "键盘正在准备词库或等待空闲会话。"
     case .applied: return "已应用到本机词库。"
     case .conflict: return "本地词库已变化，未应用。请重新下载并确认。"

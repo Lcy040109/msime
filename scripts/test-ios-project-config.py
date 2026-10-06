@@ -102,7 +102,7 @@ class IOSProjectConfigTests(unittest.TestCase):
     def test_platform_config_uses_the_shipping_identity_and_supported_version(self):
         config = json.loads((TAURI_ROOT / "tauri.ios.conf.json").read_text())
         self.assertEqual(config["identifier"], "com.metasequoiaime.client")
-        self.assertEqual(config["productName"], "水杉输入法")
+        self.assertEqual(config["productName"], "灵耀输入法")
         self.assertEqual(config["bundle"]["iOS"]["minimumSystemVersion"], "17.0")
 
     def test_native_entry_and_entitlement_share_keyboard_state_without_private_data(self):
@@ -174,7 +174,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         self.assertIn("  MSIMEKeyboardExtension:\n    type: app-extension", project)
         self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client.keyboard", project)
         self.assertIn("CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements", project)
-        self.assertIn("SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/MetasequoiaKeyboard-Bridging-Header.h", project)
+        self.assertIn("SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h", project)
         self.assertIn("SWIFT_VERSION: 5.0", project)
         self.assertIn("path: MSIMEKeyboardExtension/Info.plist", project)
         self.assertIn("      - target: MSIMEKeyboardExtension", project)
@@ -348,7 +348,7 @@ class IOSProjectConfigTests(unittest.TestCase):
         self.assertIn("pub global_theme: String", rust)
         self.assertIn("let globalTheme: String", swift)
         self.assertNotIn('"keyboardSkin"', swift)
-        for theme in ["system", "shuishan", "light", "paper", "night", "ink", "custom"]:
+        for theme in ["system", "lingyao", "light", "paper", "night", "ink", "custom"]:
             self.assertIn(f'"{theme}"', swift)
         self.assertIn("merge_account_preferences", account)
         self.assertIn("platform.save_keyboard_preferences(&previous_native)", account)

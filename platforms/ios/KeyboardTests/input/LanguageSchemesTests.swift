@@ -21,8 +21,8 @@ final class LanguageSchemesTests: XCTestCase {
 
   private func nodes(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(nodes) }
 
-  private func type(_ keys: String, into bridge: MetasequoiaInputSessionBridge) -> MetasequoiaInputSnapshot {
-    var snapshot = MetasequoiaInputSnapshot()
+  private func type(_ keys: String, into bridge: LingyaoInputSessionBridge) -> LingyaoInputSnapshot {
+    var snapshot = LingyaoInputSnapshot()
     for key in keys { snapshot = bridge.handleCharacter(String(key)) }
     return snapshot
   }
@@ -83,7 +83,7 @@ final class LanguageSchemesTests: XCTestCase {
     let enabled = ChineseInputScheme.allCases
     for (scheme, engine, remembered) in [(ChineseInputScheme.cantonese, "cantonese", true), (.zhuyin, "zhuyin", true), (.vietnamese, "vietnamese", false), (.tibetan, "tibetan", false), (.stroke, "stroke", true)] {
       var document: [String: Any] = ["last_chinese_scheme": "wubi"]
-      MetasequoiaInputSessionBridge.schemeMapping(scheme, enabledSchemes: enabled)?(&document)
+      LingyaoInputSessionBridge.schemeMapping(scheme, enabledSchemes: enabled)?(&document)
       XCTAssertEqual(document["scheme"] as? String, engine)
       XCTAssertEqual(document["last_chinese_scheme"] as? String, remembered ? engine : "wubi", engine)
       XCTAssertEqual(document["touch_keyboard_layout"] as? String, "twenty_six_key", engine)
@@ -332,7 +332,7 @@ final class LanguageSchemesTests: XCTestCase {
   func testAnIdleZhuyinToneKeyIsLeftToTheKeyboardToType() throws {
     try XCTSkipUnless(InputSchemePreference.installedLanguageSchemes?.contains(.zhuyin) == true,
                       "msime-zhuyin.db is not staged into the test host")
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToZhuyin()
     for tone in ["6", "3", "4", "7"] {
       let snapshot = bridge.handleCharacter(tone)
@@ -349,7 +349,7 @@ final class LanguageSchemesTests: XCTestCase {
   func testZhuyinComposesInPlaceAndReturnCommitsTheConversion() throws {
     try XCTSkipUnless(InputSchemePreference.installedLanguageSchemes?.contains(.zhuyin) == true,
                       "msime-zhuyin.db is not staged into the test host")
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToZhuyin()
     let composing = type("su3cl3", into: bridge)
     XCTAssertTrue(composing.isHandled)
@@ -364,7 +364,7 @@ final class LanguageSchemesTests: XCTestCase {
   func testStrokeLooksUpByStrokeOrderAndReturnCommitsTheLetters() throws {
     try XCTSkipUnless(InputSchemePreference.installedLanguageSchemes?.contains(.stroke) == true,
                       "msime-stroke.db is not staged into the test host")
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToStroke()
     let idle = bridge.handleCharacter("x")
     XCTAssertFalse(idle.isHandled, "an idle wildcard starts nothing")
@@ -387,7 +387,7 @@ final class LanguageSchemesTests: XCTestCase {
   }
 
   func testVietnameseComposesTheWordAndTheFirstCancelRestoresTheKeys() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToVietnamese()
     let composing = type("vieejt", into: bridge)
     XCTAssertTrue(composing.isHandled)
@@ -403,7 +403,7 @@ final class LanguageSchemesTests: XCTestCase {
   }
 
   func testTibetanComposesWylieAndCommitsWithTshegOrShad() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToTibetan()
     let composing = type("bkra", into: bridge)
     XCTAssertTrue(composing.isHandled)
@@ -424,7 +424,7 @@ final class LanguageSchemesTests: XCTestCase {
   }
 
   func testTibetanReturnCommitsWithoutTshegAndUppercaseIsSpelling() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToTibetan()
     // 威利转写区分大小写：`Ta` 是反写的 ཊ，不是 ཏ。
     XCTAssertTrue(bridge.handleCharacter("T", shifted: true).isHandled)
@@ -440,7 +440,7 @@ final class LanguageSchemesTests: XCTestCase {
   }
 
   func testTibetanFirstCancelRestoresTheWylie() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     _ = bridge.switchToTibetan()
     _ = type("bkra", into: bridge)
     XCTAssertEqual(bridge.cancel().preedit, "bkra")
@@ -449,7 +449,7 @@ final class LanguageSchemesTests: XCTestCase {
 
   func testTibetanNeverReplacesTheRememberedChineseScheme() {
     var document: [String: Any] = ["last_chinese_scheme": "shuangpin"]
-    MetasequoiaInputSessionBridge.schemeMapping(.tibetan, enabledSchemes: [.quanpin, .tibetan])?(&document)
+    LingyaoInputSessionBridge.schemeMapping(.tibetan, enabledSchemes: [.quanpin, .tibetan])?(&document)
     XCTAssertEqual(document["scheme"] as? String, "tibetan")
     XCTAssertEqual(document["last_chinese_scheme"] as? String, "shuangpin")
   }

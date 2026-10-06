@@ -149,7 +149,7 @@ final class TypingStatisticsTests: XCTestCase {
     XCTAssertEqual(store.availability(), .neverWritten)
 
     try store.setEnabled(true)
-    try store.record("水杉")
+    try store.record("灵耀")
     guard case .ready(let lastWritten) = store.availability() else {
       return XCTFail("A written store still reported that the keyboard had never written.")
     }

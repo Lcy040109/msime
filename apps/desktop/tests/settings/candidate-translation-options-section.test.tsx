@@ -73,7 +73,7 @@ test("shows the Android account translation switch only when requested", () => {
     />,
   );
 
-  fireEvent.click(screen.getByRole("switch", { name: "使用水杉账号翻译候选词" }));
+  fireEvent.click(screen.getByRole("switch", { name: "使用灵耀账号翻译候选词" }));
   expect(onAccountTranslationChange).toHaveBeenCalledWith(true);
 
   rerender(
@@ -93,5 +93,5 @@ test("shows the Android account translation switch only when requested", () => {
       onAccountTranslationChange={onAccountTranslationChange}
     />,
   );
-  expect(screen.queryByRole("switch", { name: "使用水杉账号翻译候选词" })).toBeNull();
+  expect(screen.queryByRole("switch", { name: "使用灵耀账号翻译候选词" })).toBeNull();
 });

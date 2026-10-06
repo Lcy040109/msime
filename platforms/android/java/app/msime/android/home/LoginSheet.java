@@ -112,7 +112,7 @@ final class LoginSheet {
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
         TextView title = new TextView(activity);
-        title.setText("link".equals(purpose) ? "添加登录方式" : "登录水杉");
+        title.setText("link".equals(purpose) ? "添加登录方式" : "登录灵耀");
         Ui.style(title, 22, 700, Ui.text(activity));
         title.setAccessibilityHeading(true);
         header.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));

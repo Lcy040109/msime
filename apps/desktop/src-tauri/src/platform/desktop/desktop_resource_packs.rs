@@ -366,7 +366,7 @@ mod tests {
         );
     }
 
-    /// macOS 发布包对每个版本都不内置日文词典。水杉日语只有日文一个方案，用户不会去切换方案：它的状态目录第一次准备好时偏好就是日文（`Preferences::for_edition`），设置应用第一次启动就由这里补下词典。越南文、藏文版不需要任何资源包。
+    /// macOS 发布包对每个版本都不内置日文词典。灵耀日语只有日文一个方案，用户不会去切换方案：它的状态目录第一次准备好时偏好就是日文（`Preferences::for_edition`），设置应用第一次启动就由这里补下词典。越南文、藏文版不需要任何资源包。
     #[test]
     fn single_language_editions_fetch_exactly_their_own_packs_on_first_launch() {
         let first_launch = |id: &str| {

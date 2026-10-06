@@ -16,10 +16,10 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $InstallDir = 'C:\Program Files\metasequoiaime\server'
-$SignTargets = @('MetasequoiaImeServer.exe', 'MetasequoiaImeWatchdog.exe', 'MetasequoiaImeTsf.dll')
-$StopProcesses = @('MetasequoiaImeServer', 'MetasequoiaImeWatchdog',
-                   'MetasequoiaImeEmojiPanel', 'MetasequoiaImeKeyboardPanel')
-$CertificateSubject = 'CN=Metasequoia IME Local Test Code Signing'
+$SignTargets = @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'LingyaoImeTsf.dll')
+$StopProcesses = @('LingyaoImeServer', 'LingyaoImeWatchdog',
+                   'LingyaoImeEmojiPanel', 'LingyaoImeKeyboardPanel')
+$CertificateSubject = 'CN=Lingyao IME Local Test Code Signing'
 $CodeSigningEku = '1.3.6.1.5.5.7.3.3'
 $TrustStores = @('Cert:\LocalMachine\Root', 'Cert:\LocalMachine\TrustedPublisher')
 
@@ -52,7 +52,7 @@ function Get-OrCreateCert {
     } | Sort-Object NotAfter -Descending | Select-Object -First 1
     if ($cert) { Write-Host "复用已有测试证书：$($cert.Thumbprint)"; return $cert }
     $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject $CertificateSubject `
-        -FriendlyName 'Metasequoia IME Local Test Code Signing' -KeyAlgorithm RSA -KeyLength 3072 `
+        -FriendlyName 'Lingyao IME Local Test Code Signing' -KeyAlgorithm RSA -KeyLength 3072 `
         -HashAlgorithm SHA256 -KeyExportPolicy Exportable -KeyUsage DigitalSignature `
         -CertStoreLocation 'Cert:\CurrentUser\My' -NotAfter (Get-Date).AddYears(5)
     Write-Host "已创建测试证书：$($cert.Thumbprint)"
@@ -73,7 +73,7 @@ function Add-CertificateTrust($cert) {
 }
 
 # —— 1. 停进程（否则正在运行的 Watchdog/Server 会锁住文件，签名会失败）——
-Write-Host '== 停止正在运行的 水杉输入法 进程 =='
+Write-Host '== 停止正在运行的 灵耀输入法 进程 =='
 foreach ($name in $StopProcesses) {
     Get-Process -Name $name -ErrorAction SilentlyContinue | ForEach-Object {
         Write-Host "  停止 $($_.ProcessName) (PID=$($_.Id))"
@@ -86,7 +86,7 @@ Start-Sleep -Seconds 1
 # 对每个 Server 导入、但安装目录缺失的 “<名>-d.dll”，若存在 release 版 “<名>.dll”，
 # 就复制一份作为别名。两者 ABI 相同（同一库同一版本），仅内部构建差异。
 Write-Host '== 补齐运行时依赖 =='
-$serverExe = Join-Path $InstallDir 'MetasequoiaImeServer.exe'
+$serverExe = Join-Path $InstallDir 'LingyaoImeServer.exe'
 if (Test-Path -LiteralPath $serverExe) {
     $ascii = [System.Text.Encoding]::ASCII.GetString([System.IO.File]::ReadAllBytes($serverExe))
     $referenced = [regex]::Matches($ascii, '[A-Za-z0-9_.\-]+\.dll') |
@@ -132,7 +132,7 @@ foreach ($t in $targets) {
 }
 Write-Host ''
 if ($allValid) {
-    Write-Host '完成。切到水杉输入法试打中文；若仍为英文，注销再登录让 TextInputHost 重载。'
+    Write-Host '完成。切到灵耀输入法试打中文；若仍为英文，注销再登录让 TextInputHost 重载。'
 } else {
     Write-Warning '有文件签名链未通过，请检查上面的输出。'
 }

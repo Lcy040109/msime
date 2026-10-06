@@ -202,12 +202,12 @@ function MobileAccountProfilePage({
       <section className={`${account.section} ${account.profilePreviewLarge}`}>
         <AccountAvatar
           user={user}
-          name={normalizedName || "水杉用户"}
+          name={normalizedName || "灵耀用户"}
           load={client.avatar}
           size="large"
         />
         <h2 className={account.heading}>{normalizedName || "你的昵称"}</h2>
-        <p className={account.muted}>在水杉，留下你的名字</p>
+        <p className={account.muted}>在灵耀，留下你的名字</p>
       </section>
       <section className={`${account.section} ${account.stack}`}>
         <h2 className={account.heading}>社区昵称</h2>
@@ -357,7 +357,7 @@ function AppIconSettingsCard({
       <div>
         <h2 className={account.heading}>App 图标</h2>
         <p className={account.note}>
-          给主屏幕上的水杉换个颜色。
+          给主屏幕上的灵耀换个颜色。
           {platform === "android"
             ? "Android 会使用系统启动器的图标别名保存选择。"
             : platform === "ios"
@@ -1012,7 +1012,7 @@ function AccountDetailsPage({
             disabled={busy && !(googleWaiting && client.googleCancel)}
             label="取消"
           />
-          <h2 className={account.heading}>登录水杉</h2>
+          <h2 className={account.heading}>登录灵耀</h2>
         </div>
       )}
       <AccountStatusMessages
@@ -1039,7 +1039,7 @@ function AccountDetailsPage({
           <AccountAvatar user={user} load={client.avatar} size="medium" />
           <div>
             <h2 className={account.heading}>{preferredAccountName(user)}</h2>
-            <p className={account.note}>{user.email ?? "水杉账号已登录"}</p>
+            <p className={account.note}>{user.email ?? "灵耀账号已登录"}</p>
           </div>
           <span className={account.profileChevron} aria-hidden="true">
             ›
@@ -1057,7 +1057,7 @@ function AccountDetailsPage({
                   ? "邮箱登录"
                   : channel === "phone"
                     ? "手机号登录"
-                    : "欢迎来到水杉"}
+                    : "欢迎来到灵耀"}
               </h2>
               <p className={account.note}>
                 {channel
@@ -1441,7 +1441,7 @@ function AccountDetailsPage({
       )}
       {!mobile && (onOpenAbout || onOpenDesktopDownload || onReplayOnboarding) && (
         <GroupList title="关于">
-          {onOpenAbout && <MeRow title="关于水杉" disabled={busy} onClick={onOpenAbout} />}
+          {onOpenAbout && <MeRow title="关于灵耀" disabled={busy} onClick={onOpenAbout} />}
           {onOpenDesktopDownload && (
             <MeRow title="电脑版下载" disabled={busy} onClick={onOpenDesktopDownload} />
           )}

@@ -125,7 +125,7 @@ struct AccountSettingsView: View {
     .environment(\.defaultMinListRowHeight, 48)
     .navigationTitle("我的")
     .navigationBarTitleDisplayMode(.large)
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .fullScreenCover(item: $replay) { replay in
       switch replay {
       case .onboarding:
@@ -167,7 +167,7 @@ struct AppleAccountSection: View {
   private let api = SkinCommunityAPI.shared
 
   private var displayName: String {
-    user?.preferredDisplayName ?? "水杉用户"
+    user?.preferredDisplayName ?? "灵耀用户"
   }
 
   /// The account card of the design: a 56pt round avatar -- the name's first character on the accent when signed in, a question mark on grey when not -- beside the name in 18pt bold and one line of status.
@@ -175,14 +175,14 @@ struct AppleAccountSection: View {
     HStack(spacing: 14) {
       Text(signedIn ? String(displayName.prefix(1)) : "?")
         .font(.system(size: 22, weight: .semibold))
-        .foregroundStyle(signedIn ? MetasequoiaTheme.onAccent : Color.secondary)
+        .foregroundStyle(signedIn ? LingyaoTheme.onAccent : Color.secondary)
         .frame(width: 56, height: 56)
-        .background(signedIn ? MetasequoiaTheme.accent : Color(uiColor: .tertiarySystemFill), in: Circle())
+        .background(signedIn ? LingyaoTheme.accent : Color(uiColor: .tertiarySystemFill), in: Circle())
         .accessibilityHidden(true)
       VStack(alignment: .leading, spacing: 4) {
         Text(signedIn ? displayName : "未登录")
           .font(.system(size: 18, weight: .bold))
-        Text(signedIn ? "水杉账号已登录" : "登录后同步词库、皮肤和设置")
+        Text(signedIn ? "灵耀账号已登录" : "登录后同步词库、皮肤和设置")
           .font(.system(size: 13)).foregroundStyle(.secondary)
       }
       Spacer()
@@ -326,7 +326,7 @@ struct AccountProfileEditor: View {
     return normalizedName != profile.user.preferredDisplayName
   }
   private var previewName: String {
-    if profile == nil { return initialUser?.preferredDisplayName ?? "水杉用户" }
+    if profile == nil { return initialUser?.preferredDisplayName ?? "灵耀用户" }
     return normalizedName.isEmpty ? "你的昵称" : normalizedName
   }
   private var nameHint: String {
@@ -367,7 +367,7 @@ struct AccountProfileEditor: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(20)
-          .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+          .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
           .accessibilityIdentifier("accountProfileError")
         }
       }
@@ -375,7 +375,7 @@ struct AccountProfileEditor: View {
       .padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 28)
       .frame(maxWidth: .infinity)
     }
-    .background(MetasequoiaTheme.canvas.ignoresSafeArea())
+    .background(LingyaoTheme.canvas.ignoresSafeArea())
     .navigationTitle("编辑资料")
     .navigationBarTitleDisplayMode(.inline)
     // The stock back button pops without asking, and a half-typed nickname would go with it. This one runs the same discard prompt the close button used to.
@@ -414,7 +414,7 @@ struct AccountProfileEditor: View {
     .confirmationDialog("注销账号将删除已发布皮肤、评分及其他云端账号数据，无法撤销。", isPresented: $confirmDeleteAccount, titleVisibility: .visible) {
       Button("注销账号", role: .destructive) { perform { try await SkinCommunityAPI.shared.logout(deleteAccount: true) } }
     }
-    .tint(MetasequoiaTheme.accent)
+    .tint(LingyaoTheme.accent)
     .task { await load() }
   }
 
@@ -432,10 +432,10 @@ struct AccountProfileEditor: View {
         actionRow("重新登录", detail: "登录状态出错时清掉它再登一次", symbol: "arrow.clockwise",
                   identifier: "clearExpiredLogin") { confirmRelogin = true }
       }
-      .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+      .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
       actionRow("注销账号", detail: "删除云端账号数据，无法撤销", symbol: "trash",
                 identifier: "deleteAccount", destructive: true) { confirmDeleteAccount = true }
-        .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+        .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
         .padding(.top, 4)
     }
   }
@@ -445,7 +445,7 @@ struct AccountProfileEditor: View {
     Button(action: action) {
       HStack(alignment: .center, spacing: 12) {
         Image(systemName: symbol).font(.subheadline)
-          .foregroundStyle(destructive ? Color.red : MetasequoiaTheme.accent).frame(width: 22)
+          .foregroundStyle(destructive ? Color.red : LingyaoTheme.accent).frame(width: 22)
         VStack(alignment: .leading, spacing: 5) {
           Text(title).font(.subheadline.weight(.medium))
             .foregroundStyle(destructive ? Color.red : Color.primary)
@@ -480,9 +480,9 @@ struct AccountProfileEditor: View {
   private var profilePreview: some View {
     VStack(spacing: 14) {
       ZStack {
-        Circle().fill(MetasequoiaTheme.accent.opacity(0.07)).frame(width: 104, height: 104)
+        Circle().fill(LingyaoTheme.accent.opacity(0.07)).frame(width: 104, height: 104)
         Circle()
-          .fill(LinearGradient(colors: [MetasequoiaTheme.needle, MetasequoiaTheme.forest],
+          .fill(LinearGradient(colors: [LingyaoTheme.needle, LingyaoTheme.forest],
                                startPoint: .topLeading, endPoint: .bottomTrailing))
           .frame(width: 84, height: 84)
         Text(String(previewName.prefix(1)))
@@ -492,7 +492,7 @@ struct AccountProfileEditor: View {
       VStack(spacing: 6) {
         Text(previewName).font(.title2.weight(.semibold))
           .multilineTextAlignment(.center).lineLimit(2)
-        Text("在水杉，留下你的名字")
+        Text("在灵耀，留下你的名字")
           .font(.subheadline).foregroundStyle(.secondary)
       }
     }
@@ -531,10 +531,10 @@ struct AccountProfileEditor: View {
         .foregroundStyle(validName || normalizedName.isEmpty ? Color.secondary : Color.red)
       }
       .padding(20)
-      .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+      .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
       .overlay {
-        RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous)
-          .strokeBorder(editingName ? MetasequoiaTheme.accent.opacity(0.5) : .clear, lineWidth: 1.5)
+        RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous)
+          .strokeBorder(editingName ? LingyaoTheme.accent.opacity(0.5) : .clear, lineWidth: 1.5)
       }
     }
   }
@@ -555,7 +555,7 @@ struct AccountProfileEditor: View {
           .accessibilityLabel(copiedID ? "账号 ID 已复制" : "复制完整账号 ID")
           .accessibilityIdentifier("copyAccountID")
           if copiedID {
-            Text("账号 ID 已复制").font(.caption).foregroundStyle(MetasequoiaTheme.accent)
+            Text("账号 ID 已复制").font(.caption).foregroundStyle(LingyaoTheme.accent)
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(.horizontal, 20).padding(.bottom, 12)
           }
@@ -563,11 +563,11 @@ struct AccountProfileEditor: View {
           detailRow("登录方式", value: loginProviders(profile), symbol: "person.badge.key")
           if let joined {
             Divider().padding(.leading, 54)
-            detailRow("加入水杉", value: joined, symbol: "calendar")
+            detailRow("加入灵耀", value: joined, symbol: "calendar")
           }
         }
       }
-      .background(MetasequoiaTheme.surface, in: RoundedRectangle(cornerRadius: MetasequoiaTheme.cardRadius, style: .continuous))
+      .background(LingyaoTheme.surface, in: RoundedRectangle(cornerRadius: LingyaoTheme.cardRadius, style: .continuous))
       Label("轻点账号 ID 即可复制", systemImage: "lock")
         .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 4)
     }
@@ -577,7 +577,7 @@ struct AccountProfileEditor: View {
                          accessory: String? = nil) -> some View {
     HStack(alignment: .center, spacing: 12) {
       Image(systemName: symbol).font(.subheadline)
-        .foregroundStyle(MetasequoiaTheme.accent).frame(width: 22)
+        .foregroundStyle(LingyaoTheme.accent).frame(width: 22)
       VStack(alignment: .leading, spacing: 5) {
         Text(title).font(.caption).foregroundStyle(.secondary)
         Text(value.isEmpty ? "暂无信息" : value).font(.subheadline.weight(.medium))
@@ -586,7 +586,7 @@ struct AccountProfileEditor: View {
       Spacer(minLength: 8)
       if let accessory {
         Image(systemName: accessory).font(.subheadline)
-          .foregroundStyle(MetasequoiaTheme.accent)
+          .foregroundStyle(LingyaoTheme.accent)
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading).padding(20)
@@ -613,12 +613,12 @@ struct AccountProfileEditor: View {
       }
       Button(action: save) {
         HStack(spacing: 10) {
-          if saving { ProgressView().tint(MetasequoiaTheme.onAccent) }
+          if saving { ProgressView().tint(LingyaoTheme.onAccent) }
           Text(saving ? "正在保存…" : "保存修改").font(.body.weight(.semibold))
         }
-        .foregroundStyle(MetasequoiaTheme.onAccent)
+        .foregroundStyle(LingyaoTheme.onAccent)
         .frame(maxWidth: .infinity).padding(.vertical, 17)
-        .background(MetasequoiaTheme.accent.opacity(canSave || saving ? 1 : 0.45),
+        .background(LingyaoTheme.accent.opacity(canSave || saving ? 1 : 0.45),
                     in: RoundedRectangle(cornerRadius: 18))
       }
       .buttonStyle(.plain)

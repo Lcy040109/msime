@@ -8,7 +8,7 @@ final class DictionarySnapshotWorkerTests: XCTestCase {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
     let stateRoot = root.appendingPathComponent("State", isDirectory: true)
-    var session: MetasequoiaInputSessionBridge? = MetasequoiaInputSessionBridge(resources: resources, stateRoot: stateRoot)
+    var session: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(resources: resources, stateRoot: stateRoot)
     let originalVersion = try session!.localDictionaryStateVersion()
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
     let queue = DictionarySnapshotQueue(directory: root)
@@ -62,7 +62,7 @@ final class DictionarySnapshotWorkerTests: XCTestCase {
     while worker?.isPreparing == true { try await Task.sleep(nanoseconds: 30_000_000) }
     let appliedVersion = try session!.localDictionaryStateVersion()
     worker = nil; session = nil
-    var restored: MetasequoiaInputSessionBridge? = MetasequoiaInputSessionBridge(resources: resources, stateRoot: stateRoot)
+    var restored: LingyaoInputSessionBridge? = LingyaoInputSessionBridge(resources: resources, stateRoot: stateRoot)
     XCTAssertEqual(try restored!.localDictionaryStateVersion(), appliedVersion)
     restored = nil
     try FileManager.default.removeItem(at: root)

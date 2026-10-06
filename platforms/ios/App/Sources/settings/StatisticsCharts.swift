@@ -59,7 +59,7 @@ struct StatisticsTrendChart: View {
       if let selected, let day = days.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selected) }) {
         PointMark(x: .value("日期", day.date), y: .value("字符", day.count))
           // 选中标记要和折线分得开,而折线是强调色,所以这里用主题里那支暖色,不是系统橙。
-          .foregroundStyle(MetasequoiaTheme.cone)
+          .foregroundStyle(LingyaoTheme.cone)
           .symbolSize(90)
       }
     }
@@ -194,7 +194,7 @@ struct StatisticsHeatmap: View {
           .fill(StatisticsHeatLegend.fill(value == 0 ? 0 : level, accent: accent))
           .frame(width: Self.cell, height: Self.cell)
           .overlay(RoundedRectangle(cornerRadius: 3)
-            .strokeBorder(MetasequoiaTheme.cone, lineWidth: isSelected(date) ? 2 : 0))
+            .strokeBorder(LingyaoTheme.cone, lineWidth: isSelected(date) ? 2 : 0))
       }
       .buttonStyle(.plain)
       .accessibilityLabel(date.formatted(.dateTime.month().day()))

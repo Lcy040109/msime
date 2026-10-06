@@ -19,7 +19,7 @@ const USAGE: &str = "usage: {program} expand <keys>... [--scheme <scheme>] [--li
        {program} [flags] prompts | prompt <name> [<args>]
        {program} [flags]
 
-Test 水杉输入法 (MSIME) by hand, or let an AI assistant manage it.
+Test 灵耀输入法 (MSIME) by hand, or let an AI assistant manage it.
 
 Testing by hand:
   expand <keys>...         The candidates each <keys> offers, one per line

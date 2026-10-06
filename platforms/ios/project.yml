@@ -106,7 +106,7 @@ targets:
         CODE_SIGN_ENTITLEMENTS: App/Resources/MSIMEApp.entitlements
         GENERATE_INFOPLIST_FILE: YES
         # 主屏、设置和系统的应用列表都显示这个名字。没有它时 iOS 退回 CFBundleName,也就是 PRODUCT_NAME,装出来的图标底下写的是 MSIMEApp。
-        INFOPLIST_KEY_CFBundleDisplayName: 水杉输入法
+        INFOPLIST_KEY_CFBundleDisplayName: 灵耀输入法
         # LaunchScreen.storyboard 一直被编进 bundle,但没有这个键就没人指向它,启动屏等于白打包。
         INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
@@ -120,7 +120,7 @@ targets:
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: AppIconForest AppIconSky AppIconDusk AppIconVermilion
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
-        # 没有这一条时 `Color.accentColor` 是系统蓝,而设置行的图标块、列表里的控件都取它。资源里的两个值就是 MetasequoiaTheme.forestUIColor 的浅色与深色两支。
+        # 没有这一条时 `Color.accentColor` 是系统蓝,而设置行的图标块、列表里的控件都取它。资源里的两个值就是 LingyaoTheme.forestUIColor 的浅色与深色两支。
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         # The app embeds SherpaOnnxC.framework (dynamic) in Frameworks/; without this runpath dyld only searches /usr/lib/swift and the app is killed at launch with "Library not loaded: @rpath/SherpaOnnxC.framework".
         LD_RUNPATH_SEARCH_PATHS:
@@ -157,7 +157,7 @@ targets:
     info:
       path: KeyboardExtension/Resources/Info.plist
       properties:
-        CFBundleDisplayName: 水杉输入法
+        CFBundleDisplayName: 灵耀输入法
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
@@ -208,7 +208,7 @@ targets:
         # 同 MSIMEApp，见那里的说明。
         PROVISIONING_PROFILE_SPECIFIER: "$(MSIME_IOS_KEYBOARD_PROFILE)"
         CODE_SIGN_ENTITLEMENTS: KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements
-        SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/KeyboardExtension/Sources/core/MetasequoiaKeyboard-Bridging-Header.h"
+        SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h"
         EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]: HandwritingInputViewFallback.swift
         EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]: HandwritingInputView.swift HandwritingDownloadSession.m
         OTHER_LDFLAGS:
@@ -319,7 +319,7 @@ targets:
       - path: App/Services/VoiceLevel.swift
       - path: App/Services/BoundedFileReader.swift
       - path: SharedUI/core/AppServicesBridge.swift
-      - path: SharedUI/core/MetasequoiaTheme.swift
+      - path: SharedUI/core/LingyaoTheme.swift
       - path: SharedUI/core/SharedNumber.swift
       - path: ../../shared/backend
         excludes:

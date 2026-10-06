@@ -78,7 +78,7 @@ enum KeyboardEmojiCatalog {
       "cursor": true,
     ])
     return try decodePage(
-      try MetasequoiaInputSessionBridge.emojiCatalog(request: request, resources: resources),
+      try LingyaoInputSessionBridge.emojiCatalog(request: request, resources: resources),
       category: category,
       requestedOffset: offset)
   }
@@ -123,7 +123,7 @@ enum KeyboardEmojiCatalog {
   /// The Engine's symbol parents in catalog order, each once.
   static func symbolParents(resources: String) throws -> [String] {
     let request = try JSONSerialization.data(withJSONObject: ["list_symbol_groups": true, "limit": 1])
-    let value = try MetasequoiaInputSessionBridge.emojiCatalog(request: request, resources: resources)
+    let value = try LingyaoInputSessionBridge.emojiCatalog(request: request, resources: resources)
     return try decodeSymbolParents(value)
   }
 
@@ -145,7 +145,7 @@ enum KeyboardEmojiCatalog {
       let request = try JSONSerialization.data(withJSONObject: [
         "category": "symbols", "parent": parent, "offset": offset, "limit": 255, "cursor": true,
       ])
-      return try MetasequoiaInputSessionBridge.emojiCatalog(request: request, resources: resources)
+      return try LingyaoInputSessionBridge.emojiCatalog(request: request, resources: resources)
     }
   }
 
@@ -158,7 +158,7 @@ enum KeyboardEmojiCatalog {
     let request = try JSONSerialization.data(withJSONObject: [
       "category": "symbols", "search": letters, "offset": 0, "limit": maximumSymbolMatches, "cursor": true,
     ])
-    return try decodeSymbolMatches(try MetasequoiaInputSessionBridge.emojiCatalog(request: request, resources: resources))
+    return try decodeSymbolMatches(try LingyaoInputSessionBridge.emojiCatalog(request: request, resources: resources))
   }
 
   static func decodeSymbolMatches(_ value: [String: Any]) throws -> [String] {

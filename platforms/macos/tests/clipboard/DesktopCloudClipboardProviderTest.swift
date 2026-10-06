@@ -74,7 +74,7 @@ import Foundation
     let signedOut = BackendCloudClipboardProvider(client: sending, credentials: { throw CancellationError() })
     let unauthenticated = await signedOut.send("synthetic")
     assert(unauthenticated == .failed && sending.calls == 4)
-    assert(BackendCloudClipboardProvider.SendOutcome.signedOut.message == "登录水杉账号后可在设备间同步剪贴板")
+    assert(BackendCloudClipboardProvider.SendOutcome.signedOut.message == "登录灵耀账号后可在设备间同步剪贴板")
     assert(BackendCloudClipboardProvider.SendOutcome.disabled.message == "云剪贴板未开启")
   }
 }

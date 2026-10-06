@@ -17,7 +17,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SPEC = HERE / "rpm" / "msime.spec"
-MAINTAINER = "Metasequoia IME <metasequoiaime@gmail.com>"
+MAINTAINER = "Lingyao IME <metasequoiaime@gmail.com>"
 
 
 def render_spec(text: str, version: str, release: str, date: dt.date) -> str:

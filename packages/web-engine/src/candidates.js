@@ -1,4 +1,4 @@
-// 候选栏：按水杉桌面端候选框的结构和样式画预编辑行、候选和翻页标记，配色和几何来自 skin.js 的 resolveSkin。
+// 候选栏：按灵耀桌面端候选框的结构和样式画预编辑行、候选和翻页标记，配色和几何来自 skin.js 的 resolveSkin。
 //
 // 隔离：整个候选栏画在宿主元素 <msime-candidates> 的 Shadow DOM 里，页面的 CSS 改不到它，它的样式也漏不出去。样式表是可构造样式表（adoptedStyleSheets），每个皮肤的取值只经 `style.setProperty` 写到 Shadow DOM 内的根元素上，不用 <style> 元素，也不写 style 属性的文本，所以页面的 CSP 不开 `style-src 'unsafe-inline'` 也能用。皮肤里的图片用 <img> 加载，地址不进 CSS。
 //

@@ -124,13 +124,13 @@ def main() -> int:
                         "--spec-out", str(spec_out), "--changelog-out", str(changelog_out)], check=True)
         spec = spec_out.read_text(encoding="utf-8")
         for needle in ("\nVersion:        12.34.56\n", "\nRelease:        2%{?dist}\n",
-                       "\n%changelog\n* Fri Jan 02 2026 Metasequoia IME <metasequoiaime@gmail.com> - 12.34.56-2\n"):
+                       "\n%changelog\n* Fri Jan 02 2026 Lingyao IME <metasequoiaime@gmail.com> - 12.34.56-2\n"):
             if needle not in spec:
                 failures.append(f"render-sources.py: rendered spec lacks {needle.strip()!r}")
         changelog = changelog_out.read_text(encoding="utf-8")
         if not changelog.startswith("msime (12.34.56-1~ppa1) resolute; urgency=medium\n"):
             failures.append(f"render-sources.py: unexpected changelog header {changelog.splitlines()[0]!r}")
-        if "\n -- Metasequoia IME <metasequoiaime@gmail.com>  Fri, 02 Jan 2026 00:00:00 +0000\n" not in changelog:
+        if "\n -- Lingyao IME <metasequoiaime@gmail.com>  Fri, 02 Jan 2026 00:00:00 +0000\n" not in changelog:
             failures.append("render-sources.py: changelog trailer is not in Debian format")
 
     for failure in failures:

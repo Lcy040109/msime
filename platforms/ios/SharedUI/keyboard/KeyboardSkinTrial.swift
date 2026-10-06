@@ -20,7 +20,7 @@ struct KeyboardSkinTrialStore {
   private let file: URL
   private let defaults: UserDefaults
   private let stateRoot: URL?
-  /// `stateRoot` is for tests, like `MetasequoiaInputSessionBridge.updateSharedPreferences`'s.
+  /// `stateRoot` is for tests, like `LingyaoInputSessionBridge.updateSharedPreferences`'s.
   init(directory: URL? = nil, defaults: UserDefaults = KeyboardFeedbackPreference.defaults,
        stateRoot: URL? = nil) throws {
     guard let directory = directory ?? FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: InputSchemePreference.appGroupIdentifier) else {
@@ -36,7 +36,7 @@ struct KeyboardSkinTrialStore {
   func begin(name: String, design: CustomKeyboardSkin) throws -> KeyboardSkinTrial {
     try rejectSymlinkAncestors(file)
     try restorePending()
-    let document = MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot)
+    let document = LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: stateRoot)
     let custom = document?["custom_theme"] as? [String: Any]
     let trial = KeyboardSkinTrial(id: UUID(), name: name,
       previousSelection: defaults.string(forKey: GlobalThemePreference.key),
@@ -49,7 +49,7 @@ struct KeyboardSkinTrialStore {
     try data.write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     // The keyboard takes its theme from the shared document, so a trial the document did not take would not show.
     guard let mapping = GlobalThemePreference.applyingDesign(trial.design),
-          MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else {
+          LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot, mapping) else {
       try? FileManager.default.removeItem(at: file)
       throw PersonalDictionaryStore.StoreError.unavailable
     }
@@ -86,7 +86,7 @@ struct KeyboardSkinTrialStore {
           let data = defaults.data(forKey: CustomKeyboardSkinStore.key),
           (try? JSONDecoder().decode(CustomKeyboardSkin.self, from: data)) == trial.design else { return }
     let previousCustom = trial.previousCustomTheme.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
-    _ = MetasequoiaInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
+    _ = LingyaoInputSessionBridge.updateSharedPreferences(stateRoot: stateRoot) { document in
       document["global_theme"] = trial.previousTheme ?? GlobalThemeCatalog.systemId
       if let previousCustom { document["custom_theme"] = previousCustom } else { document.removeValue(forKey: "custom_theme") }
     }

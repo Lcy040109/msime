@@ -3,7 +3,7 @@ import UIKit
 /// The keyboard's theme picker: the global themes of the catalog (the same ids the app and the desktop list), then the saved keyboard designs, which apply to the custom theme.
 final class KeyboardSkinPickerView: UIView {
   /// `document` is the shared document the cards resolve against, so the custom card shows the custom theme as configured.
-  init(selected: String, document: [String: Any]? = MetasequoiaInputSessionBridge.loadSharedPreferences(), showsHeader: Bool = true,
+  init(selected: String, document: [String: Any]? = LingyaoInputSessionBridge.loadSharedPreferences(), showsHeader: Bool = true,
        onSelect: @escaping (String) -> Void, onSelectDesign: @escaping (CustomKeyboardSkin) -> Void, onClose: @escaping () -> Void) {
     super.init(frame: .zero)
     accessibilityIdentifier = "keyboardSkinPicker"

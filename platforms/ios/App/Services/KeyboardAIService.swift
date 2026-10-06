@@ -44,7 +44,7 @@ enum KeyboardAIService {
     var result: CFTypeRef?
     let status = SecItemCopyMatching(lookup as CFDictionary, &result)
     guard status == errSecSuccess, let data = result as? Data, let token = String(data: data, encoding: .utf8)
-    else { throw ServiceFailure(message: "无法读取键盘密钥，请在水杉 App 中重新保存 AI 配置。") }
+    else { throw ServiceFailure(message: "无法读取键盘密钥，请在灵耀 App 中重新保存 AI 配置。") }
     return token
   }
 

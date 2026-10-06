@@ -330,7 +330,7 @@ final class BackendAccountWindow: NSWindowController, NSWindowDelegate {
   private init() {
     let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 680), styleMask: [.titled, .closable], backing: .buffered, defer: false)
     super.init(window: window)
-    window.title = "水杉账号"; window.isReleasedWhenClosed = false; window.delegate = self
+    window.title = "灵耀账号"; window.isReleasedWhenClosed = false; window.delegate = self
     window.contentView = NSHostingView(rootView: MacAccountView(model: model))
     window.center()
   }

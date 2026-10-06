@@ -143,7 +143,7 @@ export declare function createShiftTap(): { down(e: KeyboardEvent): void; up(e: 
 /** 内置皮肤 ID：`system`（网页上画桌面端设置页预览的平台默认配色，跟随明暗）、五个全局主题，以及 msime-windows 的五个内置外观。 */
 export type MsimeSkinId =
   | "system"
-  | "shuishan"
+  | "lingyao"
   | "light"
   | "paper"
   | "night"
@@ -156,8 +156,8 @@ export type MsimeSkinId =
 
 /** SDK 接受的内置皮肤 ID，顺序同设置页。 */
 export declare const SKINS: readonly MsimeSkinId[];
-/** 不传皮肤时用的皮肤，即 `"shuishan"`。 */
-export declare const DEFAULT_SKIN: "shuishan";
+/** 不传皮肤时用的皮肤，即 `"lingyao"`。 */
+export declare const DEFAULT_SKIN: "lingyao";
 
 export type MsimeSkinLayout = "horizontal" | "vertical";
 export type MsimeSkinMode = "light" | "dark";
@@ -247,7 +247,7 @@ export interface ResolvedSkin {
   readonly drawn: boolean;
 }
 
-/** 把内置皮肤 ID 或皮肤对象解析成颜色、几何和 CSS 自定义属性：桌面端 `theme::resolve` 的结果，再补齐它留空的槽位（`system` 留空的用平台默认配色，Windows 外观补上高亮候选的文字色）。自己画候选栏的页面用它取水杉的配色。未知 ID、base 或 layout 抛 TypeError。 */
+/** 把内置皮肤 ID 或皮肤对象解析成颜色、几何和 CSS 自定义属性：桌面端 `theme::resolve` 的结果，再补齐它留空的槽位（`system` 留空的用平台默认配色，Windows 外观补上高亮候选的文字色）。自己画候选栏的页面用它取灵耀的配色。未知 ID、base 或 layout 抛 TypeError。 */
 export declare function resolveSkin(skin?: MsimeSkinId | MsimeSkin, options?: { dark?: boolean; layout?: MsimeSkinLayout }): ResolvedSkin;
 
 /** 候选栏的宿主元素标签名。 */
@@ -281,7 +281,7 @@ export declare const PARTS: Readonly<{
 }>;
 
 export interface CandidateBarOptions {
-  /** 内置皮肤 ID 或皮肤对象，默认 `"shuishan"`。 */
+  /** 内置皮肤 ID 或皮肤对象，默认 `"lingyao"`。 */
   skin?: MsimeSkinId | MsimeSkin;
   /** 横排或竖排，默认 horizontal。 */
   layout?: MsimeSkinLayout;
@@ -309,13 +309,13 @@ export interface CandidateBar {
   destroy(): void;
 }
 
-/** 创建按水杉候选框皮肤绘制的候选栏。样式放在可构造样式表里，皮肤取值经 `style.setProperty` 写入，页面的 CSP 不开 `style-src 'unsafe-inline'` 也能用；浏览器不支持 adoptedStyleSheets 时抛 Error。 */
+/** 创建按灵耀候选框皮肤绘制的候选栏。样式放在可构造样式表里，皮肤取值经 `style.setProperty` 写入，页面的 CSP 不开 `style-src 'unsafe-inline'` 也能用；浏览器不支持 adoptedStyleSheets 时抛 Error。 */
 export declare function createCandidateBar(options?: CandidateBarOptions): CandidateBar;
 
 export interface AttachInputOptions {
   /** 是否画默认候选栏（createCandidateBar），默认 true。 */
   candidates?: boolean;
-  /** 候选栏的皮肤，默认 `"shuishan"`。 */
+  /** 候选栏的皮肤，默认 `"lingyao"`。 */
   skin?: MsimeSkinId | MsimeSkin;
   /** 候选栏横排或竖排，默认 horizontal。 */
   layout?: MsimeSkinLayout;

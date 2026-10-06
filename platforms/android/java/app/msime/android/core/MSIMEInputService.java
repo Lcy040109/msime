@@ -273,7 +273,7 @@ public final class MSIMEInputService extends InputMethodService {
     private java.util.Map<String, String> shuangpinHints = java.util.Map.of();
     /** 本包所属的版本：键盘只列出本版本提供的方案入口，偏好里的方案本版本没有时回退到本版本的默认方案。 */
     private final AppEdition edition = AppEdition.current();
-    /** 空闲时候选栏左侧显示的产品名，取自本版本的应用名（full 是「水杉输入法」，五笔版是「水杉五笔」）。 */
+    /** 空闲时候选栏左侧显示的产品名，取自本版本的应用名（full 是「灵耀输入法」，五笔版是「灵耀五笔」）。 */
     private String productName = "";
     KeyboardScheme selectedScheme = KeyboardScheme.fallback(edition);
     private java.util.List<KeyboardScheme> enabledSchemes =
@@ -4352,14 +4352,14 @@ public final class MSIMEInputService extends InputMethodService {
     void openClientApp() {
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         if (intent == null) {
-            Toast.makeText(this, "无法打开水杉输入法，请从主屏幕进入", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "无法打开灵耀输入法，请从主屏幕进入", Toast.LENGTH_SHORT).show();
             return;
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         try {
             startActivity(intent);
         } catch (RuntimeException error) {
-            Toast.makeText(this, "无法打开水杉输入法，请从主屏幕进入", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "无法打开灵耀输入法，请从主屏幕进入", Toast.LENGTH_SHORT).show();
         }
     }
 

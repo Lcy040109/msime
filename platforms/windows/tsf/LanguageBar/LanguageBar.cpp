@@ -7,7 +7,7 @@
 #endif // !UNICODE
 
 #include "Private.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CompositionProcessorEngine.h"
 #include "LanguageBar.h"
 #include "Globals.h"
@@ -117,11 +117,11 @@ SetThreadDpiAwarenessCtxFn ResolveSetThreadDpiAwarenessContext()
 
 //+---------------------------------------------------------------------------
 //
-// CMetasequoiaIME::_UpdateLanguageBarOnSetFocus
+// CLingyaoIME::_UpdateLanguageBarOnSetFocus
 //
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_UpdateLanguageBarOnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus)
+void CLingyaoIME::_UpdateLanguageBarOnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus)
 {
     BOOL needDisableButtons = FALSE;
 
@@ -234,7 +234,7 @@ CLangBarItemButton::CLangBarItemButton(REFGUID guidLangBar, LPCWSTR description,
     DllAddRef();
 
     // initialize TF_LANGBARITEMINFO structure.
-    _tfLangBarItemInfo.clsidService = Global::MetasequoiaIMECLSID; // This LangBarItem belongs to this TextService.
+    _tfLangBarItemInfo.clsidService = Global::LingyaoIMECLSID; // This LangBarItem belongs to this TextService.
     _tfLangBarItemInfo.guidItem = guidLangBar;                     // GUID of this LangBarItem.
     _tfLangBarItemInfo.dwStyle = (TF_LBI_STYLE_BTN_BUTTON | TF_LBI_STYLE_SHOWNINTRAY); // This LangBar is a button type.
     _tfLangBarItemInfo.ulSort = 0; // The position of this LangBar Item is not specified.

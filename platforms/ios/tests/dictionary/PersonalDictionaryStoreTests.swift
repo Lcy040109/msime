@@ -70,7 +70,7 @@ final class PersonalDictionaryStoreTests: XCTestCase {
     let host = PersonalDictionaryStore(directory: root)
     let keyboard = PersonalDictionaryStore(directory: root)
     let resources = try XCTUnwrap(Bundle.main.resourceURL?.appendingPathComponent("EngineResources", isDirectory: true))
-    let session = MetasequoiaInputSessionBridge(resources: resources,
+    let session = LingyaoInputSessionBridge(resources: resources,
                                                  stateRoot: root.appendingPathComponent("EngineState"))
     let word = try PersonalWord(kind: .quickPhrase, key: "msimefixture", value: "private fixture text").validated()
     let id = try host.enqueue(previous: nil, replacement: word)

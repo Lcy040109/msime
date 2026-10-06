@@ -42,7 +42,7 @@ import org.json.JSONObject;
 /**
  * The 社区 tab: skins, dictionaries and phrase packs published by other people, with the reply templates as a second section under the phrase packs (「AI 回复模板」).
  *
- * <p>Publishing and rating need a signed-in account, and this host carries only the keyboard's anonymous identity; a publish button that always answers "请先登录" would be worse than the honest absence of one. Taking a work, which is what people open this tab to do, works on every card: a skin's 获取 saves it into the custom skin library (and counts a download), after which the same pill says 使用 and puts it on the keyboard; a dictionary's 添加 installs it as a named dictionary, a phrase pack's 添加 installs it into the common phrases. 例外是分类：登录了水杉账号的作者可以在详情里改自己皮肤的分类。
+ * <p>Publishing and rating need a signed-in account, and this host carries only the keyboard's anonymous identity; a publish button that always answers "请先登录" would be worse than the honest absence of one. Taking a work, which is what people open this tab to do, works on every card: a skin's 获取 saves it into the custom skin library (and counts a download), after which the same pill says 使用 and puts it on the keyboard; a dictionary's 添加 installs it as a named dictionary, a phrase pack's 添加 installs it into the common phrases. 例外是分类：登录了灵耀账号的作者可以在详情里改自己皮肤的分类。
  */
 public final class CommunityFragment extends Fragment {
     private static final String ARG_KIND = "kind";

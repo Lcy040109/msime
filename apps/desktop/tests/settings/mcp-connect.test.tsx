@@ -197,12 +197,12 @@ test("paths with spaces are quoted for the shell they are pasted into", async ()
   readOnly();
   const posix = {
     ...status(),
-    command: "/Applications/水杉 输入法.app/msime-mcp",
+    command: "/Applications/灵耀 输入法.app/msime-mcp",
     options: "/it's/options.json",
   };
   const view = render(<McpConnectSection status={() => Promise.resolve(posix)} />);
   expect((await screen.findByLabelText("Claude Code 安装命令")).textContent).toBe(
-    "claude mcp add --scope user msime -- '/Applications/水杉 输入法.app/msime-mcp' --options '/it'\\''s/options.json'",
+    "claude mcp add --scope user msime -- '/Applications/灵耀 输入法.app/msime-mcp' --options '/it'\\''s/options.json'",
   );
   view.unmount();
 
@@ -437,7 +437,7 @@ test("the terminal tab tells an assistant how to run the tools directly, with th
   const program = "/opt/msime/msime-mcp --options /state/runtime-options.json";
   expect(within(group).getByLabelText("命令行用法").textContent).toBe(
     [
-      "水杉输入法（MSIME）可以在终端里直接管理：",
+      "灵耀输入法（MSIME）可以在终端里直接管理：",
       `- 查看可用的工具和参数：${program} tools`,
       `- 调用一个工具，参数是 JSON 对象，输出 JSON：${program} call <工具名> '<JSON 参数>'，参数中有单引号时改为写进 UTF-8 文件并传 @<文件路径>`,
       `- 排查输入法问题（卡顿、候选窗口不见了）的步骤：${program} prompt diagnose`,
@@ -492,7 +492,7 @@ test("commands are coloured by program, flag, quoted argument and placeholder", 
   expect(coloured(usage, "text-syntax-placeholder")).toEqual(["<工具名>", "@<文件路径>"]);
   expect(coloured(usage, "text-syntax-string")).toContain("'<JSON 参数>'");
   // The prose around the commands stays uncoloured.
-  expect(coloured(usage, "text-syntax-program").join("")).not.toContain("水杉");
+  expect(coloured(usage, "text-syntax-program").join("")).not.toContain("灵耀");
 });
 
 test("the configuration is coloured when it is laid out as the host's pretty printer writes it", async () => {

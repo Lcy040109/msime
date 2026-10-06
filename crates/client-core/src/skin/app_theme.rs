@@ -7,7 +7,7 @@
 use super::season::Season;
 use serde::{Deserialize, Serialize};
 
-/// 偏好里保存的应用主题 ID。`siji`（水杉四季）按月份取当季配色，其余四个固定一季。
+/// 偏好里保存的应用主题 ID。`siji`（灵耀四季）按月份取当季配色，其余四个固定一季。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AppTheme {
@@ -46,7 +46,7 @@ impl AppTheme {
 
     pub fn title(self) -> &'static str {
         match self {
-            AppTheme::Siji => "水杉四季",
+            AppTheme::Siji => "灵耀四季",
             AppTheme::Chunya => "春芽",
             AppTheme::Xiayin => "夏荫",
             AppTheme::Qiushan => "秋杉",
@@ -255,7 +255,7 @@ pub struct AppThemeCatalogEntry {
     pub dark: AppThemeColors,
 }
 
-/// 「水杉四季」在目录里固定画的那一季，保证目录不随月份变化。
+/// 「灵耀四季」在目录里固定画的那一季，保证目录不随月份变化。
 pub const SEASONAL_PREVIEW: Season = Season::Autumn;
 
 /// 应用主题的选择器条目，按 `AppTheme::ALL` 的顺序。

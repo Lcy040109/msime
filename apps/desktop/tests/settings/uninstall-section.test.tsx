@@ -44,7 +44,7 @@ test("uninstall section renders and cancels an uninstall confirmation", () => {
     />,
   );
 
-  expect(screen.getByRole("alertdialog", { name: "确认卸载水杉输入法" })).toBeTruthy();
+  expect(screen.getByRole("alertdialog", { name: "确认卸载灵耀输入法" })).toBeTruthy();
   expect(screen.getByText("输入法已移到废纸篓。")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(onCancelUninstall).toHaveBeenCalledOnce();
@@ -90,12 +90,12 @@ test("license rows open the third-party notices only when the host ships them", 
   const openThirdPartyLicenses = vi.fn(async () => {});
   const { unmount } = render(<LicenseRows openThirdPartyLicenses={openThirdPartyLicenses} />);
 
-  expect(screen.getByText("© 2026 Metasequoia IME")).toBeTruthy();
+  expect(screen.getByText("© 2026 Lingyao IME")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "第三方组件许可" }));
   expect(openThirdPartyLicenses).toHaveBeenCalledOnce();
   unmount();
 
   render(<LicenseRows />);
-  expect(screen.getByText("© 2026 Metasequoia IME")).toBeTruthy();
+  expect(screen.getByText("© 2026 Lingyao IME")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "第三方组件许可" })).toBeNull();
 });

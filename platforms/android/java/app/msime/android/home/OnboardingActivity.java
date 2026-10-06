@@ -192,8 +192,8 @@ public final class OnboardingActivity extends AppCompatActivity {
     }
 
     private void enable(LinearLayout column) {
-        header(column, R.drawable.ic_ms_keyboard, ordinal() + " · 约 30 秒", "把水杉加进键盘",
-            "在系统设置里启用水杉，并设为默认输入法，之后在任何应用里都能直接用。");
+        header(column, R.drawable.ic_ms_keyboard, ordinal() + " · 约 30 秒", "把灵耀加进键盘",
+            "在系统设置里启用灵耀，并设为默认输入法，之后在任何应用里都能直接用。");
         boolean enabled = ImeSetup.enabled(this);
         boolean current = enabled && ImeSetup.isDefault(this);
         LinearLayout card = card(column, 6);
@@ -247,7 +247,7 @@ public final class OnboardingActivity extends AppCompatActivity {
     }
 
     private void translation(LinearLayout column) {
-        header(column, R.drawable.ic_onboarding_translate, ordinal() + " · 水杉的特点", "候选下方就是译文",
+        header(column, R.drawable.ic_onboarding_translate, ordinal() + " · 灵耀的特点", "候选下方就是译文",
             "打开后，每个候选词下面会多一行小字的英文释义，来自随应用打包的离线词典，不联网。");
         JSONObject preferences = preferences();
         boolean on = preferences != null && preferences.optBoolean(GLOSS, false);

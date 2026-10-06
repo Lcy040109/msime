@@ -100,7 +100,7 @@ struct CommunityResourcesView: View {
         }.padding(.vertical, 2)
         if items.isEmpty && !busy {
           VStack(spacing: 12) {
-            Image(systemName: kind.icon).font(.largeTitle).foregroundStyle(MetasequoiaTheme.accent)
+            Image(systemName: kind.icon).font(.largeTitle).foregroundStyle(LingyaoTheme.accent)
             Text(scope == "" ? "期待第一份\(kind == .dictionary ? "词库" : "回复模板")" : "这里还没有作品")
             Text(scope == "saved" ? "去社区逛逛，收藏喜欢的作品。" : "点右上角 + 发布你的第一份作品。")
               .font(.caption).foregroundStyle(.secondary)
@@ -246,7 +246,7 @@ struct CommunityResourceDetail: View {
       .confirmationDialog("确认导入预览中的 \(item.content.entries?.count ?? 0) 条词条？", isPresented: $confirmImport, titleVisibility: .visible) {
         Button("确认导入") { let selected = item; run {
           try PersonalDictionaryStore().enqueueImport((selected.content.entries ?? []).map { try $0.localWord() })
-          message = "已加入本机导入队列，打开水杉键盘后处理。可在「查看导入状态」检查每条结果。"
+          message = "已加入本机导入队列，打开灵耀键盘后处理。可在「查看导入状态」检查每条结果。"
         }}
       }
       .confirmationDialog("下架后其他用户将无法获取此作品，已有本地副本保留。", isPresented: $confirmDelete, titleVisibility: .visible) {

@@ -73,14 +73,14 @@ SCHEME_LANGUAGE_DICTIONARIES = {"cantonese": "msime-cantonese.db", "zhuyin": "ms
 PREFERENCE_DEFAULT_SCHEMES = {"wubi_mixed_pinyin": "wubi"}
 # full 今天写死在 macOS 各处的标识。改了其中任何一个，已安装的用户就会被当成另一个产品：输入源、偏好域、状态目录、钥匙串条目、cask 和更新资产都对不上。
 FULL_MACOS = {
-    "input_method_bundle_id": "app.msime.inputmethod.MetasequoiaIME",
-    "input_method_name": "水杉输入法",
+    "input_method_bundle_id": "app.msime.inputmethod.LingyaoIME",
+    "input_method_name": "灵耀输入法",
     "settings_bundle_id": "app.msime.macos",
     "keychain_service": "com.metasequoia.msime.account",
     "cask": "msime",
     "dmg_prefix": "msime-macos",
 }
-# full 今天写死在 Windows 各处的标识：TSF 的 GUID 在 tsf/Global/Globals.cpp，名字在 common/StateDirectory.h、tsf/IME/MetasequoiaIME.cpp 和 installer/msime_setup.iss。改了其中任何一个，已经装着的 full 就会被当成另一个产品：TIP 注册、卸载项、数据目录和登录任务都对不上。
+# full 今天写死在 Windows 各处的标识：TSF 的 GUID 在 tsf/Global/Globals.cpp，名字在 common/StateDirectory.h、tsf/IME/LingyaoIME.cpp 和 installer/msime_setup.iss。改了其中任何一个，已经装着的 full 就会被当成另一个产品：TIP 注册、卸载项、数据目录和登录任务都对不上。
 FULL_WINDOWS = {
     "langid": "0x0804",
     "clsid": "{E3062E9A-D834-4637-8958-ED8CFA427D01}",
@@ -102,18 +102,18 @@ FULL_WINDOWS = {
         "candidate_ui_element": "{9FFF12AA-B5EE-4477-A1AA-A4BF5F7B2447}",
     },
     "inno_app_id": "{A7C3E91F-4B2D-4E8A-9F1C-6D5E8B0A2C4D}",
-    "app_name": "Metasequoia IME 水杉输入法",
-    "text_service_description": "Metasequoia 水杉输入法",
+    "app_name": "Lingyao IME 灵耀输入法",
+    "text_service_description": "Lingyao 灵耀输入法",
     "install_dir": "metasequoiaime",
-    "registry_key": "Software\\Metasequoia\\MetasequoiaIME",
+    "registry_key": "Software\\Lingyao\\LingyaoIME",
     "state_directory": "MSIME-Client",
     "user_data_directory": "MSIME",
     "data_dir_environment_variable": "METASEQUOIA_IME_DATA_DIR",
     "name_suffix": "",
-    "watchdog_task": "Metasequoia IME Watchdog",
+    "watchdog_task": "Lingyao IME Watchdog",
     "host_dll": "msime_host_api.dll",
     "tauri_identifier": "app.msime.windows",
-    "installer_base_name": "MetasequoiaIME_Setup",
+    "installer_base_name": "LingyaoIME_Setup",
 }
 # Windows 段里两两不同的名字类字段（GUID 另查）。
 WINDOWS_UNIQUE_NAMES = ["app_name", "text_service_description", "install_dir", "registry_key", "state_directory", "user_data_directory", "data_dir_environment_variable", "name_suffix", "watchdog_task", "host_dll", "tauri_identifier", "installer_base_name"]
@@ -480,7 +480,7 @@ def windows_guids(section: dict) -> list[tuple[str, str]]:
 
 def installer_base_name(edition_id: str) -> str:
     """不是 full 的版本的安装包名前缀，与 `update-manifest.ts` 的 `editionInstallerPrefix` 相同。"""
-    return f"MetasequoiaIME-{edition_id[:1].upper()}{edition_id[1:]}_Setup"
+    return f"LingyaoIME-{edition_id[:1].upper()}{edition_id[1:]}_Setup"
 
 
 def check_windows(errors: list[str], editions: list[dict]) -> None:
@@ -534,7 +534,7 @@ def check_windows(errors: list[str], editions: list[dict]) -> None:
             errors.append(f"edition full: platforms.windows.tauri_identifier must equal identifier {identifier!r} in {TAURI_WINDOWS_CONF.relative_to(ROOT)}")
     # 推出规则抄自 update-manifest.ts；那边改了而这里没跟上时，上面查的就不是更新检查认的名字。
     manifest = UPDATE_MANIFEST.read_text(encoding="utf-8")
-    for fragment in ['if (isFullEdition(edition)) return "MetasequoiaIME_Setup_v";', "return `MetasequoiaIME-${edition.charAt(0).toUpperCase()}${edition.slice(1)}_Setup_v`;"]:
+    for fragment in ['if (isFullEdition(edition)) return "LingyaoIME_Setup_v";', "return `LingyaoIME-${edition.charAt(0).toUpperCase()}${edition.slice(1)}_Setup_v`;"]:
         if fragment not in manifest:
             errors.append(f"{UPDATE_MANIFEST.relative_to(ROOT)} no longer contains {fragment!r}; update installer_base_name in this script")
 

@@ -106,7 +106,7 @@ if name == "ibus":
         print("  xkb:us::eng - English (US)")
         if ibus["known"]:
             print("language: Chinese")
-            print("  msime-linux - Metasequoia 水杉输入法")
+            print("  msime-linux - Lingyao 灵耀输入法")
     elif arguments == ["restart"]:
         # The new daemon reads the component files, including the one installed after the old daemon started.
         ibus["known"] = ibus["installed"]
@@ -273,9 +273,9 @@ def unregistering() -> None:
         # 卸载：从 Fcitx5 当前组、GNOME 输入源和 IBus 预载引擎三处移除，其余项保持原来的顺序，别的组不动。卸载从用户的 systemd 实例里运行，那里往往没有 XDG_CURRENT_DESKTOP，所以两份 IBus 列表都清理，与当前跑的是哪个宿主无关。
         harness.world(fcitx5=fcitx5, gsettings=everywhere)
         result = harness.unregister()
-        assert "已从 Fcitx5 当前输入法组「Default」移除「水杉输入法」" in result.stdout, result
-        assert "已从 org.gnome.desktop.input-sources sources 移除「Metasequoia 水杉输入法」" in result.stdout, result
-        assert "已从 org.freedesktop.ibus.general preload-engines 移除「Metasequoia 水杉输入法」" in result.stdout, result
+        assert "已从 Fcitx5 当前输入法组「Default」移除「灵耀输入法」" in result.stdout, result
+        assert "已从 org.gnome.desktop.input-sources sources 移除「Lingyao 灵耀输入法」" in result.stdout, result
+        assert "已从 org.freedesktop.ibus.general preload-engines 移除「Lingyao 灵耀输入法」" in result.stdout, result
         assert result.stderr == "", result.stderr
         state = harness.state()
         assert state["fcitx5"]["groups"] == {
@@ -295,20 +295,20 @@ def unregistering() -> None:
         # 再跑一次：都已不在列表里，只读不写。
         harness.log.write_text("")
         result = harness.unregister()
-        assert "「水杉输入法」不在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
-        assert result.stdout.count("「Metasequoia 水杉输入法」不在") == 2, result.stdout
+        assert "「灵耀输入法」不在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
+        assert result.stdout.count("「Lingyao 灵耀输入法」不在") == 2, result.stdout
         assert not any(set_group in call for call in harness.calls("gdbus")), harness.log.read_text()
         assert not any(call[0] == "set" for call in harness.calls("gsettings")), harness.calls("gsettings")
         assert harness.state() == state
 
-        # 列表里只有水杉：移除后会变空，空列表会让桌面退回一个未必是用户原来的默认值，Fcitx5 空组则没有可切回的键盘布局，所以保持原样。
+        # 列表里只有灵耀：移除后会变空，空列表会让桌面退回一个未必是用户原来的默认值，Fcitx5 空组则没有可切回的键盘布局，所以保持原样。
         alone = {GNOME: {"sources": [["ibus", "msime-linux"]]}, IBUS: {"preload-engines": ["msime-linux"]}}
         harness.world(fcitx5=fcitx5_world(current="Other", groups=fcitx5["groups"]), gsettings=alone)
         before = harness.state()
         result = harness.unregister()
-        assert "Fcitx5 当前输入法组「Other」只有「水杉输入法」，移除后会变空，保持不变" in result.stdout, result
-        assert "org.gnome.desktop.input-sources sources 只有「Metasequoia 水杉输入法」，移除后会变空，保持不变" in result.stdout, result
-        assert "org.freedesktop.ibus.general preload-engines 只有「Metasequoia 水杉输入法」，移除后会变空，保持不变" in result.stdout, result
+        assert "Fcitx5 当前输入法组「Other」只有「灵耀输入法」，移除后会变空，保持不变" in result.stdout, result
+        assert "org.gnome.desktop.input-sources sources 只有「Lingyao 灵耀输入法」，移除后会变空，保持不变" in result.stdout, result
+        assert "org.freedesktop.ibus.general preload-engines 只有「Lingyao 灵耀输入法」，移除后会变空，保持不变" in result.stdout, result
         assert harness.state() == before
         assert not any(set_group in call for call in harness.calls("gdbus"))
         assert not any(call[0] == "set" for call in harness.calls("gsettings"))
@@ -376,7 +376,7 @@ def registering_again() -> None:
         result = harness.register()
         assert result.returncode == 0 and result.stderr == "", result
         assert harness.calls("systemctl") == [["--user", "enable", "--now", *units]], harness.calls("systemctl")
-        assert "已把「水杉输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result.stdout
+        assert "已把「灵耀输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result.stdout
         assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["msime", ""]]]
         assert harness.calls("msime-linux-prepare") == [], harness.log.read_text()
         assert "词库" not in result.stdout, result.stdout
@@ -396,7 +396,7 @@ def registering_again() -> None:
         assert harness.state()["gsettings"] == registered, harness.state()["gsettings"]
         harness.log.write_text("")
         result = harness.register()
-        assert "「Metasequoia 水杉输入法」已在输入源列表中" in result.stdout, result.stdout
+        assert "「Lingyao 灵耀输入法」已在输入源列表中" in result.stdout, result.stdout
         assert not any(call[0] == "set" for call in harness.calls("gsettings")), harness.calls("gsettings")
 
         # 包管理器经 systemd-run 在用户的 systemd 实例里运行它，那里往往没有会话总线地址：与 --unregister 一样按 XDG_RUNTIME_DIR/bus 补上。
@@ -429,7 +429,7 @@ def main() -> int:
         # Fcitx5：加到当前组末尾，保留组里原有的项和默认布局，别的组不动；不碰 gsettings 与 ibus。
         harness.world(running=["fcitx5", "ibus-daemon"], desktop="KDE", fcitx5=fcitx5_world(), gsettings=fcitx5_desktop)
         result = harness.run()
-        assert "已把「水杉输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result
+        assert "已把「灵耀输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result
         assert "下一步" not in result.stdout, result.stdout
         # 托盘入口的提示与是否自动加入无关，照常打印。
         assert "状态栏上的中英文" in result.stdout, result.stdout
@@ -448,21 +448,21 @@ def main() -> int:
         # 再跑一次：已经在组里，只读不写。
         harness.log.write_text("")
         result = harness.run()
-        assert "「水杉输入法」已在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
+        assert "「灵耀输入法」已在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
         # 空组（gdbus 打印带类型标注的空数组）：组里第一项是非激活状态用的输入法，应当是键盘布局；只写入本输入法会让它无处可切回，所以不写，退回手动步骤。
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(current="Other"))
         result = harness.run()
         assert "未能自动加入输入法列表：Fcitx5 当前输入法组「Other」为空" in result.stderr, result
-        assert "下一步：用 fcitx5-configtool 把「水杉输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
+        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
         assert harness.state()["fcitx5"]["groups"]["Other"] == ["de", []]
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
         # Fcitx5 在装包之前就已启动、还没加载 msime：先让它重启一次，加载新装的输入法之后再加入当前组。
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(loaded=["keyboard-us", "pinyin"]))
         result = harness.run()
-        assert "已把「水杉输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result
+        assert "已把「灵耀输入法」加入 Fcitx5 当前输入法组「Default」" in result.stdout, result
         restarts = [call for call in harness.calls("gdbus") if "org.fcitx.Fcitx.Controller1.Restart" in call]
         assert len(restarts) == 1, harness.log.read_text()
         assert harness.state()["fcitx5"]["groups"]["Default"] == ["us", [["keyboard-us", ""], ["pinyin", ""], ["msime", ""]]]
@@ -470,7 +470,7 @@ def main() -> int:
         # 再跑一次：已经加载，不再重启 Fcitx5，也不重复写入。
         harness.log.write_text("")
         result = harness.run()
-        assert "「水杉输入法」已在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
+        assert "「灵耀输入法」已在 Fcitx5 当前输入法组「Default」中" in result.stdout, result
         assert not any("org.fcitx.Fcitx.Controller1.Restart" in call for call in harness.calls("gdbus")), harness.log.read_text()
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
@@ -478,7 +478,7 @@ def main() -> int:
         harness.world(running=["fcitx5"], fcitx5=fcitx5_world(loaded=["keyboard-us", "pinyin"], installed=["keyboard-us", "pinyin"]))
         result = harness.run()
         assert "未能自动加入输入法列表：Fcitx5 重启之后仍没有加载 msime" in result.stderr, result
-        assert "下一步：用 fcitx5-configtool 把「水杉输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
+        assert "下一步：用 fcitx5-configtool 把「灵耀输入法」（英文界面显示为「MSIME」）加入当前输入法组。" in result.stdout, result
         assert "已把" not in result.stdout, result.stdout
         assert not any("org.fcitx.Fcitx.Controller1.SetInputMethodGroupInfo" in call for call in harness.calls("gdbus"))
 
@@ -503,7 +503,7 @@ def main() -> int:
             gsettings={GNOME: {"sources": [["xkb", "us"], ["ibus", "mozc-jp"]]}, IBUS: {"preload-engines": ["xkb:us::eng"]}},
         )
         result = harness.run()
-        assert "已把「Metasequoia 水杉输入法」加入输入源列表" in result.stdout, result
+        assert "已把「Lingyao 灵耀输入法」加入输入源列表" in result.stdout, result
         assert harness.calls("ibus").count(["restart"]) == 1, harness.calls("ibus")
         settings = harness.state()["gsettings"]
         assert settings[GNOME]["sources"] == [["xkb", "us"], ["ibus", "mozc-jp"], ["ibus", "msime-linux"]], settings
@@ -513,7 +513,7 @@ def main() -> int:
         # 再跑一次：引擎已被列出就不再重启 IBus，也不重复写入。
         harness.log.write_text("")
         result = harness.run()
-        assert "「Metasequoia 水杉输入法」已在输入源列表中" in result.stdout, result
+        assert "「Lingyao 灵耀输入法」已在输入源列表中" in result.stdout, result
         assert ["restart"] not in harness.calls("ibus"), harness.calls("ibus")
         assert not any(call[0] == "set" for call in harness.calls("gsettings")), harness.calls("gsettings")
 
@@ -524,7 +524,7 @@ def main() -> int:
             ibus={"known": True, "installed": True},
         )
         result = harness.run()
-        assert "已把「Metasequoia 水杉输入法」加入输入源列表" in result.stdout, result
+        assert "已把「Lingyao 灵耀输入法」加入输入源列表" in result.stdout, result
         assert ["restart"] not in harness.calls("ibus"), harness.calls("ibus")
         settings = harness.state()["gsettings"]
         assert settings[IBUS]["preload-engines"] == ["xkb:us::eng", "libpinyin", "msime-linux"], settings
@@ -538,13 +538,13 @@ def main() -> int:
         )
         result = harness.run()
         assert "未能自动加入输入法列表：org.gnome.desktop.input-sources sources 为空" in result.stderr, result
-        assert "下一步：ibus restart，再在输入源里添加「Metasequoia 水杉输入法」。" in result.stdout, result
+        assert "下一步：ibus restart，再在输入源里添加「Lingyao 灵耀输入法」。" in result.stdout, result
         assert not any(call[0] == "set" for call in harness.calls("gsettings")), harness.calls("gsettings")
 
         # 两个宿主都没在跑：无处可加，也不去调用任何一方。
         harness.world(fcitx5=fcitx5_world(), gsettings=fcitx5_desktop)
         result = harness.run()
-        assert "下一步：启动 fcitx5 或 ibus，再在各自的设置里加入水杉输入法。" in result.stdout, result
+        assert "下一步：启动 fcitx5 或 ibus，再在各自的设置里加入灵耀输入法。" in result.stdout, result
         assert harness.calls("gdbus") == [] and harness.calls("gsettings") == [] and harness.calls("ibus") == []
 
     unregistering()

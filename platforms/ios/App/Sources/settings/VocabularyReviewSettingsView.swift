@@ -115,7 +115,7 @@ struct VocabularyReviewSettingsView: View {
   private func metric(_ title: String, _ value: Int) -> some View {
     VStack(alignment: .leading, spacing: 2) {
       Text("\(value)").font(.system(size: wide ? 34 : 28, weight: .semibold)).monospacedDigit()
-        .foregroundStyle(MetasequoiaTheme.accent)
+        .foregroundStyle(LingyaoTheme.accent)
       Text(title).font(.caption).foregroundStyle(.secondary)
     }
   }

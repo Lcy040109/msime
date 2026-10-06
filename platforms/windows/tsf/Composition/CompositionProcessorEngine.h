@@ -1,9 +1,9 @@
 #pragma once
 
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "sal.h"
 #include "KeyHandlerEditSession.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include "Compartment.h"
 #include "Define.h"
 #include "../EngineSessionAdapter.h"
@@ -11,7 +11,7 @@
 
 class CCompositionProcessorEngine
 {
-    friend class CMetasequoiaIME;
+    friend class CLingyaoIME;
 
   public:
     enum class PreservedKeyAction
@@ -22,7 +22,7 @@ class CCompositionProcessorEngine
         TogglePunctuationMode
     };
 
-    explicit CCompositionProcessorEngine(_In_ CMetasequoiaIME *pTextService);
+    explicit CCompositionProcessorEngine(_In_ CLingyaoIME *pTextService);
     ~CCompositionProcessorEngine(void);
 
     BOOL SetupLanguageProfile(LANGID langid, REFGUID guidLanguageProfile, _In_ ITfThreadMgr *pThreadMgr,
@@ -86,11 +86,11 @@ class CCompositionProcessorEngine
     }
 
     void GetReadingStrings(                                          //
-        _Inout_ CMetasequoiaImeArray<CStringRange> *pReadingStrings, //
+        _Inout_ CLingyaoImeArray<CStringRange> *pReadingStrings, //
         _Out_ BOOL *pIsWildcardIncluded                              //
     );
     void GetCandidateList(                                                //
-        _Inout_ CMetasequoiaImeArray<CCandidateListItem> *pCandidateList, //
+        _Inout_ CLingyaoImeArray<CCandidateListItem> *pCandidateList, //
         BOOL isIncrementalWordSearch, BOOL isWildcardSearch               //
     );
 
@@ -185,26 +185,26 @@ class CCompositionProcessorEngine
     BOOL IsVirtualKeyKeystrokeComposition(UINT uCode, _Out_opt_ _KEYSTROKE_STATE *pKeyState,
                                           KEYSTROKE_FUNCTION function);
     BOOL IsVirtualKeyKeystrokeCandidate(UINT uCode, _In_ _KEYSTROKE_STATE *pKeyState, CANDIDATE_MODE candidateMode,
-                                        _Out_ BOOL *pfRetCode, _In_ CMetasequoiaImeArray<_KEYSTROKE> *pKeystrokeMetric);
+                                        _Out_ BOOL *pfRetCode, _In_ CLingyaoImeArray<_KEYSTROKE> *pKeystrokeMetric);
     BOOL IsKeystrokeRange(UINT uCode, _Out_ _KEYSTROKE_STATE *pKeyState, CANDIDATE_MODE candidateMode);
 
     void SetupKeystroke();
     void SetupPreserved(_In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId);
     void SetupConfiguration();
     void SetupLanguageBar(_In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId, BOOL isSecureMode);
-    void SetKeystrokeTable(_Inout_ CMetasequoiaImeArray<_KEYSTROKE> *pKeystroke);
+    void SetKeystrokeTable(_Inout_ CLingyaoImeArray<_KEYSTROKE> *pKeystroke);
     void SetupPunctuationPair();
     void CreateLanguageBarButton(DWORD dwEnable, GUID guidLangBar, _In_z_ LPCWSTR pwszDescriptionValue,
                                  _In_z_ LPCWSTR pwszTooltipValue, DWORD dwOnIconIndex, DWORD dwOffIconIndex,
                                  _Outptr_result_maybenull_ CLangBarItemButton **ppLangBarItemButton, BOOL isSecureMode);
     void SetInitialCandidateListRange();
-    void InitializeMetasequoiaIMECompartment(_In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId);
+    void InitializeLingyaoIMECompartment(_In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId);
 
     class XPreservedKey;
     void SetPreservedKey(const CLSID clsid, TF_PRESERVEDKEY &tfPreservedKey, _In_z_ LPCWSTR pwszDescription,
                          _Out_ XPreservedKey *pXPreservedKey);
     BOOL InitPreservedKey(_In_ XPreservedKey *pXPreservedKey, _In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId);
-    BOOL CheckShiftKeyOnly(_In_ CMetasequoiaImeArray<TF_PRESERVEDKEY> *pTSFPreservedKeyTable);
+    BOOL CheckShiftKeyOnly(_In_ CLingyaoImeArray<TF_PRESERVEDKEY> *pTSFPreservedKeyTable);
 
     static HRESULT CompartmentCallback(_In_ void *pv, REFGUID guidCompartment);
     void PrivateCompartmentsUpdated(_In_ ITfThreadMgr *pThreadMgr);
@@ -242,11 +242,11 @@ class CCompositionProcessorEngine
     GUID _guidProfile;
     TfClientId _tfClientId;
 
-    CMetasequoiaImeArray<_KEYSTROKE> _KeystrokeComposition;
-    CMetasequoiaImeArray<_KEYSTROKE> _KeystrokeCandidate;
-    CMetasequoiaImeArray<_KEYSTROKE> _KeystrokeCandidateWildcard;
-    CMetasequoiaImeArray<_KEYSTROKE> _KeystrokeCandidateSymbol;
-    CMetasequoiaImeArray<_KEYSTROKE> _KeystrokeSymbol;
+    CLingyaoImeArray<_KEYSTROKE> _KeystrokeComposition;
+    CLingyaoImeArray<_KEYSTROKE> _KeystrokeCandidate;
+    CLingyaoImeArray<_KEYSTROKE> _KeystrokeCandidateWildcard;
+    CLingyaoImeArray<_KEYSTROKE> _KeystrokeCandidateSymbol;
+    CLingyaoImeArray<_KEYSTROKE> _KeystrokeSymbol;
 
     // Preserved key data
     class XPreservedKey
@@ -257,7 +257,7 @@ class CCompositionProcessorEngine
         BOOL UninitPreservedKey(_In_ ITfThreadMgr *pThreadMgr);
 
       public:
-        CMetasequoiaImeArray<TF_PRESERVEDKEY> TSFPreservedKeyTable;
+        CLingyaoImeArray<TF_PRESERVEDKEY> TSFPreservedKeyTable;
         GUID Guid;
         LPCWSTR Description;
     };
@@ -270,8 +270,8 @@ class CCompositionProcessorEngine
     XPreservedKey _PreservedKey_Punctuation;
 
     // Punctuation data
-    CMetasequoiaImeArray<CPunctuationPair> _PunctuationPair;
-    CMetasequoiaImeArray<CPunctuationNestPair> _PunctuationNestPair;
+    CLingyaoImeArray<CPunctuationPair> _PunctuationPair;
+    CLingyaoImeArray<CPunctuationNestPair> _PunctuationNestPair;
 
     // Language bar data
     CLangBarItemButton *_pLanguageBar_IMEMode;
@@ -286,7 +286,7 @@ class CCompositionProcessorEngine
     CCompartmentEventSink *_pCompartmentPunctuationEventSink;
     ITfThreadMgr *_pOwnerThreadMgr;
     HWND _ownerMsgWndHandle;
-    CMetasequoiaIME *_pTextService;
+    CLingyaoIME *_pTextService;
     std::unique_ptr<msime::tsf::EngineSessionAdapter> _hostEngineAdapter;
     BOOL _keyboardOpen;
     BOOL _keyboardOpenKnown;

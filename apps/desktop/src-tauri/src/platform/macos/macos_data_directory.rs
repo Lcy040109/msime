@@ -127,7 +127,7 @@ fn restore_target(target: &Path, had_marker: bool, backups: &[LocatorBackup]) {
     if had_marker {
         let _ = fs::write(
             target.join(DATA_DIRECTORY_MARKER),
-            b"Metasequoia IME user data directory.\n",
+            b"Lingyao IME user data directory.\n",
         );
     }
     restore_locators(backups);
@@ -227,7 +227,7 @@ where
     copy_tree_contents(&source, staging.path())?;
     fs::write(
         staging.path().join(DATA_DIRECTORY_MARKER),
-        b"Metasequoia IME user data directory.\n",
+        b"Lingyao IME user data directory.\n",
     )
     .map_err(|_| MoveError::Copy)?;
 

@@ -16,7 +16,7 @@ const initial: Snapshot = {
   preferences: {
     scheme: "quanpin",
     shuangpin_profile: "xiaohe",
-    global_theme: "shuishan",
+    global_theme: "lingyao",
     candidate_page_size: 5,
     learning: true,
     chinese_punctuation: true,

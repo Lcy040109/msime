@@ -24,4 +24,4 @@ FOUNDATION_EXPORT NSNotificationName const MSIMEStandalonePreferencesDidCloseNot
 + (NSNumber *)validateCloudSettingsSnapshot:(NSDictionary<NSString *, id> *)values;
 + (NSNumber *)applyCloudSettingsSnapshot:(NSDictionary<NSString *, id> *)values;
 @end
-#define MetasequoiaPreferencesWindowController MSIMEPreferencesWindowController
+#define LingyaoPreferencesWindowController MSIMEPreferencesWindowController

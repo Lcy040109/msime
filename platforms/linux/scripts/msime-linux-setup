@@ -11,7 +11,7 @@
 
 Windows 安装程序注册 TSF profile，装完输入法就出现在输入法列表里；这里对应的是在状态目录就绪后把输入法加进正在运行的 Fcitx5 或 IBus 的列表。任何一步失败都退回到打印手动步骤，不影响已经准备好的状态。
 
-Windows 卸载程序注销 TSF profile 和类别，输入法随之从列表里消失，并删除水杉留下的全部状态；对应的是 --unregister：卸载时（.deb 的 prerm、CMake 卸载）在删除文件之前把输入法从这些列表里移除，再把宿主改过的桌面候选面板设置（Fcitx5 classicui 的主题、字体和滚轮翻页，IBus 面板的字体）恢复成接管之前的值——用户之后自己改过的不动——并删除水杉生成的 Fcitx5 主题。只做这些，不准备状态也不下载。
+Windows 卸载程序注销 TSF profile 和类别，输入法随之从列表里消失，并删除灵耀留下的全部状态；对应的是 --unregister：卸载时（.deb 的 prerm、CMake 卸载）在删除文件之前把输入法从这些列表里移除，再把宿主改过的桌面候选面板设置（Fcitx5 classicui 的主题、字体和滚轮翻页，IBus 面板的字体）恢复成接管之前的值——用户之后自己改过的不动——并删除灵耀生成的 Fcitx5 主题。只做这些，不准备状态也不下载。
 
 --update 对应 Windows 安装程序升级时的用户词库回放。随包提供词库的安装由包管理器换掉词库，宿主启动时自己切换代次；自行下载的词库没有人替换，升级抬高词库版本后宿主只能继续用旧的。--update 读出已有状态记录的词库目录，按已安装的词库锁核对；不符时加 --download 在旁边另建一份新词库目录，与旧目录一致的几项直接链接过去，只取回缺失或不符的几项，旧目录一个文件都不动。随后请两个宿主关掉输入会话，用 msime-linux-prepare --refresh 切到新代次并回放用户词库，再让它们重新打开。已有状态时给 --download 即视为 --update。
 """
@@ -43,10 +43,10 @@ PANEL_RESTORE_LIMIT = 64 * 1024
 COMMAND_TIMEOUT = 10
 DOWNLOAD_TIMEOUT = 60
 FCITX5_INPUT_METHOD = "msime"
-FCITX5_NAME = "水杉输入法"
+FCITX5_NAME = "灵耀输入法"
 IBUS_ENGINE = "msime-linux"
 # The IBus <longname>, the same name the Windows TSF profile registers.
-IBUS_NAME = "Metasequoia 水杉输入法"
+IBUS_NAME = "Lingyao 灵耀输入法"
 FCITX5_CONTROLLER = [
     "gdbus", "call", "--session", "--dest", "org.fcitx.Fcitx5", "--object-path", "/controller", "--method",
 ]
@@ -520,14 +520,14 @@ def ensure_anonymous_account(prefix: Path) -> None:
             check=False,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
-        print(f"匿名水杉账号注册暂时未完成：{error}；下次需要候选翻译时会重试。", file=sys.stderr)
+        print(f"匿名灵耀账号注册暂时未完成：{error}；下次需要候选翻译时会重试。", file=sys.stderr)
         return
     if result.returncode != 0:
         detail = result.stderr.strip().splitlines()
         suffix = f"：{detail[-1]}" if detail else ""
-        print(f"匿名水杉账号注册暂时未完成{suffix}；下次需要候选翻译时会重试。", file=sys.stderr)
+        print(f"匿名灵耀账号注册暂时未完成{suffix}；下次需要候选翻译时会重试。", file=sys.stderr)
     else:
-        print("已自动注册本机匿名水杉账号。")
+        print("已自动注册本机匿名灵耀账号。")
 
 
 # The theme-set hook ships with the settings launcher (data/omarchy/theme-set.in); Omarchy runs every file in its theme-set.d after switching theme, and skips a dangling link, so a removed installation leaves nothing that fails.
@@ -556,7 +556,7 @@ def link_omarchy_theme_hook(prefix: Path, options_file: Path) -> None:
         return
     link = omarchy_hook_link()
     if (link.exists() or link.is_symlink()) and not our_omarchy_hook(link):
-        print(f"{link} 已存在且不是水杉的钩子，没有改动它；Omarchy 皮肤不会随主题切换更新。", file=sys.stderr)
+        print(f"{link} 已存在且不是灵耀的钩子，没有改动它；Omarchy 皮肤不会随主题切换更新。", file=sys.stderr)
         return
     try:
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -610,7 +610,7 @@ def link_omarchy_plugin(prefix: Path) -> None:
         return
     link = omarchy_plugin_link()
     if (link.exists() or link.is_symlink()) and not our_omarchy_plugin(link):
-        print(f"{link} 已存在且不是水杉的插件，没有改动它。", file=sys.stderr)
+        print(f"{link} 已存在且不是灵耀的插件，没有改动它。", file=sys.stderr)
         return
     try:
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -620,7 +620,7 @@ def link_omarchy_plugin(prefix: Path) -> None:
     except OSError as error:
         print(f"未能接入 Omarchy 状态栏插件：{error}", file=sys.stderr)
         return
-    print(f"已接入 Omarchy 状态栏插件：运行 `omarchy plugin enable {OMARCHY_PLUGIN_ID}` 把中/英和方案显示到状态栏，点它打开水杉菜单。")
+    print(f"已接入 Omarchy 状态栏插件：运行 `omarchy plugin enable {OMARCHY_PLUGIN_ID}` 把中/英和方案显示到状态栏，点它打开灵耀菜单。")
 
 
 def unlink_omarchy_plugin() -> str | None:
@@ -731,7 +731,7 @@ def register_fcitx5() -> str:
     # Fcitx5 drops entries naming an input method it has not loaded. Read the group back rather than report an addition that did not happen.
     _, items = fcitx5_group(group)
     if not any(item[0] == FCITX5_INPUT_METHOD for item in items):
-        raise RegistrationFailed("Fcitx5 没有保存加入的水杉输入法")
+        raise RegistrationFailed("Fcitx5 没有保存加入的灵耀输入法")
     return f"已把「{FCITX5_NAME}」加入 Fcitx5 当前输入法组「{group}」，用 Fcitx5 的输入法切换快捷键即可切换到它。"
 
 
@@ -893,7 +893,7 @@ def restorable(entries: dict, current) -> tuple[dict, list[str]]:
 
 
 def kept_note(kept: list[str]) -> str:
-    return f"；{'、'.join(kept)} 在水杉写入之后已被改动，保持不变" if kept else ""
+    return f"；{'、'.join(kept)} 在灵耀写入之后已被改动，保持不变" if kept else ""
 
 
 def restore_fcitx5_panel(entries: dict) -> str | None:
@@ -997,9 +997,9 @@ def restore_panel_settings() -> None:
     if theme.is_dir():
         try:
             shutil.rmtree(theme)
-            print(f"已删除水杉生成的 Fcitx5 主题 {theme}。")
+            print(f"已删除灵耀生成的 Fcitx5 主题 {theme}。")
         except OSError as error:
-            print(f"未能删除水杉生成的 Fcitx5 主题 {theme}：{error.strerror}", file=sys.stderr)
+            print(f"未能删除灵耀生成的 Fcitx5 主题 {theme}：{error.strerror}", file=sys.stderr)
     if text is None:
         return
     if complete:
@@ -1109,11 +1109,11 @@ def next_steps(state: Path, host: str | None, registered: str | None) -> None:
     elif host == "ibus":
         print(f"下一步：ibus restart，再在输入源里添加「{IBUS_NAME}」。")
     else:
-        print("下一步：启动 fcitx5 或 ibus，再在各自的设置里加入水杉输入法。")
+        print("下一步：启动 fcitx5 或 ibus，再在各自的设置里加入灵耀输入法。")
     if host == "fcitx5":
         print("  状态栏上的中英文、简繁、工具栏等入口挂在输入法状态区，需要桌面提供托盘")
         print("  宿主；若发行版以 fcitx5 --disable notificationitem 启动，这些入口不会显示，")
-        print("  但输入本身不受影响，设置也可以从应用列表里的「水杉输入法」打开。")
+        print("  但输入本身不受影响，设置也可以从应用列表里的「灵耀输入法」打开。")
     print("设置面板：msime-linux-settings（需要安装时提供了桌面二进制）")
 
 
@@ -1158,7 +1158,7 @@ def without_edition_argument(argv: list[str]) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="水杉输入法 Linux 首次配置")
+    parser = argparse.ArgumentParser(description="灵耀输入法 Linux 首次配置")
     parser.add_argument(
         "--edition",
         help=f"要配置的版本（full、pinyin、wubi 等），默认是本命令所属的版本 {installed_edition()}；指定另一个版本时交给那个版本自己的首次配置命令",
@@ -1194,12 +1194,12 @@ def main() -> int:
     parser.add_argument(
         "--unregister",
         action="store_true",
-        help="把水杉输入法从 GNOME 输入源、IBus 预载引擎和 Fcitx5 当前输入法组中移除，恢复被改过的候选面板主题、字体和滚轮翻页设置后退出，不准备状态也不下载；卸载时自动执行",
+        help="把灵耀输入法从 GNOME 输入源、IBus 预载引擎和 Fcitx5 当前输入法组中移除，恢复被改过的候选面板主题、字体和滚轮翻页设置后退出，不准备状态也不下载；卸载时自动执行",
     )
     parser.add_argument(
         "--register",
         action="store_true",
-        help="已完成首次配置时，重新启用在线、语音和剪贴板服务，并把水杉输入法加回正在运行的 Fcitx5 或 IBus 的输入法列表，不检查词库也不改状态；还没有配置过时什么也不做。发行版仓库的包替换掉另一个同样内容的包（例如 msime 替换发布页的 msime-linux）之后自动执行：被替换的包卸载时撤销了这两样",
+        help="已完成首次配置时，重新启用在线、语音和剪贴板服务，并把灵耀输入法加回正在运行的 Fcitx5 或 IBus 的输入法列表，不检查词库也不改状态；还没有配置过时什么也不做。发行版仓库的包替换掉另一个同样内容的包（例如 msime 替换发布页的 msime-linux）之后自动执行：被替换的包卸载时撤销了这两样",
     )
     arguments = parser.parse_args()
     if arguments.register and arguments.unregister:

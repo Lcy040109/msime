@@ -96,7 +96,7 @@ if(staging STREQUAL "" AND NOT user_id STREQUAL "0" AND NOT setup_program STREQU
     message(STATUS "Could not remove MSIME from this user's input method lists (${unregister_result}); remove it in the desktop input sources (IBus) or fcitx5-configtool (Fcitx5)")
   endif()
 else()
-  message(STATUS "Each user who added MSIME to an input method list should remove it there: Metasequoia 水杉输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)")
+  message(STATUS "Each user who added MSIME to an input method list should remove it there: Lingyao 灵耀输入法 from the desktop input sources (IBus), MSIME from the current group in fcitx5-configtool (Fcitx5)")
 endif()
 
 foreach(target IN LISTS removals)

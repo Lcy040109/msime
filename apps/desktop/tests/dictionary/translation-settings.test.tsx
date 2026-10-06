@@ -244,7 +244,7 @@ describe("the MSIME account translation is an explicit choice", () => {
   });
 
   test("a chosen account shows despite Tencent's credential-less default", async () => {
-    // 显式选了水杉账号的文档旁边还留着腾讯云默认的 `enabled: true`（没有凭据）；宿主走的是账号，页面必须显示账号。
+    // 显式选了灵耀账号的文档旁边还留着腾讯云默认的 `enabled: true`（没有凭据）；宿主走的是账号，页面必须显示账号。
     await mountOn("macos", {
       translation_account: true,
       custom_translation: { enabled: false, endpoint: "", api_key: "" },
@@ -280,7 +280,7 @@ describe("the MSIME account translation is an explicit choice", () => {
   test("Android shows the account as an unticked opt-in switch", async () => {
     const save = await mountOn("android");
     const account = screen.getByRole("switch", {
-      name: "使用水杉账号翻译候选词",
+      name: "使用灵耀账号翻译候选词",
     }) as HTMLInputElement;
     expect(account.checked).toBe(false);
     fireEvent.click(account);
@@ -295,7 +295,7 @@ describe("the MSIME account translation is an explicit choice", () => {
   test("the Android switch follows candidate translation", async () => {
     await mountOn("android", { candidate_translations: false });
     expect(
-      (screen.getByRole("switch", { name: "使用水杉账号翻译候选词" }) as HTMLInputElement).disabled,
+      (screen.getByRole("switch", { name: "使用灵耀账号翻译候选词" }) as HTMLInputElement).disabled,
     ).toBe(true);
   });
 });

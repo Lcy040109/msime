@@ -77,7 +77,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-emoji-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
     let category = try XCTUnwrap(KeyboardEmojiCatalog.categories.first)
     let page = try KeyboardEmojiCatalog.loadPage(
@@ -136,7 +136,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-symbol-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
     let parents = try KeyboardEmojiCatalog.symbolParents(resources: resources)
     XCTAssertTrue(parents.contains("Punctuation"))
@@ -153,7 +153,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-symbol-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
     for query in ["arrow", "jiantou", "JT"] {
       let found = try XCTUnwrap(KeyboardEmojiCatalog.searchSymbols(resources: resources, query: query), query)
@@ -325,7 +325,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-emoji-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
     for query in ["xiao", "smile"] {
       let page = try KeyboardEmojiCatalog.loadPage(
@@ -410,7 +410,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-kaomoji-search-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let resources = try XCTUnwrap(MetasequoiaInputSessionBridge(stateRoot: state).candidateGlossResources())
+    let resources = try XCTUnwrap(LingyaoInputSessionBridge(stateRoot: state).candidateGlossResources())
     for query in ["kiss", "qian"] {
       let page = try KeyboardEmojiCatalog.loadPage(
         resources: resources, category: try XCTUnwrap(KeyboardEmojiCatalog.search(query, kaomoji: true)), offset: 0)
@@ -502,7 +502,7 @@ final class KeyboardEmojiCatalogTests: XCTestCase {
     let state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-kaomoji-catalog-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: state) }
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
     let resources = try XCTUnwrap(bridge.candidateGlossResources())
     let page = try KeyboardEmojiCatalog.loadPage(
       resources: resources, category: KeyboardEmojiCatalog.kaomoji, offset: 0)

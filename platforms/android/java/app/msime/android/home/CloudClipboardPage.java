@@ -29,12 +29,12 @@ import java.util.concurrent.Callable;
 /**
  * 云剪贴板：主开关与保留时长一张卡，下面是「最近」列表（文本、置顶 · 设备 · 时间，行尾置顶与删除），右上角「清空」。
  *
- * <p>文案如实写：记录在登录的设备之间同步，经 HTTPS 传输，明文保存在水杉云，关闭即删除。客户端不加密，所以不写「端到端加密」。保留时长 1 / 7 / 30 天或一直保留，由服务端定期清理过期记录（{@link CloudClipboardApi}）。这一页从不读取系统剪贴板，点一条记录才把它复制过去。
+ * <p>文案如实写：记录在登录的设备之间同步，经 HTTPS 传输，明文保存在灵耀云，关闭即删除。客户端不加密，所以不写「端到端加密」。保留时长 1 / 7 / 30 天或一直保留，由服务端定期清理过期记录（{@link CloudClipboardApi}）。这一页从不读取系统剪贴板，点一条记录才把它复制过去。
  *
  * <p>只有真实账号有云剪贴板；没有登录时整页只显示一句说明。
  */
 public final class CloudClipboardPage extends DetailPage {
-    private static final String DESCRIPTION = "在你登录的设备之间同步，经 HTTPS 传输，保存在水杉云，关闭即删除";
+    private static final String DESCRIPTION = "在你登录的设备之间同步，经 HTTPS 传输，保存在灵耀云，关闭即删除";
     private static final List<String> RETENTION_LABELS = List.of("1 天", "7 天", "30 天", "一直");
 
     @Nullable private CloudClipboardApi.Page page;
@@ -109,7 +109,7 @@ public final class CloudClipboardPage extends DetailPage {
 
         if (signedOut) {
             GroupCard card = GroupCard.add(target, null);
-            card.note("登录水杉账号后，复制的文字可以在你的设备之间同步。" + DESCRIPTION + "。");
+            card.note("登录灵耀账号后，复制的文字可以在你的设备之间同步。" + DESCRIPTION + "。");
             return;
         }
 
@@ -234,7 +234,7 @@ public final class CloudClipboardPage extends DetailPage {
         row.setOnClickListener(ignored -> {
             ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
             if (clipboard == null) return;
-            clipboard.setPrimaryClip(ClipData.newPlainText("水杉云剪贴板", item.text()));
+            clipboard.setPrimaryClip(ClipData.newPlainText("灵耀云剪贴板", item.text()));
             MsToast.show(context, "已复制");
         });
         return row;
@@ -303,7 +303,7 @@ public final class CloudClipboardPage extends DetailPage {
         }
         new MaterialAlertDialogBuilder(requireContext())
             .setTitle("关闭云剪贴板？")
-            .setMessage("关闭后，保存在水杉云上的全部记录都会删除，其他设备也看不到了。")
+            .setMessage("关闭后，保存在灵耀云上的全部记录都会删除，其他设备也看不到了。")
             .setNegativeButton("取消", (dialog, which) -> render())
             .setOnCancelListener(dialog -> render())
             .setPositiveButton("关闭", (dialog, which) -> mutate(() -> { api.setEnabled(false); return null; }, "已关闭"))

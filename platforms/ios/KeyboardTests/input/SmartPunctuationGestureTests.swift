@@ -16,7 +16,7 @@ final class SmartPunctuationGestureTests: XCTestCase {
 
   /// Pressing the same mark again right after it landed replaces it with the Chinese one.
   func testRepeatedMarkIsOfferedTheChineseReplacement() {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.cancel()
 
     let armed = bridge.smartPunctuationArming(
@@ -56,7 +56,7 @@ final class SmartPunctuationGestureTests: XCTestCase {
   /// behaviour is covered where the switch can be set: `smart_punctuation_gestures_follow_their_own_switches`
   /// in the host-api tests. What matters here is that the default reaches the keyboard intact.
   func testSpaceConversionStaysOffUntilItIsAskedFor() {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.cancel()
     let armed = bridge.smartPunctuationArming(
       ascii: ".", commit: "。", timestampMilliseconds: 2_000, editorGeneration: 42,
@@ -73,7 +73,7 @@ final class SmartPunctuationGestureTests: XCTestCase {
 
   /// Neither gesture arms without an editor to belong to.
   func testNothingArmsWithoutACommit() {
-    let bridge = MetasequoiaInputSessionBridge()
+    let bridge = LingyaoInputSessionBridge()
     _ = bridge.cancel()
     let armed = bridge.smartPunctuationArming(
       ascii: ",", commit: "", timestampMilliseconds: 0, editorGeneration: 1,

@@ -1,11 +1,11 @@
 #include "Private.h"
 #include "Globals.h"
 #include "EditSession.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
 #include "../Composition/PreeditCaret.h"
-#include "MetasequoiaIMEBaseStructure.h"
+#include "LingyaoIMEBaseStructure.h"
 #include <debugapi.h>
 #include <minwindef.h>
 #include <string>
@@ -51,7 +51,7 @@ HRESULT EndKeyboardComposition(ITfComposition *composition, TfEditCookie ec)
 class CKeyboardCancellationEditSession final : public CEditSessionBase
 {
   public:
-    CKeyboardCancellationEditSession(CMetasequoiaIME *service, ITfContext *context,
+    CKeyboardCancellationEditSession(CLingyaoIME *service, ITfContext *context,
                                      ITfComposition *composition, uint64_t focus, uint64_t epoch)
         : CEditSessionBase(service, context), composition_(composition), focus_(focus), epoch_(epoch)
     {
@@ -105,7 +105,7 @@ DWORD_PTR MapRawCaretToPreedit(const CStringRange &raw, DWORD_PTR rawCaret, cons
 
 //////////////////////////////////////////////////////////////////////
 //
-// CMetasequoiaIME class
+// CLingyaoIME class
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -117,7 +117,7 @@ DWORD_PTR MapRawCaretToPreedit(const CStringRange &raw, DWORD_PTR rawCaret, cons
 //
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_IsRangeCovered(TfEditCookie ec, _In_ ITfRange *pRangeTest, _In_ ITfRange *pRangeCover)
+BOOL CLingyaoIME::_IsRangeCovered(TfEditCookie ec, _In_ ITfRange *pRangeTest, _In_ ITfRange *pRangeCover)
 {
     LONG lResult = 0;
     ;
@@ -141,7 +141,7 @@ BOOL CMetasequoiaIME::_IsRangeCovered(TfEditCookie ec, _In_ ITfRange *pRangeTest
 //
 //----------------------------------------------------------------------------
 
-VOID CMetasequoiaIME::_DeleteCandidateList(BOOL isForce, _In_opt_ ITfContext *pContext)
+VOID CLingyaoIME::_DeleteCandidateList(BOOL isForce, _In_opt_ ITfContext *pContext)
 {
     PerfTimer timer;
     pContext;
@@ -187,7 +187,7 @@ VOID CMetasequoiaIME::_DeleteCandidateList(BOOL isForce, _In_opt_ ITfContext *pC
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleComplete(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleComplete(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     PerfTimer timer;
     g_toggleImeFallbackBuffer.clear();
@@ -204,7 +204,7 @@ HRESULT CMetasequoiaIME::_HandleComplete(TfEditCookie ec, _In_ ITfContext *pCont
     return S_OK;
 }
 
-HRESULT CMetasequoiaIME::_HandleCompleteCommitFirst(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleCompleteCommitFirst(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     PerfTimer timer;
     g_toggleImeFallbackBuffer.clear();
@@ -221,7 +221,7 @@ HRESULT CMetasequoiaIME::_HandleCompleteCommitFirst(TfEditCookie ec, _In_ ITfCon
     return S_OK;
 }
 
-HRESULT CMetasequoiaIME::_HandleHostRawCommit(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleHostRawCommit(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     auto *host = _pCompositionProcessorEngine->GetHostEngineAdapter();
     if (!host || !host->valid()) return S_FALSE;
@@ -252,7 +252,7 @@ HRESULT CMetasequoiaIME::_HandleHostRawCommit(TfEditCookie ec, _In_ ITfContext *
     return FAILED(writeResult) ? writeResult : E_FAIL;
 }
 
-HRESULT CMetasequoiaIME::_HandleSyllableCommit(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
+HRESULT CLingyaoIME::_HandleSyllableCommit(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
                                                bool replayKey)
 {
     std::wstring text;
@@ -311,7 +311,7 @@ bool KoreanHanjaListOpen(const msime::tsf::EngineView &view)
 }
 } // namespace
 
-CMetasequoiaIME::HostComposedView CMetasequoiaIME::_ReadHostComposedView() const
+CLingyaoIME::HostComposedView CLingyaoIME::_ReadHostComposedView() const
 {
     HostComposedView result;
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
@@ -326,7 +326,7 @@ CMetasequoiaIME::HostComposedView CMetasequoiaIME::_ReadHostComposedView() const
     return result;
 }
 
-bool CMetasequoiaIME::_IsKoreanHanjaListOpen() const
+bool CLingyaoIME::_IsKoreanHanjaListOpen() const
 {
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return false;
@@ -336,7 +336,7 @@ bool CMetasequoiaIME::_IsKoreanHanjaListOpen() const
            KoreanHanjaListOpen(current.view);
 }
 
-HRESULT CMetasequoiaIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
+HRESULT CLingyaoIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
                                                uint64_t requestId)
 {
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
@@ -412,7 +412,7 @@ HRESULT CMetasequoiaIME::_HandleKoreanHanjaKey(TfEditCookie ec, _In_ ITfContext 
     return _HandleCompositionInputWorker(_pCompositionProcessorEngine, ec, pContext, FANY_IME_NO_REQUEST_ID);
 }
 
-void CMetasequoiaIME::_QueueKoreanSyllableKeyReplay(UINT virtualKey)
+void CLingyaoIME::_QueueKoreanSyllableKeyReplay(UINT virtualKey)
 {
     if (_msgWndHandle == nullptr || !msime::tsf::is_korean_caret_or_edit_key(virtualKey))
     {
@@ -431,7 +431,7 @@ void CMetasequoiaIME::_QueueKoreanSyllableKeyReplay(UINT virtualKey)
     }
 }
 
-void CMetasequoiaIME::_RunKoreanSyllableKeyReplay(UINT virtualKey)
+void CLingyaoIME::_RunKoreanSyllableKeyReplay(UINT virtualKey)
 {
     // A focus change since the commit means the key would land in another editor, so it is dropped.
     if (_koreanKeyReplayFocusToken == 0 || !_IsFocusSessionCurrent(_koreanKeyReplayFocusToken) ||
@@ -460,7 +460,7 @@ void CMetasequoiaIME::_RunKoreanSyllableKeyReplay(UINT virtualKey)
 //
 //----------------------------------------------------------------------------
 
-bool CMetasequoiaIME::_IsKeyboardCancellationCurrent(ITfContext *context, ITfComposition *composition,
+bool CLingyaoIME::_IsKeyboardCancellationCurrent(ITfContext *context, ITfComposition *composition,
                                                     uint64_t focusToken, uint64_t compositionEpoch) const
 {
     if (!context || !composition || !SupportsKeyboardCompositionCancel(this) ||
@@ -474,7 +474,7 @@ bool CMetasequoiaIME::_IsKeyboardCancellationCurrent(ITfContext *context, ITfCom
                SupportsKeyboardCompositionCancel(this), !_voiceCompositionActive);
 }
 
-HRESULT CMetasequoiaIME::_RequestKeyboardCancellation(uint64_t focusToken, uint64_t compositionEpoch)
+HRESULT CLingyaoIME::_RequestKeyboardCancellation(uint64_t focusToken, uint64_t compositionEpoch)
 {
     if (!_pComposition || !_pContext || !SupportsKeyboardCompositionCancel(this)) return S_FALSE;
     // Keep exact references across both focus validation and RequestEditSession.
@@ -502,7 +502,7 @@ HRESULT CMetasequoiaIME::_RequestKeyboardCancellation(uint64_t focusToken, uint6
     return result;
 }
 
-HRESULT CMetasequoiaIME::_ApplyKeyboardCancellation(TfEditCookie ec, ITfContext *context,
+HRESULT CLingyaoIME::_ApplyKeyboardCancellation(TfEditCookie ec, ITfContext *context,
                                                    ITfComposition *composition, uint64_t focusToken,
                                                    uint64_t compositionEpoch)
 {
@@ -538,7 +538,7 @@ HRESULT CMetasequoiaIME::_ApplyKeyboardCancellation(TfEditCookie ec, ITfContext 
         });
 }
 
-bool CMetasequoiaIME::_CancelHostComposition()
+bool CLingyaoIME::_CancelHostComposition()
 {
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (!host || !host->valid()) return true;
@@ -553,7 +553,7 @@ bool CMetasequoiaIME::_CancelHostComposition()
     return true;
 }
 
-HRESULT CMetasequoiaIME::_HandleEscape(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleEscape(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     // 越南文词和藏文音节串在第一次 Esc 时重新显示原文并继续组字；下一次 Esc 像其他组字一样丢弃它。
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
@@ -563,7 +563,7 @@ HRESULT CMetasequoiaIME::_HandleEscape(TfEditCookie ec, _In_ ITfContext *pContex
     return _HandleCancel(ec, pContext);
 }
 
-HRESULT CMetasequoiaIME::_HandleCancel(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleCancel(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     PerfTimer timer;
     (void)_CancelHostComposition();
@@ -586,7 +586,7 @@ HRESULT CMetasequoiaIME::_HandleCancel(TfEditCookie ec, _In_ ITfContext *pContex
     return S_OK;
 }
 
-HRESULT CMetasequoiaIME::_HandleToogleIMEMode(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleToogleIMEMode(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     if (auto *host = _pCompositionProcessorEngine->GetHostEngineAdapter(); host && host->valid())
     {
@@ -638,7 +638,7 @@ HRESULT CMetasequoiaIME::_HandleToogleIMEMode(TfEditCookie ec, _In_ ITfContext *
     return S_OK;
 }
 
-HRESULT CMetasequoiaIME::_HandleInsertText(TfEditCookie ec, _In_ ITfContext *pContext, const std::wstring &text)
+HRESULT CLingyaoIME::_HandleInsertText(TfEditCookie ec, _In_ ITfContext *pContext, const std::wstring &text)
 {
     if (text.empty())
     {
@@ -655,7 +655,7 @@ HRESULT CMetasequoiaIME::_HandleInsertText(TfEditCookie ec, _In_ ITfContext *pCo
     return _HandleCompleteCommitFirst(ec, pContext);
 }
 
-HRESULT CMetasequoiaIME::_HandleCommitCandidateAndContinue(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_HandleCommitCandidateAndContinue(TfEditCookie ec, _In_ ITfContext *pContext,
                                                            const std::wstring &payload)
 {
     std::size_t consumed = 0;
@@ -715,7 +715,7 @@ HRESULT CMetasequoiaIME::_HandleCommitCandidateAndContinue(TfEditCookie ec, _In_
     return _HandleCompositionInputWorker(engine, ec, pContext, FANY_IME_NO_REQUEST_ID);
 }
 
-HRESULT CMetasequoiaIME::_HandleUpdateVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_HandleUpdateVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext,
                                                        const std::wstring &text)
 {
     if (text.empty())
@@ -745,7 +745,7 @@ HRESULT CMetasequoiaIME::_HandleUpdateVoiceComposition(TfEditCookie ec, _In_ ITf
     return _AddComposingAndChar(ec, pContext, &voiceString);
 }
 
-HRESULT CMetasequoiaIME::_HandleCommitVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_HandleCommitVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext,
                                                        const std::wstring &text)
 {
     _voiceCompositionActive = false;
@@ -775,7 +775,7 @@ HRESULT CMetasequoiaIME::_HandleCommitVoiceComposition(TfEditCookie ec, _In_ ITf
     return _HandleCompleteCommitFirst(ec, pContext);
 }
 
-HRESULT CMetasequoiaIME::_HandleCancelVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CLingyaoIME::_HandleCancelVoiceComposition(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     if (!_voiceCompositionActive && _pComposition == nullptr)
     {
@@ -797,7 +797,7 @@ HRESULT CMetasequoiaIME::_HandleCancelVoiceComposition(TfEditCookie ec, _In_ ITf
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch,
+HRESULT CLingyaoIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch,
                                                  uint64_t requestId)
 {
     HRESULT workerResult = S_OK;
@@ -955,12 +955,12 @@ Exit:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEngine *pCompositionProcessorEngine,
+HRESULT CLingyaoIME::_HandleCompositionInputWorker(_In_ CCompositionProcessorEngine *pCompositionProcessorEngine,
                                                        TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId)
 {
     HRESULT hr = S_OK;
     PerfTimer timer;
-    CMetasequoiaImeArray<CStringRange> readingStrings;
+    CLingyaoImeArray<CStringRange> readingStrings;
     // CStringRange borrows its buffer; retain the host text through rendering.
     std::wstring hostPreedit;
     BOOL isWildcardIncluded = FALSE;
@@ -1165,7 +1165,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionInputWorker(_In_ CCompositionProcesso
     //
     // Get candidate string from composition processor engine
     //
-    CMetasequoiaImeArray<CCandidateListItem> candidateList;
+    CLingyaoImeArray<CCandidateListItem> candidateList;
 
     //
     // Important: Generate candidate list here
@@ -1248,7 +1248,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionInputWorker(_In_ CCompositionProcesso
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_CreateAndStartCandidate(_In_ CCompositionProcessorEngine *pCompositionProcessorEngine,
+HRESULT CLingyaoIME::_CreateAndStartCandidate(_In_ CCompositionProcessorEngine *pCompositionProcessorEngine,
                                                   TfEditCookie ec, _In_ ITfContext *pContext)
 {
     HRESULT hr = S_OK;
@@ -1317,7 +1317,7 @@ HRESULT CMetasequoiaIME::_CreateAndStartCandidate(_In_ CCompositionProcessorEngi
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionFinalize(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCandidateList)
+HRESULT CLingyaoIME::_HandleCompositionFinalize(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCandidateList)
 {
     HRESULT hr = S_OK;
     PerfTimer timer;
@@ -1364,12 +1364,12 @@ HRESULT CMetasequoiaIME::_HandleCompositionFinalize(TfEditCookie ec, _In_ ITfCon
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionConvert(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isWildcardSearch)
+HRESULT CLingyaoIME::_HandleCompositionConvert(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isWildcardSearch)
 {
     HRESULT hr = S_OK;
     PerfTimer timer;
 
-    CMetasequoiaImeArray<CCandidateListItem> candidateList;
+    CLingyaoImeArray<CCandidateListItem> candidateList;
 
     //
     // Get candidate string from composition processor engine
@@ -1453,7 +1453,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionConvert(TfEditCookie ec, _In_ ITfCont
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId)
+HRESULT CLingyaoIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId)
 {
     HRESULT workerResult = S_OK;
     ITfRange *pRangeComposition = nullptr;
@@ -1547,7 +1547,7 @@ Exit:
     return workerResult;
 }
 
-HRESULT CMetasequoiaIME::_HandleCompositionSegmentEdit(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_HandleCompositionSegmentEdit(TfEditCookie ec, _In_ ITfContext *pContext,
                                                        KEYSTROKE_FUNCTION keyFunction, uint64_t requestId)
 {
     const bool isBackspace = keyFunction == FUNCTION_BACKSPACE_SEGMENT;
@@ -1637,7 +1637,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionSegmentEdit(TfEditCookie ec, _In_ ITf
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionDelete(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId)
+HRESULT CLingyaoIME::_HandleCompositionDelete(TfEditCookie ec, _In_ ITfContext *pContext, uint64_t requestId)
 {
     HRESULT workerResult = S_OK;
     ITfRange *pRangeComposition = nullptr;
@@ -1719,7 +1719,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionDelete(TfEditCookie ec, _In_ ITfConte
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionArrowKey(TfEditCookie ec, _In_ ITfContext *pContext,
+HRESULT CLingyaoIME::_HandleCompositionArrowKey(TfEditCookie ec, _In_ ITfContext *pContext,
                                                     KEYSTROKE_FUNCTION keyFunction, uint64_t requestId)
 {
     if (keyFunction == FUNCTION_MOVE_LEFT || keyFunction == FUNCTION_MOVE_RIGHT)
@@ -1838,7 +1838,7 @@ Exit:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionPunctuation(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
+HRESULT CLingyaoIME::_HandleCompositionPunctuation(TfEditCookie ec, _In_ ITfContext *pContext, UINT code, WCHAR wch,
                                                        uint64_t requestId, const std::wstring &prefetchedText)
 {
     HRESULT hr = S_OK;
@@ -2062,7 +2062,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionPunctuation(TfEditCookie ec, _In_ ITf
 //
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_HandleCompositionDoubleSingleByte(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch)
+HRESULT CLingyaoIME::_HandleCompositionDoubleSingleByte(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch)
 {
     HRESULT hr = S_OK;
 
@@ -2097,7 +2097,7 @@ HRESULT CMetasequoiaIME::_HandleCompositionDoubleSingleByte(TfEditCookie ec, _In
 //    [in] dwKeyFunction - Function regarding virtual key
 //----------------------------------------------------------------------------
 
-HRESULT CMetasequoiaIME::_InvokeKeyHandler(_In_ ITfContext *pContext, UINT code, WCHAR wch, DWORD flags,
+HRESULT CLingyaoIME::_InvokeKeyHandler(_In_ ITfContext *pContext, UINT code, WCHAR wch, DWORD flags,
                                            _KEYSTROKE_STATE keyState, uint64_t requestId, std::wstring prefetchedText,
                                            UINT localResetToken, uint64_t expectedCompositionEpoch,
                                            uint64_t expectedFocusToken, uint64_t deferredReplayToken)

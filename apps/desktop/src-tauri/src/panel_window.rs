@@ -219,7 +219,7 @@ fn panel_surface(route: SurfaceRoute) -> Result<PanelSurface, HostActionError> {
 pub(crate) const VOCABULARY_PANEL: PanelSurface = PanelSurface {
     label: "vocabulary-panel",
     query: "vocabulary",
-    title: "水杉背单词",
+    title: "灵耀背单词",
     width: 560,
     height: 680,
     placement: PanelPlacement::BottomCenter,

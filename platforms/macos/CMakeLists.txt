@@ -151,7 +151,7 @@ set(MSIME_EDITION_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/edition_bundle.py"
 if(MSIME_EDITION STREQUAL "full")
   set(MSIME_INFO_PLIST_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in")
   set(MSIME_LOCALIZED_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources")
-  set(MSIME_INPUT_METHOD_NAME "水杉输入法")
+  set(MSIME_INPUT_METHOD_NAME "灵耀输入法")
 else()
   set(MSIME_EDITION_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/edition-${MSIME_EDITION}")
   set(MSIME_INFO_PLIST_TEMPLATE "${MSIME_EDITION_DIRECTORY}/Info.plist.in")
@@ -266,7 +266,7 @@ endforeach()
 #
 # The location has to name the .lproj directory. Every locale's file is called InfoPlist.strings, so a
 # bare `Resources` flattens them into one file and the last locale overwrites the rest - the bundle then
-# carries only the English names and the input menu loses 水杉输入法. bundle-contents checks each locale.
+# carries only the English names and the input menu loses 灵耀输入法. bundle-contents checks each locale.
 foreach(MSIME_BUNDLE_LOCALE zh-Hans en)
   target_sources(MSIMEClientInputMethod
     PRIVATE "${MSIME_LOCALIZED_RESOURCES}/${MSIME_BUNDLE_LOCALE}.lproj/InfoPlist.strings")

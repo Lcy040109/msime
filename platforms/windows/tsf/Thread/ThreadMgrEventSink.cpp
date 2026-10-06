@@ -1,12 +1,12 @@
 #include "Private.h"
 #include "fmt/xchar.h"
 #include "Globals.h"
-#include "MetasequoiaIME.h"
+#include "LingyaoIME.h"
 #include "CandidateListUIPresenter.h"
 #include "Ipc.h"
 #include "KeyPressStatisticsQueue.h"
 
-void CMetasequoiaIME::_SyncHostContextFocus(_In_opt_ ITfContext *context)
+void CLingyaoIME::_SyncHostContextFocus(_In_opt_ ITfContext *context)
 {
     auto *host = _pCompositionProcessorEngine ? _pCompositionProcessorEngine->GetHostEngineAdapter() : nullptr;
     if (host && host->valid())
@@ -39,7 +39,7 @@ void CMetasequoiaIME::_SyncHostContextFocus(_In_opt_ ITfContext *context)
     _hostFocusContext = context;
 }
 
-void CMetasequoiaIME::_SyncHostDocumentFocus(_In_opt_ ITfDocumentMgr *document)
+void CLingyaoIME::_SyncHostDocumentFocus(_In_opt_ ITfDocumentMgr *document)
 {
     ITfContext *context = nullptr;
     if (document && FAILED(document->GetTop(&context)))
@@ -59,7 +59,7 @@ void CMetasequoiaIME::_SyncHostDocumentFocus(_In_opt_ ITfDocumentMgr *document)
 // a document.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnInitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
+STDAPI CLingyaoIME::OnInitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
 {
     pDocMgr;
     return E_NOTIMPL;
@@ -73,7 +73,7 @@ STDAPI CMetasequoiaIME::OnInitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
 // document.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnUninitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
+STDAPI CLingyaoIME::OnUninitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
 {
     pDocMgr;
     return E_NOTIMPL;
@@ -88,7 +88,7 @@ STDAPI CMetasequoiaIME::OnUninitDocumentMgr(_In_ ITfDocumentMgr *pDocMgr)
 // focus document, or now no document holds the input focus.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus, _In_ ITfDocumentMgr *pDocMgrPrevFocus)
+STDAPI CLingyaoIME::OnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus, _In_ ITfDocumentMgr *pDocMgrPrevFocus)
 {
     if (pDocMgrFocus == nullptr)
     {
@@ -239,7 +239,7 @@ STDAPI CMetasequoiaIME::OnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus, _In_ ITfDo
 // Sink called by the framework when a context is pushed.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnPushContext(_In_ ITfContext *pContext)
+STDAPI CLingyaoIME::OnPushContext(_In_ ITfContext *pContext)
 {
     _HandleFocusedContextStackChange(pContext);
     return S_OK;
@@ -252,13 +252,13 @@ STDAPI CMetasequoiaIME::OnPushContext(_In_ ITfContext *pContext)
 // Sink called by the framework when a context is popped.
 //----------------------------------------------------------------------------
 
-STDAPI CMetasequoiaIME::OnPopContext(_In_ ITfContext *pContext)
+STDAPI CLingyaoIME::OnPopContext(_In_ ITfContext *pContext)
 {
     _HandleFocusedContextStackChange(pContext);
     return S_OK;
 }
 
-void CMetasequoiaIME::_HandleFocusedContextStackChange(_In_opt_ ITfContext *changedContext)
+void CLingyaoIME::_HandleFocusedContextStackChange(_In_opt_ ITfContext *changedContext)
 {
     if (!IsNamedpipeFocusStateOwner(this) || changedContext == nullptr || _pThreadMgr == nullptr)
     {
@@ -333,7 +333,7 @@ void CMetasequoiaIME::_HandleFocusedContextStackChange(_In_opt_ ITfContext *chan
 // Advise our sink.
 //----------------------------------------------------------------------------
 
-BOOL CMetasequoiaIME::_InitThreadMgrEventSink()
+BOOL CLingyaoIME::_InitThreadMgrEventSink()
 {
     ITfSource *pSource = nullptr;
     BOOL ret = FALSE;
@@ -364,7 +364,7 @@ Exit:
 // Unadvise our sink.
 //----------------------------------------------------------------------------
 
-void CMetasequoiaIME::_UninitThreadMgrEventSink()
+void CLingyaoIME::_UninitThreadMgrEventSink()
 {
     ITfSource *pSource = nullptr;
 

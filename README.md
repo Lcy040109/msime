@@ -41,9 +41,9 @@
 | --- | --- | --- |
 | [Android](platforms/android/README.md) | `platforms/android/` | 输入法服务 `app.msime.android.MSIMEInputService` 跑在 `:ime` 独立进程，Java 宿主经 `platforms/android/native/client_jni.cpp` 调 host-api；Tauri/React 设置与输入法同包不同进程，共享私有 files/bootstrap/state；手写走 ML Kit Digital Ink |
 | [iOS](platforms/ios/README.md) | `platforms/ios/` | XcodeGen 从 `project.yml` 生成的原生 App 内嵌键盘扩展 `MSIMEKeyboardExtension`，两者通过 App Group `group.app.msime.ios` 共享状态；Swift 键盘直接调 host-api，手写走 ML Kit Digital Ink |
-| [macOS](platforms/macos/README.md) | `platforms/macos/` | InputMethodKit bundle（产物名 `灵耀输入法.app`，bundle id `app.msime.inputmethod.MetasequoiaIME`），Swift 后端编成 `MSIMEBackend.dylib` 随 bundle 分发，Sparkle 负责自动更新 |
+| [macOS](platforms/macos/README.md) | `platforms/macos/` | InputMethodKit bundle（产物名 `灵耀输入法.app`，bundle id `app.msime.inputmethod.LingyaoIME`），Swift 后端编成 `MSIMEBackend.dylib` 随 bundle 分发，Sparkle 负责自动更新 |
 | [Linux](platforms/linux/README.md) | `platforms/linux/` | IBus 与 Fcitx5 是两个并列的系统入口，链同一份 host-api ABI；在线联想、语音、剪贴板等能力由独立 provider 进程加 systemd 用户单元承载；CPack 出 TGZ 与 DEB |
-| [Windows](platforms/windows/README.md) | `platforms/windows/`、`platforms/windows/tsf/` | 进程内 TSF DLL（`MetasequoiaImeTsf`）与进程外 `MetasequoiaImeServer` 经命名管道通信，另有 watchdog 与运行配置准备工具；候选窗口、悬浮工具栏与托盘菜单由 Direct2D/DirectWrite 的 `msimeui` 绘制；Inno Setup 安装器注册 TIP 并随包词库 |
+| [Windows](platforms/windows/README.md) | `platforms/windows/`、`platforms/windows/tsf/` | 进程内 TSF DLL（`LingyaoImeTsf`）与进程外 `LingyaoImeServer` 经命名管道通信，另有 watchdog 与运行配置准备工具；候选窗口、悬浮工具栏与托盘菜单由 Direct2D/DirectWrite 的 `msimeui` 绘制；Inno Setup 安装器注册 TIP 并随包词库 |
 | [HarmonyOS](platforms/harmony/README.md) | `platforms/harmony/` | ArkTS 的 `KeyboardExtensionAbility`（`module.json5` 声明 `type: "inputMethod"`）承载键盘，经 NAPI 模块 `libmsimeclient.so` 调 host-api；设置页是内联打包进 `entry/src/main/resources/rawfile/settings/index.html` 的同一套共享 React 页面 |
 
 共享库可以加载进不同宿主进程；不要求启动 Tauri 才能输入。六个平台一致：产品形态是 `platforms/<os>` 的原生宿主，Tauri 只提供跨平台共享的功能与界面，不单独作为产品启动。跨进程的设置变更走显式的持久化与通知机制，不依赖进程内共享内存。

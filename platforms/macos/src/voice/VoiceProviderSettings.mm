@@ -175,7 +175,7 @@ BOOL IsWebSocketEndpoint(NSString *value)
            !url.fragment;
 }
 } // namespace
-@implementation MetasequoiaVoiceProviderSettings
+@implementation LingyaoVoiceProviderSettings
 // dictionaryForKey: type-checks the container and nothing inside it, and the NSString * properties
 // enforce nothing at runtime, so a non-string leaf reached -length or -isEqualToString: and killed
 // the input method with an unrecognized selector. The domain is only written here, so this needs an
@@ -196,7 +196,7 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
 
 + (instancetype)loadSettings
 {
-    MetasequoiaVoiceProviderSettings *value = [self new];
+    LingyaoVoiceProviderSettings *value = [self new];
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
     NSDictionary *saved = [defaults dictionaryForKey:@"voiceInput"];
     if (!saved)
@@ -359,9 +359,9 @@ static NSString *SharedSetting(NSString *key, NSString *fallback)
 // the settings window and the contents of the standalone window the input method's toolbar opens.
 // Upstream laid it out in absolute coordinates inside a fixed 610x580 window, which is why it could
 // only ever be a window.
-@interface MetasequoiaVoiceProviderSettingsView () <NSTextFieldDelegate>
+@interface LingyaoVoiceProviderSettingsView () <NSTextFieldDelegate>
 @end
-@implementation MetasequoiaVoiceProviderSettingsView
+@implementation LingyaoVoiceProviderSettingsView
 {
     NSPopUpButton *_provider;
     NSPopUpButton *_captureDevice;
@@ -506,7 +506,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
 - (void)reloadSettings
 {
     _loading = YES;
-    MetasequoiaVoiceProviderSettings *value = [MetasequoiaVoiceProviderSettings loadSettings];
+    LingyaoVoiceProviderSettings *value = [LingyaoVoiceProviderSettings loadSettings];
     NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
     NSUInteger providerIndex = [providerIDs indexOfObject:value.provider];
     [_provider selectItemAtIndex:providerIndex == NSNotFound ? 0 : providerIndex];
@@ -712,7 +712,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     {
         return;
     }
-    MetasequoiaVoiceProviderSettings *value = [MetasequoiaVoiceProviderSettings new];
+    LingyaoVoiceProviderSettings *value = [LingyaoVoiceProviderSettings new];
     NSArray *providerIDs = MSIMEVoiceASRProviderIDs();
     value.provider = providerIDs[MIN((NSUInteger)_provider.indexOfSelectedItem, providerIDs.count - 1)];
     value.endpoint = _endpoint.stringValue;
@@ -755,24 +755,24 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     panel.canChooseDirectories = YES;
     panel.canChooseFiles = NO;
     panel.allowsMultipleSelection = NO;
-    __weak MetasequoiaVoiceProviderSettingsView *weakSelf = self;
+    __weak LingyaoVoiceProviderSettingsView *weakSelf = self;
     [panel beginSheetModalForWindow:self.window
                   completionHandler:^(NSModalResponse response) {
                     if (response != NSModalResponseOK) return;
-                    MetasequoiaVoiceProviderSettingsView *strongSelf = weakSelf;
+                    LingyaoVoiceProviderSettingsView *strongSelf = weakSelf;
                     strongSelf->_modelPath.stringValue = panel.URL.path;
                     [strongSelf commit:nil];
                   }];
 }
 @end
 
-@implementation MetasequoiaVoiceProviderSettingsWindow
+@implementation LingyaoVoiceProviderSettingsWindow
 {
-    MetasequoiaVoiceProviderSettingsView *_form;
+    LingyaoVoiceProviderSettingsView *_form;
 }
 + (instancetype)sharedController
 {
-    static MetasequoiaVoiceProviderSettingsWindow *window;
+    static LingyaoVoiceProviderSettingsWindow *window;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
       window = [self new];
@@ -791,7 +791,7 @@ static void ShowNotice(NSTextField *label, NSString *message, NSColor *color)
     {
         window.title = @"语音输入设置";
         window.releasedWhenClosed = NO;
-        _form = [[MetasequoiaVoiceProviderSettingsView alloc] initWithFrame:NSZeroRect];
+        _form = [[LingyaoVoiceProviderSettingsView alloc] initWithFrame:NSZeroRect];
         [window.contentView addSubview:_form];
         [NSLayoutConstraint activateConstraints:@[
             [_form.leadingAnchor constraintEqualToAnchor:window.contentView.leadingAnchor constant:20.0],

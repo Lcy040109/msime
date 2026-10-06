@@ -2,12 +2,12 @@
 
 #include "Private.h"
 
-class CMetasequoiaIME;
+class CLingyaoIME;
 
 class CEditSessionBase : public ITfEditSession
 {
   public:
-    CEditSessionBase(_In_ CMetasequoiaIME *pTextService, _In_ ITfContext *pContext);
+    CEditSessionBase(_In_ CLingyaoIME *pTextService, _In_ ITfContext *pContext);
     virtual ~CEditSessionBase();
 
     // IUnknown
@@ -20,7 +20,7 @@ class CEditSessionBase : public ITfEditSession
 
   protected:
     ITfContext *_pContext;
-    CMetasequoiaIME *_pTextService;
+    CLingyaoIME *_pTextService;
 
   private:
     LONG _refCount; // COM ref count

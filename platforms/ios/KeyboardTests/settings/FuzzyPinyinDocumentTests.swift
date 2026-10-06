@@ -9,7 +9,7 @@ final class FuzzyPinyinDocumentTests: XCTestCase {
     super.setUp()
     state = FileManager.default.temporaryDirectory
       .appendingPathComponent("msime-fuzzy-document-\(UUID().uuidString)", isDirectory: true)
-    _ = MetasequoiaInputSessionBridge(stateRoot: state)
+    _ = LingyaoInputSessionBridge(stateRoot: state)
   }
 
   override func tearDown() {
@@ -18,7 +18,7 @@ final class FuzzyPinyinDocumentTests: XCTestCase {
   }
 
   private func stored() throws -> FuzzyPinyinPreference.Settings {
-    try XCTUnwrap(FuzzyPinyinPreference.settings(in: MetasequoiaInputSessionBridge.loadSharedPreferences(stateRoot: state)))
+    try XCTUnwrap(FuzzyPinyinPreference.settings(in: LingyaoInputSessionBridge.loadSharedPreferences(stateRoot: state)))
   }
 
   func testFirstEnableKeepsTheChosenRulesInsteadOfReseedingEveryRule() throws {

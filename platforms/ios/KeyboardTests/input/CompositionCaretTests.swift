@@ -16,8 +16,8 @@ final class CompositionCaretTests: XCTestCase {
   }
 
   func testTheCaretMovesThroughTheSpellingAndEditsHappenThere() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
-    var snapshot = MetasequoiaInputSnapshot()
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
+    var snapshot = LingyaoInputSnapshot()
     for letter in "nihao" { snapshot = bridge.handleCharacter(String(letter)) }
     XCTAssertEqual(snapshot.editingText, "nihao")
     XCTAssertEqual(snapshot.caretPosition, 5)
@@ -38,8 +38,8 @@ final class CompositionCaretTests: XCTestCase {
   }
 
   func testSegmentEditsTakeTheSpellingApartASyllableAtATime() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
-    var snapshot = MetasequoiaInputSnapshot()
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
+    var snapshot = LingyaoInputSnapshot()
     for letter in "nihaoshijie" { snapshot = bridge.handleCharacter(String(letter)) }
     XCTAssertEqual(snapshot.caretPosition, 11)
 
@@ -70,8 +70,8 @@ final class CompositionCaretTests: XCTestCase {
   }
 
   func testHomeEndAndForwardDeleteActInsideTheSpelling() {
-    let bridge = MetasequoiaInputSessionBridge(stateRoot: state)
-    var snapshot = MetasequoiaInputSnapshot()
+    let bridge = LingyaoInputSessionBridge(stateRoot: state)
+    var snapshot = LingyaoInputSnapshot()
     for letter in "nihao" { snapshot = bridge.handleCharacter(String(letter)) }
     snapshot = bridge.moveCaretToStart()
     XCTAssertTrue(snapshot.isHandled)
@@ -130,9 +130,9 @@ final class CompositionCaretTests: XCTestCase {
   }
 
   func testOnlyAnAsciiSpellingWithAnInnerCaretIsSplit() {
-    XCTAssertEqual(MetasequoiaInputSnapshot(editingText: "nihao", caretPosition: 0).editingTextWithCaret, "|nihao")
-    XCTAssertNil(MetasequoiaInputSnapshot(editingText: "nihao", caretPosition: 5).editingTextWithCaret)
-    XCTAssertNil(MetasequoiaInputSnapshot(editingText: "nihao", caretPosition: 9).editingTextWithCaret)
-    XCTAssertNil(MetasequoiaInputSnapshot(editingText: "にほ", caretPosition: 1).editingTextWithCaret)
+    XCTAssertEqual(LingyaoInputSnapshot(editingText: "nihao", caretPosition: 0).editingTextWithCaret, "|nihao")
+    XCTAssertNil(LingyaoInputSnapshot(editingText: "nihao", caretPosition: 5).editingTextWithCaret)
+    XCTAssertNil(LingyaoInputSnapshot(editingText: "nihao", caretPosition: 9).editingTextWithCaret)
+    XCTAssertNil(LingyaoInputSnapshot(editingText: "にほ", caretPosition: 1).editingTextWithCaret)
   }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 启动器、应用信息，以及系统输入法设置里这个键盘的名字，都取自这里。 -->
-    <string name="app_name">水杉输入法</string>
+    <string name="app_name">灵耀输入法</string>
     <string name="tab_settings">设置</string>
     <string name="splash_latin" translatable="false">METASEQUOIA IME</string>
     <string name="splash_skip">轻点跳过</string>
@@ -25,22 +25,22 @@
     <string name="tryout_back">返回</string>
     <string name="tryout_dismiss_keyboard">收起键盘</string>
     <string name="tryout_heading">边打字，边试键盘</string>
-    <string name="tryout_body">点下面的输入框就能调出水杉输入法。试试你的皮肤、输入方案和模糊音；这里打的字只留在这一页，不会被读取或保存。</string>
+    <string name="tryout_body">点下面的输入框就能调出灵耀输入法。试试你的皮肤、输入方案和模糊音；这里打的字只留在这一页，不会被读取或保存。</string>
     <string name="tryout_ai_absent">登录后点“加载 AI”选择模型；对话请求只发送你明确提交的消息。</string>
     <string name="tryout_hint">输入文字，试试键盘</string>
-    <string name="tryout_switch_ime">当前不是水杉输入法？点此切换</string>
+    <string name="tryout_switch_ime">当前不是灵耀输入法？点此切换</string>
     <string name="preparation_running">正在准备词库，首次启动需要一点时间…</string>
     <string name="preparation_failed">词库准备失败，键盘只能直接输入。点此重试。</string>
-    <string name="about_title">关于水杉</string>
+    <string name="about_title">关于灵耀</string>
     <string name="about_tagline">让输入更自然</string>
     <string name="about_version">版本 %1$s (%2$s)</string>
-    <string name="about_section_msime">关于水杉</string>
-    <string name="about_msime_footer">水杉是一款开源输入法，支持多种输入方案和个性化皮肤。手机与电脑共用输入引擎，各平台提供原生输入体验。</string>
+    <string name="about_section_msime">关于灵耀</string>
+    <string name="about_msime_footer">灵耀是一款开源输入法，支持多种输入方案和个性化皮肤。手机与电脑共用输入引擎，各平台提供原生输入体验。</string>
     <string name="about_section_help">帮助与开源</string>
     <string name="about_section_privacy">隐私</string>
     <string name="about_privacy_footer">键盘默认离线。仅在你使用 AI 或语音时，将本次文字或录音发送到所配置的服务。账号、云同步和皮肤社区按你启用的功能联网。手写首次联网下载模型，之后在设备上识别；Google ML Kit 会发送性能及使用统计，不会上传笔迹或识别结果。</string>
     <string name="desktop_title">电脑版下载</string>
-    <string name="desktop_headline">在电脑上，也用水杉</string>
+    <string name="desktop_headline">在电脑上，也用灵耀</string>
     <string name="desktop_subtitle">选择你的电脑系统，获取官方安装包与使用指南。</string>
     <string name="desktop_open_release">打开官方发布页</string>
     <string name="desktop_copy_link">复制链接</string>
@@ -66,7 +66,7 @@
     <string name="account_sign_in_google">使用 Google 登录</string>
     <string name="account_sign_in_hint">登录后可在皮肤社区发布、下载和评分。日常输入不需要登录。</string>
     <string name="account_sign_out">退出登录</string>
-    <string name="account_signed_in">已登录水杉账号</string>
+    <string name="account_signed_in">已登录灵耀账号</string>
     <string name="onboarding_skip">跳过</string>
     <string name="onboarding_previous">上一步</string>
     <string name="onboarding_next">下一步</string>
