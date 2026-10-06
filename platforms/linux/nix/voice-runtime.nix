@@ -44,7 +44,7 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    description = "水杉输入法本地语音识别用的 sherpa-onnx 运行库（上游预编译）";
+    description = "灵耀输入法本地语音识别用的 sherpa-onnx 运行库（上游预编译）";
     homepage = lock.source;
     # sherpa-onnx 是 Apache-2.0，随附的 ONNX Runtime 是 MIT。
     license = [

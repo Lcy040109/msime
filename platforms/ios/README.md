@@ -16,11 +16,11 @@ Xcode 工程由 XcodeGen 从 `project.yml` 生成，`project.yml` 是唯一权�
 
 iOS 云剪贴板复用共享账号会话和 Tauri `CloudClipboardPanel`，只上传用户在面板中明确输入的文本，不读取系统剪贴板。列表、搜索、启停、添加和删除均由 `client-core` 校验后访问账号服务；复制动作通过 iOS 平台插件写入 `UIPasteboard`，限制为 4000 个 UTF-16 单元且拒绝 NUL。只有本地剪贴板历史已开启时，复制后的文本才会进入已有 App Group 历史。
 
-键盘的剪贴板面板在本机历史旁边多了「云端」一栏，手机上在别的设备发到云剪贴板的内容可以直接上屏。打开面板时取一次列表，之后只在点刷新时再取；不轮询、不推送，面板关掉后才回来的结果直接丢弃。点一条经 `textDocumentProxy` 插入。本机历史每条的菜单里有「发到云剪贴板」，要等面板确认已登录才可点，发送前先读一次服务端的开关，关着时什么都不发（「云剪贴板未开启」）；不会因为复制而自动上传，也不读系统剪贴板。没有完全访问时显示开启提示、不发任何请求；未登录显示「登录水杉账号后可在设备间同步剪贴板」。密码、新密码和验证码输入框（与按键统计同一条判断）里没有「云端」这一栏，面板开着时输入框变成这类字段，云端内容也随即隐藏、不能插入。键盘能读到登录态，是因为 App 把账号会话存在 App Group 的钥匙串访问组 `group.app.msime.ios` 里，这个组 App 与扩展原本就有权限，不新增 entitlement，token 也不落到 App Group 文件里。服务端每次刷新都轮换 refresh token、并在旧 token 被再次使用时吊销整个会话，所以 App 与键盘对这份会话的每一次写入（登录、刷新、更新资料、退出）都经 App Group 里 `backend-account-refresh.lock` 的 `flock` 串行，持锁后先重读钥匙串：另一个进程已轮换过就直接采用，不再拿用过的 token 去刷新；刷新回来写入前再读一次，钥匙串已被清空或换成别的账号时丢弃这次结果，不会把已退出或已切换的会话写回去。共享的钥匙串是登录态的唯一依据，每次都重新读取，被另一个进程清空就按未登录处理。拿不到共享目录时不刷新。Tauri 公共组件的 iOS 工程把会话存在 App 默认访问组，它带的键盘因此显示未登录，这是已知限制。
+键盘的剪贴板面板在本机历史旁边多了「云端」一栏，手机上在别的设备发到云剪贴板的内容可以直接上屏。打开面板时取一次列表，之后只在点刷新时再取；不轮询、不推送，面板关掉后才回来的结果直接丢弃。点一条经 `textDocumentProxy` 插入。本机历史每条的菜单里有「发到云剪贴板」，要等面板确认已登录才可点，发送前先读一次服务端的开关，关着时什么都不发（「云剪贴板未开启」）；不会因为复制而自动上传，也不读系统剪贴板。没有完全访问时显示开启提示、不发任何请求；未登录显示「登录灵耀账号后可在设备间同步剪贴板」。密码、新密码和验证码输入框（与按键统计同一条判断）里没有「云端」这一栏，面板开着时输入框变成这类字段，云端内容也随即隐藏、不能插入。键盘能读到登录态，是因为 App 把账号会话存在 App Group 的钥匙串访问组 `group.app.msime.ios` 里，这个组 App 与扩展原本就有权限，不新增 entitlement，token 也不落到 App Group 文件里。服务端每次刷新都轮换 refresh token、并在旧 token 被再次使用时吊销整个会话，所以 App 与键盘对这份会话的每一次写入（登录、刷新、更新资料、退出）都经 App Group 里 `backend-account-refresh.lock` 的 `flock` 串行，持锁后先重读钥匙串：另一个进程已轮换过就直接采用，不再拿用过的 token 去刷新；刷新回来写入前再读一次，钥匙串已被清空或换成别的账号时丢弃这次结果，不会把已退出或已切换的会话写回去。共享的钥匙串是登录态的唯一依据，每次都重新读取，被另一个进程清空就按未登录处理。拿不到共享目录时不刷新。Tauri 公共组件的 iOS 工程把会话存在 App 默认访问组，它带的键盘因此显示未登录，这是已知限制。
 
 本地剪贴板历史的搜索对应 Windows 剪贴板页上方的“搜索剪贴板”，同样是不分大小写的子串匹配，保持原有顺序。两处都能搜。键盘扩展没法往自己的搜索框里打字，所以键盘剪贴板页右上角的放大镜会换出一块自带的键盘（数字行加 26 个字母），剪贴板里常见的链接、验证码、电话和英文都能搜。搜索时「保存剪贴板」按钮和状态行收起、标题显示搜索词，好让手机高度的面板在字母键上方还能放下记录；「返回」先退出搜索，再关闭面板。要按中文搜，用 App 的“输入设置 → 剪贴板历史”：它和键盘通过同一个共享 ABI 读写 App Group 里的同一份历史，在这里固定、删除、清空或保存的记录，键盘下次打开剪贴板页时就能看到，反过来也一样。App 用 `PasteButton` 保存系统剪贴板，不会弹出粘贴授权提示；点一条即复制。iPhone 上右滑固定、左滑删除，每条显示三行；iPad 的宽度下每条显示六行和完整日期，固定和删除也可以用指针右键菜单。
 
-“关于水杉 → 诊断日志”对应共享偏好中的 `diagnostic_log.server`，与 macOS、Linux 的宿主日志同一个字段，随设置同步。开启后，键盘扩展在 App Group 的偏好目录写入仅所有者可读的 `diagnostic.log`，记录键盘加载（是否有完全访问、手机还是 iPad）、出现与收起、共享设置是否应用、运行时初始化或词库恢复失败，以及系统内存警告——iOS 会结束占用内存过多的键盘扩展，“键盘突然消失”的反馈最需要这一行。每条记录只有事件名，截到 192 字节的可打印 ASCII，不含按键、输入文字、候选、凭据、路径或服务响应；文件超过 1 MiB 时保留一个 `.1` 副本。键盘没有完全访问时无法写入 App Group，此时静默不写，不影响输入。App 的这一页可以开关、分享和清空日志；iPad 在同一页直接显示最近的记录，iPhone 另开一页查看。Windows 专用的 `diagnostic_log.tsf` 不在 iOS 显示，原值保留以便跨平台同步。反馈页同样链到这一页，并和 Windows、macOS 的反馈页一样列出 QQ 交流群（点一下复制群号）和 Telegram 群组。
+“关于灵耀 → 诊断日志”对应共享偏好中的 `diagnostic_log.server`，与 macOS、Linux 的宿主日志同一个字段，随设置同步。开启后，键盘扩展在 App Group 的偏好目录写入仅所有者可读的 `diagnostic.log`，记录键盘加载（是否有完全访问、手机还是 iPad）、出现与收起、共享设置是否应用、运行时初始化或词库恢复失败，以及系统内存警告——iOS 会结束占用内存过多的键盘扩展，“键盘突然消失”的反馈最需要这一行。每条记录只有事件名，截到 192 字节的可打印 ASCII，不含按键、输入文字、候选、凭据、路径或服务响应；文件超过 1 MiB 时保留一个 `.1` 副本。键盘没有完全访问时无法写入 App Group，此时静默不写，不影响输入。App 的这一页可以开关、分享和清空日志；iPad 在同一页直接显示最近的记录，iPhone 另开一页查看。Windows 专用的 `diagnostic_log.tsf` 不在 iOS 显示，原值保留以便跨平台同步。反馈页同样链到这一页，并和 Windows、macOS 的反馈页一样列出 QQ 交流群（点一下复制群号）和 Telegram 群组。
 
 “输入设置”页的「默认中英文」读写共享文档的 `default_ime_mode`，与桌面端同一个字段。新打开的键盘从这个模式开始；按中/英键切换后，这次打开的键盘一直保持用户的选择，设置页的修改也不会在输入途中翻转模式。以前桥接层在建立会话时把它强制覆盖成 `chinese`，现在不再覆盖。桌面端用 `ime_mode_scope` 按应用记住中英文，但 iOS 不告诉键盘扩展正在哪个应用里输入，没有可以作为键的应用标识，所以 iOS 不使用这个字段（共享层的 `HostCapabilities::ime_mode_scope` 也把 iOS 排除在外）。网址、邮箱等字段带来的临时英文仍按原来的规则处理，离开字段后恢复。同一节的「沿用上次的中英文」是 iOS 上唯一能做的记忆：它对应桌面端 `ime_mode_scope` 的全局记忆，按应用的那一种在 iOS 上没有可用的键。打开后，新键盘从用户上次按中/英键（或 Shift）选的模式开始，还没切换过时仍从「默认中英文」开始；网址、邮箱字段临时切到的英文不记录。键盘进程在两次出现之间会被销毁，所以记录放在 App Group（`ImeModeMemoryPreference`），不进共享文档，也不随设置同步到其它设备；开关变化时清掉旧记录。
 
@@ -56,7 +56,7 @@ App 的“输入设置 → 标点”页直接读写共享 `PreferencesStore`：�
 
 “词库”页的「输入习惯」一节直接读写共享文档的 `learning`、`frequency`（调频方式、触发频次、线性步长）、`candidate_english_gloss`、`candidate_translations`、`translation_target_language` 和 `translation_secondary_language`，与 Windows 同一组字段和取值范围：调频方式多了「不调频」，触发频次和步长为 1 到 10，释义语言多了俄语。键盘每次出现都会用共享文档覆盖这些字段在 App Group 里的兼容副本，所以页面先写文档，写成功后再把结果镜像到 App Group，供键盘在下一次读取文档之前使用；只写 App Group 的旧做法会在键盘下次出现时被文档的值改回去。设置同步里的「词库学习」也改为写共享文档，并且在其他本机设置之前写入，写入失败时整次应用不改动任何本机设置。「候选与纠错」页的「英文单词提示」是 App Group 里的 `english.suggestions`，键盘在英文输入时直接读取，不在共享文档中。
 
-“词库 → 翻译服务”页选择候选释义联网补充时用哪个服务，对应 Windows 的腾讯云机器翻译、小牛翻译和 DeepLX 兼容自定义接口，写入共享文档的 `tencent_tmt`、`niutrans`、`custom_translation` 和 `translation_account`，与其他宿主同一组字段。默认是「不使用在线翻译」，键盘不联网翻译。选择顺序与共享层一致：小牛翻译开着就用它，否则看自定义接口，否则腾讯云的两个密钥都可用时用腾讯云；这些都不适用时，只有用户在这一页显式选了「水杉账号」（`translation_account` 为 true）才把当前页的中文候选词发到 `api.msime.app`，带的是应用首次启动时注册的本机匿名账号（`MetasequoiaImeApp.init`，存于 App Group，键盘共用；键盘先于应用运行时在首次翻译时注册），账号不会作为兜底。旧版本在没有配置任何服务时默认走水杉账号，升级后这个字段缺省即为未选择：主释义语言或第二释义语言不是英语时，那一行释义会收起，英文释义只剩离线词库；已登录水杉账号的用户同样如此，要恢复需在这一页重新选「水杉账号」。腾讯云在共享默认值里是开着的，所以页面选别的服务（包括水杉账号和不使用在线翻译）时会显式写入关闭。用户选了某个服务但凭据不完整（空值、`<占位符>`、`FAKESECRET_` 示例值）时键盘不联网翻译，不会悄悄把文字发给没选的服务。请求由共享层构造和签名（`msime_client_{tencent,niutrans,custom}_translation_http_request`），回复也交回共享层解析；键盘只负责收发字节，腾讯云签过名的正文按原样发送、不重新序列化。腾讯云每批最多九个词，小牛翻译和自定义接口逐词请求，单词限 40 字，源语言固定中文。iOS 只允许 HTTPS，自定义接口填 HTTP 地址时不会被调用。键盘出现时重新读取这组设置，切换服务或凭据会清空已缓存的释义，包括还在路上的回复。页面的「测试翻译」用当前表单（未保存也可）翻译「你好」。iPhone 与 iPad 使用同一张表单，iPad 显示在设置分栏的详情区。
+“词库 → 翻译服务”页选择候选释义联网补充时用哪个服务，对应 Windows 的腾讯云机器翻译、小牛翻译和 DeepLX 兼容自定义接口，写入共享文档的 `tencent_tmt`、`niutrans`、`custom_translation` 和 `translation_account`，与其他宿主同一组字段。默认是「不使用在线翻译」，键盘不联网翻译。选择顺序与共享层一致：小牛翻译开着就用它，否则看自定义接口，否则腾讯云的两个密钥都可用时用腾讯云；这些都不适用时，只有用户在这一页显式选了「灵耀账号」（`translation_account` 为 true）才把当前页的中文候选词发到 `api.msime.app`，带的是应用首次启动时注册的本机匿名账号（`MetasequoiaImeApp.init`，存于 App Group，键盘共用；键盘先于应用运行时在首次翻译时注册），账号不会作为兜底。旧版本在没有配置任何服务时默认走灵耀账号，升级后这个字段缺省即为未选择：主释义语言或第二释义语言不是英语时，那一行释义会收起，英文释义只剩离线词库；已登录灵耀账号的用户同样如此，要恢复需在这一页重新选「灵耀账号」。腾讯云在共享默认值里是开着的，所以页面选别的服务（包括灵耀账号和不使用在线翻译）时会显式写入关闭。用户选了某个服务但凭据不完整（空值、`<占位符>`、`FAKESECRET_` 示例值）时键盘不联网翻译，不会悄悄把文字发给没选的服务。请求由共享层构造和签名（`msime_client_{tencent,niutrans,custom}_translation_http_request`），回复也交回共享层解析；键盘只负责收发字节，腾讯云签过名的正文按原样发送、不重新序列化。腾讯云每批最多九个词，小牛翻译和自定义接口逐词请求，单词限 40 字，源语言固定中文。iOS 只允许 HTTPS，自定义接口填 HTTP 地址时不会被调用。键盘出现时重新读取这组设置，切换服务或凭据会清空已缓存的释义，包括还在路上的回复。页面的「测试翻译」用当前表单（未保存也可）翻译「你好」。iPhone 与 iPad 使用同一张表单，iPad 显示在设置分栏的详情区。
 
 设置里不提供「自定义候选释义」编辑入口。键盘 Engine 仍会在建会话时读取其用户目录（`MSIME/user`）里的 `custom_translations.txt`（每行「源词 Tab 译文」，`#` 开头为注释，同一源词以最后一次为准，优先于内置词库、学到的释义和在线翻译），但 App 不再提供编辑或从“文件”导入的界面。
 
@@ -82,7 +82,7 @@ App「词库」里的个人词典对应 Windows 的用户词编辑：编辑器�
 
 个人词典页的搜索框带“我的词条 / 拼音 / 五笔 / 快捷短语 / 英文”几个范围，对应 Windows 词库管理器按词库查找并调整内置词。“我的词条”只查用户自己的词；选某个词库再输入编码时，键盘在那一整个词库里按编码前缀查找，内置词条也会列出，并标“内置”。内置词条的编码和词随词库安装，不能修改：点开只能调权重，滑动可以删除。这些改动和其他编辑走同一个 App Group 队列，队列里的词条带着 `source: bundled` 标记，键盘同步时交给 Engine 就地修改，并记入日志，词库升级后依然保留。如果编辑改动了内置词条的编码或词，Engine 会拒绝。从文件导入或在表单里新建的词一律按用户词校验，不能自称内置。
 
-个人词典页的「导出」对应 Windows 按词库类型导出：选类型和格式（词在前的标准格式，或编码在前的 Windows 格式）后点「生成导出文件」。App 不能在键盘可能持有词库时打开 Engine，所以导出和编辑走同一个队列：请求记在 App Group 的 `sync.json` 里，键盘下次同步、并且排队的编辑都已应用后，在一次维护窗口里按每页 1000 行调用 Engine 的 `export`，把结果写到 `PersonalDictionary/export.txt`，页面随后以桌面的文件名（如 `水杉IME-拼音用户词库.txt`）交给分享面板。导出规则来自 Engine，与桌面相同：拼音只导多字词，并带上调过权重的内置词，其他类型只导用户词。键盘扩展的内存上限远低于 App，所以一次导出最多 8 MB、20 万行，超出时在最后一个完整行处截断，页面说明只导出了前面一部分。
+个人词典页的「导出」对应 Windows 按词库类型导出：选类型和格式（词在前的标准格式，或编码在前的 Windows 格式）后点「生成导出文件」。App 不能在键盘可能持有词库时打开 Engine，所以导出和编辑走同一个队列：请求记在 App Group 的 `sync.json` 里，键盘下次同步、并且排队的编辑都已应用后，在一次维护窗口里按每页 1000 行调用 Engine 的 `export`，把结果写到 `PersonalDictionary/export.txt`，页面随后以桌面的文件名（如 `灵耀IME-拼音用户词库.txt`）交给分享面板。导出规则来自 Engine，与桌面相同：拼音只导多字词，并带上调过权重的内置词，其他类型只导用户词。键盘扩展的内存上限远低于 App，所以一次导出最多 8 MB、20 万行，超出时在最后一个完整行处截断，页面说明只导出了前面一部分。
 
 英文混输开关只读共享偏好的 `mixed_input.english`。共享配置中的触发阈值、Emoji 与颜文字字段原样保留，iOS 不建立第二套偏好源，也不复制 Engine 的英文候选算法。
 
@@ -204,7 +204,7 @@ APPLE_DEVELOPMENT_TEAM=LXCL4Z68GU \
 
 Tauri CLI 只把 `APPLE_DEVELOPMENT_TEAM` 应用到它自己的 App target，内嵌的 `MSIMEKeyboardExtension` 与 `MSIMESwiftRsRuntimeExports` 不会继承，签名构建会停在 `Signing for "MSIMEKeyboardExtension" requires a development team`。因此工程里为这两个 target 固定了 `DEVELOPMENT_TEAM`；`--no-sign` 构建不受影响（`CODE_SIGNING_ALLOWED=NO` 时该设置不参与）。需要换团队时在 `xcodebuild` 命令行覆盖同名设置。
 
-首次签名构建前需要在 Xcode 的 Settings → Accounts 里登录该团队的 Apple ID：App 的开发描述文件（含 `group.app.msime.ios` App Group，且已包含目标设备）本机已有，但键盘扩展的 `app.msime.ios.keyboard` 需要由 Xcode 联网创建。没有登录账号时构建会报 `No Accounts: Add a new account in Accounts settings`，并退回到不含 App Groups 能力的通配描述文件。本机的 Xcode 登录该团队之后，`app.msime.ios` 与 `app.msime.ios.keyboard` 的开发描述文件都在本地且包含目标设备。这条路径在 iPhone 17 上走通：`BUILD SUCCEEDED`，`PlugIns/MSIMEKeyboardExtension.appex` 内嵌全部十个已校验运行资源，App 由该团队的 Apple Development 证书签名，`devicectl device install app` 成功，设备上 `devicectl device info apps` 能查到「水杉输入法 / app.msime.ios / 1.0.0」。装完在系统 设置 → 通用 → 键盘 → 键盘 里添加一次「水杉输入法」，扩展即可在任意编辑器里使用。
+首次签名构建前需要在 Xcode 的 Settings → Accounts 里登录该团队的 Apple ID：App 的开发描述文件（含 `group.app.msime.ios` App Group，且已包含目标设备）本机已有，但键盘扩展的 `app.msime.ios.keyboard` 需要由 Xcode 联网创建。没有登录账号时构建会报 `No Accounts: Add a new account in Accounts settings`，并退回到不含 App Groups 能力的通配描述文件。本机的 Xcode 登录该团队之后，`app.msime.ios` 与 `app.msime.ios.keyboard` 的开发描述文件都在本地且包含目标设备。这条路径在 iPhone 17 上走通：`BUILD SUCCEEDED`，`PlugIns/MSIMEKeyboardExtension.appex` 内嵌全部十个已校验运行资源，App 由该团队的 Apple Development 证书签名，`devicectl device install app` 成功，设备上 `devicectl device info apps` 能查到「灵耀输入法 / app.msime.ios / 1.0.0」。装完在系统 设置 → 通用 → 键盘 → 键盘 里添加一次「灵耀输入法」，扩展即可在任意编辑器里使用。
 
 `devicectl device process launch` 需要设备处于解锁状态，锁屏时会被 `SBMainWorkspace` 以 `Locked` 拒绝（`FBSOpenApplicationErrorDomain error 7`）。
 
@@ -223,7 +223,7 @@ Tauri CLI 只把 `APPLE_DEVELOPMENT_TEAM` 应用到它自己的 App target，内
 要发一个版本（以五笔版为例）还差这些，全部在仓库之外或需要签名身份，本分支没有做：
 
 1. 版本表：给 wubi、pinyin 填 `platforms.ios` 段，至少包括 App 与键盘扩展的 bundle id（例如 `app.msime.ios.wubi`、`app.msime.ios.wubi.keyboard`）和 App Group；同时扩展 `editions.schema.json`、冻结基线 `editions.frozen.json` 和 `scripts/test-editions.py` 的跨版本唯一性检查，并断言 App Group 等于 `MSIMEAppEdition` 推出的 `group.app.msime.ios.<id>`。
-2. 工程：`project.yml` 为每个版本加一对 target（App 和键盘扩展），各自设 `PRODUCT_BUNDLE_IDENTIFIER`、`CFBundleDisplayName`（水杉五笔、水杉拼音；图标与 full 相同）、上面四个 Info.plist 键、App 的 `CFBundleURLTypes`（scheme 写 `MSIMEAppEdition.urlScheme` 推出的 `msime-<id>`，`CFBundleURLName` 写本版本 App 的 bundle id），以及各自的 entitlements 文件，`com.apple.security.application-groups` 写本版本的 App Group。`ProjectConfigurationTests.py` 和 `scripts/test-ios-project-config.py` 里按 full 写死的断言要随之参数化。
+2. 工程：`project.yml` 为每个版本加一对 target（App 和键盘扩展），各自设 `PRODUCT_BUNDLE_IDENTIFIER`、`CFBundleDisplayName`（灵耀五笔、灵耀拼音；图标与 full 相同）、上面四个 Info.plist 键、App 的 `CFBundleURLTypes`（scheme 写 `MSIMEAppEdition.urlScheme` 推出的 `msime-<id>`，`CFBundleURLName` 写本版本 App 的 bundle id），以及各自的 entitlements 文件，`com.apple.security.application-groups` 写本版本的 App Group。`ProjectConfigurationTests.py` 和 `scripts/test-ios-project-config.py` 里按 full 写死的断言要随之参数化。
 3. 资源：`stage-resources.sh` 目前固定用 full 的 `resources/desktop-dictionary.lock.json`，要改成按版本的 `resources/editions/<id>.lock.json` 暂存；五笔版不带日文词典，五笔版和拼音版都不带粤拼、注音、笔画词库。
 4. 签名与发布：在 Apple Developer 后台为每个版本注册 App ID 和 App Group，生成 App 与键盘扩展的描述文件，并在 App Store Connect 各建一条 App 记录。`release-ios.yml` 的模拟器包由 `build-app.sh` 以 `CODE_SIGNING_ALLOWED=NO` 构建，不签名；它的 TestFlight 那段的 `check_profile` 只认 `app.msime.ios`、`app.msime.ios.keyboard` 和 `group.app.msime.ios`，`upload-testflight.sh` 也只接受一对描述文件，都要按版本参数化。多个版本能否在一台设备上共存，只能在真机签名构建里验证。功能相近的多个 App 同时上架，有被 App Store 按 4.3（重复 App）拒审的风险。
 5. 不随版本走的部分：Tauri 公共组件的 iOS 工程（`apps/desktop/src-tauri/gen/apple`）只服务 full，它的 `main.mm` 和 `crates/tauri-mobile-platform` 的 `MobilePlatformPlugin.swift` 仍写死 `group.app.msime.ios`；账号钥匙串的服务名 `app.msime.backend.account` 不变，版本之间靠访问组隔离。
@@ -232,12 +232,12 @@ Tauri CLI 只把 `APPLE_DEVELOPMENT_TEAM` 应用到它自己的 App target，内
 
 Tauri 公共组件的真机产物把最后一个参数改为 `device`。真机构建会在 `apps/desktop/src-tauri/gen/apple` 执行锁定的 CocoaPods 安装，再调用 Tauri CLI；模拟器使用 `aarch64-sim` 并保留手写 fallback。
 
-该目标产出 `apps/desktop/src-tauri/gen/apple/build/arm64/水杉输入法.ipa`：arm64 单架构，`Payload/水杉输入法.app` 内嵌 `PlugIns/MSIMEKeyboardExtension.appex`，扩展侧带锁定 ML Kit Digital Ink 的资源包，App 与扩展各自打包同一份已校验 EngineResources。
+该目标产出 `apps/desktop/src-tauri/gen/apple/build/arm64/灵耀输入法.ipa`：arm64 单架构，`Payload/灵耀输入法.app` 内嵌 `PlugIns/MSIMEKeyboardExtension.appex`，扩展侧带锁定 ML Kit Digital Ink 的资源包，App 与扩展各自打包同一份已校验 EngineResources。
 
 模拟器 bundle 默认不带签名，因此没有 App Group 授权：进程一启动就会在共享容器查找上拿到 `client is not entitled`。要在模拟器里真正安装并观察它，用 ad-hoc 签名把既有 entitlements 附上去（模拟器不校验 provisioning，这一步不需要任何开发者证书，也不改变真机的签名边界）：
 
 ```sh
-app="apps/desktop/src-tauri/gen/apple/build/arm64-sim/水杉输入法.app"
+app="apps/desktop/src-tauri/gen/apple/build/arm64-sim/灵耀输入法.app"
 codesign -f -s - --entitlements platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements "$app/PlugIns/MSIMEKeyboardExtension.appex"
 codesign -f -s - --entitlements apps/desktop/src-tauri/gen/apple/msime-desktop_iOS/msime-desktop_iOS.entitlements "$app"
 xcrun simctl install booted "$app"
@@ -282,7 +282,7 @@ xcrun simctl delete "$device"
 
 **在 iOS 27 模拟器上，键盘能装上但切不过去。** 启用和切换是两件事，要分开看：
 
-- **启用是成功的。** 往 `.GlobalPreferences` 写 `AppleKeyboards`（加上扩展 bundle id `app.msime.ios.keyboard`）并重启模拟器之后，设置 → 通用 → 键盘 → 键盘 里确实列着「水杉输入法 · 中文」。要确认这一点得走 Settings 把每一层的单元格文案打出来看，只凭「键盘环里没有它」会误判成写入无效。
+- **启用是成功的。** 往 `.GlobalPreferences` 写 `AppleKeyboards`（加上扩展 bundle id `app.msime.ios.keyboard`）并重启模拟器之后，设置 → 通用 → 键盘 → 键盘 里确实列着「灵耀输入法 · 中文」。要确认这一点得走 Settings 把每一层的单元格文案打出来看，只凭「键盘环里没有它」会误判成写入无效。
 - **切换是失败的。** XCUITest 到不了它。`app.buttons["Next keyboard"]` 点下去落在 shift 上（键面在 Q/q 之间来回，始终是同一个 `UIKeyboardLayoutStar`），长按它弹出的是单手键盘的「默认/右手/左手」菜单，里面一个键盘名字都没有——连已启用的简体拼音和英语都没有。`app.keyboards.buttons` 只有 `shift` / `emoji` / `Return` 三个。
 
 把扩展排到 `AppleKeyboards` 数组第一位也不会让它成为默认键盘：新编辑框打开的仍是第一个**系统**键盘（实测是简体拼音），iOS 不会为第三方键盘做默认。所以模拟器上到不了「真实编辑器」这一级，差的就是那一下人手切换。

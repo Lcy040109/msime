@@ -29,7 +29,7 @@ struct KeyboardVoiceView: View {
               Text("\(entry.expiresAt.formatted(date: .omitted, time: .shortened)) 前可用；点击插入后清除待插入结果。")
                 .font(.caption).foregroundStyle(.secondary)
             } else {
-              Text("请在水杉 App 的“语音设置”中录音识别，点击“发送到键盘”，再返回这里插入。")
+              Text("请在灵耀 App 的“语音设置”中录音识别，点击“发送到键盘”，再返回这里插入。")
               Text("iOS 键盘不能直接录音。结果只保留最新一条，10 分钟内有效。")
                 .font(.footnote).foregroundStyle(.secondary)
             }
@@ -44,7 +44,7 @@ struct KeyboardVoiceView: View {
         }.frame(minHeight: 44).accessibilityIdentifier("keyboardVoiceInsert")
       }
       if let record {
-        Button(entry == nil ? "去水杉 App 录音" : "重新录音", action: record)
+        Button(entry == nil ? "去灵耀 App 录音" : "重新录音", action: record)
           .frame(minHeight: 44).accessibilityIdentifier("keyboardVoiceRecord")
       }
     }

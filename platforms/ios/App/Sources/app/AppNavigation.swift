@@ -23,7 +23,7 @@ struct AccountLoginSheet: View {
   var body: some View {
     NavigationView {
       Form { AppleAccountSection(signedIn: $signedIn) }
-        .navigationTitle("登录水杉").navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("登录灵耀").navigationBarTitleDisplayMode(.inline)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
         }

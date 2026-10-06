@@ -44,7 +44,7 @@ export function AccountIdentityDetails({
         <dd>{providers.map(accountProviderName).join("、") || "正在读取"}</dd>
       </div>
       <div>
-        <dt>加入水杉</dt>
+        <dt>加入灵耀</dt>
         <dd>{formatZhDate(user.createdAt)}</dd>
       </div>
     </dl>

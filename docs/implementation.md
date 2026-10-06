@@ -1,6 +1,6 @@
 # 实现说明
 
-这份文档描述水杉输入法客户端的最终形态：共享层与各平台宿主分别承担什么、边界画在哪里、为什么这么画。功能对照与逐项覆盖情况见 [windows-parity](windows-parity.md)、[macos-parity](macos-parity.md)、[ios-parity](ios-parity.md)、[harmony-parity](harmony-parity.md) 以及对应的 feature inventory；构建与验证命令见 [ARCHITECTURE](../ARCHITECTURE.md) 和各平台 README。
+这份文档描述灵耀输入法客户端的最终形态：共享层与各平台宿主分别承担什么、边界画在哪里、为什么这么画。功能对照与逐项覆盖情况见 [windows-parity](windows-parity.md)、[macos-parity](macos-parity.md)、[ios-parity](ios-parity.md)、[harmony-parity](harmony-parity.md) 以及对应的 feature inventory；构建与验证命令见 [ARCHITECTURE](../ARCHITECTURE.md) 和各平台 README。
 
 ## 一、目标与范围
 
@@ -89,7 +89,7 @@ React 只依赖一个 `SettingsClient` 接口；所有平台动作（读写偏�
 
 | 平台 | 系统入口 | 与共享层的连接 |
 | --- | --- | --- |
-| macOS | InputMethodKit bundle `水杉输入法.app` | 静态链接 `libmsime_host_api.a`，Swift 后端另编成 `MSIMEBackend.dylib` |
+| macOS | InputMethodKit bundle `灵耀输入法.app` | 静态链接 `libmsime_host_api.a`，Swift 后端另编成 `MSIMEBackend.dylib` |
 | iOS | `MSIMEApp` + `MSIMEKeyboardExtension.appex` | 静态链接 `libmsime_host_api.a`，Swift `@_cdecl` 回传给 Rust |
 | Android | `InputMethodService`（`:ime` 进程） | `NativeClient` 经 JNI 调 `libmsime_android.so`，后者链 `libmsime_host_api.so` |
 | Linux | IBus 组件可执行文件与 Fcitx5 addon module（并列） | 都链同一份 `libmsime_host_api.so` |
@@ -98,11 +98,11 @@ React 只依赖一个 `SettingsClient` 接口；所有平台动作（读写偏�
 
 ### macOS
 
-InputMethodKit 宿主，产物 bundle 名为 `水杉输入法.app`，`CFBundleIdentifier` 为 `app.msime.inputmethod.MetasequoiaIME`，最低系统 13.0，控制器类 `MSIMEInputController`（实现在 `src/input/InputController.mm`）。源码按 `src/{backend,candidate,cloud,core,dictionary,input,settings,voice}` 分层；`backend/` 下的 Swift 文件与 `shared/backend`、`shared/backend-ui` 一起编成 `MSIMEBackend.dylib` 再链进 bundle，账号面板等符号以弱链接引入，使不链接 Swift 后端的隔离测试目标仍能成立。
+InputMethodKit 宿主，产物 bundle 名为 `灵耀输入法.app`，`CFBundleIdentifier` 为 `app.msime.inputmethod.MetasequoiaIME`，最低系统 13.0，控制器类 `MSIMEInputController`（实现在 `src/input/InputController.mm`）。源码按 `src/{backend,candidate,cloud,core,dictionary,input,settings,voice}` 分层；`backend/` 下的 Swift 文件与 `shared/backend`、`shared/backend-ui` 一起编成 `MSIMEBackend.dylib` 再链进 bundle，账号面板等符号以弱链接引入，使不链接 Swift 后端的隔离测试目标仍能成立。
 
-输入源菜单收敛为工具入口加两条出口——中英文、英文候选模式，繁体输出、全角、中文标点、显示译文四个勾选项，输入方案与主题两个子菜单，悬浮工具栏，加表情面板、云剪贴板、屏幕键盘、手写、语音，最后是「水杉输入法设置…」和「关于水杉输入法…」。「云剪贴板…」是和表情面板同类的工具：它带着当前输入会话打开共享面板，点选条目直接上屏，安全输入期间不打开。所有管理页（候选、账号、云剪贴板的开关与清空、皮肤目录）统一进设置窗口，不在菜单里各开一条路；设置窗口优先启动共享 Tauri 页面，bundle 不可用时回退到原生视图。
+输入源菜单收敛为工具入口加两条出口——中英文、英文候选模式，繁体输出、全角、中文标点、显示译文四个勾选项，输入方案与主题两个子菜单，悬浮工具栏，加表情面板、云剪贴板、屏幕键盘、手写、语音，最后是「灵耀输入法设置…」和「关于灵耀输入法…」。「云剪贴板…」是和表情面板同类的工具：它带着当前输入会话打开共享面板，点选条目直接上屏，安全输入期间不打开。所有管理页（候选、账号、云剪贴板的开关与清空、皮肤目录）统一进设置窗口，不在菜单里各开一条路；设置窗口优先启动共享 Tauri 页面，bundle 不可用时回退到原生视图。
 
-原生实现的能力包括：候选面板（定位、分页、hover、翻页按钮、行宽测量、位置迟滞）、四套内置皮肤与外部 `skin.toml` 皮肤包、候选注释与翻译、云候选、语音（豆包 WSS、HTTP provider、波形面板、录音设备、润色、提示音）、手写、屏幕键盘、表情/颜文字/符号/剪贴板面板、悬浮工具栏、中英模式 HUD、双拼键位提示、打字统计、诊断日志、Sparkle 自动更新。发布安装来自 DMG（`platforms/macos/package-release.sh`）：设置应用内嵌 `水杉输入法.app`，每次启动都在后台比较随附与已安装 bundle 的版本，未安装时安装、随附的更新时替换，从不降级，只在打包好的应用里进行（开发运行与输入法拉起的面板进程跳过）；设置页的「安装 / 更新」是不比较版本的强制重装。两者走同一条路径：staging 目录里完整复制、原子替换到 `~/Library/Input Methods`，再启动已安装 bundle 的 `--register-input-source` 登记并启用自身，注册失败时回滚到旧安装（没有旧安装时保留新 bundle 等下次登录），不静默切换当前输入源。开发者路径是 `platforms/macos/scripts/install.sh`：用本机 Developer ID 重签、原子替换、失败回滚，并拒绝含受限 entitlement 的签名。卸载默认只把 bundle 移入废纸篓、保留词库与学习记录，用户明确勾选才一并清除状态目录、偏好域和语音密钥。
+原生实现的能力包括：候选面板（定位、分页、hover、翻页按钮、行宽测量、位置迟滞）、四套内置皮肤与外部 `skin.toml` 皮肤包、候选注释与翻译、云候选、语音（豆包 WSS、HTTP provider、波形面板、录音设备、润色、提示音）、手写、屏幕键盘、表情/颜文字/符号/剪贴板面板、悬浮工具栏、中英模式 HUD、双拼键位提示、打字统计、诊断日志、Sparkle 自动更新。发布安装来自 DMG（`platforms/macos/package-release.sh`）：设置应用内嵌 `灵耀输入法.app`，每次启动都在后台比较随附与已安装 bundle 的版本，未安装时安装、随附的更新时替换，从不降级，只在打包好的应用里进行（开发运行与输入法拉起的面板进程跳过）；设置页的「安装 / 更新」是不比较版本的强制重装。两者走同一条路径：staging 目录里完整复制、原子替换到 `~/Library/Input Methods`，再启动已安装 bundle 的 `--register-input-source` 登记并启用自身，注册失败时回滚到旧安装（没有旧安装时保留新 bundle 等下次登录），不静默切换当前输入源。开发者路径是 `platforms/macos/scripts/install.sh`：用本机 Developer ID 重签、原子替换、失败回滚，并拒绝含受限 entitlement 的签名。卸载默认只把 bundle 移入废纸篓、保留词库与学习记录，用户明确勾选才一并清除状态目录、偏好域和语音密钥。
 
 ### iOS
 

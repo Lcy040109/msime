@@ -28,7 +28,7 @@ struct SplashView: View {
         }
         .frame(height: 200)
         VStack(spacing: 8) {
-          Text("水杉输入法").font(.system(size: 24, weight: .bold)).tracking(1.44).foregroundStyle(.white)
+          Text("灵耀输入法").font(.system(size: 24, weight: .bold)).tracking(1.44).foregroundStyle(.white)
           Text("METASEQUOIA IME").font(.system(size: 13)).tracking(2.34).foregroundStyle(.white.opacity(0.62))
         }
         .opacity(showsText ? 1 : 0)
@@ -41,7 +41,7 @@ struct SplashView: View {
     .contentShape(Rectangle())
     .onTapGesture(perform: finish)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("水杉输入法")
+    .accessibilityLabel("灵耀输入法")
     .accessibilityHint("轻点跳过")
     .accessibilityAddTraits(.isButton)
     .accessibilityAction { finish() }

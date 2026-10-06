@@ -87,10 +87,10 @@ mod tests {
 
     #[test]
     fn names_are_one_component_and_trimmed() {
-        assert_eq!(sanitize_name("  水杉用户词库.txt "), Ok("水杉用户词库.txt"));
+        assert_eq!(sanitize_name("  灵耀用户词库.txt "), Ok("灵耀用户词库.txt"));
         assert_eq!(
-            sanitize_name("水杉IME-拼音用户词库.txt"),
-            Ok("水杉IME-拼音用户词库.txt")
+            sanitize_name("灵耀IME-拼音用户词库.txt"),
+            Ok("灵耀IME-拼音用户词库.txt")
         );
         for refused in [
             "",

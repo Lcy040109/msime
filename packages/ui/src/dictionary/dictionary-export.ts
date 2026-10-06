@@ -14,7 +14,7 @@ const personalDictionaryExportKinds: readonly [LocalDictionaryKind, string][] = 
 ];
 
 export function personalDictionaryExportName(): string {
-  return "水杉用户词库.txt";
+  return "灵耀用户词库.txt";
 }
 
 export function personalDictionaryExportPayload(entries: DictionaryEntry[]): {
@@ -63,11 +63,11 @@ export async function loadAllPersonalDictionaryEntries(dictionary: {
 
 export function dictionaryExportName(kind: LocalDictionaryKind): string {
   const names: Record<LocalDictionaryKind, string> = {
-    pinyin: "水杉IME-拼音用户词库.txt",
-    wubi: "水杉IME-五笔用户词库.txt",
-    wubi98: "水杉IME-98五笔用户词库.txt",
-    english: "水杉IME-英文用户词库.txt",
-    quick_phrase: "水杉IME-快捷短语用户词库.txt",
+    pinyin: "灵耀IME-拼音用户词库.txt",
+    wubi: "灵耀IME-五笔用户词库.txt",
+    wubi98: "灵耀IME-98五笔用户词库.txt",
+    english: "灵耀IME-英文用户词库.txt",
+    quick_phrase: "灵耀IME-快捷短语用户词库.txt",
   };
   return names[kind];
 }
