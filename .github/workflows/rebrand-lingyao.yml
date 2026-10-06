@@ -59,6 +59,8 @@ jobs:
           for p in root.rglob("*"):
               if not p.is_file() or ".git" in p.parts:
                   continue
+              if len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows":
+                  continue
               if legal_or_attribution(p):
                   try:
                       txt = p.read_text(encoding="utf-8")
@@ -80,7 +82,7 @@ jobs:
 
           # Rename brand-bearing paths deepest-first so code references and file names stay aligned.
           candidates = sorted(
-              [p for p in root.rglob("*") if ".git" not in p.parts],
+              [p for p in root.rglob("*") if ".git" not in p.parts and not (len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows")],
               key=lambda p: len(p.parts),
               reverse=True,
           )
