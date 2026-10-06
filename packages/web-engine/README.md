@@ -1,6 +1,6 @@
 # @msime/web-engine
 
-水杉输入法的网页引擎。全拼、小鹤双拼、自然码双拼和五笔 86 都运行在浏览器的 Web Worker 里（Rust 编译成 WebAssembly），不需要服务器，可以部署到 GitHub Pages、Vercel、Cloudflare Pages / Workers 这类任意静态托管上。
+灵耀输入法的网页引擎。全拼、小鹤双拼、自然码双拼和五笔 86 都运行在浏览器的 Web Worker 里（Rust 编译成 WebAssembly），不需要服务器，可以部署到 GitHub Pages、Vercel、Cloudflare Pages / Workers 这类任意静态托管上。
 
 ```js
 import { createMsimeEngine, attachInput } from "@msime/web-engine";
@@ -73,7 +73,7 @@ const engine = await createMsimeEngine({ scheme: "quanpin", assetBase: "/msime/a
 
 ## 部署到各平台
 
-示例站点和每个平台的配置在仓库的 [`packages/web-engine/examples/static-site`](https://github.com/metasequoiaime/msime/tree/develop/packages/web-engine/examples/static-site)。
+示例站点和每个平台的配置在仓库的 [`packages/web-engine/examples/static-site`](https://github.com/Lcy040109/msime/tree/develop/packages/web-engine/examples/static-site)。
 
 | 平台 | 做法 |
 | --- | --- |
@@ -119,9 +119,9 @@ const engine = await createMsimeEngine({ scheme: "quanpin", assetBase: "/msime/a
 
 ### `attachInput(el, engine, options?)`
 
-把引擎接到 `<textarea>` 或 `<input>` 上，返回解除绑定的函数。组字时按键交给引擎；空闲时的回车、退格、方向键和 Esc 仍由浏览器处理。单按 Shift 切换中英文。默认在文本框下方显示按水杉候选框皮肤绘制的候选栏（见下文「候选框皮肤」），选项：
+把引擎接到 `<textarea>` 或 `<input>` 上，返回解除绑定的函数。组字时按键交给引擎；空闲时的回车、退格、方向键和 Esc 仍由浏览器处理。单按 Shift 切换中英文。默认在文本框下方显示按灵耀候选框皮肤绘制的候选栏（见下文「候选框皮肤」），选项：
 
-- `skin`：内置皮肤 ID 或皮肤对象，默认 `"shuishan"`（水杉）。
+- `skin`：内置皮肤 ID 或皮肤对象，默认 `"lingyao"`（灵耀）。
 - `layout`：`"horizontal"`（默认，横排）或 `"vertical"`（竖排）。
 - `dark`：`"auto"`（默认，跟随页面的 `prefers-color-scheme`，切换时自动重画）、`true` 或 `false`。
 - `candidates: false`：不画候选栏，配合 `onFrame(frame)` 自己画。
@@ -136,14 +136,14 @@ attachInput(textarea, engine, { skin: "wechat", layout: "vertical", dark: "auto"
 
 ## 候选框皮肤
 
-候选栏画的是水杉桌面端的候选框：同样的结构、配色和皮肤规则。配色表在构建时从桌面端的主题表生成，与桌面端同一个版本，SDK 里没有另抄一份。
+候选栏画的是灵耀桌面端的候选框：同样的结构、配色和皮肤规则。配色表在构建时从桌面端的主题表生成，与桌面端同一个版本，SDK 里没有另抄一份。
 
 ### 内置皮肤
 
 | ID | 名称 | 明暗 |
 | --- | --- | --- |
 | `system` | 跟随系统 | 跟随 `dark`。网页读不到系统配色，画的是桌面端设置页预览里的平台默认配色：浅色白底、深色 `#202020` 底，选中项是灰色底、普通文字色 |
-| `shuishan` | 水杉（默认） | 深色 |
+| `lingyao` | 灵耀（默认） | 深色 |
 | `light` | 浅色 | 浅色 |
 | `paper` | 纸白 | 浅色 |
 | `night` | 夜青 | 深色 |
@@ -189,7 +189,7 @@ attachInput(textarea, engine, {
 
 ### `resolveSkin(skin?, { dark, layout }?)`
 
-自己画候选栏的页面（例如有自己设计语言的 TapTapGo）可以只取水杉的配色：`resolveSkin` 把皮肤 ID 或皮肤对象解析成桌面端 `theme::resolve` 的结果，并补齐它留空的槽位（`system` 留空的用平台默认配色，Windows 外观补上高亮候选的文字色，见上文「内置皮肤」），不画任何东西。
+自己画候选栏的页面（例如有自己设计语言的 TapTapGo）可以只取灵耀的配色：`resolveSkin` 把皮肤 ID 或皮肤对象解析成桌面端 `theme::resolve` 的结果，并补齐它留空的槽位（`system` 留空的用平台默认配色，Windows 外观补上高亮候选的文字色，见上文「内置皮肤」），不画任何东西。
 
 ```js
 import { resolveSkin } from "@msime/web-engine";

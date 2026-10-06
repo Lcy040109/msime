@@ -34,14 +34,14 @@ final class LocalSpeechModelTests: XCTestCase {
   func testTransducerHotwordsDropWordsTheModelCannotSpell() {
     let tokens = LocalSpeechText.tokenSet("<blk> 0\n水 1\n杉 2\n输 3\n入 4\n法 5\n")
     XCTAssertEqual(tokens, ["<blk>", "水", "杉", "输", "入", "法"])
-    let words = LocalSpeechText.transducerHotwords(["水杉", "输入法", "鹅", "Open AI", "C++", "rock'n-roll", "a/b", "  "], tokens: tokens)
-    XCTAssertEqual(words, "水杉\n输入法\nOpen AI\nrock'n-roll\na b\n")
-    let many = (0..<250).map { _ in "水杉" }
+    let words = LocalSpeechText.transducerHotwords(["灵耀", "输入法", "鹅", "Open AI", "C++", "rock'n-roll", "a/b", "  "], tokens: tokens)
+    XCTAssertEqual(words, "灵耀\n输入法\nOpen AI\nrock'n-roll\na b\n")
+    let many = (0..<250).map { _ in "灵耀" }
     XCTAssertEqual(LocalSpeechText.transducerHotwords(many, tokens: tokens).split(separator: "\n").count, 200)
   }
 
   func testFunAsrHotwordsAreCommaSeparatedAndCapped() {
-    XCTAssertEqual(LocalSpeechText.funAsrHotwords(["水杉", "", "a,b", "输入法"]), "水杉,输入法")
+    XCTAssertEqual(LocalSpeechText.funAsrHotwords(["灵耀", "", "a,b", "输入法"]), "灵耀,输入法")
     XCTAssertEqual(LocalSpeechText.funAsrHotwords((0..<40).map(String.init)).split(separator: ",").count, 30)
   }
 

@@ -22,7 +22,7 @@ export function supportDiagnostics({
   userAgent,
 }: SupportDiagnosticsOptions) {
   return [
-    `水杉 IME ${version}`,
+    `灵耀 IME ${version}`,
     host?.os_version
       ? `${platformOsName(host.platform)} ${host.os_version}`
       : `平台：${host?.platform ?? fallbackPlatform}`,

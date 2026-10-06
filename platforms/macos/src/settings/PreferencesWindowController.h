@@ -8,7 +8,7 @@ FOUNDATION_EXPORT NSNotificationName const MSIMEStandalonePreferencesDidCloseNot
 + (instancetype)sharedController;
 + (NSString *)storedGlobalTheme;
 + (void)setStoredGlobalTheme:(NSString *)themeId;
-/// The catalog title of a global theme id (系统, 水杉, …), or the id itself when the catalog does not know it. The account page's settings list shows theme ids through this.
+/// The catalog title of a global theme id (系统, 灵耀, …), or the id itself when the catalog does not know it. The account page's settings list shows theme ids through this.
 + (NSString *)themeTitleForIdentifier:(NSString *)themeId;
 - (void)showAndActivate;
 /// Presents the window on a named page — see -[MSIMEAppearancePreferences showSettingsPageWithIdentifier:]

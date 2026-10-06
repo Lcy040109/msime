@@ -1,4 +1,4 @@
-//! `check-words`: the gate for changes to the hand-edited files in the dictionary source repository (metasequoiaime/msime-dictionary): custom/words.txt, custom/translations.txt and custom/english.txt. A change to any of them may only append lines. Every appended entry must pass the parser the build uses and be new: not repeated within the change and not already in the file. Weighted entries (words, English words) must also keep their weight within the range the file already uses, and an entry already in a shipped database (a word in msime-pinyin.db's quanpin table for its pinyin, an English word and display in msime-english.db's english_words) is rejected when that database is given. A translation may override an existing source with a different gloss, as the build's last-line-wins does, but repeating the same source and gloss is a duplicate. Appended blank and `#` comment lines are skipped, as the build skips them.
+//! `check-words`: the gate for changes to the hand-edited files in the dictionary source repository (Lcy040109/msime-dictionary): custom/words.txt, custom/translations.txt and custom/english.txt. A change to any of them may only append lines. Every appended entry must pass the parser the build uses and be new: not repeated within the change and not already in the file. Weighted entries (words, English words) must also keep their weight within the range the file already uses, and an entry already in a shipped database (a word in msime-pinyin.db's quanpin table for its pinyin, an English word and display in msime-english.db's english_words) is rejected when that database is given. A translation may override an existing source with a different gloss, as the build's last-line-wins does, but repeating the same source and gloss is a duplicate. Appended blank and `#` comment lines are skipped, as the build skips them.
 
 use std::collections::HashMap;
 
@@ -594,7 +594,7 @@ mod tests {
         );
     }
 
-    const TRANSLATIONS: &str = "\u{feff}# glosses\n水杉\tdawn redwood\nredwood\t红杉\n";
+    const TRANSLATIONS: &str = "\u{feff}# glosses\n灵耀\tdawn redwood\nredwood\t红杉\n";
 
     fn translations(head: &str) -> Report {
         let input = Input {
@@ -608,7 +608,7 @@ mod tests {
     #[test]
     fn translations_are_append_only_and_parse_as_the_build_parses_them() {
         let report = translations(&format!(
-            "{TRANSLATIONS}银杏\tginkgo\n水杉\tmetasequoia\n水杉\tdawn redwood\n银杏\tginkgo\n只有来源\n来源\t \textra\n"
+            "{TRANSLATIONS}银杏\tginkgo\n灵耀\tmetasequoia\n灵耀\tdawn redwood\n银杏\tginkgo\n只有来源\n来源\t \textra\n"
         ));
         assert_eq!(
             reasons(&report),
@@ -632,7 +632,7 @@ mod tests {
                     gloss: "ginkgo".into()
                 },
                 &Entry::Translation {
-                    source: "水杉".into(),
+                    source: "灵耀".into(),
                     gloss: "metasequoia".into()
                 },
             ]
@@ -644,7 +644,7 @@ mod tests {
         assert_eq!(report.base_lines, None);
         assert_eq!(report.files[0].weight_range, None);
 
-        let edited = translations("\u{feff}# glosses\n水杉\tredwood\nredwood\t红杉\n");
+        let edited = translations("\u{feff}# glosses\n灵耀\tredwood\nredwood\t红杉\n");
         assert_eq!(
             reasons(&edited),
             [(

@@ -4,10 +4,10 @@
 
 namespace {
 
-NSString *const kIssuesURL = @"https://github.com/metasequoiaime/msime/issues";
+NSString *const kIssuesURL = @"https://github.com/Lcy040109/msime/issues";
 NSString *const kTelegramURL = @"https://t.me/msimegroup";
 NSString *const kWebsiteURL = @"https://msime.app/";
-NSString *const kLicenseURL = @"https://github.com/metasequoiaime/msime/blob/develop/LICENSE";
+NSString *const kLicenseURL = @"https://github.com/Lcy040109/msime/blob/develop/LICENSE";
 NSString *const kPrivacyURL = @"https://msime.app/privacy/";
 NSString *const kQQGroup = @"829919142";
 
@@ -118,7 +118,7 @@ void OpenPreferences(void) {
             title = [@"关于" stringByAppendingString:MSIMEEditionDisplayName()];
             NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"] ?: @"0.52.0";
             views = @[
-                Heading(@"水杉 IME"),
+                Heading(@"灵耀 IME"),
                 Body(@"为现代 macOS 桌面体验打造的开放中文输入法。"),
                 Title(@"当前版本"),
                 Body([NSString stringWithFormat:@"v%@", version]),
@@ -150,7 +150,7 @@ void OpenPreferences(void) {
             title = [MSIMEEditionDisplayName() stringByAppendingString:@"帮助"];
             views = @[
                 Heading(@"帮助"),
-                Body(@"水杉输入法是一款 macOS 平台的中文输入法。请先在系统设置的键盘输入法中启用水杉输入法，再使用系统配置的输入法切换快捷键。"),
+                Body(@"灵耀输入法是一款 macOS 平台的中文输入法。请先在系统设置的键盘输入法中启用灵耀输入法，再使用系统配置的输入法切换快捷键。"),
                 Title(@"快速上手"),
                 Body(@"默认使用全拼输入法。输入拼音后按数字键选择候选词；候选设置、输入方案和快捷键可以在设置窗口中调整。"),
                 Title(@"基本功能"),

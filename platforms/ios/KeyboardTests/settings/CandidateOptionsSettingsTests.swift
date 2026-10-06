@@ -85,10 +85,10 @@ final class CandidateOptionsSettingsTests: XCTestCase {
     XCTAssertEqual(CandidatePreeditStyle(in: [CandidatePreeditStyle.key: 1]), .pinyin)
 
     let pinyin = CandidatePreeditStyle.pinyin
-    XCTAssertEqual(pinyin.title(composition: "水杉shu'ru", phrasePrefix: "水杉", localModeName: nil), "水杉shu'ru")
+    XCTAssertEqual(pinyin.title(composition: "灵耀shu'ru", phrasePrefix: "灵耀", localModeName: nil), "灵耀shu'ru")
     let empty = CandidatePreeditStyle.empty
     XCTAssertEqual(empty.title(composition: "shu'ru", phrasePrefix: "", localModeName: nil), "")
-    XCTAssertEqual(empty.title(composition: "水杉shu'ru", phrasePrefix: "水杉", localModeName: nil), "水杉")
+    XCTAssertEqual(empty.title(composition: "灵耀shu'ru", phrasePrefix: "灵耀", localModeName: nil), "灵耀")
     XCTAssertEqual(empty.title(composition: "Vrq", phrasePrefix: "", localModeName: "日期与时间"), "日期与时间")
   }
 

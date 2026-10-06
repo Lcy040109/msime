@@ -11,10 +11,10 @@ export function LicenseRows({ openThirdPartyLicenses }: LicenseRowsProps) {
     <>
       <Row
         title="许可与版权"
-        description="水杉 IME 以 GPL-3.0 发布；第三方组件许可随应用资源提供。"
+        description="灵耀 IME 以 GPL-3.0 发布；第三方组件许可随应用资源提供。"
       >
         <span className={doc.version} aria-label="版权">
-          © 2026 Metasequoia IME
+          © 2026 Lingyao IME
         </span>
       </Row>
       {openThirdPartyLicenses && (

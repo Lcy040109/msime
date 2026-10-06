@@ -10,11 +10,11 @@ export function AboutHeroSection({ logo, description }: AboutHeroSectionProps) {
   return (
     <div className={doc.hero}>
       <div className={doc.mark}>
-        <img src={logo} alt="水杉 IME" />
+        <img src={logo} alt="灵耀 IME" />
       </div>
       <div>
-        <div className={doc.eyebrow}>Metasequoia IME</div>
-        <div className={doc.heroTitle}>水杉 IME</div>
+        <div className={doc.eyebrow}>Lingyao IME</div>
+        <div className={doc.heroTitle}>灵耀 IME</div>
         <p>{description}</p>
       </div>
     </div>

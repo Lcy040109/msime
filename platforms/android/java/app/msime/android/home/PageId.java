@@ -18,7 +18,7 @@ import java.util.Locale;
  */
 public enum PageId {
     SKINS("SkinsPage", "皮肤", HostDeepLink.TAB_SETTINGS,
-        "跟随系统", "水杉四季", "水杉", "浅色", "纸白", "夜青", "墨", "春芽", "夏荫", "秋杉", "冬雪", "AI 设计皮肤"),
+        "跟随系统", "灵耀四季", "灵耀", "浅色", "纸白", "夜青", "墨", "春芽", "夏荫", "秋杉", "冬雪", "AI 设计皮肤"),
     AI_SKIN("AiSkinPage", "AI 设计皮肤", HostDeepLink.TAB_SETTINGS,
         "描述一句话生成", "配色", "按键音效", "按键动画", "生成皮肤"),
     KEYBOARD_OPTIONS("KeyboardOptionsPage", "键盘", HostDeepLink.TAB_SETTINGS,
@@ -60,11 +60,11 @@ public enum PageId {
     CLOUD_CLIPBOARD("CloudClipboardPage", "云剪贴板", HostDeepLink.TAB_ACCOUNT,
         "保留时长", "最近", "清空"),
     PROFILE("ProfilePage", "个人资料", HostDeepLink.TAB_ACCOUNT,
-        "账号", "昵称", "水杉 ID", "邮箱", "登录方式", "关联", "云端数据", "导出我的数据", "退出登录", "注销账号"),
+        "账号", "昵称", "灵耀 ID", "邮箱", "登录方式", "关联", "云端数据", "导出我的数据", "退出登录", "注销账号"),
     DEVICES("DevicesPage", "我的设备", HostDeepLink.TAB_ACCOUNT,
         "设备"),
     PRIVACY("PrivacyPage", "隐私", HostDeepLink.TAB_ACCOUNT,
-        "本地优先", "联网功能", "本机数据", "剪贴板历史", "匿名使用统计", "用水杉账号翻译候选");
+        "本地优先", "联网功能", "本机数据", "剪贴板历史", "匿名使用统计", "用灵耀账号翻译候选");
 
     private static final String PACKAGE = "app.msime.android.home.";
 

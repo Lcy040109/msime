@@ -69,7 +69,7 @@ export function AboutSettingsPage() {
         </div>
         {availableUpdate && (
           <div className={doc.updateResult}>
-            <p>水杉 IME v{availableUpdate.version.display} 已发布。</p>
+            <p>灵耀 IME v{availableUpdate.version.display} 已发布。</p>
             {installerTrust?.warning && (
               <p className={doc.updateWarning}>{installerTrust.warning}</p>
             )}
