@@ -59,7 +59,7 @@ NOTICE_CHANNELS = {
 # The overviews say what each text covers, so they also have to name the pinned commit.
 OVERVIEWS = ("platforms/macos/resources/Licenses/THIRD_PARTY_NOTICES.txt", "platforms/linux/data/THIRD_PARTY_NOTICES.txt", "platforms/windows/Collect-Notices.ps1", "docs/third-party.md")
 # 主词库的上游说明：这四个 reference 的提交必须写在里面，换了提交却忘了改说明会在这里失败。
-ENGINE_NOTICE = "resources/licenses/msime-engine-dictionary-NOTICE.md"
+ENGINE_NOTICE = "resources/licenses/lingyao-engine-dictionary-NOTICE.md"
 ENGINE_NOTICE_REFERENCES = ("rime-ice-supplement", "SCOWL", "98wubi-tables", "fcitx5-table-extra")
 # The vi crate behind Vietnamese mode is MIT. The macOS bundle and the Windows package, where Vietnamese ships and notices are listed by hand, carry its text explicitly.
 VI_LICENCE = "resources/licenses/vi-MIT.txt"

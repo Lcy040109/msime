@@ -137,7 +137,7 @@ struct FeedbackView: View {
           copiedGroup = true
         }.accessibilityIdentifier("feedbackQQGroup")
         Link(destination: URL(string: "https://t.me/msimegroup")!) {
-          SettingsRowLabel(title: "Telegram 群组", detail: "t.me/lingyaogroup，面向国际用户和开发者",
+          SettingsRowLabel(title: "Telegram 群组", detail: "t.me/msimegroup，面向国际用户和开发者",
                            symbol: "paperplane.fill")
         }.accessibilityIdentifier("feedbackTelegram")
       }

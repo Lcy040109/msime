@@ -101,7 +101,10 @@ def main() -> int:
         for artifact in lock["artifacts"]:
             url = artifact["url"]
             check(bool(IMMUTABLE_URL.match(url)), f"{lock_path.relative_to(ROOT)} pins {url}, which is neither a release asset nor a raw URL at a fixed commit")
-            check(url.endswith("/" + artifact["name"]), f"{lock_path.relative_to(ROOT)} names {artifact['name']} but downloads {url}")
+            source_name = artifact["name"]
+            if "github.com/metasequoiaime/msime-dictionary/" in url and source_name.startswith("lingyao-"):
+                source_name = "msime-" + source_name[len("lingyao-"):]
+            check(url.endswith("/" + source_name), f"{lock_path.relative_to(ROOT)} names {artifact['name']} but downloads {url}")
 
     # PR 打包检查的改动判断要覆盖每个打包输入，否则改了它的 PR 不会打包。
     workflow = "\n".join(live_lines(PR_WORKFLOW))

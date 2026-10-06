@@ -166,7 +166,7 @@ public final class FeedbackPage extends DetailPage {
 
         GroupCard channels = GroupCard.add(column, "其他渠道").withDividers(Ui.ROW_PADDING_H);
         channels.button("QQ 群", QQ_GROUP, "复制群号", () -> copy("QQ 群号", QQ_GROUP, "已复制群号"));
-        channels.button("Telegram 群组", "t.me/lingyaogroup", "打开", this::openTelegram);
+        channels.button("Telegram 群组", "t.me/msimegroup", "打开", this::openTelegram);
         channels.button("GitHub Issues", "公开的问题单，适合附上复现步骤", "打开",
             () -> AboutPage.openLink(context, ISSUES));
 

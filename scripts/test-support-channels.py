@@ -20,7 +20,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 QQ_GROUP = "829919142"
-TELEGRAM = "t.me/lingyaogroup"
+TELEGRAM = "t.me/msimegroup"
 
 SURFACES = {
     "shared feedback channel component": "packages/ui/src/settings/feedback-channels.tsx",
