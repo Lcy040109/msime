@@ -3,7 +3,7 @@
 #include <array>
 #include <string_view>
 
-namespace metasequoia::punctuation_contract
+namespace lingyao::punctuation_contract
 {
 inline constexpr int version = 1;
 struct Mapping
@@ -64,4 +64,4 @@ constexpr const AlternatingMapping *alternating_mapping(char input)
         if (mapping.input == input) return &mapping;
     return nullptr;
 }
-} // namespace metasequoia::punctuation_contract
+} // namespace lingyao::punctuation_contract

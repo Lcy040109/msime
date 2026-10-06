@@ -84,7 +84,7 @@
    "arg": {
     "replacement": {
      "kind": "english",
-     "key": "metasequoia",
+     "key": "lingyao",
      "value": "Lingyao",
      "weight": 12345
     }
@@ -409,7 +409,7 @@
     "entries": [
      {
       "kind": "english",
-      "key": "metasequoia",
+      "key": "lingyao",
       "value": "Lingyao",
       "weight": 12345
      },
@@ -1433,7 +1433,7 @@
       ],
       [
        "english",
-       "metasequoia",
+       "lingyao",
        "Lingyao",
        "upsert",
        12345,
@@ -1699,17 +1699,17 @@
   },
   {
    "op": "type",
-   "arg": "metasequoia",
+   "arg": "lingyao",
    "result": {
     "handled": true
    },
    "snapshot": {
     "scheme": "quanpin",
     "local_mode": "none",
-    "preedit": "metasequoia",
-    "raw_segmentation": "metasequoia",
-    "normalized_segmentation": "metasequoia",
-    "editing_text": "metasequoia",
+    "preedit": "lingyao",
+    "raw_segmentation": "lingyao",
+    "normalized_segmentation": "lingyao",
+    "editing_text": "lingyao",
     "caret": 11,
     "dedicated_english": true,
     "shuangpin_profile": "xiaohe",
@@ -1717,7 +1717,7 @@
     "candidates": [
      {
       "word": "Lingyao",
-      "pinyin": "metasequoia",
+      "pinyin": "lingyao",
       "canonical_pinyin": "",
       "source": 4,
       "scheme": "quanpin",
@@ -1877,7 +1877,7 @@
     "entries": [
      {
       "kind": "english",
-      "key": "metasequoia",
+      "key": "lingyao",
       "value": "Lingyao",
       "weight": 12345
      },
@@ -1956,7 +1956,7 @@
       ],
       [
        "english",
-       "metasequoia",
+       "lingyao",
        "Lingyao",
        "upsert",
        12345,

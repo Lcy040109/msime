@@ -7,7 +7,7 @@
 #define TEXTSERVICE_MODEL L"Apartment"
 // 本版本注册的语言（版本表 platforms.windows.langid）：中文版本都是简体中文 0x0804，即 MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)；日文版是 0x0411（日语），越南文版是 0x042A（越南语），藏文版是 0x0451（藏语）。TSF 按它把文本服务列在设置的对应语言下，提交的文字也按它标上 GUID_PROP_LANGID。
 #define TEXTSERVICE_LANGID MSIME_EDITION_LANGID
-#define TEXTSERVICE_ICON_INDEX -IDIS_METASEQUOIAIME
+#define TEXTSERVICE_ICON_INDEX -IDIS_LINGYAOIME
 #define TEXTSERVICE_DIC L"LingyaoIMESimplifiedQuanPin.txt"
 #define TEXTSERVICE_DIC_DB L"cutted_flyciku_with_jp.db"
 #define FANYLOGFILE_ "fanydebug.log"
@@ -28,8 +28,8 @@
 #define IME_PUNCTUATION_ON_INDEX IDI_PUNCTUATION_ON
 #define IME_PUNCTUATION_OFF_INDEX IDI_PUNCTUATION_OFF
 
-#define METASEQUOIAIME_FONT_DEFAULT L"Microsoft YaHei UI"
-#define METASEQUOIAIME_LOCALE_DEFAULT L"zh-CN"
+#define LINGYAOIME_FONT_DEFAULT L"Microsoft YaHei UI"
+#define LINGYAOIME_LOCALE_DEFAULT L"zh-CN"
 
 //---------------------------------------------------------------------
 // defined max pinyin input length

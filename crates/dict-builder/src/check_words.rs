@@ -608,7 +608,7 @@ mod tests {
     #[test]
     fn translations_are_append_only_and_parse_as_the_build_parses_them() {
         let report = translations(&format!(
-            "{TRANSLATIONS}银杏\tginkgo\n灵耀\tmetasequoia\n灵耀\tdawn redwood\n银杏\tginkgo\n只有来源\n来源\t \textra\n"
+            "{TRANSLATIONS}银杏\tginkgo\n灵耀\tlingyao\n灵耀\tdawn redwood\n银杏\tginkgo\n只有来源\n来源\t \textra\n"
         ));
         assert_eq!(
             reasons(&report),
@@ -633,7 +633,7 @@ mod tests {
                 },
                 &Entry::Translation {
                     source: "灵耀".into(),
-                    gloss: "metasequoia".into()
+                    gloss: "lingyao".into()
                 },
             ]
         );

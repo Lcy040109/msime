@@ -21,7 +21,7 @@ NSNotificationName const MSIMEStandalonePreferencesDidCloseNotification =
 + (NSString *)storedGlobalTheme { return LingyaoStoredGlobalTheme(); }
 + (void)setStoredGlobalTheme:(NSString *)themeId { LingyaoSetStoredGlobalTheme(themeId); }
 + (NSString *)themeTitleForIdentifier:(NSString *)themeId {
-    return @(metasequoia::mac::ThemeTitle(themeId.UTF8String ?: "").c_str());
+    return @(lingyao::mac::ThemeTitle(themeId.UTF8String ?: "").c_str());
 }
 + (instancetype)sharedController {
     static MSIMEPreferencesWindowController *controller;

@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 #include <functional>
 
-namespace metasequoia::apple
+namespace lingyao::apple
 {
 // Each live keyboard bridge holds a shared lease, including idle sessions.
 // Publication requires the sole remaining lease. A second gate serializes
@@ -20,4 +20,4 @@ class DictionarySessionLease
     int sessions_ = -1;
     int gate_ = -1;
 };
-} // namespace metasequoia::apple
+} // namespace lingyao::apple

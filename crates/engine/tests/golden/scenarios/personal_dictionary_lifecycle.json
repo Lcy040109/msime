@@ -47,7 +47,7 @@
    "arg": {
     "replacement": {
      "kind": "english",
-     "key": "metasequoia",
+     "key": "lingyao",
      "value": "Lingyao",
      "weight": 12345
     }
@@ -445,7 +445,7 @@
   },
   {
    "op": "type",
-   "arg": "metasequoia"
+   "arg": "lingyao"
   },
   {
    "op": "command",

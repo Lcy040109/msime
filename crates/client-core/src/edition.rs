@@ -1055,7 +1055,7 @@ mod tests {
         );
         assert_eq!(full.input_method_bundle_name(), "灵耀输入法.app");
         assert_eq!(full.settings_bundle_id, "app.msime.macos");
-        assert_eq!(full.keychain_service, "com.metasequoia.msime.account");
+        assert_eq!(full.keychain_service, "com.lingyao.msime.account");
         assert_eq!(full.cask, "msime");
         assert_eq!(full.dmg_prefix, "msime-macos");
         let wubi = Edition::by_id("wubi").unwrap().macos().unwrap();
@@ -1083,7 +1083,7 @@ mod tests {
         assert_eq!(full.state_directory, "MSIME-Client");
         assert_eq!(
             full.data_dir_environment_variable,
-            "METASEQUOIA_IME_DATA_DIR"
+            "LINGYAO_IME_DATA_DIR"
         );
         assert_eq!(full.host_dll, "msime_host_api.dll");
         assert_eq!(full.tsf_guids.len(), 14);

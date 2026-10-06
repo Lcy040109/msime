@@ -1894,7 +1894,7 @@ HRESULT CLingyaoIME::ComLessCreateInstance(REFGUID rclsid, REFIID riid, _Outptr_
                                                _Out_opt_ HINSTANCE *phInst)
 {
     HRESULT hr = S_OK;
-    HINSTANCE metasequoiaIMEDllHandle = nullptr;
+    HINSTANCE lingyaoIMEDllHandle = nullptr;
     WCHAR wchPath[MAX_PATH] = {'\0'};
     WCHAR szExpandedPath[MAX_PATH] = {'\0'};
     DWORD dwCnt = 0;
@@ -1911,12 +1911,12 @@ HRESULT CLingyaoIME::ComLessCreateInstance(REFGUID rclsid, REFIID riid, _Outptr_
             hr = (0 < dwCnt && dwCnt <= ARRAYSIZE(szExpandedPath)) ? S_OK : E_FAIL;
             if (SUCCEEDED(hr))
             {
-                metasequoiaIMEDllHandle = LoadLibraryEx(szExpandedPath, NULL, 0);
-                hr = metasequoiaIMEDllHandle ? S_OK : E_FAIL;
+                lingyaoIMEDllHandle = LoadLibraryEx(szExpandedPath, NULL, 0);
+                hr = lingyaoIMEDllHandle ? S_OK : E_FAIL;
                 if (SUCCEEDED(hr))
                 {
-                    *phInst = metasequoiaIMEDllHandle;
-                    FARPROC pfn = GetProcAddress(metasequoiaIMEDllHandle, "DllGetClassObject");
+                    *phInst = lingyaoIMEDllHandle;
+                    FARPROC pfn = GetProcAddress(lingyaoIMEDllHandle, "DllGetClassObject");
                     hr = pfn ? S_OK : E_FAIL;
                     if (SUCCEEDED(hr))
                     {

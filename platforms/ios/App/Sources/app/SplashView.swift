@@ -29,7 +29,7 @@ struct SplashView: View {
         .frame(height: 200)
         VStack(spacing: 8) {
           Text("灵耀输入法").font(.system(size: 24, weight: .bold)).tracking(1.44).foregroundStyle(.white)
-          Text("METASEQUOIA IME").font(.system(size: 13)).tracking(2.34).foregroundStyle(.white.opacity(0.62))
+          Text("LINGYAO IME").font(.system(size: 13)).tracking(2.34).foregroundStyle(.white.opacity(0.62))
         }
         .opacity(showsText ? 1 : 0)
       }

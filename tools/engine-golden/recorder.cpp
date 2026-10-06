@@ -1,6 +1,6 @@
 // Golden-fixture recorder for the C++ reference engine (MSIME-Engine a9b9f092 + 23 msime overlays).
 //
-// Records what the reference engine does so the Rust engine (crates/engine) can be tested against committed JSON after the C++ is deleted. It drives only the public metasequoia::Session API (include/metasequoia/session.h) plus the personal dictionary functions (include/metasequoia/personal_dictionary.h); two internal helpers are used for fixture preparation and determinism: EnglishDictionary::ensure_schema (a fixture without msime-english.db still needs one, runtime_paths.cpp copies both) and PersonalNgramStore::flush_all (personal context rows are written asynchronously after a 2 s delay).
+// Records what the reference engine does so the Rust engine (crates/engine) can be tested against committed JSON after the C++ is deleted. It drives only the public lingyao::Session API (include/lingyao/session.h) plus the personal dictionary functions (include/lingyao/personal_dictionary.h); two internal helpers are used for fixture preparation and determinism: EnglishDictionary::ensure_schema (a fixture without msime-english.db still needs one, runtime_paths.cpp copies both) and PersonalNgramStore::flush_all (personal context rows are written asynchronously after a 2 s delay).
 //
 // Modes:
 //   recorder scenario <scenario.json> <work-root> <out.json>
@@ -8,8 +8,8 @@
 //
 // Run one scenario per process: PersonalNgramStore is a process-lifetime singleton keyed by journal path.
 
-#include <metasequoia/personal_dictionary.h>
-#include <metasequoia/session.h>
+#include <lingyao/personal_dictionary.h>
+#include <lingyao/session.h>
 
 #include "contracts/assets/assets.h"
 #include "english/english_dictionary.h"
@@ -31,7 +31,7 @@
 #include <vector>
 
 using nlohmann::ordered_json;
-using namespace metasequoia;
+using namespace lingyao;
 namespace fs = std::filesystem;
 
 namespace

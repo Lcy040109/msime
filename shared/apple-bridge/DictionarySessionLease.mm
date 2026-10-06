@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-namespace metasequoia::apple
+namespace lingyao::apple
 {
 namespace
 {
@@ -121,4 +121,4 @@ bool DictionarySessionLease::exclusively(const std::function<void()> &operation)
     Lock(gate_, LOCK_UN);
     return true;
 }
-} // namespace metasequoia::apple
+} // namespace lingyao::apple

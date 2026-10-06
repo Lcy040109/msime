@@ -4,7 +4,7 @@
 
 #include <cstddef>
 
-namespace metasequoia::mac {
+namespace lingyao::mac {
 
 constexpr std::size_t NormalizeCandidateFontSize(std::size_t value)
 {
@@ -16,4 +16,4 @@ inline bool IsVerticalCandidateOrientation(NSString *value)
     return value == nil || ![value isEqualToString:@"horizontal"];
 }
 
-} // namespace metasequoia::mac
+} // namespace lingyao::mac

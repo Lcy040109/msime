@@ -25,13 +25,13 @@ static void MSIMEConfigureMovableState(void) {
     NSString *directory = [options[@"preferences_directory"] isKindOfClass:NSString.class]
         ? options[@"preferences_directory"] : nil;
     if (directory.length > 0 && directory.isAbsolutePath) {
-        metasequoia::mac::SetDefaultSkinsRoot(
+        lingyao::mac::SetDefaultSkinsRoot(
             std::filesystem::path(directory.fileSystemRepresentation) / "skins");
     } else if (!MSIMEEditionIsFull()) {
         // 没有配置状态目录时 CandidateSkin.cpp 退回 full 的状态目录；其他版本的皮肤在自己的状态目录下。
         NSURL *state = MSIMEDefaultClientStateDirectory(NSFileManager.defaultManager);
         if (state.path.length > 0)
-            metasequoia::mac::SetDefaultSkinsRoot(std::filesystem::path(state.path.fileSystemRepresentation) / "skins");
+            lingyao::mac::SetDefaultSkinsRoot(std::filesystem::path(state.path.fileSystemRepresentation) / "skins");
     }
 }
 

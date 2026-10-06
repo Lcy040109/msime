@@ -101,7 +101,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_platform_config_uses_the_shipping_identity_and_supported_version(self):
         config = json.loads((TAURI_ROOT / "tauri.ios.conf.json").read_text())
-        self.assertEqual(config["identifier"], "com.metasequoiaime.client")
+        self.assertEqual(config["identifier"], "com.lingyaoime.client")
         self.assertEqual(config["productName"], "灵耀输入法")
         self.assertEqual(config["bundle"]["iOS"]["minimumSystemVersion"], "17.0")
 
@@ -135,7 +135,7 @@ class IOSProjectConfigTests(unittest.TestCase):
 
     def test_generated_project_builds_the_shared_rust_mobile_entry(self):
         project = (APPLE_ROOT / "project.yml").read_text()
-        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client", project)
+        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client", project)
         self.assertIn("iOS: 17.0", project)
         self.assertIn("pnpm tauri ios xcode-script", project)
         self.assertIn("framework: libapp.a", project)
@@ -172,7 +172,7 @@ class IOSProjectConfigTests(unittest.TestCase):
     def test_tauri_app_embeds_the_native_keyboard_extension(self):
         project = (APPLE_ROOT / "project.yml").read_text()
         self.assertIn("  MSIMEKeyboardExtension:\n    type: app-extension", project)
-        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client.keyboard", project)
+        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.keyboard", project)
         self.assertIn("CODE_SIGN_ENTITLEMENTS: ../../../../../platforms/ios/KeyboardExtension/Resources/MSIMEKeyboardExtension.entitlements", project)
         self.assertIn("SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/../../../../../platforms/ios/KeyboardExtension/Sources/core/LingyaoKeyboard-Bridging-Header.h", project)
         self.assertIn("SWIFT_VERSION: 5.0", project)

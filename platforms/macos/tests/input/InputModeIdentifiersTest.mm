@@ -51,11 +51,11 @@ int main() {
         NSDictionary *wubi = @{@"MSIMEEdition": @"wubi", @"CFBundleIdentifier": @"app.msime.inputmethod.wubi",
                                @"MSIMEInputSchemes": @[@"wubi"], @"MSIMEDefaultScheme": @"wubi",
                                @"MSIMESettingsBundleIdentifier": @"app.msime.macos.wubi",
-                               @"MSIMEKeychainService": @"com.metasequoia.msime.wubi.account", @"MSIMEWubiMixedPinyinDefault": @YES};
+                               @"MSIMEKeychainService": @"com.lingyao.msime.wubi.account", @"MSIMEWubiMixedPinyinDefault": @YES};
         require([MSIMEEditionIdentifierIn(@{}) isEqualToString:@"full"] && MSIMEEditionIsFullIn(@{@"CFBundleIdentifier": @"x"}) &&
                     [MSIMEInputMethodBundleIdentifierIn(@{@"CFBundleIdentifier": @"x"}) isEqualToString:@"app.msime.inputmethod.LingyaoIME"] &&
                     [MSIMESettingsBundleIdentifierIn(@{}) isEqualToString:@"app.msime.macos"] &&
-                    [MSIMEKeychainServiceIn(@{}) isEqualToString:@"com.metasequoia.msime.account"] &&
+                    [MSIMEKeychainServiceIn(@{}) isEqualToString:@"com.lingyao.msime.account"] &&
                     MSIMEEditionInputSchemesIn(@{}) == nil && [MSIMEEditionDefaultSchemeIn(@{}) isEqualToString:@"quanpin"] &&
                     !MSIMEEditionWubiMixedPinyinDefaultIn(@{@"MSIMEWubiMixedPinyinDefault": @YES}) &&
                     [MSIMEEditionNotificationNameIn(@{}, @"N") isEqualToString:@"N"],
@@ -63,7 +63,7 @@ int main() {
         require([MSIMEEditionIdentifierIn(wubi) isEqualToString:@"wubi"] &&
                     [MSIMEInputMethodBundleIdentifierIn(wubi) isEqualToString:@"app.msime.inputmethod.wubi"] &&
                     [MSIMESettingsBundleIdentifierIn(wubi) isEqualToString:@"app.msime.macos.wubi"] &&
-                    [MSIMEKeychainServiceIn(wubi) isEqualToString:@"com.metasequoia.msime.wubi.account"] &&
+                    [MSIMEKeychainServiceIn(wubi) isEqualToString:@"com.lingyao.msime.wubi.account"] &&
                     [MSIMEEditionInputSchemesIn(wubi) isEqualToArray:@[@"wubi"]] && [MSIMEEditionDefaultSchemeIn(wubi) isEqualToString:@"wubi"] &&
                     MSIMEEditionWubiMixedPinyinDefaultIn(wubi) && [MSIMEEditionNotificationNameIn(wubi, @"N") isEqualToString:@"N.wubi"],
                 "The wubi edition's Info.plist did not give the wubi identity.");

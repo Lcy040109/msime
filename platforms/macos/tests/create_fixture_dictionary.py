@@ -32,7 +32,7 @@ def main() -> None:
         database.execute("INSERT INTO english_words VALUES(?, ?, ?)", ("hello", "hello", 1))
         database.execute("INSERT INTO en_zh_glosses VALUES(?, ?)", ("hello", "你好"))
         database.execute("INSERT INTO zh_en_glosses VALUES(?, ?)", ("你好", "hello"))
-        database.execute("INSERT INTO zh_en_glosses VALUES(?, ?)", ("灵耀", "metasequoia"))
+        database.execute("INSERT INTO zh_en_glosses VALUES(?, ?)", ("灵耀", "lingyao"))
     print(output)
     print(english)
 

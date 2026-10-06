@@ -11,8 +11,8 @@
 原因在 `quanpin/quanpin_dictionary.cpp` 构造解码器的那一处：
 
 ```cpp
-decoder_(paths_.resource(metasequoia::assets::pinyin_model),
-         paths_.user(metasequoia::assets::pinyin_user_dictionary)),
+decoder_(paths_.resource(lingyao::assets::pinyin_model),
+         paths_.user(lingyao::assets::pinyin_user_dictionary)),
 ```
 
 `assets::pinyin_model` 是 `dict_pinyin.dat`（`contracts/assets/assets.h`）。**该文件当时不在锁定的词库发布里**——发布只有 `msime-pinyin.db`、`msime-english.db`、`msime-others.db`、`msime-japanese.dat` 和两个说明文件。

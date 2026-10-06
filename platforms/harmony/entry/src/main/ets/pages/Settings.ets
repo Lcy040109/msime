@@ -2121,7 +2121,7 @@ class SettingsBridge {
         }
         if (connectTimer !== undefined) clearTimeout(connectTimer);
         const start: DoubaoStartRequest = {
-          user: { uid: 'metasequoia-ime' },
+          user: { uid: 'lingyao-ime' },
           audio: { format: 'pcm', codec: 'raw', rate: 16000, bits: 16, channel: 1 },
           request: {
             model_name: 'bigmodel',

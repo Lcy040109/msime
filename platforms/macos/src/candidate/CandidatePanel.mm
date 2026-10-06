@@ -187,7 +187,7 @@
     NSArray<NSAttributedString *> *_data;
     NSFont *_font;
     NSInteger _selected;
-    metasequoia::mac::ResolvedSkin _skin;
+    lingyao::mac::ResolvedSkin _skin;
     NSImage *_decorationImage;
     CGFloat _tallestVerticalHeight;
 }

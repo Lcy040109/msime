@@ -343,7 +343,7 @@ std::filesystem::path DefaultSkinsRoot();
 void SetDefaultSkinsRoot(std::filesystem::path root);
 } // namespace msime::mac
 
-namespace metasequoia
+namespace lingyao
 {
 namespace mac = ::msime::mac;
 }

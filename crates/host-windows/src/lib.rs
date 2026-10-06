@@ -624,7 +624,7 @@ fn shell_open(target: &[u16]) -> bool {
 
 use std::os::windows::ffi::OsStrExt;
 
-/// The state directory the managed Server uses, resolved the same way `production_state_directory` in `server_main.cpp` does (`platforms/windows/common/StateDirectory.h`): an absolute value of this edition's data-directory variable (`METASEQUOIA_IME_DATA_DIR` in full), then the `DataDir` the installer records under this edition's key in the 64-bit machine view, then `%LOCALAPPDATA%\<this edition's state directory>` (`MSIME-Client` in full). The Server hands this directory to the shell it launches; a shell started any other way, such as from the Start Menu, needs it to find the same runtime options and preferences.
+/// The state directory the managed Server uses, resolved the same way `production_state_directory` in `server_main.cpp` does (`platforms/windows/common/StateDirectory.h`): an absolute value of this edition's data-directory variable (`LINGYAO_IME_DATA_DIR` in full), then the `DataDir` the installer records under this edition's key in the 64-bit machine view, then `%LOCALAPPDATA%\<this edition's state directory>` (`MSIME-Client` in full). The Server hands this directory to the shell it launches; a shell started any other way, such as from the Start Menu, needs it to find the same runtime options and preferences.
 ///
 /// 名字都按本安装包所属的版本取（版本表 `platforms.windows`），与 C++ 侧的 `msime_edition.h` 同源；几个版本同时安装时各找各的状态根。安装包的版本声明坏了时返回 `None`，而不是落到 full 的目录上。
 pub fn server_state_directory() -> Option<std::path::PathBuf> {

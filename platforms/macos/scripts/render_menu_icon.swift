@@ -20,7 +20,7 @@ import Foundation
 // 这里原本是一条照着图稿描出来的近似折线（等宽 4.5、round 接角），形状对不上：最后一笔在图稿里是从右上
 // 长扫到左下收尾，描出来那条却收在右下。菜单栏上的记号必须和应用图标是同一个，所以直接用图稿的路径，
 // 旁边的 SVG 与它保持一致，改动其一就要同步另一个。
-func metasequoiaStroke() -> CGPath {
+func lingyaoStroke() -> CGPath {
     let path = CGMutablePath()
     path.move(to: CGPoint(x: 74.7234, y: 14))
     path.addLine(to: CGPoint(x: 35.1501, y: 29.1727))
@@ -140,7 +140,7 @@ func writeIcon(named name: String, draw: (CGContext, CGFloat) -> Void) throws {
     print("Wrote \(output.path)")
 }
 
-let logo = metasequoiaStroke()
+let logo = lingyaoStroke()
 try writeIcon(named: "MSIMEClientInputMethodMenuIcon") { drawLogo(logo, in: $0, side: $1) }
 // 各输入模式的图标，Info.plist.in 里每个模式各引用一张。
 for (character, mode) in [("中", "Chinese"), ("双", "Shuangpin"), ("五", "Wubi"), ("粤", "Cantonese"),

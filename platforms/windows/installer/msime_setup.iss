@@ -172,7 +172,7 @@ Root: HKLM; Subkey: "{#MyEditionRegistryKey}"; \
 
 [Code]
 const
-  { 所有权标记的文件名按版本取（editions.iss，full 是 .metasequoiaime-data，其他版本接上自己的名字后缀），都以 DataDirMarkerPrefix 开头。几个版本可以同时安装：OwnsDataDir 只认本版本的标记，目录里只要有别的版本的标记就不归本安装器管，所以一个版本不会接管、清理或删除另一个版本的数据目录。 }
+  { 所有权标记的文件名按版本取（editions.iss，full 是 .lingyaoime-data，其他版本接上自己的名字后缀），都以 DataDirMarkerPrefix 开头。几个版本可以同时安装：OwnsDataDir 只认本版本的标记，目录里只要有别的版本的标记就不归本安装器管，所以一个版本不会接管、清理或删除另一个版本的数据目录。 }
   DataDirMarkerName = '{#MyEditionDataDirMarker}';
   DataDirMarkerPrefix = '{#MyDataDirMarkerPrefix}';
 #if !MyEditionIsFull
@@ -458,7 +458,7 @@ end;
 function OwnsDataDir(const Directory: String): Boolean;
 #if MyEditionIsFull
 begin
-  { 带着另一个版本标记的目录不归本安装器管，即使它就是本版本的默认数据目录：升级不能清理它，卸载也不能删它。.metasequoiaime-data 这个文件名只有 full 会写，所以只看文件在不在、不核对内容，以前的 full 写下的标记照样认。 }
+  { 带着另一个版本标记的目录不归本安装器管，即使它就是本版本的默认数据目录：升级不能清理它，卸载也不能删它。.lingyaoime-data 这个文件名只有 full 会写，所以只看文件在不在、不核对内容，以前的 full 写下的标记照样认。 }
   Result :=
     (not HasOtherEditionDataDirMarker(Directory)) and
     ((CompareText(Directory, ExpandConstant('{localappdata}\{#MyEditionInstallDir}')) = 0) or

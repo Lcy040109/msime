@@ -11,7 +11,7 @@
 // the Apple client unchanged, so the behaviour asserted here is that client's behaviour.
 int main() {
     @autoreleasepool {
-        using metasequoia::apple::DictionarySessionLease;
+        using lingyao::apple::DictionarySessionLease;
         NSURL *symlinkRoot = [NSURL fileURLWithPath:[NSTemporaryDirectory()
                                                        stringByAppendingPathComponent:NSUUID.UUID.UUIDString]];
         NSURL *outside = [NSURL fileURLWithPath:[NSTemporaryDirectory()

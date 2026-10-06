@@ -1,6 +1,6 @@
 name: msime-desktop
 options:
-  bundleIdPrefix: com.metasequoiaime.client
+  bundleIdPrefix: com.lingyaoime.client
   deploymentTarget:
     iOS: 17.0
 fileGroups: [../../src]
@@ -15,7 +15,7 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: 灵耀输入法
-      PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client
+      PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client
 targetTemplates:
   app:
     type: application
@@ -189,7 +189,7 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client.keyboard
+        PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.keyboard
         PRODUCT_NAME: MSIMEKeyboardExtension
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
@@ -222,7 +222,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: MSIMESwiftRsRuntimeExports
-        PRODUCT_BUNDLE_IDENTIFIER: com.metasequoiaime.client.swift-rs-runtime-exports
+        PRODUCT_BUNDLE_IDENTIFIER: com.lingyaoime.client.swift-rs-runtime-exports
         SKIP_INSTALL: true
         SWIFT_VERSION: 5.0
         ARCHS: [arm64]

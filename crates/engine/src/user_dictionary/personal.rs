@@ -1,4 +1,4 @@
-//! The personal dictionary API (user-dictionary.md §15.1-§15.3, `include/metasequoia/personal_dictionary.h`). Error texts are the reference's; copy them from J:1738-2318 and PD.
+//! The personal dictionary API (user-dictionary.md §15.1-§15.3, `include/lingyao/personal_dictionary.h`). Error texts are the reference's; copy them from J:1738-2318 and PD.
 //!
 //! Validation failures are `InvalidArgument` (the bridge threw `invalid_argument` for them); every failure of an edit, page or lookup is `Failed` carrying the reference's `result.error`, which the bridge threw as `runtime_error`.
 
@@ -703,7 +703,7 @@ mod tests {
             Some(1)
         );
         let wubi = entry(Wubi, "wq", "拟好", 12345);
-        let english = entry(English, "metasequoia", "Lingyao", 12345);
+        let english = entry(English, "lingyao", "Lingyao", 12345);
         let quick = entry(QuickPhrase, "test1", "fixture\nsecond line", 12345);
         for added in [&wubi, &english, &quick] {
             edit_personal_dictionary(&paths, None, Some(added), "").unwrap();

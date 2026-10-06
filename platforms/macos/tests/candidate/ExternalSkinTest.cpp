@@ -20,7 +20,7 @@ void Require(bool condition, const char *message)
 
 std::filesystem::path MakeTempRoot()
 {
-    char templatePath[] = "/tmp/metasequoia-skins-XXXXXX";
+    char templatePath[] = "/tmp/lingyao-skins-XXXXXX";
     Require(mkdtemp(templatePath) != nullptr, "Failed to create a temporary skins directory.");
     return templatePath;
 }

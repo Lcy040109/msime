@@ -15,7 +15,7 @@
     <projectSourceUrl>https://github.com/Lcy040109/msime</projectSourceUrl>
     <docsUrl>https://github.com/Lcy040109/msime/tree/develop/platforms/windows</docsUrl>
     <bugTrackerUrl>https://github.com/Lcy040109/msime/issues</bugTrackerUrl>
-    <tags>msime metasequoia ime input-method chinese pinyin shuangpin wubi tsf</tags>
+    <tags>msime lingyao ime input-method chinese pinyin shuangpin wubi tsf</tags>
     <summary>Lingyao IME (灵耀输入法): Chinese input method for Windows</summary>
     <description><![CDATA[Lingyao IME (灵耀输入法, MSIME) is a Chinese input method for Windows, macOS, Linux, Android, iOS and HarmonyOS. On Windows it is a Text Services Framework input method with its own Server process, a native candidate window and a settings app.
 
@@ -25,7 +25,7 @@ This package runs the released Inno Setup installer silently; the input method i
 
 ## Package parameters
 
-- `/DataDir:` - an empty directory for the input method's data (dictionaries, settings, skins). Without it the installer keeps the directory of an earlier install, or uses `%LOCALAPPDATA%\metasequoiaime`.
+- `/DataDir:` - an empty directory for the input method's data (dictionaries, settings, skins). Without it the installer keeps the directory of an earlier install, or uses `%LOCALAPPDATA%\lingyaoime`.
 
 Example: `choco install msime --params "'/DataDir:D:\msime-data'"`
 

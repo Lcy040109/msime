@@ -5,7 +5,7 @@ NSNotificationName const LingyaoCandidateSkinDidChangeNotification =
 // The same key MSIMEAppearancePreferences writes, so the retained panel and the toolbar fallback draw the theme the settings window chose.
 static NSString *const kGlobalThemePreferenceKey = @"MSIMEClientGlobalTheme";
 
-NSColor *LingyaoColorFromRgba(metasequoia::mac::Rgba color)
+NSColor *LingyaoColorFromRgba(lingyao::mac::Rgba color)
 {
     return [NSColor colorWithSRGBRed:color.r green:color.g blue:color.b alpha:color.a];
 }
@@ -31,7 +31,7 @@ BOOL LingyaoAppearanceIsDark(NSAppearance *appearance)
 
 NSURL *LingyaoCandidateSkinsDirectoryURL(void)
 {
-    const std::filesystem::path path = metasequoia::mac::DefaultSkinsRoot();
+    const std::filesystem::path path = lingyao::mac::DefaultSkinsRoot();
     if (path.empty())
     {
         return nil;
@@ -42,12 +42,12 @@ NSURL *LingyaoCandidateSkinsDirectoryURL(void)
 NSString *LingyaoStoredGlobalTheme(void)
 {
     NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:kGlobalThemePreferenceKey];
-    return metasequoia::mac::IsGlobalThemeId(value.UTF8String ?: "") ? value : @"system";
+    return lingyao::mac::IsGlobalThemeId(value.UTF8String ?: "") ? value : @"system";
 }
 
 void LingyaoSetStoredGlobalTheme(NSString *themeId)
 {
-    if (!metasequoia::mac::IsGlobalThemeId(themeId.UTF8String ?: ""))
+    if (!lingyao::mac::IsGlobalThemeId(themeId.UTF8String ?: ""))
     {
         return;
     }
@@ -56,16 +56,16 @@ void LingyaoSetStoredGlobalTheme(NSString *themeId)
                                                         object:themeId];
 }
 
-metasequoia::mac::CustomTheme LingyaoStoredCustomTheme(void)
+lingyao::mac::CustomTheme LingyaoStoredCustomTheme(void)
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     auto read = [defaults](NSString *key) {
         NSString *value = [defaults stringForKey:key];
         return std::string(value.UTF8String ?: "");
     };
-    metasequoia::mac::CustomTheme custom;
+    lingyao::mac::CustomTheme custom;
     const std::string base = read(@"MSIMEClientCustomThemeBase");
-    custom.base = metasequoia::mac::IsThemeBaseId(base) ? base : "system";
+    custom.base = lingyao::mac::IsThemeBaseId(base) ? base : "system";
     custom.candidateSkin = read(@"MSIMEClientCustomCandidateSkin");
     custom.candidateColors.text = read(@"MSIMEClientCandidateTextColor");
     custom.candidateColors.number = read(@"MSIMEClientCandidateNumberColor");
@@ -77,8 +77,8 @@ metasequoia::mac::CustomTheme LingyaoStoredCustomTheme(void)
     return custom;
 }
 
-metasequoia::mac::ResolvedSkin LingyaoResolveStoredTheme(BOOL dark, BOOL vertical)
+lingyao::mac::ResolvedSkin LingyaoResolveStoredTheme(BOOL dark, BOOL vertical)
 {
-    return metasequoia::mac::ResolveSkin(LingyaoStoredGlobalTheme().UTF8String, LingyaoStoredCustomTheme(), dark,
-                                         vertical ? "vertical" : "horizontal", metasequoia::mac::DefaultSkinsRoot());
+    return lingyao::mac::ResolveSkin(LingyaoStoredGlobalTheme().UTF8String, LingyaoStoredCustomTheme(), dark,
+                                         vertical ? "vertical" : "horizontal", lingyao::mac::DefaultSkinsRoot());
 }

@@ -41,7 +41,7 @@ function Check-Installed([string]$Edition, [string]$When) {
     $action = if ($task) { @($task.Actions)[0].Execute.Trim('"') } else { $null }
     Check ($action -eq (Join-Path $pf64 'server\LingyaoImeWatchdog.exe')) "${When}: $Edition watchdog task runs its own Watchdog"
     # 所有权标记的文件名接版本的名字后缀（edition_windows.py 的 data_dir_marker）：full 的安装器认不出别的版本的标记，不会接管它们的数据目录。
-    Check (Test-Path -LiteralPath (Join-Path $app.DataDir ('.metasequoiaime-data' + $identity.name_suffix)) -PathType Leaf) "${When}: $Edition DataDir still owned ($($app.DataDir))"
+    Check (Test-Path -LiteralPath (Join-Path $app.DataDir ('.lingyaoime-data' + $identity.name_suffix)) -PathType Leaf) "${When}: $Edition DataDir still owned ($($app.DataDir))"
     $declaration = Join-Path $pf64 'server\edition.json'
     if ($Edition -eq 'full') {
         Check (-not (Test-Path -LiteralPath $declaration)) "${When}: full carries no edition declaration"
@@ -81,7 +81,7 @@ $fullData = (Get-ItemProperty -LiteralPath "HKLM:\$((Identity 'full').registry_k
 $run = Start-Process -FilePath (Resolve-Path -LiteralPath $Installers[$other]).Path -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DATADIR=`"$fullData`"", "/LOG=`"$logs\takeover-$other.log`"" -Wait -PassThru
 Check ($run.ExitCode -ne 0) "$other refuses full's data directory"
 Check-Installed 'full' "after $other tried to take over full's data directory"
-# 反过来也一样：full 的安装器只认 .metasequoiaime-data 这个标记，目录里有别的版本的标记就不认，所以把 full 重新装到它们的数据目录上同样失败，它们的数据目录原样留着。
+# 反过来也一样：full 的安装器只认 .lingyaoime-data 这个标记，目录里有别的版本的标记就不认，所以把 full 重新装到它们的数据目录上同样失败，它们的数据目录原样留着。
 $otherData = (Get-ItemProperty -LiteralPath "HKLM:\$((Identity $other).registry_key)").DataDir
 $run = Start-Process -FilePath (Resolve-Path -LiteralPath $Installers['full']).Path -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DATADIR=`"$otherData`"", "/LOG=`"$logs\takeover-full.log`"" -Wait -PassThru
 Check ($run.ExitCode -ne 0) "full refuses $other's data directory"

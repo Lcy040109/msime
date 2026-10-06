@@ -106,7 +106,7 @@ RULES: dict[str, list[Rule]] = {
     "scripts/msime-linux-setup": [
         UNITS, COMMANDS, CLIENT_DIRECTORY, PACKAGE, DISPLAY_NAME, FCITX5_ADDON_PYTHON,
         ("Omarchy hook", r'theme-set\.d/msime"', lambda n: f'theme-set.d/{n["fcitx5_addon"]}"'),
-        ("Omarchy plugin", r'"metasequoia\.msime"', lambda n: f'"metasequoia.{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
         ("English name in the Fcitx5 hint", r"「MSIME」", lambda n: f"「{n['en']}」"),
     ],
     "scripts/msime-linux-ibus-launcher": [CLIENT_DIRECTORY],
@@ -141,11 +141,11 @@ RULES: dict[str, list[Rule]] = {
     ],
     "data/omarchy/plugin/Widget.qml.in": [
         COMMANDS, CLIENT_DIRECTORY, DISPLAY_NAME,
-        ("Omarchy plugin", r'"metasequoia\.msime"', lambda n: f'"metasequoia.{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
     ],
     "data/omarchy/plugin/manifest.json": [
         DISPLAY_NAME,
-        ("Omarchy plugin", r'"metasequoia\.msime"', lambda n: f'"metasequoia.{n["fcitx5_addon"]}"'),
+        ("Omarchy plugin", r'"lingyao\.msime"', lambda n: f'"lingyao.{n["fcitx5_addon"]}"'),
     ],
     "fcitx5/msime.conf": [
         DISPLAY_NAME, ENGLISH_NAME,
@@ -176,7 +176,7 @@ LEFTOVERS = [
     r"灵耀输入法",
     r"""["'`]msime["'`]""",
     r"theme-set\.d/msime\b(?!-)",
-    r"metasequoia\.msime(?![-\w])",
+    r"lingyao\.msime(?![-\w])",
     r"^(Name|Addon)=(MSIME|msime)$",
     r"libmsime-fcitx5",
 ]

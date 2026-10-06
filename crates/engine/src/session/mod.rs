@@ -1,4 +1,4 @@
-//! The public `Session` (`include/metasequoia/session.h`, core-session.md §4): an input session plus the nine-key session, with the routing rules between them. One host serialises calls to its session; distinct sessions may run concurrently.
+//! The public `Session` (`include/lingyao/session.h`, core-session.md §4): an input session plus the nine-key session, with the routing rules between them. One host serialises calls to its session; distinct sessions may run concurrently.
 //!
 //! The setters the product only sets at construction (`switch_scheme`, `set_helpcode_schema`, `set_helpcode_enabled`, `set_wubi_mixed_pinyin`, `set_personal_context_enabled`) and `candidate_key` stay public because the golden scenarios drive them. Learning undo (`set_learning_undo_enabled`, `forget_recent_commits`) is dropped.
 

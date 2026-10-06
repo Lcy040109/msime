@@ -20,7 +20,7 @@ NSTextField *Label(NSString *text, CGFloat size, NSFontWeight weight, NSColor *c
 }
 
 // The catalog carries ids, titles and a mode, not prose, so a card says what kind of theme it is rather than repeating a per-theme description kept here.
-NSString *ThemeDescription(const metasequoia::mac::ThemeCatalogEntry &entry)
+NSString *ThemeDescription(const lingyao::mac::ThemeCatalogEntry &entry)
 {
     if (entry.id == "custom")
     {
@@ -179,7 +179,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
         [scroll.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     ]];
 
-    for (const metasequoia::mac::ThemeCatalogEntry &entry : metasequoia::mac::ThemeCatalog())
+    for (const lingyao::mac::ThemeCatalogEntry &entry : lingyao::mac::ThemeCatalog())
     {
         [self addSection:[self makeCardForId:@(entry.id.c_str())
                                         name:@(entry.title.c_str())
@@ -350,7 +350,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
         return;
     }
     sender.state = NSControlStateValueOn;
-    if (metasequoia::mac::IsGlobalThemeId(skinId.UTF8String))
+    if (lingyao::mac::IsGlobalThemeId(skinId.UTF8String))
     {
         // The custom card selects the custom theme as it stands, package included (THEME_CONTRACT §5); only 自定义主题不使用外部皮肤 drops the package.
         _preferences.globalTheme = skinId;
@@ -371,7 +371,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
 - (BOOL)packageIsCompatible:(const msime::mac::SkinPackage &)package
 {
     const std::string layout = _preferences.vertical ? "vertical" : "horizontal";
-    for (const metasequoia::mac::ThemeCatalogEntry &entry : metasequoia::mac::ThemeCatalog())
+    for (const lingyao::mac::ThemeCatalogEntry &entry : lingyao::mac::ThemeCatalog())
     {
         if (entry.id == package.base && !entry.appearance.empty())
             return std::find(package.layouts.begin(), package.layouts.end(), layout) != package.layouts.end();
@@ -480,9 +480,9 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     }
     _directoryLabel.stringValue = path.length > 0 ? path : @"~/Library/Application Support/metasequoiaime/skins";
 
-    const metasequoia::mac::SkinCatalog catalog = metasequoia::mac::ScanSkinCatalog(root);
+    const lingyao::mac::SkinCatalog catalog = lingyao::mac::ScanSkinCatalog(root);
     NSMutableArray<NSView *> *cards = [NSMutableArray array];
-    for (const metasequoia::mac::SkinPackage &package : catalog.packages)
+    for (const lingyao::mac::SkinPackage &package : catalog.packages)
     {
         NSString *description = package.description.empty()
                                     ? [NSString stringWithFormat:@"基于%s", msime::mac::ThemeTitle(package.base).c_str()]
@@ -529,7 +529,7 @@ NSString *JoinedSkinValues(const std::vector<std::string> &values)
     else
     {
         NSMutableString *text = [NSMutableString stringWithFormat:@"已忽略 %zu 个无效皮肤目录", catalog.issues.size()];
-        for (const metasequoia::mac::SkinIssue &issue : catalog.issues)
+        for (const lingyao::mac::SkinIssue &issue : catalog.issues)
         {
             [text appendFormat:@"\n%s：%s", issue.folder.c_str(), issue.reason.c_str()];
         }

@@ -1,4 +1,4 @@
-//! Offline recognition of one handwritten character: the C++ `metasequoia::handwriting::Recognizer` (`handwriting.cpp`) and the bridge entry that fed it (`bridge.cpp` `handwriting_recognize`), over a Rust port of zinnia.
+//! Offline recognition of one handwritten character: the C++ `lingyao::handwriting::Recognizer` (`handwriting.cpp`) and the bridge entry that fed it (`bridge.cpp` `handwriting_recognize`), over a Rust port of zinnia.
 //!
 //! The reference constructed a recognizer, and so re-mapped the model, on every call. Here recent model paths are mapped and parsed once while they stay in a bounded cache: host-api classifies each character cell of a written line separately, and re-parsing the labels for every cell is wasted work. The mapping is read-only, as zinnia's was, so the weights stay clean, file-backed pages the system can evict; it is sound because the model is a packaged file installed by replacement and never edited in place while the host runs. A failed load is not remembered, so a model installed later is picked up.
 

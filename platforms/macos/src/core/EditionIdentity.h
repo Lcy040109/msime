@@ -10,7 +10,7 @@
 static NSString *const MSIMEFullEditionIdentifier = @"full";
 static NSString *const MSIMEFullInputMethodBundleIdentifier = @"app.msime.inputmethod.LingyaoIME";
 static NSString *const MSIMEFullSettingsBundleIdentifier = @"app.msime.macos";
-static NSString *const MSIMEFullKeychainService = @"com.metasequoia.msime.account";
+static NSString *const MSIMEFullKeychainService = @"com.lingyao.msime.account";
 static NSString *const MSIMEFullDefaultScheme = @"quanpin";
 static NSString *const MSIMEFullVoiceProviderKeychainService = @"app.msime.client.voice.providers";
 static NSString *const MSIMEFullUsageReportingDirectoryName = @"MSIME/telemetry";

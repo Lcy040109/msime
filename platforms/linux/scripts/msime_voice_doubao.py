@@ -125,7 +125,7 @@ def request_body(options):
         raise ValueError("invalid Doubao boosting table")
     if boosting:
         request["corpus"] = {"boosting_table_id": boosting}
-    return json.dumps({"user": {"uid": "metasequoia-ime"},
+    return json.dumps({"user": {"uid": "lingyao-ime"},
                        "audio": {"format": "pcm", "codec": "raw", "rate": 16000,
                                  "bits": 16, "channel": 1},
                        "request": request}).encode()

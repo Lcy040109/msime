@@ -10,7 +10,7 @@ use std::fs::{self, File};
 use std::io;
 use std::path::{Path, PathBuf};
 
-pub(crate) const DATA_DIRECTORY_MARKER: &str = ".metasequoiaime-data";
+pub(crate) const DATA_DIRECTORY_MARKER: &str = ".lingyaoime-data";
 const OPTIONS_FILE: &str = "runtime-options.json";
 const MAX_LOCATOR_BYTES: u64 = 1024 * 1024;
 

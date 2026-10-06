@@ -15,7 +15,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_METASEQUOIAIME          ICON                    "assets/msime.ico"
+IDIS_LINGYAOIME          ICON                    "assets/msime.ico"
 IDI_IME_MODE_ON         ICON                    "assets/cn-light.ico"
 IDI_IME_MODE_OFF        ICON                    "assets/en-light.ico"
 IDI_IME_MODE_ON_DARK    ICON                    "assets/cn-dark.ico"
@@ -102,7 +102,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDIS_METASEQUOIAIME          "Chinese Simplified QuanPin (version 6.0)"
+    IDIS_LINGYAOIME          "Chinese Simplified QuanPin (version 6.0)"
     IDS_DEFAULT_FONT        "Microsoft YaHei UI"
 END
 

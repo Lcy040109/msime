@@ -33,4 +33,4 @@ The foreground is rendered by the same script, from the same artwork, with two d
 | xxhdpi | 324 |
 | xxxhdpi | 432 |
 
-Both repositories are metasequoiaime's own and share its licence; no third-party distribution restriction applies to this asset.
+Both repositories are lingyaoime's own and share its licence; no third-party distribution restriction applies to this asset.

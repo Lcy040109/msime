@@ -16,7 +16,7 @@ inline constexpr wchar_t state_directory_registry_key[] = MSIME_EDITION_REGISTRY
 inline constexpr wchar_t state_directory_registry_value[] = L"DataDir";
 inline constexpr wchar_t state_directory_folder_name[] = MSIME_EDITION_STATE_DIRECTORY;
 
-// 先是绝对路径的本版本数据目录环境变量（full 是 METASEQUOIA_IME_DATA_DIR），再是安装器写在本版本 HKLM 键下的 DataDir，最后是 %LOCALAPPDATA%\<本版本的状态目录名>（full 是 MSIME-Client）。只有 known folder 查询失败时返回空。
+// 先是绝对路径的本版本数据目录环境变量（full 是 LINGYAO_IME_DATA_DIR），再是安装器写在本版本 HKLM 键下的 DataDir，最后是 %LOCALAPPDATA%\<本版本的状态目录名>（full 是 MSIME-Client）。只有 known folder 查询失败时返回空。
 inline std::filesystem::path resolve_state_directory() {
   // Keep the Windows host relocatable like the upstream installer. The installer/enterprise launcher can provide one absolute data directory; all preferences, dictionaries and runtime leases then follow it instead of silently splitting state between the redirected path and LocalAppData. Read through the process environment block rather than the CRT's copy: the TSF DLL is loaded into arbitrary host processes whose CRT environment may be a stale snapshot, or belong to a different CRT than the one the DLL links.
   {

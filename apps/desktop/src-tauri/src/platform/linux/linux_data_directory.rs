@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Duration;
 
-pub(crate) const DATA_DIRECTORY_MARKER: &str = ".metasequoiaime-data";
+pub(crate) const DATA_DIRECTORY_MARKER: &str = ".lingyaoime-data";
 const OPTIONS_FILE: &str = "runtime-options.json";
 const MAX_OPTIONS_BYTES: u64 = 1024 * 1024;
 const INITIAL_OPTIONS_READ_CAPACITY: usize = 8 * 1024;

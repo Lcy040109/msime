@@ -12,7 +12,7 @@ endif()
 
 set(MSIME_ENGINE_REF_SRC "" CACHE PATH "Reference MSIME-Engine source tree (pinned archive + overlays)")
 set(MSIME_ENGINE_REF_BUILD "" CACHE PATH "Configured and built reference tree containing libLingyaoImeEngine.a")
-if(NOT EXISTS "${MSIME_ENGINE_REF_SRC}/include/metasequoia/session.h")
+if(NOT EXISTS "${MSIME_ENGINE_REF_SRC}/include/lingyao/session.h")
     message(FATAL_ERROR "MSIME_ENGINE_REF_SRC must point at the reference MSIME-Engine source tree")
 endif()
 if(NOT EXISTS "${MSIME_ENGINE_REF_BUILD}/libLingyaoImeEngine.a")

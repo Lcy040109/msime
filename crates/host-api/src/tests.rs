@@ -8431,7 +8431,7 @@ fn the_dictionary_manifest_answers_what_is_installed_or_says_it_cannot() {
             "format_version": 1,
             "engine_compatibility": {"dictionary_format": 1, "japanese_model_magic": "MSJPDT1"},
             "source": {
-                "repository": "Lcy040109/msime-engine",
+                "repository": "metasequoiaime/msime-engine",
                 "path": "dictionary",
                 "commit": commit,
                 "dirty": false,

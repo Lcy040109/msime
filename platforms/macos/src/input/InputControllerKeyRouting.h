@@ -7,7 +7,7 @@
 
 #include "InputControllerPhysicalKeys.h"
 
-namespace metasequoia::mac
+namespace lingyao::mac
 {
 enum class ControllerKeyAction
 {
@@ -142,4 +142,4 @@ constexpr ControllerKeyAction ClassifyControllerKey(
         return ControllerKeyAction::Character;
     }
 }
-} // namespace metasequoia::mac
+} // namespace lingyao::mac

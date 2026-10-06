@@ -5,7 +5,7 @@
 static void require(bool value, const char *message) { if (!value) throw std::runtime_error(message); }
 
 int main() {
-    using namespace metasequoia::mac;
+    using namespace lingyao::mac;
     require(CandidatePageStart(0, 23, 9) == 0, "first page start");
     require(CandidatePageStart(8, 23, 9) == 0, "selected item stays on first page");
     require(CandidatePageStart(9, 23, 9) == 9, "second page start");

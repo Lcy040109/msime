@@ -134,7 +134,7 @@
 - **简繁转换**：共享层 `crates/client-core/src/chinese_conversion.rs` 按 OpenCC `data/config/s2t.json` 实现词级转换（兼容表归一化，再以 STPhrases ∪ 地区词派生表 → STCharacters 做最大正向匹配，完整 IDS 序列整体透传），数据取自来源钉的同一个 OpenCC 提交并登记在 `docs/third-party.md`。边界导出 `msime_client_simplified_to_traditional` 返回裸文本而非 JSON——它在每个候选上都要调用；Windows、Linux、macOS、Android、iOS 与 HarmonyOS 宿主都调这一个导出，不使用系统的 `LCMapStringEx`、`libicu`、`CFStringTransform`、`android.icu.text.Transliterator` 或 `i18n.Transliterator` 逐字转换；首次调用解析词典，之后单次约 1 µs。与该提交构建出的 OpenCC CLI 做对照，4 万行随机文本逐字节一致。
 - **安装器**：完整安装器提供数据目录选择页，拒绝系统 / 用户关键目录的父级、受保护目录内部、路径穿越与未标记的非空目录，并在就绪页展示迁移源与目标；`config.toml` 只 `onlyifdoesntexist`，升级不覆盖用户数据；light 包固定原目录。安装前在第一屏之前查注册表确认 WebView2 与 VC 运行库（要求 14.20 以上而非只看 `Installed=1`），静默安装默认继续并把缺失写进日志。
 - **云候选的首次同意（macOS）**：来源安装器的「联网功能」页在全新安装时说明云候选会把正在输入的拼写发给 inputtools.google.com，默认勾选、可取消，升级时跳过，只写 `cloud_candidates = false`。macOS 没有每个用户都会经过的安装步骤，输入法也可以在从未打开设置应用的情况下使用，所以由 IME 进程自己问：`AppearancePreferences.mm` 的 `resolveCloudCandidatesConsentWithPreferencesDirectory:userDataDirectory:` 在建立会话之前判断一次——宿主偏好里已有云候选选择、`preferences.json` 已存在或 Engine 用户数据目录（会话选项 `user_data`）已有内容即视为升级，不问、原值不动；否则记为待确认，结果存进 `MSIMEClientCloudCandidatesConsent`。待确认期间不发任何云候选请求，`InputController.mm` 的 `activateServer:` 在激活之后异步弹出不阻塞输入的「联网功能」对话框，文案沿用来源安装器页和 Linux 首次配置页，末句按来源的「设置 → 输入」指向共享设置输入页的「云候选」，按钮为「启用云候选」（默认，对应来源的默认勾选）与「不启用」；答案经 `answerCloudCandidates:` 写入共享 `cloud_candidates`，与 Windows、Linux 同一个字段。原生设置里改动云候选开关也算作答复。`shortcut` 测试的 `TestCloudCandidateConsent` 覆盖全新、升级（已有选择、已有 `preferences.json`、只有 Engine 用户数据）、空的用户数据目录、之后才出现的 `preferences.json`、拒绝与接受。
-- **安装后的首次准备**：完整安装器在提升权限下写入词库、出厂配置和所有权标记，但不以安装器身份替用户执行 Host API 准备。Server 的生产首次启动因此除全新目录外，也接受已有且带 `.metasequoiaime-data` 所有权标记、尚无 `runtime-options.json` 的目录，在用户上下文中完成准备；普通已有目录、已有运行时配置、文件和符号链接不会被接管或重建，准备失败保留现有数据。独立的 `msime-client-prepare` 仍只接受全新目录。
+- **安装后的首次准备**：完整安装器在提升权限下写入词库、出厂配置和所有权标记，但不以安装器身份替用户执行 Host API 准备。Server 的生产首次启动因此除全新目录外，也接受已有且带 `.lingyaoime-data` 所有权标记、尚无 `runtime-options.json` 的目录，在用户上下文中完成准备；普通已有目录、已有运行时配置、文件和符号链接不会被接管或重建，准备失败保留现有数据。独立的 `msime-client-prepare` 仍只接受全新目录。
 - **升级后的用户词库回放**：来源 `installer/msime_setup.iss` 的 `ReplayUserDictionary` 在每次升级时以 `--data-dir` 运行随 Server 安装的 `LingyaoImeDictionaryReplay.exe`（源码在 `server/src/user-dictionary-replay`），失败就中止安装。它回放的是来源布局下 `DataDir` 里的 `msime_user.db`；本仓没有这种布局，Windows 安装器不带这一步，也不随包安装回放工具。没有按用户安装步骤的平台改用共享的 `msime_host_api::refresh_host_options`（导出为 `msime_client_refresh_host`）：比较运行时配置的词库代次与编译进去的词库锁，不一致时准备新代次、回放用户词库日志并原子改写 `resources` / `dictionaries`。Linux 由 IBus 与 Fcitx5 宿主在建立会话前调用，macOS 由 IMK 宿主启动时（`RuntimeOptionsRefresh.h`）和设置应用启动时（`macos_launch.rs`）调用。宿主自己调用的导出 `msime_client_refresh_host`（`refresh_host_options_with_language_dictionaries`）另外让 `language_dictionaries` 跟上资源目录旁安装的粤语与注音词库，不论代次；设置应用不写这个键，以免仍在运行的旧版本 IMK 因不认识它而拒绝配置。刻意的差异：macOS 与 Linux 没有按用户执行的安装步骤可以中止，失败时保留旧代次继续输入，下次启动再试。
 - **检查更新**：各平台由 `.github/workflows/release-*.yml` 独立发布到同一个仓库、标签带平台前缀，所以读的是发行版列表而不是 `releases/latest`——后者返回的通常是别的平台那一个。只取本平台前缀、非草稿、非预发布的发行版，按版本号而不是列表顺序取最新，没有则显示「暂无可用发行版」。Server 遥测上报的版本号由 CMake 从 `platforms/windows/version.txt` 读入，`Build-Client.ps1` 的 `-TargetVersion` 把同一个版本号同时传给 Tauri 和 Server。
 - **外部链接**：走 `msime_host_windows::open_url`，用 `ShellExecuteW` 把 https URL 直接交给默认浏览器，非 https 一律拒绝，与已有的 `open_directory` 共用同一段调用；不经 `cmd /C start`，不闪控制台窗口，URL 也不过 cmd 解析。
@@ -236,7 +236,7 @@
 
 **TSF DLL 的 COM 边界。** 类工厂契约由 `msime-tsf-class-factory` 钉住：从同目录加载出货 DLL，解析 `DllGetClassObject`，用固定 CLSID 取得 `IClassFactory`，实例化的对象实现 `ITfTextInputProcessor`；未知 CLSID 返回 `CLASS_E_CLASSNOTAVAILABLE`，已知 CLSID 但请求不支持的类工厂接口返回 `E_NOINTERFACE`，空输出指针在 `QueryInterface` 返回 `E_POINTER`、在 `CreateInstance` 返回 `E_INVALIDARG`；类工厂拒绝聚合；`DllCanUnloadNow` 钉住「类工厂或 TIP 仍被引用时不可卸载、全部释放后可卸载」，并覆盖 `LockServer(TRUE/FALSE)`。生产的 `DllGetClassObject` 先清空输出，再按 CLSID、然后按接口判定，不把这两类错误混为一谈。
 
-**安装布局与注册。** 32 位与 64 位 TSF DLL 分别装到 `{commonpf32|64}\metasequoiaime\msime_v<ver>\` 并带 `regserver` 标志注册 TIP；PDB 与 `.ilk` 不装到用户机器上，`installer/Collect-Symbols.ps1` 把它们打成单独的 `msime-windows-<edition>-<version>-symbols.zip` 随安装包发布，`release-windows.yml` 和 `Package-SimplySign.ps1` 都调用它，维护者替换签名安装包时连同符号包一起替换；Server 装在 `{commonpf64}\metasequoiaime\server`；应用数据装到用户选定的 `DataDir`；HKLM `Software\Lingyao\LingyaoIME` 写 `VersionDir` / `ServerPath` / `DataDir`；`THIRD_PARTY_NOTICES.txt` 与 `LICENSE.txt` 随包分发（GPLv3 第 4、6 条）。`ISCC /DLightPackage=1` 出不含词库的轻量包。
+**安装布局与注册。** 32 位与 64 位 TSF DLL 分别装到 `{commonpf32|64}\lingyaoime\msime_v<ver>\` 并带 `regserver` 标志注册 TIP；PDB 与 `.ilk` 不装到用户机器上，`installer/Collect-Symbols.ps1` 把它们打成单独的 `msime-windows-<edition>-<version>-symbols.zip` 随安装包发布，`release-windows.yml` 和 `Package-SimplySign.ps1` 都调用它，维护者替换签名安装包时连同符号包一起替换；Server 装在 `{commonpf64}\lingyaoime\server`；应用数据装到用户选定的 `DataDir`；HKLM `Software\Lingyao\LingyaoIME` 写 `VersionDir` / `ServerPath` / `DataDir`；`THIRD_PARTY_NOTICES.txt` 与 `LICENSE.txt` 随包分发（GPLv3 第 4、6 条）。`ISCC /DLightPackage=1` 出不含词库的轻量包。
 
 ### Windows 发布流水线产出真实安装包（2026-09-23）
 
@@ -470,7 +470,7 @@ cargo run -p msime-input-runtime --example local_modes -- <verified-dictionary-d
 - **宿主能力矩阵**：`HostCapabilities::for_platform` 里没有任何一项是「Windows 有、macOS 没有」。
 - **悬浮工具栏缩放**：macOS 的白名单 75/100/125/150 与来源下拉逐项相同。
 - **翻页键的缺省**：原生窗口那个三选一的「候选翻页快捷键」只在共享 `navigation` 没有显式布尔值时充当缺省，一旦设置页写过就以共享值为准；它推出的缺省（minus_equal 开、brackets 关、其余开、mouse_wheel 关）与共享 `NavigationPreferences::default()` 逐项相同。
-- **候选字号**：`metasequoia::mac` 下那两个只认 16/18/20 的 `NormalizeCandidateFontSize` 属保留的 Apple 适配层（`LingyaoInputController.mm`，不编进产物）；发出去的宿主走的是 12–32。
+- **候选字号**：`lingyao::mac` 下那两个只认 16/18/20 的 `NormalizeCandidateFontSize` 属保留的 Apple 适配层（`LingyaoInputController.mm`，不编进产物）；发出去的宿主走的是 12–32。
 
 混输最小前缀默认值的来源依据：
 
@@ -484,7 +484,7 @@ cargo run -p msime-input-runtime --example local_modes -- <verified-dictionary-d
 
 顺带发现 `CandidatePageSizeTest.cpp` 根本没注册进 CMake——有文件、没目标，从来没跑过，这正是那条改写规则一直没被重新审视的原因。已接进 CTest（126 项），并把它从「5/7/9 的三值表」改成覆盖整个范围、越界拉到最近一端、以及窗口列出的那七项。
 
-增量记录（2026-09-21，README 其余各节：自定义候选窗翻译在桌面端没有入口）：来源《自定义候选窗翻译》一节的做法是「在 `%LOCALAPPDATA%\metasequoiaime\` 下新建 `custom_translations.txt`」。这条指令迁到 macOS 就不成立了——同一个目录在 `~/Library/Application Support/` 下，Finder 默认不显示它，用户按文档照做会找不到地方。
+增量记录（2026-09-21，README 其余各节：自定义候选窗翻译在桌面端没有入口）：来源《自定义候选窗翻译》一节的做法是「在 `%LOCALAPPDATA%\lingyaoime\` 下新建 `custom_translations.txt`」。这条指令迁到 macOS 就不成立了——同一个目录在 `~/Library/Application Support/` 下，Finder 默认不显示它，用户按文档照做会找不到地方。
 
 共享设置页本来就有这一节（输入页的「自定义候选释义」，连 Tab 分隔、`#` 注释、同源词以最后一次为准这些说明都在），但它由 `client.customTranslations` 门控，而这个能力只有 HarmonyOS 提供。于是桌面三个宿主上整节不渲染：既没有来源那条文件路径的等价物，也没有界面。
 
@@ -613,7 +613,7 @@ macOS 缺后半条。`ShouldRoutePhysicalCandidateDigit` 明确把 Unicode 模�
 
 同一轮还核过几处怀疑、结论都是已实现或有意适配，一并记下以免再查：HarmonyOS 的 `InputCommand` 枚举值与 C ABI 的命令码逐一对应（分段命令是显式的 12/13/14，不是顺延的 9/10/11）；翻页键集合覆盖来源的 `IsPagingKey` 全部并多出鼠标滚轮；日语浊音/半浊音/小假名在触屏上以 `SURFACE_VARIANTS` 面板实现（点假名直接按下对应罗马字笔画），而不是来源的 `CycleKanaVariant` 循环命令。
 
-增量记录（2026-09-20，输入行为层第一片）：先确认了一件决定工作量的事——两个仓库用的是同一个引擎 `github.com/Lcy040109/msime-engine`，来源以 submodule 锁在 `6bd22549`，本仓以 `engine-lock.json` 锁在 `0531d421`，而后者比前者**新 467 个提交**（来源那个 commit 是本仓的祖先）。所以候选生成、分词、词库这些引擎行为不存在「缺失」，本仓跑的是同一引擎的更新版本；行为差异只可能出在宿主怎么驱动它。本仓的候选快照字段（candidates / candidate_codes / candidate_annotations / candidate_sources / candidate_positions / candidate_corrected）也与来源 `CandidateViewItem` 的 text/annotation/badge/translation/fixed_position 一一对应，并多一个纠错标记。
+增量记录（2026-09-20，输入行为层第一片）：先确认了一件决定工作量的事——两个仓库用的是同一个引擎 `github.com/metasequoiaime/msime-engine`，来源以 submodule 锁在 `6bd22549`，本仓以 `engine-lock.json` 锁在 `0531d421`，而后者比前者**新 467 个提交**（来源那个 commit 是本仓的祖先）。所以候选生成、分词、词库这些引擎行为不存在「缺失」，本仓跑的是同一引擎的更新版本；行为差异只可能出在宿主怎么驱动它。本仓的候选快照字段（candidates / candidate_codes / candidate_annotations / candidate_sources / candidate_positions / candidate_corrected）也与来源 `CandidateViewItem` 的 text/annotation/badge/translation/fixed_position 一一对应，并多一个纠错标记。
 
 据此查到一处真实差异并修掉：引擎会把一部分候选扣在初始结果之后，要调 `expand_initial_candidates` 才放出来，而运行时里这个调用只有一处——`expand_for_next_page`，只在 `Action::NextPage` 时触发。翻页的宿主能拿到，改为「一次列出全部」的触屏宿主则永远拿不到。`all_candidates()` 是 `&self`，只读 `self.cached`。实测（`withholding_runtime(12, 8, 5)`）：翻页前 `all_candidates()` 返回 12 条，翻页到底后返回 20 条——号称「全部」的面板少了 8 条，正好是引擎扣住的那批。HarmonyOS 的触屏路径用的就是 `allCandidates`（`KeyboardSession.ets`，注释写明沿用 iOS 的做法放弃翻页），所以这 8 条在触屏上无法通过任何操作到达。现让 `all_candidates()` 先扩充再返回：这个调用本身就是「把全部给我」。扩充失败不致命，调用方仍拿到已有的那一代。
 
@@ -1355,9 +1355,9 @@ macOS 对应同一份 `settings_launcher.cpp` 语义，但只对设置窗生效�
 
 第三十二批的结论是「按上游 README 功能清单逐条核对，只剩加加辅助码没有对应物」，并把它记成「等仓库所有者做第三方数据决定」。**那个决定已经有了**：仓库所有者明确要求完整复刻，本批照此执行。该做的不是替他决定，而是把决定所需要知道的事实摆清楚，然后把活干完——这两件事都做了，见 `resources/helpcodes/NOTICE.md`。
 
-**为什么不能提锁。** 前几批写过「可以加一个 overlay 把 `assets::helpcodes` 从五项扩到六项」，但没说清另一条路为什么不通：`git ls-remote Lcy040109/msime-engine HEAD` 回来的就是 `engine-lock.json` 钉的那个 `f611f2ff`。引擎已经并进上游主仓（README 的「引擎在仓内」），独立引擎仓库停在并入那一刻，而加加是 2026-09-20 的 `566ff8b8` 加进上游 `engine/` 的——**没有更新的引擎提交可以提**。所以码表只能由本仓携带。
+**为什么不能提锁。** 前几批写过「可以加一个 overlay 把 `assets::helpcodes` 从五项扩到六项」，但没说清另一条路为什么不通：`git ls-remote metasequoiaime/msime-engine HEAD` 回来的就是 `engine-lock.json` 钉的那个 `f611f2ff`。引擎已经并进上游主仓（README 的「引擎在仓内」），独立引擎仓库停在并入那一刻，而加加是 2026-09-20 的 `566ff8b8` 加进上游 `engine/` 的——**没有更新的引擎提交可以提**。所以码表只能由本仓携带。
 
-**注册只需一条 asset 条目。** `HelpcodeUtils::load_helpcode_keymap` 按 `entry.schema == schema` 在 `metasequoia::assets::helpcodes` 里找，`is_supported_helpcode_schema` 查的是同一个数组，所以一条条目同时决定「能不能加载」和「算不算合法」。`contracts/assets/generate.py` 把契约生成那个数组，`product.py` 又从同一份契约派生打包文件清单——于是 overlay 改 `assets.json` 之后跑引擎**自己的**生成器，而不是手改生成出来的头文件再祈祷三者一致。overlay 会断言生成结果里确实出现了 `{"jiajia", helpcode_jiajia}`。
+**注册只需一条 asset 条目。** `HelpcodeUtils::load_helpcode_keymap` 按 `entry.schema == schema` 在 `lingyao::assets::helpcodes` 里找，`is_supported_helpcode_schema` 查的是同一个数组，所以一条条目同时决定「能不能加载」和「算不算合法」。`contracts/assets/generate.py` 把契约生成那个数组，`product.py` 又从同一份契约派生打包文件清单——于是 overlay 改 `assets.json` 之后跑引擎**自己的**生成器，而不是手改生成出来的头文件再祈祷三者一致。overlay 会断言生成结果里确实出现了 `{"jiajia", helpcode_jiajia}`。
 
 端到端验证过：删掉 `vendor/MSIME-Engine` 重跑 `scripts/fetch_engine.py`，归档按锁文件的 sha256 校验后展开、overlay 生效、数组从 5 变 6、7968 行的表在位。重复执行幂等（引擎将来自带这套方案时整个 overlay 原样退出，不覆盖它自己的表）。
 
@@ -1726,7 +1726,7 @@ macOS 原生宿主此前存在同一条可达路径。`MSIMEInputController` 把
 
 ### 自定义数据目录与安全迁移（2026-09-22）
 
-来源 `bc37ac9a` 解决的是产品数据根目录不能离开系统盘：安装器让用户选择目录，三个进程通过环境变量／注册表／默认目录的同一优先级找到它；改位置时先停输入法，迁移用户词库、配置与皮肤，并以 `.metasequoiaime-data` 标记目录所有权，避免把用户原有文件夹整棵删掉。
+来源 `bc37ac9a` 解决的是产品数据根目录不能离开系统盘：安装器让用户选择目录，三个进程通过环境变量／注册表／默认目录的同一优先级找到它；改位置时先停输入法，迁移用户词库、配置与皮肤，并以 `.lingyaoime-data` 标记目录所有权，避免把用户原有文件夹整棵删掉。
 
 此前第 1306 行把 macOS 的 `preferences_directory` 开发 override 记成“已有对应实现”，结论过早：它只证明 HostOptions 能承载绝对路径，发行设置页没有选择入口，设置 Tauri bundle 与 IMK bundle 也各自在自己的 Application Support 路径找配置，用户无法实际完成迁移。现在共享“关于”页提供数据目录状态、原生 AppKit 文件夹选择器和明确确认；平台适配层把两个固定 `runtime-options.json` 当作定位器，两边始终指向同一个可移动状态根，不照搬 Windows 注册表。
 
@@ -1831,7 +1831,7 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 
 完整安装器会在提升权限下把词库、出厂配置和所有权标记写入所选 `DataDir`，但不能以安装器身份替用户执行 Host API 准备。此前 Server 的首次准备只接受“目录不存在”，所以正常安装后的第一次启动会跳过准备，随后读取不存在的 `runtime-options.json` 并退出；默认目录和自定义目录都受影响。
 
-现在保留独立 `msime-client-prepare` 的全新目录契约；生产首次启动额外允许已有且带 `.metasequoiaime-data` 所有权标记、但尚无 `runtime-options.json` 的目录，在用户上下文中完成准备。普通已有目录、已有运行时配置、文件和符号链接仍不会被接管或重建；准备失败也不覆盖并保留现有数据。回归新增安装器所有权目录的成功准备与可恢复缺失配置路径，并继续覆盖普通不完整目录和错误资源不创建状态。验证为 host 编译运行的合成首次运行测试、x64 MinGW 语法检查和 `git diff --check`；安装包、真实 Server 首次启动和 Windows 系统入口仍未在真实 Windows 上验收。
+现在保留独立 `msime-client-prepare` 的全新目录契约；生产首次启动额外允许已有且带 `.lingyaoime-data` 所有权标记、但尚无 `runtime-options.json` 的目录，在用户上下文中完成准备。普通已有目录、已有运行时配置、文件和符号链接仍不会被接管或重建；准备失败也不覆盖并保留现有数据。回归新增安装器所有权目录的成功准备与可恢复缺失配置路径，并继续覆盖普通不完整目录和错误资源不创建状态。验证为 host 编译运行的合成首次运行测试、x64 MinGW 语法检查和 `git diff --check`；安装包、真实 Server 首次启动和 Windows 系统入口仍未在真实 Windows 上验收。
 
 ### 简繁转换改为 OpenCC 词级（2026-09-23）
 
@@ -2071,13 +2071,13 @@ Windows 的安装位置、资源目录和用户状态目录可能包含中文、
 
 对照来源 `installer/msime_setup.iss` 与 `server/src/main.cpp` 逐条核对后，下面六处差异都成立，一并修掉；另外顺带发现一处数据目录标记的问题。
 
-- **卸载删不掉自定义数据目录**：`DataDir` 注册表值带 `uninsdeletevalue`，卸载步骤里就已被删掉，`usPostUninstall` 再调 `GetDataDir` 只会回落到默认的 `{localappdata}\metasequoiaime`，自定义目录因此永远留在磁盘上。现在 `InitializeUninstall` 像缓存 `VersionDirName` 一样先调 `ResolvePreviousDataDir` 缓存路径，`usPostUninstall` 只删这个缓存路径，且仍要求它带所有权标记。注册表值照旧删除。
+- **卸载删不掉自定义数据目录**：`DataDir` 注册表值带 `uninsdeletevalue`，卸载步骤里就已被删掉，`usPostUninstall` 再调 `GetDataDir` 只会回落到默认的 `{localappdata}\lingyaoime`，自定义目录因此永远留在磁盘上。现在 `InitializeUninstall` 像缓存 `VersionDirName` 一样先调 `ResolvePreviousDataDir` 缓存路径，`usPostUninstall` 只删这个缓存路径，且仍要求它带所有权标记。注册表值照旧删除。
 - **数据目录的权限与完整性级别**：Server 与设置窗口以 Medium 完整性级别运行，写不了提升权限的安装器创建的对象。与来源相同，`[Dirs]` 给数据目录加 `Permissions: users-modify`，`ssPostInstall` 在写完词库、配置与词典重放之后再执行 `icacls /grant *S-1-5-32-545:(OI)(CI)M` 与 `/setintegritylevel (OI)(CI)M`，以覆盖安装器之后写入的文件。代价与来源一样：数据目录在每用户的 LocalAppData 下，Users 组的修改权限也让同一台机器上的其他本地用户能改它。
 - **升级与卸载不停设置窗口和面板**：设置窗口和表情 / 屏幕键盘 / 手写面板是同一个 Tauri 外壳 `msime-client-settings.exe`（面板由 `MSIME_CLIENT_PANEL` 选择），窗口关闭后隐藏驻留约 10 分钟，升级时会报文件占用。`StopImeProcesses` 依次停 Watchdog、Server 与这个外壳，升级和卸载都只经它停进程；安装包里其余可执行文件（`LingyaoImeDictionaryReplay`、`msime-client-prepare`）是一次性进程。
 - **TSF 拉起的 Server 不恢复 Watchdog**：来源 Server 启动时若命令行里没有 `--watchdog-managed`，就拉起同目录的 Watchdog。本仓库的 `parse_server_arguments` 把 `--production` 与 `--watchdog-managed` 合并成 `Managed`，区分不出来，于是 TSF DLL 用 `--production` 重启崩溃的 Server 后，要到下次登录才重新有 Watchdog。`ServerLaunch` 新增 `supervised`，只在 `--watchdog-managed` 时为真；受管启动拿到单实例锁后，若非 Watchdog 所启，就用 `CreateProcessW` 拉起同目录的 `LingyaoImeWatchdog.exe`。Watchdog 有自己的单实例互斥量，会接管已在运行的同目录 Server 而不再起第二个，TIP 未启用时自行退出。
 - **登录任务的 `/TR` 未加引号**：schtasks 把不带内层引号的 `/TR` 值在第一个空格处拆成程序与参数，`C:\Program Files\...` 会被存成程序 `C:\Program`。与来源相同，改回 `/TR "\"<路径>\""`（c306e5985 当初去掉了内层引号）。`watchdog-task.ps1` 除了静态检查，还会在提升权限的 Windows 上把安装器实际传给 schtasks 的整串参数以临时任务名注册一次，读回任务 XML 核对 `Command` 就是完整路径、`Arguments` 为空，结束后删除任务。
-- **开始菜单的「设置」找不到 `DataDir` 里的 `runtime-options.json`**：Server 拉起外壳时通过 `MSIME_CLIENT_STATE_DIR` 与 `MSIME_CLIENT_HOST_OPTIONS` 指路，开始菜单快捷方式没有这两个变量，外壳只在自己的 `app.msime.client` 目录和 `%LOCALAPPDATA%\MSIME-Client` 下找，装在默认 `{localappdata}\metasequoiaime` 或自定义目录时都找不到。现在没有这两个变量时，外壳按 Server 的 `production_state_directory` 同样的顺序（`METASEQUOIA_IME_DATA_DIR`、HKLM 64 位视图的 `DataDir`、`%LOCALAPPDATA%\MSIME-Client`，注册表读取在 `msime_host_windows::server_state_directory`）找 Server 的状态目录，其中已有 `runtime-options.json` 时就用它，状态目录取其中的 `preferences_directory`（与 Server 相同）。
-- **升级清理删掉了所有权标记**：`CleanAppDataExceptUserFiles` 在 `PrepareToInstall` 写入 `.metasequoiaime-data` 之后、`ssPostInstall` 之前执行，保留名单里没有标记文件，升级中途失败时重试和卸载都不再认这个目录。标记现在列入保留名单。
+- **开始菜单的「设置」找不到 `DataDir` 里的 `runtime-options.json`**：Server 拉起外壳时通过 `MSIME_CLIENT_STATE_DIR` 与 `MSIME_CLIENT_HOST_OPTIONS` 指路，开始菜单快捷方式没有这两个变量，外壳只在自己的 `app.msime.client` 目录和 `%LOCALAPPDATA%\MSIME-Client` 下找，装在默认 `{localappdata}\lingyaoime` 或自定义目录时都找不到。现在没有这两个变量时，外壳按 Server 的 `production_state_directory` 同样的顺序（`LINGYAO_IME_DATA_DIR`、HKLM 64 位视图的 `DataDir`、`%LOCALAPPDATA%\MSIME-Client`，注册表读取在 `msime_host_windows::server_state_directory`）找 Server 的状态目录，其中已有 `runtime-options.json` 时就用它，状态目录取其中的 `preferences_directory`（与 Server 相同）。
+- **升级清理删掉了所有权标记**：`CleanAppDataExceptUserFiles` 在 `PrepareToInstall` 写入 `.lingyaoime-data` 之后、`ssPostInstall` 之前执行，保留名单里没有标记文件，升级中途失败时重试和卸载都不再认这个目录。标记现在列入保留名单。
 
 回归：新增 `installer/tests/lifecycle.ps1`（进程停止顺序、卸载用缓存路径、权限与标记），`watchdog-task.ps1` 改为要求内层引号并加 Task Scheduler 往返，`tauri-layout.ps1` 原本断言一个已不存在的 `DataDirIsSafe`，改为断言现在的 `DataDirRejectionReason`；这几个套件与 `tsf-registration.ps1` 接进 CI 的「Windows release script tests」。`windows-installer-launch` 另外钉住卸载使用缓存路径、安装器的 `--production` 启动不算受监管；`windows-server-launch` 钉住 `supervised` 的取值。发布流水线上的 `install-smoke.ps1` 改用 `/DATADIR` 指定的自定义数据目录安装，安装后核对登录任务存下的程序是完整的 Watchdog 路径且没有参数、数据目录授予 Users 修改权限并带 Medium 完整性标签，卸载后核对这个自定义目录已被删除。
 

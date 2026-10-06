@@ -7,7 +7,7 @@ import qs.Ui
 // Omarchy starts fcitx5 with --disable notificationitem, so the tray that would show MSIME's 中/英 label and menu never appears. This widget reads the status the addon publishes (src/core/InputStatus.h) and stands in for both.
 BarWidget {
   id: root
-  moduleName: "metasequoia.msime"
+  moduleName: "lingyao.msime"
 
   readonly property var schemeNames: ({ quanpin: "全拼", shuangpin: "双拼", wubi: "五笔", cantonese: "粤拼", zhuyin: "注音", japanese: "日文", korean: "韩文", vietnamese: "越南文", tibetan: "藏文", stroke: "笔画" })
   property bool active: false

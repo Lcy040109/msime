@@ -32,8 +32,8 @@ EDITIONS = ROOT / "shared/contracts/editions.json"
 HEADER = ROOT / "shared/contracts/msime_edition.h"
 INNO = ROOT / "platforms/windows/installer/editions.iss"
 FULL = "full"
-# 数据目录所有权标记的文件名前缀，后面接版本的名字后缀（full 是空串，所以 full 的标记仍是 `.metasequoiaime-data`）。几个版本的标记文件名各不相同：一个版本的安装器和 Server 看不到别的版本的标记，不会把别的版本的数据目录当成自己的去接管、清理或删除。
-DATA_DIR_MARKER_PREFIX = ".metasequoiaime-data"
+# 数据目录所有权标记的文件名前缀，后面接版本的名字后缀（full 是空串，所以 full 的标记仍是 `.lingyaoime-data`）。几个版本的标记文件名各不相同：一个版本的安装器和 Server 看不到别的版本的标记，不会把别的版本的数据目录当成自己的去接管、清理或删除。
+DATA_DIR_MARKER_PREFIX = ".lingyaoime-data"
 # 版本表 tsf_guids 的键到 TSF Globals.cpp 里的宏名后缀，顺序就是生成文件里的顺序。
 TSF_GUIDS = [
     "preserve_key_ime_mode",

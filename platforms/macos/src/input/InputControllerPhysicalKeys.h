@@ -29,7 +29,7 @@ constexpr MaintenanceShortcutAction PhysicalMaintenanceShortcut(unsigned short k
 
 // Main-row ANSI digit key codes used for candidate selection.  These helpers
 // live in the Engine-facing namespace so InputController.mm can include them
-// alongside CandidateSkin.h, which reserves metasequoia::mac as an alias.
+// alongside CandidateSkin.h, which reserves lingyao::mac as an alias.
 constexpr int PhysicalCandidateDigitSlot(unsigned short keyCode)
 {
     switch (keyCode)

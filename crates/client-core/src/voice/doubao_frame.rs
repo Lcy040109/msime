@@ -14,7 +14,7 @@ pub fn start_frame(
     boosting_table_id: &str,
 ) -> Vec<u8> {
     let mut request = serde_json::json!({
-        "user": {"uid": "metasequoia-ime"},
+        "user": {"uid": "lingyao-ime"},
         "audio": {"format": "pcm", "codec": "raw", "rate": 16000, "bits": 16, "channel": 1},
         "request": {
             "model_name": "bigmodel",

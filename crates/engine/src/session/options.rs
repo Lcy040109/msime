@@ -1,4 +1,4 @@
-//! The public option and snapshot values of `Session` (`include/metasequoia/session.h`). Shared by the session, the nine-key session, the host facade and the golden harness.
+//! The public option and snapshot values of `Session` (`include/lingyao/session.h`). Shared by the session, the nine-key session, the host facade and the golden harness.
 
 use std::path::PathBuf;
 

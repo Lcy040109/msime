@@ -15,7 +15,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$InstallDir = 'C:\Program Files\metasequoiaime\server'
+$InstallDir = 'C:\Program Files\lingyaoime\server'
 $SignTargets = @('LingyaoImeServer.exe', 'LingyaoImeWatchdog.exe', 'LingyaoImeTsf.dll')
 $StopProcesses = @('LingyaoImeServer', 'LingyaoImeWatchdog',
                    'LingyaoImeEmojiPanel', 'LingyaoImeKeyboardPanel')

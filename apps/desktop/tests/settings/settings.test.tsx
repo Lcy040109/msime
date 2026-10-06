@@ -6984,7 +6984,7 @@ test("Linux checks the client release feed and treats no release as a normal res
   expect(await screen.findByText("暂无可用发行版")).toBeDefined();
   expect(fetch).toHaveBeenCalledWith(
     expect.stringMatching(
-      /^https:\/\/api\.github\.com\/repos\/metasequoiaime\/msime\/releases\?per_page=100&t=\d+$/,
+      /^https:\/\/api\.github\.com\/repos\/lingyaoime\/msime\/releases\?per_page=100&t=\d+$/,
     ),
     expect.objectContaining({ cache: "no-store", signal: expect.any(AbortSignal) }),
   );
@@ -7347,7 +7347,7 @@ test("Windows checks this repository's Windows releases rather than the referenc
     screen.getByText("Get-FileHash .\\LingyaoIME_Setup_v1.2.0.exe -Algorithm SHA256"),
   ).toBeDefined();
   expect(fetch).toHaveBeenCalledWith(
-    expect.stringMatching(/^https:\/\/api\.github\.com\/repos\/metasequoiaime\/msime\/releases\?/),
+    expect.stringMatching(/^https:\/\/api\.github\.com\/repos\/lingyaoime\/msime\/releases\?/),
     expect.objectContaining({ cache: "no-store", signal: expect.any(AbortSignal) }),
   );
   fireEvent.click(screen.getByRole("button", { name: "前往下载" }));

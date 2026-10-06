@@ -1,4 +1,4 @@
-//! Handwriting: the candidate policy for provider replies (`include/metasequoia/handwriting_candidates.h`), applied on every platform, and the offline recognizer the desktop hosts run on the packaged zinnia model (`recognizer`, over a Rust port of zinnia in `features` and `model`).
+//! Handwriting: the candidate policy for provider replies (`include/lingyao/handwriting_candidates.h`), applied on every platform, and the offline recognizer the desktop hosts run on the packaged zinnia model (`recognizer`, over a Rust port of zinnia in `features` and `model`).
 
 use std::collections::HashSet;
 

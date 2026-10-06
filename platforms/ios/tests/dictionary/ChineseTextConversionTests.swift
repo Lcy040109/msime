@@ -14,7 +14,7 @@ final class ChineseTextConversionTests: XCTestCase {
 
   func testTextWithoutSimplifiedCharactersPassesThrough() {
     XCTAssertEqual(ChineseTextConversion.outputString("", traditional: true), "")
-    XCTAssertEqual(ChineseTextConversion.outputString("metasequoia", traditional: true), "metasequoia")
+    XCTAssertEqual(ChineseTextConversion.outputString("lingyao", traditional: true), "lingyao")
     XCTAssertEqual(ChineseTextConversion.outputString("，。！", traditional: true), "，。！")
     // Already-traditional and mixed text stays readable instead of being mangled.
     XCTAssertEqual(ChineseTextConversion.outputString("輸入法", traditional: true), "輸入法")

@@ -226,8 +226,8 @@ def check_installer(errors: list[str], editions: list[dict]) -> None:
                 # 一个版本的名字可能恰好是另一个版本名字的前缀（LingyaoIME 和 LingyaoIME-Wubi）；只看完整出现、又不属于本版本那一处的情况。
                 if text in output and text not in own.values() and not any(text in mine for mine in own.values()):
                     errors.append(f"msime_setup.iss for edition {edition_id}: contains edition {other['id']}'s {key} {text.strip()!r}")
-        # 所有权标记的文件名接版本的名字后缀：full 的安装器认 .metasequoiaime-data 这个文件名就当目录归自己，别的版本用同一个文件名就会被 full 接管、清理或删除。
-        marker = f"DataDirMarkerName = '.metasequoiaime-data{entry['platforms']['windows']['name_suffix']}';"
+        # 所有权标记的文件名接版本的名字后缀：full 的安装器认 .lingyaoime-data 这个文件名就当目录归自己，别的版本用同一个文件名就会被 full 接管、清理或删除。
+        marker = f"DataDirMarkerName = '.lingyaoime-data{entry['platforms']['windows']['name_suffix']}';"
         if marker not in output:
             errors.append(f"msime_setup.iss for edition {edition_id}: the data-directory ownership marker is not named {marker!r}")
         # 每个版本（包括 full）都只停本安装 server 目录里的进程：几个版本的进程同名，按映像名结束会停掉同时安装的其他版本。
@@ -238,7 +238,7 @@ def check_installer(errors: list[str], editions: list[dict]) -> None:
             errors.append(f"msime_setup.iss for edition {edition_id}: does not stop exactly the processes under its own server directory ({server_dir!r})")
         # 每个版本（包括 full）都不认带着别的版本标记的目录，即使那是它的默认数据目录。
         owns = output[output.find("function OwnsDataDir"):output.find("procedure WriteDataDirMarker")]
-        if "DataDirMarkerPrefix = '.metasequoiaime-data';" not in output or "(not HasOtherEditionDataDirMarker(Directory)) and" not in owns:
+        if "DataDirMarkerPrefix = '.lingyaoime-data';" not in output or "(not HasOtherEditionDataDirMarker(Directory)) and" not in owns:
             errors.append(f"msime_setup.iss for edition {edition_id}: OwnsDataDir may claim a directory that carries another edition's marker")
         if edition_id == FULL:
             continue

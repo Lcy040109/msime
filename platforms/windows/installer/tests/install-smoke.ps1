@@ -19,8 +19,8 @@ $appKey = "HKLM:\$($identity.registry_key)"
 $taskName = $identity.watchdog_task
 $pf64 = Join-Path $env:ProgramFiles $identity.install_dir
 $pf32 = Join-Path ${env:ProgramFiles(x86)} $identity.install_dir
-# 数据目录所有权标记的文件名接版本的名字后缀（platforms/windows/scripts/edition_windows.py 的 data_dir_marker），full 是 .metasequoiaime-data。
-$markerName = '.metasequoiaime-data' + $identity.name_suffix
+# 数据目录所有权标记的文件名接版本的名字后缀（platforms/windows/scripts/edition_windows.py 的 data_dir_marker），full 是 .lingyaoime-data。
+$markerName = '.lingyaoime-data' + $identity.name_suffix
 $logs = Join-Path $env:RUNNER_TEMP "msime-install-smoke-$Edition"
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $failures = [Collections.Generic.List[string]]::new()

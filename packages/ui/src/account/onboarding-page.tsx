@@ -89,7 +89,7 @@ function Splash({ onDone }: { onDone: () => void }) {
         灵耀输入法
       </span>
       <span className={onboarding.splashTagline} aria-hidden="true">
-        METASEQUOIA IME
+        LINGYAO IME
       </span>
       <span className={onboarding.splashHint} aria-hidden="true">
         轻点跳过

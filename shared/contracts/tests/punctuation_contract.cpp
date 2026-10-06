@@ -3,7 +3,7 @@
 
 int main()
 {
-    using namespace metasequoia::punctuation_contract;
+    using namespace lingyao::punctuation_contract;
     if (version != 1 || simple.size() != 15 || alternating.size() != 2)
         return 1;
     if (!is_supported(',') || !is_supported('"') || !is_supported('<') || !is_supported('_') || is_supported('a'))

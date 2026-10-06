@@ -794,7 +794,7 @@ pub enum SchemeKey {
     Requery,
 }
 
-/// Engine-level composition commands (the C++ `metasequoia::Command`). The host facade adds its own `CommitRawWithoutLearning` on top.
+/// Engine-level composition commands (the C++ `lingyao::Command`). The host facade adds its own `CommitRawWithoutLearning` on top.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum Command {

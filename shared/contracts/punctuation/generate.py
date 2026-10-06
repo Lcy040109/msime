@@ -24,7 +24,7 @@ lines = [
     "#include <array>",
     "#include <string_view>",
     "",
-    "namespace metasequoia::punctuation_contract",
+    "namespace lingyao::punctuation_contract",
     "{",
     f"inline constexpr int version = {SPEC['contractVersion']};",
     "struct Mapping",
@@ -77,7 +77,7 @@ lines += [
     "        if (mapping.input == input) return &mapping;",
     "    return nullptr;",
     "}",
-    "} // namespace metasequoia::punctuation_contract",
+    "} // namespace lingyao::punctuation_contract",
     "",
 ]
 expected = "\n".join(lines)
