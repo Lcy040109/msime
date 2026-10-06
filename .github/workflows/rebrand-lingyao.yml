@@ -111,6 +111,44 @@ jobs:
               print("\n".join(skipped_legal[:50]))
           PY
 
+      - name: Verify no non-legal legacy branding remains
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          needles = ["水杉", "Metasequoia", "METASEQUOIA", "shuishan", "Shuishan", "metasequoiaime"]
+          hits = []
+          def skip(p: Path) -> bool:
+              s = p.as_posix()
+              name = p.name.upper()
+              if ".git" in p.parts:
+                  return True
+              if len(p.parts) >= 2 and p.parts[0] == ".github" and p.parts[1] == "workflows":
+                  return True
+              if s == "LICENSE" or "/licenses/" in f"/{s.lower()}/":
+                  return True
+              if "LICENSE" in name or "NOTICE" in name or name == "UPSTREAM.MD":
+                  return True
+              if p.name.lower() == "copyright":
+                  return True
+              return False
+          for p in Path(".").rglob("*"):
+              if not p.is_file() or skip(p):
+                  continue
+              try:
+                  text = p.read_text(encoding="utf-8")
+              except (UnicodeDecodeError, OSError):
+                  continue
+              found = [n for n in needles if n in text]
+              if found:
+                  hits.append((p.as_posix(), found))
+          print(f"Legacy branding hits outside legal/attribution files: {len(hits)}")
+          for path, found in hits[:200]:
+              print(path, ",".join(found))
+          if hits:
+              raise SystemExit(1)
+          PY
+
       - name: Commit full rebrand
         shell: bash
         run: |
