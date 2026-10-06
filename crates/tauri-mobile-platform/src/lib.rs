@@ -398,7 +398,7 @@ impl IosKeyboardPreferences {
             // The ids of msime_client_core::skin::theme::GlobalTheme, which this crate does not depend on; the desktop crate's iOS account tests hold the two lists together.
             && matches!(
                 self.global_theme.as_str(),
-                "system" | "shuishan" | "light" | "paper" | "night" | "ink" | "custom"
+                "system" | "lingyao" | "light" | "paper" | "night" | "ink" | "custom"
             )
             && self.custom_keyboard_skin.as_ref().is_none_or(|value| {
                 value.len() <= MAX_IOS_CUSTOM_KEYBOARD_SKIN_BYTES
@@ -959,7 +959,7 @@ mod tests {
             boosting_table_id: String::new(),
             model_path: "/data/user/0/fixture/voice-models/x-asr-zh-en-streaming".into(),
             hotwords: vec![MobileVoiceHotword {
-                text: "水杉".into(),
+                text: "灵耀".into(),
                 pinyin: "shui shan".into(),
             }],
         };
@@ -995,7 +995,7 @@ mod tests {
             MobileVoiceTranscriptionRequest {
                 hotwords: vec![
                     MobileVoiceHotword {
-                        text: "水杉".into(),
+                        text: "灵耀".into(),
                         pinyin: "shui shan".into(),
                     };
                     1_001

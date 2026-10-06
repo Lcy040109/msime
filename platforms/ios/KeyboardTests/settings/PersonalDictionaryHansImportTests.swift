@@ -46,8 +46,8 @@ final class PersonalDictionaryHansImportTests: XCTestCase {
   func testSharedImportFormatsQueueWhatTheEngineAcceptsAndReportTheRest() throws {
     // Standard puts the word first; the second row is jianpin the Engine refuses and the third repeats the first.
     let standard = try PersonalDictionaryBridge.importEntries(
-      kind: "pinyin", format: "standard", text: "水杉\tshui'shan\t100\n你好\tnihaoma\t100\n水杉\tshui'shan\t100\n在家\tzai'jia\t100\n")
-    XCTAssertEqual(standard.entries.map(\.value), ["水杉", "在家"])
+      kind: "pinyin", format: "standard", text: "灵耀\tshui'shan\t100\n你好\tnihaoma\t100\n灵耀\tshui'shan\t100\n在家\tzai'jia\t100\n")
+    XCTAssertEqual(standard.entries.map(\.value), ["灵耀", "在家"])
     XCTAssertEqual(standard.entries.map(\.key), ["shui'shan", "zai'jia"])
     XCTAssertEqual(standard.report["applied"] as? Int, 2)
     XCTAssertEqual(standard.report["failed"] as? Int, 1)
@@ -82,8 +82,8 @@ final class PersonalDictionaryHansImportTests: XCTestCase {
 
   func testTheNativePagesDictionaryFileImportPreviewsWhatItSkipped() throws {
     let standard = try PersonalDictionaryImport.file(
-      "水杉\tshui'shan\t100\n你好\tni\t100\n在家\tzai'jia\t100\n", kind: .pinyin, format: "standard")
-    XCTAssertEqual(standard.file.entries.map(\.value), ["水杉", "在家"])
+      "灵耀\tshui'shan\t100\n你好\tni\t100\n在家\tzai'jia\t100\n", kind: .pinyin, format: "standard")
+    XCTAssertEqual(standard.file.entries.map(\.value), ["灵耀", "在家"])
     XCTAssertEqual(standard.notice, "跳过 1 行，首先出现在第 2 行。")
     // A row that parsed but that the Engine refused gets the desktop's extra hint.
     XCTAssertEqual(

@@ -492,7 +492,7 @@ CGFloat DrawPreviewToolbar(NSRect slot, const msime::mac::SkinTokens &tokens, NS
 NSArray<NSString *> *PreviewSamples()
 {
     return @[
-        @"水杉(Ss)", @"输入法(Sw)", @"你好(Nh)", @"世界(Sj)", @"中国(Zg)", @"水仙(Sx)", @"水山(Ss)", @"水衫(Ss)",
+        @"灵耀(Ss)", @"输入法(Sw)", @"你好(Nh)", @"世界(Sj)", @"中国(Zg)", @"水仙(Sx)", @"水山(Ss)", @"水衫(Ss)",
         @"水善(Ss)"
     ];
 }

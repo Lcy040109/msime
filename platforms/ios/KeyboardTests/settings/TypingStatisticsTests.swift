@@ -138,7 +138,7 @@ final class TypingStatisticsTests: XCTestCase {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     let date = calendar.date(from: DateComponents(year: 2026, month: 9, day: 23, hour: 14))!
-    try store.record("水杉", source: .quanpin, at: date, calendar: calendar)
+    try store.record("灵耀", source: .quanpin, at: date, calendar: calendar)
     Thread.sleep(forTimeInterval: 0.05)
     try store.record("输入法", source: .quanpin, at: date, calendar: calendar)
     let snapshot = try store.load()
@@ -240,7 +240,7 @@ final class TypingStatisticsTests: XCTestCase {
     XCTAssertEqual(store.availability(), .neverWritten)
 
     try store.setEnabled(true)
-    try store.record("水杉")
+    try store.record("灵耀")
     guard case .ready(let lastWritten) = store.availability() else {
       return XCTFail("A written store still reported that the keyboard had never written.")
     }

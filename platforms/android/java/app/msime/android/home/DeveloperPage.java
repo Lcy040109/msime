@@ -36,7 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 开发者选项：MCP 开发者访问（把选定的日志打包上传一次到水杉云，供开发者用 MCP 读取）、调试开关、导出诊断包和重置所有设置。
+ * 开发者选项：MCP 开发者访问（把选定的日志打包上传一次到灵耀云，供开发者用 MCP 读取）、调试开关、导出诊断包和重置所有设置。
  *
  * <p>P19：MCP 上传默认关闭，每次上传（包括重新上传）都要在「确认上传」组里点一次「上传」；「输入事件」默认不勾选。上传内容只来自 Rust 写出的诊断包，配置快照已在那里脱敏，输入事件和性能数据只有时间、耗时和事件种类，见 {@link DiagnosticsApi}。是否已上传、远程地址和令牌是服务端状态，每次进页从云端读回；完整令牌只在上传或重新生成的那一次回答里出现，只留在本页内存里。
  *
@@ -114,7 +114,7 @@ public final class DeveloperPage extends DetailPage {
         } else if (uploaded != null) {
             mcpSubtitle = "已上传 · " + when(uploaded.createdAt()) + " · " + remaining(uploaded.expiresAt());
         } else {
-            mcpSubtitle = "把下方选定的日志打包上传一次到水杉云，开发者在自己电脑上读取这份快照，手机无需保持在线，不会读取你输入的文字";
+            mcpSubtitle = "把下方选定的日志打包上传一次到灵耀云，开发者在自己电脑上读取这份快照，手机无需保持在线，不会读取你输入的文字";
         }
         GroupCard.Row mcpRow = mcp.toggle("上传日志供开发者通过 MCP 读取", mcpSubtitle, uploaded != null && !confirming,
             on -> {
@@ -182,7 +182,7 @@ public final class DeveloperPage extends DetailPage {
     }
 
     private void renderUploaded(LinearLayout target, DiagnosticsApi.Snapshot uploaded) {
-        GroupCard group = GroupCard.add(target, "日志快照 · 存于水杉云");
+        GroupCard group = GroupCard.add(target, "日志快照 · 存于灵耀云");
         group.button("上传时间", when(uploaded.createdAt()) + " · 共 " + size(uploaded.bytes()) + " · 之后产生的日志需重新上传",
             "重新上传", () -> {
                 confirming = true;
@@ -351,7 +351,7 @@ public final class DeveloperPage extends DetailPage {
     }
 
     private void share(String url, String token) {
-        String text = "水杉 MCP 日志快照\n地址：" + url + "\n令牌：" + token;
+        String text = "灵耀 MCP 日志快照\n地址：" + url + "\n令牌：" + token;
         Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(send, "只发给你信任的开发者"));
         MsToast.show(requireContext(), "令牌可读取这份快照，只发给开发者");
@@ -553,7 +553,7 @@ public final class DeveloperPage extends DetailPage {
     // ---- 文案 ----
 
     private static String failureMessage(CloudApi.Failure failure) {
-        if (failure.network()) return "连不上水杉云，请检查网络";
+        if (failure.network()) return "连不上灵耀云，请检查网络";
         if (failure.unavailable()) return "这项服务暂未开放";
         if (failure.status == 429) return "上传太频繁，请稍后再试";
         if (failure.status == 413) return "日志太大，请少选几类再上传";

@@ -1,4 +1,4 @@
-// 演示页。输入区的文字、光标和行内拼音都由这里自己画；按键由一个看不见的密码框接收：浏览器在密码框里强制停用系统输入法（macOS 进入安全输入，Windows 解除输入法关联），按键原样到达页面，交给水杉的引擎处理。普通的可编辑或可聚焦元素都挡不住系统输入法。右侧的选项改动立刻作用到引擎，下方的接入代码按同样的选项生成。
+// 演示页。输入区的文字、光标和行内拼音都由这里自己画；按键由一个看不见的密码框接收：浏览器在密码框里强制停用系统输入法（macOS 进入安全输入，Windows 解除输入法关联），按键原样到达页面，交给灵耀的引擎处理。普通的可编辑或可聚焦元素都挡不住系统输入法。右侧的选项改动立刻作用到引擎，下方的接入代码按同样的选项生成。
 import { KeyKind, SKINS, createCandidateBar, createMsimeEngine, createShiftTap, keyFromEvent, osImeIntercepting, packKey, resolveSkin, version } from "./msime/index.js";
 
 const PINYIN = new Set(["quanpin", "xiaohe", "ziranma"]);
@@ -36,7 +36,7 @@ const EXAMPLES = {
 };
 
 // 内置皮肤的中文名，与 SDK README 的「内置皮肤」表一致。
-const SKIN_NAMES = { system: "跟随系统", shuishan: "水杉", light: "浅色", paper: "纸白", night: "夜青", ink: "墨", wechat: "微信绿", graphite: "石墨", willow_green: "杨柳青", autumn_osmanthus: "秋桂", microsoft: "微软" };
+const SKIN_NAMES = { system: "跟随系统", lingyao: "灵耀", light: "浅色", paper: "纸白", night: "夜青", ink: "墨", wechat: "微信绿", graphite: "石墨", willow_green: "杨柳青", autumn_osmanthus: "秋桂", microsoft: "微软" };
 // 画廊里的自定义皮肤示例：皮肤对象的写法与桌面端 skin.toml 相同，装饰图和背景图用 data: 地址的 SVG，不依赖外部文件。
 const LEAF = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40"><path d="M8 34C14 12 34 4 58 6C54 26 36 36 8 34Z" fill="#2C7A4B"/><path d="M10 33C24 24 38 16 54 9" stroke="#DDF3E2" stroke-width="2" fill="none" stroke-linecap="round"/></svg>')}`;
 const GLOW = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DDF3E2"/><stop offset="1" stop-color="#FFF6DA"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>')}`;
@@ -56,7 +56,7 @@ const CUSTOM_SKIN = {
 const skinOf = (id) => (id === "custom" ? CUSTOM_SKIN : id);
 
 // SDK 的默认值，生成代码时只写出与它们不同的选项。
-const DEFAULTS = { scheme: "quanpin", pageSize: 9, model: true, modelEnabled: true, skin: "shuishan", layout: "horizontal", dark: "auto" };
+const DEFAULTS = { scheme: "quanpin", pageSize: 9, model: true, modelEnabled: true, skin: "lingyao", layout: "horizontal", dark: "auto" };
 const options = { ...DEFAULTS };
 
 const $ = (id) => document.getElementById(id);
@@ -411,7 +411,7 @@ function render(frame) {
 }`,
   }),
   palette: () => ({
-    note: "页面有自己的设计、想自己画候选栏时，只取水杉皮肤解析好的配色和圆角：结果与桌面端 theme::resolve 一致，值都校验过，可以直接设到 CSS 变量上。",
+    note: "页面有自己的设计、想自己画候选栏时，只取灵耀皮肤解析好的配色和圆角：结果与桌面端 theme::resolve 一致，值都校验过，可以直接设到 CSS 变量上。",
     code: `import { resolveSkin } from "@msime/web-engine";
 
 const { palette, geometry, variables } = resolveSkin(${options.skin === "custom" ? "mySkin" : `"${options.skin}"`}, { dark: ${effectiveDark()}, layout: "${options.layout}" });
@@ -688,7 +688,7 @@ function renderSkins() {
     card.setAttribute("aria-pressed", String(card.dataset.value === options.skin));
     card.querySelector(".thumb-stage").replaceChildren(thumbnail(card.dataset.value));
   }
-  const fixed = ["shuishan", "light", "paper", "night", "ink"].includes(options.skin);
+  const fixed = ["lingyao", "light", "paper", "night", "ink"].includes(options.skin);
   $("skin-note").textContent = fixed ? "全局主题自带明暗，和桌面端一样不随「明暗」切换。" : options.skin === "custom" ? "皮肤对象：浅色和深色各一套配色，加上圆角、装饰图（右上角的叶子）和渐变背景。" : "";
 }
 

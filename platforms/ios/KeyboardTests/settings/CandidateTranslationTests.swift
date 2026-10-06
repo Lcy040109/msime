@@ -108,18 +108,18 @@ final class CandidateTranslationTests: XCTestCase {
 
   func testCacheIsBoundedAndThePageOnScreenIsAskedAgain() async throws {
     let service = StubTranslationService(
-      answers: ["EN": ["你好": "hello", "中国": "China", "水杉": "dawn redwood"]])
+      answers: ["EN": ["你好": "hello", "中国": "China", "灵耀": "dawn redwood"]])
     let store = CandidateTranslationStore(service: service, cacheLimit: 2)
     var arrived = expectation(description: "first page")
     store.onArrival = { arrived.fulfill() }
-    store.refresh(words: ["你好", "中国", "水杉"], codes: ["EN"])
+    store.refresh(words: ["你好", "中国", "灵耀"], codes: ["EN"])
     await fulfillment(of: [arrived], timeout: 5)
 
     arrived = expectation(description: "page asked again")
     store.refresh(words: ["你好"], codes: ["EN"])
     await fulfillment(of: [arrived], timeout: 5)
     XCTAssertEqual(store.gloss(word: "你好", code: "EN"), "hello")
-    XCTAssertNil(store.gloss(word: "水杉", code: "EN"))
+    XCTAssertNil(store.gloss(word: "灵耀", code: "EN"))
     XCTAssertEqual(service.calls.count, 2)
   }
 

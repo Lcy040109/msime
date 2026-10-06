@@ -81,7 +81,7 @@ final class CandidateFontSizeTests: XCTestCase {
 
   func testTheExpandedPanelDrawsCandidatesAtTheChosenSize() throws {
     let panel = KeyboardCandidatePanelView(
-      candidates: ["水杉"], preedit: "shuishan", candidateScale: 24.0 / 18.0, preeditScale: 1,
+      candidates: ["灵耀"], preedit: "lingyao", candidateScale: 24.0 / 18.0, preeditScale: 1,
       display: { $0 }, onSelect: { _ in }, onClose: {})
     panel.frame = CGRect(x: 0, y: 0, width: 390, height: 300)
     panel.layoutIfNeeded()
@@ -93,7 +93,7 @@ final class CandidateFontSizeTests: XCTestCase {
 
   func testTheExpandedPanelHeaderLeadsWithTheBrandMark() throws {
     let panel = KeyboardCandidatePanelView(
-      candidates: ["水杉"], preedit: "shuishan", display: { $0 }, onSelect: { _ in }, onClose: {})
+      candidates: ["灵耀"], preedit: "lingyao", display: { $0 }, onSelect: { _ in }, onClose: {})
     panel.frame = CGRect(x: 0, y: 0, width: 390, height: 300)
     panel.layoutIfNeeded()
     let mark = try XCTUnwrap(find("candidatePanelBrandIcon", in: panel) as? UIImageView)

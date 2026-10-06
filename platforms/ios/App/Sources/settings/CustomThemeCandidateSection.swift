@@ -166,7 +166,7 @@ struct CustomThemeCandidateSection: View {
   private func previewStrip(dark: Bool) -> some View {
     let palette = CandidatePalette.resolve(previewPreferences, systemDark: dark)
     return HStack(spacing: 6) {
-      ForEach(Array(["水杉", "输入", "输入法"].enumerated()), id: \.offset) { index, word in
+      ForEach(Array(["灵耀", "输入", "输入法"].enumerated()), id: \.offset) { index, word in
         HStack(spacing: 3) {
           Text("\(index + 1)").font(.caption).foregroundStyle(Color(palette.number))
           Text(word).foregroundStyle(Color(palette.text))

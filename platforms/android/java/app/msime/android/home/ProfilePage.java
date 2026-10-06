@@ -39,7 +39,7 @@ import java.util.function.Function;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * 个人资料：头像（点了换一张）、昵称、水杉 ID、邮箱，三种登录方式的关联状态，云端数据（大小、导出、删除），退出登录与注销账号。
+ * 个人资料：头像（点了换一张）、昵称、灵耀 ID、邮箱，三种登录方式的关联状态，云端数据（大小、导出、删除），退出登录与注销账号。
  *
  * <p>数据全部来自 {@link DeviceDataApi}。注销账号和删除云端数据要求最近登录：收到 {@link DeviceDataApi.RecentLoginRequired} 时弹登录面板，用户重新登录同一个账号后自动重试一次；登录成了别的账号时不重试，免得删错。关联登录方式走登录面板的 `link` 用途，回来后按关联列表的变化说出关联了哪一种。
  */
@@ -204,7 +204,7 @@ public final class ProfilePage extends DetailPage {
 
         GroupCard account = GroupCard.add(column, "账号").withDividers(16);
         account.nav("昵称", null, profile.displayName(), this::rename);
-        account.nav("水杉 ID", null, profile.id(), () -> copy("水杉 ID", profile.id()));
+        account.nav("灵耀 ID", null, profile.id(), () -> copy("灵耀 ID", profile.id()));
         if (!profile.email().isEmpty()) account.value("邮箱", null, profile.email());
 
         GroupCard methods = GroupCard.add(column, "登录方式").withDividers(16);

@@ -1,6 +1,6 @@
 //! The global theme: one id that colours the candidate window, the floating toolbar, the menus and the touch keyboard on every host.
 //!
-//! There are seven ids. `system` leaves every colour to the host's own platform tokens; `shuishan`, `light`, `paper`, `night` and `ink` are the built-in palettes, copied from the design's `THEMES` table; `custom` is whatever the user assembled in `Preferences::custom_theme` (an external candidate skin package, the seven candidate colour pickers, and the keyboard design produced by the editor, the community library or the AI generator).
+//! There are seven ids. `system` leaves every colour to the host's own platform tokens; `lingyao`, `light`, `paper`, `night` and `ink` are the built-in palettes, copied from the design's `THEMES` table; `custom` is whatever the user assembled in `Preferences::custom_theme` (an external candidate skin package, the seven candidate colour pickers, and the keyboard design produced by the editor, the community library or the AI generator).
 //!
 //! Hosts do not keep their own copy of these palettes. They read the catalog (`catalog`) to draw the picker and call `resolve` for the colours on screen, so a palette is changed here once and every host follows.
 //!
@@ -17,7 +17,7 @@ pub enum GlobalTheme {
     /// Follow the platform: every slot is the host's native token, in the host's current light or dark mode.
     #[default]
     System,
-    Shuishan,
+    Lingyao,
     Light,
     Paper,
     Night,
@@ -29,7 +29,7 @@ pub enum GlobalTheme {
 impl GlobalTheme {
     pub const ALL: [GlobalTheme; 7] = [
         GlobalTheme::System,
-        GlobalTheme::Shuishan,
+        GlobalTheme::Lingyao,
         GlobalTheme::Light,
         GlobalTheme::Paper,
         GlobalTheme::Night,
@@ -40,7 +40,7 @@ impl GlobalTheme {
     pub fn id(self) -> &'static str {
         match self {
             GlobalTheme::System => "system",
-            GlobalTheme::Shuishan => "shuishan",
+            GlobalTheme::Lingyao => "lingyao",
             GlobalTheme::Light => "light",
             GlobalTheme::Paper => "paper",
             GlobalTheme::Night => "night",
@@ -63,7 +63,7 @@ impl GlobalTheme {
     pub fn title(self) -> &'static str {
         match self {
             GlobalTheme::System => "跟随系统",
-            GlobalTheme::Shuishan => "水杉",
+            GlobalTheme::Lingyao => "灵耀",
             GlobalTheme::Light => "浅色",
             GlobalTheme::Paper => "纸白",
             GlobalTheme::Night => "夜青",
@@ -113,7 +113,7 @@ pub struct BuiltinTheme {
 /// The five built-in palettes, in picker order.
 pub const BUILTIN_THEMES: [BuiltinTheme; 5] = [
     BuiltinTheme {
-        id: GlobalTheme::Shuishan,
+        id: GlobalTheme::Lingyao,
         appearance: ThemeAppearance::Dark,
         background: "#1E1F1C",
         panel: "#2A2B27",

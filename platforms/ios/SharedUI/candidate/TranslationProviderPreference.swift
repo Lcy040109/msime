@@ -1,13 +1,13 @@
 import Foundation
 import CoreFoundation
 
-/// Where candidate glosses come from: nowhere online (the default), a service the user signed up for with their own credentials, or the 水杉 account's translation API. The three provider objects live in the shared preference document (`niutrans`, `custom_translation`, `tencent_tmt`) so the choice follows the same precedence as the other hosts: NiuTrans first, then the custom endpoint, then Tencent TMT when both of its secrets are usable. The account is used only when the user explicitly chose it (`translation_account`) and none of their own services applies; it is never a fallback. A chosen provider that is not usable yields no online glosses at all rather than sending the words somewhere the user did not pick.
+/// Where candidate glosses come from: nowhere online (the default), a service the user signed up for with their own credentials, or the 灵耀 account's translation API. The three provider objects live in the shared preference document (`niutrans`, `custom_translation`, `tencent_tmt`) so the choice follows the same precedence as the other hosts: NiuTrans first, then the custom endpoint, then Tencent TMT when both of its secrets are usable. The account is used only when the user explicitly chose it (`translation_account`) and none of their own services applies; it is never a fallback. A chosen provider that is not usable yields no online glosses at all rather than sending the words somewhere the user did not pick.
 enum TranslationProvider: String, CaseIterable, Sendable {
   case off, account, niutrans, tencent, custom
   var title: String {
     switch self {
     case .off: "不使用在线翻译"
-    case .account: "水杉账号（发送到 api.msime.app）"
+    case .account: "灵耀账号（发送到 api.msime.app）"
     case .niutrans: "小牛翻译"
     case .tencent: "腾讯云机器翻译"
     case .custom: "自定义接口（DeepLX 兼容）"
@@ -50,7 +50,7 @@ enum TranslationProviderPreference {
   static let niutransKey = "niutrans"
   static let customKey = "custom_translation"
   static let tencentKey = "tencent_tmt"
-  /// True only when the user explicitly picked the 水杉 account in 「翻译服务」; absent means no.
+  /// True only when the user explicitly picked the 灵耀 account in 「翻译服务」; absent means no.
   static let accountKey = "translation_account"
   static let defaultTencentRegion = "ap-guangzhou"
 

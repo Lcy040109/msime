@@ -91,7 +91,7 @@ final class MacDictionaryModel: ObservableObject {
   func chooseExport() {
     guard !busy, panel == nil, format != .hans else { return }
     let selected = NSSavePanel()
-    selected.allowedContentTypes = [.plainText]; selected.nameFieldStringValue = "水杉-\(kind.title).tsv"
+    selected.allowedContentTypes = [.plainText]; selected.nameFieldStringValue = "灵耀-\(kind.title).tsv"
     panel = selected
     selected.begin { response in
       Task { @MainActor in

@@ -274,7 +274,7 @@ export function ScreenKeyboardPreview({
         <rect width="1100" height={canvasHeight} rx="8" fill={`url(#${patternId})`} />
       )}
       <text x="10" y="14" dominantBaseline="middle" fontSize="12" fill={palette.accent}>
-        {touch ? "水杉 IME" : "Touch keyboard"}
+        {touch ? "灵耀 IME" : "Touch keyboard"}
       </text>
       {/* The close glyph belongs to the desktop panel, which floats in a window the user can dismiss.
           A phone's keyboard is dismissed by the system, so drawing an X there promises nothing. */}
