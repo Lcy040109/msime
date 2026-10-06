@@ -1,27 +1,27 @@
-# 水杉输入法
+# 灵耀输入法
 
-[![Core CI](https://github.com/metasequoiaime/msime/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/metasequoiaime/msime/actions/workflows/ci.yml)
-[![iOS CI](https://github.com/metasequoiaime/msime/actions/workflows/ci-ios.yml/badge.svg?branch=develop)](https://github.com/metasequoiaime/msime/actions/workflows/ci-ios.yml)
-[![macOS CI](https://github.com/metasequoiaime/msime/actions/workflows/ci-macos.yml/badge.svg?branch=develop)](https://github.com/metasequoiaime/msime/actions/workflows/ci-macos.yml)
-[![Android Release](https://github.com/metasequoiaime/msime/actions/workflows/release-android.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-android.yml)
-[![iOS Release](https://github.com/metasequoiaime/msime/actions/workflows/release-ios.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-ios.yml)
-[![macOS Release](https://github.com/metasequoiaime/msime/actions/workflows/release-macos.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-macos.yml)
-[![Linux Release](https://github.com/metasequoiaime/msime/actions/workflows/release-linux.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-linux.yml)
-[![Windows Release](https://github.com/metasequoiaime/msime/actions/workflows/release-windows.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-windows.yml)
-[![HarmonyOS Release](https://github.com/metasequoiaime/msime/actions/workflows/release-harmony.yml/badge.svg)](https://github.com/metasequoiaime/msime/actions/workflows/release-harmony.yml)
+[![Core CI](https://github.com/Lcy040109/msime/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Lcy040109/msime/actions/workflows/ci.yml)
+[![iOS CI](https://github.com/Lcy040109/msime/actions/workflows/ci-ios.yml/badge.svg?branch=develop)](https://github.com/Lcy040109/msime/actions/workflows/ci-ios.yml)
+[![macOS CI](https://github.com/Lcy040109/msime/actions/workflows/ci-macos.yml/badge.svg?branch=develop)](https://github.com/Lcy040109/msime/actions/workflows/ci-macos.yml)
+[![Android Release](https://github.com/Lcy040109/msime/actions/workflows/release-android.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-android.yml)
+[![iOS Release](https://github.com/Lcy040109/msime/actions/workflows/release-ios.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-ios.yml)
+[![macOS Release](https://github.com/Lcy040109/msime/actions/workflows/release-macos.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-macos.yml)
+[![Linux Release](https://github.com/Lcy040109/msime/actions/workflows/release-linux.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-linux.yml)
+[![Windows Release](https://github.com/Lcy040109/msime/actions/workflows/release-windows.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-windows.yml)
+[![HarmonyOS Release](https://github.com/Lcy040109/msime/actions/workflows/release-harmony.yml/badge.svg)](https://github.com/Lcy040109/msime/actions/workflows/release-harmony.yml)
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/metasequoiaime/msime?style=flat)](https://github.com/metasequoiaime/msime/stargazers)
-[![GitHub contributors](https://img.shields.io/github/contributors/metasequoiaime/msime?style=flat)](https://github.com/metasequoiaime/msime/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/Lcy040109/msime?style=flat)](https://github.com/Lcy040109/msime/stargazers)
+[![GitHub contributors](https://img.shields.io/github/contributors/Lcy040109/msime?style=flat)](https://github.com/Lcy040109/msime/graphs/contributors)
 
-水杉输入法（MSIME）是面向 Android、iOS、macOS、Linux、Windows 与 HarmonyOS 的多平台中文输入法。六个平台各有自己的原生输入法宿主，都接入同一套共享输入运行时和同一份 React 设置界面；React 管理界面通过 Tauri 调用普通 Rust 业务库；输入算法由 msime-engine 提供。
+灵耀输入法（MSIME）是面向 Android、iOS、macOS、Linux、Windows 与 HarmonyOS 的多平台中文输入法。六个平台各有自己的原生输入法宿主，都接入同一套共享输入运行时和同一份 React 设置界面；React 管理界面通过 Tauri 调用普通 Rust 业务库；输入算法由 msime-engine 提供。
 
-项目主页：[msime.app](https://msime.app/) · [GitHub 仓库](https://github.com/metasequoiaime/msime) · [贡献者](https://github.com/metasequoiaime/msime/graphs/contributors) · [问题反馈](https://github.com/metasequoiaime/msime/issues) · [代码签名策略 / Code signing policy](https://github.com/metasequoiaime/msime-windows/blob/develop/docs/code-signing-policy.md)
+项目主页：[msime.app](https://msime.app/) · [GitHub 仓库](https://github.com/Lcy040109/msime) · [贡献者](https://github.com/Lcy040109/msime/graphs/contributors) · [问题反馈](https://github.com/Lcy040109/msime/issues) · [代码签名策略 / Code signing policy](https://github.com/Lcy040109/msime-windows/blob/develop/docs/code-signing-policy.md)
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=metasequoiaime/msime&type=Date)](https://star-history.com/#metasequoiaime/msime&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Lcy040109/msime&type=Date)](https://star-history.com/#Lcy040109/msime&Date)
 
-> **关于名称**：MSIME 是 Metasequoia IME（水杉输入法）的缩写，与 Microsoft IME 无关，也与微软没有任何关联。代码、包名和仓库名中的 `msime` 一律是这个含义。设置中的 `shuangpin_profile: microsoft` 是「微软双拼」方案，与小鹤、自然码、首道并列的四个键位方案之一，供习惯该键位的用户选择，同样不代表任何关联。
+> **关于名称**：MSIME 是 Lingyao IME（灵耀输入法）的缩写，与 Microsoft IME 无关，也与微软没有任何关联。代码、包名和仓库名中的 `msime` 一律是这个含义。设置中的 `shuangpin_profile: microsoft` 是「微软双拼」方案，与小鹤、自然码、首道并列的四个键位方案之一，供习惯该键位的用户选择，同样不代表任何关联。
 
 **输入法能看到你输入的一切，所以这个问题应该有一个能逐条核对的答案：[哪些数据会离开设备](PRIVACY.md)。**简短版本：新装的默认配置下没有功能会把你输入的内容发出设备；云联想（把正在组的拼音发给 Google 输入工具）要你在首次询问或设置里打开，其余联网功能都要你自己填凭据或选择服务才会工作。另有一条不携带输入内容的自有匿名使用统计：六个平台都会向 `api.msime.app` 发送每日活跃、会话和崩溃（错误摘要与去掉目录的调用栈）记录，默认开启，可以在设置的「匿名使用统计」里关闭——字段、逐平台差异和落盘位置逐条列在 [PRIVACY.md](PRIVACY.md#使用统计与崩溃上报默认开启可关闭)。仓库不接入任何第三方统计或崩溃上报 SDK。
 
@@ -41,7 +41,7 @@
 | --- | --- | --- |
 | [Android](platforms/android/README.md) | `platforms/android/` | 输入法服务 `app.msime.android.MSIMEInputService` 跑在 `:ime` 独立进程，Java 宿主经 `platforms/android/native/client_jni.cpp` 调 host-api；Tauri/React 设置与输入法同包不同进程，共享私有 files/bootstrap/state；手写走 ML Kit Digital Ink |
 | [iOS](platforms/ios/README.md) | `platforms/ios/` | XcodeGen 从 `project.yml` 生成的原生 App 内嵌键盘扩展 `MSIMEKeyboardExtension`，两者通过 App Group `group.app.msime.ios` 共享状态；Swift 键盘直接调 host-api，手写走 ML Kit Digital Ink |
-| [macOS](platforms/macos/README.md) | `platforms/macos/` | InputMethodKit bundle（产物名 `水杉输入法.app`，bundle id `app.msime.inputmethod.MetasequoiaIME`），Swift 后端编成 `MSIMEBackend.dylib` 随 bundle 分发，Sparkle 负责自动更新 |
+| [macOS](platforms/macos/README.md) | `platforms/macos/` | InputMethodKit bundle（产物名 `灵耀输入法.app`，bundle id `app.msime.inputmethod.MetasequoiaIME`），Swift 后端编成 `MSIMEBackend.dylib` 随 bundle 分发，Sparkle 负责自动更新 |
 | [Linux](platforms/linux/README.md) | `platforms/linux/` | IBus 与 Fcitx5 是两个并列的系统入口，链同一份 host-api ABI；在线联想、语音、剪贴板等能力由独立 provider 进程加 systemd 用户单元承载；CPack 出 TGZ 与 DEB |
 | [Windows](platforms/windows/README.md) | `platforms/windows/`、`platforms/windows/tsf/` | 进程内 TSF DLL（`MetasequoiaImeTsf`）与进程外 `MetasequoiaImeServer` 经命名管道通信，另有 watchdog 与运行配置准备工具；候选窗口、悬浮工具栏与托盘菜单由 Direct2D/DirectWrite 的 `msimeui` 绘制；Inno Setup 安装器注册 TIP 并随包词库 |
 | [HarmonyOS](platforms/harmony/README.md) | `platforms/harmony/` | ArkTS 的 `KeyboardExtensionAbility`（`module.json5` 声明 `type: "inputMethod"`）承载键盘，经 NAPI 模块 `libmsimeclient.so` 调 host-api；设置页是内联打包进 `entry/src/main/resources/rawfile/settings/index.html` 的同一套共享 React 页面 |
@@ -100,7 +100,7 @@ cargo test -p msime-engine --locked
 
 ## 固定词库资源
 
-`resources/desktop-dictionary.lock.json` 固定 `metasequoiaime/msime-dictionary` 已发布 `dict-v2.0.14` 的来源、长度和 SHA-256。其中 `msime-mozc_dictionary_oss_README.txt` 与 `msime-mozc_LICENSE.txt` 是日文词库的许可证全文（前者是 IPAdic 与 ICOT 的条款，后者是 Mozc 的三条款 BSD），`msime-scowl_Copyright.txt` 是 `msime-english.db` 里 SCOWL 词表的版权与许可声明，它们的条款都要求随数据一同分发，重新打包时不可省略；详见[第三方组件清单](docs/third-party.md#日文词库的分发义务)。首次下载约 189 MB。词库锁的 `source_commit` 记录这批词库是本仓库哪次提交用 `msime-dict-build` 产出的，其中 `msime-bigram.bin` 与 `msime-trigram.bin` 是整句词格仲裁的语言模型表。表缺失时 engine 不报错，只是整句路径不加权——候选照出，顺序变差，所以换词库版本时要确认 `crates/engine` 还读得了新表，并重跑句子转换评测。开发准备命令：
+`resources/desktop-dictionary.lock.json` 固定 `Lcy040109/msime-dictionary` 已发布 `dict-v2.0.14` 的来源、长度和 SHA-256。其中 `msime-mozc_dictionary_oss_README.txt` 与 `msime-mozc_LICENSE.txt` 是日文词库的许可证全文（前者是 IPAdic 与 ICOT 的条款，后者是 Mozc 的三条款 BSD），`msime-scowl_Copyright.txt` 是 `msime-english.db` 里 SCOWL 词表的版权与许可声明，它们的条款都要求随数据一同分发，重新打包时不可省略；详见[第三方组件清单](docs/third-party.md#日文词库的分发义务)。首次下载约 189 MB。词库锁的 `source_commit` 记录这批词库是本仓库哪次提交用 `msime-dict-build` 产出的，其中 `msime-bigram.bin` 与 `msime-trigram.bin` 是整句词格仲裁的语言模型表。表缺失时 engine 不报错，只是整句路径不加权——候选照出，顺序变差，所以换词库版本时要确认 `crates/engine` 还读得了新表，并重跑句子转换评测。开发准备命令：
 
 ```sh
 cargo run -p msime-client-core --example install_resources -- target/resources
@@ -126,7 +126,7 @@ macOS 原生 IMK bundle 的构建、隔离状态目录与安装见 [macOS 宿主
 
 ## 代码签名策略 / Code signing policy
 
-Windows 正式版目前由 [msime-windows](https://github.com/metasequoiaime/msime-windows) 构建、签名和发布，签名适用那边的 [Code signing policy](https://github.com/metasequoiaime/msime-windows/blob/develop/docs/code-signing-policy.md)：
+Windows 正式版目前由 [msime-windows](https://github.com/Lcy040109/msime-windows) 构建、签名和发布，签名适用那边的 [Code signing policy](https://github.com/Lcy040109/msime-windows/blob/develop/docs/code-signing-policy.md)：
 
 Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
 
