@@ -38,11 +38,11 @@ jobs:
       - name: Fetch the locked language dictionaries
         run: python3 scripts/fetch_language_dictionaries.py
       - name: Stage the HarmonyOS engine resources
-        env: {MSIME_REQUIRE_LANGUAGE_DICTIONARIES: "1"}
+        env: {LINGYAO_REQUIRE_LANGUAGE_DICTIONARIES: "1"}
         run: |
           set -euo pipefail
           mkdir -p target/resources
-          resource_dir="$(cargo run --quiet --locked -p msime-client-core --example install_resources -- target/resources)"
+          resource_dir="$(cargo run --quiet --locked -p lingyao-client-core --example install_resources -- target/resources)"
           bash platforms/harmony/stage-resources.sh "$resource_dir"
       # SDK 目录必须整份解压：hvigor 在 runtimeOS 为 HarmonyOS 时会逐个检查 SDK 组件，少了 previewer 或 hms/native 就报 `SDK component missing`，构建一开始就失败。只跳过 SDK 之外的 codelinter。压缩包解完即删。
       - name: Install the HarmonyOS command-line tools
@@ -61,14 +61,14 @@ jobs:
           test -f "$root/sdk/default/openharmony/native/build/cmake/ohos.toolchain.cmake"
           echo "$root/bin" >> "$GITHUB_PATH"
           echo "DEVECO_SDK_HOME=$root/sdk" >> "$GITHUB_ENV"
-          echo "MSIME_OHOS_NDK=$root/sdk/default/openharmony/native" >> "$GITHUB_ENV"
+          echo "LINGYAO_OHOS_NDK=$root/sdk/default/openharmony/native" >> "$GITHUB_ENV"
           rustup target add aarch64-unknown-linux-ohos
           df -h "$RUNNER_TEMP" | tail -1
       - name: Build HarmonyOS native host
         run: bash platforms/harmony/build-native.sh arm64-v8a
       - name: Stage the sherpa-onnx HAR
         run: bash platforms/harmony/stage-voice-runtime.sh
-      # ohpm install 在 entry/oh_modules 建出 libmsimeclient.so 的类型链接，少了它 ArkTS 解析不到 NAPI 模块（见 platforms/harmony/README.md）。
+      # ohpm install 在 entry/oh_modules 建出 liblingyaoclient.so 的类型链接，少了它 ArkTS 解析不到 NAPI 模块（见 platforms/harmony/README.md）。
       - name: Build HarmonyOS HAP
         working-directory: platforms/harmony
         run: |
@@ -84,7 +84,7 @@ jobs:
           echo "path=$hap" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-harmony-${{ steps.version.outputs.value }}
+          name: lingyao-harmony-${{ steps.version.outputs.value }}
           path: ${{ steps.hap.outputs.path }}
           if-no-files-found: error
       # The build takes the dispatched commit, and the release is tagged at that checked-out commit (git rev-parse HEAD), so publishing has to be asked for rather than implied. Without the gate a build of a feature branch cuts a real public release.

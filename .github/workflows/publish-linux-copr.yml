@@ -1,6 +1,6 @@
 name: Publish Linux to COPR
 
-# 把已发布的 linux-vX.Y.Z 的源码包交给 Fedora COPR（项目 <COPR 用户>/msime），由 COPR 为各 Fedora chroot 构建并托管软件源，用户执行 dnf copr enable msime/msime 后就能 dnf install msime（见 platforms/linux/README.md「包管理器」）。Release Linux 发布成功后调用它；上传或构建失败时也可以单独手动触发，重新提交同一个版本，不用重新发版。
+# 把已发布的 linux-vX.Y.Z 的源码包交给 Fedora COPR（项目 <COPR 用户>/lingyao），由 COPR 为各 Fedora chroot 构建并托管软件源，用户执行 dnf copr enable lingyao/lingyao 后就能 dnf install lingyao（见 platforms/linux/README.md「包管理器」）。Release Linux 发布成功后调用它；上传或构建失败时也可以单独手动触发，重新提交同一个版本，不用重新发版。
 #
 # SRPM 由 render-definitions.sh 用 linux-vX.Y.Z 那个提交的 spec 现场打出，两个源码 tarball 从发布页下载并对着 SHA256SUMS 核对。凭据是仓库 secret COPR_CONFIG，即 https://copr.fedorainfracloud.org/api/ 给出的整段 ~/.config/copr；没有配置时只留一条警告，不让发版失败。
 on:
@@ -60,12 +60,12 @@ jobs:
       - name: Download the release's source tarballs
         if: ${{ steps.check.outputs.skip == 'false' }}
         env: {GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}", VERSION: "${{ inputs.version }}"}
-        run: gh release download "linux-v$VERSION" --dir target/release --pattern SHA256SUMS --pattern "msime-$VERSION.tar.xz" --pattern "msime-$VERSION-vendor.tar.xz"
+        run: gh release download "linux-v$VERSION" --dir target/release --pattern SHA256SUMS --pattern "lingyao-$VERSION.tar.xz" --pattern "lingyao-$VERSION-vendor.tar.xz"
       - name: Build the source RPM
         if: ${{ steps.check.outputs.skip == 'false' }}
-        env: {VERSION: "${{ inputs.version }}", MSIME_DEFINITIONS: rpm, MSIME_RELEASE_DIR: target/release}
+        env: {VERSION: "${{ inputs.version }}", LINGYAO_DEFINITIONS: rpm, LINGYAO_RELEASE_DIR: target/release}
         run: bash platforms/linux/packaging/render-definitions.sh "$VERSION" target/package-definitions
       - name: Build on COPR
         if: ${{ steps.check.outputs.skip == 'false' }}
         env: {VERSION: "${{ inputs.version }}", OWNER: "${{ steps.copr.outputs.owner }}"}
-        run: copr-cli --config "$COPR_CLI_CONFIG" build "$OWNER/msime" "target/package-definitions/rpm/msime-$VERSION-1.src.rpm"
+        run: copr-cli --config "$COPR_CLI_CONFIG" build "$OWNER/lingyao" "target/package-definitions/rpm/lingyao-$VERSION-1.src.rpm"

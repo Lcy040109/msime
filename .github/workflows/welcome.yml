@@ -37,14 +37,14 @@ jobs:
 
             - 请确认内容里没有真实输入文本、凭据、个人资料或私人路径；如有，请编辑删除。
             - 缺陷请写明平台、版本和最小复现步骤，这能大大加快定位。
-            - 安全问题请改走 [私下报告入口](https://github.com/metasequoiaime/msime/security/advisories/new)，不要在公开 issue 里讨论细节。
+            - 安全问题请改走 [私下报告入口](https://github.com/Lcy040109/msime/security/advisories/new)，不要在公开 issue 里讨论细节。
           PR_MESSAGE: |
             感谢你的第一个 PR！合并前请留意：
 
             - 日常改动请以 `develop` 为目标分支，`main` 只接受发布提升。
             - PR 标题使用 Conventional Commits（例如 `fix(linux): ...`），squash 合并时它会成为提交信息。
             - 合并前本地跑一次 `bash scripts/verify-local.sh --quick`，并在 PR 描述里写明实际执行过的验证和未覆盖的平台。
-            - 架构边界与验证分级见 [ARCHITECTURE.md](https://github.com/metasequoiaime/msime/blob/develop/ARCHITECTURE.md)，贡献流程见 [CONTRIBUTING.md](https://github.com/metasequoiaime/msime/blob/develop/CONTRIBUTING.md)。
+            - 架构边界与验证分级见 [ARCHITECTURE.md](https://github.com/Lcy040109/msime/blob/develop/ARCHITECTURE.md)，贡献流程见 [CONTRIBUTING.md](https://github.com/Lcy040109/msime/blob/develop/CONTRIBUTING.md)。
         run: |
           set -euo pipefail
           # The issues endpoint returns both issues and pull requests; pull requests carry a pull_request key.

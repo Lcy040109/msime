@@ -62,13 +62,13 @@ jobs:
             if ($clang.Count -lt 1) { throw 'no clang on PATH or in the Visual Studio installation' }
             $env:PATH = "$(Split-Path -Parent $clang[0]);$env:PATH"
           }
-          ./platforms/windows/Build-RustOutputs.ps1 -Architecture $env:ARCH -OutputDirectory (Join-Path $env:RUNNER_TEMP 'msime-rust') -TargetVersion $env:VERSION
-          Get-ChildItem -LiteralPath (Join-Path $env:RUNNER_TEMP "msime-rust/$env:ARCH") | Format-Table Name, Length
-      # Not msime-windows-*: the coexistence and publish jobs download that pattern as the installers.
+          ./platforms/windows/Build-RustOutputs.ps1 -Architecture $env:ARCH -OutputDirectory (Join-Path $env:RUNNER_TEMP 'lingyao-rust') -TargetVersion $env:VERSION
+          Get-ChildItem -LiteralPath (Join-Path $env:RUNNER_TEMP "lingyao-rust/$env:ARCH") | Format-Table Name, Length
+      # Not lingyao-windows-*: the coexistence and publish jobs download that pattern as the installers.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-rust-windows-${{ matrix.arch }}-${{ needs.source.outputs.version }}
-          path: ${{ runner.temp }}/msime-rust/
+          name: lingyao-rust-windows-${{ matrix.arch }}-${{ needs.source.outputs.version }}
+          path: ${{ runner.temp }}/lingyao-rust/
           if-no-files-found: error
   # 每个版本（shared/contracts/editions.json 里有 Windows 段的 id）各打一个安装包，可以同时安装。full 的安装包名、AppId、目录和注册表键与引入版本之前相同。
   release:
@@ -97,11 +97,11 @@ jobs:
         with: {node-version: 24}
       # Reads the pnpm version from packageManager in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      # Each architecture's Rust outputs land in msime-rust/<arch>, the layout Build-Client.ps1 -RustOutputs reads.
+      # Each architecture's Rust outputs land in lingyao-rust/<arch>, the layout Build-Client.ps1 -RustOutputs reads.
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: msime-rust-windows-*-${{ needs.source.outputs.version }}
-          path: ${{ runner.temp }}/msime-rust
+          pattern: lingyao-rust-windows-*-${{ needs.source.outputs.version }}
+          path: ${{ runner.temp }}/lingyao-rust
           merge-multiple: true
       - name: Fetch offline candidate glosses and language dictionaries
         # bash 在第一条失败的命令处停下，多行的 pwsh 步骤只报告最后一条的结果。粤拼和注音词库要等 resources/language-dictionaries.lock.json 锁定发布版本后才下载。落定重排模型和手写模型不进安装包，由设置应用按需下载。
@@ -114,7 +114,7 @@ jobs:
       - id: vcpkg-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ runner.temp }}/msime-deps
+          path: ${{ runner.temp }}/lingyao-deps
           key: windows-deps-${{ hashFiles('platforms/windows/vcpkg.json') }}-${{ steps.version.outputs.vcpkg-baseline }}
       - name: Install native dependencies
         if: steps.vcpkg-cache.outputs.cache-hit != 'true'
@@ -130,26 +130,26 @@ jobs:
           & (Join-Path $vcpkg 'bootstrap-vcpkg.bat') -disableMetrics
           if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap failed' }
           foreach ($triplet in @('x64-windows', 'x86-windows')) {
-            & (Join-Path $vcpkg 'vcpkg.exe') install --triplet $triplet --x-manifest-root=platforms/windows "--x-install-root=$(Join-Path $env:RUNNER_TEMP "msime-deps/$triplet")"
+            & (Join-Path $vcpkg 'vcpkg.exe') install --triplet $triplet --x-manifest-root=platforms/windows "--x-install-root=$(Join-Path $env:RUNNER_TEMP "lingyao-deps/$triplet")"
             if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed for $triplet" }
           }
       - if: steps.vcpkg-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ runner.temp }}/msime-deps
+          path: ${{ runner.temp }}/lingyao-deps
           key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
       - name: Download desktop resources
         shell: pwsh
         run: |
           # Fetches and verifies the files resources/desktop-dictionary.lock.json pins; prints the directory holding them.
-          $resources = cargo run --quiet --locked -p msime-client-core --example install_resources -- (Join-Path $env:RUNNER_TEMP 'desktop-resources')
+          $resources = cargo run --quiet --locked -p lingyao-client-core --example install_resources -- (Join-Path $env:RUNNER_TEMP 'desktop-resources')
           if ($LASTEXITCODE -ne 0) { throw 'desktop resource download failed' }
-          "MSIME_DESKTOP_RESOURCES=$(@($resources)[-1].Trim())" >> $env:GITHUB_ENV
+          "LINGYAO_DESKTOP_RESOURCES=$(@($resources)[-1].Trim())" >> $env:GITHUB_ENV
       - name: Build Windows client
         shell: pwsh
         env: {VERSION: "${{ steps.version.outputs.value }}", EDITION: "${{ matrix.edition }}"}
         run: |
-          $deps = Join-Path $env:RUNNER_TEMP 'msime-deps'
+          $deps = Join-Path $env:RUNNER_TEMP 'lingyao-deps'
           # Build-Client.ps1 defaults to the Visual Studio 2022 generator; the runner image moves between Visual Studio releases, so name the one it has.
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $major = ([version](& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion)).Major
@@ -173,17 +173,17 @@ jobs:
             if (-not (& $vswhere -latest -products * -requires $component -property installationPath)) { throw "Visual Studio lacks $component" }
           }
           # The Rust half comes from the rust job; nothing is compiled by cargo or pnpm here.
-          ./platforms/windows/Build-Client.ps1 -X64Dependencies (Join-Path $deps 'x64-windows/x64-windows') -X86Dependencies (Join-Path $deps 'x86-windows/x86-windows') -TargetVersion $env:VERSION -Generator $generator -Edition $env:EDITION -RustOutputs (Join-Path $env:RUNNER_TEMP 'msime-rust')
+          ./platforms/windows/Build-Client.ps1 -X64Dependencies (Join-Path $deps 'x64-windows/x64-windows') -X86Dependencies (Join-Path $deps 'x86-windows/x86-windows') -TargetVersion $env:VERSION -Generator $generator -Edition $env:EDITION -RustOutputs (Join-Path $env:RUNNER_TEMP 'lingyao-rust')
       - name: Collect third-party notices
         shell: pwsh
         env: {EDITION: "${{ matrix.edition }}"}
         run: |
-          $deps = Join-Path $env:RUNNER_TEMP 'msime-deps'
+          $deps = Join-Path $env:RUNNER_TEMP 'lingyao-deps'
           # The Rust crates linked into the host DLL, the MCP server and the settings binary, and the npm packages bundled into its frontend, carry notices the vcpkg prefixes do not. Run on this runner, cargo resolves the Windows dependency graph.
-          $supplemental = Join-Path $env:RUNNER_TEMP 'msime-supplemental-notices'
+          $supplemental = Join-Path $env:RUNNER_TEMP 'lingyao-supplemental-notices'
           $rust = Join-Path $supplemental 'rust-crates-NOTICES.txt'
           $frontend = Join-Path $supplemental 'frontend-npm-NOTICES.txt'
-          python -X utf8 platforms/linux/collect-notices.py cargo $rust msime-host-api msime-engine msime-mcp-server msime-desktop:tauri/custom-protocol
+          python -X utf8 platforms/linux/collect-notices.py cargo $rust lingyao-host-api lingyao-engine lingyao-mcp-server lingyao-desktop:tauri/custom-protocol
           if ($LASTEXITCODE -ne 0) { throw 'Rust crate notice collection failed' }
           # The npm collector reads the installed node_modules, which the rust job, not this one, installed.
           pnpm install --frozen-lockfile
@@ -205,13 +205,13 @@ jobs:
           ./platforms/windows/installer/Prepare-PackageFiles.ps1 -TargetVersion $env:VERSION
           -Edition $env:EDITION
           -NoticesDirectory target/windows-notices
-          -DesktopResourcesDirectory $env:MSIME_DESKTOP_RESOURCES
+          -DesktopResourcesDirectory $env:LINGYAO_DESKTOP_RESOURCES
           -ServerReleaseDirectory target/windows-$env:EDITION/x64/bin
           -Tsf32ReleaseDirectory target/windows-$env:EDITION/x86/bin
           -Tsf64ReleaseDirectory target/windows-$env:EDITION/x64/bin
           -TsfArm64ReleaseDirectory target/windows-$env:EDITION/arm64/bin
-          -DesktopExecutable target/windows-$env:EDITION/x64/bin/msime-client-settings.exe
-      # 安装包不带 PDB（msime_setup.iss），这次构建的符号作为单独的发布资产放在安装包旁边，收集逻辑和布局见 Collect-Symbols.ps1。维护者用 Package-SimplySign.ps1 打出签名安装包时，同一脚本会写出对应的符号包，连同安装包一起替换到发布上。
+          -DesktopExecutable target/windows-$env:EDITION/x64/bin/lingyao-client-settings.exe
+      # 安装包不带 PDB（lingyao_setup.iss），这次构建的符号作为单独的发布资产放在安装包旁边，收集逻辑和布局见 Collect-Symbols.ps1。维护者用 Package-SimplySign.ps1 打出签名安装包时，同一脚本会写出对应的符号包，连同安装包一起替换到发布上。
       - name: Collect debug symbols
         shell: pwsh
         env: {VERSION: "${{ steps.version.outputs.value }}", EDITION: "${{ matrix.edition }}"}
@@ -230,14 +230,14 @@ jobs:
             choco install innosetup --version 6.7.1 --no-progress -y
             if ($LASTEXITCODE -ne 0) { throw 'Inno Setup install failed' }
           }
-          # msime_setup.iss uses compiler:Languages\ChineseSimplified.isl, which is a user-contributed translation that the Inno Setup installer does not ship; take it from the is-6_7_1 tag.
+          # lingyao_setup.iss uses compiler:Languages\ChineseSimplified.isl, which is a user-contributed translation that the Inno Setup installer does not ship; take it from the is-6_7_1 tag.
           $isl = "$inno\Languages\ChineseSimplified.isl"
           if (-not (Test-Path -LiteralPath $isl)) {
             Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/jrsoftware/issrc/cfdf48923178df4b4f040e038b423aa555a61ffc/Files/Languages/Unofficial/ChineseSimplified.isl' -OutFile $isl
             if ((Get-FileHash -LiteralPath $isl -Algorithm SHA256).Hash -ne '7D544B9BB1D142CFA11F2E5D3CC8ABE2E55F8E066C5124E3772675AA236E1278') { throw 'ChineseSimplified.isl digest mismatch' }
           }
           ./platforms/windows/installer/Compile-Installer.ps1 -Edition $env:EDITION
-          # 安装包名前缀按版本取（full 是 MetasequoiaIME_Setup，五笔版是 MetasequoiaIME-Wubi_Setup），与更新检查认的名字一致。
+          # 安装包名前缀按版本取（full 是 LingyaoIME_Setup，五笔版是 LingyaoIME-Wubi_Setup），与更新检查认的名字一致。
           $base = (python platforms/windows/scripts/edition_windows.py field --edition $env:EDITION installer_base_name).Trim()
           if ($LASTEXITCODE -ne 0) { throw 'edition installer name lookup failed' }
           $installer = "platforms/windows/installer/Output/${base}_v$env:VERSION.exe"
@@ -250,13 +250,13 @@ jobs:
           Get-ChildItem dist | Format-Table Name, Length
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-windows-${{ matrix.edition }}-${{ steps.version.outputs.value }}
+          name: lingyao-windows-${{ matrix.edition }}-${{ steps.version.outputs.value }}
           path: dist/
           if-no-files-found: error
-      # 单独的产物，名字不匹配下面的 msime-windows-* 模式，所以 coexistence 任务不会下载符号；publish 两个都取。
+      # 单独的产物，名字不匹配下面的 lingyao-windows-* 模式，所以 coexistence 任务不会下载符号；publish 两个都取。
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-symbols-windows-${{ matrix.edition }}-${{ steps.version.outputs.value }}
+          name: lingyao-symbols-windows-${{ matrix.edition }}-${{ steps.version.outputs.value }}
           path: dist-symbols/
           if-no-files-found: error
       # The runner is a disposable elevated Windows machine, so install the built package on it and uninstall it again before anything is published. The artifact is uploaded first so a failing package can still be inspected.
@@ -280,7 +280,7 @@ jobs:
         with: {ref: "${{ needs.source.outputs.sha }}", persist-credentials: false}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: msime-windows-*-${{ needs.release.outputs.version }}
+          pattern: lingyao-windows-*-${{ needs.release.outputs.version }}
           path: dist
           merge-multiple: true
       - name: Install the editions side by side
@@ -307,7 +307,7 @@ jobs:
         with: {ref: "${{ needs.source.outputs.sha }}", persist-credentials: false}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: msime-windows-${{ matrix.edition }}-${{ needs.release.outputs.version }}
+          name: lingyao-windows-${{ matrix.edition }}-${{ needs.release.outputs.version }}
           path: dist
       - name: Install and uninstall the package
         shell: pwsh
@@ -333,12 +333,12 @@ jobs:
         with: {ref: "${{ needs.source.outputs.sha }}", fetch-depth: 0, persist-credentials: false}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: msime-windows-*-${{ needs.release.outputs.version }}
+          pattern: lingyao-windows-*-${{ needs.release.outputs.version }}
           path: dist
           merge-multiple: true
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: msime-symbols-windows-*-${{ needs.release.outputs.version }}
+          pattern: lingyao-symbols-windows-*-${{ needs.release.outputs.version }}
           path: dist
           merge-multiple: true
       - name: Publish independent Windows release

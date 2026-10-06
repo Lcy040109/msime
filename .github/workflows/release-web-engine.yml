@@ -1,8 +1,8 @@
 name: Release Web Engine
 
-# 构建网页内置输入法用的引擎包（msime-engine-wasm 的 wasm、加载代码、裁剪后的拼音库和五笔 86 库、整句模型、NOTICE、清单和校验和）以及 npm 包 @msime/web-engine，只有 publish 为 true 时才发布为 web-engine-vX.Y.Z release 并发布到 npm。
+# 构建网页内置输入法用的引擎包（lingyao-engine-wasm 的 wasm、加载代码、裁剪后的拼音库和五笔 86 库、整句模型、NOTICE、清单和校验和）以及 npm 包 @lingyao/web-engine，只有 publish 为 true 时才发布为 web-engine-vX.Y.Z release 并发布到 npm。
 #
-# TapTapGo 在 data/msime/web-engine.lock.json 里按 sha256 和大小钉住这个 release 的每个文件，构建时下载并逐个校验。因此发布出去的 release 不能删除，附件也不能替换：哪怕只是重新上传同名文件，已经钉住它的每个构建都会校验失败。要修正就发一个新版本号。
+# TapTapGo 在 data/lingyao/web-engine.lock.json 里按 sha256 和大小钉住这个 release 的每个文件，构建时下载并逐个校验。因此发布出去的 release 不能删除，附件也不能替换：哪怕只是重新上传同名文件，已经钉住它的每个构建都会校验失败。要修正就发一个新版本号。
 #
 # 词库和模型按 resources/desktop-dictionary.lock.json 下载并校验。web_article_eval（文章跟打的首选命中率）的输入不在本仓库，这里不跑；发布人在本地运行后把结果那一行补进 release notes。
 on:
@@ -78,14 +78,14 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
-      # 1. 输入：词库 release 里的 msime-pinyin.db、msime-wubi.db 和 chinese-ime-lm 的整句模型，按锁文件的 URL 下载，长度和 SHA-256 都对上才用。
+      # 1. 输入：词库 release 里的 lingyao-pinyin.db、lingyao-wubi.db 和 chinese-ime-lm 的整句模型，按锁文件的 URL 下载，长度和 SHA-256 都对上才用。
       - name: Download the pinned dictionary and model
         run: |
           set -euo pipefail
           lock=resources/desktop-dictionary.lock.json
           inputs=target/web-engine/inputs
           mkdir -p "$inputs"
-          for name in msime-pinyin.db msime-wubi.db sentence-model.safetensors; do
+          for name in lingyao-pinyin.db lingyao-wubi.db sentence-model.safetensors; do
             url="$(jq -er --arg n "$name" '.artifacts[] | select(.name == $n) | .url' "$lock")"
             sha="$(jq -er --arg n "$name" '.artifacts[] | select(.name == $n) | .sha256' "$lock")"
             size="$(jq -er --arg n "$name" '.artifacts[] | select(.name == $n) | .size' "$lock")"
@@ -94,22 +94,22 @@ jobs:
             [[ "$actual" == "$size" ]] || { echo "$name is $actual bytes, the lock says $size" >&2; exit 1; }
             echo "$sha  $inputs/$name" | sha256sum -c -
           done
-      # 2. 构建；脚本内部调用 `msime-dict-build web` 裁词库，跑 NOTICE 检查和体积门槛。
+      # 2. 构建；脚本内部调用 `lingyao-dict-build web` 裁词库，跑 NOTICE 检查和体积门槛。
       - name: Build the web engine
         env: {VERSION: "${{ steps.version.outputs.value }}"}
         run: |
           scripts/build-web-engine.sh --version "$VERSION" \
-            --pinyin target/web-engine/inputs/msime-pinyin.db --wubi target/web-engine/inputs/msime-wubi.db \
+            --pinyin target/web-engine/inputs/lingyao-pinyin.db --wubi target/web-engine/inputs/lingyao-wubi.db \
             --model target/web-engine/inputs/sentence-model.safetensors
       # 3. 冒烟测试、按键延迟门槛和校验和。
       - name: Smoke test the built glue and wasm in Node
         run: |
-          cargo run --locked -p msime-engine-wasm --example make_fixture -- target/web-engine/fixture/msime.db
-          node crates/engine-wasm/tests/smoke.mjs target/web-engine/fixture/msime.db
+          cargo run --locked -p lingyao-engine-wasm --example make_fixture -- target/web-engine/fixture/lingyao.db
+          node crates/engine-wasm/tests/smoke.mjs target/web-engine/fixture/lingyao.db
       - name: Test the web engine SDK
         run: |
           node --test 'packages/web-engine/test/*.test.mjs'
-          node packages/web-engine/test/smoke.mjs target/web-engine/fixture/msime.db
+          node packages/web-engine/test/smoke.mjs target/web-engine/fixture/lingyao.db
           node packages/web-engine/test/candidates.browser.mjs
       - name: Keystroke latency
         env: {MAX_P95: "${{ inputs.max_p95_ms }}"}
@@ -128,11 +128,11 @@ jobs:
           name: web-engine-${{ steps.version.outputs.value }}
           path: target/web-engine/dist/
           if-no-files-found: error
-      # npm 包 @msime/web-engine 单独上传：它不属于 dist，不能出现在 TapTapGo 钉住的清单和校验和里。
+      # npm 包 @lingyao/web-engine 单独上传：它不属于 dist，不能出现在 TapTapGo 钉住的清单和校验和里。
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: web-engine-npm-${{ steps.version.outputs.value }}
-          path: target/web-engine/npm/msime-web-engine-${{ steps.version.outputs.value }}.tgz
+          path: target/web-engine/npm/lingyao-web-engine-${{ steps.version.outputs.value }}.tgz
           if-no-files-found: error
     outputs:
       version: ${{ steps.version.outputs.value }}
@@ -159,10 +159,10 @@ jobs:
           set -euo pipefail
           dist=dist
           (cd "$dist" && sha256sum -c SHA256SUMS.txt)
-          jq -r '"Built by scripts/build-web-engine.sh from metasequoiaime/msime \(.source_commit) (pinyin dictionary keeps \(.keep_multi) multi-character words).\n\nInputs: msime-pinyin.db, msime-wubi.db and sentence-model.safetensors as pinned in resources/desktop-dictionary.lock.json at that commit. Licences: NOTICE.md. Checksums: SHA256SUMS.txt; web-engine-manifest.json lists every file with its sha256 and size for data/msime/web-engine.lock.json in TapTapGo.\n\nPublished assets are never replaced or deleted, because TapTapGo pins them by sha256."' "$dist/web-engine-manifest.json" > notes.md
+          jq -r '"Built by scripts/build-web-engine.sh from metasequoiaime/lingyao \(.source_commit) (pinyin dictionary keeps \(.keep_multi) multi-character words).\n\nInputs: lingyao-pinyin.db, lingyao-wubi.db and sentence-model.safetensors as pinned in resources/desktop-dictionary.lock.json at that commit. Licences: NOTICE.md. Checksums: SHA256SUMS.txt; web-engine-manifest.json lists every file with its sha256 and size for data/lingyao/web-engine.lock.json in TapTapGo.\n\nPublished assets are never replaced or deleted, because TapTapGo pins them by sha256."' "$dist/web-engine-manifest.json" > notes.md
           tag="web-engine-v${VERSION}"
-          RELEASE_LATEST=false bash scripts/publish-release.sh "$tag" "$SOURCE_SHA" "Web engine ${VERSION}" notes.md "$dist"/msime_engine_bg.wasm "$dist"/msime_engine.js "$dist"/msime-pinyin.db.gz "$dist"/msime-wubi86.db.gz "$dist"/sentence-model.safetensors.gz "$dist"/NOTICE.md "$dist"/web-engine-manifest.json "$dist"/SHA256SUMS.txt "npm/msime-web-engine-${VERSION}.tgz"
-  # 6. 把附到 release 上的同一个 tgz 发布为 npm 包 @msime/web-engine。发布逻辑在 publish-web-engine-npm.yml：npm 失败时单独触发它补发这个版本，不用重跑这里，也不会再动已经发布的 release；npm 上已有的版本不能替换，同一版本重新发布时 npm 保留最初那次的包。预发布版本打 next 标签，不会成为 npm install 的默认版本。
+          RELEASE_LATEST=false bash scripts/publish-release.sh "$tag" "$SOURCE_SHA" "Web engine ${VERSION}" notes.md "$dist"/lingyao_engine_bg.wasm "$dist"/lingyao_engine.js "$dist"/lingyao-pinyin.db.gz "$dist"/lingyao-wubi86.db.gz "$dist"/sentence-model.safetensors.gz "$dist"/NOTICE.md "$dist"/web-engine-manifest.json "$dist"/SHA256SUMS.txt "npm/lingyao-web-engine-${VERSION}.tgz"
+  # 6. 把附到 release 上的同一个 tgz 发布为 npm 包 @lingyao/web-engine。发布逻辑在 publish-web-engine-npm.yml：npm 失败时单独触发它补发这个版本，不用重跑这里，也不会再动已经发布的 release；npm 上已有的版本不能替换，同一版本重新发布时 npm 保留最初那次的包。预发布版本打 next 标签，不会成为 npm install 的默认版本。
   npm:
     needs: [build, publish]
     if: ${{ inputs.publish }}

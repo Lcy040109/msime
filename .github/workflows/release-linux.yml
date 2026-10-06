@@ -51,18 +51,18 @@ jobs:
         run: |
           corepack enable
           pnpm install --frozen-lockfile
-          pnpm --filter @msime/desktop build
+          pnpm --filter @lingyao/desktop build
       # package-container.sh installs target/offline-glosses when it is there.
       - name: Fetch the locked offline candidate glosses
         run: python3 scripts/fetch_offline_glosses.py
       # package-container.sh installs target/language-dictionaries (Cantonese and Zhuyin, with their licences) when it is there; until a release is pinned the script prints a skipped line.
       - name: Fetch the locked language dictionaries
         run: python3 scripts/fetch_language_dictionaries.py
-      # Builds the Release host library and desktop binary, configures the native hosts for /usr with packaging on, runs the same ctest suite the pull-request gate runs (on the Release build, where the tests keep their assertions), then produces the .deb, the .tar.gz and SHA256SUMS. 每个有 Linux 段的版本各出一个包（full 是 msime-linux，其他版本是装在 /opt 下的 msime-linux-<id>），共用同一次构建的宿主库和桌面二进制。
+      # Builds the Release host library and desktop binary, configures the native hosts for /usr with packaging on, runs the same ctest suite the pull-request gate runs (on the Release build, where the tests keep their assertions), then produces the .deb, the .tar.gz and SHA256SUMS. 每个有 Linux 段的版本各出一个包（full 是 lingyao-linux，其他版本是装在 /opt 下的 lingyao-linux-<id>），共用同一次构建的宿主库和桌面二进制。
       - name: Build Linux packages
         env: {VERSION: "${{ steps.version.outputs.value }}"}
         run: bash platforms/linux/package-container.sh "$VERSION"
-      # Asset names come from CPack (<package>_VERSION_ARCH.deb with dpkg's amd64/arm64, <package>-VERSION-linux-ARCH.tar.gz with x86_64/aarch64, <package> 取自版本表：full 是 msime-linux，其他版本是 msime-linux-<id>). The in-app update check selects releases by the linux-v tag prefix and opens the release page; it shows the digest GitHub computes for the edition's own .deb (else .tar.gz) for the host's architecture, picked by the package name and that architecture part (packages/ui/src/settings/update-manifest.ts).
+      # Asset names come from CPack (<package>_VERSION_ARCH.deb with dpkg's amd64/arm64, <package>-VERSION-linux-ARCH.tar.gz with x86_64/aarch64, <package> 取自版本表：full 是 lingyao-linux，其他版本是 lingyao-linux-<id>). The in-app update check selects releases by the linux-v tag prefix and opens the release page; it shows the digest GitHub computes for the edition's own .deb (else .tar.gz) for the host's architecture, picked by the package name and that architecture part (packages/ui/src/settings/update-manifest.ts).
       - name: Verify Linux packages
         env: {VERSION: "${{ steps.version.outputs.value }}"}
         run: |
@@ -89,7 +89,7 @@ jobs:
             unpacked=$(mktemp -d)
             dpkg-deb -x "${deb[0]}" "$unpacked"
             unstripped=$(find "$unpacked" -type f ! -name 'libonnxruntime.so*' ! -name 'libsherpa-onnx-c-api.so*' -exec file {} + | grep ': *ELF' | grep -v ', stripped' || true)
-            # 发布页的包不带离线手写模型（package-container.sh 以 -DMSIME_BUNDLE_HANDWRITING_MODEL=OFF 配置），由设置应用按需下载。
+            # 发布页的包不带离线手写模型（package-container.sh 以 -DLINGYAO_BUNDLE_HANDWRITING_MODEL=OFF 配置），由设置应用按需下载。
             bundled_model=$(find "$unpacked" -name 'handwriting-zh_CN.model')
             rm -rf "$unpacked"
             [[ -z $bundled_model ]] || { echo "edition $edition: ${deb[0]} bundles the handwriting model: $bundled_model" >&2; exit 1; }
@@ -100,7 +100,7 @@ jobs:
           bash platforms/linux/tests/tools/check-deb-coexistence.sh "${edition_debs[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-linux-deb-${{ matrix.arch }}-${{ steps.version.outputs.value }}
+          name: lingyao-linux-deb-${{ matrix.arch }}-${{ steps.version.outputs.value }}
           path: target/linux-package/dist/
           if-no-files-found: error
     outputs:
@@ -130,14 +130,14 @@ jobs:
         run: |
           corepack enable
           pnpm install --frozen-lockfile
-          pnpm --filter @msime/desktop build
+          pnpm --filter @lingyao/desktop build
       - name: Fetch the locked offline candidate glosses
         run: python3 scripts/fetch_offline_glosses.py
       # package-container.sh installs target/language-dictionaries (Cantonese and Zhuyin, with their licences) when it is there; until a release is pinned the script prints a skipped line.
       - name: Fetch the locked language dictionaries
         run: python3 scripts/fetch_language_dictionaries.py
       - name: Build Linux RPM
-        env: {VERSION: "${{ steps.version.outputs.value }}", MSIME_PACKAGE_FORMAT: rpm}
+        env: {VERSION: "${{ steps.version.outputs.value }}", LINGYAO_PACKAGE_FORMAT: rpm}
         run: bash platforms/linux/package-container.sh "$VERSION"
       # Installs the RPMs into a clean Fedora container and erases them again, which is where an unsatisfiable Requires shows up; every edition's RPM goes in together, and removing one must leave the others' files in place.
       - name: Verify Linux RPM
@@ -159,10 +159,10 @@ jobs:
           bash platforms/linux/tests/tools/check-rpm-install.sh "${edition_rpms[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-linux-rpm-${{ matrix.arch }}-${{ steps.version.outputs.value }}
+          name: lingyao-linux-rpm-${{ matrix.arch }}-${{ steps.version.outputs.value }}
           path: target/linux-package-rpm/dist/
           if-no-files-found: error
-  # 发行版源码构建要的 tarball（COPR、OBS 与 PPA 用源码与 vendor 包，Gentoo 只用前端包；AUR 的 msime 从 GitHub 的标签归档构建，不用这些）：当前提交的源码、离线构建用的 vendor 包（crate、构建好的前端、按锁文件取回的数据）和单独的前端包，见 platforms/linux/packaging/make-source-tarballs.sh。随发布一起上传，各包定义按发布页地址引用它们。只打 full。
+  # 发行版源码构建要的 tarball（COPR、OBS 与 PPA 用源码与 vendor 包，Gentoo 只用前端包；AUR 的 lingyao 从 GitHub 的标签归档构建，不用这些）：当前提交的源码、离线构建用的 vendor 包（crate、构建好的前端、按锁文件取回的数据）和单独的前端包，见 platforms/linux/packaging/make-source-tarballs.sh。随发布一起上传，各包定义按发布页地址引用它们。只打 full。
   distro-sources:
     needs: source
     if: ${{ needs.source.outputs.packaging == 'true' }}
@@ -183,7 +183,7 @@ jobs:
           bash platforms/linux/packaging/make-source-tarballs.sh "$VERSION" target/distro-sources
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-linux-sources-${{ steps.version.outputs.value }}
+          name: lingyao-linux-sources-${{ steps.version.outputs.value }}
           path: target/distro-sources/
           if-no-files-found: error
   publish:
@@ -194,10 +194,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {ref: "${{ needs.source.outputs.sha }}", fetch-depth: 0, persist-credentials: false}
-      # 只取要发布的产物：两个架构各自的 msime-linux-deb/rpm-ARCH-VERSION 与 msime-linux-sources-VERSION。
+      # 只取要发布的产物：两个架构各自的 lingyao-linux-deb/rpm-ARCH-VERSION 与 lingyao-linux-sources-VERSION。
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: msime-linux-*-${{ needs.deb.outputs.version }}
+          pattern: lingyao-linux-*-${{ needs.deb.outputs.version }}
           path: dist
           merge-multiple: true
       # The build takes the dispatched commit, so publishing has to be asked for rather than implied. Without the gate a build of a feature branch cuts a real public release.
@@ -232,7 +232,7 @@ jobs:
         run: bash platforms/linux/packaging/render-definitions.sh "$VERSION" target/package-definitions
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-package-definitions-linux-${{ needs.deb.outputs.version }}
+          name: lingyao-package-definitions-linux-${{ needs.deb.outputs.version }}
           path: target/package-definitions/
           include-hidden-files: true
           if-no-files-found: error
@@ -245,7 +245,7 @@ jobs:
     with:
       version: ${{ needs.deb.outputs.version }}
     secrets: inherit
-  # 同一个版本交给 Fedora COPR 构建，用户用 dnf copr enable msime/msime 安装；同样只对从 main 发出的正式版本，逻辑在 publish-linux-copr.yml，失败时单独手动触发它。
+  # 同一个版本交给 Fedora COPR 构建，用户用 dnf copr enable lingyao/lingyao 安装；同样只对从 main 发出的正式版本，逻辑在 publish-linux-copr.yml，失败时单独手动触发它。
   copr:
     needs: [deb, package-definitions]
     if: ${{ needs.package-definitions.result == 'success' }}
@@ -254,7 +254,7 @@ jobs:
     with:
       version: ${{ needs.deb.outputs.version }}
     secrets: inherit
-  # 同一个版本作为签名源码包上传到 Launchpad PPA，用户用 add-apt-repository ppa:msime/ppa 安装；同样只对从 main 发出的正式版本，逻辑在 publish-linux-ppa.yml，失败时单独手动触发它。
+  # 同一个版本作为签名源码包上传到 Launchpad PPA，用户用 add-apt-repository ppa:lingyao/ppa 安装；同样只对从 main 发出的正式版本，逻辑在 publish-linux-ppa.yml，失败时单独手动触发它。
   ppa:
     needs: [deb, package-definitions]
     if: ${{ needs.package-definitions.result == 'success' }}

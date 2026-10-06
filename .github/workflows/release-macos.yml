@@ -38,7 +38,7 @@ jobs:
           case "$GITHUB_REF_NAME" in main) suffix= ;; develop) suffix=-beta ;; *) suffix=-alpha ;; esac; echo "release=${version}${suffix}" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: brew install nlohmann-json
-      # platforms/macos/CMakeLists.txt makes an empty MSIME_SPARKLE_ROOT a FATAL_ERROR, so the
+      # platforms/macos/CMakeLists.txt makes an empty LINGYAO_SPARKLE_ROOT a FATAL_ERROR, so the
       # configure below cannot run without this. Same pinned version, same digest and same cache key
       # as ci-macos.yml -- the digest lives beside the version in CMakeLists.txt.
       - name: Cache the pinned Sparkle archive
@@ -68,7 +68,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sparkle"
           tar -xJf "$archive" -C "$RUNNER_TEMP/sparkle"
           test -d "$RUNNER_TEMP/sparkle/Sparkle.framework"
-          echo "MSIME_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
+          echo "LINGYAO_SPARKLE_ROOT=$RUNNER_TEMP/sparkle" >> "$GITHUB_ENV"
       - name: Enable pnpm
         # Reads the pnpm version from packageManager in package.json.
         run: corepack enable
@@ -78,9 +78,9 @@ jobs:
         run: |
           set -euo pipefail
           : "${MACOS_SIGNING_IDENTITY:?MACOS_CERTIFICATE_P12_BASE64 is set but MACOS_SIGNING_IDENTITY is not}"
-          keychain="$RUNNER_TEMP/msime-signing.keychain-db"
+          keychain="$RUNNER_TEMP/lingyao-signing.keychain-db"
           password="$(openssl rand -base64 32)"
-          certificate="$RUNNER_TEMP/msime-signing.p12"
+          certificate="$RUNNER_TEMP/lingyao-signing.p12"
           printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$certificate"
           security create-keychain -p "$password" "$keychain"
           security set-keychain-settings -lut 21600 "$keychain"
@@ -91,7 +91,7 @@ jobs:
           security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
           rm -f "$certificate"
           security find-identity -v -p codesigning "$keychain" | grep -F "$MACOS_SIGNING_IDENTITY"
-          echo "MSIME_SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          echo "LINGYAO_SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
       # stage-resources.sh stages target/offline-glosses when it is there and package-release.sh embeds it.
       - name: Fetch the locked offline candidate glosses
         run: python3 scripts/fetch_offline_glosses.py
@@ -108,8 +108,8 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: "${{ secrets.MACOS_NOTARY_APP_SPECIFIC_PASSWORD }}"
         run: bash platforms/macos/package-release.sh --editions "$MACOS_EDITIONS" "$VERSION" dist
       - name: Remove signing keychain
-        if: ${{ always() && env.MSIME_SIGNING_KEYCHAIN != '' }}
-        run: security delete-keychain "$MSIME_SIGNING_KEYCHAIN"
+        if: ${{ always() && env.LINGYAO_SIGNING_KEYCHAIN != '' }}
+        run: security delete-keychain "$LINGYAO_SIGNING_KEYCHAIN"
       - name: Verify release assets
         env: {VERSION: "${{ steps.version.outputs.value }}"}
         run: |
@@ -117,7 +117,7 @@ jobs:
           shopt -s nullglob
           dmgs=(dist/*.dmg)
           IFS=, read -r -a editions <<< "$MACOS_EDITIONS"
-          # 每个版本恰好一个 DMG，名字是该版本的 dmg_prefix 加版本号；full 仍是 msime-macos-VERSION-universal.dmg。
+          # 每个版本恰好一个 DMG，名字是该版本的 dmg_prefix 加版本号；full 仍是 lingyao-macos-VERSION-universal.dmg。
           [[ ${#dmgs[@]} -eq ${#editions[@]} ]]
           for edition in "${editions[@]}"; do
             prefix="$(python3 platforms/macos/scripts/edition_bundle.py field --edition "$edition" dmg_prefix)"
@@ -125,9 +125,9 @@ jobs:
             grep -q " ${prefix}-${VERSION}-universal.dmg\$" dist/SHA256SUMS
           done
           [[ -f dist/SHA256SUMS ]]
-          # package-release.sh 剥离发布的可执行文件（输入法、它的 msime-voice-local 辅助程序、设置应用、msime-mcp）之前先写出 dSYM，再打成一个 zip；各版本共用同一组可执行文件，一份覆盖全部版本。它作为发布资产长期保留，用来符号化这个版本的崩溃报告，不像 workflow artifact 那样 90 天后过期。
-          [[ -f "dist/msime-macos-${VERSION}-dsym.zip" ]]
-          grep -q " msime-macos-${VERSION}-dsym.zip\$" dist/SHA256SUMS
+          # package-release.sh 剥离发布的可执行文件（输入法、它的 lingyao-voice-local 辅助程序、设置应用、lingyao-mcp）之前先写出 dSYM，再打成一个 zip；各版本共用同一组可执行文件，一份覆盖全部版本。它作为发布资产长期保留，用来符号化这个版本的崩溃报告，不像 workflow artifact 那样 90 天后过期。
+          [[ -f "dist/lingyao-macos-${VERSION}-dsym.zip" ]]
+          grep -q " lingyao-macos-${VERSION}-dsym.zip\$" dist/SHA256SUMS
           (cd dist && shasum -a 256 -c SHA256SUMS)
           ls -l dist
           for dmg in "${dmgs[@]}"; do
@@ -135,7 +135,7 @@ jobs:
           done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: msime-macos-${{ steps.version.outputs.value }}
+          name: lingyao-macos-${{ steps.version.outputs.value }}
           path: dist/
           if-no-files-found: error
       # The build takes the dispatched commit, and the release is tagged at that checked-out commit (git rev-parse HEAD), so publishing has to be asked for rather than implied. Without the gate a build of a feature branch cuts a real public release.
@@ -150,8 +150,8 @@ jobs:
           stable='^macos-v[0-9]+\.[0-9]+\.[0-9]+$'; [[ "$RELEASE" == "$VERSION" ]] || stable=.
           start=$(git tag --list 'macos-v*' --sort=-v:refname | grep -vxF "$tag" | grep -E "$stable" | head -1 || true)
           python3 scripts/generate-release-notes.py --platform macos --version "$RELEASE" --start-tag "$start" --end-ref "$(git rev-parse HEAD)" --output release-notes.md
-          bash scripts/publish-release.sh "$tag" "$(git rev-parse HEAD)" "macOS ${RELEASE}" release-notes.md dist/*.dmg "dist/msime-macos-${VERSION}-dsym.zip" dist/SHA256SUMS
-      # brew install --cask metasequoiaime/tap/msime（五笔版 msime-wubi，拼音版 msime-pinyin，日文版 msime-japanese，越南文版 msime-vietnamese，藏文版 msime-tibetan）. Only a notarized final release goes to the tap: an ad-hoc package installs but macOS will not register its input method, and a prerelease (which every release dispatched from a branch other than main is) is not what someone installing from Homebrew asked for. stapler validate checks the ticket in the DMG itself rather than trusting which secrets were set. 每个版本一个 cask，由 platforms/macos/scripts/edition_bundle.py 从同一个模板渲染；full 的渲染结果与原来的 sed 替换相同，只有 full 把 msime-mcp 放上 PATH。
+          bash scripts/publish-release.sh "$tag" "$(git rev-parse HEAD)" "macOS ${RELEASE}" release-notes.md dist/*.dmg "dist/lingyao-macos-${VERSION}-dsym.zip" dist/SHA256SUMS
+      # brew install --cask metasequoiaime/tap/lingyao（五笔版 lingyao-wubi，拼音版 lingyao-pinyin，日文版 lingyao-japanese，越南文版 lingyao-vietnamese，藏文版 lingyao-tibetan）. Only a notarized final release goes to the tap: an ad-hoc package installs but macOS will not register its input method, and a prerelease (which every release dispatched from a branch other than main is) is not what someone installing from Homebrew asked for. stapler validate checks the ticket in the DMG itself rather than trusting which secrets were set. 每个版本一个 cask，由 platforms/macos/scripts/edition_bundle.py 从同一个模板渲染；full 的渲染结果与原来的 sed 替换相同，只有 full 把 lingyao-mcp 放上 PATH。
       - name: Update the Homebrew casks
         if: ${{ inputs.publish && !inputs.prerelease && github.ref_name == 'main' }}
         env: {GH_TOKEN: "${{ secrets.HOMEBREW_TAP_TOKEN }}", VERSION: "${{ steps.version.outputs.value }}"}
@@ -176,7 +176,7 @@ jobs:
             fi
             sha256="$(shasum -a 256 "$dmg" | cut -d' ' -f1)"
             python3 platforms/macos/scripts/edition_bundle.py cask --edition "$edition" --version "$VERSION" --sha256 "$sha256" \
-              --template platforms/macos/homebrew/msime.rb.in > "$RUNNER_TEMP/tap/Casks/${cask}.rb"
+              --template platforms/macos/homebrew/lingyao.rb.in > "$RUNNER_TEMP/tap/Casks/${cask}.rb"
             git -C "$RUNNER_TEMP/tap" add "Casks/${cask}.rb"
             updated+=("$cask")
           done
